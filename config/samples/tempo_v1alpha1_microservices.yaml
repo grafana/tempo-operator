@@ -1,0 +1,6 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: Microservices
+metadata:
+  name: microservices-sample
+spec:
+  # TODO(user): Add fields here
