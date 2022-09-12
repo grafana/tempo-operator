@@ -7,6 +7,7 @@ import (
 
 // MicroservicesSpec defines the desired state of Microservices.
 type MicroservicesSpec struct {
+	// NOTE: currently this field is not considered.
 	// The resources are split in between components.
 	// Tempo operator knows how to split them appropriately based on grafana/tempo/issues/1540.
 	//
@@ -14,6 +15,7 @@ type MicroservicesSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Resource Requirements"
 	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 
+	// NOTE: currently this field is not considered.
 	// Storage defines S3 compatible object storage configuration.
 	// User is required to create secret and supply it.
 	//
@@ -21,18 +23,21 @@ type MicroservicesSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Object Storage"
 	Storage ObjectStorageSpec `json:"storage,omitempty"`
 
+	// NOTE: currently this field is not considered.
 	// StorageClassName for PVCs used by ingester/querier.
 	//
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="StorageClassName for PVCs"
 	StorageClassName string `json:"storageClassName,omitempty"`
 
+	// NOTE: currently this field is not considered.
 	// LimitSpec is used to limit ingestion and querying rates.
 	//
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Ingestion and Querying Ratelimiting"
 	LimitSpec LimitSpec `json:"limits,omitempty"`
 
+	// NOTE: currently this field is not considered.
 	// Retention period defined by dataset.
 	// User can specify how long data should be stored.
 	//
@@ -40,24 +45,19 @@ type MicroservicesSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Retention Period"
 	Retention RetentionSpec `json:"retention,omitempty"`
 
+	// NOTE: currently this field is not considered.
 	// ReplicationFactor is used to define how many component replicas should exist.
 	//
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Replication Factor"
 	ReplicationFactor int `json:"replicationFactor,omitempty"`
 
+	// NOTE: currently this field is not considered.
 	// Components defines requierements for a set of tempo components.
 	//
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tempo Components"
 	Components TempoComponentsSpec `json:"template,omitempty"`
-
-	// Tenants ...
-	// TODO(frzifus): define a tenant structure. For tests, a simple list would be good.
-	// But for production use, tenants should be outsourced into a secret or similar.
-	//
-	// +optional
-	Tenants any `json:"tenants,omitempty"`
 }
 
 // MicroservicesStatus defines the observed state of Microservices
@@ -181,9 +181,12 @@ type TempoComponentSpec struct {
 type TempoQueryFrontendSpec struct {
 	// TempoComponentSpec is embedded to extend this definition with further options.
 	//
+	// Currently there is no way to inline this field.
+	// See: https://github.com/golang/go/issues/6213
+	//
 	// +required
 	// +kubebuilder:validation:Required
-	TempoComponentSpec
+	TempoComponentSpec `json:"component,omitempty"`
 
 	// JaegerQuerySpec defines Jaeger Query spefic options.
 	//
