@@ -181,9 +181,12 @@ type TempoComponentSpec struct {
 type TempoQueryFrontendSpec struct {
 	// TempoComponentSpec is embedded to extend this definition with further options.
 	//
+	// Currently there is no way to inline this field.
+	// See: https://github.com/golang/go/issues/6213
+	//
 	// +required
 	// +kubebuilder:validation:Required
-	TempoComponentSpec
+	TempoComponentSpec `json:"component,omitempty"`
 
 	// JaegerQuerySpec defines Jaeger Query spefic options.
 	//
