@@ -52,12 +52,8 @@ type MicroservicesSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tempo Components"
 	Components TempoComponentsSpec `json:"template,omitempty"`
 
-	// Tenants ...
 	// TODO(frzifus): define a tenant structure. For tests, a simple list would be good.
 	// But for production use, tenants should be outsourced into a secret or similar.
-	//
-	// +optional
-	// Tenants any `json:"tenants,omitempty"`
 }
 
 // MicroservicesStatus defines the observed state of Microservices
