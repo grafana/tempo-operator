@@ -57,7 +57,7 @@ type MicroservicesSpec struct {
 	// But for production use, tenants should be outsourced into a secret or similar.
 	//
 	// +optional
-	Tenants any `json:"tenants,omitempty"`
+	// Tenants any `json:"tenants,omitempty"`
 }
 
 // MicroservicesStatus defines the observed state of Microservices
