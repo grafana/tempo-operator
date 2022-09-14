@@ -237,3 +237,8 @@ catalog-push: ## Push a catalog image.
 # Run CI steps
 .PHONY: ci
 ci: test
+
+# Run go lint against code
+.PHONY: lint
+lint:
+	golangci-lint run

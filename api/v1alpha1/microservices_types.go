@@ -8,6 +8,13 @@ import (
 // MicroservicesSpec defines the desired state of Microservices.
 type MicroservicesSpec struct {
 	// NOTE: currently this field is not considered.
+	// Components defines requierements for a set of tempo components.
+	//
+	// +optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tempo Components"
+	Components TempoComponentsSpec `json:"template,omitempty"`
+
+	// NOTE: currently this field is not considered.
 	// The resources are split in between components.
 	// Tempo operator knows how to split them appropriately based on grafana/tempo/issues/1540.
 	//
@@ -24,6 +31,14 @@ type MicroservicesSpec struct {
 	Storage ObjectStorageSpec `json:"storage,omitempty"`
 
 	// NOTE: currently this field is not considered.
+	// Retention period defined by dataset.
+	// User can specify how long data should be stored.
+	//
+	// +optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Retention Period"
+	Retention RetentionSpec `json:"retention,omitempty"`
+
+	// NOTE: currently this field is not considered.
 	// StorageClassName for PVCs used by ingester/querier.
 	//
 	// +optional
@@ -38,29 +53,14 @@ type MicroservicesSpec struct {
 	LimitSpec LimitSpec `json:"limits,omitempty"`
 
 	// NOTE: currently this field is not considered.
-	// Retention period defined by dataset.
-	// User can specify how long data should be stored.
-	//
-	// +optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Retention Period"
-	Retention RetentionSpec `json:"retention,omitempty"`
-
-	// NOTE: currently this field is not considered.
 	// ReplicationFactor is used to define how many component replicas should exist.
 	//
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Replication Factor"
 	ReplicationFactor int `json:"replicationFactor,omitempty"`
-
-	// NOTE: currently this field is not considered.
-	// Components defines requierements for a set of tempo components.
-	//
-	// +optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tempo Components"
-	Components TempoComponentsSpec `json:"template,omitempty"`
 }
 
-// MicroservicesStatus defines the observed state of Microservices
+// MicroservicesStatus defines the observed state of Microservices.
 type MicroservicesStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
@@ -69,18 +69,17 @@ type MicroservicesStatus struct {
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 
-// Microservices is the Schema for the microservices API
+// Microservices is the Schema for the microservices API.
 type Microservices struct {
+	Status            MicroservicesStatus `json:"status,omitempty"`
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-
-	Spec   MicroservicesSpec   `json:"spec,omitempty"`
-	Status MicroservicesStatus `json:"status,omitempty"`
+	Spec              MicroservicesSpec `json:"spec,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 
-// MicroservicesList contains a list of Microservices
+// MicroservicesList contains a list of Microservices.
 type MicroservicesList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
@@ -90,6 +89,13 @@ type MicroservicesList struct {
 // ObjectStorageSpec defines the requirements to access the object
 // storage bucket to persist traces by the ingester component.
 type ObjectStorageSpec struct {
+	// TLS configuration for reaching the object storage endpoint.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="TLS Config"
+	TLS *ObjectStorageTLSSpec `json:"tls,omitempty"`
+
 	// Secret for object storage authentication.
 	// Name of a secret in the same namespace as the tempo Microservices custom resource.
 	//
@@ -97,13 +103,6 @@ type ObjectStorageSpec struct {
 	// +kubebuilder:validation:Required
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Object Storage Secret"
 	Secret string `json:"secret,omitempty"`
-
-	// TLS configuration for reaching the object storage endpoint.
-	//
-	// +optional
-	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="TLS Config"
-	TLS *ObjectStorageTLSSpec `json:"tls,omitempty"`
 }
 
 // ObjectStorageTLSSpec is the TLS configuration for reaching the object storage endpoint.
@@ -206,21 +205,21 @@ type JaegerQuerySpec struct {
 	Enabled bool `json:"enabled"`
 }
 
-// LimitSpec defines Gloabl and PerTenant rate limits.
+// LimitSpec defines Global and PerTenant rate limits.
 type LimitSpec struct {
-	// Global is used to define global rate limits.
-	//
-	// +required
-	// +kubebuilder:validation:Required
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Global Limit"
-	Global RateLimitSpec `json:"global"`
-
 	// PerTenant is used to define rate limits per tenant.
 	//
 	// +required
 	// +kubebuilder:validation:Required
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tenant Limits"
 	PerTenant map[string]RateLimitSpec `json:"perTenant"`
+
+	// Global is used to define global rate limits.
+	//
+	// +required
+	// +kubebuilder:validation:Required
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Global Limit"
+	Global RateLimitSpec `json:"global"`
 }
 
 // RateLimitSpec defines rate limits for Ingestion and Query components.
@@ -285,19 +284,18 @@ type QueryLimit struct {
 
 // RetentionSpec defines global and per tenant retention configurations.
 type RetentionSpec struct {
-	// Global is used to configure global retention.
-	//
-	// +required
-	// +kubebuilder:validation:Required
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Global Retention"
-	Global RetentionConfig `json:"global"`
-
 	// PerTenant is used to configure retention per tenant.
 	//
 	// +required
 	// +kubebuilder:validation:Required
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="PerTenant Retention"
 	PerTenant map[string]RetentionConfig `json:"perTenant"`
+	// Global is used to configure global retention.
+	//
+	// +required
+	// +kubebuilder:validation:Required
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Global Retention"
+	Global RetentionConfig `json:"global"`
 }
 
 // RetentionConfig defines how long data should be provided.
