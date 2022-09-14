@@ -21,7 +21,7 @@ Resource Types:
 
 
 
-Microservices is the Schema for the microservices API
+Microservices is the Schema for the microservices API.
 
 <table>
     <thead>
@@ -60,7 +60,7 @@ Microservices is the Schema for the microservices API
         <td><b>status</b></td>
         <td>object</td>
         <td>
-          MicroservicesStatus defines the observed state of Microservices<br/>
+          MicroservicesStatus defines the observed state of Microservices.<br/>
         </td>
         <td>false</td>
       </tr></tbody>
@@ -87,49 +87,49 @@ MicroservicesSpec defines the desired state of Microservices.
         <td><b><a href="#microservicesspeclimits">limits</a></b></td>
         <td>object</td>
         <td>
-          LimitSpec is used to limit ingestion and querying rates.<br/>
+          NOTE: currently this field is not considered. LimitSpec is used to limit ingestion and querying rates.<br/>
         </td>
         <td>false</td>
       </tr><tr>
         <td><b>replicationFactor</b></td>
         <td>integer</td>
         <td>
-          ReplicationFactor is used to define how many component replicas should exist.<br/>
+          NOTE: currently this field is not considered. ReplicationFactor is used to define how many component replicas should exist.<br/>
         </td>
         <td>false</td>
       </tr><tr>
         <td><b><a href="#microservicesspecresources">resources</a></b></td>
         <td>object</td>
         <td>
-          The resources are split in between components. Tempo operator knows how to split them appropriately based on grafana/tempo/issues/1540.<br/>
+          NOTE: currently this field is not considered. The resources are split in between components. Tempo operator knows how to split them appropriately based on grafana/tempo/issues/1540.<br/>
         </td>
         <td>false</td>
       </tr><tr>
         <td><b><a href="#microservicesspecretention">retention</a></b></td>
         <td>object</td>
         <td>
-          Retention period defined by dataset. User can specify how long data should be stored.<br/>
+          NOTE: currently this field is not considered. Retention period defined by dataset. User can specify how long data should be stored.<br/>
         </td>
         <td>false</td>
       </tr><tr>
         <td><b><a href="#microservicesspecstorage">storage</a></b></td>
         <td>object</td>
         <td>
-          Storage defines S3 compatible object storage configuration. User is required to create secret and supply it.<br/>
+          NOTE: currently this field is not considered. Storage defines S3 compatible object storage configuration. User is required to create secret and supply it.<br/>
         </td>
         <td>false</td>
       </tr><tr>
         <td><b>storageClassName</b></td>
         <td>string</td>
         <td>
-          StorageClassName for PVCs used by ingester/querier.<br/>
+          NOTE: currently this field is not considered. StorageClassName for PVCs used by ingester/querier.<br/>
         </td>
         <td>false</td>
       </tr><tr>
         <td><b><a href="#microservicesspectemplate">template</a></b></td>
         <td>object</td>
         <td>
-          Components defines requierements for a set of tempo components.<br/>
+          NOTE: currently this field is not considered. Components defines requierements for a set of tempo components.<br/>
         </td>
         <td>false</td>
       </tr></tbody>
@@ -141,7 +141,7 @@ MicroservicesSpec defines the desired state of Microservices.
 
 
 
-LimitSpec is used to limit ingestion and querying rates.
+NOTE: currently this field is not considered. LimitSpec is used to limit ingestion and querying rates.
 
 <table>
     <thead>
@@ -393,7 +393,7 @@ Query is used to define query rate limits.
 
 
 
-The resources are split in between components. Tempo operator knows how to split them appropriately based on grafana/tempo/issues/1540.
+NOTE: currently this field is not considered. The resources are split in between components. Tempo operator knows how to split them appropriately based on grafana/tempo/issues/1540.
 
 <table>
     <thead>
@@ -427,7 +427,7 @@ The resources are split in between components. Tempo operator knows how to split
 
 
 
-Retention period defined by dataset. User can specify how long data should be stored.
+NOTE: currently this field is not considered. Retention period defined by dataset. User can specify how long data should be stored.
 
 <table>
     <thead>
@@ -515,7 +515,7 @@ RetentionConfig defines how long data should be provided.
 
 
 
-Storage defines S3 compatible object storage configuration. User is required to create secret and supply it.
+NOTE: currently this field is not considered. Storage defines S3 compatible object storage configuration. User is required to create secret and supply it.
 
 <table>
     <thead>
@@ -576,7 +576,7 @@ TLS configuration for reaching the object storage endpoint.
 
 
 
-Components defines requierements for a set of tempo components.
+NOTE: currently this field is not considered. Components defines requierements for a set of tempo components.
 
 <table>
     <thead>
