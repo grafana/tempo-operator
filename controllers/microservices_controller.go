@@ -11,7 +11,7 @@ import (
 	tempov1alpha1 "github.com/os-observability/tempo-operator/api/v1alpha1"
 )
 
-// MicroservicesReconciler reconciles a Microservices object
+// MicroservicesReconciler reconciles a Microservices object.
 type MicroservicesReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
