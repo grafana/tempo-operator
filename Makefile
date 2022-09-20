@@ -264,12 +264,6 @@ $(OPERATOR_SDK): $(LOCALBIN)
 	test -s $(OPERATOR_SDK) || curl -sLo $(OPERATOR_SDK) https://github.com/operator-framework/operator-sdk/releases/download/v${OPERATOR_SDK_VERSION}/operator-sdk_`go env GOOS`_`go env GOARCH`
 	@chmod +x $(OPERATOR_SDK)
 
-.PHONY: operator-sdk
-operator-sdk: $(OPERATOR_SDK) ## Download operator-sdk locally if necessary.
-$(OPERATOR_SDK): $(LOCALBIN)
-	test -s $(OPERATOR_SDK) || curl -sLo $(OPERATOR_SDK) https://github.com/operator-framework/operator-sdk/releases/download/v${OPERATOR_SDK_VERSION}/operator-sdk_`go env GOOS`_`go env GOARCH`
-	@chmod +x $(OPERATOR_SDK)
-
 # go-get-tool will 'go get' any package $2 and install it to $1.
 define go-get-tool
 @[ -f $(1) ] || { \
