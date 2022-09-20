@@ -154,7 +154,7 @@ $(LOCALBIN):
 	mkdir -p $(LOCALBIN)
 
 ## Tool Versions
-KUSTOMIZE_VERSION ?= v3.8.7
+KUSTOMIZE_VERSION ?= v4.5.5
 CONTROLLER_TOOLS_VERSION ?= v0.9.2
 CRDOC_VERSION ?= v0.5.2
 OPERATOR_SDK_VERSION ?= 1.23.0
@@ -256,7 +256,7 @@ crdoc: ## Download crdoc locally if necessary.
 
 .PHONY: kustomize
 kustomize: ## Download kustomize locally if necessary.
-		test -s $(LOCALBIN)/kustomize-$(KUSTOMIZE_VERSION) || $(call go-get-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v3,$(KUSTOMIZE_VERSION))
+		test -s $(LOCALBIN)/kustomize-$(KUSTOMIZE_VERSION) || $(call go-get-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v4,$(KUSTOMIZE_VERSION))
 
 .PHONY: operator-sdk
 operator-sdk: $(OPERATOR_SDK) ## Download operator-sdk locally if necessary.
