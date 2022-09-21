@@ -80,6 +80,10 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "Microservices")
 		os.Exit(1)
 	}
+	if err = (&tempov1alpha1.Microservices{}).SetupWebhookWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create webhook", "webhook", "Microservices")
+		os.Exit(1)
+	}
 	//+kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
