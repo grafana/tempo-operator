@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"time"
 
 	rbacv1 "k8s.io/api/rbac/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -20,6 +21,9 @@ type MicroservicesReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
 }
+
+// +kubebuilder:rbac:groups="",resources=services;configmaps;serviceaccounts,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=apps,resources=deployments;statefulsets,verbs=get;list;watch;create;update;patch;delete
 
 //+kubebuilder:rbac:groups=tempo.grafana.com,resources=microservices,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=tempo.grafana.com,resources=microservices/status,verbs=get;update;patch
@@ -49,7 +53,14 @@ func (r *MicroservicesReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	objects := manifests.BuildAll(manifests.Params{Tempo: tempo})
+	objects, err := manifests.BuildAll(manifests.Params{Tempo: tempo})
+	// TODO(pavolloffay) check error type and change return appropriately
+	if err != nil {
+		return ctrl.Result{
+			Requeue:      true,
+			RequeueAfter: time.Second,
+		}, err
+	}
 	errCount := 0
 	for _, obj := range objects {
 		l := log.WithValues(

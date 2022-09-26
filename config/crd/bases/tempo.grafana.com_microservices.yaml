@@ -71,9 +71,6 @@ spec:
                               `0` to disable.'
                             type: integer
                         type: object
-                    required:
-                    - ingestion
-                    - query
                     type: object
                   perTenant:
                     additionalProperties:
@@ -110,15 +107,11 @@ spec:
                                 `0` to disable.'
                               type: integer
                           type: object
-                      required:
-                      - ingestion
-                      - query
                       type: object
                     description: PerTenant is used to define rate limits per tenant.
                     type: object
                 required:
                 - global
-                - perTenant
                 type: object
               replicationFactor:
                 description: 'NOTE: currently this field is not considered. ReplicationFactor
@@ -177,9 +170,6 @@ spec:
                       type: object
                     description: PerTenant is used to configure retention per tenant.
                     type: object
-                required:
-                - global
-                - perTenant
                 type: object
               storage:
                 description: 'NOTE: currently this field is not considered. Storage
@@ -517,11 +507,7 @@ spec:
                             description: Enabled is used to define if Jaeger Query
                               component should be created.
                             type: boolean
-                        required:
-                        - enabled
                         type: object
-                    required:
-                    - jaegerQuery
                     type: object
                 type: object
             type: object

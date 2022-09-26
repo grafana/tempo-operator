@@ -13,10 +13,14 @@ type Params struct {
 	Tempo tempov1alpha1.Microservices
 }
 
-func BuildAll(params Params) []client.Object {
+func BuildAll(params Params) ([]client.Object, error) {
 	var manifests []client.Object
+	configMaps, err := config.BuildConfigMaps(params.Tempo)
+	if err != nil {
+		return nil, err
+	}
 	manifests = append(manifests, distributor.BuildDistributor(params.Tempo)...)
 	manifests = append(manifests, ingester.BuildIngester(params.Tempo)...)
-	manifests = append(manifests, config.BuildConfigMaps(params.Tempo))
-	return manifests
+	manifests = append(manifests, configMaps)
+	return manifests, nil
 }
