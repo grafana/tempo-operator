@@ -23,7 +23,7 @@ func statefulSet(tempo v1alpha1.Microservices) *v1.StatefulSet {
 			APIVersion: v1.SchemeGroupVersion.String(),
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      manifestutils.Name(tempo.Name),
+			Name:      manifestutils.Name("distributor", tempo.Name),
 			Namespace: tempo.Namespace,
 			Labels:    labels,
 		},
@@ -56,7 +56,7 @@ func statefulSet(tempo v1alpha1.Microservices) *v1.StatefulSet {
 							VolumeSource: corev1.VolumeSource{
 								ConfigMap: &corev1.ConfigMapVolumeSource{
 									LocalObjectReference: corev1.LocalObjectReference{
-										Name: manifestutils.Name(tempo.Name),
+										Name: manifestutils.Name("", tempo.Name),
 									},
 								},
 							},

@@ -32,6 +32,7 @@ const (
 	kvStore = "memberlist"
 )
 
+// nolint
 func config(tempo v1alpha1.Microservices) (string, error) {
 	logLevel := logging.Level{}
 	logLevel.Set("warn")
@@ -138,7 +139,7 @@ func BuildConfigMaps(tempo v1alpha1.Microservices) (client.Object, error) {
 	labels := manifestutils.ComponentLabels("config", tempo.Name)
 	return &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:   manifestutils.Name(tempo.Name),
+			Name:   manifestutils.Name("", tempo.Name),
 			Labels: labels,
 		},
 		Data: map[string]string{

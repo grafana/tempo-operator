@@ -22,7 +22,7 @@ import (
 // - Service
 // - Deployment
 // - StatefulSet
-// - ServiceMonitor
+// - ServiceMonitor.
 func MutateFuncFor(existing, desired client.Object) controllerutil.MutateFn {
 	return func() error {
 		existingAnnotations := existing.GetAnnotations()

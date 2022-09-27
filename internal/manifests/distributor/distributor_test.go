@@ -1,30 +1,37 @@
-package ingester
+package distributor
 
 import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/os-observability/tempo-operator/api/v1alpha1"
 	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
 )
 
-const configVolumeName = "tempo-conf"
-
-func BuildIngester(tempo v1alpha1.Microservices) []client.Object {
-	return []client.Object{deployment(tempo)}
-}
-
-func deployment(tempo v1alpha1.Microservices) *v1.Deployment {
-	labels := manifestutils.ComponentLabels("ingester", tempo.Name)
-	return &v1.Deployment{
+func TestBuildDistributor(t *testing.T) {
+	objects := BuildDistributor(v1alpha1.Microservices{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      manifestutils.Name("ingester", tempo.Name),
-			Namespace: tempo.Namespace,
+			Name:      "test",
+			Namespace: "project1",
+		},
+	})
+
+	labels := manifestutils.ComponentLabels("distributor", "test")
+	assert.Equal(t, 1, len(objects))
+	assert.Equal(t, &v1.StatefulSet{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: v1.SchemeGroupVersion.String(),
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "tempo-test-distributor",
+			Namespace: "project1",
 			Labels:    labels,
 		},
-		Spec: v1.DeploymentSpec{
+		Spec: v1.StatefulSetSpec{
 			Selector: &metav1.LabelSelector{
 				MatchLabels: labels,
 			},
@@ -37,7 +44,7 @@ func deployment(tempo v1alpha1.Microservices) *v1.Deployment {
 						{
 							Name:  "tempo",
 							Image: "docker.io/grafana/tempo:1.5.0",
-							Args:  []string{"-target=ingester", "-config.file=/conf/tempo.yaml"},
+							Args:  []string{"-target=distributor", "-config.file=/conf/tempo.yaml"},
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      configVolumeName,
@@ -53,7 +60,7 @@ func deployment(tempo v1alpha1.Microservices) *v1.Deployment {
 							VolumeSource: corev1.VolumeSource{
 								ConfigMap: &corev1.ConfigMapVolumeSource{
 									LocalObjectReference: corev1.LocalObjectReference{
-										Name: manifestutils.Name("", tempo.Name),
+										Name: "tempo-test",
 									},
 								},
 							},
@@ -62,5 +69,5 @@ func deployment(tempo v1alpha1.Microservices) *v1.Deployment {
 				},
 			},
 		},
-	}
+	}, objects[0])
 }

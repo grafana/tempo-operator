@@ -12,7 +12,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	tempov1alpha1 "github.com/os-observability/tempo-operator/api/v1alpha1"
+	"github.com/os-observability/tempo-operator/api/v1alpha1"
 	"github.com/os-observability/tempo-operator/internal/manifests"
 )
 
@@ -41,7 +41,7 @@ type MicroservicesReconciler struct {
 func (r *MicroservicesReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := log.FromContext(ctx)
 	log = log.WithValues("tempo", req.NamespacedName)
-	tempo := tempov1alpha1.Microservices{}
+	tempo := v1alpha1.Microservices{}
 	if err := r.Get(ctx, req.NamespacedName, &tempo); err != nil {
 		if !apierrors.IsNotFound(err) {
 			log.Error(err, "unable to fetch TempoMicroservices")
@@ -96,7 +96,7 @@ func (r *MicroservicesReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 // SetupWithManager sets up the controller with the Manager.
 func (r *MicroservicesReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&tempov1alpha1.Microservices{}).
+		For(&v1alpha1.Microservices{}).
 		Complete(r)
 }
 

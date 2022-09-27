@@ -2,14 +2,19 @@ package manifestutils
 
 import (
 	"fmt"
+
 	"k8s.io/apimachinery/pkg/labels"
 )
 
-func Name(instanceName string) string {
-	return fmt.Sprintf("tempo-%s", instanceName)
+// Name returns component name.
+func Name(component string, instanceName string) string {
+	if component == "" {
+		return fmt.Sprintf("tempo-%s", instanceName)
+	}
+	return fmt.Sprintf("tempo-%s-%s", instanceName, component)
 }
 
-// ComponentLabels is a list of all commonLabels including the app.kubernetes.io/component:<component> label
+// ComponentLabels is a list of all commonLabels including the app.kubernetes.io/component:<component> label.
 func ComponentLabels(component, instanceName string) labels.Set {
 	return labels.Merge(commonLabels(instanceName), map[string]string{
 		"app.kubernetes.io/component": component,

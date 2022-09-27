@@ -1,27 +1,31 @@
 package ingester
 
 import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/os-observability/tempo-operator/api/v1alpha1"
 	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
 )
 
-const configVolumeName = "tempo-conf"
-
-func BuildIngester(tempo v1alpha1.Microservices) []client.Object {
-	return []client.Object{deployment(tempo)}
-}
-
-func deployment(tempo v1alpha1.Microservices) *v1.Deployment {
-	labels := manifestutils.ComponentLabels("ingester", tempo.Name)
-	return &v1.Deployment{
+func TestBuildIngester(t *testing.T) {
+	objects := BuildIngester(v1alpha1.Microservices{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      manifestutils.Name("ingester", tempo.Name),
-			Namespace: tempo.Namespace,
+			Name:      "test",
+			Namespace: "project1",
+		},
+	})
+
+	labels := manifestutils.ComponentLabels("ingester", "test")
+	assert.Equal(t, 1, len(objects))
+	assert.Equal(t, &v1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "tempo-test-ingester",
+			Namespace: "project1",
 			Labels:    labels,
 		},
 		Spec: v1.DeploymentSpec{
@@ -53,7 +57,7 @@ func deployment(tempo v1alpha1.Microservices) *v1.Deployment {
 							VolumeSource: corev1.VolumeSource{
 								ConfigMap: &corev1.ConfigMapVolumeSource{
 									LocalObjectReference: corev1.LocalObjectReference{
-										Name: manifestutils.Name("", tempo.Name),
+										Name: "tempo-test",
 									},
 								},
 							},
@@ -62,5 +66,5 @@ func deployment(tempo v1alpha1.Microservices) *v1.Deployment {
 				},
 			},
 		},
-	}
+	}, objects[0])
 }
