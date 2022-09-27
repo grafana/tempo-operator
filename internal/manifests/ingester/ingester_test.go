@@ -7,6 +7,7 @@ import (
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"github.com/os-observability/tempo-operator/api/v1alpha1"
 	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
@@ -21,14 +22,14 @@ func TestBuildIngester(t *testing.T) {
 	})
 
 	labels := manifestutils.ComponentLabels("ingester", "test")
-	assert.Equal(t, 1, len(objects))
-	assert.Equal(t, &v1.Deployment{
+	assert.Equal(t, 2, len(objects))
+	assert.Equal(t, &v1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "tempo-test-ingester",
 			Namespace: "project1",
 			Labels:    labels,
 		},
-		Spec: v1.DeploymentSpec{
+		Spec: v1.StatefulSetSpec{
 			Selector: &metav1.LabelSelector{
 				MatchLabels: labels,
 			},
@@ -49,6 +50,23 @@ func TestBuildIngester(t *testing.T) {
 									ReadOnly:  true,
 								},
 							},
+							Ports: []corev1.ContainerPort{
+								{
+									Name:          "memberlist",
+									ContainerPort: portMemberlist,
+									Protocol:      corev1.ProtocolTCP,
+								},
+								{
+									Name:          "http",
+									ContainerPort: portHTTPServer,
+									Protocol:      corev1.ProtocolTCP,
+								},
+								{
+									Name:          "grpc",
+									ContainerPort: portGRPCServer,
+									Protocol:      corev1.ProtocolTCP,
+								},
+							},
 						},
 					},
 					Volumes: []corev1.Volume{
@@ -67,4 +85,27 @@ func TestBuildIngester(t *testing.T) {
 			},
 		},
 	}, objects[0])
+	assert.Equal(t, &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "tempo-test-ingester",
+			Namespace: "project1",
+		},
+		Spec: corev1.ServiceSpec{
+			Ports: []corev1.ServicePort{
+				{
+					Name:       "http",
+					Protocol:   corev1.ProtocolTCP,
+					Port:       portHTTPServer,
+					TargetPort: intstr.FromString("http"),
+				},
+				{
+					Name:       "grpc",
+					Protocol:   corev1.ProtocolTCP,
+					Port:       portGRPCServer,
+					TargetPort: intstr.FromString("grpc"),
+				},
+			},
+			Selector: labels,
+		},
+	}, objects[1])
 }
