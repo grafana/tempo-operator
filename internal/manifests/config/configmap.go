@@ -135,7 +135,8 @@ func config(tempo v1alpha1.Microservices) (string, error) {
 	return cfgStr, nil
 }
 
-func BuildConfigMaps(tempo v1alpha1.Microservices) (client.Object, error) {
+// BuildConfigs creates configuration objects.
+func BuildConfigs(tempo v1alpha1.Microservices) (client.Object, error) {
 	labels := manifestutils.ComponentLabels("config", tempo.Name)
 	return &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{

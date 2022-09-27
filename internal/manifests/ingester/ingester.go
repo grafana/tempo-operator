@@ -19,6 +19,7 @@ const (
 	portMemberlist   = 7946
 )
 
+// BuildIngester creates distributor objects.
 func BuildIngester(tempo v1alpha1.Microservices) []client.Object {
 	return []client.Object{deployment(tempo), service(tempo)}
 }

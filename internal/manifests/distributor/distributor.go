@@ -18,6 +18,7 @@ const (
 	otlpGrpcPort     = 4317
 )
 
+// BuildDistributor creates distributor objects.
 func BuildDistributor(tempo v1alpha1.Microservices) []client.Object {
 	return []client.Object{statefulSet(tempo), service(tempo)}
 }
