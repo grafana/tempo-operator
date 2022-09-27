@@ -109,8 +109,6 @@ spec:
                       type: object
                     description: PerTenant is used to define rate limits per tenant.
                     type: object
-                required:
-                - global
                 type: object
               replicationFactor:
                 description: 'NOTE: currently this field is not considered. ReplicationFactor
