@@ -4,10 +4,12 @@ go 1.18
 
 require (
 	github.com/ViaQ/logerr/v2 v2.1.0
+	github.com/grafana/dskit v0.0.0-20220817135401-71aee950db17
 	github.com/grafana/tempo v1.5.1-0.20220922223305-ab82376c11d5
 	github.com/imdario/mergo v0.3.12
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.20.2
+	github.com/weaveworks/common v0.0.0-20220916164235-da3fde973eec
 	k8s.io/api v0.25.2
 	k8s.io/apimachinery v0.25.2
 	k8s.io/client-go v12.0.0+incompatible
@@ -22,9 +24,9 @@ require (
 	github.com/openshift/api v3.9.0+incompatible
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.59.2
 	github.com/stretchr/testify v1.7.2
-	go.opentelemetry.io/collector v0.46.0
+	go.opentelemetry.io/collector v0.46.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1
-	k8s.io/utils v0.0.0-20220823124924-e9cbc92d1a73 // indirect
+	k8s.io/utils v0.0.0-20220823124924-e9cbc92d1a73
 )
 
 require (
@@ -100,7 +102,6 @@ require (
 	github.com/googleapis/go-type-adapters v1.0.0 // indirect
 	github.com/gorilla/handlers v1.5.1 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
-	github.com/grafana/dskit v0.0.0-20220817135401-71aee950db17 // indirect
 	github.com/grafana/regexp v0.0.0-20220304100321-149c8afcd6cb // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0 // indirect
@@ -211,7 +212,6 @@ require (
 	github.com/uber-go/atomic v1.4.0 // indirect
 	github.com/uber/jaeger-client-go v2.30.0+incompatible // indirect
 	github.com/uber/jaeger-lib v2.4.1+incompatible // indirect
-	github.com/weaveworks/common v0.0.0-20220916164235-da3fde973eec // indirect
 	github.com/weaveworks/promrus v1.2.0 // indirect
 	github.com/willf/bitset v1.1.11 // indirect
 	github.com/willf/bloom v2.0.3+incompatible // indirect

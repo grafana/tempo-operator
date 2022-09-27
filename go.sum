@@ -1141,8 +1141,6 @@ github.com/grafana/opentelemetry-collector v0.4.1-0.20220315084747-b05fe1477960/
 github.com/grafana/regexp v0.0.0-20220202152315-e74e38789280/go.mod h1:M5qHK+eWfAv8VR/265dIuEpL3fNfeC21tXXp9itM24A=
 github.com/grafana/regexp v0.0.0-20220304100321-149c8afcd6cb h1:wwzNkyaQwcXCzQuKoWz3lwngetmcyg+EhW0fF5lz73M=
 github.com/grafana/regexp v0.0.0-20220304100321-149c8afcd6cb/go.mod h1:M5qHK+eWfAv8VR/265dIuEpL3fNfeC21tXXp9itM24A=
-github.com/grafana/tempo v1.5.0 h1:JSwulLVtXvUw2MyuUPcvRg3MJiwTUs5XWnbG6fOKatc=
-github.com/grafana/tempo v1.5.0/go.mod h1:IB52YU6zkGL+3t0eNrY8kAExx0lLa4LH20wGu3c4wD8=
 github.com/grafana/tempo v1.5.1-0.20220922223305-ab82376c11d5 h1:24z9mi7NPVWO1NJJooK4hAhVs+IiBkbQEQMQeYzhwwc=
 github.com/grafana/tempo v1.5.1-0.20220922223305-ab82376c11d5/go.mod h1:yyT8LCIPcCBR0FTGnE5zeq/cug3EYGuzCfakHoKPyJA=
 github.com/gregjones/httpcache v0.0.0-20180305231024-9cad4c3443a7/go.mod h1:FecbI9+v66THATjSRHfNgh1IVFe/9kFxbXtjV0ctIMA=

@@ -100,7 +100,7 @@ type ObjectStorageSpec struct {
 	// Name of a secret in the same namespace as the tempo Microservices custom resource.
 	//
 	// +optional
-	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Object Storage Secret"
 	Secret string `json:"secret,omitempty"`
 }
@@ -184,13 +184,13 @@ type TempoQueryFrontendSpec struct {
 	// See: https://github.com/golang/go/issues/6213
 	//
 	// +optional
-	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:Optional
 	TempoComponentSpec `json:"component,omitempty"`
 
 	// JaegerQuerySpec defines Jaeger Query spefic options.
 	//
 	// +optional
-	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger Query Settings"
 	JaegerQuery JaegerQuerySpec `json:"jaegerQuery"`
 }
@@ -200,7 +200,7 @@ type JaegerQuerySpec struct {
 	// Enabled is used to define if Jaeger Query component should be created.
 	//
 	// +optional
-	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger Query Enabled"
 	Enabled bool `json:"enabled"`
 }
@@ -210,14 +210,14 @@ type LimitSpec struct {
 	// PerTenant is used to define rate limits per tenant.
 	//
 	// +optional
-	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tenant Limits"
 	PerTenant map[string]RateLimitSpec `json:"perTenant"`
 
 	// Global is used to define global rate limits.
 	//
 	// +optinal
-	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Global Limit"
 	Global RateLimitSpec `json:"global"`
 }
@@ -227,14 +227,14 @@ type RateLimitSpec struct {
 	// Ingestion is used to define ingestion rate limits.
 	//
 	// +optional
-	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Ingestion Limit"
 	Ingestion IngestionLimitSpec `json:"ingestion"`
 
 	// Query is used to define query rate limits.
 	//
 	// +optional
-	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Query Limit"
 	Query QueryLimit `json:"query"`
 }
@@ -287,13 +287,13 @@ type RetentionSpec struct {
 	// PerTenant is used to configure retention per tenant.
 	//
 	// +optional
-	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="PerTenant Retention"
 	PerTenant map[string]RetentionConfig `json:"perTenant"`
 	// Global is used to configure global retention.
 	//
 	// +optional
-	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Global Retention"
 	Global RetentionConfig `json:"global"`
 }

@@ -158,7 +158,7 @@ NOTE: currently this field is not considered. LimitSpec is used to limit ingesti
         <td>
           Global is used to define global rate limits.<br/>
         </td>
-        <td>true</td>
+        <td>false</td>
       </tr><tr>
         <td><b><a href="#microservicesspeclimitspertenantkey">perTenant</a></b></td>
         <td>map[string]object</td>
