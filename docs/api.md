@@ -158,14 +158,14 @@ NOTE: currently this field is not considered. LimitSpec is used to limit ingesti
         <td>
           Global is used to define global rate limits.<br/>
         </td>
-        <td>true</td>
+        <td>false</td>
       </tr><tr>
         <td><b><a href="#microservicesspeclimitspertenantkey">perTenant</a></b></td>
         <td>map[string]object</td>
         <td>
           PerTenant is used to define rate limits per tenant.<br/>
         </td>
-        <td>true</td>
+        <td>false</td>
       </tr></tbody>
 </table>
 
@@ -192,14 +192,14 @@ Global is used to define global rate limits.
         <td>
           Ingestion is used to define ingestion rate limits.<br/>
         </td>
-        <td>true</td>
+        <td>false</td>
       </tr><tr>
         <td><b><a href="#microservicesspeclimitsglobalquery">query</a></b></td>
         <td>object</td>
         <td>
           Query is used to define query rate limits.<br/>
         </td>
-        <td>true</td>
+        <td>false</td>
       </tr></tbody>
 </table>
 
@@ -301,14 +301,14 @@ RateLimitSpec defines rate limits for Ingestion and Query components.
         <td>
           Ingestion is used to define ingestion rate limits.<br/>
         </td>
-        <td>true</td>
+        <td>false</td>
       </tr><tr>
         <td><b><a href="#microservicesspeclimitspertenantkeyquery">query</a></b></td>
         <td>object</td>
         <td>
           Query is used to define query rate limits.<br/>
         </td>
-        <td>true</td>
+        <td>false</td>
       </tr></tbody>
 </table>
 
@@ -444,14 +444,14 @@ NOTE: currently this field is not considered. Retention period defined by datase
         <td>
           Global is used to configure global retention.<br/>
         </td>
-        <td>true</td>
+        <td>false</td>
       </tr><tr>
         <td><b><a href="#microservicesspecretentionpertenantkey">perTenant</a></b></td>
         <td>map[string]object</td>
         <td>
           PerTenant is used to configure retention per tenant.<br/>
         </td>
-        <td>true</td>
+        <td>false</td>
       </tr></tbody>
 </table>
 
@@ -1043,13 +1043,6 @@ TempoQueryFrontendSpec defines the query frontend spec.
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#microservicesspectemplatequeryfrontendjaegerquery">jaegerQuery</a></b></td>
-        <td>object</td>
-        <td>
-          JaegerQuerySpec defines Jaeger Query spefic options.<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
         <td><b><a href="#microservicesspectemplatequeryfrontendcomponent">component</a></b></td>
         <td>object</td>
         <td>
@@ -1057,33 +1050,13 @@ TempoQueryFrontendSpec defines the query frontend spec.
  Currently there is no way to inline this field. See: https://github.com/golang/go/issues/6213<br/>
         </td>
         <td>false</td>
-      </tr></tbody>
-</table>
-
-
-### Microservices.spec.template.queryFrontend.jaegerQuery
-<sup><sup>[↩ Parent](#microservicesspectemplatequeryfrontend)</sup></sup>
-
-
-
-JaegerQuerySpec defines Jaeger Query spefic options.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>enabled</b></td>
-        <td>boolean</td>
+      </tr><tr>
+        <td><b><a href="#microservicesspectemplatequeryfrontendjaegerquery">jaegerQuery</a></b></td>
+        <td>object</td>
         <td>
-          Enabled is used to define if Jaeger Query component should be created.<br/>
+          JaegerQuerySpec defines Jaeger Query spefic options.<br/>
         </td>
-        <td>true</td>
+        <td>false</td>
       </tr></tbody>
 </table>
 
@@ -1183,6 +1156,33 @@ The pod this Toleration is attached to tolerates any taint that matches the trip
         <td>string</td>
         <td>
           Value is the taint value the toleration matches to. If the operator is Exists, the value should be empty, otherwise just a regular string.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### Microservices.spec.template.queryFrontend.jaegerQuery
+<sup><sup>[↩ Parent](#microservicesspectemplatequeryfrontend)</sup></sup>
+
+
+
+JaegerQuerySpec defines Jaeger Query spefic options.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>enabled</b></td>
+        <td>boolean</td>
+        <td>
+          Enabled is used to define if Jaeger Query component should be created.<br/>
         </td>
         <td>false</td>
       </tr></tbody>
