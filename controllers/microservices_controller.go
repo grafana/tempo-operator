@@ -90,6 +90,13 @@ func (r *MicroservicesReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		l.Info(fmt.Sprintf("Resource has been %s", op))
 	}
 
+	if errCount > 0 {
+		return ctrl.Result{
+			Requeue:      true,
+			RequeueAfter: time.Second,
+		}, fmt.Errorf("failed to create objects for Tempo %s", req.NamespacedName)
+	}
+
 	return ctrl.Result{}, nil
 }
 
