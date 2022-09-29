@@ -1,3 +1,12 @@
+# When the VERBOSE variable is set to 1, all the commands are shown
+ifeq ("$(VERBOSE)","true")
+echo_prefix=">>>>"
+else
+VECHO = @
+endif
+
+ECHO ?= @echo $(echo_prefix)
+
 # VERSION defines the project version for the bundle.
 # Update this value when you upgrade the version of your project.
 # To re-generate a bundle for another specific version without changing the standard setup, you can:
@@ -167,6 +176,11 @@ CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen-$(CONTROLLER_TOOLS_VERSION)
 ENVTEST ?= $(LOCALBIN)/setup-envtest-$(ENVTEST_VERSION)
 CRDOC = $(LOCALBIN)/crdoc-$(CRDOC_VERSION)
 OPERATOR_SDK ?= $(LOCALBIN)/operator-sdk-$(OPERATOR_SDK_VERSION)
+KIND ?= $(LOCALBIN)/kind
+
+# Options for KIND version to use
+export KUBE_VERSION ?= 1.25
+KIND_CONFIG ?= kind-$(KUBE_VERSION).yaml
 
 .PHONY: controller-gen
 controller-gen: ## Download controller-gen locally if necessary.
@@ -259,6 +273,41 @@ crdoc: ## Download crdoc locally if necessary.
 kustomize: ## Download kustomize locally if necessary.
 		test -s $(LOCALBIN)/kustomize-$(KUSTOMIZE_VERSION) || $(call go-get-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v4,$(KUSTOMIZE_VERSION))
 
+.PHONY: kind
+kind: $(KIND)
+$(KIND): $(LOCALBIN)
+	./hack/install/install-kind.sh
+
+.PHONY: start-kind
+start-kind: kind
+	$(ECHO) Starting KIND cluster...
+	$(VECHO)$(KIND) create cluster --config $(KIND_CONFIG) 2>&1 | grep -v "already exists" || true
+
+stop-kind:
+	$(ECHO)"Stopping the kind cluster"
+	$(VECHO)kind delete cluster
+
+# end-to-tests
+.PHONY: e2e
+e2e:
+	$(KUTTL) test
+
+.PHONY: prepare-e2e
+prepare-e2e: kuttl start-kind cert-manager set-test-image-vars docker-build load-image-operator deploy
+
+.PHONY: set-test-image-vars
+set-test-image-vars:
+	$(eval IMG=local/tempo-operator:e2e)
+
+# Set the controller image parameters
+.PHONY: set-image-controller
+set-image-controller: manifests kustomize
+	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
+
+.PHONY: load-image-operator
+load-image-operator:
+	kind load docker-image local/tempo-operator:e2e
+
 .PHONY: operator-sdk
 operator-sdk: $(OPERATOR_SDK) ## Download operator-sdk locally if necessary.
 $(OPERATOR_SDK): $(LOCALBIN)
@@ -281,6 +330,25 @@ mv "$$APP" "$$APP_NAME" ;\
 rm -rf $$TMP_DIR ;\
 }
 endef
+
+.PHONY: kuttl
+kuttl:
+ifeq (, $(shell which kubectl-kuttl))
+	echo ${PATH}
+	ls -l /usr/local/bin
+	which kubectl-kuttl
+
+	@{ \
+	set -e ;\
+	echo "" ;\
+	echo "ERROR: kuttl not found." ;\
+	echo "Please check https://kuttl.dev/docs/cli.html for installation instructions and try again." ;\
+	echo "" ;\
+	exit 1 ;\
+	}
+else
+KUTTL=$(shell which kubectl-kuttl)
+endif
 
 .PHONY: ensure-generate-is-noop
 ensure-generate-is-noop: generate bundle
