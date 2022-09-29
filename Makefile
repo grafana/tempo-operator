@@ -98,7 +98,7 @@ fmt: ## Run go fmt against code.
 	go fmt ./...
 
 .PHONY: vet
-vet: ## Run go vet against code.
+vet: ## Run go vet against code.sadsada
 	go vet ./...
 
 .PHONY: test
@@ -159,6 +159,7 @@ CONTROLLER_TOOLS_VERSION ?= v0.9.2
 CRDOC_VERSION ?= v0.5.2
 OPERATOR_SDK_VERSION ?= 1.23.0
 ENVTEST_VERSION ?= latest
+CERTMANAGER_VERSION ?= 1.8.0
 
 ## Tool Binaries
 KUSTOMIZE ?= $(LOCALBIN)/kustomize-$(KUSTOMIZE_VERSION)
@@ -289,3 +290,26 @@ ensure-generate-is-noop: generate bundle
 	@git diff -s --exit-code bundle config || (echo "Build failed: the bundle, config files has been changed but the generated bundle, config files aren't up to date. Run 'make bundle' and update your PR." && git diff && exit 1)
 	@git diff -s --exit-code bundle.Dockerfile || (echo "Build failed: the bundle.Dockerfile file has been changed. The file should be the same as generated one. Run 'make bundle' and update your PR." && git diff && exit 1)
 	@git diff -s --exit-code docs/api.md || (echo "Build failed: the api.md file has been changed but the generated api.md file isn't up to date. Run 'make api-docs' and update your PR." && git diff && exit 1)
+
+.PHONY: cert-manager
+cert-manager: cmctl
+	# Consider using cmctl to install the cert-manager once install command is not experimental
+	kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v${CERTMANAGER_VERSION}/cert-manager.yaml
+	$(CMCTL) check api --wait=5m
+
+PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
+CMCTL = $(shell pwd)/bin/cmctl
+.PHONY: cmctl
+cmctl:
+	@{ \
+	set -e ;\
+	if (`pwd`/bin/cmctl version | grep ${CERTMANAGER_VERSION}) > /dev/null 2>&1 ; then \
+		exit 0; \
+	fi ;\
+	TMP_DIR=$$(mktemp -d) ;\
+	curl -L -o $$TMP_DIR/cmctl.tar.gz https://github.com/jetstack/cert-manager/releases/download/v$(CERTMANAGER_VERSION)/cmctl-`go env GOOS`-`go env GOARCH`.tar.gz ;\
+	tar xzf $$TMP_DIR/cmctl.tar.gz -C $$TMP_DIR ;\
+	[ -d bin ] || mkdir bin ;\
+	mv $$TMP_DIR/cmctl $(CMCTL) ;\
+	rm -rf $$TMP_DIR ;\
+	}
