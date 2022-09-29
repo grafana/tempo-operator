@@ -6,7 +6,7 @@ require (
 	github.com/ViaQ/logerr/v2 v2.1.0
 	github.com/grafana/dskit v0.0.0-20220817135401-71aee950db17
 	github.com/grafana/tempo v1.5.1-0.20220922223305-ab82376c11d5
-	github.com/imdario/mergo v0.3.12
+	github.com/imdario/mergo v0.3.13
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.20.2
 	github.com/weaveworks/common v0.0.0-20220916164235-da3fde973eec
