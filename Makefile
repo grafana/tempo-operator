@@ -177,6 +177,7 @@ ENVTEST ?= $(LOCALBIN)/setup-envtest-$(ENVTEST_VERSION)
 CRDOC = $(LOCALBIN)/crdoc-$(CRDOC_VERSION)
 OPERATOR_SDK ?= $(LOCALBIN)/operator-sdk-$(OPERATOR_SDK_VERSION)
 KIND ?= $(LOCALBIN)/kind
+KUTTL ?= $(LOCALBIN)/kubectl-kuttl
 
 # Options for KIND version to use
 export KUBE_VERSION ?= 1.25
@@ -333,22 +334,7 @@ endef
 
 .PHONY: kuttl
 kuttl:
-ifeq (, $(shell which kubectl-kuttl))
-	echo ${PATH}
-	ls -l /usr/local/bin
-	which kubectl-kuttl
-
-	@{ \
-	set -e ;\
-	echo "" ;\
-	echo "ERROR: kuttl not found." ;\
-	echo "Please check https://kuttl.dev/docs/cli.html for installation instructions and try again." ;\
-	echo "" ;\
-	exit 1 ;\
-	}
-else
-KUTTL=$(shell which kubectl-kuttl)
-endif
+	./hack/install/install-kuttl.sh
 
 .PHONY: ensure-generate-is-noop
 ensure-generate-is-noop: generate bundle
