@@ -11,3 +11,6 @@ PROGRAM="kubectl-kuttl"
 url="https://github.com/kudobuilder/kuttl/releases/download/v$VERSION/kubectl-kuttl_${VERSION}_$(go env GOOS)_x86_64"
 
 download $PROGRAM $VERSION $url
+
+export PATH=$PATH:/usr/local/bin
+
