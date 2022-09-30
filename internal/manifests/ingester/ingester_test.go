@@ -7,6 +7,7 @@ import (
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8slabels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"github.com/os-observability/tempo-operator/api/v1alpha1"
@@ -35,7 +36,7 @@ func TestBuildIngester(t *testing.T) {
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: labels,
+					Labels: k8slabels.Merge(labels, map[string]string{"tempo-gossip-member": "true"}),
 				},
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{
@@ -52,8 +53,8 @@ func TestBuildIngester(t *testing.T) {
 							},
 							Ports: []corev1.ContainerPort{
 								{
-									Name:          "memberlist",
-									ContainerPort: portMemberlist,
+									Name:          "http-memberlist",
+									ContainerPort: 7946,
 									Protocol:      corev1.ProtocolTCP,
 								},
 								{

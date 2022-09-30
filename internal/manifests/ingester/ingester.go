@@ -4,11 +4,13 @@ import (
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8slabels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/os-observability/tempo-operator/api/v1alpha1"
 	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
+	"github.com/os-observability/tempo-operator/internal/manifests/memberlist"
 )
 
 const (
@@ -16,7 +18,6 @@ const (
 	componentName    = "ingester"
 	portGRPCServer   = 9095
 	portHTTPServer   = 3100
-	portMemberlist   = 7946
 )
 
 // BuildIngester creates distributor objects.
@@ -38,7 +39,7 @@ func deployment(tempo v1alpha1.Microservices) *v1.StatefulSet {
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: labels,
+					Labels: k8slabels.Merge(labels, memberlist.GossipSelector),
 				},
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{
@@ -55,8 +56,8 @@ func deployment(tempo v1alpha1.Microservices) *v1.StatefulSet {
 							},
 							Ports: []corev1.ContainerPort{
 								{
-									Name:          "memberlist",
-									ContainerPort: portMemberlist,
+									Name:          "http-memberlist",
+									ContainerPort: memberlist.PortMemberlist,
 									Protocol:      corev1.ProtocolTCP,
 								},
 								{

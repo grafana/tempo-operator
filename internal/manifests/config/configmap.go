@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/grafana/dskit/kv"
@@ -137,6 +138,7 @@ func config(tempo v1alpha1.Microservices) (string, error) {
 
 // BuildConfigs creates configuration objects.
 func BuildConfigs(tempo v1alpha1.Microservices) (client.Object, error) {
+	cfg := strings.Replace(hardcodedConfig, "${MEMBERLIST}", manifestutils.Name("gossip-ring", tempo.Name), 1)
 	labels := manifestutils.ComponentLabels("config", tempo.Name)
 	return &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
@@ -144,7 +146,7 @@ func BuildConfigs(tempo v1alpha1.Microservices) (client.Object, error) {
 			Labels: labels,
 		},
 		Data: map[string]string{
-			"tempo.yaml": hardcodedConfig,
+			"tempo.yaml": cfg,
 		},
 	}, nil
 }
@@ -184,7 +186,7 @@ ingester:
 memberlist:
   abort_if_cluster_join_fails: false
   join_members:
-  - tempo-cluster-tempo-distributed-gossip-ring
+  - ${MEMBERLIST}
 metrics_generator_enabled: false
 multitenancy_enabled: false
 overrides:
