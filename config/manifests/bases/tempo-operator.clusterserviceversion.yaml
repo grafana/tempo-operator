@@ -232,6 +232,12 @@ spec:
         displayName: Tolerations
         path: template.queryFrontend.tolerations
       version: v1alpha1
+    - description: TempoOperatorConfig is the Schema for the tempooperatorconfigs
+        API.
+      displayName: Tempo Operator Config
+      kind: TempoOperatorConfig
+      name: tempooperatorconfigs.tempo.grafana.com
+      version: v1alpha1
   description: Simpilifes the deployment of tempo db.
   displayName: tempo-operator
   icon:

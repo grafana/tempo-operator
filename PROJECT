@@ -20,4 +20,12 @@ resources:
     defaulting: true
     validation: true
     webhookVersion: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  domain: grafana.com
+  group: tempo
+  kind: TempoOperatorConfig
+  path: github.com/os-observability/tempo-operator/api/v1alpha1
+  version: v1alpha1
 version: "3"

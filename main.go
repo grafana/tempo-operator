@@ -46,9 +46,10 @@ func main() {
 	flag.Parse()
 
 	var err error
+	ctrlConfig := tempov1alpha1.TempoOperatorConfig{}
 	options := ctrl.Options{Scheme: scheme}
 	if configFile != "" {
-		options, err = options.AndFrom(ctrl.ConfigFile().AtPath(configFile))
+		options, err = options.AndFrom(ctrl.ConfigFile().AtPath(configFile).OfKind(&ctrlConfig))
 		if err != nil {
 			setupLog.Error(err, "unable to load the config file")
 			os.Exit(1)

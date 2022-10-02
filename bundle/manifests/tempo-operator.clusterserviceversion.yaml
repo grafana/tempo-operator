@@ -11,6 +11,14 @@ metadata:
             "name": "microservices-sample"
           },
           "spec": null
+        },
+        {
+          "apiVersion": "tempo.grafana.com/v1alpha1",
+          "kind": "TempoOperatorConfig",
+          "metadata": {
+            "name": "tempooperatorconfig-sample"
+          },
+          "spec": null
         }
       ]
     capabilities: Basic Install
@@ -244,6 +252,12 @@ spec:
         displayName: Tolerations
         path: template.queryFrontend.tolerations
       version: v1alpha1
+    - description: TempoOperatorConfig is the Schema for the tempooperatorconfigs
+        API.
+      displayName: Tempo Operator Config
+      kind: TempoOperatorConfig
+      name: tempooperatorconfigs.tempo.grafana.com
+      version: v1alpha1
   description: Simpilifes the deployment of tempo db.
   displayName: tempo-operator
   icon:
@@ -338,9 +352,7 @@ spec:
             spec:
               containers:
               - args:
-                - --health-probe-bind-address=:8081
-                - --metrics-bind-address=127.0.0.1:8080
-                - --leader-elect
+                - --config=controller_manager_config.yaml
                 command:
                 - /manager
                 image: controller:latest
@@ -377,6 +389,9 @@ spec:
                 - mountPath: /tmp/k8s-webhook-server/serving-certs
                   name: cert
                   readOnly: true
+                - mountPath: /controller_manager_config.yaml
+                  name: manager-config
+                  subPath: controller_manager_config.yaml
               - args:
                 - --secure-listen-address=0.0.0.0:8443
                 - --upstream=http://127.0.0.1:8080/
@@ -409,6 +424,9 @@ spec:
                 secret:
                   defaultMode: 420
                   secretName: webhook-server-cert
+              - configMap:
+                  name: tempo-operator-manager-config
+                name: manager-config
       permissions:
       - rules:
         - apiGroups:
