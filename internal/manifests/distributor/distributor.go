@@ -20,10 +20,10 @@ const (
 
 // BuildDistributor creates distributor objects.
 func BuildDistributor(tempo v1alpha1.Microservices) []client.Object {
-	return []client.Object{statefulSet(tempo), service(tempo)}
+	return []client.Object{deployment(tempo), service(tempo)}
 }
 
-func statefulSet(tempo v1alpha1.Microservices) *v1.Deployment {
+func deployment(tempo v1alpha1.Microservices) *v1.Deployment {
 	labels := manifestutils.ComponentLabels(componentName, tempo.Name)
 	return &v1.Deployment{
 		TypeMeta: metav1.TypeMeta{

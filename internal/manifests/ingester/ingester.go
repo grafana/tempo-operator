@@ -20,13 +20,18 @@ const (
 )
 
 // BuildIngester creates distributor objects.
-func BuildIngester(tempo v1alpha1.Microservices) []client.Object {
-	return []client.Object{deployment(tempo), service(tempo)}
+func BuildIngester(tempo v1alpha1.Microservices) ([]client.Object, error) {
+	ss, err := statefulSet(tempo)
+	if err != nil {
+		return nil, err
+	}
+
+	return []client.Object{ss, service(tempo)}, nil
 }
 
-func deployment(tempo v1alpha1.Microservices) *v1.StatefulSet {
+func statefulSet(tempo v1alpha1.Microservices) (*v1.StatefulSet, error) {
 	labels := manifestutils.ComponentLabels("ingester", tempo.Name)
-	return &v1.StatefulSet{
+	ss := &v1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      manifestutils.Name("ingester", tempo.Name),
 			Namespace: tempo.Namespace,
@@ -88,6 +93,12 @@ func deployment(tempo v1alpha1.Microservices) *v1.StatefulSet {
 			},
 		},
 	}
+
+	err := manifestutils.ConfigureStorage(tempo, &ss.Spec.Template.Spec)
+	if err != nil {
+		return nil, err
+	}
+	return ss, nil
 }
 
 func service(tempo v1alpha1.Microservices) *corev1.Service {

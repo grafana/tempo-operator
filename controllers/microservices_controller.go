@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"time"
 
+	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -22,7 +24,7 @@ type MicroservicesReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-// +kubebuilder:rbac:groups="",resources=services;configmaps;serviceaccounts,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="",resources=services;configmaps;serviceaccounts;secrets,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=apps,resources=deployments;statefulsets,verbs=get;list;watch;create;update;patch;delete
 
 //+kubebuilder:rbac:groups=tempo.grafana.com,resources=microservices,verbs=get;list;watch;create;update;patch;delete
@@ -45,16 +47,22 @@ func (r *MicroservicesReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	if err := r.Get(ctx, req.NamespacedName, &tempo); err != nil {
 		if !apierrors.IsNotFound(err) {
 			log.Error(err, "unable to fetch TempoMicroservices")
+			return ctrl.Result{}, fmt.Errorf("could not fetch tempo: %w", err)
 		}
 
 		// we'll ignore not-found errors, since they can't be fixed by an immediate
 		// requeue (we'll need to wait for a new notification), and we can get them
 		// on deleted requests.
-		return ctrl.Result{}, client.IgnoreNotFound(err)
+		return ctrl.Result{}, nil
 	}
 
-	objects, err := manifests.BuildAll(manifests.Params{Tempo: tempo})
-	// TODO(pavolloffay) check error type and change return appropriately
+	storageConfig, err := r.getStorageConfig(ctx, tempo)
+	if err != nil {
+		return ctrl.Result{}, fmt.Errorf("storage secret error: %w", err)
+	}
+
+	objects, err := manifests.BuildAll(manifests.Params{Tempo: tempo, StorageParams: *storageConfig})
+	// TODO (pavolloffay) check error type and change return appropriately
 	if err != nil {
 		return ctrl.Result{
 			Requeue:      true,
@@ -98,6 +106,28 @@ func (r *MicroservicesReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	}
 
 	return ctrl.Result{}, nil
+}
+
+func (r *MicroservicesReconciler) getStorageConfig(ctx context.Context, tempo v1alpha1.Microservices) (*manifests.StorageParams, error) {
+	storageSecret := &corev1.Secret{}
+	err := r.Get(ctx, types.NamespacedName{Namespace: tempo.Namespace, Name: tempo.Spec.Storage.Secret}, storageSecret)
+	// TODO check if secret exists in the validating webhook
+	if err != nil {
+		return nil, fmt.Errorf("could not fetch storage secret: %w", err)
+	}
+
+	if storageSecret.Data == nil ||
+		storageSecret.Data["endpoint"] == nil ||
+		storageSecret.Data["bucket"] == nil ||
+		storageSecret.Data["access_key_id"] == nil ||
+		storageSecret.Data["access_key_secret"] == nil {
+		return nil, fmt.Errorf("storage secret should contain endpoint and bucket, access_key_id and access_key_secret fields")
+	}
+
+	return &manifests.StorageParams{S3: manifests.S3{
+		Endpoint: string(storageSecret.Data["endpoint"]),
+		Bucket:   string(storageSecret.Data["bucket"]),
+	}}, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
