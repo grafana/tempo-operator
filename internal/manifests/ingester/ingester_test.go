@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -14,12 +15,18 @@ import (
 )
 
 func TestBuildIngester(t *testing.T) {
-	objects := BuildIngester(v1alpha1.Microservices{
+	objects, err := BuildIngester(v1alpha1.Microservices{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test",
 			Namespace: "project1",
 		},
+		Spec: v1alpha1.MicroservicesSpec{
+			Storage: v1alpha1.ObjectStorageSpec{
+				Secret: "test-storage-secret",
+			},
+		},
 	})
+	require.NoError(t, err)
 
 	labels := manifestutils.ComponentLabels("ingester", "test")
 	assert.Equal(t, 2, len(objects))
@@ -42,7 +49,33 @@ func TestBuildIngester(t *testing.T) {
 						{
 							Name:  "tempo",
 							Image: "docker.io/grafana/tempo:1.5.0",
-							Args:  []string{"-target=ingester", "-config.file=/conf/tempo.yaml"},
+							Args: []string{"-target=ingester",
+								"-config.file=/conf/tempo.yaml",
+								"--storage.trace.s3.secret_key=$(S3_SECRET_KEY)",
+								"--storage.trace.s3.access_key=$(S3_ACCESS_KEY)"},
+							Env: []corev1.EnvVar{
+								{
+									Name: "S3_SECRET_KEY",
+									ValueFrom: &corev1.EnvVarSource{
+										SecretKeyRef: &corev1.SecretKeySelector{
+											Key: "access_key_secret",
+											LocalObjectReference: corev1.LocalObjectReference{
+												Name: "test-storage-secret",
+											},
+										},
+									},
+								}, {
+									Name: "S3_ACCESS_KEY",
+									ValueFrom: &corev1.EnvVarSource{
+										SecretKeyRef: &corev1.SecretKeySelector{
+											Key: "access_key_id",
+											LocalObjectReference: corev1.LocalObjectReference{
+												Name: "test-storage-secret",
+											},
+										},
+									},
+								},
+							},
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      configVolumeName,
