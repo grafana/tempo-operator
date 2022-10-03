@@ -11,6 +11,10 @@ This is a Kubernetes operator for [Grafana Tempo](https://github.com/grafana/tem
 
 ## Deploy 
 
+1. Deploy object storage `kubectl apply -f minio.yaml`
+
+2. Create Tempo CR:
+
 ```yaml
 kubectl apply -f - <<EOF
 apiVersion: tempo.grafana.com/v1alpha1
@@ -24,6 +28,8 @@ spec:
   retention:
     global: {}
     perTenant: {}
+  storage:
+    secret: test
 EOF
 ```
 

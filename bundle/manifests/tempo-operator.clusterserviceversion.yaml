@@ -271,6 +271,7 @@ spec:
           - ""
           resources:
           - configmaps
+          - secrets
           - serviceaccounts
           - services
           verbs:

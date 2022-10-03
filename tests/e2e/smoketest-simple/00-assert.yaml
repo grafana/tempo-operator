@@ -1,0 +1,4 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: Microservices
+metadata:
+  name: simplest

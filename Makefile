@@ -1,3 +1,12 @@
+# When the VERBOSE variable is set to 1, all the commands are shown
+ifeq ("$(VERBOSE)","true")
+echo_prefix=">>>>"
+else
+VECHO = @
+endif
+
+ECHO ?= @echo $(echo_prefix)
+
 # VERSION defines the project version for the bundle.
 # Update this value when you upgrade the version of your project.
 # To re-generate a bundle for another specific version without changing the standard setup, you can:
@@ -141,6 +150,7 @@ uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified 
 deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	$(KUSTOMIZE) build config/default | kubectl apply -f -
+	kubectl rollout --namespace tempo-operator-system status deployment/tempo-operator-controller-manager
 
 .PHONY: undeploy
 undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
@@ -159,7 +169,7 @@ CONTROLLER_TOOLS_VERSION ?= v0.9.2
 CRDOC_VERSION ?= v0.5.2
 OPERATOR_SDK_VERSION ?= 1.23.0
 ENVTEST_VERSION ?= latest
-CERTMANAGER_VERSION ?= 1.8.0
+CERTMANAGER_VERSION ?= 1.9.1
 
 ## Tool Binaries
 KUSTOMIZE ?= $(LOCALBIN)/kustomize-$(KUSTOMIZE_VERSION)
@@ -167,6 +177,12 @@ CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen-$(CONTROLLER_TOOLS_VERSION)
 ENVTEST ?= $(LOCALBIN)/setup-envtest-$(ENVTEST_VERSION)
 CRDOC = $(LOCALBIN)/crdoc-$(CRDOC_VERSION)
 OPERATOR_SDK ?= $(LOCALBIN)/operator-sdk-$(OPERATOR_SDK_VERSION)
+KIND ?= $(LOCALBIN)/kind
+KUTTL ?= $(LOCALBIN)/kubectl-kuttl
+
+# Options for KIND version to use
+export KUBE_VERSION ?= 1.25
+KIND_CONFIG ?= kind-$(KUBE_VERSION).yaml
 
 .PHONY: controller-gen
 controller-gen: ## Download controller-gen locally if necessary.
@@ -259,6 +275,41 @@ crdoc: ## Download crdoc locally if necessary.
 kustomize: ## Download kustomize locally if necessary.
 		test -s $(LOCALBIN)/kustomize-$(KUSTOMIZE_VERSION) || $(call go-get-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v4,$(KUSTOMIZE_VERSION))
 
+.PHONY: kind
+kind: $(KIND)
+$(KIND): $(LOCALBIN)
+	./hack/install/install-kind.sh
+
+.PHONY: start-kind
+start-kind: kind
+	$(ECHO) Starting KIND cluster...
+	$(VECHO)$(KIND) create cluster --config $(KIND_CONFIG) 2>&1 | grep -v "already exists" || true
+
+stop-kind:
+	$(ECHO)"Stopping the kind cluster"
+	$(VECHO)kind delete cluster
+
+# end-to-tests
+.PHONY: e2e
+e2e:
+	$(KUTTL) test
+
+.PHONY: prepare-e2e
+prepare-e2e: kuttl start-kind cert-manager set-test-image-vars docker-build load-image-operator deploy
+
+.PHONY: set-test-image-vars
+set-test-image-vars:
+	$(eval IMG=local/tempo-operator:e2e)
+
+# Set the controller image parameters
+.PHONY: set-image-controller
+set-image-controller: manifests kustomize
+	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
+
+.PHONY: load-image-operator
+load-image-operator:
+	kind load docker-image local/tempo-operator:e2e
+
 .PHONY: operator-sdk
 operator-sdk: $(OPERATOR_SDK) ## Download operator-sdk locally if necessary.
 $(OPERATOR_SDK): $(LOCALBIN)
@@ -281,6 +332,10 @@ mv "$$APP" "$$APP_NAME" ;\
 rm -rf $$TMP_DIR ;\
 }
 endef
+
+.PHONY: kuttl
+kuttl:
+	./hack/install/install-kuttl.sh
 
 .PHONY: ensure-generate-is-noop
 ensure-generate-is-noop: generate bundle

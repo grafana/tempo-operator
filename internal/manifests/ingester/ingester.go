@@ -4,11 +4,13 @@ import (
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8slabels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/os-observability/tempo-operator/api/v1alpha1"
 	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
+	"github.com/os-observability/tempo-operator/internal/manifests/memberlist"
 )
 
 const (
@@ -16,17 +18,21 @@ const (
 	componentName    = "ingester"
 	portGRPCServer   = 9095
 	portHTTPServer   = 3100
-	portMemberlist   = 7946
 )
 
 // BuildIngester creates distributor objects.
-func BuildIngester(tempo v1alpha1.Microservices) []client.Object {
-	return []client.Object{deployment(tempo), service(tempo)}
+func BuildIngester(tempo v1alpha1.Microservices) ([]client.Object, error) {
+	ss, err := statefulSet(tempo)
+	if err != nil {
+		return nil, err
+	}
+
+	return []client.Object{ss, service(tempo)}, nil
 }
 
-func deployment(tempo v1alpha1.Microservices) *v1.StatefulSet {
+func statefulSet(tempo v1alpha1.Microservices) (*v1.StatefulSet, error) {
 	labels := manifestutils.ComponentLabels("ingester", tempo.Name)
-	return &v1.StatefulSet{
+	ss := &v1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      manifestutils.Name("ingester", tempo.Name),
 			Namespace: tempo.Namespace,
@@ -38,7 +44,7 @@ func deployment(tempo v1alpha1.Microservices) *v1.StatefulSet {
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: labels,
+					Labels: k8slabels.Merge(labels, memberlist.GossipSelector),
 				},
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{
@@ -55,8 +61,8 @@ func deployment(tempo v1alpha1.Microservices) *v1.StatefulSet {
 							},
 							Ports: []corev1.ContainerPort{
 								{
-									Name:          "memberlist",
-									ContainerPort: portMemberlist,
+									Name:          "http-memberlist",
+									ContainerPort: memberlist.PortMemberlist,
 									Protocol:      corev1.ProtocolTCP,
 								},
 								{
@@ -88,6 +94,12 @@ func deployment(tempo v1alpha1.Microservices) *v1.StatefulSet {
 			},
 		},
 	}
+
+	err := manifestutils.ConfigureStorage(tempo, &ss.Spec.Template.Spec)
+	if err != nil {
+		return nil, err
+	}
+	return ss, nil
 }
 
 func service(tempo v1alpha1.Microservices) *corev1.Service {

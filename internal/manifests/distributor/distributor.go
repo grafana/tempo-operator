@@ -4,11 +4,13 @@ import (
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8slabels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/os-observability/tempo-operator/api/v1alpha1"
 	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
+	"github.com/os-observability/tempo-operator/internal/manifests/memberlist"
 )
 
 const (
@@ -20,10 +22,10 @@ const (
 
 // BuildDistributor creates distributor objects.
 func BuildDistributor(tempo v1alpha1.Microservices) []client.Object {
-	return []client.Object{statefulSet(tempo), service(tempo)}
+	return []client.Object{deployment(tempo), service(tempo)}
 }
 
-func statefulSet(tempo v1alpha1.Microservices) *v1.Deployment {
+func deployment(tempo v1alpha1.Microservices) *v1.Deployment {
 	labels := manifestutils.ComponentLabels(componentName, tempo.Name)
 	return &v1.Deployment{
 		TypeMeta: metav1.TypeMeta{
@@ -40,7 +42,7 @@ func statefulSet(tempo v1alpha1.Microservices) *v1.Deployment {
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: labels,
+					Labels: k8slabels.Merge(labels, memberlist.GossipSelector),
 				},
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{
@@ -52,6 +54,11 @@ func statefulSet(tempo v1alpha1.Microservices) *v1.Deployment {
 								{
 									Name:          otlpGrpcPortName,
 									ContainerPort: otlpGrpcPort,
+									Protocol:      corev1.ProtocolTCP,
+								},
+								{
+									Name:          "http-memberlist",
+									ContainerPort: memberlist.PortMemberlist,
 									Protocol:      corev1.ProtocolTCP,
 								},
 							},

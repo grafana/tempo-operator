@@ -3,6 +3,8 @@ package config
 import (
 	"fmt"
 	"regexp"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/grafana/dskit/kv"
@@ -22,7 +24,6 @@ import (
 	"gopkg.in/yaml.v3"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/os-observability/tempo-operator/api/v1alpha1"
 	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
@@ -135,8 +136,35 @@ func config(tempo v1alpha1.Microservices) (string, error) {
 	return cfgStr, nil
 }
 
+// Params holds configuration parameters.
+type Params struct {
+	S3 S3
+}
+
+// S3 holds S3 object storage configuration options.
+type S3 struct {
+	Endpoint string
+	Bucket   string
+}
+
 // BuildConfigs creates configuration objects.
-func BuildConfigs(tempo v1alpha1.Microservices) (client.Object, error) {
+func BuildConfigs(tempo v1alpha1.Microservices, params Params) (*corev1.ConfigMap, error) {
+	s3Insecure := false
+	s3Endpoint := params.S3.Endpoint
+	if strings.HasPrefix(s3Endpoint, "http://") {
+		s3Insecure = true
+		s3Endpoint = strings.TrimPrefix(s3Endpoint, "http://")
+	} else if !strings.HasPrefix(s3Endpoint, "https://") {
+		s3Insecure = true
+	} else {
+		s3Endpoint = strings.TrimPrefix(s3Endpoint, "https://")
+	}
+
+	config := strings.Replace(hardcodedConfig, "${S3_INSECURE}", strconv.FormatBool(s3Insecure), 1)
+	config = strings.Replace(config, "${S3_ENDPOINT}", s3Endpoint, 1)
+	config = strings.Replace(config, "${S3_BUCKET}", params.S3.Bucket, 1)
+	config = strings.Replace(config, "${MEMBERLIST}", manifestutils.Name("gossip-ring", tempo.Name), 1)
+
 	labels := manifestutils.ComponentLabels("config", tempo.Name)
 	return &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
@@ -144,7 +172,7 @@ func BuildConfigs(tempo v1alpha1.Microservices) (client.Object, error) {
 			Labels: labels,
 		},
 		Data: map[string]string{
-			"tempo.yaml": hardcodedConfig,
+			"tempo.yaml": config,
 		},
 	}, nil
 }
@@ -184,7 +212,7 @@ ingester:
 memberlist:
   abort_if_cluster_join_fails: false
   join_members:
-  - tempo-cluster-tempo-distributed-gossip-ring
+  - ${MEMBERLIST}
 metrics_generator_enabled: false
 multitenancy_enabled: false
 overrides:
@@ -204,11 +232,17 @@ server:
   log_level: debug
 storage:
   trace:
-    backend: local
+    backend: s3
     blocklist_poll: 5m
     cache: none
+    s3:
+      endpoint: ${S3_ENDPOINT}
+      bucket: ${S3_BUCKET}
+      insecure: ${S3_INSECURE}
     local:
       path: /var/tempo/traces
     wal:
       path: /var/tempo/wal
+usage_report:
+  reporting_enabled: false
 `
