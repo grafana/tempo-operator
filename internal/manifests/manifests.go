@@ -7,6 +7,7 @@ import (
 	"github.com/os-observability/tempo-operator/internal/manifests/config"
 	"github.com/os-observability/tempo-operator/internal/manifests/distributor"
 	"github.com/os-observability/tempo-operator/internal/manifests/ingester"
+	"github.com/os-observability/tempo-operator/internal/manifests/memberlist"
 )
 
 // Params holds parameters used to create Tempo objects.
@@ -43,5 +44,6 @@ func BuildAll(params Params) ([]client.Object, error) {
 	}
 	manifests = append(manifests, ingesterObjs...)
 	manifests = append(manifests, configMaps)
+	manifests = append(manifests, memberlist.BuildGossip(params.Tempo))
 	return manifests, nil
 }

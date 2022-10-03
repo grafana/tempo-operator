@@ -163,6 +163,7 @@ func BuildConfigs(tempo v1alpha1.Microservices, params Params) (*corev1.ConfigMa
 	config := strings.Replace(hardcodedConfig, "${S3_INSECURE}", strconv.FormatBool(s3Insecure), 1)
 	config = strings.Replace(config, "${S3_ENDPOINT}", s3Endpoint, 1)
 	config = strings.Replace(config, "${S3_BUCKET}", params.S3.Bucket, 1)
+	config = strings.Replace(config, "${MEMBERLIST}", manifestutils.Name("gossip-ring", tempo.Name), 1)
 
 	labels := manifestutils.ComponentLabels("config", tempo.Name)
 	return &corev1.ConfigMap{
@@ -211,7 +212,7 @@ ingester:
 memberlist:
   abort_if_cluster_join_fails: false
   join_members:
-  - tempo-cluster-tempo-distributed-gossip-ring
+  - ${MEMBERLIST}
 metrics_generator_enabled: false
 multitenancy_enabled: false
 overrides:

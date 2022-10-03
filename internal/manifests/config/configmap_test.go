@@ -5,12 +5,17 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/os-observability/tempo-operator/api/v1alpha1"
 )
 
 func TestConfigmap(t *testing.T) {
-	cm, err := BuildConfigs(v1alpha1.Microservices{}, Params{S3: S3{
+	cm, err := BuildConfigs(v1alpha1.Microservices{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "test",
+		},
+	}, Params{S3: S3{
 		Endpoint: "http://minio:9000",
 		Bucket:   "tempo",
 	}})
@@ -51,7 +56,7 @@ ingester:
 memberlist:
   abort_if_cluster_join_fails: false
   join_members:
-  - tempo-cluster-tempo-distributed-gossip-ring
+  - tempo-test-gossip-ring
 metrics_generator_enabled: false
 multitenancy_enabled: false
 overrides:
