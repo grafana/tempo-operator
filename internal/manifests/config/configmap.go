@@ -148,7 +148,7 @@ type S3 struct {
 }
 
 // BuildConfigs creates configuration objects.
-func BuildConfigs(tempo v1alpha1.Microservices, params Params) (client.Object, error) {
+func BuildConfigs(tempo v1alpha1.Microservices, params Params) (*corev1.ConfigMap, error) {
 	s3Insecure := false
 	s3Endpoint := params.S3.Endpoint
 	if strings.HasPrefix(s3Endpoint, "http://") {
@@ -163,7 +163,7 @@ func BuildConfigs(tempo v1alpha1.Microservices, params Params) (client.Object, e
 	config := strings.Replace(hardcodedConfig, "${S3_INSECURE}", strconv.FormatBool(s3Insecure), 1)
 	config = strings.Replace(config, "${S3_ENDPOINT}", s3Endpoint, 1)
 	config = strings.Replace(config, "${S3_BUCKET}", params.S3.Bucket, 1)
-  config = strings.Replace(config, "${MEMBERLIST}", manifestutils.Name("gossip-ring", tempo.Name), 1)
+	config = strings.Replace(config, "${MEMBERLIST}", manifestutils.Name("gossip-ring", tempo.Name), 1)
 
 	labels := manifestutils.ComponentLabels("config", tempo.Name)
 	return &corev1.ConfigMap{
