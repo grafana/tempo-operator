@@ -17,7 +17,7 @@ spec:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: ProjectConfig is the Schema for the projectconfigs API
+        description: ProjectConfig is the Schema for the projectconfigs API.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
