@@ -3,7 +3,7 @@
 # It should be run by config/default
 resources:
 - bases/tempo.grafana.com_microservices.yaml
-- bases/config.grafana.com_projectconfigs.yaml
+- bases/config.tempo.grafana.com_projectconfigs.yaml
 #+kubebuilder:scaffold:crdkustomizeresource
 
 patchesStrategicMerge:

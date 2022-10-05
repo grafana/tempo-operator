@@ -4,9 +4,9 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.9.2
   creationTimestamp: null
-  name: projectconfigs.config.grafana.com
+  name: projectconfigs.config.tempo.grafana.com
 spec:
-  group: config.grafana.com
+  group: config.tempo.grafana.com
   names:
     kind: ProjectConfig
     listKind: ProjectConfigList
