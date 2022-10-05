@@ -16,7 +16,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	configtempov1alpha1 "github.com/os-observability/tempo-operator/apis/config.tempo/v1alpha1"
-	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config.tempo/v1alpha1"
 	tempov1alpha1 "github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 	controllers "github.com/os-observability/tempo-operator/controllers/tempo"
 	//+kubebuilder:scaffold:imports
@@ -31,7 +30,6 @@ func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
 	utilruntime.Must(tempov1alpha1.AddToScheme(scheme))
-	utilruntime.Must(configv1alpha1.AddToScheme(scheme))
 	utilruntime.Must(configtempov1alpha1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
@@ -58,7 +56,7 @@ func main() {
 	opts.BindFlags(flag.CommandLine)
 	flag.Parse()
 
-	ctrlConfig := configv1alpha1.ProjectConfig{}
+	ctrlConfig := configtempov1alpha1.ProjectConfig{}
 	options := ctrl.Options{
 		Scheme:                 scheme,
 		MetricsBindAddress:     metricsAddr,
