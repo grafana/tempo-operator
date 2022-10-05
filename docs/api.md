@@ -3,14 +3,13 @@
 Packages:
 
 - [tempo.grafana.com/v1alpha1](#tempografanacomv1alpha1)
+- [config.grafana.com/v1alpha1](#configgrafanacomv1alpha1)
 
 # tempo.grafana.com/v1alpha1
 
 Resource Types:
 
 - [Microservices](#microservices)
-
-- [TempoOperatorConfig](#tempooperatorconfig)
 
 
 
@@ -1190,15 +1189,24 @@ JaegerQuerySpec defines Jaeger Query spefic options.
       </tr></tbody>
 </table>
 
-## TempoOperatorConfig
-<sup><sup>[↩ Parent](#tempografanacomv1alpha1 )</sup></sup>
+# config.grafana.com/v1alpha1
+
+Resource Types:
+
+- [ProjectConfig](#projectconfig)
+
+
+
+
+## ProjectConfig
+<sup><sup>[↩ Parent](#configgrafanacomv1alpha1 )</sup></sup>
 
 
 
 
 
 
-TempoOperatorConfig is the Schema for the tempooperatorconfigs API.
+ProjectConfig is the Schema for the projectconfigs API
 
 <table>
     <thead>
@@ -1212,13 +1220,13 @@ TempoOperatorConfig is the Schema for the tempooperatorconfigs API.
     <tbody><tr>
       <td><b>apiVersion</b></td>
       <td>string</td>
-      <td>tempo.grafana.com/v1alpha1</td>
+      <td>config.grafana.com/v1alpha1</td>
       <td>true</td>
       </tr>
       <tr>
       <td><b>kind</b></td>
       <td>string</td>
-      <td>TempoOperatorConfig</td>
+      <td>ProjectConfig</td>
       <td>true</td>
       </tr>
       <tr>
@@ -1235,7 +1243,7 @@ TempoOperatorConfig is the Schema for the tempooperatorconfigs API.
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#tempooperatorconfigcontroller">controller</a></b></td>
+        <td><b><a href="#projectconfigcontroller">controller</a></b></td>
         <td>object</td>
         <td>
           Controller contains global configuration options for controllers registered within this manager.<br/>
@@ -1249,38 +1257,38 @@ TempoOperatorConfig is the Schema for the tempooperatorconfigs API.
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#tempooperatorconfighealth">health</a></b></td>
+        <td><b><a href="#projectconfighealth">health</a></b></td>
         <td>object</td>
         <td>
           Health contains the controller health configuration<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#tempooperatorconfigleaderelection">leaderElection</a></b></td>
+        <td><b><a href="#projectconfigleaderelection">leaderElection</a></b></td>
         <td>object</td>
         <td>
           LeaderElection is the LeaderElection config to be used when configuring the manager.Manager leader election<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#tempooperatorconfigmetrics">metrics</a></b></td>
+        <td><b><a href="#projectconfigmetrics">metrics</a></b></td>
         <td>object</td>
         <td>
           Metrics contains thw controller metrics configuration<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b>spec</b></td>
+        <td><b><a href="#projectconfigspec">spec</a></b></td>
         <td>object</td>
         <td>
-          TempoOperatorConfigSpec defines the desired state of TempoOperatorConfig.<br/>
+          ProjectConfigSpec defines the desired state of ProjectConfig<br/>
         </td>
         <td>false</td>
       </tr><tr>
         <td><b>status</b></td>
         <td>object</td>
         <td>
-          TempoOperatorConfigStatus defines the observed state of TempoOperatorConfig.<br/>
+          ProjectConfigStatus defines the observed state of ProjectConfig<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -1291,7 +1299,7 @@ TempoOperatorConfig is the Schema for the tempooperatorconfigs API.
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#tempooperatorconfigwebhook">webhook</a></b></td>
+        <td><b><a href="#projectconfigwebhook">webhook</a></b></td>
         <td>object</td>
         <td>
           Webhook contains the controllers webhook configuration<br/>
@@ -1301,8 +1309,8 @@ TempoOperatorConfig is the Schema for the tempooperatorconfigs API.
 </table>
 
 
-### TempoOperatorConfig.controller
-<sup><sup>[↩ Parent](#tempooperatorconfig)</sup></sup>
+### ProjectConfig.controller
+<sup><sup>[↩ Parent](#projectconfig)</sup></sup>
 
 
 
@@ -1339,8 +1347,8 @@ Controller contains global configuration options for controllers registered with
 </table>
 
 
-### TempoOperatorConfig.health
-<sup><sup>[↩ Parent](#tempooperatorconfig)</sup></sup>
+### ProjectConfig.health
+<sup><sup>[↩ Parent](#projectconfig)</sup></sup>
 
 
 
@@ -1380,8 +1388,8 @@ Health contains the controller health configuration
 </table>
 
 
-### TempoOperatorConfig.leaderElection
-<sup><sup>[↩ Parent](#tempooperatorconfig)</sup></sup>
+### ProjectConfig.leaderElection
+<sup><sup>[↩ Parent](#projectconfig)</sup></sup>
 
 
 
@@ -1449,8 +1457,8 @@ LeaderElection is the LeaderElection config to be used when configuring the mana
 </table>
 
 
-### TempoOperatorConfig.metrics
-<sup><sup>[↩ Parent](#tempooperatorconfig)</sup></sup>
+### ProjectConfig.metrics
+<sup><sup>[↩ Parent](#projectconfig)</sup></sup>
 
 
 
@@ -1476,8 +1484,35 @@ Metrics contains thw controller metrics configuration
 </table>
 
 
-### TempoOperatorConfig.webhook
-<sup><sup>[↩ Parent](#tempooperatorconfig)</sup></sup>
+### ProjectConfig.spec
+<sup><sup>[↩ Parent](#projectconfig)</sup></sup>
+
+
+
+ProjectConfigSpec defines the desired state of ProjectConfig
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>foo</b></td>
+        <td>string</td>
+        <td>
+          Foo is an example field of ProjectConfig. Edit projectconfig_types.go to remove/update<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### ProjectConfig.webhook
+<sup><sup>[↩ Parent](#projectconfig)</sup></sup>
 
 
 

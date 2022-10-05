@@ -5,21 +5,20 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.9.2
   creationTimestamp: null
-  name: tempooperatorconfigs.tempo.grafana.com
+  name: projectconfigs.config.grafana.com
 spec:
-  group: tempo.grafana.com
+  group: config.grafana.com
   names:
-    kind: TempoOperatorConfig
-    listKind: TempoOperatorConfigList
-    plural: tempooperatorconfigs
-    singular: tempooperatorconfig
+    kind: ProjectConfig
+    listKind: ProjectConfigList
+    plural: projectconfigs
+    singular: projectconfig
   scope: Namespaced
   versions:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: TempoOperatorConfig is the Schema for the tempooperatorconfigs
-          API.
+        description: ProjectConfig is the Schema for the projectconfigs API
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -143,10 +142,15 @@ spec:
                 type: string
             type: object
           spec:
-            description: TempoOperatorConfigSpec defines the desired state of TempoOperatorConfig.
+            description: ProjectConfigSpec defines the desired state of ProjectConfig
+            properties:
+              foo:
+                description: Foo is an example field of ProjectConfig. Edit projectconfig_types.go
+                  to remove/update
+                type: string
             type: object
           status:
-            description: TempoOperatorConfigStatus defines the observed state of TempoOperatorConfig.
+            description: ProjectConfigStatus defines the observed state of ProjectConfig
             type: object
           syncPeriod:
             description: SyncPeriod determines the minimum frequency at which watched

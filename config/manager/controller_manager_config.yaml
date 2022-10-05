@@ -1,5 +1,5 @@
-apiVersion: tempo.grafana.com/v1alpha1
-kind: TempoOperatorConfig
+apiVersion: config.grafana.com/v1alpha1
+kind: ProjectConfig
 health:
   healthProbeBindAddress: :8081
 metrics:
