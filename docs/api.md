@@ -3,7 +3,7 @@
 Packages:
 
 - [tempo.grafana.com/v1alpha1](#tempografanacomv1alpha1)
-- [config.grafana.com/v1alpha1](#configgrafanacomv1alpha1)
+- [config.tempo.grafana.com/v1alpha1](#configtempografanacomv1alpha1)
 
 # tempo.grafana.com/v1alpha1
 
@@ -1189,7 +1189,7 @@ JaegerQuerySpec defines Jaeger Query spefic options.
       </tr></tbody>
 </table>
 
-# config.grafana.com/v1alpha1
+# config.tempo.grafana.com/v1alpha1
 
 Resource Types:
 
@@ -1199,14 +1199,14 @@ Resource Types:
 
 
 ## ProjectConfig
-<sup><sup>[↩ Parent](#configgrafanacomv1alpha1 )</sup></sup>
+<sup><sup>[↩ Parent](#configtempografanacomv1alpha1 )</sup></sup>
 
 
 
 
 
 
-ProjectConfig is the Schema for the projectconfigs API
+ProjectConfig is the Schema for the projectconfigs API.
 
 <table>
     <thead>
@@ -1220,7 +1220,7 @@ ProjectConfig is the Schema for the projectconfigs API
     <tbody><tr>
       <td><b>apiVersion</b></td>
       <td>string</td>
-      <td>config.grafana.com/v1alpha1</td>
+      <td>config.tempo.grafana.com/v1alpha1</td>
       <td>true</td>
       </tr>
       <tr>
@@ -1275,20 +1275,6 @@ ProjectConfig is the Schema for the projectconfigs API
         <td>object</td>
         <td>
           Metrics contains thw controller metrics configuration<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#projectconfigspec">spec</a></b></td>
-        <td>object</td>
-        <td>
-          ProjectConfigSpec defines the desired state of ProjectConfig<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>status</b></td>
-        <td>object</td>
-        <td>
-          ProjectConfigStatus defines the observed state of ProjectConfig<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -1478,33 +1464,6 @@ Metrics contains thw controller metrics configuration
         <td>string</td>
         <td>
           BindAddress is the TCP address that the controller should bind to for serving prometheus metrics. It can be set to "0" to disable the metrics serving.<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-
-### ProjectConfig.spec
-<sup><sup>[↩ Parent](#projectconfig)</sup></sup>
-
-
-
-ProjectConfigSpec defines the desired state of ProjectConfig
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>foo</b></td>
-        <td>string</td>
-        <td>
-          Foo is an example field of ProjectConfig. Edit projectconfig_types.go to remove/update<br/>
         </td>
         <td>false</td>
       </tr></tbody>

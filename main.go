@@ -15,7 +15,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
+	configtempov1alpha1 "github.com/os-observability/tempo-operator/apis/config.tempo/v1alpha1"
+	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config.tempo/v1alpha1"
 	tempov1alpha1 "github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 	controllers "github.com/os-observability/tempo-operator/controllers/tempo"
 	//+kubebuilder:scaffold:imports
@@ -31,6 +32,7 @@ func init() {
 
 	utilruntime.Must(tempov1alpha1.AddToScheme(scheme))
 	utilruntime.Must(configv1alpha1.AddToScheme(scheme))
+	utilruntime.Must(configtempov1alpha1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 

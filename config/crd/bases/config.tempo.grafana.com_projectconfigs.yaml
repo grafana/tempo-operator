@@ -1,3 +1,4 @@
+---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
@@ -17,7 +18,7 @@ spec:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: ProjectConfig is the Schema for the projectconfigs API
+        description: ProjectConfig is the Schema for the projectconfigs API.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -140,17 +141,6 @@ spec:
                   disable the metrics serving.
                 type: string
             type: object
-          spec:
-            description: ProjectConfigSpec defines the desired state of ProjectConfig
-            properties:
-              foo:
-                description: Foo is an example field of ProjectConfig. Edit projectconfig_types.go
-                  to remove/update
-                type: string
-            type: object
-          status:
-            description: ProjectConfigStatus defines the observed state of ProjectConfig
-            type: object
           syncPeriod:
             description: SyncPeriod determines the minimum frequency at which watched
               resources are reconciled. A lower period will correct entropy more quickly,
@@ -184,9 +174,3 @@ spec:
     storage: true
     subresources:
       status: {}
-status:
-  acceptedNames:
-    kind: ""
-    plural: ""
-  conditions: null
-  storedVersions: null
