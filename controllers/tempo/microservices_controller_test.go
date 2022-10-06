@@ -13,7 +13,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/os-observability/tempo-operator/api/v1alpha1"
+	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 )
 
 func TestReconcile(t *testing.T) {
