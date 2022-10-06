@@ -8,6 +8,8 @@ import (
 	"github.com/os-observability/tempo-operator/internal/manifests/distributor"
 	"github.com/os-observability/tempo-operator/internal/manifests/ingester"
 	"github.com/os-observability/tempo-operator/internal/manifests/memberlist"
+	"github.com/os-observability/tempo-operator/internal/manifests/querier"
+	"github.com/os-observability/tempo-operator/internal/manifests/queryfrontend"
 )
 
 // Params holds parameters used to create Tempo objects.
@@ -42,8 +44,14 @@ func BuildAll(params Params) ([]client.Object, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	querierObjects := querier.BuildQuerier(params.Tempo)
+	queryFrontendObjects := queryfrontend.BuildQueryFrontend(params.Tempo)
 	manifests = append(manifests, ingesterObjs...)
 	manifests = append(manifests, configMaps)
 	manifests = append(manifests, memberlist.BuildGossip(params.Tempo))
+	manifests = append(manifests, querierObjects...)
+	manifests = append(manifests, queryFrontendObjects...)
+
 	return manifests, nil
 }
