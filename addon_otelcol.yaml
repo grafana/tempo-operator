@@ -1,0 +1,38 @@
+# kubectl port-forward service/observatorium-xyz-observatorium-api 8090:8090
+# docker run --rm -it --net=host -v $PWD:/tmp/conf ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector:0.61.0 --config /tmp/conf/addon_otelcol.yaml
+extensions:
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+  jaeger:
+    protocols:
+      thrift_binary:
+      thrift_compact:
+      thrift_http:
+      grpc:
+
+processors:
+
+exporters:
+  otlp:
+    endpoint: localhost:8090
+    compression: none
+    headers:
+      X-Tenant: "test-oidc"
+      # Get the token
+      # kubectl port-forward -n hydra service/hydra 4444:4444
+      # ./token-refresher --url=https://localhost:8090  --oidc.client-id=user --oidc.client-secret=secret --log.level=debug --oidc.issuer-url=http://localhost:4444/ --oidc.audience=tempo --file /tmp/token
+      # Or kubectl rollout restart deployment.apps/token-refresher && sleep 4 && kubectl exec -it deployment.apps/token-refresher -- /bin/cat /tmp/token
+#      Authorization: "bearer"
+      Authorization: "bearer eyJhbGciOiJSUzI1NiIsImtpZCI6InB1YmxpYzpoeWRyYS5qd3QuYWNjZXNzLXRva2VuIiwidHlwIjoiSldUIn0.eyJhdWQiOlsidGVtcG8iXSwiY2xpZW50X2lkIjoidXNlciIsImV4cCI6MTY2NTQ5NTI3NiwiZXh0Ijp7fSwiaWF0IjoxNjY1NDkxNjc2LCJpc3MiOiJodHRwOi8vaHlkcmEuaHlkcmEuc3ZjLmNsdXN0ZXIubG9jYWw6NDQ0NC8iLCJqdGkiOiJmMzE0ZmYwMy1kZTNkLTRmN2YtOTE3Yi01MWNlNThjOGQxMjkiLCJuYmYiOjE2NjU0OTE2NzYsInNjcCI6W10sInN1YiI6InVzZXIifQ.MjPKDTRn9OemFBDdiui1ZnsH9gCDuXSJAinCuCS4KvhPjjFIjBZUP-A_ueeZChWZa17PUsl9LCHBWILv6qmAB4HdHr0O3IAPOQQXweO-OlNJIQ4Vj3Id8qBWd0C5R6ojuRM9PGPtfAvn0rmJVdCRi8VzEE7VmIYH8EOoT0t8HdQEAtJAuuq04winSa1GjJLxWfTtKVOoegBW8B201l0RU8eFIiUDiowQvJpL_4Lvibgn40Tl7CiUMztLj920qMl-fKSUxTWp7q2Qor0fVJXlxx3oNqShJIePN7z7HRLYKWeYEvgOUJa4Z05JFpIITlT-wzZ5itwwD_zkOMbUyGHRjTIBLZ_9knIUgBkL3T1uYYE84J1Z6YrvVaDwRq6v2j1fx8AIFZY7Q5aY32nM7YTDTO-5Cfu6bHyAUFMsndpf6CehxvJ74KkRlchHdQz_NDYUZYevrlWhtd6b0-oSvhdcU2RUaFOFbXg3xYeDKzcuZmD0j9eGuJ6ytZES7bKa1iE9dD8iGOidwMtLD5gVPljEuv16wqBQ1MyiyrF5gKVKUOhqs6MRQs91R5-hSaKujt4e3h_coReg4dAcfWl8gKdtpr2IGxvUVyJuJbZqnpj_ia78U4kHDc8dVoUT_RfwpCpb00buYiNCJQJ87VWLEDZjkG6bqn38SdAwr4X4m_wC1vM"
+    tls:
+      insecure: true
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp, jaeger]
+      exporters: [otlp]

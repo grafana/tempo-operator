@@ -1,0 +1,38 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/instance: token-refresher
+    app.kubernetes.io/name: token-refresher
+    app.kubernetes.io/version: master-2021-03-05-b34376b
+  name: token-refresher
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: token-refresher
+      app.kubernetes.io/name: token-refresher
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: token-refresher
+        app.kubernetes.io/name: token-refresher
+        app.kubernetes.io/version: master-2021-03-05-b34376b
+    spec:
+      containers:
+      - args:
+        - --log.level=debug
+        - --log.format=logfmt
+        - --file=/tmp/token
+        - --oidc.audience=tempo
+        - --oidc.client-id=user
+        - --oidc.client-secret=secret
+        - --oidc.issuer-url=http://hydra.hydra.svc.cluster.local:4444/
+        - --url=http://observatorium-xyz-observatorium-api.default.svc:8090
+        image: quay.io/observatorium/token-refresher:master-2021-03-05-b34376b
+        name: token-refresher
+        ports:
+        - containerPort: 8081
+          name: internal
+        - containerPort: 8080
+          name: web

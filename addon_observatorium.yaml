@@ -1,0 +1,181 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/component: api
+    app.kubernetes.io/instance: observatorium-xyz
+    app.kubernetes.io/name: observatorium-api
+    app.kubernetes.io/part-of: observatorium
+    app.kubernetes.io/version: main-2022-03-03-v0.1.2-139-gb3a1918
+  name: observatorium-xyz-observatorium-api
+---
+apiVersion: v1
+data:
+  rbac.yaml: |-
+    "roleBindings":
+      - "name": "test-oidc"
+        "roles":
+          - "read-write"
+        "subjects":
+          - "kind": "user"
+            "name": "user"
+    "roles":
+      - "name": "read-write"
+        "permissions":
+          - "read"
+          - "write"
+        "resources":
+          - "logs"
+          - "metrics"
+          - "traces"
+        "tenants":
+          - "test-oidc"
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/component: api
+    app.kubernetes.io/instance: observatorium-xyz
+    app.kubernetes.io/name: observatorium-api
+    app.kubernetes.io/part-of: observatorium
+    app.kubernetes.io/version: main-2022-03-03-v0.1.2-139-gb3a1918
+  name: observatorium-xyz-observatorium-api
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+    app.kubernetes.io/component: api
+    app.kubernetes.io/instance: observatorium-xyz
+    app.kubernetes.io/name: observatorium-api
+    app.kubernetes.io/part-of: observatorium
+    app.kubernetes.io/version: main-2022-03-03-v0.1.2-139-gb3a1918
+  name: observatorium-xyz-observatorium-api
+stringData:
+  tenants.yaml: |-
+    "tenants":
+    - "id": "1610b0c3-c509-4592-a256-a1871353dbfa"
+      "name": "test-oidc"
+      "oidc":
+        "clientID": "tempo"
+        "issuerURL": "http://hydra.hydra.svc.cluster.local:4444/"
+      "rateLimits":
+      - "endpoint": "/api/metrics/v1/.+/api/v1/receive"
+        "limit": 1000
+        "window": "1s"
+      - "endpoint": "/api/logs/v1/.*"
+        "limit": 1000
+        "window": "1s"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: api
+    app.kubernetes.io/instance: observatorium-xyz
+    app.kubernetes.io/name: observatorium-api
+    app.kubernetes.io/part-of: observatorium
+    app.kubernetes.io/version: main-2022-03-03-v0.1.2-139-gb3a1918
+  name: observatorium-xyz-observatorium-api
+spec:
+  ports:
+    - appProtocol: h2c
+      name: grpc-public
+      port: 8090
+      targetPort: 8090
+    - appProtocol: http
+      name: internal
+      port: 8081
+      targetPort: 8081
+    - appProtocol: http
+      name: public
+      port: 8080
+      targetPort: 8080
+  selector:
+    app.kubernetes.io/component: api
+    app.kubernetes.io/instance: observatorium-xyz
+    app.kubernetes.io/name: observatorium-api
+    app.kubernetes.io/part-of: observatorium
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/component: api
+    app.kubernetes.io/instance: observatorium-xyz
+    app.kubernetes.io/name: observatorium-api
+    app.kubernetes.io/part-of: observatorium
+    app.kubernetes.io/version: main-2022-03-03-v0.1.2-139-gb3a1918
+  name: observatorium-xyz-observatorium-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: api
+      app.kubernetes.io/instance: observatorium-xyz
+      app.kubernetes.io/name: observatorium-api
+      app.kubernetes.io/part-of: observatorium
+  strategy:
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: api
+        app.kubernetes.io/instance: observatorium-xyz
+        app.kubernetes.io/name: observatorium-api
+        app.kubernetes.io/part-of: observatorium
+        app.kubernetes.io/version: main-2022-03-03-v0.1.2-139-gb3a1918
+    spec:
+      containers:
+        - args:
+            - --web.listen=0.0.0.0:8080
+            - --web.internal.listen=0.0.0.0:8081
+            - --log.level=debug
+            - --traces.write.endpoint=tempo-simplest-distributor:4317
+            - --grpc.listen=0.0.0.0:8090
+            - --rbac.config=/etc/observatorium/rbac.yaml
+            - --tenants.config=/etc/observatorium/tenants.yaml
+          image: pavolloffay/observatorium-api:001
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 10
+            httpGet:
+              path: /live
+              port: 8081
+              scheme: HTTP
+            periodSeconds: 30
+          name: observatorium-api
+          ports:
+            - containerPort: 8090
+              name: grpc-public
+            - containerPort: 8081
+              name: internal
+            - containerPort: 8080
+              name: public
+          readinessProbe:
+            failureThreshold: 12
+            httpGet:
+              path: /ready
+              port: 8081
+              scheme: HTTP
+            periodSeconds: 5
+          resources: {}
+          volumeMounts:
+            - mountPath: /etc/observatorium/rbac.yaml
+              name: rbac
+              readOnly: true
+              subPath: rbac.yaml
+            - mountPath: /etc/observatorium/tenants.yaml
+              name: tenants
+              readOnly: true
+              subPath: tenants.yaml
+      serviceAccountName: observatorium-xyz-observatorium-api
+      volumes:
+        - configMap:
+            name: observatorium-xyz-observatorium-api
+          name: rbac
+        - name: tenants
+          secret:
+            secretName: observatorium-xyz-observatorium-api
