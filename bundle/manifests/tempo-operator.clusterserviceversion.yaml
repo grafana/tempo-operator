@@ -5,14 +5,6 @@ metadata:
     alm-examples: |-
       [
         {
-          "apiVersion": "config.tempo.grafana.com/v1alpha1",
-          "kind": "ProjectConfig",
-          "metadata": {
-            "name": "projectconfig-sample"
-          },
-          "spec": null
-        },
-        {
           "apiVersion": "tempo.grafana.com/v1alpha1",
           "kind": "Microservices",
           "metadata": {
@@ -251,9 +243,6 @@ spec:
       - description: Tolerations defines component specific pod tolerations.
         displayName: Tolerations
         path: template.queryFrontend.tolerations
-      version: v1alpha1
-    - kind: ProjectConfig
-      name: projectconfigs.config.tempo.grafana.com
       version: v1alpha1
   description: Simpilifes the deployment of tempo db.
   displayName: tempo-operator
