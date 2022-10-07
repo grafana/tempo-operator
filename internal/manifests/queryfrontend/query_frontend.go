@@ -119,10 +119,12 @@ func deployment(tempo v1alpha1.Microservices) *v1.Deployment {
 								{
 									Name:          jaegerUIPortName,
 									ContainerPort: portJaegerUI,
+									Protocol:      corev1.ProtocolTCP,
 								},
 								{
 									Name:          jaegerMetricsPortName,
 									ContainerPort: portQueryMetrics,
+									Protocol:      corev1.ProtocolTCP,
 								},
 							},
 							// TODO do we need to define Resources?
@@ -156,7 +158,9 @@ func deployment(tempo v1alpha1.Microservices) *v1.Deployment {
 }
 
 func services(tempo v1alpha1.Microservices) []*corev1.Service {
-	labels := manifestutils.ComponentLabels(componentName, tempo.Name)
+	selectorLabels := manifestutils.ComponentLabels(componentName, tempo.Name) // TODO is there a better way to do this?
+	delete(selectorLabels, "app.kubernetes.io/managed-by")
+	delete(selectorLabels, "app.kubernetes.io/created-by")
 
 	frontEndService := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -187,7 +191,7 @@ func services(tempo v1alpha1.Microservices) []*corev1.Service {
 					TargetPort: intstr.FromString("jaeger-metrics"),
 				},
 			},
-			Selector: labels,
+			Selector: selectorLabels,
 		},
 	}
 
@@ -226,11 +230,9 @@ func services(tempo v1alpha1.Microservices) []*corev1.Service {
 					TargetPort: intstr.FromString("grpc"),
 				},
 			},
-			Selector: labels,
+			Selector: selectorLabels,
 		},
 	}
 
-	services := []*corev1.Service{frontEndService, frontEndDiscoveryService}
-
-	return services
+	return []*corev1.Service{frontEndService, frontEndDiscoveryService}
 }

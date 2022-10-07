@@ -45,13 +45,11 @@ func BuildAll(params Params) ([]client.Object, error) {
 		return nil, err
 	}
 
-	querierObjects := querier.BuildQuerier(params.Tempo)
-	queryFrontendObjects := queryfrontend.BuildQueryFrontend(params.Tempo)
 	manifests = append(manifests, ingesterObjs...)
 	manifests = append(manifests, configMaps)
 	manifests = append(manifests, memberlist.BuildGossip(params.Tempo))
-	manifests = append(manifests, querierObjects...)
-	manifests = append(manifests, queryFrontendObjects...)
+	manifests = append(manifests, querier.BuildQuerier(params.Tempo)...)
+	manifests = append(manifests, queryfrontend.BuildQueryFrontend(params.Tempo)...)
 
 	return manifests, nil
 }
