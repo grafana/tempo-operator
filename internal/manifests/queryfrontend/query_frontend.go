@@ -60,7 +60,29 @@ func deployment(tempo v1alpha1.Microservices) *v1.Deployment {
 					Labels: k8slabels.Merge(labels, memberlist.GossipSelector),
 				},
 				Spec: corev1.PodSpec{
-					// TODO do we need to set any of this affinity stuff???
+					Affinity: &corev1.Affinity{
+						PodAntiAffinity: &corev1.PodAntiAffinity{
+							PreferredDuringSchedulingIgnoredDuringExecution: []corev1.WeightedPodAffinityTerm{
+								{
+									Weight: 100,
+									PodAffinityTerm: corev1.PodAffinityTerm{
+										LabelSelector: &metav1.LabelSelector{
+											MatchLabels: labels,
+										},
+										TopologyKey: "failure-domain.beta.kubernetes.io/zone",
+									},
+								},
+							},
+							RequiredDuringSchedulingIgnoredDuringExecution: []corev1.PodAffinityTerm{
+								{
+									LabelSelector: &metav1.LabelSelector{
+										MatchLabels: labels,
+									},
+									TopologyKey: "kubernetes.io/hostname",
+								},
+							},
+						},
+					},
 					Containers: []corev1.Container{
 						{
 							Name:  "query-frontend",
@@ -88,7 +110,7 @@ func deployment(tempo v1alpha1.Microservices) *v1.Deployment {
 							},
 						},
 						{
-							Name:  "tempo",
+							Name:  "tempo-query",
 							Image: "docker.io/grafana/tempo:1.5.0",
 							Args: []string{"--query.base-path=/",
 								"--grpc-storage-plugin.configuration-file=/conf/tempo-query.yaml",
