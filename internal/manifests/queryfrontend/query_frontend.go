@@ -41,6 +41,9 @@ func BuildQueryFrontend(tempo v1alpha1.Microservices) []client.Object {
 
 func deployment(tempo v1alpha1.Microservices) *v1.Deployment {
 	labels := manifestutils.ComponentLabels(componentName, tempo.Name)
+	selectorLabels := manifestutils.ComponentLabels(componentName, tempo.Name) // TODO is there a better way to do this?
+	delete(selectorLabels, "app.kubernetes.io/managed-by")
+	delete(selectorLabels, "app.kubernetes.io/created-by")
 
 	return &v1.Deployment{
 		TypeMeta: metav1.TypeMeta{
@@ -67,7 +70,7 @@ func deployment(tempo v1alpha1.Microservices) *v1.Deployment {
 									Weight: 100,
 									PodAffinityTerm: corev1.PodAffinityTerm{
 										LabelSelector: &metav1.LabelSelector{
-											MatchLabels: labels,
+											MatchLabels: selectorLabels,
 										},
 										TopologyKey: "failure-domain.beta.kubernetes.io/zone",
 									},
@@ -76,7 +79,7 @@ func deployment(tempo v1alpha1.Microservices) *v1.Deployment {
 							RequiredDuringSchedulingIgnoredDuringExecution: []corev1.PodAffinityTerm{
 								{
 									LabelSelector: &metav1.LabelSelector{
-										MatchLabels: labels,
+										MatchLabels: selectorLabels,
 									},
 									TopologyKey: "kubernetes.io/hostname",
 								},
@@ -107,6 +110,10 @@ func deployment(tempo v1alpha1.Microservices) *v1.Deployment {
 									MountPath: "/conf",
 									ReadOnly:  true,
 								},
+								{
+									Name:      "data-querier-frontend",
+									MountPath: "/var/tempo",
+								},
 							},
 						},
 						{
@@ -134,12 +141,14 @@ func deployment(tempo v1alpha1.Microservices) *v1.Deployment {
 									MountPath: "/conf",
 									ReadOnly:  true,
 								},
+								{
+									Name:      "data-query",
+									MountPath: "/var/tempo",
+								},
 							},
 						},
 					},
 					Volumes: []corev1.Volume{
-						// TODO our tempo deployment has two volumes here named "data-querier-frontend" and "data-query"
-						//  both have "emptyDir" set to null.
 						{
 							Name: configVolumeName,
 							VolumeSource: corev1.VolumeSource{
@@ -148,6 +157,18 @@ func deployment(tempo v1alpha1.Microservices) *v1.Deployment {
 										Name: manifestutils.Name("", tempo.Name),
 									},
 								},
+							},
+						},
+						{
+							Name: "data-querier-frontend",
+							VolumeSource: corev1.VolumeSource{
+								EmptyDir: &corev1.EmptyDirVolumeSource{},
+							},
+						},
+						{
+							Name: "data-query",
+							VolumeSource: corev1.VolumeSource{
+								EmptyDir: &corev1.EmptyDirVolumeSource{},
 							},
 						},
 					},
