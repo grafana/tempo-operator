@@ -23,13 +23,18 @@ const (
 )
 
 // BuildQuerier creates querier objects.
-func BuildQuerier(tempo v1alpha1.Microservices) []client.Object {
-	return []client.Object{deployment(tempo), service(tempo)}
+func BuildQuerier(tempo v1alpha1.Microservices) ([]client.Object, error) {
+	d, err := deployment(tempo)
+	if err != nil {
+		return nil, err
+	}
+
+	return []client.Object{d, service(tempo)}, nil
 }
 
-func deployment(tempo v1alpha1.Microservices) *v1.Deployment {
+func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
 	labels := manifestutils.ComponentLabels(componentName, tempo.Name)
-	return &v1.Deployment{
+	d := &v1.Deployment{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: v1.SchemeGroupVersion.String(),
 		},
@@ -89,6 +94,12 @@ func deployment(tempo v1alpha1.Microservices) *v1.Deployment {
 			},
 		},
 	}
+
+	err := manifestutils.ConfigureStorage(tempo, &d.Spec.Template.Spec)
+	if err != nil {
+		return nil, err
+	}
+	return d, nil
 }
 
 func service(tempo v1alpha1.Microservices) *corev1.Service {

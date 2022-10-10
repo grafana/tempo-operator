@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -12,12 +13,13 @@ import (
 )
 
 func TestBuildQueryFrontend(t *testing.T) {
-	objects := BuildQueryFrontend(v1alpha1.Microservices{
+	objects, err := BuildQueryFrontend(v1alpha1.Microservices{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test",
 			Namespace: "project1",
 		},
 	})
+	require.NoError(t, err)
 
 	// labels := manifestutils.ComponentLabels("query-frontend", "test")
 	assert.Equal(t, 3, len(objects))

@@ -32,20 +32,28 @@ const (
 )
 
 // BuildQueryFrontend creates the query-frontend objects.
-func BuildQueryFrontend(tempo v1alpha1.Microservices) []client.Object {
-	theDeployment := deployment(tempo)
-	queryFrontEndServices := services(tempo)
+func BuildQueryFrontend(tempo v1alpha1.Microservices) ([]client.Object, error) {
+	d, err := deployment(tempo)
+	if err != nil {
+		return nil, err
+	}
+	svcs := services(tempo)
 
-	return []client.Object{theDeployment, queryFrontEndServices[0], queryFrontEndServices[1]}
+	var manifests []client.Object
+	manifests = append(manifests, d)
+	for _, s := range svcs {
+		manifests = append(manifests, s)
+	}
+	return manifests, nil
 }
 
-func deployment(tempo v1alpha1.Microservices) *v1.Deployment {
+func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
 	labels := manifestutils.ComponentLabels(componentName, tempo.Name)
 	selectorLabels := manifestutils.ComponentLabels(componentName, tempo.Name) // TODO is there a better way to do this?
 	delete(selectorLabels, "app.kubernetes.io/managed-by")
 	delete(selectorLabels, "app.kubernetes.io/created-by")
 
-	return &v1.Deployment{
+	d := &v1.Deployment{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: v1.SchemeGroupVersion.String(),
 		},
@@ -90,7 +98,11 @@ func deployment(tempo v1alpha1.Microservices) *v1.Deployment {
 						{
 							Name:  "query-frontend",
 							Image: "docker.io/grafana/tempo:1.5.0",
-							Args:  []string{"-target=query-frontend", "-config.file=/conf/tempo.yaml", "-mem-ballast-size-mbs=1024"},
+							Args: []string{
+								"-target=query-frontend",
+								"-config.file=/conf/tempo.yaml",
+								"-mem-ballast-size-mbs=1024",
+							},
 							Ports: []corev1.ContainerPort{
 								{
 									Name:          httpPortName,
@@ -118,10 +130,12 @@ func deployment(tempo v1alpha1.Microservices) *v1.Deployment {
 						},
 						{
 							Name:  "tempo-query",
-							Image: "docker.io/grafana/tempo:1.5.0",
-							Args: []string{"--query.base-path=/",
+							Image: "docker.io/grafana/tempo-query:1.5.0",
+							Args: []string{
+								"--query.base-path=/",
 								"--grpc-storage-plugin.configuration-file=/conf/tempo-query.yaml",
-								"--query.bearer-token-propagation=true"},
+								"--query.bearer-token-propagation=true",
+							},
 							Ports: []corev1.ContainerPort{
 								{
 									Name:          jaegerUIPortName,
@@ -176,6 +190,12 @@ func deployment(tempo v1alpha1.Microservices) *v1.Deployment {
 			},
 		},
 	}
+
+	err := manifestutils.ConfigureStorage(tempo, &d.Spec.Template.Spec)
+	if err != nil {
+		return nil, err
+	}
+	return d, nil
 }
 
 func services(tempo v1alpha1.Microservices) []*corev1.Service {
