@@ -108,6 +108,7 @@ func service(tempo v1alpha1.Microservices) *corev1.Service {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      manifestutils.Name(componentName, tempo.Name),
 			Namespace: tempo.Namespace,
+			Labels:    labels,
 		},
 		Spec: corev1.ServiceSpec{
 			Ports: []corev1.ServicePort{

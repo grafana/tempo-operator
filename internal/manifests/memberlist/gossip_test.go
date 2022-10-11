@@ -1,7 +1,12 @@
 package memberlist
 
 import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
@@ -9,25 +14,22 @@ import (
 	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
 )
 
-const (
-	PortMemberlist = 7946
-	componentName  = "gossip-ring"
-)
-
-var (
-	GossipSelector = map[string]string{"tempo-gossip-member": "true"}
-)
-
-// BuildGossip creates Kubernetes objects that are needed for memberlist.
-func BuildGossip(tempo v1alpha1.Microservices) *corev1.Service {
-	labels := manifestutils.ComponentLabels(componentName, tempo.Name)
-	return &corev1.Service{
+func TestBuildGossip(t *testing.T) {
+	service := BuildGossip(v1alpha1.Microservices{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      manifestutils.Name(componentName, tempo.Name),
-			Namespace: tempo.Namespace,
+			Name:      "test",
+			Namespace: "ns1",
+		},
+	})
+	labels := manifestutils.ComponentLabels("gossip-ring", "test")
+	require.NotNil(t, service)
+	assert.Equal(t, &v1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "tempo-test-gossip-ring",
+			Namespace: "ns1",
 			Labels:    labels,
 		},
-		Spec: corev1.ServiceSpec{
+		Spec: v1.ServiceSpec{
 			Selector: GossipSelector,
 			Ports: []corev1.ServicePort{
 				{
@@ -38,5 +40,5 @@ func BuildGossip(tempo v1alpha1.Microservices) *corev1.Service {
 				},
 			},
 		},
-	}
+	}, service)
 }
