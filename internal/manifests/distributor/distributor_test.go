@@ -88,6 +88,7 @@ func TestBuildDistributor(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "tempo-test-distributor",
 			Namespace: "project1",
+			Labels:    labels,
 		},
 		Spec: corev1.ServiceSpec{
 			Ports: []corev1.ServicePort{
