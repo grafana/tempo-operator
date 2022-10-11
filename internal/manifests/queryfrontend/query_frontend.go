@@ -49,9 +49,6 @@ func BuildQueryFrontend(tempo v1alpha1.Microservices) ([]client.Object, error) {
 
 func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
 	labels := manifestutils.ComponentLabels(componentName, tempo.Name)
-	selectorLabels := manifestutils.ComponentLabels(componentName, tempo.Name) // TODO is there a better way to do this?
-	delete(selectorLabels, "app.kubernetes.io/managed-by")
-	delete(selectorLabels, "app.kubernetes.io/created-by")
 
 	d := &v1.Deployment{
 		TypeMeta: metav1.TypeMeta{
@@ -78,7 +75,7 @@ func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
 									Weight: 100,
 									PodAffinityTerm: corev1.PodAffinityTerm{
 										LabelSelector: &metav1.LabelSelector{
-											MatchLabels: selectorLabels,
+											MatchLabels: labels,
 										},
 										TopologyKey: "failure-domain.beta.kubernetes.io/zone",
 									},
@@ -87,7 +84,7 @@ func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
 							RequiredDuringSchedulingIgnoredDuringExecution: []corev1.PodAffinityTerm{
 								{
 									LabelSelector: &metav1.LabelSelector{
-										MatchLabels: selectorLabels,
+										MatchLabels: labels,
 									},
 									TopologyKey: "kubernetes.io/hostname",
 								},
@@ -213,10 +210,7 @@ func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
 }
 
 func services(tempo v1alpha1.Microservices) []*corev1.Service {
-	componentLabels := manifestutils.ComponentLabels(componentName, tempo.Name)
-	selectorLabels := manifestutils.ComponentLabels(componentName, tempo.Name)
-	delete(selectorLabels, "app.kubernetes.io/managed-by")
-	delete(selectorLabels, "app.kubernetes.io/created-by")
+	labels := manifestutils.ComponentLabels(componentName, tempo.Name)
 
 	frontEndService := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -247,7 +241,7 @@ func services(tempo v1alpha1.Microservices) []*corev1.Service {
 					TargetPort: intstr.FromString("jaeger-metrics"),
 				},
 			},
-			Selector: selectorLabels,
+			Selector: labels,
 		},
 	}
 
@@ -255,7 +249,7 @@ func services(tempo v1alpha1.Microservices) []*corev1.Service {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      manifestutils.Name(componentName+"-discovery", tempo.Name),
 			Namespace: tempo.Namespace,
-			Labels:    componentLabels,
+			Labels:    labels,
 		},
 		Spec: corev1.ServiceSpec{
 			Ports: []corev1.ServicePort{
@@ -287,7 +281,7 @@ func services(tempo v1alpha1.Microservices) []*corev1.Service {
 					TargetPort: intstr.FromString("grpc"),
 				},
 			},
-			Selector: selectorLabels,
+			Selector: labels,
 		},
 	}
 
