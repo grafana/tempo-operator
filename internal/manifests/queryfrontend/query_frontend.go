@@ -128,39 +128,6 @@ func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
 								},
 							},
 						},
-						{
-							Name:  "tempo-query",
-							Image: "docker.io/grafana/tempo-query:1.5.0",
-							Args: []string{
-								"--query.base-path=/",
-								"--grpc-storage-plugin.configuration-file=/conf/tempo-query.yaml",
-								"--query.bearer-token-propagation=true",
-							},
-							Ports: []corev1.ContainerPort{
-								{
-									Name:          jaegerUIPortName,
-									ContainerPort: portJaegerUI,
-									Protocol:      corev1.ProtocolTCP,
-								},
-								{
-									Name:          jaegerMetricsPortName,
-									ContainerPort: portQueryMetrics,
-									Protocol:      corev1.ProtocolTCP,
-								},
-							},
-							// TODO do we need to define Resources?
-							VolumeMounts: []corev1.VolumeMount{
-								{
-									Name:      configVolumeName,
-									MountPath: "/conf",
-									ReadOnly:  true,
-								},
-								{
-									Name:      "data-query",
-									MountPath: "/var/tempo",
-								},
-							},
-						},
 					},
 					Volumes: []corev1.Volume{
 						{
@@ -179,16 +146,63 @@ func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
 								EmptyDir: &corev1.EmptyDirVolumeSource{},
 							},
 						},
-						{
-							Name: "data-query",
-							VolumeSource: corev1.VolumeSource{
-								EmptyDir: &corev1.EmptyDirVolumeSource{},
+						/*
+							{
+								Name: "data-query",
+								VolumeSource: corev1.VolumeSource{
+									EmptyDir: &corev1.EmptyDirVolumeSource{},
+								},
 							},
-						},
+
+						*/
 					},
 				},
 			},
 		},
+	}
+
+	if tempo.Spec.Components.QueryFrontend != nil && tempo.Spec.Components.QueryFrontend.JaegerQuery.Enabled {
+		jaegerQueryContainer := corev1.Container{
+			Name:  "tempo-query",
+			Image: "docker.io/grafana/tempo-query:1.5.0",
+			Args: []string{
+				"--query.base-path=/",
+				"--grpc-storage-plugin.configuration-file=/conf/tempo-query.yaml",
+				"--query.bearer-token-propagation=true",
+			},
+			Ports: []corev1.ContainerPort{
+				{
+					Name:          jaegerUIPortName,
+					ContainerPort: portJaegerUI,
+					Protocol:      corev1.ProtocolTCP,
+				},
+				{
+					Name:          jaegerMetricsPortName,
+					ContainerPort: portQueryMetrics,
+					Protocol:      corev1.ProtocolTCP,
+				},
+			},
+			VolumeMounts: []corev1.VolumeMount{
+				{
+					Name:      configVolumeName,
+					MountPath: "/conf",
+					ReadOnly:  true,
+				},
+				{
+					Name:      "data-query",
+					MountPath: "/var/tempo",
+				},
+			},
+		}
+		jaegerQueryVolume := corev1.Volume{
+			Name: "data-query",
+			VolumeSource: corev1.VolumeSource{
+				EmptyDir: &corev1.EmptyDirVolumeSource{},
+			},
+		}
+
+		d.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, jaegerQueryContainer)
+		d.Spec.Template.Spec.Volumes = append(d.Spec.Template.Spec.Volumes, jaegerQueryVolume)
 	}
 
 	err := manifestutils.ConfigureStorage(tempo, &d.Spec.Template.Spec)
@@ -199,7 +213,8 @@ func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
 }
 
 func services(tempo v1alpha1.Microservices) []*corev1.Service {
-	selectorLabels := manifestutils.ComponentLabels(componentName, tempo.Name) // TODO is there a better way to do this?
+	componentLabels := manifestutils.ComponentLabels(componentName, tempo.Name)
+	selectorLabels := manifestutils.ComponentLabels(componentName, tempo.Name)
 	delete(selectorLabels, "app.kubernetes.io/managed-by")
 	delete(selectorLabels, "app.kubernetes.io/created-by")
 
@@ -240,6 +255,7 @@ func services(tempo v1alpha1.Microservices) []*corev1.Service {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      manifestutils.Name(componentName+"-discovery", tempo.Name),
 			Namespace: tempo.Namespace,
+			Labels:    componentLabels,
 		},
 		Spec: corev1.ServiceSpec{
 			Ports: []corev1.ServicePort{

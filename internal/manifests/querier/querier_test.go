@@ -33,6 +33,7 @@ func TestBuildQuerier(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "tempo-test-querier",
 			Namespace: "project1",
+			Labels:    labels,
 		},
 		Spec: corev1.ServiceSpec{
 			Ports: []corev1.ServicePort{
@@ -75,7 +76,7 @@ func TestBuildQuerier(t *testing.T) {
 						{
 							Name:  "tempo",
 							Image: "docker.io/grafana/tempo:1.5.0",
-							Args:  []string{"-target=querier", "-config.file=/conf/tempo.yaml", "-mem-ballast-size-mbs=1024"},
+							Args:  []string{"-target=querier", "-config.file=/conf/tempo.yaml"},
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      configVolumeName,

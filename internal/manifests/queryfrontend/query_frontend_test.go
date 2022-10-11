@@ -27,8 +27,10 @@ func TestBuildQueryFrontend(t *testing.T) {
 	// Test the services
 	frontendService := objects[1].(*corev1.Service)
 	assert.Equal(t, "tempo-test-query-frontend", frontendService.Name)
+
 	assert.Len(t, frontendService.Spec.Ports, 4)
 	// TODO check port values
+	// TODO what else do we need to check?   Ports here is an []v1.servicePort
 
 	frontEndDiscoveryService := objects[2].(*corev1.Service)
 	assert.Equal(t, "tempo-test-query-frontend-discovery", frontEndDiscoveryService.Name)
@@ -37,6 +39,6 @@ func TestBuildQueryFrontend(t *testing.T) {
 
 	deployment := objects[0].(*v1.Deployment)
 	assert.Equal(t, "tempo-test-query-frontend", deployment.Name)
-	assert.Len(t, deployment.Spec.Template.Spec.Containers, 2)
+	assert.Len(t, deployment.Spec.Template.Spec.Containers, 1)
 
 }

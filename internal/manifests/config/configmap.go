@@ -167,7 +167,7 @@ func BuildConfigs(tempo v1alpha1.Microservices, params Params) (*corev1.ConfigMa
 	config = strings.Replace(config, "${QUERY_FRONTEND_DISCOVERY}", fmt.Sprintf("%s:9095", manifestutils.Name("query-frontend-discovery", tempo.Name)), 1)
 
 	labels := manifestutils.ComponentLabels("config", tempo.Name)
-	return &corev1.ConfigMap{
+	configMap := &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   manifestutils.Name("", tempo.Name),
 			Labels: labels,
@@ -176,7 +176,12 @@ func BuildConfigs(tempo v1alpha1.Microservices, params Params) (*corev1.ConfigMa
 			"tempo.yaml":       config,
 			"tempo-query.yaml": "backend: 127.0.0.1:3100\n",
 		},
-	}, nil
+	}
+	if tempo.Spec.Components.QueryFrontend != nil && tempo.Spec.Components.QueryFrontend.JaegerQuery.Enabled {
+		configMap.Data["tempo-query.yaml"] = "backend: 127.0.0.1:3100\n"
+	}
+
+	return configMap, nil
 }
 
 // TODO(pavolloffay) This is a temporary solution.

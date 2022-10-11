@@ -56,7 +56,7 @@ func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
 						{
 							Name:  "tempo",
 							Image: "docker.io/grafana/tempo:1.5.0",
-							Args:  []string{"-target=querier", "-config.file=/conf/tempo.yaml", "-mem-ballast-size-mbs=1024"},
+							Args:  []string{"-target=querier", "-config.file=/conf/tempo.yaml"},
 							Ports: []corev1.ContainerPort{
 								{
 									Name:          httpPortName,
@@ -108,6 +108,7 @@ func service(tempo v1alpha1.Microservices) *corev1.Service {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      manifestutils.Name(componentName, tempo.Name),
 			Namespace: tempo.Namespace,
+			Labels:    labels,
 		},
 		Spec: corev1.ServiceSpec{
 			Ports: []corev1.ServicePort{
