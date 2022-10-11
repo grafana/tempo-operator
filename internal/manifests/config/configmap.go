@@ -173,8 +173,7 @@ func BuildConfigs(tempo v1alpha1.Microservices, params Params) (*corev1.ConfigMa
 			Labels: labels,
 		},
 		Data: map[string]string{
-			"tempo.yaml":       config,
-			"tempo-query.yaml": "backend: 127.0.0.1:3100\n",
+			"tempo.yaml": config,
 		},
 	}
 	if tempo.Spec.Components.QueryFrontend != nil && tempo.Spec.Components.QueryFrontend.JaegerQuery.Enabled {
