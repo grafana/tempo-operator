@@ -112,7 +112,6 @@ func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
 									Protocol:      corev1.ProtocolTCP,
 								},
 							},
-							// TODO do we need to set resources
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      configVolumeName,
@@ -143,15 +142,6 @@ func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
 								EmptyDir: &corev1.EmptyDirVolumeSource{},
 							},
 						},
-						/*
-							{
-								Name: "data-query",
-								VolumeSource: corev1.VolumeSource{
-									EmptyDir: &corev1.EmptyDirVolumeSource{},
-								},
-							},
-
-						*/
 					},
 				},
 			},
@@ -216,6 +206,7 @@ func services(tempo v1alpha1.Microservices) []*corev1.Service {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      manifestutils.Name(componentName, tempo.Name),
 			Namespace: tempo.Namespace,
+			Labels:    labels,
 		},
 		Spec: corev1.ServiceSpec{
 			Ports: []corev1.ServicePort{

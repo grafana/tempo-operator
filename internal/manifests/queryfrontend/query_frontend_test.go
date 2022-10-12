@@ -35,6 +35,7 @@ func TestBuildQueryFrontend(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      manifestutils.Name(componentName, "test"),
 			Namespace: "project1",
+			Labels:    labels,
 		},
 		Spec: corev1.ServiceSpec{
 			Ports: []corev1.ServicePort{
@@ -167,7 +168,6 @@ func TestBuildQueryFrontend(t *testing.T) {
 									Protocol:      corev1.ProtocolTCP,
 								},
 							},
-							// TODO do we need to set resources
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      configVolumeName,
@@ -198,15 +198,6 @@ func TestBuildQueryFrontend(t *testing.T) {
 								EmptyDir: &corev1.EmptyDirVolumeSource{},
 							},
 						},
-						/*
-							{
-								Name: "data-query",
-								VolumeSource: corev1.VolumeSource{
-									EmptyDir: &corev1.EmptyDirVolumeSource{},
-								},
-							},
-
-						*/
 					},
 				},
 			},
