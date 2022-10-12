@@ -8,7 +8,7 @@ require (
 	github.com/grafana/tempo v1.5.1-0.20220922223305-ab82376c11d5
 	github.com/imdario/mergo v0.3.13
 	github.com/onsi/ginkgo v1.16.5
-	github.com/onsi/gomega v1.21.1
+	github.com/onsi/gomega v1.22.0
 	github.com/weaveworks/common v0.0.0-20220916164235-da3fde973eec
 	k8s.io/api v0.25.2
 	k8s.io/apimachinery v0.25.2
@@ -22,7 +22,7 @@ require (
 	github.com/Azure/go-autorest/autorest v0.11.27 // indirect
 	github.com/Azure/go-autorest/autorest/adal v0.9.20 // indirect
 	github.com/openshift/api v3.9.0+incompatible
-	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.60.0
+	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.60.1
 	github.com/stretchr/testify v1.8.0
 	go.opentelemetry.io/collector v0.46.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1
