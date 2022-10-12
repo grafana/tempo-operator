@@ -8,6 +8,8 @@ import (
 	"github.com/os-observability/tempo-operator/internal/manifests/distributor"
 	"github.com/os-observability/tempo-operator/internal/manifests/ingester"
 	"github.com/os-observability/tempo-operator/internal/manifests/memberlist"
+	"github.com/os-observability/tempo-operator/internal/manifests/querier"
+	"github.com/os-observability/tempo-operator/internal/manifests/queryfrontend"
 )
 
 // Params holds parameters used to create Tempo objects.
@@ -29,7 +31,6 @@ type S3 struct {
 
 // BuildAll creates objects for Tempo deployment.
 func BuildAll(params Params) ([]client.Object, error) {
-	var manifests []client.Object
 	configMaps, err := config.BuildConfigs(params.Tempo, config.Params{S3: config.S3{
 		Endpoint: params.StorageParams.S3.Endpoint,
 		Bucket:   params.StorageParams.S3.Bucket,
@@ -37,13 +38,27 @@ func BuildAll(params Params) ([]client.Object, error) {
 	if err != nil {
 		return nil, err
 	}
-	manifests = append(manifests, distributor.BuildDistributor(params.Tempo)...)
+
 	ingesterObjs, err := ingester.BuildIngester(params.Tempo)
 	if err != nil {
 		return nil, err
 	}
-	manifests = append(manifests, ingesterObjs...)
+
+	querierObjs, err := querier.BuildQuerier(params.Tempo)
+	if err != nil {
+		return nil, err
+	}
+	frontendObjs, err := queryfrontend.BuildQueryFrontend(params.Tempo)
+	if err != nil {
+		return nil, err
+	}
+
+	var manifests []client.Object
 	manifests = append(manifests, configMaps)
+	manifests = append(manifests, distributor.BuildDistributor(params.Tempo)...)
+	manifests = append(manifests, ingesterObjs...)
 	manifests = append(manifests, memberlist.BuildGossip(params.Tempo))
+	manifests = append(manifests, frontendObjs...)
+	manifests = append(manifests, querierObjs...)
 	return manifests, nil
 }

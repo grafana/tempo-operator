@@ -65,6 +65,9 @@ overrides:
   max_bytes_per_tag_values_query: 15000000000
   max_search_bytes_per_trace: 0
   max_traces_per_user: 50000000
+querier:
+  frontend_worker:
+    frontend_address: tempo-test-query-frontend-discovery:9095
 search_enabled: true
 server:
   grpc_server_max_recv_msg_size: 4194304

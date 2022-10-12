@@ -164,9 +164,10 @@ func BuildConfigs(tempo v1alpha1.Microservices, params Params) (*corev1.ConfigMa
 	config = strings.Replace(config, "${S3_ENDPOINT}", s3Endpoint, 1)
 	config = strings.Replace(config, "${S3_BUCKET}", params.S3.Bucket, 1)
 	config = strings.Replace(config, "${MEMBERLIST}", manifestutils.Name("gossip-ring", tempo.Name), 1)
+	config = strings.Replace(config, "${QUERY_FRONTEND_DISCOVERY}", fmt.Sprintf("%s:9095", manifestutils.Name("query-frontend-discovery", tempo.Name)), 1)
 
 	labels := manifestutils.ComponentLabels("config", tempo.Name)
-	return &corev1.ConfigMap{
+	configMap := &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   manifestutils.Name("", tempo.Name),
 			Labels: labels,
@@ -174,7 +175,12 @@ func BuildConfigs(tempo v1alpha1.Microservices, params Params) (*corev1.ConfigMa
 		Data: map[string]string{
 			"tempo.yaml": config,
 		},
-	}, nil
+	}
+	if tempo.Spec.Components.QueryFrontend != nil && tempo.Spec.Components.QueryFrontend.JaegerQuery.Enabled {
+		configMap.Data["tempo-query.yaml"] = "backend: 127.0.0.1:3100\n"
+	}
+
+	return configMap, nil
 }
 
 // TODO(pavolloffay) This is a temporary solution.
@@ -221,6 +227,9 @@ overrides:
   max_bytes_per_tag_values_query: 15000000000
   max_search_bytes_per_trace: 0
   max_traces_per_user: 50000000
+querier:
+  frontend_worker:
+    frontend_address: ${QUERY_FRONTEND_DISCOVERY}
 search_enabled: true
 server:
   grpc_server_max_recv_msg_size: 4194304
