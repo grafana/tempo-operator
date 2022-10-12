@@ -8,7 +8,7 @@ require (
 	github.com/grafana/tempo v1.5.1-0.20220922223305-ab82376c11d5
 	github.com/imdario/mergo v0.3.13
 	github.com/onsi/ginkgo v1.16.5
-	github.com/onsi/gomega v1.22.0
+	github.com/onsi/gomega v1.22.1
 	github.com/weaveworks/common v0.0.0-20220916164235-da3fde973eec
 	k8s.io/api v0.25.2
 	k8s.io/apimachinery v0.25.2
