@@ -134,6 +134,7 @@ spec:
             - --web.internal.listen=0.0.0.0:8081
             - --log.level=debug
             - --traces.write.endpoint=tempo-simplest-distributor:4317
+            - --traces.read.endpoint=tempo-simplest-query-frontend:16686
             - --grpc.listen=0.0.0.0:8090
             - --rbac.config=/etc/observatorium/rbac.yaml
             - --tenants.config=/etc/observatorium/tenants.yaml
