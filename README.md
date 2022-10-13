@@ -22,14 +22,12 @@ kind: Microservices
 metadata:
   name: simplest
 spec:
-  limits:
-    global: {}
-    perTenant: {}
-  retention:
-    global: {}
-    perTenant: {}
   storage:
     secret: test
+  template:
+    queryFrontend:
+      jaegerQuery:
+        enabled: true
 EOF
 ```
 
