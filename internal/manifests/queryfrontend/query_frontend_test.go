@@ -16,22 +16,25 @@ import (
 	"github.com/os-observability/tempo-operator/internal/manifests/memberlist"
 )
 
-func TestBuildQueryFrontend(t *testing.T) {
-	objects, err := BuildQueryFrontend(v1alpha1.Microservices{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "test",
-			Namespace: "project1",
+func getJaegerServicePorts() []corev1.ServicePort {
+	jaegerServicePorts := []corev1.ServicePort{
+		{
+			Name:       tempoQueryJaegerUiPortName,
+			Port:       portJaegerUI,
+			TargetPort: intstr.FromInt(portJaegerUI),
 		},
-	})
-	require.NoError(t, err)
-	require.Equal(t, 3, len(objects))
+		{
+			Name:       tempoQueryMetricsPortName,
+			Port:       portQueryMetrics,
+			TargetPort: intstr.FromString("jaeger-metrics"),
+		},
+	}
+	return jaegerServicePorts
+}
 
+func getExpectedFrontEndService(withJaeger bool) *corev1.Service {
 	labels := manifestutils.ComponentLabels("query-frontend", "test")
-
-	// Test the services
-	frontendService := objects[1].(*corev1.Service)
-	frontEndDiscoveryService := objects[2].(*corev1.Service)
-	assert.Equal(t, &corev1.Service{
+	expectedFrontEndService := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      manifestutils.Name(componentName, "test"),
 			Namespace: "project1",
@@ -50,22 +53,21 @@ func TestBuildQueryFrontend(t *testing.T) {
 					Port:       portGRPCServer,
 					TargetPort: intstr.FromInt(portGRPCServer),
 				},
-				{
-					Name:       tempoQueryJaegerUiPortName,
-					Port:       portJaegerUI,
-					TargetPort: intstr.FromInt(portJaegerUI),
-				},
-				{
-					Name:       tempoQueryMetricsPortName,
-					Port:       portQueryMetrics,
-					TargetPort: intstr.FromString("jaeger-metrics"),
-				},
 			},
 			Selector: labels,
 		},
-	}, frontendService)
+	}
+	if withJaeger {
+		expectedFrontEndService.Spec.Ports = append(expectedFrontEndService.Spec.Ports, getJaegerServicePorts()...)
+	}
 
-	assert.Equal(t, &corev1.Service{
+	return expectedFrontEndService
+}
+
+func getExpectedFrontendDiscoveryService(withJaeger bool) *corev1.Service {
+	labels := manifestutils.ComponentLabels("query-frontend", "test")
+
+	expectedFrontendDiscoveryService := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      manifestutils.Name(componentName+"-discovery", "test"),
 			Namespace: "project1",
@@ -85,16 +87,6 @@ func TestBuildQueryFrontend(t *testing.T) {
 					TargetPort: intstr.FromInt(portGRPCServer),
 				},
 				{
-					Name:       tempoQueryJaegerUiPortName,
-					Port:       portJaegerUI,
-					TargetPort: intstr.FromInt(portJaegerUI),
-				},
-				{
-					Name:       tempoQueryMetricsPortName,
-					Port:       portQueryMetrics,
-					TargetPort: intstr.FromString("jaeger-metrics"),
-				},
-				{
 					Name:       grpclbPortName,
 					Protocol:   corev1.ProtocolTCP,
 					Port:       portGRPCLBServer,
@@ -103,10 +95,18 @@ func TestBuildQueryFrontend(t *testing.T) {
 			},
 			Selector: labels,
 		},
-	}, frontEndDiscoveryService)
+	}
+	if withJaeger {
+		expectedFrontendDiscoveryService.Spec.Ports = append(expectedFrontendDiscoveryService.Spec.Ports, getJaegerServicePorts()...)
+	}
 
-	deployment := objects[0].(*v1.Deployment)
-	assert.Equal(t, &v1.Deployment{
+	return expectedFrontendDiscoveryService
+}
+
+func getExpectedDeployment(withJaeger bool) *v1.Deployment {
+	labels := manifestutils.ComponentLabels("query-frontend", "test")
+
+	expectedDeployment := &v1.Deployment{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: v1.SchemeGroupVersion.String(),
 		},
@@ -202,6 +202,111 @@ func TestBuildQueryFrontend(t *testing.T) {
 				},
 			},
 		},
-	}, deployment)
+	}
 
+	if withJaeger {
+		jaegerQueryContainer := corev1.Container{
+			Name:  "tempo-query",
+			Image: "docker.io/grafana/tempo-query:1.5.0",
+			Args: []string{
+				"--query.base-path=/",
+				"--grpc-storage-plugin.configuration-file=/conf/tempo-query.yaml",
+				"--query.bearer-token-propagation=true",
+			},
+			Ports: []corev1.ContainerPort{
+				{
+					Name:          jaegerUIPortName,
+					ContainerPort: portJaegerUI,
+					Protocol:      corev1.ProtocolTCP,
+				},
+				{
+					Name:          jaegerMetricsPortName,
+					ContainerPort: portQueryMetrics,
+					Protocol:      corev1.ProtocolTCP,
+				},
+			},
+			VolumeMounts: []corev1.VolumeMount{
+				{
+					Name:      configVolumeName,
+					MountPath: "/conf",
+					ReadOnly:  true,
+				},
+				{
+					Name:      "data-query",
+					MountPath: "/var/tempo",
+				},
+			},
+		}
+		jaegerQueryVolume := corev1.Volume{
+			Name: "data-query",
+			VolumeSource: corev1.VolumeSource{
+				EmptyDir: &corev1.EmptyDirVolumeSource{},
+			},
+		}
+		//expectedDeployment.Spec.Template.Spec.Containers
+
+		expectedDeployment.Spec.Template.Spec.Containers = append(expectedDeployment.Spec.Template.Spec.Containers, jaegerQueryContainer)
+		expectedDeployment.Spec.Template.Spec.Volumes = append(expectedDeployment.Spec.Template.Spec.Volumes, jaegerQueryVolume)
+	}
+
+	return expectedDeployment
+}
+
+func TestBuildQueryFrontend(t *testing.T) {
+	objects, err := BuildQueryFrontend(v1alpha1.Microservices{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test",
+			Namespace: "project1",
+		},
+	})
+	require.NoError(t, err)
+	require.Equal(t, 3, len(objects))
+
+	// Test the services
+	frontendService := objects[1].(*corev1.Service)
+	expectedFrontEndService := getExpectedFrontEndService(false)
+	frontEndDiscoveryService := objects[2].(*corev1.Service)
+	expectedFrontendDiscoveryService := getExpectedFrontendDiscoveryService(false)
+	assert.Equal(t, expectedFrontendDiscoveryService, frontEndDiscoveryService)
+	assert.Equal(t, expectedFrontEndService, frontendService)
+
+	deployment := objects[0].(*v1.Deployment)
+	expectedDeployment := getExpectedDeployment(false)
+	assert.Equal(t, expectedDeployment, deployment)
+}
+
+func TestBuildQueryFrontendWithJaeger(t *testing.T) {
+	withJaeger := true
+	objects, err := BuildQueryFrontend(v1alpha1.Microservices{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test",
+			Namespace: "project1",
+		},
+		Spec: v1alpha1.MicroservicesSpec{
+			Components: v1alpha1.TempoComponentsSpec{
+				QueryFrontend: &v1alpha1.TempoQueryFrontendSpec{
+					JaegerQuery: v1alpha1.JaegerQuerySpec{
+						Enabled: true,
+					},
+				},
+			},
+		},
+	})
+
+	require.NoError(t, err)
+	require.Equal(t, 3, len(objects))
+
+	// Test the services
+	frontendService := objects[1].(*corev1.Service)
+
+	expectedFrontEndService := getExpectedFrontEndService(withJaeger)
+	assert.Equal(t, expectedFrontEndService, frontendService)
+
+	frontEndDiscoveryService := objects[2].(*corev1.Service)
+	expectedFrontendDiscoveryService := getExpectedFrontendDiscoveryService(withJaeger)
+	assert.Equal(t, expectedFrontendDiscoveryService, frontEndDiscoveryService)
+
+	deployment := objects[0].(*v1.Deployment)
+	expectedDeployment := getExpectedDeployment(withJaeger)
+	assert.Equal(t, expectedDeployment, deployment)
 }

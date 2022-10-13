@@ -221,16 +221,6 @@ func services(tempo v1alpha1.Microservices) []*corev1.Service {
 					Port:       portGRPCServer,
 					TargetPort: intstr.FromInt(portGRPCServer),
 				},
-				{
-					Name:       tempoQueryJaegerUiPortName,
-					Port:       portJaegerUI,
-					TargetPort: intstr.FromInt(portJaegerUI),
-				},
-				{
-					Name:       tempoQueryMetricsPortName,
-					Port:       portQueryMetrics,
-					TargetPort: intstr.FromString("jaeger-metrics"),
-				},
 			},
 			Selector: labels,
 		},
@@ -256,16 +246,6 @@ func services(tempo v1alpha1.Microservices) []*corev1.Service {
 					TargetPort: intstr.FromInt(portGRPCServer),
 				},
 				{
-					Name:       tempoQueryJaegerUiPortName,
-					Port:       portJaegerUI,
-					TargetPort: intstr.FromInt(portJaegerUI),
-				},
-				{
-					Name:       tempoQueryMetricsPortName,
-					Port:       portQueryMetrics,
-					TargetPort: intstr.FromString("jaeger-metrics"),
-				},
-				{
 					Name:       grpclbPortName,
 					Protocol:   corev1.ProtocolTCP,
 					Port:       portGRPCLBServer,
@@ -274,6 +254,24 @@ func services(tempo v1alpha1.Microservices) []*corev1.Service {
 			},
 			Selector: labels,
 		},
+	}
+
+	if tempo.Spec.Components.QueryFrontend != nil && tempo.Spec.Components.QueryFrontend.JaegerQuery.Enabled {
+		jaegerPorts := []corev1.ServicePort{
+			{
+				Name:       tempoQueryJaegerUiPortName,
+				Port:       portJaegerUI,
+				TargetPort: intstr.FromInt(portJaegerUI),
+			},
+			{
+				Name:       tempoQueryMetricsPortName,
+				Port:       portQueryMetrics,
+				TargetPort: intstr.FromString("jaeger-metrics"),
+			},
+		}
+
+		frontEndService.Spec.Ports = append(frontEndService.Spec.Ports, jaegerPorts...)
+		frontEndDiscoveryService.Spec.Ports = append(frontEndDiscoveryService.Spec.Ports, jaegerPorts...)
 	}
 
 	return []*corev1.Service{frontEndService, frontEndDiscoveryService}
