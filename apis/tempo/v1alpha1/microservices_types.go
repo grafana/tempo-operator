@@ -212,7 +212,7 @@ type LimitSpec struct {
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tenant Limits"
-	PerTenant map[string]RateLimitSpec `json:"perTenant"`
+	PerTenant map[string]RateLimitSpec `json:"perTenant,omitempty"`
 
 	// Global is used to define global rate limits.
 	//
@@ -289,7 +289,7 @@ type RetentionSpec struct {
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="PerTenant Retention"
-	PerTenant map[string]RetentionConfig `json:"perTenant"`
+	PerTenant map[string]RetentionConfig `json:"perTenant,omitempty"`
 	// Global is used to configure global retention.
 	//
 	// +optional
