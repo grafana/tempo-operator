@@ -11,7 +11,7 @@ require (
 	github.com/onsi/gomega v1.22.1
 	github.com/weaveworks/common v0.0.0-20220916164235-da3fde973eec
 	k8s.io/api v0.25.2
-	k8s.io/apimachinery v0.25.2
+	k8s.io/apimachinery v0.25.3
 	k8s.io/client-go v12.0.0+incompatible
 	sigs.k8s.io/controller-runtime v0.13.0
 )
