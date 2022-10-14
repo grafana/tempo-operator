@@ -27,7 +27,7 @@ spec:
         - --oidc.audience=tempo
         - --oidc.client-id=user
         - --oidc.client-secret=secret
-        - --oidc.issuer-url=http://hydra.hydra.svc.cluster.local:4444/
+        - --oidc.issuer-url=http://hydra.hydra.svc.cluster.local:30444/
         - --url=http://observatorium-xyz-observatorium-api.default.svc:8090
         image: quay.io/observatorium/token-refresher:master-2021-03-05-b34376b
         name: token-refresher

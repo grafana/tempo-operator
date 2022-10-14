@@ -11,7 +11,7 @@ data:
       "access_token": "jwt"
     "urls":
       "self":
-        "issuer": "http://hydra.hydra.svc.cluster.local:4444/"
+        "issuer": "http://hydra.hydra.svc.cluster.local:30444/"
 kind: ConfigMap
 metadata:
   name: hydra-config
@@ -90,15 +90,17 @@ metadata:
   name: hydra
   namespace: hydra
 spec:
+  type: NodePort
   ports:
   - name: admin
     port: 4445
     protocol: TCP
     targetPort: admin
   - name: public
-    port: 4444
+    port: 30444
     protocol: TCP
     targetPort: public
+    nodePort: 30444
   - name: token
     port: 5555
     protocol: TCP
@@ -120,7 +122,7 @@ spec:
         - --header
         - 'Content-Type: application/json'
         - --data
-        - '{"audience":["tempo"],"client_id":"user","client_secret":"secret","grant_types":["client_credentials"],"token_endpoint_auth_method":"client_secret_basic"}'
+        - '{"audience":["tempo"],"client_id":"user","client_secret":"secret","grant_types":["client_credentials"],"token_endpoint_auth_method":"client_secret_basic","redirect_uris":["http://localhost:8050/api/traces/v1/test-oidc/search"]}'
         - http://hydra.hydra.svc:4445/clients
         image: alpine/curl
         name: usercreator

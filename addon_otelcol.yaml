@@ -1,5 +1,7 @@
-# kubectl port-forward service/observatorium-xyz-observatorium-api 8090:8090
+# kubectl port-forward service/observatorium-xyz-observatorium-api 8090:8090 8050:8080
 # docker run --rm -it --net=host -v $PWD:/tmp/conf ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector:0.61.0 --config /tmp/conf/addon_otelcol.yaml
+# access Jaeger UI: http://localhost:8050/api/traces/v1/test-oidc/search
+# it requires 192.168.49.2 hydra.hydra.svc.cluster.local in /etc/hosts
 extensions:
 
 receivers:
