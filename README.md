@@ -13,7 +13,13 @@ This is a Kubernetes operator for [Grafana Tempo](https://github.com/grafana/tem
 
 1. Deploy object storage `kubectl apply -f minio.yaml`
 
-2. Create Tempo CR:
+2. Build and deploy operator:
+
+```bash
+IMG=docker.io/${USER}/tempo-operator:dev-$(date +%s) make generate bundle docker-build docker-push deploy
+``` 
+
+3.Create Tempo CR:
 
 ```yaml
 kubectl apply -f - <<EOF
