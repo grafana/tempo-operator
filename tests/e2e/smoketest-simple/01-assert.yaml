@@ -1,0 +1,30 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: Microservices
+metadata:
+  name: simplest
+---
+# FIXME what else should I check for deployments
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-simplest-query-frontend
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-simplest-distributor
+status:
+  readyReplicas: 1
+spec:
+  replicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-simplest-querier
+status:
+  readyReplicas: 1
+
+
