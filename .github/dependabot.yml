@@ -2,15 +2,22 @@ version: 2
 updates:
   - package-ecosystem: gomod
     directory: /
+    # Try to run dependabot PRs when they won't obstruct other work
     schedule:
       interval: daily
+      time: "03:00"
+      timezone: "Europe/Berlin"
 
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: daily
+      time: "03:00"
+      timezone: "Europe/Berlin"
 
   - package-ecosystem: docker
     directory: /
     schedule:
       interval: daily
+      time: "03:00"
+      timezone: "Europe/Berlin"
