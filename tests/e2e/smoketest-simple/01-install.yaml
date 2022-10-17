@@ -5,11 +5,6 @@ metadata:
 spec:
   storage:
     secret: test
-    # FIXME if we're not deploying Jaeger do we need template?
-  template:
-    queryFrontend:
-      jaegerQuery:
-        enabled: false
   retention:
     perTenant: {}
   limits:

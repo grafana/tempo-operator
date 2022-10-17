@@ -8,7 +8,6 @@ spec:
   template:
     queryFrontend:
       jaegerQuery:
-# FIXME remember to reset this to falso before checkin
         enabled: true
   retention:
     perTenant: {}
