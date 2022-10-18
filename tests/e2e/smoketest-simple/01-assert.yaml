@@ -3,7 +3,6 @@ kind: Microservices
 metadata:
   name: simplest
 ---
-# FIXME what else should I check for deployments
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -26,5 +25,13 @@ metadata:
   name: tempo-simplest-querier
 status:
   readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-simplest-compactor
+status:
+  readyReplicas: 1
+
 
 

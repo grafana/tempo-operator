@@ -4,6 +4,7 @@ metadata:
   name: simplest
 spec:
   storage:
+    # This is the minio secret
     secret: test
   template:
     queryFrontend:
