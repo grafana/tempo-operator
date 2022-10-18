@@ -1,0 +1,7 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+  - command: 'sleep 30s'   # FIXME remove this after fixing the 02-assert
+  - command: 'kubectl exec --namespace $NAMESPACE deployment/tempo-simplest-query-frontend --container tempo-query -- sh  -c "rm -f services ; wget -q http://localhost:16686/api/services ; cat services | grep -i tracegen"'
+    namespaced: true
+

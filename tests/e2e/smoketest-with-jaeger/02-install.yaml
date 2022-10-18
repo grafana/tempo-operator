@@ -13,7 +13,8 @@ spec:
           args:
             - -otlp-endpoint=tempo-simplest-distributor:4317
             - -otlp-insecure
-            - -duration=1m
-            - -workers=20
+            - -duration=1m  # TODO reduce this
+            #- -traces=100
+            - -workers=1
       restartPolicy: Never
   backoffLimit: 4
