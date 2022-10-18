@@ -4,6 +4,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/os-observability/tempo-operator/internal/manifests/compactor"
 	"github.com/os-observability/tempo-operator/internal/manifests/config"
 	"github.com/os-observability/tempo-operator/internal/manifests/distributor"
 	"github.com/os-observability/tempo-operator/internal/manifests/ingester"
@@ -53,6 +54,11 @@ func BuildAll(params Params) ([]client.Object, error) {
 		return nil, err
 	}
 
+	compactorObjs, err := compactor.BuildCompactor(params.Tempo)
+	if err != nil {
+		return nil, err
+	}
+
 	var manifests []client.Object
 	manifests = append(manifests, configMaps)
 	manifests = append(manifests, distributor.BuildDistributor(params.Tempo)...)
@@ -60,5 +66,6 @@ func BuildAll(params Params) ([]client.Object, error) {
 	manifests = append(manifests, memberlist.BuildGossip(params.Tempo))
 	manifests = append(manifests, frontendObjs...)
 	manifests = append(manifests, querierObjs...)
+	manifests = append(manifests, compactorObjs...)
 	return manifests, nil
 }
