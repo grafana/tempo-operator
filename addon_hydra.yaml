@@ -12,6 +12,9 @@ data:
     "urls":
       "self":
         "issuer": "http://hydra.hydra.svc.cluster.local:30444/"
+      "login": "http://hydra.hydra.svc.cluster.local:30448/login"
+      "logout": "http://hydra.hydra.svc.cluster.local:30448/logout"
+      "consent": "http://hydra.hydra.svc.cluster.local:30448/consent"
 kind: ConfigMap
 metadata:
   name: hydra-config
@@ -46,6 +49,11 @@ spec:
         image: oryd/hydra:v1.11.7
         imagePullPolicy: IfNotPresent
         name: hydra
+        env:
+        - name: LOG_LEAK_SENSITIVE_VALUES
+          value: "true"
+        - name: LOG_LEVEL
+          value: "debug"
         ports:
         - containerPort: 5555
           name: token
@@ -60,6 +68,15 @@ spec:
           readOnly: true
         - mountPath: /var/lib/sqlite
           name: hydra-sqlite
+      - image: oryd/hydra-login-consent-node:v1.11.7
+        imagePullPolicy: IfNotPresent
+        name: hydra-consent
+        env:
+          - name: HYDRA_ADMIN_URL
+            value: http://localhost:4445
+        ports:
+          - containerPort: 3000
+            name: consent
       initContainers:
       - args:
         - migrate
@@ -105,6 +122,11 @@ spec:
     port: 5555
     protocol: TCP
     targetPort: token
+  - name: consent
+    port: 30448
+    protocol: TCP
+    targetPort: consent
+    nodePort: 30448
   selector:
     app: hydra
 ---
@@ -122,7 +144,7 @@ spec:
         - --header
         - 'Content-Type: application/json'
         - --data
-        - '{"audience":["tempo"],"client_id":"user","client_secret":"secret","grant_types":["client_credentials"],"token_endpoint_auth_method":"client_secret_basic","redirect_uris":["http://localhost:8050/api/traces/v1/test-oidc/search"]}'
+        - '{"audience":["tempo"],"client_id":"tempo","client_secret":"secret","grant_types":["client_credentials","implicit"],"token_endpoint_auth_method":"client_secret_basic","redirect_uris":["http://localhost:8050/oidc/test-oidc/callback"],"contacts":["admin@example.com"],"scope":"openid profile email groups"}'
         - http://hydra.hydra.svc:4445/clients
         image: alpine/curl
         name: usercreator

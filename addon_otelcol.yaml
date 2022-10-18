@@ -1,7 +1,7 @@
 # kubectl port-forward service/observatorium-xyz-observatorium-api 8090:8090 8050:8080
 # docker run --rm -it --net=host -v $PWD:/tmp/conf ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector:0.61.0 --config /tmp/conf/addon_otelcol.yaml
 # access Jaeger UI: http://localhost:8050/api/traces/v1/test-oidc/search
-# it requires 192.168.49.2 hydra.hydra.svc.cluster.local in /etc/hosts
+# it requires 192.168.49.2 hydra.hydra.svc.cluster.local in /etc/hosts - The IP address is minikube ip
 extensions:
 
 receivers:
@@ -28,8 +28,12 @@ exporters:
       # kubectl port-forward -n hydra service/hydra 4444:4444
       # ./token-refresher --url=https://localhost:8090  --oidc.client-id=user --oidc.client-secret=secret --log.level=debug --oidc.issuer-url=http://localhost:4444/ --oidc.audience=tempo --file /tmp/token
       # Or kubectl rollout restart deployment.apps/token-refresher && sleep 4 && kubectl exec -it deployment.apps/token-refresher -- /bin/cat /tmp/token
+
+      # Get token when dex is used
+      # kubectl port-forward -n dex dex-85bb4b8f7f-jrjl5  5556:5556
+      # curl -H "Content-Type: application/x-www-form-urlencoded" --data-urlencode "grant_type=password" --data-urlencode "username=admin@example.com" --data-urlencode "password=password" --data-urlencode "client_id=test" --data-urlencode "client_secret=ZXhhbXBsZS1hcHAtc2VjcmV0" --data-urlencode "scope= openid email" localhost:5556/dex/token
 #      Authorization: "bearer"
-      Authorization: "bearer eyJhbGciOiJSUzI1NiIsImtpZCI6InB1YmxpYzpoeWRyYS5qd3QuYWNjZXNzLXRva2VuIiwidHlwIjoiSldUIn0.eyJhdWQiOlsidGVtcG8iXSwiY2xpZW50X2lkIjoidXNlciIsImV4cCI6MTY2NTU5MzU1MiwiZXh0Ijp7fSwiaWF0IjoxNjY1NTg5OTUyLCJpc3MiOiJodHRwOi8vaHlkcmEuaHlkcmEuc3ZjLmNsdXN0ZXIubG9jYWw6NDQ0NC8iLCJqdGkiOiIzMjhiZGY3ZS1iNDZkLTRjNDAtOTJlMC02ZDI1MjNiZjFmODkiLCJuYmYiOjE2NjU1ODk5NTIsInNjcCI6W10sInN1YiI6InVzZXIifQ.n8Mh4hufERzn1Or-wHwswcKZ9u671Kg0ZICIuQPFU5QLI-nnxZBP6EvFX2P1IlSq0M3VnOGuyNaSlUXRlTjwNXgCeWbQm2PCUT-V0-aXu-RDFX4lZvk42BbCeSDu5Zn20GVWabUw8xUhsbDQ6ix1ZXOTRZl4Mq5oapvGg0vKfOIcF-XlnMEG34D-yRPqJd1viXtgXNElNSftO_G5BFjY_i2f-1F9vMl5nyxD6E5Qm845HONegB7u-hi04mg9rApLlZXDmnsay1mtRU7f5xRZcqMDrXcX8453tW-r_IUTyPsZw1I3QaCiW0jalJLPbBd4eTVBqt1NYQHE6RE0Cy7Mv2iTE0-PqrylGr3hKKKwASDTASwzk3SghVKHfCrGBj4h2af1tjvRVRPg5DieZegbZmzR2sZqAexgp97inApvWUTHXV-lXPA0FjdrFfdy4kinoNmRt0NnmwTEaQi95Ue4pbeACsrjBW_AGuZrKQI99QbJbsD8QvWyZvecspu7lmdw8ZfFp6gSc6CCnOF_Idp0Hk_pGTnKjFQs9i7mRox93pir4pq-q-gdvTLCYwZ4J1WiDhTqJB06k6qa0cgiJfVp-Rq0lIkFeBaYNosfAHDlLjCceE_ofcpBq0MIQjoD-oMGBtdpTKNvQ_sikU8mCOeNi9Ss4CBPahlP6PoRx9hJ4ks"
+      Authorization: "bearer eyJhbGciOiJSUzI1NiIsImtpZCI6Ijg5ZTU5NjgyYTMwNzJhNDRkODExMTNjOTM0Yjc5NjhjODRmN2M5YTYifQ.eyJpc3MiOiJodHRwOi8vZGV4LmRleC5zdmMuY2x1c3Rlci5sb2NhbDozMDU1Ni9kZXgiLCJzdWIiOiJDaVF3T0dFNE5qZzBZaTFrWWpnNExUUmlOek10T1RCaE9TMHpZMlF4TmpZeFpqVTBOallTQld4dlkyRnMiLCJhdWQiOiJ0ZXN0IiwiZXhwIjoxNjY2MTg0MTU1LCJpYXQiOjE2NjYwOTc3NTUsImF0X2hhc2giOiJha3JtTmFXVXk0SUJvbl9XQlJicG5RIiwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlfQ.k9GXezONHoEQRt2WoysJLCMDfqwmuk7XFTvEpWoxxbvoUOzZx6BGY0Lyh_IGoq3-PHr-qKwY34tOLSYlVM1yCi7PdC8W6o2ldlJVRywticYQIGir32Gur-v_cKODEBKui4M-Im3ocPSZEz2vZCeJ98tC4CTtcw1kA7AmShxaPp97xaWdxjajwVwu86dEUQfp9mSgdLNWlReautZflig_w9sCMbrRdyqxU9nqmLPamqePoVWpo2Gvtz_wQ4d4_qg-9045nnl634-7jpHo362RpAg79VLvotQIlAmjEanFo0dVdzqaP25t9pRNRNBqb49gEkfYnVK1xbvq6mNcsgf1cA"
     tls:
       insecure: true
 

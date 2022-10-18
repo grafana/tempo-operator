@@ -19,7 +19,7 @@ data:
           - "read-write"
         "subjects":
           - "kind": "user"
-            "name": "user"
+            "name": "admin@example.com"
     "roles":
       - "name": "read-write"
         "permissions":
@@ -58,9 +58,11 @@ stringData:
     - "id": "1610b0c3-c509-4592-a256-a1871353dbfa"
       "name": "test-oidc"
       "oidc":
-        "clientID": "tempo"
-        "issuerURL": "http://hydra.hydra.svc.cluster.local:30444/"
-        "redirectURL": "http://localhost:8050/api/traces/v1/test-oidc/search/"
+        "clientID": "test"
+        "issuerURL": "http://dex.dex.svc.cluster.local:30556/dex"
+        "clientSecret": "ZXhhbXBsZS1hcHAtc2VjcmV0"
+        "redirectURL": "http://localhost:8050/oidc/test-oidc/callback"
+        "usernameClaim": "email"
       "rateLimits":
       - "endpoint": "/api/metrics/v1/.+/api/v1/receive"
         "limit": 1000
@@ -136,7 +138,7 @@ spec:
             - --web.internal.listen=0.0.0.0:8081
             - --log.level=debug
             - --traces.write.endpoint=tempo-simplest-distributor:4317
-            - --traces.read.endpoint=tempo-simplest-query-frontend:16686
+            - --traces.read.endpoint=http://tempo-simplest-query-frontend:16686
             - --grpc.listen=0.0.0.0:8090
             - --rbac.config=/etc/observatorium/rbac.yaml
             - --tenants.config=/etc/observatorium/tenants.yaml
