@@ -2,7 +2,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: tracegen
-  status:
-    conditions:
-      - status: "True"
-        type: Complete
+status:
+  conditions:
+    - status: "True"
+      type: Complete
