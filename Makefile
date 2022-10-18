@@ -125,6 +125,7 @@ build: generate fmt vet ## Build manager binary.
 
 .PHONY: run
 run: manifests generate fmt vet ## Run a controller from your host.
+	@echo "warn: webhook support is disabled. In case you rely on some kind of webhook, please use another deployment method!"
 	ENABLE_WEBHOOKS=$(ENABLE_WEBHOOKS) go run ./main.go
 
 .PHONY: docker-build
