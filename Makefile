@@ -67,8 +67,6 @@ else
 GOBIN=$(shell go env GOBIN)
 endif
 
-# by default, do not run the manager with webhooks enabled. This only affects local runs, not the build or in-cluster deployments.
-ENABLE_WEBHOOKS ?= false
 
 # Setting SHELL to bash allows bash commands to be executed by recipes.
 # Options are set to exit when a recipe line exits non-zero or a piped command fails.
@@ -125,8 +123,9 @@ build: generate fmt vet ## Build manager binary.
 
 .PHONY: run
 run: manifests generate fmt vet ## Run a controller from your host.
-	@echo "warn: webhook support is disabled. In case you rely on some kind of webhook, please use another deployment method!"
-	ENABLE_WEBHOOKS=$(ENABLE_WEBHOOKS) go run ./main.go
+	# Disabled webhooks only affects local runs, not the build or in-cluster deployments.
+	@echo -e "\033[33mWebhooks are disabled! Use the normal deployment method to enable full operator functionality.\033[0m"
+	ENABLE_WEBHOOKS=false go run ./main.go
 
 .PHONY: docker-build
 docker-build: test ## Build docker image with the manager.
