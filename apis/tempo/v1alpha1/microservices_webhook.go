@@ -1,6 +1,8 @@
 package v1alpha1
 
 import (
+	"time"
+
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -25,8 +27,9 @@ var _ webhook.Defaulter = &Microservices{}
 // Default implements webhook.Defaulter so a webhook will be registered for the type.
 func (r *Microservices) Default() {
 	microserviceslog.Info("default", "name", r.Name)
-
-	// TODO(user): fill in your defaulting logic.
+	if r.Spec.Retention.Global.Traces == 0 {
+		r.Spec.Retention.Global.Traces = 48 * time.Hour
+	}
 }
 
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
