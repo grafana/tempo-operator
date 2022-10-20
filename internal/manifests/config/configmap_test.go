@@ -2,6 +2,7 @@ package config
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -15,6 +16,13 @@ func TestConfigmap(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "test",
 		},
+		Spec: v1alpha1.MicroservicesSpec{
+			Retention: v1alpha1.RetentionSpec{
+				Global: v1alpha1.RetentionConfig{
+					Traces: 48 * time.Hour,
+				},
+			},
+		},
 	}, Params{S3: S3{
 		Endpoint: "http://minio:9000",
 		Bucket:   "tempo",
@@ -26,7 +34,7 @@ func TestConfigmap(t *testing.T) {
 	assert.Equal(t, `
 compactor:
   compaction:
-    block_retention: 48h
+    block_retention: 48h0m0s
   ring:
     kvstore:
       store: memberlist
