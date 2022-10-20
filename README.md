@@ -29,7 +29,7 @@ metadata:
   name: simplest
 spec:
   storage:
-    secret: test
+    secret: minio-test
   template:
     queryFrontend:
       jaegerQuery:
