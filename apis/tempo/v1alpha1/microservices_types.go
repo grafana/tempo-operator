@@ -1,6 +1,8 @@
 package v1alpha1
 
 import (
+	"time"
+
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -306,7 +308,7 @@ type RetentionConfig struct {
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors="urn:alm:descriptor:com.tectonic.ui:text",displayName="Trace Retention Period"
-	Traces string `json:"traces"`
+	Traces time.Duration `json:"traces"`
 }
 
 func init() {
