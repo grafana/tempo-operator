@@ -160,9 +160,12 @@ func BuildConfigs(tempo v1alpha1.Microservices, params Params) (*corev1.ConfigMa
 		s3Endpoint = strings.TrimPrefix(s3Endpoint, "https://")
 	}
 
+	globalRetention := tempo.Spec.Retention.Global.Traces
+
 	config := strings.Replace(hardcodedConfig, "${S3_INSECURE}", strconv.FormatBool(s3Insecure), 1)
 	config = strings.Replace(config, "${S3_ENDPOINT}", s3Endpoint, 1)
 	config = strings.Replace(config, "${S3_BUCKET}", params.S3.Bucket, 1)
+	config = strings.Replace(config, "${GLOBAL_BLOCK_RETENTION}", globalRetention.String(), 1)
 	config = strings.Replace(config, "${MEMBERLIST}", manifestutils.Name("gossip-ring", tempo.Name), 1)
 	config = strings.Replace(config, "${QUERY_FRONTEND_DISCOVERY}", fmt.Sprintf("%s:9095", manifestutils.Name("query-frontend-discovery", tempo.Name)), 1)
 
@@ -188,7 +191,7 @@ func BuildConfigs(tempo v1alpha1.Microservices, params Params) (*corev1.ConfigMa
 const hardcodedConfig = `
 compactor:
   compaction:
-    block_retention: 48h
+    block_retention: ${GLOBAL_BLOCK_RETENTION}
   ring:
     kvstore:
       store: memberlist
