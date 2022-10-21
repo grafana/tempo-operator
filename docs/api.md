@@ -474,9 +474,11 @@ Global is used to configure global retention.
     </thead>
     <tbody><tr>
         <td><b>traces</b></td>
-        <td>string</td>
+        <td>integer</td>
         <td>
-          Traces defines retention period. Supported parameter suffixes are “s”, “m” and “h”. example: 336h<br/>
+          Traces defines retention period. Supported parameter suffixes are “s”, “m” and “h”. example: 336h default: value is 48h.<br/>
+          <br/>
+            <i>Format</i>: int64<br/>
         </td>
         <td>false</td>
       </tr></tbody>
@@ -501,9 +503,11 @@ RetentionConfig defines how long data should be provided.
     </thead>
     <tbody><tr>
         <td><b>traces</b></td>
-        <td>string</td>
+        <td>integer</td>
         <td>
-          Traces defines retention period. Supported parameter suffixes are “s”, “m” and “h”. example: 336h<br/>
+          Traces defines retention period. Supported parameter suffixes are “s”, “m” and “h”. example: 336h default: value is 48h.<br/>
+          <br/>
+            <i>Format</i>: int64<br/>
         </td>
         <td>false</td>
       </tr></tbody>

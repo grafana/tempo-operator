@@ -152,8 +152,10 @@ spec:
                     properties:
                       traces:
                         description: 'Traces defines retention period. Supported parameter
-                          suffixes are “s”, “m” and “h”. example: 336h'
-                        type: string
+                          suffixes are “s”, “m” and “h”. example: 336h default: value
+                          is 48h.'
+                        format: int64
+                        type: integer
                     type: object
                   perTenant:
                     additionalProperties:
@@ -162,8 +164,10 @@ spec:
                       properties:
                         traces:
                           description: 'Traces defines retention period. Supported
-                            parameter suffixes are “s”, “m” and “h”. example: 336h'
-                          type: string
+                            parameter suffixes are “s”, “m” and “h”. example: 336h
+                            default: value is 48h.'
+                          format: int64
+                          type: integer
                       type: object
                     description: PerTenant is used to configure retention per tenant.
                     type: object
