@@ -1,9 +1,15 @@
 apiVersion: v1
+kind: Namespace
+metadata:
+  name: minio-storage
+---
+apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   labels:
     app.kubernetes.io/name: minio
   name: minio
+  namespace: minio-storage
 spec:
   accessModes:
     - ReadWriteOnce
@@ -15,6 +21,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: minio
+  namespace: minio-storage
 spec:
   selector:
     matchLabels:
@@ -54,6 +61,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: minio
+  namespace: minio-storage
 spec:
   ports:
     - port: 9000
@@ -67,8 +75,9 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: minio-test
+  namespace: minio-storage
 stringData:
-  endpoint: http://minio:9000
+  endpoint: http://minio.minio-storage.svc:9000
   bucket: tempo
   access_key_id: tempo
   access_key_secret: supersecret

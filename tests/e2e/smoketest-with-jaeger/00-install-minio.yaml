@@ -1,4 +1,4 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-  - script: "cd ../../../ && MINIO_NAMESPACE=$NAMESPACE make deploy-minio"
+  - script: "cd ../../../ && make deploy-minio"

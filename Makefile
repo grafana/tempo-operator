@@ -187,9 +187,6 @@ KUTTL ?= $(LOCALBIN)/kubectl-kuttl
 export KUBE_VERSION ?= 1.25
 KIND_CONFIG ?= kind-$(KUBE_VERSION).yaml
 
-# Default namespace for minio install
-MINIO_NAMESPACE ?= default
-
 .PHONY: controller-gen
 controller-gen: ## Download controller-gen locally if necessary.
 	test -s $(LOCALBIN)/controller-gen-$(CONTROLLER_TOOLS_VERSION) || $(call go-get-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen,$(CONTROLLER_TOOLS_VERSION))
@@ -298,7 +295,7 @@ stop-kind:
 .PHONY: deploy-minio
 deploy-minio:
 	$(ECHO) Installing minio
-	$(VECHO) kubectl apply --namespace $(MINIO_NAMESPACE) -f minio.yaml
+	$(VECHO) kubectl apply -f minio.yaml
 
 # end-to-tests
 .PHONY: e2e

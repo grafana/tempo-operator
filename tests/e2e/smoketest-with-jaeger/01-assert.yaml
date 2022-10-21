@@ -2,11 +2,28 @@ apiVersion: tempo.grafana.com/v1alpha1
 kind: Microservices
 metadata:
   name: simplest
+#
+# Deployments
+#
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tempo-simplest-query-frontend
+  labels:
+    app.kubernetes.io/component: query-frontend
+    app.kubernetes.io/created-by: tempo-controller
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/name: tempo
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: query-frontend
+      app.kubernetes.io/created-by: tempo-controller
+      app.kubernetes.io/instance: simplest
+      app.kubernetes.io/managed-by: tempo-controller
+      app.kubernetes.io/name: tempo
 status:
   readyReplicas: 1
 ---
@@ -14,15 +31,42 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tempo-simplest-distributor
-status:
-  readyReplicas: 1
+  labels:
+    app.kubernetes.io/component: distributor
+    app.kubernetes.io/created-by: tempo-controller
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/name: tempo
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: distributor
+      app.kubernetes.io/created-by: tempo-controller
+      app.kubernetes.io/instance: simplest
+      app.kubernetes.io/managed-by: tempo-controller
+      app.kubernetes.io/name: tempo
+status:
+  readyReplicas: 1
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tempo-simplest-querier
+  labels:
+    app.kubernetes.io/component: querier
+    app.kubernetes.io/created-by: tempo-controller
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/name: tempo
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: querier
+      app.kubernetes.io/created-by: tempo-controller
+      app.kubernetes.io/instance: simplest
+      app.kubernetes.io/managed-by: tempo-controller
+      app.kubernetes.io/name: tempo
 status:
   readyReplicas: 1
 ---
@@ -30,7 +74,220 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tempo-simplest-compactor
+  labels:
+    app.kubernetes.io/component: compactor
+    app.kubernetes.io/created-by: tempo-controller
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/name: tempo
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: compactor
+      app.kubernetes.io/created-by: tempo-controller
+      app.kubernetes.io/instance: simplest
+      app.kubernetes.io/managed-by: tempo-controller
+      app.kubernetes.io/name: tempo
 status:
   readyReplicas: 1
+#
+# Services
+#
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: compactor
+    app.kubernetes.io/created-by: tempo-controller
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/name: tempo
+  name: tempo-simplest-compactor
+spec:
+  ports:
+    - name: http-memberlist
+      port: 7946
+      protocol: TCP
+      targetPort: 7946
+    - name: http
+      port: 3100
+      protocol: TCP
+      targetPort: http
+  selector:
+    app.kubernetes.io/component: compactor
+    app.kubernetes.io/created-by: tempo-controller
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/name: tempo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: distributor
+    app.kubernetes.io/created-by: tempo-controller
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/name: tempo
+  name: tempo-simplest-distributor
+spec:
+  ports:
+    - name: otlp-grpc
+      port: 4317
+      protocol: TCP
+      targetPort: otlp-grpc
+  selector:
+    app.kubernetes.io/component: distributor
+    app.kubernetes.io/created-by: tempo-controller
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/name: tempo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: gossip-ring
+    app.kubernetes.io/created-by: tempo-controller
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/name: tempo
+  name: tempo-simplest-gossip-ring
+spec:
+  ports:
+    - name: gossip-ring
+      port: 7946
+      protocol: TCP
+      targetPort: http-memberlist
+  selector:
+    tempo-gossip-member: "true"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: ingester
+    app.kubernetes.io/created-by: tempo-controller
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/name: tempo
+  name: tempo-simplest-ingester
+spec:
+  ports:
+    - name: http
+      port: 3100
+      protocol: TCP
+      targetPort: http
+    - name: grpc
+      port: 9095
+      protocol: TCP
+      targetPort: grpc
+  selector:
+    app.kubernetes.io/component: ingester
+    app.kubernetes.io/created-by: tempo-controller
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/name: tempo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: querier
+    app.kubernetes.io/created-by: tempo-controller
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/name: tempo
+  name: tempo-simplest-querier
+spec:
+  ports:
+    - name: http
+      port: 7946
+      protocol: TCP
+      targetPort: 7946
+    - name: grpc
+      port: 9095
+      protocol: TCP
+      targetPort: grpc
+  selector:
+    app.kubernetes.io/component: querier
+    app.kubernetes.io/created-by: tempo-controller
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/name: tempo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: query-frontend
+    app.kubernetes.io/created-by: tempo-controller
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/name: tempo
+  name: tempo-simplest-query-frontend
+spec:
+  ports:
+    - name: http
+      port: 3100
+      protocol: TCP
+      targetPort: 3100
+    - name: grpc
+      port: 9095
+      protocol: TCP
+      targetPort: 9095
+    - name: tempo-query-jaeger-ui
+      port: 16686
+      protocol: TCP
+      targetPort: 16686
+    - name: tempo-query-metrics
+      port: 16687
+      protocol: TCP
+      targetPort: jaeger-metrics
+  selector:
+    app.kubernetes.io/component: query-frontend
+    app.kubernetes.io/created-by: tempo-controller
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/name: tempo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: query-frontend
+    app.kubernetes.io/created-by: tempo-controller
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/name: tempo
+  name: tempo-simplest-query-frontend-discovery
+spec:
+  ports:
+    - name: http
+      port: 3100
+      protocol: TCP
+      targetPort: 3100
+    - name: grpc
+      port: 9095
+      protocol: TCP
+      targetPort: 9095
+    - name: grpclb
+      port: 9096
+      protocol: TCP
+      targetPort: grpc
+    - name: tempo-query-jaeger-ui
+      port: 16686
+      protocol: TCP
+      targetPort: 16686
+    - name: tempo-query-metrics
+      port: 16687
+      protocol: TCP
+      targetPort: jaeger-metrics
+  selector:
+    app.kubernetes.io/component: query-frontend
+    app.kubernetes.io/created-by: tempo-controller
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-controller
 
 
