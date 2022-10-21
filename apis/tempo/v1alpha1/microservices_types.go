@@ -1,6 +1,8 @@
 package v1alpha1
 
 import (
+	"time"
+
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -302,11 +304,12 @@ type RetentionSpec struct {
 type RetentionConfig struct {
 	// Traces defines retention period. Supported parameter suffixes are “s”, “m” and “h”.
 	// example: 336h
+	// default: value is 48h.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors="urn:alm:descriptor:com.tectonic.ui:text",displayName="Trace Retention Period"
-	Traces string `json:"traces"`
+	Traces time.Duration `json:"traces"`
 }
 
 func init() {

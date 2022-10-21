@@ -114,7 +114,7 @@ spec:
         displayName: Global Retention
         path: retention.global
       - description: 'Traces defines retention period. Supported parameter suffixes
-          are “s”, “m” and “h”. example: 336h'
+          are “s”, “m” and “h”. example: 336h default: value is 48h.'
         displayName: Trace Retention Period
         path: retention.global.traces
         x-descriptors:
@@ -123,7 +123,7 @@ spec:
         displayName: PerTenant Retention
         path: retention.perTenant
       - description: 'Traces defines retention period. Supported parameter suffixes
-          are “s”, “m” and “h”. example: 336h'
+          are “s”, “m” and “h”. example: 336h default: value is 48h.'
         displayName: Trace Retention Period
         path: retention.perTenant.traces
         x-descriptors:
