@@ -304,6 +304,7 @@ type RetentionSpec struct {
 type RetentionConfig struct {
 	// Traces defines retention period. Supported parameter suffixes are “s”, “m” and “h”.
 	// example: 336h
+	// default: value is 48h.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional

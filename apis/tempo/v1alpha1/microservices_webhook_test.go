@@ -9,9 +9,9 @@ import (
 
 func TestDefault(t *testing.T) {
 	tests := []struct {
-		name     string
 		input    *Microservices
 		expected *Microservices
+		name     string
 	}{
 		{
 			name: "no action retention exists",
