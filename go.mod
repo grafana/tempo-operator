@@ -23,7 +23,7 @@ require (
 	github.com/Azure/go-autorest/autorest/adal v0.9.20 // indirect
 	github.com/openshift/api v3.9.0+incompatible
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.60.1
-	github.com/stretchr/testify v1.8.0
+	github.com/stretchr/testify v1.8.1
 	go.opentelemetry.io/collector v0.46.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/utils v0.0.0-20220823124924-e9cbc92d1a73
