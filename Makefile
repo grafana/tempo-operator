@@ -292,6 +292,11 @@ stop-kind:
 	$(ECHO)"Stopping the kind cluster"
 	$(VECHO)kind delete cluster
 
+.PHONY: deploy-minio
+deploy-minio:
+	$(ECHO) Installing minio
+	$(VECHO) kubectl apply -f minio.yaml
+
 # end-to-tests
 .PHONY: e2e
 e2e:

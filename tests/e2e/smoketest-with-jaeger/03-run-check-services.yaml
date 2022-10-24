@@ -1,0 +1,7 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+  # This is a hacky but simple way of determining if any of the traces created by tracegen were received.  It should be considered temporary.
+  - command: 'kubectl exec --namespace $NAMESPACE deployment/tempo-simplest-query-frontend --container tempo-query -- sh  -c "rm -f services ; wget -q http://localhost:16686/api/services ; cat services | grep -i tracegen"'
+    namespaced: true
+
