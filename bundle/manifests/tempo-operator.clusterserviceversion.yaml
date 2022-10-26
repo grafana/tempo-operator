@@ -344,7 +344,7 @@ spec:
                 - --config=controller_manager_config.yaml
                 command:
                 - /manager
-                image: ghcr.io/pavolloffay/tempo-operator:dev-1666717787
+                image: controller:latest
                 livenessProbe:
                   httpGet:
                     path: /healthz
