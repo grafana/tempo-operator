@@ -17,7 +17,7 @@ metadata:
 spec:
   storage:
     secret: minio-test
-  storageSize: 1Gi
+  storageSize: 200M
   template:
     queryFrontend:
       jaegerQuery:
