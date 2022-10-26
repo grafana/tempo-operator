@@ -41,13 +41,13 @@ type MicroservicesSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Retention Period"
 	Retention RetentionSpec `json:"retention,omitempty"`
 
-	// StorageClassName for PVCs used by ingester.
+	// StorageClassName for PVCs used by ingester. Defaults to nil (default storage class in the cluster).
 	//
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="StorageClassName for PVCs"
 	StorageClassName *string `json:"storageClassName,omitempty"`
 
-	// StorageSize for PVCs used by ingester.
+	// StorageSize for PVCs used by ingester. Defaults to 10Gi.
 	//
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Storage size for PVCs"
