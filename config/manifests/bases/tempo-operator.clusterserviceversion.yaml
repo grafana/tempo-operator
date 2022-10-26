@@ -146,10 +146,11 @@ spec:
         path: storage.tls.caName
         x-descriptors:
         - urn:alm:descriptor:io.kubernetes:ConfigMap
-      - description: StorageClassName for PVCs used by ingester.
+      - description: StorageClassName for PVCs used by ingester. Defaults to nil (default
+          storage class in the cluster).
         displayName: StorageClassName for PVCs
         path: storageClassName
-      - description: StorageSize for PVCs used by ingester.
+      - description: StorageSize for PVCs used by ingester. Defaults to 10Gi.
         displayName: Storage size for PVCs
         path: storageSize
       - description: 'NOTE: currently this field is not considered. Components defines
