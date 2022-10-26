@@ -3,10 +3,15 @@ package v1alpha1
 import (
 	"time"
 
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+)
+
+var (
+	zeroQuantity = resource.MustParse("0Gi")
 )
 
 // log is for logging in this package.
@@ -29,6 +34,10 @@ func (r *Microservices) Default() {
 	microserviceslog.Info("default", "name", r.Name)
 	if r.Spec.Retention.Global.Traces == 0 {
 		r.Spec.Retention.Global.Traces = 48 * time.Hour
+	}
+
+	if r.Spec.StorageSize.Cmp(zeroQuantity) <= 0 {
+		r.Spec.StorageSize = resource.MustParse("10Gi")
 	}
 }
 

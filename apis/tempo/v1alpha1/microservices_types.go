@@ -4,6 +4,7 @@ import (
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -40,12 +41,17 @@ type MicroservicesSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Retention Period"
 	Retention RetentionSpec `json:"retention,omitempty"`
 
-	// NOTE: currently this field is not considered.
-	// StorageClassName for PVCs used by ingester/querier.
+	// StorageClassName for PVCs used by ingester.
 	//
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="StorageClassName for PVCs"
-	StorageClassName string `json:"storageClassName,omitempty"`
+	StorageClassName *string `json:"storageClassName,omitempty"`
+
+	// StorageSize for PVCs used by ingester.
+	//
+	// +optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Storage size for PVCs"
+	StorageSize resource.Quantity `json:"storageSize,omitempty"`
 
 	// NOTE: currently this field is not considered.
 	// LimitSpec is used to limit ingestion and querying rates.

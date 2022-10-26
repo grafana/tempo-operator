@@ -1,6 +1,7 @@
 package ingester
 
 import (
+	"k8s.io/apimachinery/pkg/api/resource"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -16,6 +17,8 @@ import (
 )
 
 func TestBuildIngester(t *testing.T) {
+	storageClassName := "default"
+	filesystem := corev1.PersistentVolumeFilesystem
 	objects, err := BuildIngester(v1alpha1.Microservices{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test",
@@ -25,6 +28,8 @@ func TestBuildIngester(t *testing.T) {
 			Storage: v1alpha1.ObjectStorageSpec{
 				Secret: "test-storage-secret",
 			},
+			StorageSize:      resource.MustParse("10Gi"),
+			StorageClassName: &storageClassName,
 		},
 	})
 	require.NoError(t, err)
@@ -83,6 +88,10 @@ func TestBuildIngester(t *testing.T) {
 									MountPath: "/conf",
 									ReadOnly:  true,
 								},
+								{
+									Name:      dataVolumeName,
+									MountPath: "/var/tempo",
+								},
 							},
 							Ports: []corev1.ContainerPort{
 								{
@@ -114,6 +123,23 @@ func TestBuildIngester(t *testing.T) {
 								},
 							},
 						},
+					},
+				},
+			},
+			VolumeClaimTemplates: []corev1.PersistentVolumeClaim{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: dataVolumeName,
+					},
+					Spec: corev1.PersistentVolumeClaimSpec{
+						AccessModes: []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
+						Resources: corev1.ResourceRequirements{
+							Requests: corev1.ResourceList{
+								corev1.ResourceStorage: resource.MustParse("10Gi"),
+							},
+						},
+						StorageClassName: &storageClassName,
+						VolumeMode:       &filesystem,
 					},
 				},
 			},

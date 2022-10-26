@@ -158,10 +158,12 @@ spec:
         path: storage.tls.caName
         x-descriptors:
         - urn:alm:descriptor:io.kubernetes:ConfigMap
-      - description: 'NOTE: currently this field is not considered. StorageClassName
-          for PVCs used by ingester/querier.'
+      - description: StorageClassName for PVCs used by ingester.
         displayName: StorageClassName for PVCs
         path: storageClassName
+      - description: StorageSize for PVCs used by ingester.
+        displayName: Storage size for PVCs
+        path: storageSize
       - description: 'NOTE: currently this field is not considered. Components defines
           requierements for a set of tempo components.'
         displayName: Tempo Components
@@ -342,7 +344,7 @@ spec:
                 - --config=controller_manager_config.yaml
                 command:
                 - /manager
-                image: controller:latest
+                image: ghcr.io/pavolloffay/tempo-operator:dev-1666717787
                 livenessProbe:
                   httpGet:
                     path: /healthz
