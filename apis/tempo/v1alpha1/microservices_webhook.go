@@ -11,7 +11,8 @@ import (
 )
 
 var (
-	zeroQuantity = resource.MustParse("0Gi")
+	zeroQuantity  = resource.MustParse("0Gi")
+	tenGBQuantity = resource.MustParse("10Gi")
 )
 
 // log is for logging in this package.
@@ -37,7 +38,7 @@ func (r *Microservices) Default() {
 	}
 
 	if r.Spec.StorageSize.Cmp(zeroQuantity) <= 0 {
-		r.Spec.StorageSize = resource.MustParse("10Gi")
+		r.Spec.StorageSize = tenGBQuantity
 	}
 }
 
