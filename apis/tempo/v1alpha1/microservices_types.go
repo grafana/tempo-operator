@@ -47,18 +47,18 @@ type MicroservicesSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="StorageClassName for PVCs"
 	StorageClassName *string `json:"storageClassName,omitempty"`
 
-	// StorageSize for PVCs used by ingester. Defaults to 10Gi.
-	//
-	// +optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Storage size for PVCs"
-	StorageSize resource.Quantity `json:"storageSize,omitempty"`
-
 	// NOTE: currently this field is not considered.
 	// LimitSpec is used to limit ingestion and querying rates.
 	//
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Ingestion and Querying Ratelimiting"
 	LimitSpec LimitSpec `json:"limits,omitempty"`
+
+	// StorageSize for PVCs used by ingester. Defaults to 10Gi.
+	//
+	// +optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Storage size for PVCs"
+	StorageSize resource.Quantity `json:"storageSize,omitempty"`
 
 	// NOTE: currently this field is not considered.
 	// ReplicationFactor is used to define how many component replicas should exist.
@@ -224,7 +224,7 @@ type LimitSpec struct {
 
 	// Global is used to define global rate limits.
 	//
-	// +optinal
+	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Global Limit"
 	Global RateLimitSpec `json:"global"`
@@ -253,41 +253,47 @@ type IngestionLimitSpec struct {
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors="urn:alm:descriptor:com.tectonic.ui:number",displayName="Ingestion Burst Size in Bytes"
-	IngestionBurstSizeBytes int `json:"ingestionBurstSizeBytes"`
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Ingestion Burst Size in Bytes"
+	IngestionBurstSizeBytes *int `json:"ingestionBurstSizeBytes,omitempty"`
 
 	// IngestionRateLimitBytes defines the Per-user ingestion rate limit (bytes) used in ingestion.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors="urn:alm:descriptor:com.tectonic.ui:number",displayName="Ingestion Rate Limit in Bytes"
-	IngestionRateLimitBytes int `json:"ingestionRateLimitBytes"`
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Ingestion Rate Limit in Bytes"
+	IngestionRateLimitBytes *int `json:"ingestionRateLimitBytes,omitempty"`
 
 	// MaxBytesPerTrace defines the maximum number of bytes of an acceptable trace.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors="urn:alm:descriptor:com.tectonic.ui:number",displayName="Max Bytes per Trace"
-	MaxBytesPerTrace int `json:"maxBytesPerTrace"`
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Max Bytes per Trace"
+	MaxBytesPerTrace *int `json:"maxBytesPerTrace,omitempty"`
 
 	// MaxTracesPerUser defines the maximum number of traces a user can send.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors="urn:alm:descriptor:com.tectonic.ui:number",displayName="Max Traces per User"
-	MaxTracesPerUser int `json:"maxTracesPerUser"`
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Max Traces per User"
+	MaxTracesPerUser *int `json:"maxTracesPerUser,omitempty"`
 }
 
 // QueryLimit defines query limits.
 type QueryLimit struct {
+	// MaxBytesPerTagValues defines the maximum size in bytes of a tag-values query.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Max Tags per User"
+	MaxBytesPerTagValues *int `json:"maxBytesPerTagValues,omitempty"`
 	// MaxSearchBytesPerTrace defines the maximum size of search data for a single
 	// trace in bytes.
 	// default: `0` to disable.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors="urn:alm:descriptor:com.tectonic.ui:number",displayName="Max Traces per User"
-	MaxSearchBytesPerTrace int `json:"maxSearchBytesPerTrace"`
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Max Traces per User"
+	MaxSearchBytesPerTrace *int `json:"maxSearchBytesPerTrace"`
 }
 
 // RetentionSpec defines global and per tenant retention configurations.

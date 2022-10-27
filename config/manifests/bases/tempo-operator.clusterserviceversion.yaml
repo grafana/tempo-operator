@@ -29,35 +29,29 @@ spec:
           ingestion.
         displayName: Ingestion Burst Size in Bytes
         path: limits.global.ingestion.ingestionBurstSizeBytes
-        x-descriptors:
-        - urn:alm:descriptor:com.tectonic.ui:number
       - description: IngestionRateLimitBytes defines the Per-user ingestion rate limit
           (bytes) used in ingestion.
         displayName: Ingestion Rate Limit in Bytes
         path: limits.global.ingestion.ingestionRateLimitBytes
-        x-descriptors:
-        - urn:alm:descriptor:com.tectonic.ui:number
       - description: MaxBytesPerTrace defines the maximum number of bytes of an acceptable
           trace.
         displayName: Max Bytes per Trace
         path: limits.global.ingestion.maxBytesPerTrace
-        x-descriptors:
-        - urn:alm:descriptor:com.tectonic.ui:number
       - description: MaxTracesPerUser defines the maximum number of traces a user
           can send.
         displayName: Max Traces per User
         path: limits.global.ingestion.maxTracesPerUser
-        x-descriptors:
-        - urn:alm:descriptor:com.tectonic.ui:number
       - description: Query is used to define query rate limits.
         displayName: Query Limit
         path: limits.global.query
+      - description: MaxBytesPerTagValues defines the maximum size in bytes of a tag-values
+          query.
+        displayName: Max Tags per User
+        path: limits.global.query.maxBytesPerTagValues
       - description: 'MaxSearchBytesPerTrace defines the maximum size of search data
           for a single trace in bytes. default: `0` to disable.'
         displayName: Max Traces per User
         path: limits.global.query.maxSearchBytesPerTrace
-        x-descriptors:
-        - urn:alm:descriptor:com.tectonic.ui:number
       - description: PerTenant is used to define rate limits per tenant.
         displayName: Tenant Limits
         path: limits.perTenant
@@ -68,35 +62,29 @@ spec:
           ingestion.
         displayName: Ingestion Burst Size in Bytes
         path: limits.perTenant.ingestion.ingestionBurstSizeBytes
-        x-descriptors:
-        - urn:alm:descriptor:com.tectonic.ui:number
       - description: IngestionRateLimitBytes defines the Per-user ingestion rate limit
           (bytes) used in ingestion.
         displayName: Ingestion Rate Limit in Bytes
         path: limits.perTenant.ingestion.ingestionRateLimitBytes
-        x-descriptors:
-        - urn:alm:descriptor:com.tectonic.ui:number
       - description: MaxBytesPerTrace defines the maximum number of bytes of an acceptable
           trace.
         displayName: Max Bytes per Trace
         path: limits.perTenant.ingestion.maxBytesPerTrace
-        x-descriptors:
-        - urn:alm:descriptor:com.tectonic.ui:number
       - description: MaxTracesPerUser defines the maximum number of traces a user
           can send.
         displayName: Max Traces per User
         path: limits.perTenant.ingestion.maxTracesPerUser
-        x-descriptors:
-        - urn:alm:descriptor:com.tectonic.ui:number
       - description: Query is used to define query rate limits.
         displayName: Query Limit
         path: limits.perTenant.query
+      - description: MaxBytesPerTagValues defines the maximum size in bytes of a tag-values
+          query.
+        displayName: Max Tags per User
+        path: limits.perTenant.query.maxBytesPerTagValues
       - description: 'MaxSearchBytesPerTrace defines the maximum size of search data
           for a single trace in bytes. default: `0` to disable.'
         displayName: Max Traces per User
         path: limits.perTenant.query.maxSearchBytesPerTrace
-        x-descriptors:
-        - urn:alm:descriptor:com.tectonic.ui:number
       - description: 'NOTE: currently this field is not considered. ReplicationFactor
           is used to define how many component replicas should exist.'
         displayName: Replication Factor

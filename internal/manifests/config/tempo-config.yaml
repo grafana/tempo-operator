@@ -36,11 +36,27 @@ memberlist:
 metrics_generator_enabled: false
 multitenancy_enabled: false
 overrides:
-  ingestion_burst_size_bytes: 15000000000
-  ingestion_rate_limit_bytes: 15000000000
-  max_bytes_per_tag_values_query: 15000000000
-  max_search_bytes_per_trace: 0
-  max_traces_per_user: 50000000
+{{- if .GlobalRateLimits.IngestionBurstSizeBytes }}
+  ingestion_burst_size_bytes: {{ .GlobalRateLimits.IngestionBurstSizeBytes }}
+{{- end }}
+{{- if .GlobalRateLimits.IngestionRateLimitBytes }}
+  ingestion_rate_limit_bytes: {{ .GlobalRateLimits.IngestionRateLimitBytes }}
+{{- end }}
+{{- if .GlobalRateLimits.MaxTracesPerUser }}
+  max_traces_per_user: {{ .GlobalRateLimits.MaxTracesPerUser }}
+{{- end }}
+{{- if .GlobalRateLimits.MaxBytesPerTrace }}
+  max_bytes_per_trace: {{ .GlobalRateLimits.MaxBytesPerTrace }}
+{{- end }}
+{{- if .GlobalRateLimits.MaxBytesPerTagValues }}
+  max_bytes_per_tag_values_query: {{ .GlobalRateLimits.MaxBytesPerTagValues }}
+{{- end }}
+{{- if .GlobalRateLimits.MaxSearchBytesPerTrace }}
+  max_search_bytes_per_trace: {{ .GlobalRateLimits.MaxSearchBytesPerTrace }}
+{{- end }}
+{{- if .TenantRateLimitsPath }}
+  per_tenant_override_config: {{ .TenantRateLimitsPath }}
+{{- end }}
 querier:
   frontend_worker:
     frontend_address: {{ .QueryFrontendDiscovery }}

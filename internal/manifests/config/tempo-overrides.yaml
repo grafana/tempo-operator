@@ -1,0 +1,22 @@
+overrides:
+{{- range $name, $value := .RateLimits }}
+  "{{ $name }}":
+{{- if $value.IngestionBurstSizeBytes }}
+    ingestion_burst_size_bytes: {{ $value.IngestionBurstSizeBytes }}
+{{- end }}
+{{- if $value.IngestionRateLimitBytes }}
+    ingestion_rate_limit_bytes: {{ $value.IngestionRateLimitBytes }}
+{{- end }}
+{{- if $value.MaxTracesPerUser }}
+    max_traces_per_user: {{ $value.MaxTracesPerUser }}
+{{- end }}
+{{- if $value.MaxBytesPerTrace }}
+    max_bytes_per_trace: {{ $value.MaxBytesPerTrace }}
+{{- end }}
+{{- if $value.MaxBytesPerTagValues }}
+    max_bytes_per_tag_values_query: {{ $value.MaxBytesPerTagValues }}
+{{- end }}
+{{- if $value.MaxSearchBytesPerTrace }}
+    max_search_bytes_per_trace: {{ $value.MaxSearchBytesPerTrace }}
+{{- end }}
+{{- end }}

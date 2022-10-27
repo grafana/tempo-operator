@@ -65,6 +65,10 @@ spec:
                       query:
                         description: Query is used to define query rate limits.
                         properties:
+                          maxBytesPerTagValues:
+                            description: MaxBytesPerTagValues defines the maximum
+                              size in bytes of a tag-values query.
+                            type: integer
                           maxSearchBytesPerTrace:
                             description: 'MaxSearchBytesPerTrace defines the maximum
                               size of search data for a single trace in bytes. default:
@@ -101,6 +105,10 @@ spec:
                         query:
                           description: Query is used to define query rate limits.
                           properties:
+                            maxBytesPerTagValues:
+                              description: MaxBytesPerTagValues defines the maximum
+                                size in bytes of a tag-values query.
+                              type: integer
                             maxSearchBytesPerTrace:
                               description: 'MaxSearchBytesPerTrace defines the maximum
                                 size of search data for a single trace in bytes. default:
