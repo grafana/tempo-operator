@@ -122,7 +122,14 @@ MicroservicesSpec defines the desired state of Microservices.
         <td><b>storageClassName</b></td>
         <td>string</td>
         <td>
-          NOTE: currently this field is not considered. StorageClassName for PVCs used by ingester/querier.<br/>
+          StorageClassName for PVCs used by ingester. Defaults to nil (default storage class in the cluster).<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>storageSize</b></td>
+        <td>int or string</td>
+        <td>
+          StorageSize for PVCs used by ingester. Defaults to 10Gi.<br/>
         </td>
         <td>false</td>
       </tr><tr>

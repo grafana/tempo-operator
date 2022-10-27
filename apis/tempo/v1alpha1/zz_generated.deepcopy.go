@@ -133,6 +133,12 @@ func (in *MicroservicesSpec) DeepCopyInto(out *MicroservicesSpec) {
 	}
 	in.Storage.DeepCopyInto(&out.Storage)
 	in.Retention.DeepCopyInto(&out.Retention)
+	if in.StorageClassName != nil {
+		in, out := &in.StorageClassName, &out.StorageClassName
+		*out = new(string)
+		**out = **in
+	}
+	out.StorageSize = in.StorageSize.DeepCopy()
 	in.LimitSpec.DeepCopyInto(&out.LimitSpec)
 }
 

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 func TestDefault(t *testing.T) {
@@ -14,7 +15,7 @@ func TestDefault(t *testing.T) {
 		name     string
 	}{
 		{
-			name: "no action retention exists",
+			name: "no action default values are provided",
 			input: &Microservices{
 				Spec: MicroservicesSpec{
 					Retention: RetentionSpec{
@@ -22,6 +23,7 @@ func TestDefault(t *testing.T) {
 							Traces: time.Hour,
 						},
 					},
+					StorageSize: resource.MustParse("1Gi"),
 				},
 			},
 			expected: &Microservices{
@@ -31,11 +33,12 @@ func TestDefault(t *testing.T) {
 							Traces: time.Hour,
 						},
 					},
+					StorageSize: resource.MustParse("1Gi"),
 				},
 			},
 		},
 		{
-			name:  "configure default missing retention",
+			name:  "default values are set in the webhook",
 			input: &Microservices{},
 			expected: &Microservices{
 				Spec: MicroservicesSpec{
@@ -44,6 +47,7 @@ func TestDefault(t *testing.T) {
 							Traces: 48 * time.Hour,
 						},
 					},
+					StorageSize: resource.MustParse("10Gi"),
 				},
 			},
 		},
