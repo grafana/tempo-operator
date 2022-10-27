@@ -195,9 +195,16 @@ spec:
                     type: object
                 type: object
               storageClassName:
-                description: 'NOTE: currently this field is not considered. StorageClassName
-                  for PVCs used by ingester/querier.'
+                description: StorageClassName for PVCs used by ingester. Defaults
+                  to nil (default storage class in the cluster).
                 type: string
+              storageSize:
+                anyOf:
+                - type: integer
+                - type: string
+                description: StorageSize for PVCs used by ingester. Defaults to 10Gi.
+                pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                x-kubernetes-int-or-string: true
               template:
                 description: 'NOTE: currently this field is not considered. Components
                   defines requierements for a set of tempo components.'
