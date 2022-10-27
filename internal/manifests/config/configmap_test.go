@@ -98,5 +98,6 @@ storage:
     wal:
       path: /var/tempo/wal
 usage_report:
-  reporting_enabled: false`, cm.Data["tempo.yaml"])
+  reporting_enabled: false
+`, cm.Data["tempo.yaml"])
 }
