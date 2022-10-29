@@ -15,6 +15,7 @@ import (
 
 const (
 	configVolumeName = "tempo-conf"
+	dataVolumeName   = "data"
 	componentName    = "ingester"
 	portGRPCServer   = 9095
 	portHTTPServer   = 3100
@@ -32,6 +33,7 @@ func BuildIngester(tempo v1alpha1.Microservices) ([]client.Object, error) {
 
 func statefulSet(tempo v1alpha1.Microservices) (*v1.StatefulSet, error) {
 	labels := manifestutils.ComponentLabels("ingester", tempo.Name)
+	filesystem := corev1.PersistentVolumeFilesystem
 	ss := &v1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      manifestutils.Name("ingester", tempo.Name),
@@ -57,6 +59,10 @@ func statefulSet(tempo v1alpha1.Microservices) (*v1.StatefulSet, error) {
 									Name:      configVolumeName,
 									MountPath: "/conf",
 									ReadOnly:  true,
+								},
+								{
+									Name:      dataVolumeName,
+									MountPath: "/var/tempo",
 								},
 							},
 							Ports: []corev1.ContainerPort{
@@ -92,9 +98,25 @@ func statefulSet(tempo v1alpha1.Microservices) (*v1.StatefulSet, error) {
 					},
 				},
 			},
+			VolumeClaimTemplates: []corev1.PersistentVolumeClaim{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: dataVolumeName,
+					},
+					Spec: corev1.PersistentVolumeClaimSpec{
+						AccessModes: []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
+						Resources: corev1.ResourceRequirements{
+							Requests: corev1.ResourceList{
+								corev1.ResourceStorage: tempo.Spec.StorageSize,
+							},
+						},
+						StorageClassName: tempo.Spec.StorageClassName,
+						VolumeMode:       &filesystem,
+					},
+				},
+			},
 		},
 	}
-
 	err := manifestutils.ConfigureStorage(tempo, &ss.Spec.Template.Spec)
 	if err != nil {
 		return nil, err
