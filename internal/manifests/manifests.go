@@ -32,7 +32,7 @@ type S3 struct {
 
 // BuildAll creates objects for Tempo deployment.
 func BuildAll(params Params) ([]client.Object, error) {
-	configMaps, err := config.BuildConfigs(params.Tempo, config.Params{S3: config.S3{
+	configMaps, err := config.BuildConfigMap(params.Tempo, config.Params{S3: config.S3{
 		Endpoint: params.StorageParams.S3.Endpoint,
 		Bucket:   params.StorageParams.S3.Bucket,
 	}})
