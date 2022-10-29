@@ -13,23 +13,34 @@ import (
 
 // Params holds configuration parameters.
 type Params struct {
-	S3 S3Options
+	S3 S3
+}
+
+// S3 holds S3 object storage configuration options.
+type S3 struct {
+	Endpoint string
+	Bucket   string
 }
 
 // BuildConfigMap creates configuration objects.
 func BuildConfigMap(tempo v1alpha1.Microservices, params Params) (*corev1.ConfigMap, error) {
-	params.S3.Insecure = false
-	if strings.HasPrefix(params.S3.Endpoint, "http://") {
-		params.S3.Insecure = true
-		params.S3.Endpoint = strings.TrimPrefix(params.S3.Endpoint, "http://")
-	} else if !strings.HasPrefix(params.S3.Endpoint, "https://") {
-		params.S3.Insecure = true
+	s3Insecure := false
+	s3Endpoint := params.S3.Endpoint
+	if strings.HasPrefix(s3Endpoint, "http://") {
+		s3Insecure = true
+		s3Endpoint = strings.TrimPrefix(s3Endpoint, "http://")
+	} else if !strings.HasPrefix(s3Endpoint, "https://") {
+		s3Insecure = true
 	} else {
-		params.S3.Endpoint = strings.TrimPrefix(params.S3.Endpoint, "https://")
+		s3Endpoint = strings.TrimPrefix(s3Endpoint, "https://")
 	}
 
-	config, err := buildConfiguration(Options{
-		S3:              params.S3,
+	config, err := buildConfiguration(options{
+		S3: s3{
+			Endpoint: s3Endpoint,
+			Bucket:   params.S3.Bucket,
+			Insecure: s3Insecure,
+		},
 		GlobalRetention: tempo.Spec.Retention.Global.Traces.String(),
 		MemberList: []string{
 			manifestutils.Name("gossip-ring", tempo.Name),

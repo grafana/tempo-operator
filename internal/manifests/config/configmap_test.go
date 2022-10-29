@@ -23,7 +23,7 @@ func TestConfigmap(t *testing.T) {
 				},
 			},
 		},
-	}, Params{S3: S3Options{
+	}, Params{S3: S3{
 		Endpoint: "http://minio:9000",
 		Bucket:   "tempo",
 	}})

@@ -20,7 +20,7 @@ var (
 )
 
 // Build builds a tempo configuration.
-func buildConfiguration(opts Options) ([]byte, error) {
+func buildConfiguration(opts options) ([]byte, error) {
 	// Build Tempo config yaml
 	w := bytes.NewBuffer(nil)
 	err := tempoConfigYAMLTmpl.Execute(w, opts)
