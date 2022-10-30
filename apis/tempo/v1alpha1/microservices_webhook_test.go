@@ -9,6 +9,7 @@ import (
 )
 
 func TestDefault(t *testing.T) {
+	defaultMaxSearch := 0
 	tests := []struct {
 		input    *Microservices
 		expected *Microservices
@@ -24,6 +25,13 @@ func TestDefault(t *testing.T) {
 						},
 					},
 					StorageSize: resource.MustParse("1Gi"),
+					LimitSpec: LimitSpec{
+						Global: RateLimitSpec{
+							Query: QueryLimit{
+								MaxSearchBytesPerTrace: &defaultMaxSearch,
+							},
+						},
+					},
 				},
 			},
 			expected: &Microservices{
@@ -34,6 +42,13 @@ func TestDefault(t *testing.T) {
 						},
 					},
 					StorageSize: resource.MustParse("1Gi"),
+					LimitSpec: LimitSpec{
+						Global: RateLimitSpec{
+							Query: QueryLimit{
+								MaxSearchBytesPerTrace: &defaultMaxSearch,
+							},
+						},
+					},
 				},
 			},
 		},
@@ -48,6 +63,13 @@ func TestDefault(t *testing.T) {
 						},
 					},
 					StorageSize: resource.MustParse("10Gi"),
+					LimitSpec: LimitSpec{
+						Global: RateLimitSpec{
+							Query: QueryLimit{
+								MaxSearchBytesPerTrace: &defaultMaxSearch,
+							},
+						},
+					},
 				},
 			},
 		},
