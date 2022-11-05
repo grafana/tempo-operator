@@ -53,6 +53,8 @@ spec:
           can send.
         displayName: Max Traces per User
         path: limits.global.ingestion.maxTracesPerUser
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:text
       - description: Query is used to define query rate limits.
         displayName: Query Limit
         path: limits.global.query
@@ -86,6 +88,8 @@ spec:
           can send.
         displayName: Max Traces per User
         path: limits.perTenant.ingestion.maxTracesPerUser
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:text
       - description: Query is used to define query rate limits.
         displayName: Query Limit
         path: limits.perTenant.query
