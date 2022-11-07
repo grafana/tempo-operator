@@ -23,13 +23,10 @@ var (
 )
 
 func s3FromParams(params Params) s3 {
-	s3Insecure := false
+	s3Insecure := !strings.HasPrefix(s3Endpoint, "https://")
 	s3Endpoint := params.S3.Endpoint
 	if strings.HasPrefix(s3Endpoint, "http://") {
-		s3Insecure = true
 		s3Endpoint = strings.TrimPrefix(s3Endpoint, "http://")
-	} else if !strings.HasPrefix(s3Endpoint, "https://") {
-		s3Insecure = true
 	} else {
 		s3Endpoint = strings.TrimPrefix(s3Endpoint, "https://")
 	}
