@@ -63,6 +63,7 @@ func buildConfiguration(tempo v1alpha1.Microservices, params Params) ([]byte, er
 		},
 		QueryFrontendDiscovery: fmt.Sprintf("%s:9095", naming.Name("query-frontend-discovery", tempo.Name)),
 		GlobalRateLimits:       fromRateLimitSpecToRateLimitOptions(tempo.Spec.LimitSpec.Global),
+		Search:                 fromSearchSpecToOptions(tempo.Spec.SearchOptions),
 	}
 
 	if isTenantOverridesConfigRequired(tempo.Spec.LimitSpec) {
@@ -110,4 +111,30 @@ func renderTenantOverridesTemplate(opts tenantOptions) ([]byte, error) {
 	}
 
 	return cfg, nil
+}
+
+func fromSearchSpecToOptions(spec v1alpha1.SearchSpec) searchOptions {
+	options := searchOptions{
+		ExternalHedgeRequestsUpTo: spec.ExternalHedgeRequestsUpTo,
+		ConcurrentJobs:            spec.ConcurrentJobs,
+		TargetBytesPerJob:         spec.TargetBytesPerJob,
+		// If not specified, will be zero,  means disable limit by default
+		MaxSearchTimeRange: spec.MaxSearchTimeRange.String(),
+	}
+	if spec.QueryTimeout != 0 {
+		options.QueryTimeout = spec.QueryTimeout.String()
+	}
+
+	if spec.ExternalHedgeRequestsAt != 0 {
+		options.QueryTimeout = spec.ExternalHedgeRequestsAt.String()
+	}
+
+	if spec.QueryIngestersUntil != 0 {
+		options.QueryIngestersUntil = spec.QueryIngestersUntil.String()
+	}
+
+	if spec.QueryBackendAfter != 0 {
+		options.QueryBackendAfter = spec.QueryBackendAfter.String()
+	}
+	return options
 }

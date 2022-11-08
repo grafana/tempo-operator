@@ -15,6 +15,7 @@ type options struct {
 	GlobalRateLimits       rateLimitsOptions
 	TenantRateLimitsPath   string
 	MemberList             []string
+	Search                 searchOptions
 }
 
 type tenantOptions struct {
@@ -28,4 +29,15 @@ type rateLimitsOptions struct {
 	MaxTracesPerUser        *int
 	MaxBytesPerTagValues    *int
 	MaxSearchBytesPerTrace  *int
+}
+
+type searchOptions struct {
+	MaxSearchTimeRange        string
+	QueryIngestersUntil       string
+	QueryBackendAfter         string
+	QueryTimeout              string
+	ExternalHedgeRequestsAt   string
+	ExternalHedgeRequestsUpTo int
+	ConcurrentJobs            int
+	TargetBytesPerJob         int
 }

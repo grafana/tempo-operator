@@ -70,6 +70,17 @@ overrides:
 querier:
   frontend_worker:
     frontend_address: {{ .QueryFrontendDiscovery }}
+  search:
+{{- if .Search.QueryTimeout }}
+    query_timeout: {{ .Search.QueryTimeout }}
+{{- end }}
+{{- if .Search.ExternalHedgeRequestsAt }}
+    external_hedge_requests_at: {{ .Search.ExternalHedgeRequestsAt }}
+{{- end }}
+{{- if .Search.ExternalHedgeRequestsAt }}
+    external_hedge_requests_up_to: {{ .Search.ExternalHedgeRequestsUpTo }}
+{{- end }}
+
 search_enabled: true
 server:
   grpc_server_max_recv_msg_size: 4194304
@@ -94,3 +105,20 @@ storage:
       path: /var/tempo/wal
 usage_report:
   reporting_enabled: false
+query_frontend:
+  search:
+{{- if .Search.ConcurrentJobs }}
+    concurrent_jobs: {{ .Search.ConcurrentJobs }}
+{{- end }}
+{{- if .Search.TargetBytesPerJob }}
+    target_bytes_per_job: {{ .Search.TargetBytesPerJob }}
+{{- end }}
+{{- if .Search.MaxSearchTimeRange }}
+    max_duration: {{ .Search.MaxSearchTimeRange }}
+{{- end }}
+{{- if .Search.QueryBackendAfter }}
+    query_backend_after: {{ .Search.QueryBackendAfter }}
+{{- end }}
+{{- if .Search.QueryIngestersUntil }}
+    query_ingesters_until: {{ .Search.QueryIngestersUntil }}
+{{- end }}
