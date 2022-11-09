@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   unit-tests:
-    name: Unit tests
+    name: Unit tests ${{ github.ref }}
     runs-on: ubuntu-22.04
     steps:
       - name: Set up Go
