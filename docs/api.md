@@ -276,6 +276,13 @@ Query is used to define query rate limits.
         </tr>
     </thead>
     <tbody><tr>
+        <td><b>maxBytesPerTagValues</b></td>
+        <td>integer</td>
+        <td>
+          MaxBytesPerTagValues defines the maximum size in bytes of a tag-values query.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b>maxSearchBytesPerTrace</b></td>
         <td>integer</td>
         <td>
@@ -385,6 +392,13 @@ Query is used to define query rate limits.
         </tr>
     </thead>
     <tbody><tr>
+        <td><b>maxBytesPerTagValues</b></td>
+        <td>integer</td>
+        <td>
+          MaxBytesPerTagValues defines the maximum size in bytes of a tag-values query.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b>maxSearchBytesPerTrace</b></td>
         <td>integer</td>
         <td>

@@ -52,6 +52,12 @@ spec:
       - description: Query is used to define query rate limits.
         displayName: Query Limit
         path: limits.global.query
+      - description: MaxBytesPerTagValues defines the maximum size in bytes of a tag-values
+          query.
+        displayName: Max Tags per User
+        path: limits.global.query.maxBytesPerTagValues
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:number
       - description: 'MaxSearchBytesPerTrace defines the maximum size of search data
           for a single trace in bytes. default: `0` to disable.'
         displayName: Max Traces per User
@@ -91,6 +97,12 @@ spec:
       - description: Query is used to define query rate limits.
         displayName: Query Limit
         path: limits.perTenant.query
+      - description: MaxBytesPerTagValues defines the maximum size in bytes of a tag-values
+          query.
+        displayName: Max Tags per User
+        path: limits.perTenant.query.maxBytesPerTagValues
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:number
       - description: 'MaxSearchBytesPerTrace defines the maximum size of search data
           for a single trace in bytes. default: `0` to disable.'
         displayName: Max Traces per User

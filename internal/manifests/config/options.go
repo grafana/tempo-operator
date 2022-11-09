@@ -11,6 +11,21 @@ type s3 struct {
 type options struct {
 	GlobalRetention        string
 	QueryFrontendDiscovery string
-	MemberList             []string
 	S3                     s3
+	GlobalRateLimits       rateLimitsOptions
+	TenantRateLimitsPath   string
+	MemberList             []string
+}
+
+type tenantOptions struct {
+	RateLimits map[string]rateLimitsOptions
+}
+
+type rateLimitsOptions struct {
+	IngestionBurstSizeBytes *int
+	IngestionRateLimitBytes *int
+	MaxBytesPerTrace        *int
+	MaxTracesPerUser        *int
+	MaxBytesPerTagValues    *int
+	MaxSearchBytesPerTrace  *int
 }

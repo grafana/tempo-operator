@@ -40,6 +40,11 @@ func (r *Microservices) Default() {
 	if r.Spec.StorageSize.Cmp(zeroQuantity) <= 0 {
 		r.Spec.StorageSize = tenGBQuantity
 	}
+
+	if r.Spec.LimitSpec.Global.Query.MaxSearchBytesPerTrace == nil {
+		defaultMaxSearchBytesPerTrace := 0
+		r.Spec.LimitSpec.Global.Query.MaxSearchBytesPerTrace = &defaultMaxSearchBytesPerTrace
+	}
 }
 
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
