@@ -55,6 +55,7 @@ multitenancy_enabled: false
 querier: 
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
+  search:
 search_enabled: true
 server: 
   grpc_server_max_recv_msg_size: 4194304
@@ -79,6 +80,9 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
+query_frontend:
+  search:
+    max_duration: 0s
 `
 	cfg, err := buildConfiguration(v1alpha1.Microservices{
 		ObjectMeta: metav1.ObjectMeta{
@@ -149,6 +153,7 @@ multitenancy_enabled: false
 querier: 
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
+  search:
 search_enabled: true
 server: 
   grpc_server_max_recv_msg_size: 4194304
@@ -173,6 +178,9 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
+query_frontend:
+  search:
+    max_duration: 0s
       `,
 		},
 		{
@@ -226,6 +234,7 @@ overrides:
 querier: 
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
+  search:
 search_enabled: true
 server: 
   grpc_server_max_recv_msg_size: 4194304
@@ -250,6 +259,9 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
+query_frontend:
+  search:
+    max_duration: 0s
       `,
 		},
 		{
@@ -302,6 +314,7 @@ overrides:
 querier: 
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
+  search:
 search_enabled: true
 server: 
   grpc_server_max_recv_msg_size: 4194304
@@ -326,6 +339,9 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
+query_frontend:
+  search:
+    max_duration: 0s
       `,
 		},
 		{
@@ -379,6 +395,7 @@ overrides:
 querier: 
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
+  search:
 search_enabled: true
 server: 
   grpc_server_max_recv_msg_size: 4194304
@@ -403,6 +420,9 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
+query_frontend:
+  search:
+    max_duration: 0s
       `,
 		},
 		{
@@ -456,6 +476,7 @@ overrides:
 querier: 
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
+  search:
 search_enabled: true
 server: 
   grpc_server_max_recv_msg_size: 4194304
@@ -480,6 +501,9 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
+query_frontend:
+  search:
+    max_duration: 0s
       `,
 		},
 		{
@@ -533,6 +557,7 @@ overrides:
 querier: 
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
+  search:
 search_enabled: true
 server: 
   grpc_server_max_recv_msg_size: 4194304
@@ -557,6 +582,9 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
+query_frontend:
+  search:
+    max_duration: 0s
       `,
 		},
 		{
@@ -610,6 +638,7 @@ overrides:
 querier: 
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
+  search:
 search_enabled: true
 server: 
   grpc_server_max_recv_msg_size: 4194304
@@ -634,6 +663,9 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
+query_frontend:
+  search:
+    max_duration: 0s
       `,
 		},
 		{
@@ -699,6 +731,7 @@ overrides:
 querier: 
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
+  search:
 search_enabled: true
 server: 
   grpc_server_max_recv_msg_size: 4194304
@@ -723,6 +756,9 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
+query_frontend:
+  search:
+    max_duration: 0s
       `,
 		},
 		{
@@ -786,6 +822,7 @@ overrides:
 querier: 
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
+  search:
 search_enabled: true
 server: 
   grpc_server_max_recv_msg_size: 4194304
@@ -810,6 +847,9 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
+query_frontend:
+  search:
+    max_duration: 0s
       `,
 		},
 	}
