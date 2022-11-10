@@ -201,6 +201,10 @@ spec:
                   concurrentJobs:
                     type: integer
                   externalHedgeRequestsAt:
+                    description: A Duration represents the elapsed time between two
+                      instants as an int64 nanosecond count. The representation limits
+                      the largest representable duration to approximately 290 years.
+                    format: int64
                     type: integer
                   externalHedgeRequestsUpTo:
                     type: integer
@@ -223,10 +227,18 @@ spec:
                     format: int64
                     type: integer
                   queryTimeout:
+                    description: A Duration represents the elapsed time between two
+                      instants as an int64 nanosecond count. The representation limits
+                      the largest representable duration to approximately 290 years.
+                    format: int64
                     type: integer
                   targetBytesPerJob:
                     type: integer
                 type: object
+              serviceAccount:
+                description: ServiceAccount defines the service account to use for
+                  all tempo components.
+                type: string
               storage:
                 description: Storage defines S3 compatible object storage configuration.
                   User is required to create secret and supply it.

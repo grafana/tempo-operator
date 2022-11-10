@@ -126,6 +126,13 @@ MicroservicesSpec defines the desired state of Microservices.
         </td>
         <td>false</td>
       </tr><tr>
+        <td><b><a href="#microservicesspecsearchoptions">searchOptions</a></b></td>
+        <td>object</td>
+        <td>
+          SearchOptions control the configuration for the search capabilities.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b>serviceAccount</b></td>
         <td>string</td>
         <td>
@@ -661,6 +668,92 @@ RetentionConfig defines how long data should be provided.
         <td>string</td>
         <td>
           Traces defines retention period. Supported parameter suffixes are “s”, “m” and “h”. example: 336h default: value is 48h.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### Microservices.spec.searchOptions
+<sup><sup>[↩ Parent](#microservicesspec)</sup></sup>
+
+
+
+SearchOptions control the configuration for the search capabilities.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>concurrentJobs</b></td>
+        <td>integer</td>
+        <td>
+          <br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>externalHedgeRequestsAt</b></td>
+        <td>integer</td>
+        <td>
+          A Duration represents the elapsed time between two instants as an int64 nanosecond count. The representation limits the largest representable duration to approximately 290 years.<br/>
+          <br/>
+            <i>Format</i>: int64<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>externalHedgeRequestsUpTo</b></td>
+        <td>integer</td>
+        <td>
+          <br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>maxSearchTimeRange</b></td>
+        <td>integer</td>
+        <td>
+          A Duration represents the elapsed time between two instants as an int64 nanosecond count. The representation limits the largest representable duration to approximately 290 years.<br/>
+          <br/>
+            <i>Format</i>: int64<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>queryBackendAfter</b></td>
+        <td>integer</td>
+        <td>
+          A Duration represents the elapsed time between two instants as an int64 nanosecond count. The representation limits the largest representable duration to approximately 290 years.<br/>
+          <br/>
+            <i>Format</i>: int64<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>queryIngestersUntil</b></td>
+        <td>integer</td>
+        <td>
+          A Duration represents the elapsed time between two instants as an int64 nanosecond count. The representation limits the largest representable duration to approximately 290 years.<br/>
+          <br/>
+            <i>Format</i>: int64<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>queryTimeout</b></td>
+        <td>integer</td>
+        <td>
+          A Duration represents the elapsed time between two instants as an int64 nanosecond count. The representation limits the largest representable duration to approximately 290 years.<br/>
+          <br/>
+            <i>Format</i>: int64<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>targetBytesPerJob</b></td>
+        <td>integer</td>
+        <td>
+          <br/>
         </td>
         <td>false</td>
       </tr></tbody>
