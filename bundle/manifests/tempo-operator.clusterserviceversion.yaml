@@ -128,11 +128,14 @@ spec:
           is used to define how many component replicas should exist.'
         displayName: Replication Factor
         path: replicationFactor
-      - description: 'NOTE: currently this field is not considered. The resources
-          are split in between components. Tempo operator knows how to split them
-          appropriately based on grafana/tempo/issues/1540.'
-        displayName: Resource Requirements
+      - description: Resources defines resources configuration.
+        displayName: Resources
         path: resources
+      - description: The resources are split in between components. Tempo operator
+          knows how to split them appropriately based on http://github.com/grafana/tempo/issues/1540.
+          Only limits are supported, the operator calculates requests automatically.
+        displayName: Resource Requirements
+        path: resources.resources
       - description: 'NOTE: currently this field is not considered. Retention period
           defined by dataset. User can specify how long data should be stored.'
         displayName: Retention Period

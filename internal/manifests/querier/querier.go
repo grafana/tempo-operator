@@ -83,6 +83,7 @@ func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
 									ReadOnly:  true,
 								},
 							},
+							Resources: manifestutils.Resources(tempo, componentName),
 						},
 					},
 					Volumes: []corev1.Volume{

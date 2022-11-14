@@ -46,6 +46,11 @@ spec:
   storage:
     secret: minio-test
   storageSize: 1Gi
+  resources:
+    total:
+      limits:
+        memory: 2Gi
+        cpu: 2000m
   template:
     queryFrontend:
       jaegerQuery:

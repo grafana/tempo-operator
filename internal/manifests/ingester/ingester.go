@@ -9,7 +9,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
-	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
+	manifestutils "github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
 	"github.com/os-observability/tempo-operator/internal/manifests/memberlist"
 )
 
@@ -32,7 +32,7 @@ func BuildIngester(tempo v1alpha1.Microservices) ([]client.Object, error) {
 }
 
 func statefulSet(tempo v1alpha1.Microservices) (*v1.StatefulSet, error) {
-	labels := manifestutils.ComponentLabels("ingester", tempo.Name)
+	labels := manifestutils.ComponentLabels(componentName, tempo.Name)
 	filesystem := corev1.PersistentVolumeFilesystem
 	cfg := &v1alpha1.TempoComponentSpec{}
 	if userCfg := tempo.Spec.Components.Ingester; userCfg != nil {
@@ -41,7 +41,7 @@ func statefulSet(tempo v1alpha1.Microservices) (*v1.StatefulSet, error) {
 
 	ss := &v1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      manifestutils.Name("ingester", tempo.Name),
+			Name:      manifestutils.Name(componentName, tempo.Name),
 			Namespace: tempo.Namespace,
 			Labels:    labels,
 		},
@@ -89,6 +89,7 @@ func statefulSet(tempo v1alpha1.Microservices) (*v1.StatefulSet, error) {
 									Protocol:      corev1.ProtocolTCP,
 								},
 							},
+							Resources: manifestutils.Resources(tempo, componentName),
 						},
 					},
 					Volumes: []corev1.Volume{

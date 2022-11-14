@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8slabels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -179,6 +180,16 @@ func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 									MountPath: "/var/tempo",
 								},
 							},
+							Resources: corev1.ResourceRequirements{
+								Limits: corev1.ResourceList{
+									corev1.ResourceCPU:    *resource.NewMilliQuantity(90, resource.BinarySI),
+									corev1.ResourceMemory: *resource.NewQuantity(107374184, resource.BinarySI),
+								},
+								Requests: corev1.ResourceList{
+									corev1.ResourceCPU:    *resource.NewMilliQuantity(27, resource.BinarySI),
+									corev1.ResourceMemory: *resource.NewQuantity(32212256, resource.BinarySI),
+								},
+							},
 						},
 					},
 					Volumes: []corev1.Volume{
@@ -236,6 +247,16 @@ func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 					MountPath: "/var/tempo",
 				},
 			},
+			Resources: corev1.ResourceRequirements{
+				Limits: corev1.ResourceList{
+					corev1.ResourceCPU:    *resource.NewMilliQuantity(90, resource.BinarySI),
+					corev1.ResourceMemory: *resource.NewQuantity(107374184, resource.BinarySI),
+				},
+				Requests: corev1.ResourceList{
+					corev1.ResourceCPU:    *resource.NewMilliQuantity(27, resource.BinarySI),
+					corev1.ResourceMemory: *resource.NewQuantity(32212256, resource.BinarySI),
+				},
+			},
 		}
 		jaegerQueryVolume := corev1.Volume{
 			Name: "data-query",
@@ -263,6 +284,14 @@ func TestBuildQueryFrontend(t *testing.T) {
 		Spec: v1alpha1.MicroservicesSpec{
 			Images: v1alpha1.ImagesSpec{
 				Tempo: "docker.io/grafana/tempo:1.5.0",
+			},
+			Resources: v1alpha1.Resources{
+				Total: &corev1.ResourceRequirements{
+					Limits: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("1000m"),
+						corev1.ResourceMemory: resource.MustParse("2Gi"),
+					},
+				},
 			},
 		},
 	})
@@ -306,6 +335,14 @@ func TestBuildQueryFrontendWithJaeger(t *testing.T) {
 					},
 					JaegerQuery: v1alpha1.JaegerQuerySpec{
 						Enabled: true,
+					},
+				},
+			},
+			Resources: v1alpha1.Resources{
+				Total: &corev1.ResourceRequirements{
+					Limits: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("1000m"),
+						corev1.ResourceMemory: resource.MustParse("2Gi"),
 					},
 				},
 			},

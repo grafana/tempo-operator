@@ -23,13 +23,10 @@ type MicroservicesSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tempo Components"
 	Components TempoComponentsSpec `json:"template,omitempty"`
 
-	// NOTE: currently this field is not considered.
-	// The resources are split in between components.
-	// Tempo operator knows how to split them appropriately based on grafana/tempo/issues/1540.
-	//
+	// Resources defines resources configuration.
 	// +optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Resource Requirements"
-	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Resources"
+	Resources Resources `json:"resources,omitempty"`
 
 	// NOTE: currently this field is not considered.
 	// Storage defines S3 compatible object storage configuration.
@@ -111,6 +108,18 @@ type ImagesSpec struct {
 	//
 	// +optional
 	TempoQuery string `json:"tempoQuery,omitempty"`
+}
+
+// Resources defines resources configuration.
+type Resources struct {
+	// The total amount of resources for Tempo instance.
+	// The operator autonomously splits resources between deployed Tempo components.
+	// Only limits are supported, the operator calculates requests automatically.
+	// See http://github.com/grafana/tempo/issues/1540.
+	//
+	// +optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Resource Requirements"
+	Total *corev1.ResourceRequirements `json:"total,omitempty"`
 }
 
 // ObjectStorageSpec defines the requirements to access the object
