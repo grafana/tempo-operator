@@ -34,6 +34,11 @@ func BuildIngester(tempo v1alpha1.Microservices) ([]client.Object, error) {
 func statefulSet(tempo v1alpha1.Microservices) (*v1.StatefulSet, error) {
 	labels := manifestutils.ComponentLabels("ingester", tempo.Name)
 	filesystem := corev1.PersistentVolumeFilesystem
+	cfg := &v1alpha1.TempoComponentSpec{}
+	if userCfg := tempo.Spec.Components.Ingester; userCfg != nil {
+		cfg = userCfg
+	}
+
 	ss := &v1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      manifestutils.Name("ingester", tempo.Name),
@@ -49,6 +54,8 @@ func statefulSet(tempo v1alpha1.Microservices) (*v1.StatefulSet, error) {
 					Labels: k8slabels.Merge(labels, memberlist.GossipSelector),
 				},
 				Spec: corev1.PodSpec{
+					NodeSelector: cfg.NodeSelector,
+					Tolerations:  cfg.Tolerations,
 					Containers: []corev1.Container{
 						{
 							Name:  "tempo",

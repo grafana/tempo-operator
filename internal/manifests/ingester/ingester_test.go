@@ -30,6 +30,16 @@ func TestBuildIngester(t *testing.T) {
 			},
 			StorageSize:      resource.MustParse("10Gi"),
 			StorageClassName: &storageClassName,
+			Components: v1alpha1.TempoComponentsSpec{
+				Ingester: &v1alpha1.TempoComponentSpec{
+					NodeSelector: map[string]string{"a": "b"},
+					Tolerations: []corev1.Toleration{
+						{
+							Key: "c",
+						},
+					},
+				},
+			},
 		},
 	})
 	require.NoError(t, err)
@@ -51,6 +61,12 @@ func TestBuildIngester(t *testing.T) {
 					Labels: k8slabels.Merge(labels, map[string]string{"tempo-gossip-member": "true"}),
 				},
 				Spec: corev1.PodSpec{
+					NodeSelector: map[string]string{"a": "b"},
+					Tolerations: []corev1.Toleration{
+						{
+							Key: "c",
+						},
+					},
 					Containers: []corev1.Container{
 						{
 							Name:  "tempo",

@@ -247,6 +247,8 @@ func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 
 		expectedDeployment.Spec.Template.Spec.Containers = append(expectedDeployment.Spec.Template.Spec.Containers, jaegerQueryContainer)
 		expectedDeployment.Spec.Template.Spec.Volumes = append(expectedDeployment.Spec.Template.Spec.Volumes, jaegerQueryVolume)
+		expectedDeployment.Spec.Template.Spec.NodeSelector = map[string]string{"a": "b"}
+		expectedDeployment.Spec.Template.Spec.Tolerations = []corev1.Toleration{{Key: "c"}}
 	}
 
 	return expectedDeployment
@@ -285,6 +287,14 @@ func TestBuildQueryFrontendWithJaeger(t *testing.T) {
 		Spec: v1alpha1.MicroservicesSpec{
 			Components: v1alpha1.TempoComponentsSpec{
 				QueryFrontend: &v1alpha1.TempoQueryFrontendSpec{
+					TempoComponentSpec: v1alpha1.TempoComponentSpec{
+						NodeSelector: map[string]string{"a": "b"},
+						Tolerations: []corev1.Toleration{
+							{
+								Key: "c",
+							},
+						},
+					},
 					JaegerQuery: v1alpha1.JaegerQuerySpec{
 						Enabled: true,
 					},
