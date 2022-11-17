@@ -55,7 +55,6 @@ multitenancy_enabled: false
 querier: 
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
-  search:
 search_enabled: true
 server: 
   grpc_server_max_recv_msg_size: 4194304
@@ -153,7 +152,6 @@ multitenancy_enabled: false
 querier: 
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
-  search:
 search_enabled: true
 server: 
   grpc_server_max_recv_msg_size: 4194304
@@ -234,7 +232,6 @@ overrides:
 querier: 
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
-  search:
 search_enabled: true
 server: 
   grpc_server_max_recv_msg_size: 4194304
@@ -314,7 +311,6 @@ overrides:
 querier: 
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
-  search:
 search_enabled: true
 server: 
   grpc_server_max_recv_msg_size: 4194304
@@ -395,7 +391,6 @@ overrides:
 querier: 
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
-  search:
 search_enabled: true
 server: 
   grpc_server_max_recv_msg_size: 4194304
@@ -476,7 +471,6 @@ overrides:
 querier: 
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
-  search:
 search_enabled: true
 server: 
   grpc_server_max_recv_msg_size: 4194304
@@ -557,7 +551,6 @@ overrides:
 querier: 
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
-  search:
 search_enabled: true
 server: 
   grpc_server_max_recv_msg_size: 4194304
@@ -638,7 +631,6 @@ overrides:
 querier: 
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
-  search:
 search_enabled: true
 server: 
   grpc_server_max_recv_msg_size: 4194304
@@ -731,7 +723,6 @@ overrides:
 querier: 
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
-  search:
 search_enabled: true
 server: 
   grpc_server_max_recv_msg_size: 4194304
@@ -822,7 +813,6 @@ overrides:
 querier: 
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
-  search:
 search_enabled: true
 server: 
   grpc_server_max_recv_msg_size: 4194304

@@ -70,6 +70,7 @@ overrides:
 querier:
   frontend_worker:
     frontend_address: {{ .QueryFrontendDiscovery }}
+{{- if or .Search.QueryTimeout .Search.ExternalHedgeRequestsAt .Search.ExternalHedgeRequestsAt}}
   search:
 {{- if .Search.QueryTimeout }}
     query_timeout: {{ .Search.QueryTimeout }}
@@ -80,7 +81,7 @@ querier:
 {{- if .Search.ExternalHedgeRequestsAt }}
     external_hedge_requests_up_to: {{ .Search.ExternalHedgeRequestsUpTo }}
 {{- end }}
-
+{{- end }}
 search_enabled: true
 server:
   grpc_server_max_recv_msg_size: 4194304
