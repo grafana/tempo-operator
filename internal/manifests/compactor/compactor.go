@@ -32,6 +32,11 @@ func BuildCompactor(tempo v1alpha1.Microservices) ([]client.Object, error) {
 
 func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
 	labels := manifestutils.ComponentLabels(componentName, tempo.Name)
+	cfg := &v1alpha1.TempoComponentSpec{}
+	if userCfg := tempo.Spec.Components.Compactor; userCfg != nil {
+		cfg = userCfg
+	}
+
 	d := &v1.Deployment{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: v1.SchemeGroupVersion.String(),
@@ -50,6 +55,8 @@ func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
 					Labels: k8slabels.Merge(labels, memberlist.GossipSelector),
 				},
 				Spec: corev1.PodSpec{
+					NodeSelector: cfg.NodeSelector,
+					Tolerations:  cfg.Tolerations,
 					Containers: []corev1.Container{
 						{
 							Name:  "tempo",

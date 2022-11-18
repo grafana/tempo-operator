@@ -20,6 +20,18 @@ func TestBuildDistributor(t *testing.T) {
 			Name:      "test",
 			Namespace: "project1",
 		},
+		Spec: v1alpha1.MicroservicesSpec{
+			Components: v1alpha1.TempoComponentsSpec{
+				Distributor: &v1alpha1.TempoComponentSpec{
+					NodeSelector: map[string]string{"a": "b"},
+					Tolerations: []corev1.Toleration{
+						{
+							Key: "c",
+						},
+					},
+				},
+			},
+		},
 	})
 
 	labels := manifestutils.ComponentLabels("distributor", "test")
@@ -42,6 +54,12 @@ func TestBuildDistributor(t *testing.T) {
 					Labels: k8slabels.Merge(labels, map[string]string{"tempo-gossip-member": "true"}),
 				},
 				Spec: corev1.PodSpec{
+					NodeSelector: map[string]string{"a": "b"},
+					Tolerations: []corev1.Toleration{
+						{
+							Key: "c",
+						},
+					},
 					Containers: []corev1.Container{
 						{
 							Name:  "tempo",
