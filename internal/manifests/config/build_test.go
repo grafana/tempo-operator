@@ -923,8 +923,8 @@ func TestBuildConfiguration_SearchConfig(t *testing.T) {
 
 	testCases := []struct {
 		name   string
-		spec   v1alpha1.SearchSpec
 		expect string
+		spec   v1alpha1.SearchSpec
 	}{
 		{
 			name: "defaults",
