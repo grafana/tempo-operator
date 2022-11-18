@@ -1230,6 +1230,385 @@ query_frontend:
     max_duration: 0s
       `,
 		},
+		{
+			name: "set ConcurrentJobs",
+			spec: v1alpha1.SearchSpec{
+				ConcurrentJobs: 8,
+			},
+			expect: `
+--- 
+compactor: 
+  compaction: 
+    block_retention: 48h0m0s
+  ring: 
+    kvstore: 
+      store: memberlist
+distributor: 
+  receivers: 
+    jaeger: 
+      protocols: 
+        thrift_http: 
+          endpoint: "0.0.0.0:14268"
+    otlp: 
+      protocols: 
+        grpc: 
+          endpoint: "0.0.0.0:4317"
+        http: 
+          endpoint: "0.0.0.0:4318"
+  ring: 
+    kvstore: 
+      store: memberlist
+ingester: 
+  lifecycler: 
+    ring: 
+      kvstore: 
+        store: memberlist
+      replication_factor: 1
+    tokens_file_path: /var/tempo/tokens.json
+  max_block_duration: 10m
+memberlist: 
+  abort_if_cluster_join_fails: false
+  join_members: 
+    - tempo-test-gossip-ring
+metrics_generator_enabled: false
+multitenancy_enabled: false
+overrides:
+querier: 
+  frontend_worker: 
+    frontend_address: "tempo-test-query-frontend-discovery:9095"
+search_enabled: true
+server: 
+  grpc_server_max_recv_msg_size: 4194304
+  grpc_server_max_send_msg_size: 4194304
+  http_listen_port: 3100
+  http_server_read_timeout: 3m
+  http_server_write_timeout: 3m
+  log_format: logfmt
+  log_level: debug
+storage: 
+  trace: 
+    backend: s3
+    blocklist_poll: 5m
+    cache: none
+    local: 
+      path: /var/tempo/traces
+    s3: 
+      bucket: tempo
+      endpoint: "minio:9000"
+      insecure: true
+    wal: 
+      path: /var/tempo/wal
+usage_report: 
+  reporting_enabled: false
+query_frontend:
+  search:
+    max_duration: 0s
+    concurrent_jobs: 8
+      `,
+		},
+		{
+			name: "set TargetBytesPerJob",
+			spec: v1alpha1.SearchSpec{
+				TargetBytesPerJob: 1024000,
+			},
+			expect: `
+--- 
+compactor: 
+  compaction: 
+    block_retention: 48h0m0s
+  ring: 
+    kvstore: 
+      store: memberlist
+distributor: 
+  receivers: 
+    jaeger: 
+      protocols: 
+        thrift_http: 
+          endpoint: "0.0.0.0:14268"
+    otlp: 
+      protocols: 
+        grpc: 
+          endpoint: "0.0.0.0:4317"
+        http: 
+          endpoint: "0.0.0.0:4318"
+  ring: 
+    kvstore: 
+      store: memberlist
+ingester: 
+  lifecycler: 
+    ring: 
+      kvstore: 
+        store: memberlist
+      replication_factor: 1
+    tokens_file_path: /var/tempo/tokens.json
+  max_block_duration: 10m
+memberlist: 
+  abort_if_cluster_join_fails: false
+  join_members: 
+    - tempo-test-gossip-ring
+metrics_generator_enabled: false
+multitenancy_enabled: false
+overrides:
+querier: 
+  frontend_worker: 
+    frontend_address: "tempo-test-query-frontend-discovery:9095"
+search_enabled: true
+server: 
+  grpc_server_max_recv_msg_size: 4194304
+  grpc_server_max_send_msg_size: 4194304
+  http_listen_port: 3100
+  http_server_read_timeout: 3m
+  http_server_write_timeout: 3m
+  log_format: logfmt
+  log_level: debug
+storage: 
+  trace: 
+    backend: s3
+    blocklist_poll: 5m
+    cache: none
+    local: 
+      path: /var/tempo/traces
+    s3: 
+      bucket: tempo
+      endpoint: "minio:9000"
+      insecure: true
+    wal: 
+      path: /var/tempo/wal
+usage_report: 
+  reporting_enabled: false
+query_frontend:
+  search:
+    max_duration: 0s
+    target_bytes_per_job: 1024000
+      `,
+		},
+		{
+			name: "set MaxSearchTimeRange",
+			spec: v1alpha1.SearchSpec{
+				MaxSearchTimeRange: time.Duration(7*24) * time.Hour,
+			},
+			expect: `
+--- 
+compactor: 
+  compaction: 
+    block_retention: 48h0m0s
+  ring: 
+    kvstore: 
+      store: memberlist
+distributor: 
+  receivers: 
+    jaeger: 
+      protocols: 
+        thrift_http: 
+          endpoint: "0.0.0.0:14268"
+    otlp: 
+      protocols: 
+        grpc: 
+          endpoint: "0.0.0.0:4317"
+        http: 
+          endpoint: "0.0.0.0:4318"
+  ring: 
+    kvstore: 
+      store: memberlist
+ingester: 
+  lifecycler: 
+    ring: 
+      kvstore: 
+        store: memberlist
+      replication_factor: 1
+    tokens_file_path: /var/tempo/tokens.json
+  max_block_duration: 10m
+memberlist: 
+  abort_if_cluster_join_fails: false
+  join_members: 
+    - tempo-test-gossip-ring
+metrics_generator_enabled: false
+multitenancy_enabled: false
+overrides:
+querier: 
+  frontend_worker: 
+    frontend_address: "tempo-test-query-frontend-discovery:9095"
+search_enabled: true
+server: 
+  grpc_server_max_recv_msg_size: 4194304
+  grpc_server_max_send_msg_size: 4194304
+  http_listen_port: 3100
+  http_server_read_timeout: 3m
+  http_server_write_timeout: 3m
+  log_format: logfmt
+  log_level: debug
+storage: 
+  trace: 
+    backend: s3
+    blocklist_poll: 5m
+    cache: none
+    local: 
+      path: /var/tempo/traces
+    s3: 
+      bucket: tempo
+      endpoint: "minio:9000"
+      insecure: true
+    wal: 
+      path: /var/tempo/wal
+usage_report: 
+  reporting_enabled: false
+query_frontend:
+  search:
+    max_duration: 168h0m0s
+      `,
+		},
+		{
+			name: "set QueryBackendAfter",
+			spec: v1alpha1.SearchSpec{
+				QueryBackendAfter: time.Duration(8) * time.Hour,
+			},
+			expect: `
+--- 
+compactor: 
+  compaction: 
+    block_retention: 48h0m0s
+  ring: 
+    kvstore: 
+      store: memberlist
+distributor: 
+  receivers: 
+    jaeger: 
+      protocols: 
+        thrift_http: 
+          endpoint: "0.0.0.0:14268"
+    otlp: 
+      protocols: 
+        grpc: 
+          endpoint: "0.0.0.0:4317"
+        http: 
+          endpoint: "0.0.0.0:4318"
+  ring: 
+    kvstore: 
+      store: memberlist
+ingester: 
+  lifecycler: 
+    ring: 
+      kvstore: 
+        store: memberlist
+      replication_factor: 1
+    tokens_file_path: /var/tempo/tokens.json
+  max_block_duration: 10m
+memberlist: 
+  abort_if_cluster_join_fails: false
+  join_members: 
+    - tempo-test-gossip-ring
+metrics_generator_enabled: false
+multitenancy_enabled: false
+overrides:
+querier: 
+  frontend_worker: 
+    frontend_address: "tempo-test-query-frontend-discovery:9095"
+search_enabled: true
+server: 
+  grpc_server_max_recv_msg_size: 4194304
+  grpc_server_max_send_msg_size: 4194304
+  http_listen_port: 3100
+  http_server_read_timeout: 3m
+  http_server_write_timeout: 3m
+  log_format: logfmt
+  log_level: debug
+storage: 
+  trace: 
+    backend: s3
+    blocklist_poll: 5m
+    cache: none
+    local: 
+      path: /var/tempo/traces
+    s3: 
+      bucket: tempo
+      endpoint: "minio:9000"
+      insecure: true
+    wal: 
+      path: /var/tempo/wal
+usage_report: 
+  reporting_enabled: false
+query_frontend:
+  search:
+    max_duration: 0s
+    query_backend_after: 8h0m0s
+      `,
+		},
+		{
+			name: "set QueryIngestersUntil",
+			spec: v1alpha1.SearchSpec{
+				QueryIngestersUntil: time.Duration(8) * time.Hour,
+			},
+			expect: `
+--- 
+compactor: 
+  compaction: 
+    block_retention: 48h0m0s
+  ring: 
+    kvstore: 
+      store: memberlist
+distributor: 
+  receivers: 
+    jaeger: 
+      protocols: 
+        thrift_http: 
+          endpoint: "0.0.0.0:14268"
+    otlp: 
+      protocols: 
+        grpc: 
+          endpoint: "0.0.0.0:4317"
+        http: 
+          endpoint: "0.0.0.0:4318"
+  ring: 
+    kvstore: 
+      store: memberlist
+ingester: 
+  lifecycler: 
+    ring: 
+      kvstore: 
+        store: memberlist
+      replication_factor: 1
+    tokens_file_path: /var/tempo/tokens.json
+  max_block_duration: 10m
+memberlist: 
+  abort_if_cluster_join_fails: false
+  join_members: 
+    - tempo-test-gossip-ring
+metrics_generator_enabled: false
+multitenancy_enabled: false
+overrides:
+querier: 
+  frontend_worker: 
+    frontend_address: "tempo-test-query-frontend-discovery:9095"
+search_enabled: true
+server: 
+  grpc_server_max_recv_msg_size: 4194304
+  grpc_server_max_send_msg_size: 4194304
+  http_listen_port: 3100
+  http_server_read_timeout: 3m
+  http_server_write_timeout: 3m
+  log_format: logfmt
+  log_level: debug
+storage: 
+  trace: 
+    backend: s3
+    blocklist_poll: 5m
+    cache: none
+    local: 
+      path: /var/tempo/traces
+    s3: 
+      bucket: tempo
+      endpoint: "minio:9000"
+      insecure: true
+    wal: 
+      path: /var/tempo/wal
+usage_report: 
+  reporting_enabled: false
+query_frontend:
+  search:
+    max_duration: 0s
+    query_ingesters_until: 8h0m0s
+      `,
+		},
 	}
 
 	for _, tc := range testCases {
