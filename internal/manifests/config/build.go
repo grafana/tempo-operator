@@ -126,7 +126,7 @@ func fromSearchSpecToOptions(spec v1alpha1.SearchSpec) searchOptions {
 	}
 
 	if spec.ExternalHedgeRequestsAt != 0 {
-		options.QueryTimeout = spec.ExternalHedgeRequestsAt.String()
+		options.ExternalHedgeRequestsAt = spec.ExternalHedgeRequestsAt.String()
 	}
 
 	if spec.QueryIngestersUntil != 0 {

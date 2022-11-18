@@ -70,7 +70,7 @@ overrides:
 querier:
   frontend_worker:
     frontend_address: {{ .QueryFrontendDiscovery }}
-{{- if or .Search.QueryTimeout .Search.ExternalHedgeRequestsAt .Search.ExternalHedgeRequestsAt}}
+{{- if or .Search.QueryTimeout .Search.ExternalHedgeRequestsAt .Search.ExternalHedgeRequestsUpTo}}
   search:
 {{- if .Search.QueryTimeout }}
     query_timeout: {{ .Search.QueryTimeout }}
@@ -78,7 +78,7 @@ querier:
 {{- if .Search.ExternalHedgeRequestsAt }}
     external_hedge_requests_at: {{ .Search.ExternalHedgeRequestsAt }}
 {{- end }}
-{{- if .Search.ExternalHedgeRequestsAt }}
+{{- if .Search.ExternalHedgeRequestsUpTo }}
     external_hedge_requests_up_to: {{ .Search.ExternalHedgeRequestsUpTo }}
 {{- end }}
 {{- end }}
