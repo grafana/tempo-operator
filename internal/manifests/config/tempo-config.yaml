@@ -106,7 +106,7 @@ storage:
       path: /var/tempo/wal
 usage_report:
   reporting_enabled: false
-{{- if or .Search.ConcurrentJobs .Search.TargetBytesPerJob .Search.MaxSearchTimeRange .Search.QueryBackendAfter .Search.QueryIngestersUntil}}
+{{- if or .Search.ConcurrentJobs .Search.TargetBytesPerJob .Search.MaxSearchDuration .Search.QueryBackendAfter .Search.QueryIngestersUntil}}
 query_frontend:
   search:
 {{- if .Search.ConcurrentJobs }}
@@ -115,8 +115,8 @@ query_frontend:
 {{- if .Search.TargetBytesPerJob }}
     target_bytes_per_job: {{ .Search.TargetBytesPerJob }}
 {{- end }}
-{{- if .Search.MaxSearchTimeRange }}
-    max_duration: {{ .Search.MaxSearchTimeRange }}
+{{- if .Search.MaxSearchDuration }}
+    max_duration: {{ .Search.MaxSearchDuration }}
 {{- end }}
 {{- if .Search.QueryBackendAfter }}
     query_backend_after: {{ .Search.QueryBackendAfter }}

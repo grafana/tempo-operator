@@ -146,25 +146,25 @@ spec:
         path: retention.perTenant.traces
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:text
-      - description: SearchOptions control the configuration for the search capabilities.
+      - description: SearchSpec control the configuration for the search capabilities.
         displayName: Search configuration options
-        path: searchOptions
+        path: search
       - displayName: Number of concurrent jobs
-        path: searchOptions.concurrentJobs
+        path: search.concurrentJobs
       - displayName: External Hedge Requests At
-        path: searchOptions.externalHedgeRequestsAt
+        path: search.externalHedgeRequestsAt
       - displayName: External Hedge Requests Up To
-        path: searchOptions.externalHedgeRequestsUpTo
+        path: search.externalHedgeRequestsUpTo
       - displayName: Max search time range allowed
-        path: searchOptions.maxSearchTimeRange
+        path: search.maxSearchDuration
       - displayName: Query Backend After
-        path: searchOptions.queryBackendAfter
+        path: search.queryBackendAfter
       - displayName: Query Ingesters Until
-        path: searchOptions.queryIngestersUntil
+        path: search.queryIngestersUntil
       - displayName: Query timeout
-        path: searchOptions.queryTimeout
+        path: search.queryTimeout
       - displayName: Number of bytes for each job
-        path: searchOptions.targetBytesPerJob
+        path: search.targetBytesPerJob
       - description: ServiceAccount defines the service account to use for all tempo
           components.
         displayName: Service Account

@@ -1341,7 +1341,7 @@ query_frontend:
 		{
 			name: "set MaxSearchTimeRange",
 			spec: v1alpha1.SearchSpec{
-				MaxSearchTimeRange: "168h",
+				MaxSearchDuration: "168h",
 			},
 			expect: `
 --- 
@@ -1577,7 +1577,7 @@ query_frontend:
 							Traces: 48 * time.Hour,
 						},
 					},
-					SearchOptions: tc.spec,
+					SearchSpec: tc.spec,
 				},
 			}, Params{S3: S3{
 				Endpoint: "http://minio:9000",

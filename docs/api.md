@@ -126,10 +126,10 @@ MicroservicesSpec defines the desired state of Microservices.
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#microservicesspecsearchoptions">searchOptions</a></b></td>
+        <td><b><a href="#microservicesspecsearch">search</a></b></td>
         <td>object</td>
         <td>
-          SearchOptions control the configuration for the search capabilities.<br/>
+          SearchSpec control the configuration for the search capabilities.<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -674,12 +674,12 @@ RetentionConfig defines how long data should be provided.
 </table>
 
 
-### Microservices.spec.searchOptions
+### Microservices.spec.search
 <sup><sup>[↩ Parent](#microservicesspec)</sup></sup>
 
 
 
-SearchOptions control the configuration for the search capabilities.
+SearchSpec control the configuration for the search capabilities.
 
 <table>
     <thead>
@@ -712,7 +712,7 @@ SearchOptions control the configuration for the search capabilities.
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b>maxSearchTimeRange</b></td>
+        <td><b>maxSearchDuration</b></td>
         <td>string</td>
         <td>
           <br/>

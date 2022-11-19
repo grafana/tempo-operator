@@ -32,7 +32,7 @@ type rateLimitsOptions struct {
 }
 
 type searchOptions struct {
-	MaxSearchTimeRange        string
+	MaxSearchDuration         string
 	QueryIngestersUntil       string
 	QueryBackendAfter         string
 	QueryTimeout              string

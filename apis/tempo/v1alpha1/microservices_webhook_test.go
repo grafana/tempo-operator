@@ -76,8 +76,8 @@ func TestDefault(t *testing.T) {
 							},
 						},
 					},
-					SearchOptions: SearchSpec{
-						MaxSearchTimeRange: "0s",
+					SearchSpec: SearchSpec{
+						MaxSearchDuration: "0s",
 					},
 				},
 			},
@@ -112,8 +112,8 @@ func TestDefault(t *testing.T) {
 							},
 						},
 					},
-					SearchOptions: SearchSpec{
-						MaxSearchTimeRange: "0s",
+					SearchSpec: SearchSpec{
+						MaxSearchDuration: "0s",
 					},
 				},
 			},

@@ -194,9 +194,8 @@ spec:
                     description: PerTenant is used to configure retention per tenant.
                     type: object
                 type: object
-              searchOptions:
-                description: SearchOptions control the configuration for the search
-                  capabilities.
+              search:
+                description: SearchSpec control the configuration for the search capabilities.
                 properties:
                   concurrentJobs:
                     type: integer
@@ -204,7 +203,7 @@ spec:
                     type: string
                   externalHedgeRequestsUpTo:
                     type: integer
-                  maxSearchTimeRange:
+                  maxSearchDuration:
                     type: string
                   queryBackendAfter:
                     type: string

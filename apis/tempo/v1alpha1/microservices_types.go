@@ -66,11 +66,11 @@ type MicroservicesSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Storage size for PVCs"
 	StorageSize resource.Quantity `json:"storageSize,omitempty"`
 
-	// SearchOptions control the configuration for the search capabilities.
+	// SearchSpec control the configuration for the search capabilities.
 	//
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Search configuration options"
-	SearchOptions SearchSpec `json:"searchOptions,omitempty"`
+	SearchSpec SearchSpec `json:"search,omitempty"`
 
 	// NOTE: currently this field is not considered.
 	// ReplicationFactor is used to define how many component replicas should exist.
@@ -145,7 +145,7 @@ type SearchSpec struct {
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Max search time range allowed"
-	MaxSearchTimeRange string `json:"maxSearchTimeRange,omitempty"`
+	MaxSearchDuration string `json:"maxSearchDuration,omitempty"`
 
 	// +optional
 	// +kubebuilder:validation:Optional
