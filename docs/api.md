@@ -699,11 +699,9 @@ SearchOptions control the configuration for the search capabilities.
         <td>false</td>
       </tr><tr>
         <td><b>externalHedgeRequestsAt</b></td>
-        <td>integer</td>
+        <td>string</td>
         <td>
-          A Duration represents the elapsed time between two instants as an int64 nanosecond count. The representation limits the largest representable duration to approximately 290 years.<br/>
           <br/>
-            <i>Format</i>: int64<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -715,38 +713,30 @@ SearchOptions control the configuration for the search capabilities.
         <td>false</td>
       </tr><tr>
         <td><b>maxSearchTimeRange</b></td>
-        <td>integer</td>
+        <td>string</td>
         <td>
-          A Duration represents the elapsed time between two instants as an int64 nanosecond count. The representation limits the largest representable duration to approximately 290 years.<br/>
           <br/>
-            <i>Format</i>: int64<br/>
         </td>
         <td>false</td>
       </tr><tr>
         <td><b>queryBackendAfter</b></td>
-        <td>integer</td>
+        <td>string</td>
         <td>
-          A Duration represents the elapsed time between two instants as an int64 nanosecond count. The representation limits the largest representable duration to approximately 290 years.<br/>
           <br/>
-            <i>Format</i>: int64<br/>
         </td>
         <td>false</td>
       </tr><tr>
         <td><b>queryIngestersUntil</b></td>
-        <td>integer</td>
+        <td>string</td>
         <td>
-          A Duration represents the elapsed time between two instants as an int64 nanosecond count. The representation limits the largest representable duration to approximately 290 years.<br/>
           <br/>
-            <i>Format</i>: int64<br/>
         </td>
         <td>false</td>
       </tr><tr>
         <td><b>queryTimeout</b></td>
-        <td>integer</td>
+        <td>string</td>
         <td>
-          A Duration represents the elapsed time between two instants as an int64 nanosecond count. The representation limits the largest representable duration to approximately 290 years.<br/>
           <br/>
-            <i>Format</i>: int64<br/>
         </td>
         <td>false</td>
       </tr><tr>

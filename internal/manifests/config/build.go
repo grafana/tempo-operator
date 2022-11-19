@@ -114,27 +114,14 @@ func renderTenantOverridesTemplate(opts tenantOptions) ([]byte, error) {
 }
 
 func fromSearchSpecToOptions(spec v1alpha1.SearchSpec) searchOptions {
-	options := searchOptions{
+	return searchOptions{
 		ExternalHedgeRequestsUpTo: spec.ExternalHedgeRequestsUpTo,
 		ConcurrentJobs:            spec.ConcurrentJobs,
 		TargetBytesPerJob:         spec.TargetBytesPerJob,
-		// If not specified, will be zero,  means disable limit by default
-		MaxSearchTimeRange: spec.MaxSearchTimeRange.String(),
+		MaxSearchTimeRange:        spec.MaxSearchTimeRange,
+		QueryTimeout:              spec.QueryTimeout,
+		ExternalHedgeRequestsAt:   spec.ExternalHedgeRequestsAt,
+		QueryIngestersUntil:       spec.QueryIngestersUntil,
+		QueryBackendAfter:         spec.QueryBackendAfter,
 	}
-	if spec.QueryTimeout != 0 {
-		options.QueryTimeout = spec.QueryTimeout.String()
-	}
-
-	if spec.ExternalHedgeRequestsAt != 0 {
-		options.ExternalHedgeRequestsAt = spec.ExternalHedgeRequestsAt.String()
-	}
-
-	if spec.QueryIngestersUntil != 0 {
-		options.QueryIngestersUntil = spec.QueryIngestersUntil.String()
-	}
-
-	if spec.QueryBackendAfter != 0 {
-		options.QueryBackendAfter = spec.QueryBackendAfter.String()
-	}
-	return options
 }

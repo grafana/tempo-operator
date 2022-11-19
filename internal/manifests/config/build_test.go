@@ -79,9 +79,6 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
-query_frontend:
-  search:
-    max_duration: 0s
 `
 	cfg, err := buildConfiguration(v1alpha1.Microservices{
 		ObjectMeta: metav1.ObjectMeta{
@@ -176,9 +173,6 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
-query_frontend:
-  search:
-    max_duration: 0s
       `,
 		},
 		{
@@ -256,9 +250,6 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
-query_frontend:
-  search:
-    max_duration: 0s
       `,
 		},
 		{
@@ -335,9 +326,6 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
-query_frontend:
-  search:
-    max_duration: 0s
       `,
 		},
 		{
@@ -415,9 +403,6 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
-query_frontend:
-  search:
-    max_duration: 0s
       `,
 		},
 		{
@@ -495,9 +480,6 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
-query_frontend:
-  search:
-    max_duration: 0s
       `,
 		},
 		{
@@ -575,9 +557,6 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
-query_frontend:
-  search:
-    max_duration: 0s
       `,
 		},
 		{
@@ -655,9 +634,6 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
-query_frontend:
-  search:
-    max_duration: 0s
       `,
 		},
 		{
@@ -747,9 +723,6 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
-query_frontend:
-  search:
-    max_duration: 0s
       `,
 		},
 		{
@@ -837,9 +810,6 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
-query_frontend:
-  search:
-    max_duration: 0s
       `,
 		},
 	}
@@ -994,15 +964,12 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
-query_frontend:
-  search:
-    max_duration: 0s
       `,
 		},
 		{
 			name: "set QueryTimeout",
 			spec: v1alpha1.SearchSpec{
-				QueryTimeout: time.Duration(10) * time.Second,
+				QueryTimeout: "10s",
 			},
 			expect: `
 --- 
@@ -1071,15 +1038,12 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
-query_frontend:
-  search:
-    max_duration: 0s
       `,
 		},
 		{
 			name: "set ExternalHedgeRequestsAt",
 			spec: v1alpha1.SearchSpec{
-				ExternalHedgeRequestsAt: time.Duration(10) * time.Second,
+				ExternalHedgeRequestsAt: "10s",
 			},
 			expect: `
 --- 
@@ -1148,9 +1112,6 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
-query_frontend:
-  search:
-    max_duration: 0s
       `,
 		},
 		{
@@ -1225,9 +1186,6 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
-query_frontend:
-  search:
-    max_duration: 0s
       `,
 		},
 		{
@@ -1302,7 +1260,6 @@ usage_report:
   reporting_enabled: false
 query_frontend:
   search:
-    max_duration: 0s
     concurrent_jobs: 8
       `,
 		},
@@ -1378,14 +1335,13 @@ usage_report:
   reporting_enabled: false
 query_frontend:
   search:
-    max_duration: 0s
     target_bytes_per_job: 1024000
       `,
 		},
 		{
 			name: "set MaxSearchTimeRange",
 			spec: v1alpha1.SearchSpec{
-				MaxSearchTimeRange: time.Duration(7*24) * time.Hour,
+				MaxSearchTimeRange: "168h",
 			},
 			expect: `
 --- 
@@ -1454,13 +1410,13 @@ usage_report:
   reporting_enabled: false
 query_frontend:
   search:
-    max_duration: 168h0m0s
+    max_duration: 168h
       `,
 		},
 		{
 			name: "set QueryBackendAfter",
 			spec: v1alpha1.SearchSpec{
-				QueryBackendAfter: time.Duration(8) * time.Hour,
+				QueryBackendAfter: "8h",
 			},
 			expect: `
 --- 
@@ -1529,14 +1485,13 @@ usage_report:
   reporting_enabled: false
 query_frontend:
   search:
-    max_duration: 0s
-    query_backend_after: 8h0m0s
+    query_backend_after: 8h
       `,
 		},
 		{
 			name: "set QueryIngestersUntil",
 			spec: v1alpha1.SearchSpec{
-				QueryIngestersUntil: time.Duration(8) * time.Hour,
+				QueryIngestersUntil: "8h",
 			},
 			expect: `
 --- 
@@ -1605,8 +1560,7 @@ usage_report:
   reporting_enabled: false
 query_frontend:
   search:
-    max_duration: 0s
-    query_ingesters_until: 8h0m0s
+    query_ingesters_until: 8h
       `,
 		},
 	}

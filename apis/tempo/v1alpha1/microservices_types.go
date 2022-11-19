@@ -66,18 +66,18 @@ type MicroservicesSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Storage size for PVCs"
 	StorageSize resource.Quantity `json:"storageSize,omitempty"`
 
+	// SearchOptions control the configuration for the search capabilities.
+	//
+	// +optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Search configuration options"
+	SearchOptions SearchSpec `json:"searchOptions,omitempty"`
+
 	// NOTE: currently this field is not considered.
 	// ReplicationFactor is used to define how many component replicas should exist.
 	//
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Replication Factor"
 	ReplicationFactor int `json:"replicationFactor,omitempty"`
-
-	// SearchOptions control the configuration for the search capabilities.
-	//
-	// +optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Search configuration options"
-	SearchOptions SearchSpec `json:"searchOptions,omitempty"`
 }
 
 // MicroservicesStatus defines the observed state of Microservices.
@@ -135,13 +135,27 @@ type SearchSpec struct {
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Query timeout"
-	QueryTimeout time.Duration `json:"queryTimeout,omitempty"`
+	QueryTimeout string `json:"queryTimeout,omitempty"`
 
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="External Hedge Requests At"
-	ExternalHedgeRequestsAt time.Duration `json:"externalHedgeRequestsAt,omitempty"`
+	ExternalHedgeRequestsAt string `json:"externalHedgeRequestsAt,omitempty"`
 
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Max search time range allowed"
+	MaxSearchTimeRange string `json:"maxSearchTimeRange,omitempty"`
+
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Query Ingesters Until"
+	QueryIngestersUntil string `json:"queryIngestersUntil,omitempty"`
+
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Query Backend After"
+	QueryBackendAfter string `json:"queryBackendAfter,omitempty"`
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="External Hedge Requests Up To"
@@ -156,21 +170,6 @@ type SearchSpec struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Number of bytes for each job"
 	TargetBytesPerJob int `json:"targetBytesPerJob,omitempty"`
-
-	// +optional
-	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Max search time range allowed"
-	MaxSearchTimeRange time.Duration `json:"maxSearchTimeRange,omitempty"`
-
-	// +optional
-	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Query Ingesters Until"
-	QueryIngestersUntil time.Duration `json:"queryIngestersUntil,omitempty"`
-
-	// +optional
-	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Query Backend After"
-	QueryBackendAfter time.Duration `json:"queryBackendAfter,omitempty"`
 }
 
 // ObjectStorageSpec defines the requirements to access the object

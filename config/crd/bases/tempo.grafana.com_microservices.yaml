@@ -201,37 +201,17 @@ spec:
                   concurrentJobs:
                     type: integer
                   externalHedgeRequestsAt:
-                    description: A Duration represents the elapsed time between two
-                      instants as an int64 nanosecond count. The representation limits
-                      the largest representable duration to approximately 290 years.
-                    format: int64
-                    type: integer
+                    type: string
                   externalHedgeRequestsUpTo:
                     type: integer
                   maxSearchTimeRange:
-                    description: A Duration represents the elapsed time between two
-                      instants as an int64 nanosecond count. The representation limits
-                      the largest representable duration to approximately 290 years.
-                    format: int64
-                    type: integer
+                    type: string
                   queryBackendAfter:
-                    description: A Duration represents the elapsed time between two
-                      instants as an int64 nanosecond count. The representation limits
-                      the largest representable duration to approximately 290 years.
-                    format: int64
-                    type: integer
+                    type: string
                   queryIngestersUntil:
-                    description: A Duration represents the elapsed time between two
-                      instants as an int64 nanosecond count. The representation limits
-                      the largest representable duration to approximately 290 years.
-                    format: int64
-                    type: integer
+                    type: string
                   queryTimeout:
-                    description: A Duration represents the elapsed time between two
-                      instants as an int64 nanosecond count. The representation limits
-                      the largest representable duration to approximately 290 years.
-                    format: int64
-                    type: integer
+                    type: string
                   targetBytesPerJob:
                     type: integer
                 type: object
