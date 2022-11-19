@@ -81,6 +81,10 @@ func (d *defaulter) Default(ctx context.Context, obj runtime.Object) error {
 		r.Spec.LimitSpec.Global.Query.MaxSearchBytesPerTrace = &defaultMaxSearchBytesPerTrace
 	}
 
+	if r.Spec.SearchOptions.MaxSearchTimeRange == "" {
+		r.Spec.SearchOptions.MaxSearchTimeRange = "0s"
+	}
+
 	return nil
 }
 
