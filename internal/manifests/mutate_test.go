@@ -491,6 +491,8 @@ func TestGetMutateFunc_MutateRoleBinding(t *testing.T) {
 }
 
 func TestGeMutateFunc_MutateDeploymentSpec(t *testing.T) {
+	one := int32(1)
+	two := int32(1)
 	type test struct {
 		got  *appsv1.Deployment
 		want *appsv1.Deployment
@@ -506,7 +508,7 @@ func TestGeMutateFunc_MutateDeploymentSpec(t *testing.T) {
 							"test": "test",
 						},
 					},
-					Replicas: pointer.Int32Ptr(1),
+					Replicas: &one,
 					Template: corev1.PodTemplateSpec{
 						Spec: corev1.PodSpec{
 							Containers: []corev1.Container{
@@ -527,7 +529,7 @@ func TestGeMutateFunc_MutateDeploymentSpec(t *testing.T) {
 							"and":  "another",
 						},
 					},
-					Replicas: pointer.Int32Ptr(2),
+					Replicas: &one,
 					Template: corev1.PodTemplateSpec{
 						Spec: corev1.PodSpec{
 							Containers: []corev1.Container{
@@ -554,7 +556,7 @@ func TestGeMutateFunc_MutateDeploymentSpec(t *testing.T) {
 							"test": "test",
 						},
 					},
-					Replicas: pointer.Int32Ptr(1),
+					Replicas: &one,
 					Template: corev1.PodTemplateSpec{
 						Spec: corev1.PodSpec{
 							Containers: []corev1.Container{
@@ -576,7 +578,7 @@ func TestGeMutateFunc_MutateDeploymentSpec(t *testing.T) {
 							"and":  "another",
 						},
 					},
-					Replicas: pointer.Int32Ptr(2),
+					Replicas: &two,
 					Template: corev1.PodTemplateSpec{
 						Spec: corev1.PodSpec{
 							Containers: []corev1.Container{
@@ -618,6 +620,8 @@ func TestGeMutateFunc_MutateDeploymentSpec(t *testing.T) {
 }
 
 func TestGeMutateFunc_MutateStatefulSetSpec(t *testing.T) {
+	one := int32(1)
+	two := int32(2)
 	type test struct {
 		got  *appsv1.StatefulSet
 		want *appsv1.StatefulSet
@@ -634,7 +638,7 @@ func TestGeMutateFunc_MutateStatefulSetSpec(t *testing.T) {
 							"test": "test",
 						},
 					},
-					Replicas: pointer.Int32Ptr(1),
+					Replicas: &one,
 					Template: corev1.PodTemplateSpec{
 						Spec: corev1.PodSpec{
 							Containers: []corev1.Container{
@@ -662,7 +666,7 @@ func TestGeMutateFunc_MutateStatefulSetSpec(t *testing.T) {
 							"and":  "another",
 						},
 					},
-					Replicas: pointer.Int32Ptr(2),
+					Replicas: &two,
 					Template: corev1.PodTemplateSpec{
 						Spec: corev1.PodSpec{
 							Containers: []corev1.Container{
@@ -697,7 +701,7 @@ func TestGeMutateFunc_MutateStatefulSetSpec(t *testing.T) {
 							"test": "test",
 						},
 					},
-					Replicas: pointer.Int32Ptr(1),
+					Replicas: &one,
 					Template: corev1.PodTemplateSpec{
 						Spec: corev1.PodSpec{
 							Containers: []corev1.Container{
@@ -726,7 +730,7 @@ func TestGeMutateFunc_MutateStatefulSetSpec(t *testing.T) {
 							"and":  "another",
 						},
 					},
-					Replicas: pointer.Int32Ptr(2),
+					Replicas: &two,
 					Template: corev1.PodTemplateSpec{
 						Spec: corev1.PodSpec{
 							Containers: []corev1.Container{
