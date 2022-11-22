@@ -84,6 +84,13 @@ MicroservicesSpec defines the desired state of Microservices.
         </tr>
     </thead>
     <tbody><tr>
+        <td><b><a href="#microservicesspecimages">images</a></b></td>
+        <td>object</td>
+        <td>
+          Images defines the image for each container.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b><a href="#microservicesspeclimits">limits</a></b></td>
         <td>object</td>
         <td>
@@ -136,7 +143,41 @@ MicroservicesSpec defines the desired state of Microservices.
         <td><b><a href="#microservicesspectemplate">template</a></b></td>
         <td>object</td>
         <td>
-          NOTE: currently this field is not considered. Components defines requierements for a set of tempo components.<br/>
+          NOTE: currently this field is not considered. Components defines requirements for a set of tempo components.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### Microservices.spec.images
+<sup><sup>[↩ Parent](#microservicesspec)</sup></sup>
+
+
+
+Images defines the image for each container.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>tempo</b></td>
+        <td>string</td>
+        <td>
+          Tempo defines the tempo container image.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>tempoQuery</b></td>
+        <td>string</td>
+        <td>
+          TempoQuery defines the tempo-query container image.<br/>
         </td>
         <td>false</td>
       </tr></tbody>
@@ -601,7 +642,7 @@ TLS configuration for reaching the object storage endpoint.
 
 
 
-NOTE: currently this field is not considered. Components defines requierements for a set of tempo components.
+NOTE: currently this field is not considered. Components defines requirements for a set of tempo components.
 
 <table>
     <thead>

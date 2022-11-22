@@ -55,7 +55,7 @@ func deployment(tempo v1alpha1.Microservices) *v1.Deployment {
 					Containers: []corev1.Container{
 						{
 							Name:  "tempo",
-							Image: "docker.io/grafana/tempo:1.5.0",
+							Image: tempo.Spec.Images.Tempo,
 							Args:  []string{"-target=distributor", "-config.file=/conf/tempo.yaml"},
 							Ports: []corev1.ContainerPort{
 								{

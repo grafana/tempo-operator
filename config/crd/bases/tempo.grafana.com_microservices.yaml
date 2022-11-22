@@ -35,6 +35,16 @@ spec:
           spec:
             description: MicroservicesSpec defines the desired state of Microservices.
             properties:
+              images:
+                description: Images defines the image for each container.
+                properties:
+                  tempo:
+                    description: Tempo defines the tempo container image.
+                    type: string
+                  tempoQuery:
+                    description: TempoQuery defines the tempo-query container image.
+                    type: string
+                type: object
               limits:
                 description: 'NOTE: currently this field is not considered. LimitSpec
                   is used to limit ingestion and querying rates.'
@@ -215,7 +225,7 @@ spec:
                 x-kubernetes-int-or-string: true
               template:
                 description: 'NOTE: currently this field is not considered. Components
-                  defines requierements for a set of tempo components.'
+                  defines requirements for a set of tempo components.'
                 properties:
                   compactor:
                     description: Compactor defines the lokistack compactor component

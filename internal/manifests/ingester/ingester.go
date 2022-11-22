@@ -59,7 +59,7 @@ func statefulSet(tempo v1alpha1.Microservices) (*v1.StatefulSet, error) {
 					Containers: []corev1.Container{
 						{
 							Name:  "tempo",
-							Image: "docker.io/grafana/tempo:1.5.0",
+							Image: tempo.Spec.Images.Tempo,
 							Args:  []string{"-target=ingester", "-config.file=/conf/tempo.yaml"},
 							VolumeMounts: []corev1.VolumeMount{
 								{

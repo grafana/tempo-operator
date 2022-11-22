@@ -25,6 +25,9 @@ func TestBuildIngester(t *testing.T) {
 			Namespace: "project1",
 		},
 		Spec: v1alpha1.MicroservicesSpec{
+			Images: v1alpha1.ImagesSpec{
+				Tempo: "docker.io/grafana/tempo:1.5.0",
+			},
 			Storage: v1alpha1.ObjectStorageSpec{
 				Secret: "test-storage-secret",
 			},

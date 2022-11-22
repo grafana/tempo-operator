@@ -22,6 +22,9 @@ data:
     # if you are doing or is intended to do any operation such as perform cleanups
     # after the manager stops then its usage might be unsafe.
     # leaderElectionReleaseOnCancel: true
+    images:
+      tempo: docker.io/grafana/tempo:1.5.0
+      tempoQuery: docker.io/grafana/tempo-query:1.5.0
 kind: ConfigMap
 metadata:
   name: tempo-operator-manager-config

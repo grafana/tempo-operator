@@ -101,7 +101,7 @@ func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
 					Containers: []corev1.Container{
 						{
 							Name:  "query-frontend",
-							Image: "docker.io/grafana/tempo:1.5.0",
+							Image: tempo.Spec.Images.Tempo,
 							Args: []string{
 								"-target=query-frontend",
 								"-config.file=/conf/tempo.yaml",
@@ -158,7 +158,7 @@ func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
 	if tempo.Spec.Components.QueryFrontend != nil && tempo.Spec.Components.QueryFrontend.JaegerQuery.Enabled {
 		jaegerQueryContainer := corev1.Container{
 			Name:  "tempo-query",
-			Image: "docker.io/grafana/tempo-query:1.5.0",
+			Image: tempo.Spec.Images.TempoQuery,
 			Args: []string{
 				"--query.base-path=/",
 				"--grpc-storage-plugin.configuration-file=/conf/tempo-query.yaml",

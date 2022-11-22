@@ -39,6 +39,9 @@ func TestReconcile(t *testing.T) {
 			Namespace: nsn.Namespace,
 		},
 		Spec: v1alpha1.MicroservicesSpec{
+			Images: v1alpha1.ImagesSpec{
+				Tempo: "docker.io/grafana/tempo:1.5.0",
+			},
 			LimitSpec: v1alpha1.LimitSpec{
 				PerTenant: map[string]v1alpha1.RateLimitSpec{},
 			},
