@@ -17,8 +17,8 @@ import (
 var (
 	zeroQuantity                = resource.MustParse("0Gi")
 	tenGBQuantity               = resource.MustParse("10Gi")
-	ErrNoDefaultTempoImage      = errors.New("please specify a tempo image in the CR or in the operator configuration")
-	ErrNoDefaultTempoQueryImage = errors.New("please specify a tempo-query image in the CR or in the operator configuration")
+	errNoDefaultTempoImage      = errors.New("please specify a tempo image in the CR or in the operator configuration")
+	errNoDefaultTempoQueryImage = errors.New("please specify a tempo-query image in the CR or in the operator configuration")
 )
 
 // log is for logging in this package.
@@ -48,13 +48,13 @@ func (d *defaulter) Default(ctx context.Context, obj runtime.Object) error {
 
 	if r.Spec.Images.Tempo == "" {
 		if d.defaultImages.Tempo == "" {
-			return ErrNoDefaultTempoImage
+			return errNoDefaultTempoImage
 		}
 		r.Spec.Images.Tempo = d.defaultImages.Tempo
 	}
 	if r.Spec.Images.TempoQuery == "" {
 		if d.defaultImages.TempoQuery == "" {
-			return ErrNoDefaultTempoQueryImage
+			return errNoDefaultTempoQueryImage
 		}
 		r.Spec.Images.TempoQuery = d.defaultImages.TempoQuery
 	}
