@@ -35,6 +35,15 @@ memberlist:
   {{- end }}
 metrics_generator_enabled: false
 multitenancy_enabled: false
+{{- if or
+  .GlobalRateLimits.IngestionBurstSizeBytes
+  .GlobalRateLimits.IngestionRateLimitBytes
+  .GlobalRateLimits.MaxTracesPerUser
+  .GlobalRateLimits.MaxBytesPerTrace
+  .GlobalRateLimits.MaxBytesPerTagValues
+  .GlobalRateLimits.MaxSearchBytesPerTrace
+  .TenantRateLimitsPath
+}}
 overrides:
 {{- if .GlobalRateLimits.IngestionBurstSizeBytes }}
   ingestion_burst_size_bytes: {{ .GlobalRateLimits.IngestionBurstSizeBytes }}
@@ -56,6 +65,7 @@ overrides:
 {{- end }}
 {{- if .TenantRateLimitsPath }}
   per_tenant_override_config: {{ .TenantRateLimitsPath }}
+{{- end }}
 {{- end }}
 querier:
   frontend_worker:

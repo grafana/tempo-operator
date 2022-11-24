@@ -52,7 +52,6 @@ memberlist:
     - tempo-test-gossip-ring
 metrics_generator_enabled: false
 multitenancy_enabled: false
-overrides:
 querier: 
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
@@ -147,7 +146,6 @@ memberlist:
     - tempo-test-gossip-ring
 metrics_generator_enabled: false
 multitenancy_enabled: false
-overrides:
 querier: 
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
