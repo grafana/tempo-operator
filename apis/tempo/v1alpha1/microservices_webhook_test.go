@@ -1,6 +1,7 @@
 package v1alpha1
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -9,6 +10,13 @@ import (
 )
 
 func TestDefault(t *testing.T) {
+	defaulter := &defaulter{
+		defaultImages: ImagesSpec{
+			Tempo:      "docker.io/grafana/tempo:x.y.z",
+			TempoQuery: "docker.io/grafana/tempo-query:x.y.z",
+		},
+	}
+
 	defaultMaxSearch := 0
 	tests := []struct {
 		input    *Microservices
@@ -19,6 +27,10 @@ func TestDefault(t *testing.T) {
 			name: "no action default values are provided",
 			input: &Microservices{
 				Spec: MicroservicesSpec{
+					Images: ImagesSpec{
+						Tempo:      "docker.io/grafana/tempo:1.2.3",
+						TempoQuery: "docker.io/grafana/tempo-query:1.2.3",
+					},
 					Retention: RetentionSpec{
 						Global: RetentionConfig{
 							Traces: time.Hour,
@@ -36,6 +48,10 @@ func TestDefault(t *testing.T) {
 			},
 			expected: &Microservices{
 				Spec: MicroservicesSpec{
+					Images: ImagesSpec{
+						Tempo:      "docker.io/grafana/tempo:1.2.3",
+						TempoQuery: "docker.io/grafana/tempo-query:1.2.3",
+					},
 					Retention: RetentionSpec{
 						Global: RetentionConfig{
 							Traces: time.Hour,
@@ -57,6 +73,10 @@ func TestDefault(t *testing.T) {
 			input: &Microservices{},
 			expected: &Microservices{
 				Spec: MicroservicesSpec{
+					Images: ImagesSpec{
+						Tempo:      "docker.io/grafana/tempo:x.y.z",
+						TempoQuery: "docker.io/grafana/tempo-query:x.y.z",
+					},
 					Retention: RetentionSpec{
 						Global: RetentionConfig{
 							Traces: 48 * time.Hour,
@@ -77,7 +97,8 @@ func TestDefault(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			test.input.Default()
+			err := defaulter.Default(context.Background(), test.input)
+			assert.NoError(t, err)
 			assert.Equal(t, test.expected, test.input)
 		})
 	}

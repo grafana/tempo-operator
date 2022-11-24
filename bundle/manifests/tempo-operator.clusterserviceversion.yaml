@@ -27,6 +27,9 @@ spec:
       kind: Microservices
       name: microservices.tempo.grafana.com
       specDescriptors:
+      - description: Images defines the image for each container.
+        displayName: Container Images
+        path: images
       - description: 'NOTE: currently this field is not considered. LimitSpec is used
           to limit ingestion and querying rates.'
         displayName: Ingestion and Querying Ratelimiting
@@ -178,7 +181,7 @@ spec:
         displayName: Storage size for PVCs
         path: storageSize
       - description: 'NOTE: currently this field is not considered. Components defines
-          requierements for a set of tempo components.'
+          requirements for a set of tempo components.'
         displayName: Tempo Components
         path: template
       - description: Compactor defines the lokistack compactor component spec.

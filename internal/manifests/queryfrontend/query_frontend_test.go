@@ -260,6 +260,11 @@ func TestBuildQueryFrontend(t *testing.T) {
 			Name:      "test",
 			Namespace: "project1",
 		},
+		Spec: v1alpha1.MicroservicesSpec{
+			Images: v1alpha1.ImagesSpec{
+				Tempo: "docker.io/grafana/tempo:1.5.0",
+			},
+		},
 	})
 	require.NoError(t, err)
 	require.Equal(t, 3, len(objects))
@@ -285,6 +290,10 @@ func TestBuildQueryFrontendWithJaeger(t *testing.T) {
 			Namespace: "project1",
 		},
 		Spec: v1alpha1.MicroservicesSpec{
+			Images: v1alpha1.ImagesSpec{
+				Tempo:      "docker.io/grafana/tempo:1.5.0",
+				TempoQuery: "docker.io/grafana/tempo-query:1.5.0",
+			},
 			Components: v1alpha1.TempoComponentsSpec{
 				QueryFrontend: &v1alpha1.TempoQueryFrontendSpec{
 					TempoComponentSpec: v1alpha1.TempoComponentSpec{

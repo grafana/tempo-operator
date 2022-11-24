@@ -1,8 +1,12 @@
 package v1alpha1
 
 import (
+	"context"
+	"errors"
+	"fmt"
 	"time"
 
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -11,16 +15,19 @@ import (
 )
 
 var (
-	zeroQuantity  = resource.MustParse("0Gi")
-	tenGBQuantity = resource.MustParse("10Gi")
+	zeroQuantity                = resource.MustParse("0Gi")
+	tenGBQuantity               = resource.MustParse("10Gi")
+	errNoDefaultTempoImage      = errors.New("please specify a tempo image in the CR or in the operator configuration")
+	errNoDefaultTempoQueryImage = errors.New("please specify a tempo-query image in the CR or in the operator configuration")
 )
 
 // log is for logging in this package.
 var microserviceslog = logf.Log.WithName("microservices-resource")
 
-func (r *Microservices) SetupWebhookWithManager(mgr ctrl.Manager) error {
+func (r *Microservices) SetupWebhookWithManager(mgr ctrl.Manager, defaultImages ImagesSpec) error {
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(r).
+		WithDefaulter(&defaulter{defaultImages: defaultImages}).
 		Complete()
 }
 
@@ -28,11 +35,30 @@ func (r *Microservices) SetupWebhookWithManager(mgr ctrl.Manager) error {
 
 //+kubebuilder:webhook:path=/mutate-tempo-grafana-com-v1alpha1-microservices,mutating=true,failurePolicy=fail,sideEffects=None,groups=tempo.grafana.com,resources=microservices,verbs=create;update,versions=v1alpha1,name=mmicroservices.kb.io,admissionReviewVersions=v1
 
-var _ webhook.Defaulter = &Microservices{}
+type defaulter struct {
+	defaultImages ImagesSpec
+}
 
-// Default implements webhook.Defaulter so a webhook will be registered for the type.
-func (r *Microservices) Default() {
+func (d *defaulter) Default(ctx context.Context, obj runtime.Object) error {
+	r, ok := obj.(*Microservices)
+	if !ok {
+		return apierrors.NewBadRequest(fmt.Sprintf("expected a Microservices object but got %T", obj))
+	}
 	microserviceslog.Info("default", "name", r.Name)
+
+	if r.Spec.Images.Tempo == "" {
+		if d.defaultImages.Tempo == "" {
+			return errNoDefaultTempoImage
+		}
+		r.Spec.Images.Tempo = d.defaultImages.Tempo
+	}
+	if r.Spec.Images.TempoQuery == "" {
+		if d.defaultImages.TempoQuery == "" {
+			return errNoDefaultTempoQueryImage
+		}
+		r.Spec.Images.TempoQuery = d.defaultImages.TempoQuery
+	}
+
 	if r.Spec.Retention.Global.Traces == 0 {
 		r.Spec.Retention.Global.Traces = 48 * time.Hour
 	}
@@ -45,6 +71,8 @@ func (r *Microservices) Default() {
 		defaultMaxSearchBytesPerTrace := 0
 		r.Spec.LimitSpec.Global.Query.MaxSearchBytesPerTrace = &defaultMaxSearchBytesPerTrace
 	}
+
+	return nil
 }
 
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.

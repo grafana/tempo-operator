@@ -86,7 +86,7 @@ var _ = BeforeSuite(func() {
 	})
 	Expect(err).NotTo(HaveOccurred())
 
-	err = (&Microservices{}).SetupWebhookWithManager(mgr)
+	err = (&Microservices{}).SetupWebhookWithManager(mgr, ImagesSpec{})
 	Expect(err).NotTo(HaveOccurred())
 
 	//+kubebuilder:scaffold:webhook

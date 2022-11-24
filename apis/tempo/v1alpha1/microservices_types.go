@@ -10,8 +10,14 @@ import (
 
 // MicroservicesSpec defines the desired state of Microservices.
 type MicroservicesSpec struct {
+	// Images defines the image for each container.
+	//
+	// +optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Container Images"
+	Images ImagesSpec `json:"images,omitempty"`
+
 	// NOTE: currently this field is not considered.
-	// Components defines requierements for a set of tempo components.
+	// Components defines requirements for a set of tempo components.
 	//
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tempo Components"
@@ -92,6 +98,19 @@ type MicroservicesList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []Microservices `json:"items"`
+}
+
+// ImagesSpec defines the image for each container.
+type ImagesSpec struct {
+	// Tempo defines the tempo container image.
+	//
+	// +optional
+	Tempo string `json:"tempo,omitempty"`
+
+	// TempoQuery defines the tempo-query container image.
+	//
+	// +optional
+	TempoQuery string `json:"tempoQuery,omitempty"`
 }
 
 // ObjectStorageSpec defines the requirements to access the object
