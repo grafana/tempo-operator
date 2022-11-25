@@ -135,11 +135,11 @@ spec:
               resources:
                 description: Resources defines resources configuration.
                 properties:
-                  resources:
-                    description: The resources are split in between components. Tempo
-                      operator knows how to split them appropriately based on http://github.com/grafana/tempo/issues/1540.
-                      Only limits are supported, the operator calculates requests
-                      automatically.
+                  total:
+                    description: The total amount of resources for Tempo instance.
+                      The operator autonomously splits resources between deployed
+                      Tempo components. Only limits are supported, the operator calculates
+                      requests automatically. See http://github.com/grafana/tempo/issues/1540.
                     properties:
                       limits:
                         additionalProperties:
