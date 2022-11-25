@@ -16,12 +16,12 @@ func Name(component string, instanceName string) string {
 
 // ComponentLabels is a list of all commonLabels including the app.kubernetes.io/component:<component> label.
 func ComponentLabels(component, instanceName string) labels.Set {
-	return labels.Merge(commonLabels(instanceName), map[string]string{
+	return labels.Merge(CommonLabels(instanceName), map[string]string{
 		"app.kubernetes.io/component": component,
 	})
 }
 
-func commonLabels(instanceName string) map[string]string {
+func CommonLabels(instanceName string) map[string]string {
 	return map[string]string{
 		"app.kubernetes.io/name":       "tempo",
 		"app.kubernetes.io/instance":   instanceName,
