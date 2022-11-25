@@ -18,7 +18,7 @@ require (
 	github.com/Azure/go-autorest/autorest v0.11.27 // indirect
 	github.com/Azure/go-autorest/autorest/adal v0.9.20 // indirect
 	github.com/openshift/api v3.9.0+incompatible
-	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.61.0
+	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.61.1
 	github.com/stretchr/testify v1.8.1
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/utils v0.0.0-20221108210102-8e77b1f39fe2
