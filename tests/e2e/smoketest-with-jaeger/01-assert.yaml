@@ -3,6 +3,20 @@ kind: Microservices
 metadata:
   name: simplest
 #
+# Service Accounts
+#
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: tempo-simplest-serviceaccount
+  labels:
+    app.kubernetes.io/component: serviceaccount
+    app.kubernetes.io/created-by: tempo-controller
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/name: tempo
+#
 # Deployments
 #
 ---
