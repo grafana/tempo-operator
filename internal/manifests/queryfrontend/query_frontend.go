@@ -12,6 +12,7 @@ import (
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
 	"github.com/os-observability/tempo-operator/internal/manifests/memberlist"
+	"github.com/os-observability/tempo-operator/internal/manifests/serviceaccount"
 )
 
 const (
@@ -73,8 +74,9 @@ func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
 					Labels: k8slabels.Merge(labels, memberlist.GossipSelector),
 				},
 				Spec: corev1.PodSpec{
-					NodeSelector: cfg.NodeSelector,
-					Tolerations:  cfg.Tolerations,
+					ServiceAccountName: serviceaccount.ServiceAccountName(tempo),
+					NodeSelector:       cfg.NodeSelector,
+					Tolerations:        cfg.Tolerations,
 					Affinity: &corev1.Affinity{
 						PodAntiAffinity: &corev1.PodAntiAffinity{
 							PreferredDuringSchedulingIgnoredDuringExecution: []corev1.WeightedPodAffinityTerm{

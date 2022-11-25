@@ -196,6 +196,10 @@ spec:
                     description: PerTenant is used to configure retention per tenant.
                     type: object
                 type: object
+              serviceAccount:
+                description: ServiceAccount defines the service account to use for
+                  all tempo components.
+                type: string
               storage:
                 description: 'NOTE: currently this field is not considered. Storage
                   defines S3 compatible object storage configuration. User is required

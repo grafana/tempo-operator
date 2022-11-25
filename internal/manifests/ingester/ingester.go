@@ -11,6 +11,7 @@ import (
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 	manifestutils "github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
 	"github.com/os-observability/tempo-operator/internal/manifests/memberlist"
+	"github.com/os-observability/tempo-operator/internal/manifests/serviceaccount"
 )
 
 const (
@@ -54,8 +55,9 @@ func statefulSet(tempo v1alpha1.Microservices) (*v1.StatefulSet, error) {
 					Labels: k8slabels.Merge(labels, memberlist.GossipSelector),
 				},
 				Spec: corev1.PodSpec{
-					NodeSelector: cfg.NodeSelector,
-					Tolerations:  cfg.Tolerations,
+					ServiceAccountName: serviceaccount.ServiceAccountName(tempo),
+					NodeSelector:       cfg.NodeSelector,
+					Tolerations:        cfg.Tolerations,
 					Containers: []corev1.Container{
 						{
 							Name:  "tempo",

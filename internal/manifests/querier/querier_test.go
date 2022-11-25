@@ -95,7 +95,8 @@ func TestBuildQuerier(t *testing.T) {
 					Labels: k8slabels.Merge(labels, map[string]string{"tempo-gossip-member": "true"}),
 				},
 				Spec: corev1.PodSpec{
-					NodeSelector: map[string]string{"a": "b"},
+					ServiceAccountName: "tempo-test-serviceaccount",
+					NodeSelector:       map[string]string{"a": "b"},
 					Tolerations: []corev1.Toleration{
 						{
 							Key: "c",

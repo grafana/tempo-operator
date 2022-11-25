@@ -119,6 +119,13 @@ MicroservicesSpec defines the desired state of Microservices.
         </td>
         <td>false</td>
       </tr><tr>
+        <td><b>serviceAccount</b></td>
+        <td>string</td>
+        <td>
+          ServiceAccount defines the service account to use for all tempo components.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b><a href="#microservicesspecstorage">storage</a></b></td>
         <td>object</td>
         <td>

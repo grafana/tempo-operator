@@ -18,5 +18,5 @@ func TestBuildAll(t *testing.T) {
 		},
 	}})
 	require.NoError(t, err)
-	assert.Len(t, objects, 13)
+	assert.Len(t, objects, 14)
 }

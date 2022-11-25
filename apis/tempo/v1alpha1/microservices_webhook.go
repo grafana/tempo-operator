@@ -6,12 +6,15 @@ import (
 	"fmt"
 	"time"
 
+	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
-	"sigs.k8s.io/controller-runtime/pkg/webhook"
 )
 
 var (
@@ -28,10 +31,9 @@ func (r *Microservices) SetupWebhookWithManager(mgr ctrl.Manager, defaultImages 
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(r).
 		WithDefaulter(&defaulter{defaultImages: defaultImages}).
+		WithValidator(&validator{client: mgr.GetClient()}).
 		Complete()
 }
-
-// TODO(user): EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 
 //+kubebuilder:webhook:path=/mutate-tempo-grafana-com-v1alpha1-microservices,mutating=true,failurePolicy=fail,sideEffects=None,groups=tempo.grafana.com,resources=microservices,verbs=create;update,versions=v1alpha1,name=mmicroservices.kb.io,admissionReviewVersions=v1
 
@@ -75,31 +77,55 @@ func (d *defaulter) Default(ctx context.Context, obj runtime.Object) error {
 	return nil
 }
 
-// TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
 //+kubebuilder:webhook:path=/validate-tempo-grafana-com-v1alpha1-microservices,mutating=false,failurePolicy=fail,sideEffects=None,groups=tempo.grafana.com,resources=microservices,verbs=create;update,versions=v1alpha1,name=vmicroservices.kb.io,admissionReviewVersions=v1
 
-var _ webhook.Validator = &Microservices{}
+type validator struct {
+	client client.Client
+}
 
-// ValidateCreate implements webhook.Validator so a webhook will be registered for the type.
-func (r *Microservices) ValidateCreate() error {
-	microserviceslog.Info("validate create", "name", r.Name)
+func (v *validator) ValidateCreate(ctx context.Context, obj runtime.Object) error {
+	return v.validate(ctx, obj)
+}
 
-	// TODO(user): fill in your validation logic upon object creation.
+func (v *validator) ValidateUpdate(ctx context.Context, oldObj, newObj runtime.Object) error {
+	return v.validate(ctx, newObj)
+}
+
+func (v *validator) ValidateDelete(ctx context.Context, obj runtime.Object) error {
+	// NOTE(agerstmayr): change verbs in +kubebuilder:webhook to "verbs=create;update;delete" if you want to enable deletion validation.
 	return nil
 }
 
-// ValidateUpdate implements webhook.Validator so a webhook will be registered for the type.
-func (r *Microservices) ValidateUpdate(old runtime.Object) error {
-	microserviceslog.Info("validate update", "name", r.Name)
+func (v *validator) validateServiceAccount(ctx context.Context, tempo *Microservices) field.ErrorList {
+	var allErrs field.ErrorList
 
-	// TODO(user): fill in your validation logic upon object update.
-	return nil
+	if tempo.Spec.ServiceAccount != "" {
+		// check if custom service account exists
+		serviceAccount := &corev1.ServiceAccount{}
+		err := v.client.Get(ctx, types.NamespacedName{Namespace: tempo.Namespace, Name: tempo.Spec.ServiceAccount}, serviceAccount)
+		if err != nil {
+			allErrs = append(allErrs, field.Invalid(
+				field.NewPath("spec").Child("serviceAccount"),
+				tempo.Spec.ServiceAccount,
+				err.Error(),
+			))
+		}
+	}
+
+	return allErrs
 }
 
-// ValidateDelete implements webhook.Validator so a webhook will be registered for the type.
-func (r *Microservices) ValidateDelete() error {
-	microserviceslog.Info("validate delete", "name", r.Name)
+func (v *validator) validate(ctx context.Context, obj runtime.Object) error {
+	tempo, ok := obj.(*Microservices)
+	if !ok {
+		return apierrors.NewBadRequest(fmt.Sprintf("expected a Microservices object but got %T", obj))
+	}
+	microserviceslog.Info("validate", "name", tempo.Name)
 
-	// TODO(user): fill in your validation logic upon object deletion.
-	return nil
+	var allErrs field.ErrorList
+	allErrs = append(allErrs, v.validateServiceAccount(ctx, tempo)...)
+	if len(allErrs) == 0 {
+		return nil
+	}
+	return apierrors.NewInvalid(tempo.GroupVersionKind().GroupKind(), tempo.Name, allErrs)
 }

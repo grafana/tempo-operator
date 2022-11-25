@@ -16,6 +16,12 @@ type MicroservicesSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Container Images"
 	Images ImagesSpec `json:"images,omitempty"`
 
+	// ServiceAccount defines the service account to use for all tempo components.
+	//
+	// +optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Service Account"
+	ServiceAccount string `json:"serviceAccount,omitempty"`
+
 	// NOTE: currently this field is not considered.
 	// Components defines requirements for a set of tempo components.
 	//

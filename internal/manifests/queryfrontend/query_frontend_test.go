@@ -125,6 +125,7 @@ func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 					Labels: k8slabels.Merge(labels, memberlist.GossipSelector),
 				},
 				Spec: corev1.PodSpec{
+					ServiceAccountName: "tempo-test-serviceaccount",
 					Affinity: &corev1.Affinity{
 						PodAntiAffinity: &corev1.PodAntiAffinity{
 							PreferredDuringSchedulingIgnoredDuringExecution: []corev1.WeightedPodAffinityTerm{

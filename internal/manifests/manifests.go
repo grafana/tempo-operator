@@ -11,6 +11,7 @@ import (
 	"github.com/os-observability/tempo-operator/internal/manifests/memberlist"
 	"github.com/os-observability/tempo-operator/internal/manifests/querier"
 	"github.com/os-observability/tempo-operator/internal/manifests/queryfrontend"
+	"github.com/os-observability/tempo-operator/internal/manifests/serviceaccount"
 )
 
 // Params holds parameters used to create Tempo objects.
@@ -61,6 +62,9 @@ func BuildAll(params Params) ([]client.Object, error) {
 
 	var manifests []client.Object
 	manifests = append(manifests, configMaps)
+	if params.Tempo.Spec.ServiceAccount == "" {
+		manifests = append(manifests, serviceaccount.BuildDefaultServiceAccount(params.Tempo))
+	}
 	manifests = append(manifests, distributor.BuildDistributor(params.Tempo)...)
 	manifests = append(manifests, ingesterObjs...)
 	manifests = append(manifests, memberlist.BuildGossip(params.Tempo))
