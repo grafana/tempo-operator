@@ -161,6 +161,10 @@ spec:
       protocol: TCP
       targetPort: http-memberlist
   selector:
+    app.kubernetes.io/created-by: tempo-controller
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/name: tempo
     tempo-gossip-member: "true"
 ---
 apiVersion: v1
