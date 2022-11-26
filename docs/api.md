@@ -108,7 +108,7 @@ MicroservicesSpec defines the desired state of Microservices.
         <td><b><a href="#microservicesspecresources">resources</a></b></td>
         <td>object</td>
         <td>
-          NOTE: currently this field is not considered. The resources are split in between components. Tempo operator knows how to split them appropriately based on grafana/tempo/issues/1540.<br/>
+          Resources defines resources configuration.<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -455,7 +455,34 @@ Query is used to define query rate limits.
 
 
 
-NOTE: currently this field is not considered. The resources are split in between components. Tempo operator knows how to split them appropriately based on grafana/tempo/issues/1540.
+Resources defines resources configuration.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#microservicesspecresourcestotal">total</a></b></td>
+        <td>object</td>
+        <td>
+          The total amount of resources for Tempo instance. The operator autonomously splits resources between deployed Tempo components. Only limits are supported, the operator calculates requests automatically. See http://github.com/grafana/tempo/issues/1540.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### Microservices.spec.resources.total
+<sup><sup>[↩ Parent](#microservicesspecresources)</sup></sup>
+
+
+
+The total amount of resources for Tempo instance. The operator autonomously splits resources between deployed Tempo components. Only limits are supported, the operator calculates requests automatically. See http://github.com/grafana/tempo/issues/1540.
 
 <table>
     <thead>

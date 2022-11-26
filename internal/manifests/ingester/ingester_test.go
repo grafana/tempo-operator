@@ -43,6 +43,14 @@ func TestBuildIngester(t *testing.T) {
 					},
 				},
 			},
+			Resources: v1alpha1.Resources{
+				Total: &corev1.ResourceRequirements{
+					Limits: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("1000m"),
+						corev1.ResourceMemory: resource.MustParse("2Gi"),
+					},
+				},
+			},
 		},
 	})
 	require.NoError(t, err)
@@ -127,6 +135,16 @@ func TestBuildIngester(t *testing.T) {
 									Name:          "grpc",
 									ContainerPort: portGRPCServer,
 									Protocol:      corev1.ProtocolTCP,
+								},
+							},
+							Resources: corev1.ResourceRequirements{
+								Limits: corev1.ResourceList{
+									corev1.ResourceCPU:    *resource.NewMilliQuantity(380, resource.BinarySI),
+									corev1.ResourceMemory: *resource.NewQuantity(1073741824, resource.BinarySI),
+								},
+								Requests: corev1.ResourceList{
+									corev1.ResourceCPU:    *resource.NewMilliQuantity(114, resource.BinarySI),
+									corev1.ResourceMemory: *resource.NewQuantity(322122560, resource.BinarySI),
 								},
 							},
 						},

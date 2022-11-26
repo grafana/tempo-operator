@@ -130,6 +130,7 @@ func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
 									MountPath: "/var/tempo",
 								},
 							},
+							Resources: manifestutils.Resources(tempo, componentName),
 						},
 					},
 					Volumes: []corev1.Volume{
@@ -187,6 +188,7 @@ func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
 					MountPath: "/var/tempo",
 				},
 			},
+			Resources: manifestutils.Resources(tempo, componentName),
 		}
 		jaegerQueryVolume := corev1.Volume{
 			Name: "data-query",

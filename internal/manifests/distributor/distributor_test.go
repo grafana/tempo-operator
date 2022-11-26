@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8slabels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -31,6 +32,14 @@ func TestBuildDistributor(t *testing.T) {
 						{
 							Key: "c",
 						},
+					},
+				},
+			},
+			Resources: v1alpha1.Resources{
+				Total: &corev1.ResourceRequirements{
+					Limits: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("1000m"),
+						corev1.ResourceMemory: resource.MustParse("2Gi"),
 					},
 				},
 			},
@@ -85,6 +94,16 @@ func TestBuildDistributor(t *testing.T) {
 									Name:          "http-memberlist",
 									ContainerPort: 7946,
 									Protocol:      corev1.ProtocolTCP,
+								},
+							},
+							Resources: corev1.ResourceRequirements{
+								Limits: corev1.ResourceList{
+									corev1.ResourceCPU:    *resource.NewMilliQuantity(270, resource.BinarySI),
+									corev1.ResourceMemory: *resource.NewQuantity(257698032, resource.BinarySI),
+								},
+								Requests: corev1.ResourceList{
+									corev1.ResourceCPU:    *resource.NewMilliQuantity(81, resource.BinarySI),
+									corev1.ResourceMemory: *resource.NewQuantity(77309416, resource.BinarySI),
 								},
 							},
 						},
