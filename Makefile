@@ -377,3 +377,7 @@ cmctl:
 	mv $$TMP_DIR/cmctl $(CMCTL) ;\
 	rm -rf $$TMP_DIR ;\
 	}
+
+.PHONY: scorecard-tests
+scorecard-tests: operator-sdk
+	$(OPERATOR_SDK) scorecard -w=5m bundle || (echo "scorecard test failed" && exit 1)
