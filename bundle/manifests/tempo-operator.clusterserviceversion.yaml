@@ -14,8 +14,13 @@ metadata:
         }
       ]
     capabilities: Basic Install
+    categories: Tracing
+    certified: "false"
+    containerImage: ghcr.io/os-observability/tempo-operator/tempo-operator
     operators.operatorframework.io/builder: operator-sdk-v1.23.0
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
+    repository: github.com/os-observability/tempo-operator
+    support: Tempo Operator Community
   name: tempo-operator.v0.0.1
   namespace: placeholder
 spec:
