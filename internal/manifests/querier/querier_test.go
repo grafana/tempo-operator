@@ -27,6 +27,7 @@ func TestBuildQuerier(t *testing.T) {
 			Images: v1alpha1.ImagesSpec{
 				Tempo: "docker.io/grafana/tempo:1.5.0",
 			},
+			ServiceAccount: "tempo-test-serviceaccount",
 			Components: v1alpha1.TempoComponentsSpec{
 				Querier: &v1alpha1.TempoComponentSpec{
 					NodeSelector: map[string]string{"a": "b"},

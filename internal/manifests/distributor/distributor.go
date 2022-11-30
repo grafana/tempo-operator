@@ -11,7 +11,7 @@ import (
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
 	"github.com/os-observability/tempo-operator/internal/manifests/memberlist"
-	"github.com/os-observability/tempo-operator/internal/manifests/serviceaccount"
+	"github.com/os-observability/tempo-operator/internal/manifests/naming"
 )
 
 const (
@@ -38,7 +38,7 @@ func deployment(tempo v1alpha1.Microservices) *v1.Deployment {
 			APIVersion: v1.SchemeGroupVersion.String(),
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      manifestutils.Name(componentName, tempo.Name),
+			Name:      naming.Name(componentName, tempo.Name),
 			Namespace: tempo.Namespace,
 			Labels:    labels,
 		},
@@ -51,7 +51,7 @@ func deployment(tempo v1alpha1.Microservices) *v1.Deployment {
 					Labels: k8slabels.Merge(labels, memberlist.GossipSelector),
 				},
 				Spec: corev1.PodSpec{
-					ServiceAccountName: serviceaccount.ServiceAccountName(tempo),
+					ServiceAccountName: tempo.Spec.ServiceAccount,
 					NodeSelector:       cfg.NodeSelector,
 					Tolerations:        cfg.Tolerations,
 					Containers: []corev1.Container{
@@ -87,7 +87,7 @@ func deployment(tempo v1alpha1.Microservices) *v1.Deployment {
 							VolumeSource: corev1.VolumeSource{
 								ConfigMap: &corev1.ConfigMapVolumeSource{
 									LocalObjectReference: corev1.LocalObjectReference{
-										Name: manifestutils.Name("", tempo.Name),
+										Name: naming.Name("", tempo.Name),
 									},
 								},
 							},
@@ -103,7 +103,7 @@ func service(tempo v1alpha1.Microservices) *corev1.Service {
 	labels := manifestutils.ComponentLabels(componentName, tempo.Name)
 	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      manifestutils.Name(componentName, tempo.Name),
+			Name:      naming.Name(componentName, tempo.Name),
 			Namespace: tempo.Namespace,
 			Labels:    labels,
 		},

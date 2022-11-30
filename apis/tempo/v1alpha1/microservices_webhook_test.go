@@ -7,6 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func TestDefault(t *testing.T) {
@@ -26,11 +27,15 @@ func TestDefault(t *testing.T) {
 		{
 			name: "no action default values are provided",
 			input: &Microservices{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+				},
 				Spec: MicroservicesSpec{
 					Images: ImagesSpec{
 						Tempo:      "docker.io/grafana/tempo:1.2.3",
 						TempoQuery: "docker.io/grafana/tempo-query:1.2.3",
 					},
+					ServiceAccount: "tempo-test-serviceaccount",
 					Retention: RetentionSpec{
 						Global: RetentionConfig{
 							Traces: time.Hour,
@@ -47,11 +52,15 @@ func TestDefault(t *testing.T) {
 				},
 			},
 			expected: &Microservices{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+				},
 				Spec: MicroservicesSpec{
 					Images: ImagesSpec{
 						Tempo:      "docker.io/grafana/tempo:1.2.3",
 						TempoQuery: "docker.io/grafana/tempo-query:1.2.3",
 					},
+					ServiceAccount: "tempo-test-serviceaccount",
 					Retention: RetentionSpec{
 						Global: RetentionConfig{
 							Traces: time.Hour,
@@ -69,14 +78,22 @@ func TestDefault(t *testing.T) {
 			},
 		},
 		{
-			name:  "default values are set in the webhook",
-			input: &Microservices{},
+			name: "default values are set in the webhook",
+			input: &Microservices{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+				},
+			},
 			expected: &Microservices{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+				},
 				Spec: MicroservicesSpec{
 					Images: ImagesSpec{
 						Tempo:      "docker.io/grafana/tempo:x.y.z",
 						TempoQuery: "docker.io/grafana/tempo-query:x.y.z",
 					},
+					ServiceAccount: "tempo-test-serviceaccount",
 					Retention: RetentionSpec{
 						Global: RetentionConfig{
 							Traces: 48 * time.Hour,

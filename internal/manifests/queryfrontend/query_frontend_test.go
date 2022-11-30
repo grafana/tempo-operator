@@ -15,6 +15,7 @@ import (
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
 	"github.com/os-observability/tempo-operator/internal/manifests/memberlist"
+	"github.com/os-observability/tempo-operator/internal/manifests/naming"
 )
 
 func getJaegerServicePorts() []corev1.ServicePort {
@@ -37,7 +38,7 @@ func getExpectedFrontEndService(withJaeger bool) *corev1.Service {
 	labels := manifestutils.ComponentLabels("query-frontend", "test")
 	expectedFrontEndService := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      manifestutils.Name(componentName, "test"),
+			Name:      naming.Name(componentName, "test"),
 			Namespace: "project1",
 			Labels:    labels,
 		},
@@ -70,7 +71,7 @@ func getExpectedFrontendDiscoveryService(withJaeger bool) *corev1.Service {
 
 	expectedFrontendDiscoveryService := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      manifestutils.Name(componentName+"-discovery", "test"),
+			Name:      naming.Name(componentName+"-discovery", "test"),
 			Namespace: "project1",
 			Labels:    labels,
 		},
@@ -112,7 +113,7 @@ func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 			APIVersion: v1.SchemeGroupVersion.String(),
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      manifestutils.Name(componentName, "test"),
+			Name:      naming.Name(componentName, "test"),
 			Namespace: "project1",
 			Labels:    labels,
 		},
@@ -199,7 +200,7 @@ func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 							VolumeSource: corev1.VolumeSource{
 								ConfigMap: &corev1.ConfigMapVolumeSource{
 									LocalObjectReference: corev1.LocalObjectReference{
-										Name: manifestutils.Name("", "test"),
+										Name: naming.Name("", "test"),
 									},
 								},
 							},
@@ -286,6 +287,7 @@ func TestBuildQueryFrontend(t *testing.T) {
 			Images: v1alpha1.ImagesSpec{
 				Tempo: "docker.io/grafana/tempo:1.5.0",
 			},
+			ServiceAccount: "tempo-test-serviceaccount",
 			Resources: v1alpha1.Resources{
 				Total: &corev1.ResourceRequirements{
 					Limits: corev1.ResourceList{
@@ -324,6 +326,7 @@ func TestBuildQueryFrontendWithJaeger(t *testing.T) {
 				Tempo:      "docker.io/grafana/tempo:1.5.0",
 				TempoQuery: "docker.io/grafana/tempo-query:1.5.0",
 			},
+			ServiceAccount: "tempo-test-serviceaccount",
 			Components: v1alpha1.TempoComponentsSpec{
 				QueryFrontend: &v1alpha1.TempoQueryFrontendSpec{
 					TempoComponentSpec: v1alpha1.TempoComponentSpec{

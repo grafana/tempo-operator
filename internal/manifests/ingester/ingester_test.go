@@ -28,6 +28,7 @@ func TestBuildIngester(t *testing.T) {
 			Images: v1alpha1.ImagesSpec{
 				Tempo: "docker.io/grafana/tempo:1.5.0",
 			},
+			ServiceAccount: "tempo-test-serviceaccount",
 			Storage: v1alpha1.ObjectStorageSpec{
 				Secret: "test-storage-secret",
 			},

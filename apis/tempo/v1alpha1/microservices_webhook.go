@@ -15,6 +15,8 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
+
+	"github.com/os-observability/tempo-operator/internal/manifests/naming"
 )
 
 var (
@@ -61,6 +63,10 @@ func (d *defaulter) Default(ctx context.Context, obj runtime.Object) error {
 		r.Spec.Images.TempoQuery = d.defaultImages.TempoQuery
 	}
 
+	if r.Spec.ServiceAccount == "" {
+		r.Spec.ServiceAccount = naming.DefaultServiceAccountName(r.Name)
+	}
+
 	if r.Spec.Retention.Global.Traces == 0 {
 		r.Spec.Retention.Global.Traces = 48 * time.Hour
 	}
@@ -99,7 +105,8 @@ func (v *validator) ValidateDelete(ctx context.Context, obj runtime.Object) erro
 func (v *validator) validateServiceAccount(ctx context.Context, tempo *Microservices) field.ErrorList {
 	var allErrs field.ErrorList
 
-	if tempo.Spec.ServiceAccount != "" {
+	// the default service account gets created later in the reconciliation loop
+	if tempo.Spec.ServiceAccount != naming.DefaultServiceAccountName(tempo.Name) {
 		// check if custom service account exists
 		serviceAccount := &corev1.ServiceAccount{}
 		err := v.client.Get(ctx, types.NamespacedName{Namespace: tempo.Namespace, Name: tempo.Spec.ServiceAccount}, serviceAccount)

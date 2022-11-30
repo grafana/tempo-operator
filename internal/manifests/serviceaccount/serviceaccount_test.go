@@ -30,24 +30,3 @@ func TestBuildDefaultServiceAccount(t *testing.T) {
 		},
 	}, serviceAccount)
 }
-
-func TestServiceAccountName(t *testing.T) {
-	serviceAccountName1 := ServiceAccountName(v1alpha1.Microservices{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "test",
-			Namespace: "ns1",
-		},
-	})
-	assert.Equal(t, "tempo-test-serviceaccount", serviceAccountName1)
-
-	serviceAccountName2 := ServiceAccountName(v1alpha1.Microservices{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "test",
-			Namespace: "ns1",
-		},
-		Spec: v1alpha1.MicroservicesSpec{
-			ServiceAccount: "existing-sa",
-		},
-	})
-	assert.Equal(t, "existing-sa", serviceAccountName2)
-}

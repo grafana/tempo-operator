@@ -8,6 +8,7 @@ import (
 
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
+	"github.com/os-observability/tempo-operator/internal/manifests/naming"
 )
 
 const (
@@ -26,7 +27,7 @@ func BuildGossip(tempo v1alpha1.Microservices) *corev1.Service {
 
 	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      manifestutils.Name(componentName, tempo.Name),
+			Name:      naming.Name(componentName, tempo.Name),
 			Namespace: tempo.Namespace,
 			Labels:    labels,
 		},

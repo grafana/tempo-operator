@@ -1,4 +1,4 @@
-package manifestutils
+package naming
 
 import (
 	"testing"
@@ -27,4 +27,9 @@ func TestName(t *testing.T) {
 			assert.Equal(t, test.expected, got)
 		})
 	}
+}
+
+func TestDefaultServiceAccountName(t *testing.T) {
+	serviceAccountName := DefaultServiceAccountName("test")
+	assert.Equal(t, "tempo-test-serviceaccount", serviceAccountName)
 }
