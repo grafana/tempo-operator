@@ -6,6 +6,7 @@ import (
 
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
+	"github.com/os-observability/tempo-operator/internal/manifests/naming"
 )
 
 const tenantOverridesMountPath = "/conf/overrides.yaml"
@@ -35,7 +36,7 @@ func BuildConfigMap(tempo v1alpha1.Microservices, params Params) (*corev1.Config
 	labels := manifestutils.ComponentLabels("config", tempo.Name)
 	configMap := &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:   manifestutils.Name("", tempo.Name),
+			Name:   naming.Name("", tempo.Name),
 			Labels: labels,
 		},
 		Data: map[string]string{

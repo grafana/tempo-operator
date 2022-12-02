@@ -12,6 +12,7 @@ import (
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
 	"github.com/os-observability/tempo-operator/internal/manifests/memberlist"
+	"github.com/os-observability/tempo-operator/internal/manifests/naming"
 )
 
 const (
@@ -60,7 +61,7 @@ func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
 			APIVersion: v1.SchemeGroupVersion.String(),
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      manifestutils.Name(componentName, tempo.Name),
+			Name:      naming.Name(componentName, tempo.Name),
 			Namespace: tempo.Namespace,
 			Labels:    labels,
 		},
@@ -73,8 +74,9 @@ func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
 					Labels: k8slabels.Merge(labels, memberlist.GossipSelector),
 				},
 				Spec: corev1.PodSpec{
-					NodeSelector: cfg.NodeSelector,
-					Tolerations:  cfg.Tolerations,
+					ServiceAccountName: tempo.Spec.ServiceAccount,
+					NodeSelector:       cfg.NodeSelector,
+					Tolerations:        cfg.Tolerations,
 					Affinity: &corev1.Affinity{
 						PodAntiAffinity: &corev1.PodAntiAffinity{
 							PreferredDuringSchedulingIgnoredDuringExecution: []corev1.WeightedPodAffinityTerm{
@@ -139,7 +141,7 @@ func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
 							VolumeSource: corev1.VolumeSource{
 								ConfigMap: &corev1.ConfigMapVolumeSource{
 									LocalObjectReference: corev1.LocalObjectReference{
-										Name: manifestutils.Name("", tempo.Name),
+										Name: naming.Name("", tempo.Name),
 									},
 								},
 							},
@@ -213,7 +215,7 @@ func services(tempo v1alpha1.Microservices) []*corev1.Service {
 
 	frontEndService := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      manifestutils.Name(componentName, tempo.Name),
+			Name:      naming.Name(componentName, tempo.Name),
 			Namespace: tempo.Namespace,
 			Labels:    labels,
 		},
@@ -237,7 +239,7 @@ func services(tempo v1alpha1.Microservices) []*corev1.Service {
 
 	frontEndDiscoveryService := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      manifestutils.Name(componentName+"-discovery", tempo.Name),
+			Name:      naming.Name(componentName+"-discovery", tempo.Name),
 			Namespace: tempo.Namespace,
 			Labels:    labels,
 		},

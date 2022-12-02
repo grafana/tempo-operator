@@ -28,6 +28,7 @@ func TestBuildIngester(t *testing.T) {
 			Images: v1alpha1.ImagesSpec{
 				Tempo: "docker.io/grafana/tempo:1.5.0",
 			},
+			ServiceAccount: "tempo-test-serviceaccount",
 			Storage: v1alpha1.ObjectStorageSpec{
 				Secret: "test-storage-secret",
 			},
@@ -72,7 +73,8 @@ func TestBuildIngester(t *testing.T) {
 					Labels: k8slabels.Merge(labels, map[string]string{"tempo-gossip-member": "true"}),
 				},
 				Spec: corev1.PodSpec{
-					NodeSelector: map[string]string{"a": "b"},
+					ServiceAccountName: "tempo-test-serviceaccount",
+					NodeSelector:       map[string]string{"a": "b"},
 					Tolerations: []corev1.Toleration{
 						{
 							Key: "c",

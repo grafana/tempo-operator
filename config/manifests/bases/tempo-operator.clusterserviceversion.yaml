@@ -146,6 +146,10 @@ spec:
         path: retention.perTenant.traces
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:text
+      - description: ServiceAccount defines the service account to use for all tempo
+          components.
+        displayName: Service Account
+        path: serviceAccount
       - description: 'NOTE: currently this field is not considered. Storage defines
           S3 compatible object storage configuration. User is required to create secret
           and supply it.'
