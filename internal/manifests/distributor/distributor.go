@@ -15,10 +15,12 @@ import (
 )
 
 const (
-	configVolumeName = "tempo-conf"
-	componentName    = "distributor"
-	otlpGrpcPortName = "otlp-grpc"
-	otlpGrpcPort     = 4317
+	configVolumeName   = "tempo-conf"
+	componentName      = "distributor"
+	httpPortName       = "http"
+	otlpGrpcPortName   = "otlp-grpc"
+	portHTTPServer     = 3100
+	portOtlpGrpcServer = 4317
 )
 
 // BuildDistributor creates distributor objects.
@@ -62,7 +64,12 @@ func deployment(tempo v1alpha1.Microservices) *v1.Deployment {
 							Ports: []corev1.ContainerPort{
 								{
 									Name:          otlpGrpcPortName,
-									ContainerPort: otlpGrpcPort,
+									ContainerPort: portOtlpGrpcServer,
+									Protocol:      corev1.ProtocolTCP,
+								},
+								{
+									Name:          httpPortName,
+									ContainerPort: portHTTPServer,
 									Protocol:      corev1.ProtocolTCP,
 								},
 								{
@@ -112,8 +119,14 @@ func service(tempo v1alpha1.Microservices) *corev1.Service {
 				{
 					Name:       otlpGrpcPortName,
 					Protocol:   corev1.ProtocolTCP,
-					Port:       otlpGrpcPort,
+					Port:       portOtlpGrpcServer,
 					TargetPort: intstr.FromString(otlpGrpcPortName),
+				},
+				{
+					Name:       httpPortName,
+					Protocol:   corev1.ProtocolTCP,
+					Port:       portHTTPServer,
+					TargetPort: intstr.FromString(httpPortName),
 				},
 			},
 			Selector: labels,
