@@ -142,7 +142,7 @@ type ObjectStorageSpec struct {
 	// Name of a secret in the same namespace as the tempo Microservices custom resource.
 	//
 	// +optional
-	// +kubebuilder:validation:Optional
+	// +kubebuilder:validation:Required
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Object Storage Secret"
 	Secret string `json:"secret,omitempty"`
 }

@@ -111,7 +111,6 @@ func (r *MicroservicesReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 func (r *MicroservicesReconciler) getStorageConfig(ctx context.Context, tempo v1alpha1.Microservices) (*manifests.StorageParams, error) {
 	storageSecret := &corev1.Secret{}
 	err := r.Get(ctx, types.NamespacedName{Namespace: tempo.Namespace, Name: tempo.Spec.Storage.Secret}, storageSecret)
-	// TODO check if secret exists in the validating webhook
 	if err != nil {
 		return nil, fmt.Errorf("could not fetch storage secret: %w", err)
 	}
