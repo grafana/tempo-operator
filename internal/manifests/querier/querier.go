@@ -123,10 +123,16 @@ func service(tempo v1alpha1.Microservices) *corev1.Service {
 		Spec: corev1.ServiceSpec{
 			Ports: []corev1.ServicePort{
 				{
-					Name:       httpPortName,
+					Name:       "http-memberlist",
 					Protocol:   corev1.ProtocolTCP,
 					Port:       memberlist.PortMemberlist,
 					TargetPort: intstr.FromInt(memberlist.PortMemberlist),
+				},
+				{
+					Name:       httpPortName,
+					Protocol:   corev1.ProtocolTCP,
+					Port:       portHTTPServer,
+					TargetPort: intstr.FromString("http"),
 				},
 				{
 					Name:       grpcPortName,

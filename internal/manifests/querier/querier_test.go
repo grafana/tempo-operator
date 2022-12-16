@@ -62,10 +62,16 @@ func TestBuildQuerier(t *testing.T) {
 		Spec: corev1.ServiceSpec{
 			Ports: []corev1.ServicePort{
 				{
-					Name:       "http",
+					Name:       "http-memberlist",
 					Protocol:   corev1.ProtocolTCP,
 					Port:       memberlist.PortMemberlist,
 					TargetPort: intstr.FromInt(memberlist.PortMemberlist),
+				},
+				{
+					Name:       "http",
+					Protocol:   corev1.ProtocolTCP,
+					Port:       portHTTPServer,
+					TargetPort: intstr.FromString("http"),
 				},
 				{
 					Name:       "grpc",

@@ -151,6 +151,10 @@ spec:
       port: 4317
       protocol: TCP
       targetPort: otlp-grpc
+    - name: http
+      port: 3100
+      protocol: TCP
+      targetPort: http
   selector:
     app.kubernetes.io/component: distributor
     app.kubernetes.io/created-by: tempo-controller
@@ -220,10 +224,14 @@ metadata:
   name: tempo-simplest-querier
 spec:
   ports:
-    - name: http
+    - name: http-memberlist
       port: 7946
       protocol: TCP
       targetPort: 7946
+    - name: http
+      port: 3100
+      protocol: TCP
+      targetPort: http
     - name: grpc
       port: 9095
       protocol: TCP

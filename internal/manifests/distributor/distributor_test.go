@@ -89,7 +89,12 @@ func TestBuildDistributor(t *testing.T) {
 							Ports: []corev1.ContainerPort{
 								{
 									Name:          otlpGrpcPortName,
-									ContainerPort: otlpGrpcPort,
+									ContainerPort: portOtlpGrpcServer,
+									Protocol:      corev1.ProtocolTCP,
+								},
+								{
+									Name:          httpPortName,
+									ContainerPort: portHTTPServer,
 									Protocol:      corev1.ProtocolTCP,
 								},
 								{
@@ -137,8 +142,14 @@ func TestBuildDistributor(t *testing.T) {
 				{
 					Name:       otlpGrpcPortName,
 					Protocol:   corev1.ProtocolTCP,
-					Port:       otlpGrpcPort,
+					Port:       portOtlpGrpcServer,
 					TargetPort: intstr.FromString(otlpGrpcPortName),
+				},
+				{
+					Name:       httpPortName,
+					Protocol:   corev1.ProtocolTCP,
+					Port:       portHTTPServer,
+					TargetPort: intstr.FromString(httpPortName),
 				},
 			},
 			Selector: labels,
