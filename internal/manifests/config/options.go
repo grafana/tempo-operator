@@ -33,11 +33,11 @@ type rateLimitsOptions struct {
 
 type searchOptions struct {
 	MaxSearchDuration         string
-	QueryIngestersUntil       string
-	QueryBackendAfter         string
 	QueryTimeout              string
 	ExternalHedgeRequestsAt   string
 	ExternalHedgeRequestsUpTo int
 	ConcurrentJobs            int
-	TargetBytesPerJob         int
+	MaxConcurrentQueries      int
+	DefaultResultLimit        int
+	MaxResultLimit            int
 }

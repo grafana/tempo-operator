@@ -196,22 +196,12 @@ spec:
               search:
                 description: SearchSpec control the configuration for the search capabilities.
                 properties:
-                  concurrentJobs:
+                  defaultResultLimit:
                     type: integer
-                  externalHedgeRequestsAt:
-                    type: string
-                  externalHedgeRequestsUpTo:
+                  maxResultLimit:
                     type: integer
                   maxSearchDuration:
                     type: string
-                  queryBackendAfter:
-                    type: string
-                  queryIngestersUntil:
-                    type: string
-                  queryTimeout:
-                    type: string
-                  targetBytesPerJob:
-                    type: integer
                 type: object
               serviceAccount:
                 description: ServiceAccount defines the service account to use for

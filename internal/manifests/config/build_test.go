@@ -52,7 +52,11 @@ memberlist:
     - tempo-test-gossip-ring
 metrics_generator_enabled: false
 multitenancy_enabled: false
-querier: 
+querier:
+  max_concurrent_queries: 20
+  search:
+    external_hedge_requests_at: 8s
+    external_hedge_requests_up_to: 2
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 search_enabled: true
@@ -79,6 +83,9 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
+query_frontend:
+  search:
+    concurrent_jobs: 2000
 `
 	cfg, err := buildConfiguration(v1alpha1.Microservices{
 		ObjectMeta: metav1.ObjectMeta{
@@ -147,6 +154,10 @@ memberlist:
 metrics_generator_enabled: false
 multitenancy_enabled: false
 querier: 
+  max_concurrent_queries: 20
+  search:
+    external_hedge_requests_at: 8s
+    external_hedge_requests_up_to: 2
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 search_enabled: true
@@ -173,6 +184,9 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
+query_frontend:
+  search:
+    concurrent_jobs: 2000
       `,
 		},
 		{
@@ -224,6 +238,10 @@ multitenancy_enabled: false
 overrides:
   ingestion_rate_limit_bytes: 100
 querier: 
+  max_concurrent_queries: 20
+  search:
+    external_hedge_requests_at: 8s
+    external_hedge_requests_up_to: 2
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 search_enabled: true
@@ -250,6 +268,9 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
+query_frontend:
+  search:
+    concurrent_jobs: 2000
       `,
 		},
 		{
@@ -300,6 +321,10 @@ multitenancy_enabled: false
 overrides:
   ingestion_burst_size_bytes: 100
 querier: 
+  max_concurrent_queries: 20
+  search:
+    external_hedge_requests_at: 8s
+    external_hedge_requests_up_to: 2
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 search_enabled: true
@@ -326,6 +351,9 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
+query_frontend:
+  search:
+    concurrent_jobs: 2000
       `,
 		},
 		{
@@ -376,7 +404,11 @@ metrics_generator_enabled: false
 multitenancy_enabled: false
 overrides:
   max_bytes_per_trace: 100
-querier: 
+querier:
+  max_concurrent_queries: 20
+  search:
+    external_hedge_requests_at: 8s
+    external_hedge_requests_up_to: 2
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 search_enabled: true
@@ -403,6 +435,9 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
+query_frontend:
+  search:
+    concurrent_jobs: 2000
       `,
 		},
 		{
@@ -453,7 +488,11 @@ metrics_generator_enabled: false
 multitenancy_enabled: false
 overrides:
   max_traces_per_user: 100
-querier: 
+querier:
+  max_concurrent_queries: 20
+  search:
+    external_hedge_requests_at: 8s
+    external_hedge_requests_up_to: 2
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 search_enabled: true
@@ -480,6 +519,9 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
+query_frontend:
+  search:
+    concurrent_jobs: 2000
       `,
 		},
 		{
@@ -530,7 +572,11 @@ metrics_generator_enabled: false
 multitenancy_enabled: false
 overrides:
   max_bytes_per_tag_values_query: 100
-querier: 
+querier:
+  max_concurrent_queries: 20
+  search:
+    external_hedge_requests_at: 8s
+    external_hedge_requests_up_to: 2
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 search_enabled: true
@@ -557,6 +603,9 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
+query_frontend:
+  search:
+    concurrent_jobs: 2000
       `,
 		},
 		{
@@ -607,7 +656,11 @@ metrics_generator_enabled: false
 multitenancy_enabled: false
 overrides:
   max_search_bytes_per_trace: 1000
-querier: 
+querier:
+  max_concurrent_queries: 20
+  search:
+    external_hedge_requests_at: 8s
+    external_hedge_requests_up_to: 2
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 search_enabled: true
@@ -634,6 +687,9 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
+query_frontend:
+  search:
+    concurrent_jobs: 2000
       `,
 		},
 		{
@@ -697,6 +753,10 @@ overrides:
   max_bytes_per_tag_values_query: 500
   max_search_bytes_per_trace: 1000
 querier: 
+  max_concurrent_queries: 20
+  search:
+    external_hedge_requests_at: 8s
+    external_hedge_requests_up_to: 2
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 search_enabled: true
@@ -723,6 +783,9 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
+query_frontend:
+  search:
+    concurrent_jobs: 2000
       `,
 		},
 		{
@@ -784,6 +847,10 @@ multitenancy_enabled: false
 overrides:
   per_tenant_override_config: /conf/overrides.yaml
 querier: 
+  max_concurrent_queries: 20
+  search:
+    external_hedge_requests_at: 8s
+    external_hedge_requests_up_to: 2
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 search_enabled: true
@@ -810,6 +877,9 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
+query_frontend:
+  search:
+    concurrent_jobs: 2000
       `,
 		},
 	}
@@ -936,302 +1006,11 @@ memberlist:
     - tempo-test-gossip-ring
 metrics_generator_enabled: false
 multitenancy_enabled: false
-overrides:
 querier: 
-  frontend_worker: 
-    frontend_address: "tempo-test-query-frontend-discovery:9095"
-search_enabled: true
-server: 
-  grpc_server_max_recv_msg_size: 4194304
-  grpc_server_max_send_msg_size: 4194304
-  http_listen_port: 3100
-  http_server_read_timeout: 3m
-  http_server_write_timeout: 3m
-  log_format: logfmt
-  log_level: debug
-storage: 
-  trace: 
-    backend: s3
-    blocklist_poll: 5m
-    cache: none
-    local: 
-      path: /var/tempo/traces
-    s3: 
-      bucket: tempo
-      endpoint: "minio:9000"
-      insecure: true
-    wal: 
-      path: /var/tempo/wal
-usage_report: 
-  reporting_enabled: false
-      `,
-		},
-		{
-			name: "set QueryTimeout",
-			spec: v1alpha1.SearchSpec{
-				QueryTimeout: "10s",
-			},
-			expect: `
---- 
-compactor: 
-  compaction: 
-    block_retention: 48h0m0s
-  ring: 
-    kvstore: 
-      store: memberlist
-distributor: 
-  receivers: 
-    jaeger: 
-      protocols: 
-        thrift_http: 
-          endpoint: "0.0.0.0:14268"
-    otlp: 
-      protocols: 
-        grpc: 
-          endpoint: "0.0.0.0:4317"
-        http: 
-          endpoint: "0.0.0.0:4318"
-  ring: 
-    kvstore: 
-      store: memberlist
-ingester: 
-  lifecycler: 
-    ring: 
-      kvstore: 
-        store: memberlist
-      replication_factor: 1
-    tokens_file_path: /var/tempo/tokens.json
-  max_block_duration: 10m
-memberlist: 
-  abort_if_cluster_join_fails: false
-  join_members: 
-    - tempo-test-gossip-ring
-metrics_generator_enabled: false
-multitenancy_enabled: false
-overrides:
-querier: 
-  frontend_worker: 
-    frontend_address: "tempo-test-query-frontend-discovery:9095"
+  max_concurrent_queries: 20
   search:
-    query_timeout: 10s
-search_enabled: true
-server: 
-  grpc_server_max_recv_msg_size: 4194304
-  grpc_server_max_send_msg_size: 4194304
-  http_listen_port: 3100
-  http_server_read_timeout: 3m
-  http_server_write_timeout: 3m
-  log_format: logfmt
-  log_level: debug
-storage: 
-  trace: 
-    backend: s3
-    blocklist_poll: 5m
-    cache: none
-    local: 
-      path: /var/tempo/traces
-    s3: 
-      bucket: tempo
-      endpoint: "minio:9000"
-      insecure: true
-    wal: 
-      path: /var/tempo/wal
-usage_report: 
-  reporting_enabled: false
-      `,
-		},
-		{
-			name: "set ExternalHedgeRequestsAt",
-			spec: v1alpha1.SearchSpec{
-				ExternalHedgeRequestsAt: "10s",
-			},
-			expect: `
---- 
-compactor: 
-  compaction: 
-    block_retention: 48h0m0s
-  ring: 
-    kvstore: 
-      store: memberlist
-distributor: 
-  receivers: 
-    jaeger: 
-      protocols: 
-        thrift_http: 
-          endpoint: "0.0.0.0:14268"
-    otlp: 
-      protocols: 
-        grpc: 
-          endpoint: "0.0.0.0:4317"
-        http: 
-          endpoint: "0.0.0.0:4318"
-  ring: 
-    kvstore: 
-      store: memberlist
-ingester: 
-  lifecycler: 
-    ring: 
-      kvstore: 
-        store: memberlist
-      replication_factor: 1
-    tokens_file_path: /var/tempo/tokens.json
-  max_block_duration: 10m
-memberlist: 
-  abort_if_cluster_join_fails: false
-  join_members: 
-    - tempo-test-gossip-ring
-metrics_generator_enabled: false
-multitenancy_enabled: false
-overrides:
-querier: 
-  frontend_worker: 
-    frontend_address: "tempo-test-query-frontend-discovery:9095"
-  search:
-    external_hedge_requests_at: 10s
-search_enabled: true
-server: 
-  grpc_server_max_recv_msg_size: 4194304
-  grpc_server_max_send_msg_size: 4194304
-  http_listen_port: 3100
-  http_server_read_timeout: 3m
-  http_server_write_timeout: 3m
-  log_format: logfmt
-  log_level: debug
-storage: 
-  trace: 
-    backend: s3
-    blocklist_poll: 5m
-    cache: none
-    local: 
-      path: /var/tempo/traces
-    s3: 
-      bucket: tempo
-      endpoint: "minio:9000"
-      insecure: true
-    wal: 
-      path: /var/tempo/wal
-usage_report: 
-  reporting_enabled: false
-      `,
-		},
-		{
-			name: "set ExternalHedgeRequestsUpTo",
-			spec: v1alpha1.SearchSpec{
-				ExternalHedgeRequestsUpTo: 8,
-			},
-			expect: `
---- 
-compactor: 
-  compaction: 
-    block_retention: 48h0m0s
-  ring: 
-    kvstore: 
-      store: memberlist
-distributor: 
-  receivers: 
-    jaeger: 
-      protocols: 
-        thrift_http: 
-          endpoint: "0.0.0.0:14268"
-    otlp: 
-      protocols: 
-        grpc: 
-          endpoint: "0.0.0.0:4317"
-        http: 
-          endpoint: "0.0.0.0:4318"
-  ring: 
-    kvstore: 
-      store: memberlist
-ingester: 
-  lifecycler: 
-    ring: 
-      kvstore: 
-        store: memberlist
-      replication_factor: 1
-    tokens_file_path: /var/tempo/tokens.json
-  max_block_duration: 10m
-memberlist: 
-  abort_if_cluster_join_fails: false
-  join_members: 
-    - tempo-test-gossip-ring
-metrics_generator_enabled: false
-multitenancy_enabled: false
-overrides:
-querier: 
-  frontend_worker: 
-    frontend_address: "tempo-test-query-frontend-discovery:9095"
-  search:
-    external_hedge_requests_up_to: 8
-search_enabled: true
-server: 
-  grpc_server_max_recv_msg_size: 4194304
-  grpc_server_max_send_msg_size: 4194304
-  http_listen_port: 3100
-  http_server_read_timeout: 3m
-  http_server_write_timeout: 3m
-  log_format: logfmt
-  log_level: debug
-storage: 
-  trace: 
-    backend: s3
-    blocklist_poll: 5m
-    cache: none
-    local: 
-      path: /var/tempo/traces
-    s3: 
-      bucket: tempo
-      endpoint: "minio:9000"
-      insecure: true
-    wal: 
-      path: /var/tempo/wal
-usage_report: 
-  reporting_enabled: false
-      `,
-		},
-		{
-			name: "set ConcurrentJobs",
-			spec: v1alpha1.SearchSpec{
-				ConcurrentJobs: 8,
-			},
-			expect: `
---- 
-compactor: 
-  compaction: 
-    block_retention: 48h0m0s
-  ring: 
-    kvstore: 
-      store: memberlist
-distributor: 
-  receivers: 
-    jaeger: 
-      protocols: 
-        thrift_http: 
-          endpoint: "0.0.0.0:14268"
-    otlp: 
-      protocols: 
-        grpc: 
-          endpoint: "0.0.0.0:4317"
-        http: 
-          endpoint: "0.0.0.0:4318"
-  ring: 
-    kvstore: 
-      store: memberlist
-ingester: 
-  lifecycler: 
-    ring: 
-      kvstore: 
-        store: memberlist
-      replication_factor: 1
-    tokens_file_path: /var/tempo/tokens.json
-  max_block_duration: 10m
-memberlist: 
-  abort_if_cluster_join_fails: false
-  join_members: 
-    - tempo-test-gossip-ring
-metrics_generator_enabled: false
-multitenancy_enabled: false
-overrides:
-querier: 
+    external_hedge_requests_at: 8s
+    external_hedge_requests_up_to: 2
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 search_enabled: true
@@ -1260,307 +1039,7 @@ usage_report:
   reporting_enabled: false
 query_frontend:
   search:
-    concurrent_jobs: 8
-      `,
-		},
-		{
-			name: "set TargetBytesPerJob",
-			spec: v1alpha1.SearchSpec{
-				TargetBytesPerJob: 1024000,
-			},
-			expect: `
---- 
-compactor: 
-  compaction: 
-    block_retention: 48h0m0s
-  ring: 
-    kvstore: 
-      store: memberlist
-distributor: 
-  receivers: 
-    jaeger: 
-      protocols: 
-        thrift_http: 
-          endpoint: "0.0.0.0:14268"
-    otlp: 
-      protocols: 
-        grpc: 
-          endpoint: "0.0.0.0:4317"
-        http: 
-          endpoint: "0.0.0.0:4318"
-  ring: 
-    kvstore: 
-      store: memberlist
-ingester: 
-  lifecycler: 
-    ring: 
-      kvstore: 
-        store: memberlist
-      replication_factor: 1
-    tokens_file_path: /var/tempo/tokens.json
-  max_block_duration: 10m
-memberlist: 
-  abort_if_cluster_join_fails: false
-  join_members: 
-    - tempo-test-gossip-ring
-metrics_generator_enabled: false
-multitenancy_enabled: false
-overrides:
-querier: 
-  frontend_worker: 
-    frontend_address: "tempo-test-query-frontend-discovery:9095"
-search_enabled: true
-server: 
-  grpc_server_max_recv_msg_size: 4194304
-  grpc_server_max_send_msg_size: 4194304
-  http_listen_port: 3100
-  http_server_read_timeout: 3m
-  http_server_write_timeout: 3m
-  log_format: logfmt
-  log_level: debug
-storage: 
-  trace: 
-    backend: s3
-    blocklist_poll: 5m
-    cache: none
-    local: 
-      path: /var/tempo/traces
-    s3: 
-      bucket: tempo
-      endpoint: "minio:9000"
-      insecure: true
-    wal: 
-      path: /var/tempo/wal
-usage_report: 
-  reporting_enabled: false
-query_frontend:
-  search:
-    target_bytes_per_job: 1024000
-      `,
-		},
-		{
-			name: "set MaxSearchTimeRange",
-			spec: v1alpha1.SearchSpec{
-				MaxSearchDuration: "168h",
-			},
-			expect: `
---- 
-compactor: 
-  compaction: 
-    block_retention: 48h0m0s
-  ring: 
-    kvstore: 
-      store: memberlist
-distributor: 
-  receivers: 
-    jaeger: 
-      protocols: 
-        thrift_http: 
-          endpoint: "0.0.0.0:14268"
-    otlp: 
-      protocols: 
-        grpc: 
-          endpoint: "0.0.0.0:4317"
-        http: 
-          endpoint: "0.0.0.0:4318"
-  ring: 
-    kvstore: 
-      store: memberlist
-ingester: 
-  lifecycler: 
-    ring: 
-      kvstore: 
-        store: memberlist
-      replication_factor: 1
-    tokens_file_path: /var/tempo/tokens.json
-  max_block_duration: 10m
-memberlist: 
-  abort_if_cluster_join_fails: false
-  join_members: 
-    - tempo-test-gossip-ring
-metrics_generator_enabled: false
-multitenancy_enabled: false
-overrides:
-querier: 
-  frontend_worker: 
-    frontend_address: "tempo-test-query-frontend-discovery:9095"
-search_enabled: true
-server: 
-  grpc_server_max_recv_msg_size: 4194304
-  grpc_server_max_send_msg_size: 4194304
-  http_listen_port: 3100
-  http_server_read_timeout: 3m
-  http_server_write_timeout: 3m
-  log_format: logfmt
-  log_level: debug
-storage: 
-  trace: 
-    backend: s3
-    blocklist_poll: 5m
-    cache: none
-    local: 
-      path: /var/tempo/traces
-    s3: 
-      bucket: tempo
-      endpoint: "minio:9000"
-      insecure: true
-    wal: 
-      path: /var/tempo/wal
-usage_report: 
-  reporting_enabled: false
-query_frontend:
-  search:
-    max_duration: 168h
-      `,
-		},
-		{
-			name: "set QueryBackendAfter",
-			spec: v1alpha1.SearchSpec{
-				QueryBackendAfter: "8h",
-			},
-			expect: `
---- 
-compactor: 
-  compaction: 
-    block_retention: 48h0m0s
-  ring: 
-    kvstore: 
-      store: memberlist
-distributor: 
-  receivers: 
-    jaeger: 
-      protocols: 
-        thrift_http: 
-          endpoint: "0.0.0.0:14268"
-    otlp: 
-      protocols: 
-        grpc: 
-          endpoint: "0.0.0.0:4317"
-        http: 
-          endpoint: "0.0.0.0:4318"
-  ring: 
-    kvstore: 
-      store: memberlist
-ingester: 
-  lifecycler: 
-    ring: 
-      kvstore: 
-        store: memberlist
-      replication_factor: 1
-    tokens_file_path: /var/tempo/tokens.json
-  max_block_duration: 10m
-memberlist: 
-  abort_if_cluster_join_fails: false
-  join_members: 
-    - tempo-test-gossip-ring
-metrics_generator_enabled: false
-multitenancy_enabled: false
-overrides:
-querier: 
-  frontend_worker: 
-    frontend_address: "tempo-test-query-frontend-discovery:9095"
-search_enabled: true
-server: 
-  grpc_server_max_recv_msg_size: 4194304
-  grpc_server_max_send_msg_size: 4194304
-  http_listen_port: 3100
-  http_server_read_timeout: 3m
-  http_server_write_timeout: 3m
-  log_format: logfmt
-  log_level: debug
-storage: 
-  trace: 
-    backend: s3
-    blocklist_poll: 5m
-    cache: none
-    local: 
-      path: /var/tempo/traces
-    s3: 
-      bucket: tempo
-      endpoint: "minio:9000"
-      insecure: true
-    wal: 
-      path: /var/tempo/wal
-usage_report: 
-  reporting_enabled: false
-query_frontend:
-  search:
-    query_backend_after: 8h
-      `,
-		},
-		{
-			name: "set QueryIngestersUntil",
-			spec: v1alpha1.SearchSpec{
-				QueryIngestersUntil: "8h",
-			},
-			expect: `
---- 
-compactor: 
-  compaction: 
-    block_retention: 48h0m0s
-  ring: 
-    kvstore: 
-      store: memberlist
-distributor: 
-  receivers: 
-    jaeger: 
-      protocols: 
-        thrift_http: 
-          endpoint: "0.0.0.0:14268"
-    otlp: 
-      protocols: 
-        grpc: 
-          endpoint: "0.0.0.0:4317"
-        http: 
-          endpoint: "0.0.0.0:4318"
-  ring: 
-    kvstore: 
-      store: memberlist
-ingester: 
-  lifecycler: 
-    ring: 
-      kvstore: 
-        store: memberlist
-      replication_factor: 1
-    tokens_file_path: /var/tempo/tokens.json
-  max_block_duration: 10m
-memberlist: 
-  abort_if_cluster_join_fails: false
-  join_members: 
-    - tempo-test-gossip-ring
-metrics_generator_enabled: false
-multitenancy_enabled: false
-overrides:
-querier: 
-  frontend_worker: 
-    frontend_address: "tempo-test-query-frontend-discovery:9095"
-search_enabled: true
-server: 
-  grpc_server_max_recv_msg_size: 4194304
-  grpc_server_max_send_msg_size: 4194304
-  http_listen_port: 3100
-  http_server_read_timeout: 3m
-  http_server_write_timeout: 3m
-  log_format: logfmt
-  log_level: debug
-storage: 
-  trace: 
-    backend: s3
-    blocklist_poll: 5m
-    cache: none
-    local: 
-      path: /var/tempo/traces
-    s3: 
-      bucket: tempo
-      endpoint: "minio:9000"
-      insecure: true
-    wal: 
-      path: /var/tempo/wal
-usage_report: 
-  reporting_enabled: false
-query_frontend:
-  search:
-    query_ingesters_until: 8h
+    concurrent_jobs: 2000
       `,
 		},
 	}

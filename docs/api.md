@@ -691,21 +691,14 @@ SearchSpec control the configuration for the search capabilities.
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>concurrentJobs</b></td>
+        <td><b>defaultResultLimit</b></td>
         <td>integer</td>
         <td>
           <br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b>externalHedgeRequestsAt</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>externalHedgeRequestsUpTo</b></td>
+        <td><b>maxResultLimit</b></td>
         <td>integer</td>
         <td>
           <br/>
@@ -714,34 +707,6 @@ SearchSpec control the configuration for the search capabilities.
       </tr><tr>
         <td><b>maxSearchDuration</b></td>
         <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>queryBackendAfter</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>queryIngestersUntil</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>queryTimeout</b></td>
-        <td>string</td>
-        <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>targetBytesPerJob</b></td>
-        <td>integer</td>
         <td>
           <br/>
         </td>

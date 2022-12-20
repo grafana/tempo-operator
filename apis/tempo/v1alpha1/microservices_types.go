@@ -134,42 +134,16 @@ type Resources struct {
 type SearchSpec struct {
 	// +optional
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Query timeout"
-	QueryTimeout string `json:"queryTimeout,omitempty"`
-
-	// +optional
-	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="External Hedge Requests At"
-	ExternalHedgeRequestsAt string `json:"externalHedgeRequestsAt,omitempty"`
-
-	// +optional
-	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Max search time range allowed"
 	MaxSearchDuration string `json:"maxSearchDuration,omitempty"`
-
 	// +optional
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Query Ingesters Until"
-	QueryIngestersUntil string `json:"queryIngestersUntil,omitempty"`
-
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Limit used for search requests if none is set by the caller"
+	DefaultResultLimit int `json:"defaultResultLimit,omitempty"`
 	// +optional
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Query Backend After"
-	QueryBackendAfter string `json:"queryBackendAfter,omitempty"`
-	// +optional
-	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="External Hedge Requests Up To"
-	ExternalHedgeRequestsUpTo int `json:"externalHedgeRequestsUpTo,omitempty"`
-
-	// +optional
-	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Number of concurrent jobs"
-	ConcurrentJobs int `json:"concurrentJobs,omitempty"`
-
-	// +optional
-	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Number of bytes for each job"
-	TargetBytesPerJob int `json:"targetBytesPerJob,omitempty"`
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="The maximum allowed value of the limit parameter on search requests"
+	MaxResultLimit int `json:"maxResultLimit,omitempty"`
 }
 
 // ObjectStorageSpec defines the requirements to access the object

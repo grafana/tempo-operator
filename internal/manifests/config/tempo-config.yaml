@@ -68,6 +68,7 @@ overrides:
 {{- end }}
 {{- end }}
 querier:
+  max_concurrent_queries: {{ .Search.MaxConcurrentQueries }}
   frontend_worker:
     frontend_address: {{ .QueryFrontendDiscovery }}
 {{- if or .Search.QueryTimeout .Search.ExternalHedgeRequestsAt .Search.ExternalHedgeRequestsUpTo}}
@@ -112,16 +113,13 @@ query_frontend:
 {{- if .Search.ConcurrentJobs }}
     concurrent_jobs: {{ .Search.ConcurrentJobs }}
 {{- end }}
-{{- if .Search.TargetBytesPerJob }}
-    target_bytes_per_job: {{ .Search.TargetBytesPerJob }}
-{{- end }}
 {{- if .Search.MaxSearchDuration }}
     max_duration: {{ .Search.MaxSearchDuration }}
 {{- end }}
-{{- if .Search.QueryBackendAfter }}
-    query_backend_after: {{ .Search.QueryBackendAfter }}
+{{- if .Search.DefaultResultLimit }}
+    default_result_limit: {{ .Search.DefaultResultLimit }}
 {{- end }}
-{{- if .Search.QueryIngestersUntil }}
-    query_ingesters_until: {{ .Search.QueryIngestersUntil }}
+{{- if .Search.MaxResultLimit }}
+    max_result_limit: {{ .Search.MaxResultLimit }}
 {{- end }}
 {{- end }}
