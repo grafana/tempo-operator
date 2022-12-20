@@ -57,7 +57,7 @@ func fromRateLimitSpecToRateLimitOptionsMap(ratemaps map[string]v1alpha1.RateLim
 func buildConfiguration(tempo v1alpha1.Microservices, params Params) ([]byte, error) {
 	opts := options{
 		S3:              s3FromParams(params),
-		GlobalRetention: tempo.Spec.Retention.Global.Traces.String(),
+		GlobalRetention: tempo.Spec.Retention.Global.Traces.Duration.String(),
 		MemberList: []string{
 			naming.Name("gossip-ring", tempo.Name),
 		},
