@@ -18,7 +18,7 @@ func TestConfigmap(t *testing.T) {
 		Spec: v1alpha1.MicroservicesSpec{
 			Retention: v1alpha1.RetentionSpec{
 				Global: v1alpha1.RetentionConfig{
-					Traces: 48 * time.Hour,
+					Traces: metav1.Duration{Duration: 48 * time.Hour},
 				},
 			},
 		},

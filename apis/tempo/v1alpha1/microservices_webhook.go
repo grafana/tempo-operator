@@ -68,8 +68,8 @@ func (d *defaulter) Default(ctx context.Context, obj runtime.Object) error {
 		r.Spec.ServiceAccount = naming.DefaultServiceAccountName(r.Name)
 	}
 
-	if r.Spec.Retention.Global.Traces == 0 {
-		r.Spec.Retention.Global.Traces = 48 * time.Hour
+	if r.Spec.Retention.Global.Traces.Duration == 0 {
+		r.Spec.Retention.Global.Traces.Duration = 48 * time.Hour
 	}
 
 	if r.Spec.StorageSize.Cmp(zeroQuantity) <= 0 {

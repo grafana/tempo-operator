@@ -40,7 +40,7 @@ func TestDefault(t *testing.T) {
 					ServiceAccount: "tempo-test-serviceaccount",
 					Retention: RetentionSpec{
 						Global: RetentionConfig{
-							Traces: time.Hour,
+							Traces: metav1.Duration{Duration: time.Hour},
 						},
 					},
 					StorageSize: resource.MustParse("1Gi"),
@@ -65,7 +65,7 @@ func TestDefault(t *testing.T) {
 					ServiceAccount: "tempo-test-serviceaccount",
 					Retention: RetentionSpec{
 						Global: RetentionConfig{
-							Traces: time.Hour,
+							Traces: metav1.Duration{Duration: time.Hour},
 						},
 					},
 					StorageSize: resource.MustParse("1Gi"),
@@ -98,7 +98,7 @@ func TestDefault(t *testing.T) {
 					ServiceAccount: "tempo-test-serviceaccount",
 					Retention: RetentionSpec{
 						Global: RetentionConfig{
-							Traces: 48 * time.Hour,
+							Traces: metav1.Duration{Duration: 48 * time.Hour},
 						},
 					},
 					StorageSize: resource.MustParse("10Gi"),
