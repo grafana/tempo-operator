@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -133,6 +134,11 @@ func (r *MicroservicesReconciler) getStorageConfig(ctx context.Context, tempo v1
 func (r *MicroservicesReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&v1alpha1.Microservices{}).
+		Owns(&corev1.ConfigMap{}).
+		Owns(&corev1.ServiceAccount{}).
+		Owns(&corev1.Service{}).
+		Owns(&v1.StatefulSet{}).
+		Owns(&v1.Deployment{}).
 		Complete(r)
 }
 
