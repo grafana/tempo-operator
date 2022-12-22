@@ -12,8 +12,7 @@ import (
 )
 
 const (
-	PortMemberlist = 7946
-	componentName  = "gossip-ring"
+	componentName = "gossip-ring"
 )
 
 var (
@@ -35,10 +34,10 @@ func BuildGossip(tempo v1alpha1.Microservices) *corev1.Service {
 			Selector: selector,
 			Ports: []corev1.ServicePort{
 				{
-					Name:       componentName,
+					Name:       manifestutils.HttpMemberlistPortName,
 					Protocol:   corev1.ProtocolTCP,
-					Port:       PortMemberlist,
-					TargetPort: intstr.FromString("http-memberlist"),
+					Port:       manifestutils.PortMemberlist,
+					TargetPort: intstr.FromString(manifestutils.HttpMemberlistPortName),
 				},
 			},
 		},

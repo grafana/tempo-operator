@@ -15,12 +15,7 @@ import (
 )
 
 const (
-	configVolumeName = "tempo-conf"
-	componentName    = "querier"
-	httpPortName     = "http"
-	grpcPortName     = "grpc"
-	portHTTPServer   = 3100
-	portGRPCServer   = 9095
+	componentName = "querier"
 )
 
 // BuildQuerier creates querier objects.
@@ -68,19 +63,19 @@ func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
 							Args:  []string{"-target=querier", "-config.file=/conf/tempo.yaml"},
 							Ports: []corev1.ContainerPort{
 								{
-									Name:          httpPortName,
-									ContainerPort: portHTTPServer,
+									Name:          manifestutils.HttpPortName,
+									ContainerPort: manifestutils.PortHTTPServer,
 									Protocol:      corev1.ProtocolTCP,
 								},
 								{
-									Name:          "http-memberlist",
-									ContainerPort: memberlist.PortMemberlist,
+									Name:          manifestutils.HttpMemberlistPortName,
+									ContainerPort: manifestutils.PortMemberlist,
 									Protocol:      corev1.ProtocolTCP,
 								},
 							},
 							VolumeMounts: []corev1.VolumeMount{
 								{
-									Name:      configVolumeName,
+									Name:      manifestutils.ConfigVolumeName,
 									MountPath: "/conf",
 									ReadOnly:  true,
 								},
@@ -90,7 +85,7 @@ func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
 					},
 					Volumes: []corev1.Volume{
 						{
-							Name: configVolumeName,
+							Name: manifestutils.ConfigVolumeName,
 							VolumeSource: corev1.VolumeSource{
 								ConfigMap: &corev1.ConfigMapVolumeSource{
 									LocalObjectReference: corev1.LocalObjectReference{
@@ -123,22 +118,22 @@ func service(tempo v1alpha1.Microservices) *corev1.Service {
 		Spec: corev1.ServiceSpec{
 			Ports: []corev1.ServicePort{
 				{
-					Name:       "http-memberlist",
+					Name:       manifestutils.HttpMemberlistPortName,
 					Protocol:   corev1.ProtocolTCP,
-					Port:       memberlist.PortMemberlist,
-					TargetPort: intstr.FromInt(memberlist.PortMemberlist),
+					Port:       manifestutils.PortMemberlist,
+					TargetPort: intstr.FromString(manifestutils.HttpMemberlistPortName),
 				},
 				{
-					Name:       httpPortName,
+					Name:       manifestutils.HttpPortName,
 					Protocol:   corev1.ProtocolTCP,
-					Port:       portHTTPServer,
-					TargetPort: intstr.FromString("http"),
+					Port:       manifestutils.PortHTTPServer,
+					TargetPort: intstr.FromString(manifestutils.HttpPortName),
 				},
 				{
-					Name:       grpcPortName,
+					Name:       manifestutils.GrpcPortName,
 					Protocol:   corev1.ProtocolTCP,
-					Port:       portGRPCServer,
-					TargetPort: intstr.FromString("grpc"),
+					Port:       manifestutils.PortGRPCServer,
+					TargetPort: intstr.FromString(manifestutils.GrpcPortName),
 				},
 			},
 			Selector: labels,

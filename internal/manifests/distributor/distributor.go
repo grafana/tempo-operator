@@ -15,12 +15,7 @@ import (
 )
 
 const (
-	configVolumeName   = "tempo-conf"
-	componentName      = "distributor"
-	httpPortName       = "http"
-	otlpGrpcPortName   = "otlp-grpc"
-	portHTTPServer     = 3100
-	portOtlpGrpcServer = 4317
+	componentName = "distributor"
 )
 
 // BuildDistributor creates distributor objects.
@@ -63,24 +58,24 @@ func deployment(tempo v1alpha1.Microservices) *v1.Deployment {
 							Args:  []string{"-target=distributor", "-config.file=/conf/tempo.yaml"},
 							Ports: []corev1.ContainerPort{
 								{
-									Name:          otlpGrpcPortName,
-									ContainerPort: portOtlpGrpcServer,
+									Name:          manifestutils.OtlpGrpcPortName,
+									ContainerPort: manifestutils.PortOtlpGrpcServer,
 									Protocol:      corev1.ProtocolTCP,
 								},
 								{
-									Name:          httpPortName,
-									ContainerPort: portHTTPServer,
+									Name:          manifestutils.HttpPortName,
+									ContainerPort: manifestutils.PortHTTPServer,
 									Protocol:      corev1.ProtocolTCP,
 								},
 								{
-									Name:          "http-memberlist",
-									ContainerPort: memberlist.PortMemberlist,
+									Name:          manifestutils.HttpMemberlistPortName,
+									ContainerPort: manifestutils.PortMemberlist,
 									Protocol:      corev1.ProtocolTCP,
 								},
 							},
 							VolumeMounts: []corev1.VolumeMount{
 								{
-									Name:      configVolumeName,
+									Name:      manifestutils.ConfigVolumeName,
 									MountPath: "/conf",
 									ReadOnly:  true,
 								},
@@ -90,7 +85,7 @@ func deployment(tempo v1alpha1.Microservices) *v1.Deployment {
 					},
 					Volumes: []corev1.Volume{
 						{
-							Name: configVolumeName,
+							Name: manifestutils.ConfigVolumeName,
 							VolumeSource: corev1.VolumeSource{
 								ConfigMap: &corev1.ConfigMapVolumeSource{
 									LocalObjectReference: corev1.LocalObjectReference{
@@ -117,16 +112,16 @@ func service(tempo v1alpha1.Microservices) *corev1.Service {
 		Spec: corev1.ServiceSpec{
 			Ports: []corev1.ServicePort{
 				{
-					Name:       otlpGrpcPortName,
+					Name:       manifestutils.OtlpGrpcPortName,
 					Protocol:   corev1.ProtocolTCP,
-					Port:       portOtlpGrpcServer,
-					TargetPort: intstr.FromString(otlpGrpcPortName),
+					Port:       manifestutils.PortOtlpGrpcServer,
+					TargetPort: intstr.FromString(manifestutils.OtlpGrpcPortName),
 				},
 				{
-					Name:       httpPortName,
+					Name:       manifestutils.HttpPortName,
 					Protocol:   corev1.ProtocolTCP,
-					Port:       portHTTPServer,
-					TargetPort: intstr.FromString(httpPortName),
+					Port:       manifestutils.PortHTTPServer,
+					TargetPort: intstr.FromString(manifestutils.HttpPortName),
 				},
 			},
 			Selector: labels,

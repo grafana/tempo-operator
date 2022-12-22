@@ -113,7 +113,7 @@ func TestBuildIngester(t *testing.T) {
 							},
 							VolumeMounts: []corev1.VolumeMount{
 								{
-									Name:      configVolumeName,
+									Name:      manifestutils.ConfigVolumeName,
 									MountPath: "/conf",
 									ReadOnly:  true,
 								},
@@ -124,18 +124,18 @@ func TestBuildIngester(t *testing.T) {
 							},
 							Ports: []corev1.ContainerPort{
 								{
-									Name:          "http-memberlist",
-									ContainerPort: 7946,
+									Name:          manifestutils.HttpMemberlistPortName,
+									ContainerPort: manifestutils.PortMemberlist,
 									Protocol:      corev1.ProtocolTCP,
 								},
 								{
-									Name:          "http",
-									ContainerPort: portHTTPServer,
+									Name:          manifestutils.HttpPortName,
+									ContainerPort: manifestutils.PortHTTPServer,
 									Protocol:      corev1.ProtocolTCP,
 								},
 								{
-									Name:          "grpc",
-									ContainerPort: portGRPCServer,
+									Name:          manifestutils.GrpcPortName,
+									ContainerPort: manifestutils.PortGRPCServer,
 									Protocol:      corev1.ProtocolTCP,
 								},
 							},
@@ -153,7 +153,7 @@ func TestBuildIngester(t *testing.T) {
 					},
 					Volumes: []corev1.Volume{
 						{
-							Name: configVolumeName,
+							Name: manifestutils.ConfigVolumeName,
 							VolumeSource: corev1.VolumeSource{
 								ConfigMap: &corev1.ConfigMapVolumeSource{
 									LocalObjectReference: corev1.LocalObjectReference{
@@ -193,16 +193,16 @@ func TestBuildIngester(t *testing.T) {
 		Spec: corev1.ServiceSpec{
 			Ports: []corev1.ServicePort{
 				{
-					Name:       "http",
+					Name:       manifestutils.HttpPortName,
 					Protocol:   corev1.ProtocolTCP,
-					Port:       portHTTPServer,
-					TargetPort: intstr.FromString("http"),
+					Port:       manifestutils.PortHTTPServer,
+					TargetPort: intstr.FromString(manifestutils.HttpPortName),
 				},
 				{
-					Name:       "grpc",
+					Name:       manifestutils.GrpcPortName,
 					Protocol:   corev1.ProtocolTCP,
-					Port:       portGRPCServer,
-					TargetPort: intstr.FromString("grpc"),
+					Port:       manifestutils.PortGRPCServer,
+					TargetPort: intstr.FromString(manifestutils.GrpcPortName),
 				},
 			},
 			Selector: labels,

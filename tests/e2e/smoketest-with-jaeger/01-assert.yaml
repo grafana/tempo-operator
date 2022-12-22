@@ -123,7 +123,7 @@ spec:
     - name: http-memberlist
       port: 7946
       protocol: TCP
-      targetPort: 7946
+      targetPort: http-memberlist
     - name: http
       port: 3100
       protocol: TCP
@@ -174,7 +174,7 @@ metadata:
   name: tempo-simplest-gossip-ring
 spec:
   ports:
-    - name: gossip-ring
+    - name: http-memberlist
       port: 7946
       protocol: TCP
       targetPort: http-memberlist
@@ -227,7 +227,7 @@ spec:
     - name: http-memberlist
       port: 7946
       protocol: TCP
-      targetPort: 7946
+      targetPort: http-memberlist
     - name: http
       port: 3100
       protocol: TCP
@@ -258,11 +258,11 @@ spec:
     - name: http
       port: 3100
       protocol: TCP
-      targetPort: 3100
+      targetPort: http
     - name: grpc
       port: 9095
       protocol: TCP
-      targetPort: 9095
+      targetPort: grpc
     - name: tempo-query-jaeger-ui
       port: 16686
       protocol: TCP
@@ -293,15 +293,15 @@ spec:
     - name: http
       port: 3100
       protocol: TCP
-      targetPort: 3100
+      targetPort: http
     - name: grpc
       port: 9095
       protocol: TCP
-      targetPort: 9095
+      targetPort: grpc
     - name: grpclb
       port: 9096
       protocol: TCP
-      targetPort: grpc
+      targetPort: grpclb
     - name: tempo-query-jaeger-ui
       port: 16686
       protocol: TCP

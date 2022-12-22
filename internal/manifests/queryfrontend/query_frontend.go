@@ -16,17 +16,12 @@ import (
 )
 
 const (
-	configVolumeName           = "tempo-conf"
 	componentName              = "query-frontend"
-	grpcPortName               = "grpc"
 	grpclbPortName             = "grpclb"
-	httpPortName               = "http"
 	jaegerMetricsPortName      = "jaeger-metrics"
 	jaegerUIPortName           = "jaeger-ui"
 	tempoQueryJaegerUiPortName = "tempo-query-jaeger-ui"
 	tempoQueryMetricsPortName  = "tempo-query-metrics"
-	portHTTPServer             = 3100
-	portGRPCServer             = 9095
 	portGRPCLBServer           = 9096
 	portJaegerUI               = 16686
 	portQueryMetrics           = 16687
@@ -111,19 +106,19 @@ func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
 							},
 							Ports: []corev1.ContainerPort{
 								{
-									Name:          httpPortName,
-									ContainerPort: portHTTPServer,
+									Name:          manifestutils.HttpPortName,
+									ContainerPort: manifestutils.PortHTTPServer,
 									Protocol:      corev1.ProtocolTCP,
 								},
 								{
-									Name:          grpcPortName,
-									ContainerPort: portGRPCServer,
+									Name:          manifestutils.GrpcPortName,
+									ContainerPort: manifestutils.PortGRPCServer,
 									Protocol:      corev1.ProtocolTCP,
 								},
 							},
 							VolumeMounts: []corev1.VolumeMount{
 								{
-									Name:      configVolumeName,
+									Name:      manifestutils.ConfigVolumeName,
 									MountPath: "/conf",
 									ReadOnly:  true,
 								},
@@ -137,7 +132,7 @@ func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
 					},
 					Volumes: []corev1.Volume{
 						{
-							Name: configVolumeName,
+							Name: manifestutils.ConfigVolumeName,
 							VolumeSource: corev1.VolumeSource{
 								ConfigMap: &corev1.ConfigMapVolumeSource{
 									LocalObjectReference: corev1.LocalObjectReference{
@@ -181,7 +176,7 @@ func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
 			},
 			VolumeMounts: []corev1.VolumeMount{
 				{
-					Name:      configVolumeName,
+					Name:      manifestutils.ConfigVolumeName,
 					MountPath: "/conf",
 					ReadOnly:  true,
 				},
@@ -222,15 +217,15 @@ func services(tempo v1alpha1.Microservices) []*corev1.Service {
 		Spec: corev1.ServiceSpec{
 			Ports: []corev1.ServicePort{
 				{
-					Name:       httpPortName,
-					Port:       portHTTPServer,
-					TargetPort: intstr.FromInt(portHTTPServer),
+					Name:       manifestutils.HttpPortName,
+					Port:       manifestutils.PortHTTPServer,
+					TargetPort: intstr.FromString(manifestutils.HttpPortName),
 				},
 				{
-					Name:       grpcPortName,
+					Name:       manifestutils.GrpcPortName,
 					Protocol:   corev1.ProtocolTCP,
-					Port:       portGRPCServer,
-					TargetPort: intstr.FromInt(portGRPCServer),
+					Port:       manifestutils.PortGRPCServer,
+					TargetPort: intstr.FromString(manifestutils.GrpcPortName),
 				},
 			},
 			Selector: labels,
@@ -246,21 +241,21 @@ func services(tempo v1alpha1.Microservices) []*corev1.Service {
 		Spec: corev1.ServiceSpec{
 			Ports: []corev1.ServicePort{
 				{
-					Name:       httpPortName,
-					Port:       portHTTPServer,
-					TargetPort: intstr.FromInt(portHTTPServer),
+					Name:       manifestutils.HttpPortName,
+					Port:       manifestutils.PortHTTPServer,
+					TargetPort: intstr.FromString(manifestutils.HttpPortName),
 				},
 				{
-					Name:       grpcPortName,
+					Name:       manifestutils.GrpcPortName,
 					Protocol:   corev1.ProtocolTCP,
-					Port:       portGRPCServer,
-					TargetPort: intstr.FromInt(portGRPCServer),
+					Port:       manifestutils.PortGRPCServer,
+					TargetPort: intstr.FromString(manifestutils.GrpcPortName),
 				},
 				{
 					Name:       grpclbPortName,
 					Protocol:   corev1.ProtocolTCP,
 					Port:       portGRPCLBServer,
-					TargetPort: intstr.FromString("grpc"),
+					TargetPort: intstr.FromString(grpclbPortName),
 				},
 			},
 			Selector: labels,
