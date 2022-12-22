@@ -199,14 +199,14 @@ spec:
                   all tempo components.
                 type: string
               storage:
-                description: 'NOTE: currently this field is not considered. Storage
-                  defines S3 compatible object storage configuration. User is required
-                  to create secret and supply it.'
+                description: Storage defines S3 compatible object storage configuration.
+                  User is required to create secret and supply it.
                 properties:
                   secret:
                     description: Secret for object storage authentication. Name of
                       a secret in the same namespace as the tempo Microservices custom
                       resource.
+                    minLength: 1
                     type: string
                   tls:
                     description: TLS configuration for reaching the object storage
@@ -218,6 +218,8 @@ spec:
                           LokiStack custom resource.
                         type: string
                     type: object
+                required:
+                - secret
                 type: object
               storageClassName:
                 description: StorageClassName for PVCs used by ingester. Defaults
@@ -544,6 +546,8 @@ spec:
                         type: object
                     type: object
                 type: object
+            required:
+            - storage
             type: object
           status:
             description: MicroservicesStatus defines the observed state of Microservices.

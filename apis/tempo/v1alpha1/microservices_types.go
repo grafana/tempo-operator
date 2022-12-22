@@ -32,13 +32,12 @@ type MicroservicesSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Resources"
 	Resources Resources `json:"resources,omitempty"`
 
-	// NOTE: currently this field is not considered.
 	// Storage defines S3 compatible object storage configuration.
 	// User is required to create secret and supply it.
 	//
-	// +optional
+	// +kubebuilder:validation:Required
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Object Storage"
-	Storage ObjectStorageSpec `json:"storage,omitempty"`
+	Storage ObjectStorageSpec `json:"storage"`
 
 	// NOTE: currently this field is not considered.
 	// Retention period defined by dataset.
@@ -139,10 +138,10 @@ type ObjectStorageSpec struct {
 	// Secret for object storage authentication.
 	// Name of a secret in the same namespace as the tempo Microservices custom resource.
 	//
-	// +optional
 	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:MinLength=1
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Object Storage Secret"
-	Secret string `json:"secret,omitempty"`
+	Secret string `json:"secret"`
 }
 
 // ObjectStorageTLSSpec is the TLS configuration for reaching the object storage endpoint.
