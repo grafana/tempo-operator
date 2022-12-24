@@ -150,9 +150,8 @@ spec:
           components.
         displayName: Service Account
         path: serviceAccount
-      - description: 'NOTE: currently this field is not considered. Storage defines
-          S3 compatible object storage configuration. User is required to create secret
-          and supply it.'
+      - description: Storage defines S3 compatible object storage configuration. User
+          is required to create secret and supply it.
         displayName: Object Storage
         path: storage
       - description: Secret for object storage authentication. Name of a secret in

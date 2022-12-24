@@ -84,6 +84,13 @@ MicroservicesSpec defines the desired state of Microservices.
         </tr>
     </thead>
     <tbody><tr>
+        <td><b><a href="#microservicesspecstorage">storage</a></b></td>
+        <td>object</td>
+        <td>
+          Storage defines S3 compatible object storage configuration. User is required to create secret and supply it.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
         <td><b><a href="#microservicesspecimages">images</a></b></td>
         <td>object</td>
         <td>
@@ -126,13 +133,6 @@ MicroservicesSpec defines the desired state of Microservices.
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#microservicesspecstorage">storage</a></b></td>
-        <td>object</td>
-        <td>
-          NOTE: currently this field is not considered. Storage defines S3 compatible object storage configuration. User is required to create secret and supply it.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
         <td><b>storageClassName</b></td>
         <td>string</td>
         <td>
@@ -151,6 +151,67 @@ MicroservicesSpec defines the desired state of Microservices.
         <td>object</td>
         <td>
           NOTE: currently this field is not considered. Components defines requirements for a set of tempo components.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### Microservices.spec.storage
+<sup><sup>[↩ Parent](#microservicesspec)</sup></sup>
+
+
+
+Storage defines S3 compatible object storage configuration. User is required to create secret and supply it.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>secret</b></td>
+        <td>string</td>
+        <td>
+          Secret for object storage authentication. Name of a secret in the same namespace as the tempo Microservices custom resource.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#microservicesspecstoragetls">tls</a></b></td>
+        <td>object</td>
+        <td>
+          TLS configuration for reaching the object storage endpoint.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### Microservices.spec.storage.tls
+<sup><sup>[↩ Parent](#microservicesspecstorage)</sup></sup>
+
+
+
+TLS configuration for reaching the object storage endpoint.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>caName</b></td>
+        <td>string</td>
+        <td>
+          CA is the name of a ConfigMap containing a CA certificate. It needs to be in the same namespace as the LokiStack custom resource.<br/>
         </td>
         <td>false</td>
       </tr></tbody>
@@ -600,67 +661,6 @@ RetentionConfig defines how long data should be provided.
         <td>string</td>
         <td>
           Traces defines retention period. Supported parameter suffixes are “s”, “m” and “h”. example: 336h default: value is 48h.<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-
-### Microservices.spec.storage
-<sup><sup>[↩ Parent](#microservicesspec)</sup></sup>
-
-
-
-NOTE: currently this field is not considered. Storage defines S3 compatible object storage configuration. User is required to create secret and supply it.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>secret</b></td>
-        <td>string</td>
-        <td>
-          Secret for object storage authentication. Name of a secret in the same namespace as the tempo Microservices custom resource.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#microservicesspecstoragetls">tls</a></b></td>
-        <td>object</td>
-        <td>
-          TLS configuration for reaching the object storage endpoint.<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-
-### Microservices.spec.storage.tls
-<sup><sup>[↩ Parent](#microservicesspecstorage)</sup></sup>
-
-
-
-TLS configuration for reaching the object storage endpoint.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>caName</b></td>
-        <td>string</td>
-        <td>
-          CA is the name of a ConfigMap containing a CA certificate. It needs to be in the same namespace as the LokiStack custom resource.<br/>
         </td>
         <td>false</td>
       </tr></tbody>
