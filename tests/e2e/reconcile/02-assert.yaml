@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: querier
+    app.kubernetes.io/created-by: tempo-controller
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/name: tempo
+  name: tempo-simplest-querier
+spec:
+  ports:
+    - name: http-memberlist
+      port: 7946
+      protocol: TCP
+      targetPort: 7946
+    - name: http
+      port: 3100
+      protocol: TCP
+      targetPort: http
+    - name: grpc
+      port: 9095
+      protocol: TCP
+      targetPort: grpc
+  selector:
+    app.kubernetes.io/component: querier
+    app.kubernetes.io/created-by: tempo-controller
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/name: tempo
