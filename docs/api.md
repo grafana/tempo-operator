@@ -698,6 +698,13 @@ SearchSpec control the configuration for the search capabilities.
         </td>
         <td>false</td>
       </tr><tr>
+        <td><b>enabled</b></td>
+        <td>boolean</td>
+        <td>
+          <br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b>maxResultLimit</b></td>
         <td>integer</td>
         <td>

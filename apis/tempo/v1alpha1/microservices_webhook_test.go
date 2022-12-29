@@ -77,7 +77,7 @@ func TestDefault(t *testing.T) {
 						},
 					},
 					SearchSpec: SearchSpec{
-						MaxSearchDuration: "0s",
+						MaxSearchDuration: metav1.Duration{Duration: 0},
 					},
 				},
 			},
@@ -113,7 +113,7 @@ func TestDefault(t *testing.T) {
 						},
 					},
 					SearchSpec: SearchSpec{
-						MaxSearchDuration: "0s",
+						MaxSearchDuration: metav1.Duration{Duration: 0},
 					},
 				},
 			},

@@ -134,8 +134,12 @@ type Resources struct {
 type SearchSpec struct {
 	// +optional
 	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Search enabled"
+	Enabled *bool `json:"enabled,omitempty"`
+	// +optional
+	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Max search time range allowed"
-	MaxSearchDuration string `json:"maxSearchDuration,omitempty"`
+	MaxSearchDuration metav1.Duration `json:"maxSearchDuration,omitempty"`
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Limit used for search requests if none is set by the caller"

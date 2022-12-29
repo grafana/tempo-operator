@@ -1051,11 +1051,6 @@ query_frontend:
 					Name: "test",
 				},
 				Spec: v1alpha1.MicroservicesSpec{
-					Retention: v1alpha1.RetentionSpec{
-						Global: v1alpha1.RetentionConfig{
-							Traces: 48 * time.Hour,
-						},
-					},
 					SearchSpec: tc.spec,
 				},
 			}, Params{S3: S3{

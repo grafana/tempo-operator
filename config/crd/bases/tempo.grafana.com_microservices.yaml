@@ -199,6 +199,8 @@ spec:
                 properties:
                   defaultResultLimit:
                     type: integer
+                  enabled:
+                    type: boolean
                   maxResultLimit:
                     type: integer
                   maxSearchDuration:
