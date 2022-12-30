@@ -86,6 +86,7 @@ usage_report:
 query_frontend:
   search:
     concurrent_jobs: 2000
+    max_duration: 0s
 `
 	cfg, err := buildConfiguration(v1alpha1.Microservices{
 		ObjectMeta: metav1.ObjectMeta{
@@ -187,6 +188,7 @@ usage_report:
 query_frontend:
   search:
     concurrent_jobs: 2000
+    max_duration: 0s
       `,
 		},
 		{
@@ -271,6 +273,7 @@ usage_report:
 query_frontend:
   search:
     concurrent_jobs: 2000
+    max_duration: 0s
       `,
 		},
 		{
@@ -354,6 +357,7 @@ usage_report:
 query_frontend:
   search:
     concurrent_jobs: 2000
+    max_duration: 0s
       `,
 		},
 		{
@@ -438,6 +442,7 @@ usage_report:
 query_frontend:
   search:
     concurrent_jobs: 2000
+    max_duration: 0s
       `,
 		},
 		{
@@ -522,6 +527,7 @@ usage_report:
 query_frontend:
   search:
     concurrent_jobs: 2000
+    max_duration: 0s
       `,
 		},
 		{
@@ -606,6 +612,7 @@ usage_report:
 query_frontend:
   search:
     concurrent_jobs: 2000
+    max_duration: 0s
       `,
 		},
 		{
@@ -690,6 +697,7 @@ usage_report:
 query_frontend:
   search:
     concurrent_jobs: 2000
+    max_duration: 0s
       `,
 		},
 		{
@@ -786,6 +794,7 @@ usage_report:
 query_frontend:
   search:
     concurrent_jobs: 2000
+    max_duration: 0s
       `,
 		},
 		{
@@ -880,6 +889,7 @@ usage_report:
 query_frontend:
   search:
     concurrent_jobs: 2000
+    max_duration: 0s
       `,
 		},
 	}
@@ -973,7 +983,7 @@ func TestBuildConfiguration_SearchConfig(t *testing.T) {
 --- 
 compactor: 
   compaction: 
-    block_retention: 48h0m0s
+    block_retention: 0s
   ring: 
     kvstore: 
       store: memberlist
@@ -1040,6 +1050,7 @@ usage_report:
 query_frontend:
   search:
     concurrent_jobs: 2000
+    max_duration: 0s
       `,
 		},
 	}

@@ -163,6 +163,8 @@ spec:
         path: search
       - displayName: Limit used for search requests if none is set by the caller
         path: search.defaultResultLimit
+      - displayName: Search enabled
+        path: search.enabled
       - displayName: The maximum allowed value of the limit parameter on search requests
         path: search.maxResultLimit
       - displayName: Max search time range allowed
