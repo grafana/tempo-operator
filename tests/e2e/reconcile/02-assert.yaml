@@ -13,7 +13,7 @@ spec:
     - name: http-memberlist
       port: 7946
       protocol: TCP
-      targetPort: 7946
+      targetPort: http-memberlist
     - name: http
       port: 3100
       protocol: TCP
