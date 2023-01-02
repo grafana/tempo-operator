@@ -838,25 +838,25 @@ func TestGetMutateFunc_MutateServiceMonitorSpec(t *testing.T) {
 					JobLabel: "some-job-new",
 					Endpoints: []monitoringv1.Endpoint{
 						{
-							Port:            "loki-test",
+							Port:            "tempo-test",
 							Path:            "/some-path",
 							Scheme:          "https",
 							BearerTokenFile: manifestutils.BearerTokenFile,
 							TLSConfig: &monitoringv1.TLSConfig{
 								SafeTLSConfig: monitoringv1.SafeTLSConfig{
-									ServerName: "loki-test.some-ns.svc.cluster.local",
+									ServerName: "tempo-test.some-ns.svc.cluster.local",
 								},
 								CAFile: manifestutils.PrometheusCAFile,
 							},
 						},
 						{
-							Port:            "loki-test",
+							Port:            "tempo-test",
 							Path:            "/some-new-path",
 							Scheme:          "https",
 							BearerTokenFile: manifestutils.BearerTokenFile,
 							TLSConfig: &monitoringv1.TLSConfig{
 								SafeTLSConfig: monitoringv1.SafeTLSConfig{
-									ServerName: "loki-test.some-ns.svc.cluster.local",
+									ServerName: "tempo-test.some-ns.svc.cluster.local",
 								},
 								CAFile: manifestutils.PrometheusCAFile,
 							},
@@ -882,13 +882,13 @@ func TestGetMutateFunc_MutateServiceMonitorSpec(t *testing.T) {
 					JobLabel: "some-job",
 					Endpoints: []monitoringv1.Endpoint{
 						{
-							Port:            "loki-test",
+							Port:            "tempo-test",
 							Path:            "/some-path",
 							Scheme:          "https",
 							BearerTokenFile: manifestutils.BearerTokenFile,
 							TLSConfig: &monitoringv1.TLSConfig{
 								SafeTLSConfig: monitoringv1.SafeTLSConfig{
-									ServerName: "loki-test.some-ns.svc.cluster.local",
+									ServerName: "tempo-test.some-ns.svc.cluster.local",
 								},
 								CAFile: manifestutils.PrometheusCAFile,
 							},
@@ -910,25 +910,25 @@ func TestGetMutateFunc_MutateServiceMonitorSpec(t *testing.T) {
 					JobLabel: "some-job-new",
 					Endpoints: []monitoringv1.Endpoint{
 						{
-							Port:            "loki-test",
+							Port:            "tempo-test",
 							Path:            "/some-path",
 							Scheme:          "https",
 							BearerTokenFile: manifestutils.BearerTokenFile,
 							TLSConfig: &monitoringv1.TLSConfig{
 								SafeTLSConfig: monitoringv1.SafeTLSConfig{
-									ServerName: "loki-test.some-ns.svc.cluster.local",
+									ServerName: "tempo-test.some-ns.svc.cluster.local",
 								},
 								CAFile: manifestutils.PrometheusCAFile,
 							},
 						},
 						{
-							Port:            "loki-test",
+							Port:            "tempo-test",
 							Path:            "/some-new-path",
 							Scheme:          "https",
 							BearerTokenFile: manifestutils.BearerTokenFile,
 							TLSConfig: &monitoringv1.TLSConfig{
 								SafeTLSConfig: monitoringv1.SafeTLSConfig{
-									ServerName: "loki-test.some-ns.svc.cluster.local",
+									ServerName: "tempo-test.some-ns.svc.cluster.local",
 								},
 								CAFile: manifestutils.PrometheusCAFile,
 							},

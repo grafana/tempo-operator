@@ -35,11 +35,6 @@ func CreateOrRotateCertificates(ctx context.Context, log logr.Logger,
 		return kverrors.Wrap(err, "failed to lookup microservices", "name", req.String())
 	}
 
-	/*var mode lokiv1.ModeType
-	if stack.Spec.Tenants != nil {
-		mode = stack.Spec.Tenants.Mode
-	}*/
-
 	opts, err := GetOptions(ctx, k, req)
 	if err != nil {
 		return kverrors.Wrap(err, "failed to lookup certificates secrets", "name", req.String())
@@ -55,11 +50,6 @@ func CreateOrRotateCertificates(ctx context.Context, log logr.Logger,
 	if err != nil {
 		ll.Error(err, "failed to build certificate manifests")
 		return kverrors.Wrap(err, "failed to build certificate manifests", "name", req.String())
-		/*return &status.DegradedError{
-			Message: "Failed to rotate TLS certificates",
-			Reason:  lokiv1.ReasonFailedCertificateRotation,
-			Requeue: true,
-		}*/
 	}
 
 	ll.Info("certificate manifests built", "count", len(objects))
