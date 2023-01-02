@@ -16,3 +16,7 @@ func Name(component string, instanceName string) string {
 func DefaultServiceAccountName(name string) string {
 	return Name("serviceaccount", name)
 }
+
+func SigningCABundleName(name string) string {
+	return fmt.Sprintf("tempo-%s-ca-bundle", name)
+}

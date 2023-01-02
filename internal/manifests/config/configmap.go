@@ -16,7 +16,9 @@ const tenantOverridesMountPath = "/conf/overrides.yaml"
 
 // Params holds configuration parameters.
 type Params struct {
-	S3 S3
+	S3             S3
+	HTTPEncryption bool
+	GRPCEncryption bool
 }
 
 // S3 holds S3 object storage configuration options.
@@ -51,7 +53,11 @@ func BuildConfigMap(tempo v1alpha1.Microservices, params Params) (*corev1.Config
 		},
 	}
 	if tempo.Spec.Components.QueryFrontend.JaegerQuery.Enabled {
-		configMap.Data["tempo-query.yaml"] = fmt.Sprintf("backend: 127.0.0.1:%d\n", manifestutils.PortHTTPServer)
+		tempoQueryConfig, err := buildTempoQueryConfig(tempo)
+		if err != nil {
+			return nil, "", err
+		}
+		configMap.Data["tempo-query.yaml"] = string(tempoQueryConfig)
 	}
 
 	// We only need to hash the main ConfigMap, the per-tenant overrides

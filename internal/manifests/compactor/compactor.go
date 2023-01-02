@@ -20,8 +20,38 @@ func BuildCompactor(params manifestutils.Params) ([]client.Object, error) {
 	if err != nil {
 		return nil, err
 	}
+	gates := params.Gates
+	tempo := params.Tempo
+	if gates.HTTPEncryption || gates.GRPCEncryption {
+		caBundleName := naming.SigningCABundleName(tempo.Name)
+		if err := manifestutils.ConfigureServiceCA(&d.Spec.Template.Spec, caBundleName); err != nil {
+			return nil, err
+		}
+	}
 
-	return []client.Object{d, service(params.Tempo)}, nil
+	if gates.GRPCEncryption {
+		if err := configureCompactorGRPCServicePKI(d, tempo); err != nil {
+			return nil, err
+		}
+	}
+
+	if gates.HTTPEncryption {
+		if err := configureCompactorHTTPServicePKI(d, tempo); err != nil {
+			return nil, err
+		}
+	}
+
+	return []client.Object{d, service(tempo)}, nil
+}
+
+func configureCompactorGRPCServicePKI(sts *v1.Deployment, tempo v1alpha1.Microservices) error {
+	serviceName := naming.Name(componentName, tempo.Name)
+	return manifestutils.ConfigureGRPCServicePKI(&sts.Spec.Template.Spec, serviceName)
+}
+
+func configureCompactorHTTPServicePKI(sts *v1.Deployment, tempo v1alpha1.Microservices) error {
+	serviceName := naming.Name(componentName, tempo.Name)
+	return manifestutils.ConfigureHTTPServicePKI(&sts.Spec.Template.Spec, serviceName)
 }
 
 func deployment(params manifestutils.Params) (*v1.Deployment, error) {

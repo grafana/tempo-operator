@@ -31,8 +31,9 @@ func start(c *cobra.Command, args []string) {
 	}
 
 	if err = (&controllers.MicroservicesReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
+		Client:       mgr.GetClient(),
+		Scheme:       mgr.GetScheme(),
+		FeatureGates: ctrlConfig.Gates,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Microservices")
 		os.Exit(1)

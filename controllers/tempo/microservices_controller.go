@@ -24,7 +24,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
+	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/os-observability/tempo-operator/internal/certrotation/handlers"
 	"github.com/os-observability/tempo-operator/internal/manifests"
 	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
 	"github.com/os-observability/tempo-operator/internal/status"
@@ -37,7 +39,8 @@ const (
 // MicroservicesReconciler reconciles a Microservices object.
 type MicroservicesReconciler struct {
 	client.Client
-	Scheme *runtime.Scheme
+	Scheme       *runtime.Scheme
+	FeatureGates configv1alpha1.FeatureGates
 }
 
 // +kubebuilder:rbac:groups="",resources=services;configmaps;serviceaccounts;secrets;pods,verbs=get;list;watch;create;update;patch;delete
@@ -70,6 +73,13 @@ func (r *MicroservicesReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		// requeue (we'll need to wait for a new notification), and we can get them
 		// on deleted requests.
 		return ctrl.Result{}, nil
+	}
+
+	if r.FeatureGates.BuiltInCertManagement.Enabled {
+		err := handlers.CreateOrRotateCertificates(ctx, log, req, r.Client, r.Scheme, r.FeatureGates)
+		if err != nil {
+			return ctrl.Result{}, fmt.Errorf("build in cert manager error: %w", err)
+		}
 	}
 
 	err := r.reconcileManifests(ctx, log, req, tempo)
@@ -134,7 +144,7 @@ func (r *MicroservicesReconciler) reconcileManifests(ctx context.Context, log lo
 		}
 	}
 
-	objects, err := manifests.BuildAll(manifestutils.Params{Tempo: tempo, StorageParams: *storageConfig})
+	objects, err := manifests.BuildAll(manifestutils.Params{Tempo: tempo, StorageParams: *storageConfig, Gates: r.FeatureGates})
 	// TODO (pavolloffay) check error type and change return appropriately
 	if err != nil {
 		return fmt.Errorf("error building manifests: %w", err)

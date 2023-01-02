@@ -30,7 +30,30 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 	if err != nil {
 		return nil, err
 	}
-	svcs := services(params.Tempo)
+
+	gates := params.Gates
+	tempo := params.Tempo
+
+	if gates.HTTPEncryption || gates.GRPCEncryption {
+		caBundleName := naming.SigningCABundleName(tempo.Name)
+		if err := manifestutils.ConfigureServiceCA(&d.Spec.Template.Spec, caBundleName, 0, 1); err != nil {
+			return nil, err
+		}
+		configureJaegerQueryPKI(d, tempo)
+	}
+
+	if gates.HTTPEncryption {
+		if err := configureQuerierFrontEndHTTPServicePKI(d, tempo); err != nil {
+			return nil, err
+		}
+	}
+
+	if gates.GRPCEncryption {
+		if err := configureQuerierFrontEndGRPCServicePKI(d, tempo); err != nil {
+			return nil, err
+		}
+	}
+	svcs := services(tempo)
 
 	var manifests []client.Object
 	manifests = append(manifests, d)
@@ -40,6 +63,24 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 	return manifests, nil
 }
 
+func configureJaegerQueryPKI(deployment *v1.Deployment, tempo v1alpha1.Microservices) {
+	if tempo.Spec.Components.QueryFrontend != nil && tempo.Spec.Components.QueryFrontend.JaegerQuery.Enabled {
+		deployment.Spec.Template.Spec.Containers[1].Args = append(deployment.Spec.Template.Spec.Containers[1].Args,
+			"--grpc-storage.tls.enabled=true",
+			"--grpc-storage.tls.key=/var/run/tls/grpc/server/tls.key",
+			"--grpc-storage.tls.cert=/var/run/tls/grpc/server/tls.crt",
+			"--grpc-storage.tls.ca=/var/run/ca/service-ca.crt",
+		)
+	}
+}
+
+func configureQuerierFrontEndHTTPServicePKI(deployment *v1.Deployment, tempo v1alpha1.Microservices) error {
+	return manifestutils.ConfigureHTTPServicePKI(&deployment.Spec.Template.Spec, naming.Name(componentName, tempo.Name), 0, 1)
+}
+
+func configureQuerierFrontEndGRPCServicePKI(deployment *v1.Deployment, tempo v1alpha1.Microservices) error {
+	return manifestutils.ConfigureGRPCServicePKI(&deployment.Spec.Template.Spec, naming.Name(componentName, tempo.Name), 0, 1)
+}
 func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 	tempo := params.Tempo
 	labels := manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, tempo.Name)

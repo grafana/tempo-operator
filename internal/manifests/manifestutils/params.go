@@ -1,13 +1,16 @@
 package manifestutils
 
-import "github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
+import (
+	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
+	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
+)
 
 // Params holds parameters used to create Tempo objects.
 type Params struct {
 	StorageParams  StorageParams
 	ConfigChecksum string
-
-	Tempo v1alpha1.Microservices
+	Tempo          v1alpha1.Microservices
+	Gates          configv1alpha1.FeatureGates
 }
 
 // StorageParams holds storage configuration.

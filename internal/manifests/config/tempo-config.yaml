@@ -73,6 +73,14 @@ querier:
 {{- end }}
   frontend_worker:
     frontend_address: {{ .QueryFrontendDiscovery }}
+{{- if .Gates.GRPCEncryption }}
+    grpc_client_config:
+      tls_enabled: true
+      tls_cert_path:  {{ .TLS.Paths.GRPC.Certificate }}
+      tls_key_path: {{ .TLS.Paths.GRPC.Key }}
+      tls_ca_path: {{ .TLS.Paths.CA }}
+      tls_server_name: {{ .TLS.ServerNames.GRPC.QueryFrontend }}
+{{- end }}
 {{- if .Search.Enabled }}
   search:
 {{- if .Search.QueryTimeout }}
@@ -94,6 +102,20 @@ server:
   http_server_write_timeout: 3m
   log_format: logfmt
   log_level: debug
+{{- if .Gates.GRPCEncryption }}
+  grpc_tls_config:
+    cert_file:  {{ .TLS.Paths.GRPC.Certificate }}
+    key_file: {{ .TLS.Paths.GRPC.Key }}
+    client_ca_file: {{ .TLS.Paths.CA }}
+    client_auth_type: RequireAndVerifyClientCert
+{{- end }}
+{{- if .Gates.HTTPEncryption }}
+  http_tls_config:
+    cert_file:  {{ .TLS.Paths.HTTP.Certificate }}
+    key_file: {{ .TLS.Paths.HTTP.Key }}
+    client_ca_file: {{ .TLS.Paths.CA }}
+    client_auth_type: RequireAndVerifyClientCert
+{{- end }}
 storage:
   trace:
     backend: s3
@@ -124,4 +146,13 @@ query_frontend:
 {{- if .Search.MaxResultLimit }}
     max_result_limit: {{ .Search.MaxResultLimit }}
 {{- end }}
+{{- end }}
+{{- if .Gates.GRPCEncryption }}
+ingester_client:
+  grpc_client_config:
+    tls_enabled: true
+    tls_cert_path:  {{ .TLS.Paths.GRPC.Certificate }}
+    tls_key_path: {{ .TLS.Paths.GRPC.Key }}
+    tls_ca_path: {{ .TLS.Paths.CA }}
+    tls_server_name: {{ .TLS.ServerNames.GRPC.Ingester }}
 {{- end }}
