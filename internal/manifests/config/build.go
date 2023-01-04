@@ -114,6 +114,7 @@ func renderTenantOverridesTemplate(opts tenantOptions) ([]byte, error) {
 }
 
 func fromSearchSpecToOptions(spec v1alpha1.SearchSpec) searchOptions {
+
 	options := searchOptions{
 		// Those are recommended defaults taken from: https://grafana.com/docs/tempo/latest/operations/backend_search/
 		// some of them could depend on the volumen and retention of the data, need to figure out how to set it.
@@ -121,8 +122,18 @@ func fromSearchSpecToOptions(spec v1alpha1.SearchSpec) searchOptions {
 		ConcurrentJobs:            2000,
 		MaxConcurrentQueries:      20,
 		ExternalHedgeRequestsAt:   "8s",
+		MaxResultLimit:            spec.MaxResultLimit,
 		// If not specified, will be zero,  means disable limit by default
 		MaxDuration: spec.MaxDuration.Duration.String(),
 	}
+
+	if spec.DefaultResultLimit != nil {
+		options.DefaultResultLimit = *spec.DefaultResultLimit
+	}
+
+	if spec.Enabled != nil {
+		options.Enabled = *spec.Enabled
+	}
+
 	return options
 }

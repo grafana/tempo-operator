@@ -40,4 +40,5 @@ type searchOptions struct {
 	MaxConcurrentQueries      int
 	DefaultResultLimit        int
 	MaxResultLimit            int
+	Enabled                   bool
 }
