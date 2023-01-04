@@ -122,7 +122,7 @@ func fromSearchSpecToOptions(spec v1alpha1.SearchSpec) searchOptions {
 		MaxConcurrentQueries:      20,
 		ExternalHedgeRequestsAt:   "8s",
 		// If not specified, will be zero,  means disable limit by default
-		MaxSearchDuration: spec.MaxSearchDuration.Duration.String(),
+		MaxDuration: spec.MaxDuration.Duration.String(),
 	}
 	return options
 }

@@ -85,6 +85,12 @@ func (d *defaulter) Default(ctx context.Context, obj runtime.Object) error {
 		defaultSearchEnabled := true
 		r.Spec.SearchSpec.Enabled = &defaultSearchEnabled
 	}
+
+	if r.Spec.SearchSpec.DefaultResultLimit == nil {
+		defaultDefaultResultLimit := 20
+		r.Spec.SearchSpec.DefaultResultLimit = &defaultDefaultResultLimit
+	}
+
 	return nil
 }
 

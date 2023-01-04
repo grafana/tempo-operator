@@ -113,8 +113,8 @@ query_frontend:
 {{- if .Search.ConcurrentJobs }}
     concurrent_jobs: {{ .Search.ConcurrentJobs }}
 {{- end }}
-{{- if .Search.MaxSearchDuration }}
-    max_duration: {{ .Search.MaxSearchDuration }}
+{{- if .Search.MaxDuration }}
+    max_duration: {{ .Search.MaxDuration }}
 {{- end }}
 {{- if .Search.DefaultResultLimit }}
     default_result_limit: {{ .Search.DefaultResultLimit }}

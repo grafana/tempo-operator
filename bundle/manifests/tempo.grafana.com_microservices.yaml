@@ -197,13 +197,22 @@ spec:
                 description: SearchSpec control the configuration for the search capabilities.
                 properties:
                   defaultResultLimit:
+                    description: 'Limit used for search requests if none is set by
+                      the caller (default: 20)'
                     type: integer
                   enabled:
+                    description: Enable tempo search feature, default to true
                     type: boolean
-                  maxResultLimit:
-                    type: integer
-                  maxSearchDuration:
+                  maxDuration:
+                    description: 'The maximum allowed time range for a search, default:
+                      0s which means unlimited.'
                     type: string
+                  maxResultLimit:
+                    description: The maximum allowed value of the limit parameter
+                      on search requests. If the search request limit parameter exceeds
+                      the value configured here it will be set to the value configured
+                      here. The default value of 0 disables this limit.
+                    type: integer
                 type: object
               serviceAccount:
                 description: ServiceAccount defines the service account to use for

@@ -32,7 +32,7 @@ type rateLimitsOptions struct {
 }
 
 type searchOptions struct {
-	MaxSearchDuration         string
+	MaxDuration               string
 	QueryTimeout              string
 	ExternalHedgeRequestsAt   string
 	ExternalHedgeRequestsUpTo int

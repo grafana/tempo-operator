@@ -132,18 +132,28 @@ type Resources struct {
 }
 
 type SearchSpec struct {
+	// Enable tempo search feature, default to true
+	//
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Search enabled"
 	Enabled *bool `json:"enabled,omitempty"`
-	// +optional
-	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Max search time range allowed"
-	MaxSearchDuration metav1.Duration `json:"maxSearchDuration,omitempty"`
+	// Limit used for search requests if none is set by the caller (default: 20)
+	//
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Limit used for search requests if none is set by the caller"
-	DefaultResultLimit int `json:"defaultResultLimit,omitempty"`
+	DefaultResultLimit *int `json:"defaultResultLimit,omitempty"`
+	// The maximum allowed time range for a search, default: 0s which means unlimited.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Max search time range allowed"
+	MaxDuration metav1.Duration `json:"maxDuration,omitempty"`
+	// The maximum allowed value of the limit parameter on search requests. If the search request limit parameter
+	// exceeds the value configured here it will be set to the value configured here.
+	// The default value of 0 disables this limit.
+	//
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="The maximum allowed value of the limit parameter on search requests"

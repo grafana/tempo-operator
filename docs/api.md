@@ -694,28 +694,28 @@ SearchSpec control the configuration for the search capabilities.
         <td><b>defaultResultLimit</b></td>
         <td>integer</td>
         <td>
-          <br/>
+          Limit used for search requests if none is set by the caller (default: 20)<br/>
         </td>
         <td>false</td>
       </tr><tr>
         <td><b>enabled</b></td>
         <td>boolean</td>
         <td>
-          <br/>
+          Enable tempo search feature, default to true<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>maxDuration</b></td>
+        <td>string</td>
+        <td>
+          The maximum allowed time range for a search, default: 0s which means unlimited.<br/>
         </td>
         <td>false</td>
       </tr><tr>
         <td><b>maxResultLimit</b></td>
         <td>integer</td>
         <td>
-          <br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>maxSearchDuration</b></td>
-        <td>string</td>
-        <td>
-          <br/>
+          The maximum allowed value of the limit parameter on search requests. If the search request limit parameter exceeds the value configured here it will be set to the value configured here. The default value of 0 disables this limit.<br/>
         </td>
         <td>false</td>
       </tr></tbody>
