@@ -131,6 +131,7 @@ type Resources struct {
 	Total *corev1.ResourceRequirements `json:"total,omitempty"`
 }
 
+// SearchSpec specified the global search parameters.
 type SearchSpec struct {
 	// Enable tempo search feature, default to true
 	//
@@ -142,7 +143,7 @@ type SearchSpec struct {
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Limit used for search requests if none is set by the caller"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Limit used for search requests if none is set by the caller, this limit the number of traces returned by the query"
 	DefaultResultLimit *int `json:"defaultResultLimit,omitempty"`
 	// The maximum allowed time range for a search, default: 0s which means unlimited.
 	//
@@ -156,7 +157,7 @@ type SearchSpec struct {
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="The maximum allowed value of the limit parameter on search requests"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="The maximum allowed value of the limit parameter on search requests, this determine the max number of traces allowed to be returned"
 	MaxResultLimit int `json:"maxResultLimit,omitempty"`
 }
 

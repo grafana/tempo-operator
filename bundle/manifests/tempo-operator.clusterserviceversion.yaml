@@ -163,7 +163,8 @@ spec:
         path: search
       - description: 'Limit used for search requests if none is set by the caller
           (default: 20)'
-        displayName: Limit used for search requests if none is set by the caller
+        displayName: Limit used for search requests if none is set by the caller,
+          this limit the number of traces returned by the query
         path: search.defaultResultLimit
       - description: Enable tempo search feature, default to true
         displayName: Search enabled
@@ -176,7 +177,8 @@ spec:
           If the search request limit parameter exceeds the value configured here
           it will be set to the value configured here. The default value of 0 disables
           this limit.
-        displayName: The maximum allowed value of the limit parameter on search requests
+        displayName: The maximum allowed value of the limit parameter on search requests,
+          this determine the max number of traces allowed to be returned
         path: search.maxResultLimit
       - description: ServiceAccount defines the service account to use for all tempo
           components.
