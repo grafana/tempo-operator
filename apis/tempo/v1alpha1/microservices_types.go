@@ -178,6 +178,7 @@ type ObjectStorageSpec struct {
 	// +kubebuilder:validation:MinLength=1
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Object Storage Secret"
 	Secret string `json:"secret"`
+	// Don't forget to update storageSecretField in microservices_controller.go if this field name changes.
 }
 
 // ObjectStorageTLSSpec is the TLS configuration for reaching the object storage endpoint.

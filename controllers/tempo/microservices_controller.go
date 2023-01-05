@@ -9,14 +9,24 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/os-observability/tempo-operator/internal/manifests"
+)
+
+const (
+	storageSecretField = ".spec.storage.secret" // nolint #nosec
 )
 
 // MicroservicesReconciler reconciles a Microservices object.
@@ -132,6 +142,20 @@ func (r *MicroservicesReconciler) getStorageConfig(ctx context.Context, tempo v1
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *MicroservicesReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	// Add an index to the storage secret field in the Microservices CRD.
+	// If the content of any secret changes, the watcher can identify related Microservices CRs
+	// and reconcile them (i.e. update the tempo configuration file and restart the pods)
+	err := mgr.GetFieldIndexer().IndexField(context.Background(), &v1alpha1.Microservices{}, storageSecretField, func(rawObj client.Object) []string {
+		microservices := rawObj.(*v1alpha1.Microservices)
+		if microservices.Spec.Storage.Secret == "" {
+			return nil
+		}
+		return []string{microservices.Spec.Storage.Secret}
+	})
+	if err != nil {
+		return err
+	}
+
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&v1alpha1.Microservices{}).
 		Owns(&corev1.ConfigMap{}).
@@ -139,6 +163,11 @@ func (r *MicroservicesReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&corev1.Service{}).
 		Owns(&v1.StatefulSet{}).
 		Owns(&v1.Deployment{}).
+		Watches(
+			&source.Kind{Type: &corev1.Secret{}},
+			handler.EnqueueRequestsFromMapFunc(r.findMicroservicesForStorageSecret),
+			builder.WithPredicates(predicate.ResourceVersionChangedPredicate{}),
+		).
 		Complete(r)
 }
 
@@ -149,4 +178,27 @@ func isNamespaceScoped(obj client.Object) bool {
 	default:
 		return true
 	}
+}
+
+func (r *MicroservicesReconciler) findMicroservicesForStorageSecret(secret client.Object) []reconcile.Request {
+	microservices := &v1alpha1.MicroservicesList{}
+	listOps := &client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(storageSecretField, secret.GetName()),
+		Namespace:     secret.GetNamespace(),
+	}
+	err := r.List(context.TODO(), microservices, listOps)
+	if err != nil {
+		return []reconcile.Request{}
+	}
+
+	requests := make([]reconcile.Request, len(microservices.Items))
+	for i, item := range microservices.Items {
+		requests[i] = reconcile.Request{
+			NamespacedName: types.NamespacedName{
+				Name:      item.GetName(),
+				Namespace: item.GetNamespace(),
+			},
+		}
+	}
+	return requests
 }
