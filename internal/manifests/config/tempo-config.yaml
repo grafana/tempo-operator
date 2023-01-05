@@ -68,9 +68,24 @@ overrides:
 {{- end }}
 {{- end }}
 querier:
+{{- if .Search.Enabled }}
+  max_concurrent_queries: {{ .Search.MaxConcurrentQueries }}
+{{- end }}
   frontend_worker:
     frontend_address: {{ .QueryFrontendDiscovery }}
-search_enabled: true
+{{- if .Search.Enabled }}
+  search:
+{{- if .Search.QueryTimeout }}
+    query_timeout: {{ .Search.QueryTimeout }}
+{{- end }}
+{{- if .Search.ExternalHedgeRequestsAt }}
+    external_hedge_requests_at: {{ .Search.ExternalHedgeRequestsAt }}
+{{- end }}
+{{- if .Search.ExternalHedgeRequestsUpTo }}
+    external_hedge_requests_up_to: {{ .Search.ExternalHedgeRequestsUpTo }}
+{{- end }}
+{{- end }}
+search_enabled: {{ .Search.Enabled }}
 server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
@@ -94,3 +109,19 @@ storage:
       path: /var/tempo/wal
 usage_report:
   reporting_enabled: false
+{{- if .Search.Enabled }}
+query_frontend:
+  search:
+{{- if .Search.ConcurrentJobs }}
+    concurrent_jobs: {{ .Search.ConcurrentJobs }}
+{{- end }}
+{{- if .Search.MaxDuration }}
+    max_duration: {{ .Search.MaxDuration }}
+{{- end }}
+{{- if .Search.DefaultResultLimit }}
+    default_result_limit: {{ .Search.DefaultResultLimit }}
+{{- end }}
+{{- if .Search.MaxResultLimit }}
+    max_result_limit: {{ .Search.MaxResultLimit }}
+{{- end }}
+{{- end }}

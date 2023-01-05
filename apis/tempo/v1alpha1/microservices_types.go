@@ -66,6 +66,12 @@ type MicroservicesSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Storage size for PVCs"
 	StorageSize resource.Quantity `json:"storageSize,omitempty"`
 
+	// SearchSpec control the configuration for the search capabilities.
+	//
+	// +optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Search configuration options"
+	SearchSpec SearchSpec `json:"search,omitempty"`
+
 	// NOTE: currently this field is not considered.
 	// ReplicationFactor is used to define how many component replicas should exist.
 	//
@@ -123,6 +129,36 @@ type Resources struct {
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Resource Requirements"
 	Total *corev1.ResourceRequirements `json:"total,omitempty"`
+}
+
+// SearchSpec specified the global search parameters.
+type SearchSpec struct {
+	// Enable tempo search feature, default to true
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Search enabled"
+	Enabled *bool `json:"enabled,omitempty"`
+	// Limit used for search requests if none is set by the caller (default: 20)
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Limit used for search requests if none is set by the caller, this limit the number of traces returned by the query"
+	DefaultResultLimit *int `json:"defaultResultLimit,omitempty"`
+	// The maximum allowed time range for a search, default: 0s which means unlimited.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Max search time range allowed"
+	MaxDuration metav1.Duration `json:"maxDuration,omitempty"`
+	// The maximum allowed value of the limit parameter on search requests. If the search request limit parameter
+	// exceeds the value configured here it will be set to the value configured here.
+	// The default value of 0 disables this limit.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="The maximum allowed value of the limit parameter on search requests, this determine the max number of traces allowed to be returned"
+	MaxResultLimit int `json:"maxResultLimit,omitempty"`
 }
 
 // ObjectStorageSpec defines the requirements to access the object

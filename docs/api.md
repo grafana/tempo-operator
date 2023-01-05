@@ -126,6 +126,13 @@ MicroservicesSpec defines the desired state of Microservices.
         </td>
         <td>false</td>
       </tr><tr>
+        <td><b><a href="#microservicesspecsearch">search</a></b></td>
+        <td>object</td>
+        <td>
+          SearchSpec control the configuration for the search capabilities.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b>serviceAccount</b></td>
         <td>string</td>
         <td>
@@ -661,6 +668,54 @@ RetentionConfig defines how long data should be provided.
         <td>string</td>
         <td>
           Traces defines retention period. Supported parameter suffixes are “s”, “m” and “h”. example: 336h default: value is 48h.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### Microservices.spec.search
+<sup><sup>[↩ Parent](#microservicesspec)</sup></sup>
+
+
+
+SearchSpec control the configuration for the search capabilities.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>defaultResultLimit</b></td>
+        <td>integer</td>
+        <td>
+          Limit used for search requests if none is set by the caller (default: 20)<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>enabled</b></td>
+        <td>boolean</td>
+        <td>
+          Enable tempo search feature, default to true<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>maxDuration</b></td>
+        <td>string</td>
+        <td>
+          The maximum allowed time range for a search, default: 0s which means unlimited.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>maxResultLimit</b></td>
+        <td>integer</td>
+        <td>
+          The maximum allowed value of the limit parameter on search requests. If the search request limit parameter exceeds the value configured here it will be set to the value configured here. The default value of 0 disables this limit.<br/>
         </td>
         <td>false</td>
       </tr></tbody>

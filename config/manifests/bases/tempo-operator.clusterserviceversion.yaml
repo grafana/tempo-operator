@@ -146,6 +146,28 @@ spec:
         path: retention.perTenant.traces
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:text
+      - description: SearchSpec control the configuration for the search capabilities.
+        displayName: Search configuration options
+        path: search
+      - description: 'Limit used for search requests if none is set by the caller
+          (default: 20)'
+        displayName: Limit used for search requests if none is set by the caller,
+          this limit the number of traces returned by the query
+        path: search.defaultResultLimit
+      - description: Enable tempo search feature, default to true
+        displayName: Search enabled
+        path: search.enabled
+      - description: 'The maximum allowed time range for a search, default: 0s which
+          means unlimited.'
+        displayName: Max search time range allowed
+        path: search.maxDuration
+      - description: The maximum allowed value of the limit parameter on search requests.
+          If the search request limit parameter exceeds the value configured here
+          it will be set to the value configured here. The default value of 0 disables
+          this limit.
+        displayName: The maximum allowed value of the limit parameter on search requests,
+          this determine the max number of traces allowed to be returned
+        path: search.maxResultLimit
       - description: ServiceAccount defines the service account to use for all tempo
           components.
         displayName: Service Account

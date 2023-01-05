@@ -20,7 +20,10 @@ func TestDefault(t *testing.T) {
 		},
 	}
 
+	defaultSearchEnabled := true
 	defaultMaxSearch := 0
+	defaultDefaultResultLimit := 20
+
 	tests := []struct {
 		input    *Microservices
 		expected *Microservices
@@ -76,6 +79,11 @@ func TestDefault(t *testing.T) {
 							},
 						},
 					},
+					SearchSpec: SearchSpec{
+						MaxDuration:        metav1.Duration{Duration: 0},
+						Enabled:            &defaultSearchEnabled,
+						DefaultResultLimit: &defaultDefaultResultLimit,
+					},
 				},
 			},
 		},
@@ -108,6 +116,11 @@ func TestDefault(t *testing.T) {
 								MaxSearchBytesPerTrace: &defaultMaxSearch,
 							},
 						},
+					},
+					SearchSpec: SearchSpec{
+						MaxDuration:        metav1.Duration{Duration: 0},
+						Enabled:            &defaultSearchEnabled,
+						DefaultResultLimit: &defaultDefaultResultLimit,
 					},
 				},
 			},

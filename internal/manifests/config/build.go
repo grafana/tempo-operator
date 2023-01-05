@@ -63,6 +63,7 @@ func buildConfiguration(tempo v1alpha1.Microservices, params Params) ([]byte, er
 		},
 		QueryFrontendDiscovery: fmt.Sprintf("%s:9095", naming.Name("query-frontend-discovery", tempo.Name)),
 		GlobalRateLimits:       fromRateLimitSpecToRateLimitOptions(tempo.Spec.LimitSpec.Global),
+		Search:                 fromSearchSpecToOptions(tempo.Spec.SearchSpec),
 	}
 
 	if isTenantOverridesConfigRequired(tempo.Spec.LimitSpec) {
@@ -110,4 +111,29 @@ func renderTenantOverridesTemplate(opts tenantOptions) ([]byte, error) {
 	}
 
 	return cfg, nil
+}
+
+func fromSearchSpecToOptions(spec v1alpha1.SearchSpec) searchOptions {
+
+	options := searchOptions{
+		// Those are recommended defaults taken from: https://grafana.com/docs/tempo/latest/operations/backend_search/
+		// some of them could depend on the volumen and retention of the data, need to figure out how to set it.
+		ExternalHedgeRequestsUpTo: 2,
+		ConcurrentJobs:            2000,
+		MaxConcurrentQueries:      20,
+		ExternalHedgeRequestsAt:   "8s",
+		MaxResultLimit:            spec.MaxResultLimit,
+		// If not specified, will be zero,  means disable limit by default
+		MaxDuration: spec.MaxDuration.Duration.String(),
+	}
+
+	if spec.DefaultResultLimit != nil {
+		options.DefaultResultLimit = *spec.DefaultResultLimit
+	}
+
+	if spec.Enabled != nil {
+		options.Enabled = *spec.Enabled
+	}
+
+	return options
 }
