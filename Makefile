@@ -303,7 +303,7 @@ e2e:
 	$(KUTTL) test
 
 .PHONY: prepare-e2e
-prepare-e2e: kuttl start-kind cert-manager set-test-image-vars docker-build load-image-operator deploy
+prepare-e2e: kuttl start-kind cert-manager deploy-minio set-test-image-vars docker-build load-image-operator deploy
 
 .PHONY: set-test-image-vars
 set-test-image-vars:
