@@ -45,15 +45,15 @@ func getExpectedFrontEndService(withJaeger bool) *corev1.Service {
 		Spec: corev1.ServiceSpec{
 			Ports: []corev1.ServicePort{
 				{
-					Name:       httpPortName,
-					Port:       portHTTPServer,
-					TargetPort: intstr.FromInt(portHTTPServer),
+					Name:       manifestutils.HttpPortName,
+					Port:       manifestutils.PortHTTPServer,
+					TargetPort: intstr.FromString(manifestutils.HttpPortName),
 				},
 				{
-					Name:       grpcPortName,
+					Name:       manifestutils.GrpcPortName,
 					Protocol:   corev1.ProtocolTCP,
-					Port:       portGRPCServer,
-					TargetPort: intstr.FromInt(portGRPCServer),
+					Port:       manifestutils.PortGRPCServer,
+					TargetPort: intstr.FromString(manifestutils.GrpcPortName),
 				},
 			},
 			Selector: labels,
@@ -78,21 +78,21 @@ func getExpectedFrontendDiscoveryService(withJaeger bool) *corev1.Service {
 		Spec: corev1.ServiceSpec{
 			Ports: []corev1.ServicePort{
 				{
-					Name:       httpPortName,
-					Port:       portHTTPServer,
-					TargetPort: intstr.FromInt(portHTTPServer),
+					Name:       manifestutils.HttpPortName,
+					Port:       manifestutils.PortHTTPServer,
+					TargetPort: intstr.FromString(manifestutils.HttpPortName),
 				},
 				{
-					Name:       grpcPortName,
+					Name:       manifestutils.GrpcPortName,
 					Protocol:   corev1.ProtocolTCP,
-					Port:       portGRPCServer,
-					TargetPort: intstr.FromInt(portGRPCServer),
+					Port:       manifestutils.PortGRPCServer,
+					TargetPort: intstr.FromString(manifestutils.GrpcPortName),
 				},
 				{
 					Name:       grpclbPortName,
 					Protocol:   corev1.ProtocolTCP,
 					Port:       portGRPCLBServer,
-					TargetPort: intstr.FromString("grpc"),
+					TargetPort: intstr.FromString(grpclbPortName),
 				},
 			},
 			Selector: labels,
@@ -161,19 +161,19 @@ func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 							},
 							Ports: []corev1.ContainerPort{
 								{
-									Name:          httpPortName,
-									ContainerPort: portHTTPServer,
+									Name:          manifestutils.HttpPortName,
+									ContainerPort: manifestutils.PortHTTPServer,
 									Protocol:      corev1.ProtocolTCP,
 								},
 								{
-									Name:          grpcPortName,
-									ContainerPort: portGRPCServer,
+									Name:          manifestutils.GrpcPortName,
+									ContainerPort: manifestutils.PortGRPCServer,
 									Protocol:      corev1.ProtocolTCP,
 								},
 							},
 							VolumeMounts: []corev1.VolumeMount{
 								{
-									Name:      configVolumeName,
+									Name:      manifestutils.ConfigVolumeName,
 									MountPath: "/conf",
 									ReadOnly:  true,
 								},
@@ -196,7 +196,7 @@ func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 					},
 					Volumes: []corev1.Volume{
 						{
-							Name: configVolumeName,
+							Name: manifestutils.ConfigVolumeName,
 							VolumeSource: corev1.VolumeSource{
 								ConfigMap: &corev1.ConfigMapVolumeSource{
 									LocalObjectReference: corev1.LocalObjectReference{
@@ -240,7 +240,7 @@ func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 			},
 			VolumeMounts: []corev1.VolumeMount{
 				{
-					Name:      configVolumeName,
+					Name:      manifestutils.ConfigVolumeName,
 					MountPath: "/conf",
 					ReadOnly:  true,
 				},

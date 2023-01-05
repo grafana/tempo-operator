@@ -34,10 +34,10 @@ func TestBuildGossip(t *testing.T) {
 			Selector: selector,
 			Ports: []corev1.ServicePort{
 				{
-					Name:       componentName,
+					Name:       manifestutils.HttpMemberlistPortName,
 					Protocol:   corev1.ProtocolTCP,
-					Port:       PortMemberlist,
-					TargetPort: intstr.FromString("http-memberlist"),
+					Port:       manifestutils.PortMemberlist,
+					TargetPort: intstr.FromString(manifestutils.HttpMemberlistPortName),
 				},
 			},
 		},

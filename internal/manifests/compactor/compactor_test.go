@@ -14,7 +14,6 @@ import (
 
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
-	"github.com/os-observability/tempo-operator/internal/manifests/memberlist"
 )
 
 func TestBuildCompactor(t *testing.T) {
@@ -62,16 +61,16 @@ func TestBuildCompactor(t *testing.T) {
 		Spec: corev1.ServiceSpec{
 			Ports: []corev1.ServicePort{
 				{
-					Name:       "http-memberlist",
+					Name:       manifestutils.HttpMemberlistPortName,
 					Protocol:   corev1.ProtocolTCP,
-					Port:       memberlist.PortMemberlist,
-					TargetPort: intstr.FromInt(memberlist.PortMemberlist),
+					Port:       manifestutils.PortMemberlist,
+					TargetPort: intstr.FromString(manifestutils.HttpMemberlistPortName),
 				},
 				{
-					Name:       httpPortName,
+					Name:       manifestutils.HttpPortName,
 					Protocol:   corev1.ProtocolTCP,
-					Port:       portHTTPServer,
-					TargetPort: intstr.FromString(httpPortName),
+					Port:       manifestutils.PortHTTPServer,
+					TargetPort: intstr.FromString(manifestutils.HttpPortName),
 				},
 			},
 			Selector: labels,
@@ -110,20 +109,20 @@ func TestBuildCompactor(t *testing.T) {
 							Args:  []string{"-target=compactor", "-config.file=/conf/tempo.yaml"},
 							VolumeMounts: []corev1.VolumeMount{
 								{
-									Name:      configVolumeName,
+									Name:      manifestutils.ConfigVolumeName,
 									MountPath: "/conf",
 									ReadOnly:  true,
 								},
 							},
 							Ports: []corev1.ContainerPort{
 								{
-									Name:          "http",
-									ContainerPort: portHTTPServer,
+									Name:          manifestutils.HttpPortName,
+									ContainerPort: manifestutils.PortHTTPServer,
 									Protocol:      corev1.ProtocolTCP,
 								},
 								{
-									Name:          "http-memberlist",
-									ContainerPort: 7946,
+									Name:          manifestutils.HttpMemberlistPortName,
+									ContainerPort: manifestutils.PortMemberlist,
 									Protocol:      corev1.ProtocolTCP,
 								},
 							},
@@ -141,7 +140,7 @@ func TestBuildCompactor(t *testing.T) {
 					},
 					Volumes: []corev1.Volume{
 						{
-							Name: configVolumeName,
+							Name: manifestutils.ConfigVolumeName,
 							VolumeSource: corev1.VolumeSource{
 								ConfigMap: &corev1.ConfigMapVolumeSource{
 									LocalObjectReference: corev1.LocalObjectReference{
