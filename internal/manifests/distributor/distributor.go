@@ -19,12 +19,14 @@ const (
 )
 
 // BuildDistributor creates distributor objects.
-func BuildDistributor(tempo v1alpha1.Microservices) []client.Object {
-	return []client.Object{deployment(tempo), service(tempo)}
+func BuildDistributor(params manifestutils.Params) []client.Object {
+	return []client.Object{deployment(params), service(params.Tempo)}
 }
 
-func deployment(tempo v1alpha1.Microservices) *v1.Deployment {
+func deployment(params manifestutils.Params) *v1.Deployment {
+	tempo := params.Tempo
 	labels := manifestutils.ComponentLabels(componentName, tempo.Name)
+	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
 	cfg := &v1alpha1.TempoComponentSpec{}
 	if userCfg := tempo.Spec.Components.Distributor; userCfg != nil {
 		cfg = userCfg
@@ -45,7 +47,8 @@ func deployment(tempo v1alpha1.Microservices) *v1.Deployment {
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: k8slabels.Merge(labels, memberlist.GossipSelector),
+					Labels:      k8slabels.Merge(labels, memberlist.GossipSelector),
+					Annotations: annotations,
 				},
 				Spec: corev1.PodSpec{
 					ServiceAccountName: tempo.Spec.ServiceAccount,

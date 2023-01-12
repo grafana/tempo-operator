@@ -23,6 +23,7 @@ import (
 
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/os-observability/tempo-operator/internal/manifests"
+	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
 )
 
 const (
@@ -72,7 +73,7 @@ func (r *MicroservicesReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		return ctrl.Result{}, fmt.Errorf("storage secret error: %w", err)
 	}
 
-	objects, err := manifests.BuildAll(manifests.Params{Tempo: tempo, StorageParams: *storageConfig})
+	objects, err := manifests.BuildAll(manifestutils.Params{Tempo: tempo, StorageParams: *storageConfig})
 	// TODO (pavolloffay) check error type and change return appropriately
 	if err != nil {
 		return ctrl.Result{
@@ -119,7 +120,7 @@ func (r *MicroservicesReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	return ctrl.Result{}, nil
 }
 
-func (r *MicroservicesReconciler) getStorageConfig(ctx context.Context, tempo v1alpha1.Microservices) (*manifests.StorageParams, error) {
+func (r *MicroservicesReconciler) getStorageConfig(ctx context.Context, tempo v1alpha1.Microservices) (*manifestutils.StorageParams, error) {
 	storageSecret := &corev1.Secret{}
 	err := r.Get(ctx, types.NamespacedName{Namespace: tempo.Namespace, Name: tempo.Spec.Storage.Secret}, storageSecret)
 	if err != nil {
@@ -134,7 +135,7 @@ func (r *MicroservicesReconciler) getStorageConfig(ctx context.Context, tempo v1
 		return nil, fmt.Errorf("storage secret should contain endpoint and bucket, access_key_id and access_key_secret fields")
 	}
 
-	return &manifests.StorageParams{S3: manifests.S3{
+	return &manifestutils.StorageParams{S3: manifestutils.S3{
 		Endpoint: string(storageSecret.Data["endpoint"]),
 		Bucket:   string(storageSecret.Data["bucket"]),
 	}}, nil
