@@ -143,7 +143,7 @@ func (r *MicroservicesReconciler) getStorageConfig(ctx context.Context, tempo v1
 // SetupWithManager sets up the controller with the Manager.
 func (r *MicroservicesReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	// Add an index to the storage secret field in the Microservices CRD.
-	// If the content of any secret changes, the watcher can identify related Microservices CRs
+	// If the content of any secret in the cluster changes, the watcher can identify related Microservices CRs
 	// and reconcile them (i.e. update the tempo configuration file and restart the pods)
 	err := mgr.GetFieldIndexer().IndexField(context.Background(), &v1alpha1.Microservices{}, storageSecretField, func(rawObj client.Object) []string {
 		microservices := rawObj.(*v1alpha1.Microservices)
