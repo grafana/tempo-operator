@@ -93,4 +93,9 @@ func TestReconcile(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotEmpty(t, list.Items)
 	}
+	// test status
+	updatedTempo := v1alpha1.Microservices{}
+	err = k8sClient.Get(context.Background(), nsn, &updatedTempo)
+	require.NoError(t, err)
+	assert.Equal(t, "1.5.0", updatedTempo.Status.TempoVersion)
 }

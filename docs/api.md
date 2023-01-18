@@ -57,7 +57,7 @@ Microservices is the Schema for the microservices API.
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b>status</b></td>
+        <td><b><a href="#microservicesstatus">status</a></b></td>
         <td>object</td>
         <td>
           MicroservicesStatus defines the observed state of Microservices.<br/>
@@ -1334,6 +1334,33 @@ JaegerQuerySpec defines Jaeger Query spefic options.
         <td>boolean</td>
         <td>
           Enabled is used to define if Jaeger Query component should be created.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### Microservices.status
+<sup><sup>[↩ Parent](#microservices)</sup></sup>
+
+
+
+MicroservicesStatus defines the observed state of Microservices.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>tempoVersion</b></td>
+        <td>string</td>
+        <td>
+          Version of the managed Tempo instance.<br/>
         </td>
         <td>false</td>
       </tr></tbody>

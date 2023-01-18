@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	dockerparser "github.com/novln/docker-parser"
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -116,6 +117,13 @@ func (r *MicroservicesReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		}, fmt.Errorf("failed to create objects for Tempo %s", req.NamespacedName)
 	}
 
+	err = updateStatus(ctx, tempo, r.Client.Status())
+	if err != nil {
+		return ctrl.Result{
+			Requeue:      true,
+			RequeueAfter: time.Second,
+		}, fmt.Errorf("failed to update status for %s, requeueing reconcile event: %w", req.NamespacedName, err)
+	}
 	return ctrl.Result{}, nil
 }
 
@@ -201,4 +209,18 @@ func (r *MicroservicesReconciler) findMicroservicesForStorageSecret(secret clien
 		}
 	}
 	return requests
+}
+
+func updateStatus(ctx context.Context, tempo v1alpha1.Microservices, statusWriter client.StatusWriter) error {
+	tempoImage, err := dockerparser.Parse(tempo.Spec.Images.Tempo)
+	if err != nil {
+		return err
+	}
+	changed := tempo
+	changed.Status.TempoVersion = tempoImage.Tag()
+	statusPatch := client.MergeFrom(&tempo)
+	if err := statusWriter.Patch(ctx, &changed, statusPatch); err != nil {
+		return err
+	}
+	return nil
 }
