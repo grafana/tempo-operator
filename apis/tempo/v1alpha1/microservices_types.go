@@ -82,12 +82,15 @@ type MicroservicesSpec struct {
 
 // MicroservicesStatus defines the observed state of Microservices.
 type MicroservicesStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	// Version of the managed Tempo instance.
+	// +optional
+	TempoVersion string `json:"tempoVersion,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
+//+kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
+//+kubebuilder:printcolumn:name="Tempo version",type="string",JSONPath=".status.tempoVersion",description="Tempo Version"
 
 // Microservices is the Schema for the microservices API.
 type Microservices struct {

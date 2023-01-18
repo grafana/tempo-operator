@@ -15,7 +15,15 @@ spec:
     singular: microservices
   scope: Namespaced
   versions:
-  - name: v1alpha1
+  - additionalPrinterColumns:
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    - description: Tempo Version
+      jsonPath: .status.tempoVersion
+      name: Tempo version
+      type: string
+    name: v1alpha1
     schema:
       openAPIV3Schema:
         description: Microservices is the Schema for the microservices API.
@@ -572,6 +580,10 @@ spec:
             type: object
           status:
             description: MicroservicesStatus defines the observed state of Microservices.
+            properties:
+              tempoVersion:
+                description: Version of the managed Tempo instance.
+                type: string
             type: object
         type: object
     served: true
