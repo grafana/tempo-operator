@@ -45,8 +45,7 @@ spec:
                     type: string
                 type: object
               limits:
-                description: 'NOTE: currently this field is not considered. LimitSpec
-                  is used to limit ingestion and querying rates.'
+                description: LimitSpec is used to limit ingestion and querying rates.
                 properties:
                   global:
                     description: Global is used to define global rate limits.
@@ -253,8 +252,7 @@ spec:
                 pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                 x-kubernetes-int-or-string: true
               template:
-                description: 'NOTE: currently this field is not considered. Components
-                  defines requirements for a set of tempo components.'
+                description: Components defines requirements for a set of tempo components.
                 properties:
                   compactor:
                     description: Compactor defines the lokistack compactor component
