@@ -287,6 +287,12 @@ spec:
       - description: Tolerations defines component specific pod tolerations.
         displayName: Tolerations
         path: template.queryFrontend.tolerations
+      statusDescriptors:
+      - description: Conditions of the Tempo deployment health.
+        displayName: Conditions
+        path: conditions
+        x-descriptors:
+        - urn:alm:descriptor:io.kubernetes.conditions
       version: v1alpha1
   description: Simpilifes the deployment of tempo db.
   displayName: tempo-operator
