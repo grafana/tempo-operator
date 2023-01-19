@@ -33,12 +33,18 @@ var microserviceslog = logf.Log.WithName("microservices-resource")
 func (r *Microservices) SetupWebhookWithManager(mgr ctrl.Manager, defaultImages ImagesSpec) error {
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(r).
-		WithDefaulter(&defaulter{defaultImages: defaultImages}).
+		WithDefaulter(NewDefaulter(defaultImages)).
 		WithValidator(&validator{client: mgr.GetClient()}).
 		Complete()
 }
 
 //+kubebuilder:webhook:path=/mutate-tempo-grafana-com-v1alpha1-microservices,mutating=true,failurePolicy=fail,sideEffects=None,groups=tempo.grafana.com,resources=microservices,verbs=create;update,versions=v1alpha1,name=mmicroservices.kb.io,admissionReviewVersions=v1
+
+func NewDefaulter(defaultImages ImagesSpec) *defaulter {
+	return &defaulter{
+		defaultImages: defaultImages,
+	}
+}
 
 type defaulter struct {
 	defaultImages ImagesSpec
