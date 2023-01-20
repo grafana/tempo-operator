@@ -5,7 +5,7 @@ import (
 	"crypto/rand"
 	"crypto/x509"
 	"crypto/x509/pkix"
-	"errors"
+	"fmt"
 	"math/big"
 	"testing"
 	"time"
@@ -329,7 +329,7 @@ func signCertificate(template *x509.Certificate, requestKey stdcrypto.PublicKey,
 		return nil, err
 	}
 	if len(certs) != 1 {
-return nil, fmt.Errorf("Expected a single certificate. Found: %s", len(certs))
+		return nil, fmt.Errorf("Expected a single certificate. Found: %d", len(certs))
 	}
 	return certs[0], nil
 }
