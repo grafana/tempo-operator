@@ -101,7 +101,7 @@ MicroservicesSpec defines the desired state of Microservices.
         <td><b><a href="#microservicesspeclimits">limits</a></b></td>
         <td>object</td>
         <td>
-          NOTE: currently this field is not considered. LimitSpec is used to limit ingestion and querying rates.<br/>
+          LimitSpec is used to limit ingestion and querying rates.<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -157,7 +157,7 @@ MicroservicesSpec defines the desired state of Microservices.
         <td><b><a href="#microservicesspectemplate">template</a></b></td>
         <td>object</td>
         <td>
-          NOTE: currently this field is not considered. Components defines requirements for a set of tempo components.<br/>
+          Components defines requirements for a set of tempo components.<br/>
         </td>
         <td>false</td>
       </tr></tbody>
@@ -264,7 +264,7 @@ Images defines the image for each container.
 
 
 
-NOTE: currently this field is not considered. LimitSpec is used to limit ingestion and querying rates.
+LimitSpec is used to limit ingestion and querying rates.
 
 <table>
     <thead>
@@ -727,7 +727,7 @@ SearchSpec control the configuration for the search capabilities.
 
 
 
-NOTE: currently this field is not considered. Components defines requirements for a set of tempo components.
+Components defines requirements for a set of tempo components.
 
 <table>
     <thead>
