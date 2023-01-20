@@ -30,27 +30,29 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	gates := params.Gates
 	tempo := params.Tempo
 
-	if gates.HTTPEncryption || gates.GRPCEncryption {
-		caBundleName := naming.SigningCABundleName(tempo.Name)
-		if err := manifestutils.ConfigureServiceCA(&d.Spec.Template.Spec, caBundleName, 0, 1); err != nil {
-			return nil, err
+	// Only consider query frontend an internal service if the JaegerQuery is enabled. otherwise query frontend
+	// should be considered an exposed service.
+	if tempo.Spec.Components.QueryFrontend != nil && tempo.Spec.Components.QueryFrontend.JaegerQuery.Enabled {
+		if gates.HTTPEncryption || gates.GRPCEncryption {
+			caBundleName := naming.SigningCABundleName(tempo.Name)
+			if err := manifestutils.ConfigureServiceCA(&d.Spec.Template.Spec, caBundleName, 0, 1); err != nil {
+				return nil, err
+			}
 		}
-		configureJaegerQueryPKI(d, tempo)
-	}
 
-	if gates.HTTPEncryption {
-		if err := configureQuerierFrontEndHTTPServicePKI(d, tempo); err != nil {
-			return nil, err
+		if gates.HTTPEncryption {
+			if err := configureQuerierFrontEndHTTPServicePKI(d, tempo); err != nil {
+				return nil, err
+			}
 		}
-	}
 
-	if gates.GRPCEncryption {
-		if err := configureQuerierFrontEndGRPCServicePKI(d, tempo); err != nil {
-			return nil, err
+		if gates.GRPCEncryption {
+			if err := configureQuerierFrontEndGRPCServicePKI(d, tempo); err != nil {
+				return nil, err
+			}
 		}
 	}
 	svcs := services(tempo)
@@ -61,17 +63,6 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 		manifests = append(manifests, s)
 	}
 	return manifests, nil
-}
-
-func configureJaegerQueryPKI(deployment *v1.Deployment, tempo v1alpha1.Microservices) {
-	if tempo.Spec.Components.QueryFrontend != nil && tempo.Spec.Components.QueryFrontend.JaegerQuery.Enabled {
-		deployment.Spec.Template.Spec.Containers[1].Args = append(deployment.Spec.Template.Spec.Containers[1].Args,
-			"--grpc-storage.tls.enabled=true",
-			"--grpc-storage.tls.key=/var/run/tls/grpc/server/tls.key",
-			"--grpc-storage.tls.cert=/var/run/tls/grpc/server/tls.crt",
-			"--grpc-storage.tls.ca=/var/run/ca/service-ca.crt",
-		)
-	}
 }
 
 func configureQuerierFrontEndHTTPServicePKI(deployment *v1.Deployment, tempo v1alpha1.Microservices) error {
