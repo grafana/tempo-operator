@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -16,11 +17,11 @@ import (
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 )
 
-func TestReconcile(t *testing.T) {
+func createSecret(t *testing.T, nsn types.NamespacedName) *corev1.Secret {
 	storageSecret := &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "test",
-			Namespace: "default",
+			Name:      nsn.Name,
+			Namespace: nsn.Namespace,
 		},
 		StringData: map[string]string{
 			"endpoint":          "http://minio:9000",
@@ -31,8 +32,10 @@ func TestReconcile(t *testing.T) {
 	}
 	err := k8sClient.Create(context.Background(), storageSecret)
 	require.NoError(t, err)
+	return storageSecret
+}
 
-	nsn := types.NamespacedName{Name: "test", Namespace: "default"}
+func createTempoCR(t *testing.T, nsn types.NamespacedName, storageSecret *corev1.Secret) {
 	tempo := &v1alpha1.Microservices{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      nsn.Name,
@@ -53,8 +56,14 @@ func TestReconcile(t *testing.T) {
 			},
 		},
 	}
-	err = k8sClient.Create(context.Background(), tempo)
+	err := k8sClient.Create(context.Background(), tempo)
 	require.NoError(t, err)
+}
+
+func TestReconcile(t *testing.T) {
+	nsn := types.NamespacedName{Name: "reconcile-test", Namespace: "default"}
+	storageSecret := createSecret(t, nsn)
+	createTempoCR(t, nsn, storageSecret)
 
 	reconciler := MicroservicesReconciler{
 		Client: k8sClient,
@@ -93,9 +102,124 @@ func TestReconcile(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotEmpty(t, list.Items)
 	}
+
 	// test status
 	updatedTempo := v1alpha1.Microservices{}
 	err = k8sClient.Get(context.Background(), nsn, &updatedTempo)
 	require.NoError(t, err)
 	assert.Equal(t, "1.5.0", updatedTempo.Status.TempoVersion)
+
+	// test status condition
+	assert.Equal(t, []metav1.Condition{{
+		Type:               "Ready",
+		Status:             "True",
+		LastTransitionTime: updatedTempo.Status.Conditions[0].LastTransitionTime,
+		Reason:             "Ready",
+		Message:            "All components are operational",
+	}}, updatedTempo.Status.Conditions)
+	// make sure LastTransitionTime is recent
+	assert.InDelta(t, metav1.NewTime(time.Now()).Unix(), updatedTempo.Status.Conditions[0].LastTransitionTime.Unix(), 60)
+}
+
+func TestDegraded(t *testing.T) {
+	// First, create object storage secret and Tempo CR
+	nsn := types.NamespacedName{Name: "degraded-test", Namespace: "default"}
+	storageSecret := createSecret(t, nsn)
+	createTempoCR(t, nsn, storageSecret)
+
+	// Reconcile
+	reconciler := MicroservicesReconciler{
+		Client: k8sClient,
+		Scheme: testScheme,
+	}
+	req := ctrl.Request{
+		NamespacedName: nsn,
+	}
+	reconcileResult, err := reconciler.Reconcile(context.Background(), req)
+	require.NoError(t, err)
+	assert.Equal(t, false, reconcileResult.Requeue)
+
+	// Verify status conditions: Ready=true
+	updatedTempo1 := v1alpha1.Microservices{}
+	err = k8sClient.Get(context.Background(), nsn, &updatedTempo1)
+	require.NoError(t, err)
+	assert.Equal(t, []metav1.Condition{{
+		Type:               "Ready",
+		Status:             "True",
+		LastTransitionTime: updatedTempo1.Status.Conditions[0].LastTransitionTime,
+		Reason:             "Ready",
+		Message:            "All components are operational",
+	}}, updatedTempo1.Status.Conditions)
+
+	// Update the storage secret to an invalid endpoint
+	storageSecret.Data["endpoint"] = []byte("invalid")
+	err = k8sClient.Update(context.Background(), storageSecret)
+	require.NoError(t, err)
+
+	// LastTransitionTime gets stored in seconds, therefore we need to wait a bit to verify that the time got updated
+	time.Sleep(1 * time.Second)
+
+	// Reconcile
+	reconcileResult, err = reconciler.Reconcile(context.Background(), req)
+	require.NoError(t, err)
+	assert.Equal(t, false, reconcileResult.Requeue)
+
+	// Verify status conditions: Ready=false, Degraded=true
+	updatedTempo2 := v1alpha1.Microservices{}
+	err = k8sClient.Get(context.Background(), nsn, &updatedTempo2)
+	require.NoError(t, err)
+	assert.Equal(t, []metav1.Condition{
+		{
+			Type:               "Ready",
+			Status:             "False",
+			LastTransitionTime: updatedTempo2.Status.Conditions[0].LastTransitionTime,
+			Reason:             "Ready",
+			Message:            "All components are operational",
+		},
+		{
+			Type:               "Degraded",
+			Status:             "True",
+			LastTransitionTime: updatedTempo2.Status.Conditions[1].LastTransitionTime,
+			Reason:             "InvalidStorageConfig",
+			Message:            "'endpoint' field of storage secret must be a valid URL",
+		},
+	}, updatedTempo2.Status.Conditions)
+	assert.Greater(t, updatedTempo2.Status.Conditions[0].LastTransitionTime.UnixNano(), updatedTempo1.Status.Conditions[0].LastTransitionTime.UnixNano())
+	assert.Greater(t, updatedTempo2.Status.Conditions[1].LastTransitionTime.UnixNano(), updatedTempo1.Status.Conditions[0].LastTransitionTime.UnixNano())
+
+	// Update the storage secret to a valid endpoint
+	storageSecret.Data["endpoint"] = []byte("http://minio:9000")
+	err = k8sClient.Update(context.Background(), storageSecret)
+	require.NoError(t, err)
+
+	// LastTransitionTime gets stored in seconds, therefore we need to wait a bit to verify that the time got updated
+	time.Sleep(1 * time.Second)
+
+	// Reconcile
+	reconcileResult, err = reconciler.Reconcile(context.Background(), req)
+	require.NoError(t, err)
+	assert.Equal(t, false, reconcileResult.Requeue)
+
+	// Verify status conditions: Ready=true, Degraded=false
+	updatedTempo3 := v1alpha1.Microservices{}
+	err = k8sClient.Get(context.Background(), nsn, &updatedTempo3)
+	require.NoError(t, err)
+	assert.Equal(t, []metav1.Condition{
+		{
+			Type:               "Ready",
+			Status:             "True",
+			LastTransitionTime: updatedTempo3.Status.Conditions[0].LastTransitionTime,
+			Reason:             "Ready",
+			Message:            "All components are operational",
+		},
+		{
+			Type:               "Degraded",
+			Status:             "False",
+			LastTransitionTime: updatedTempo3.Status.Conditions[1].LastTransitionTime,
+			Reason:             "InvalidStorageConfig",
+			Message:            "'endpoint' field of storage secret must be a valid URL",
+		},
+	}, updatedTempo3.Status.Conditions)
+	assert.Greater(t, updatedTempo3.Status.Conditions[0].LastTransitionTime.UnixNano(), updatedTempo2.Status.Conditions[0].LastTransitionTime.UnixNano())
+	assert.Greater(t, updatedTempo3.Status.Conditions[1].LastTransitionTime.UnixNano(), updatedTempo2.Status.Conditions[1].LastTransitionTime.UnixNano())
 }
