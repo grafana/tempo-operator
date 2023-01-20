@@ -329,7 +329,7 @@ func signCertificate(template *x509.Certificate, requestKey stdcrypto.PublicKey,
 		return nil, err
 	}
 	if len(certs) != 1 {
-		return nil, errors.New("Expected a single certificate")
+return nil, fmt.Errorf("Expected a single certificate. Found: %s", len(certs))
 	}
 	return certs[0], nil
 }
