@@ -30,7 +30,7 @@ func CABundleName(stackName string) string {
 	return fmt.Sprintf("tempo-%s-ca-bundle", stackName)
 }
 
-// ComponentCertSecretNames retruns a list of all tempo component certificate secret names.
+// ComponentCertSecretNames returns a list of all tempo component certificate secret names.
 func ComponentCertSecretNames(stackName string) []string {
 	return []string{
 		fmt.Sprintf("tempo-%s-distributor-http", stackName),
