@@ -20,7 +20,6 @@ type MicroservicesSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Service Account"
 	ServiceAccount string `json:"serviceAccount,omitempty"`
 
-	// NOTE: currently this field is not considered.
 	// Components defines requirements for a set of tempo components.
 	//
 	// +optional
@@ -53,7 +52,6 @@ type MicroservicesSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="StorageClassName for PVCs"
 	StorageClassName *string `json:"storageClassName,omitempty"`
 
-	// NOTE: currently this field is not considered.
 	// LimitSpec is used to limit ingestion and querying rates.
 	//
 	// +optional
