@@ -230,6 +230,7 @@ func (r *MicroservicesReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&corev1.Service{}).
 		Owns(&v1.StatefulSet{}).
 		Owns(&v1.Deployment{}).
+		Owns(&corev1.Secret{}).
 		Watches(
 			&source.Kind{Type: &corev1.Secret{}},
 			handler.EnqueueRequestsFromMapFunc(r.findMicroservicesForStorageSecret),
