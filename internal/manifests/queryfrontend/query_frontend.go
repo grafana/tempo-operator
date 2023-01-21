@@ -16,15 +16,13 @@ import (
 )
 
 const (
-	componentName              = "query-frontend"
-	grpclbPortName             = "grpclb"
-	jaegerMetricsPortName      = "jaeger-metrics"
-	jaegerUIPortName           = "jaeger-ui"
-	tempoQueryJaegerUiPortName = "tempo-query-jaeger-ui"
-	tempoQueryMetricsPortName  = "tempo-query-metrics"
-	portGRPCLBServer           = 9096
-	portJaegerUI               = 16686
-	portQueryMetrics           = 16687
+	componentName         = "query-frontend"
+	grpclbPortName        = "grpclb"
+	jaegerMetricsPortName = "jaeger-metrics"
+	jaegerUIPortName      = "jaeger-ui"
+	portGRPCLBServer      = 9096
+	portJaegerUI          = 16686
+	portJaegerMetrics     = 16687
 )
 
 // BuildQueryFrontend creates the query-frontend objects.
@@ -170,7 +168,7 @@ func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
 				},
 				{
 					Name:          jaegerMetricsPortName,
-					ContainerPort: portQueryMetrics,
+					ContainerPort: portJaegerMetrics,
 					Protocol:      corev1.ProtocolTCP,
 				},
 			},
@@ -265,14 +263,14 @@ func services(tempo v1alpha1.Microservices) []*corev1.Service {
 	if tempo.Spec.Components.QueryFrontend != nil && tempo.Spec.Components.QueryFrontend.JaegerQuery.Enabled {
 		jaegerPorts := []corev1.ServicePort{
 			{
-				Name:       tempoQueryJaegerUiPortName,
+				Name:       jaegerUIPortName,
 				Port:       portJaegerUI,
-				TargetPort: intstr.FromInt(portJaegerUI),
+				TargetPort: intstr.FromString(jaegerUIPortName),
 			},
 			{
-				Name:       tempoQueryMetricsPortName,
-				Port:       portQueryMetrics,
-				TargetPort: intstr.FromString("jaeger-metrics"),
+				Name:       jaegerMetricsPortName,
+				Port:       portJaegerMetrics,
+				TargetPort: intstr.FromString(jaegerMetricsPortName),
 			},
 		}
 

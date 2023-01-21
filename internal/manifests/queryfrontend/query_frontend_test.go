@@ -21,14 +21,14 @@ import (
 func getJaegerServicePorts() []corev1.ServicePort {
 	jaegerServicePorts := []corev1.ServicePort{
 		{
-			Name:       tempoQueryJaegerUiPortName,
+			Name:       jaegerUIPortName,
 			Port:       portJaegerUI,
-			TargetPort: intstr.FromInt(portJaegerUI),
+			TargetPort: intstr.FromString(jaegerUIPortName),
 		},
 		{
-			Name:       tempoQueryMetricsPortName,
-			Port:       portQueryMetrics,
-			TargetPort: intstr.FromString("jaeger-metrics"),
+			Name:       jaegerMetricsPortName,
+			Port:       portJaegerMetrics,
+			TargetPort: intstr.FromString(jaegerMetricsPortName),
 		},
 	}
 	return jaegerServicePorts
@@ -234,7 +234,7 @@ func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 				},
 				{
 					Name:          jaegerMetricsPortName,
-					ContainerPort: portQueryMetrics,
+					ContainerPort: portJaegerMetrics,
 					Protocol:      corev1.ProtocolTCP,
 				},
 			},
