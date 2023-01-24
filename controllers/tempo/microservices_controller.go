@@ -49,7 +49,7 @@ type DegradedError struct {
 }
 
 func (e *DegradedError) Error() string {
-	return fmt.Sprintf("cluster degraded: %s", e.Message)
+	return fmt.Sprintf("cluster degraded: %s: %s", e.Reason, e.Message)
 }
 
 // +kubebuilder:rbac:groups="",resources=services;configmaps;serviceaccounts;secrets,verbs=get;list;watch;create;update;patch;delete
