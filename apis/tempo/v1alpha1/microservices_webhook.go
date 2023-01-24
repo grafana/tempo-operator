@@ -40,17 +40,18 @@ func (r *Microservices) SetupWebhookWithManager(mgr ctrl.Manager, defaultImages 
 
 //+kubebuilder:webhook:path=/mutate-tempo-grafana-com-v1alpha1-microservices,mutating=true,failurePolicy=fail,sideEffects=None,groups=tempo.grafana.com,resources=microservices,verbs=create;update,versions=v1alpha1,name=mmicroservices.kb.io,admissionReviewVersions=v1
 
-func NewDefaulter(defaultImages ImagesSpec) *defaulter {
-	return &defaulter{
+// NewDefaulter creates a new instance of Defaulter, which implements functions for setting defaults on the Tempo CR.
+func NewDefaulter(defaultImages ImagesSpec) *Defaulter {
+	return &Defaulter{
 		defaultImages: defaultImages,
 	}
 }
 
-type defaulter struct {
+type Defaulter struct {
 	defaultImages ImagesSpec
 }
 
-func (d *defaulter) Default(ctx context.Context, obj runtime.Object) error {
+func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 	r, ok := obj.(*Microservices)
 	if !ok {
 		return apierrors.NewBadRequest(fmt.Sprintf("expected a Microservices object but got %T", obj))
