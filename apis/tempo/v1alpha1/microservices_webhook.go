@@ -55,7 +55,7 @@ func (d *defaulter) Default(ctx context.Context, obj runtime.Object) error {
 	if !ok {
 		return apierrors.NewBadRequest(fmt.Sprintf("expected a Microservices object but got %T", obj))
 	}
-	microserviceslog.Info("default", "name", r.Name)
+	microserviceslog.V(1).Info("default", "name", r.Name)
 
 	if r.Spec.Images.Tempo == "" {
 		if d.defaultImages.Tempo == "" {
@@ -196,7 +196,7 @@ func (v *validator) validate(ctx context.Context, obj runtime.Object) error {
 	if !ok {
 		return apierrors.NewBadRequest(fmt.Sprintf("expected a Microservices object but got %T", obj))
 	}
-	microserviceslog.Info("validate", "name", tempo.Name)
+	microserviceslog.V(1).Info("validate", "name", tempo.Name)
 
 	var allErrs field.ErrorList
 	allErrs = append(allErrs, v.validateServiceAccount(ctx, tempo)...)

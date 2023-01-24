@@ -385,6 +385,7 @@ spec:
             spec:
               containers:
               - args:
+                - start
                 - --config=controller_manager_config.yaml
                 command:
                 - /manager

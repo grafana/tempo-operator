@@ -1,4 +1,4 @@
-package main
+package generate
 
 import (
 	"bytes"
@@ -7,6 +7,9 @@ import (
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	configtempov1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
@@ -33,6 +36,9 @@ func TestBuild(t *testing.T) {
 }
 
 func TestYAMLEncoding(t *testing.T) {
+	scheme := runtime.NewScheme()
+	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
+
 	cm := corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "test-config-map",
@@ -43,7 +49,7 @@ func TestYAMLEncoding(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err := toYAML([]client.Object{&cm}, &buf)
+	err := toYAML(scheme, []client.Object{&cm}, &buf)
 	require.NoError(t, err)
 	require.Equal(t, `---
 apiVersion: v1

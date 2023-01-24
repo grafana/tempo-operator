@@ -1,33 +1,22 @@
-package main
+package generate
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"io"
-	"log"
 	"os"
 
+	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
-	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/yaml"
-	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
-	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	configtempov1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/os-observability/tempo-operator/cmd"
 	"github.com/os-observability/tempo-operator/internal/manifests"
 )
-
-var (
-	scheme = runtime.NewScheme()
-)
-
-func init() {
-	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
-}
 
 func loadSpec(path string) (v1alpha1.Microservices, error) {
 	file, err := os.Open(path)
@@ -62,7 +51,7 @@ func build(ctrlConfig configtempov1alpha1.ProjectConfig, params manifests.Params
 	return objects, nil
 }
 
-func toYAML(objects []client.Object, out io.Writer) error {
+func toYAML(scheme *runtime.Scheme, objects []client.Object, out io.Writer) error {
 	encoder := json.NewSerializerWithOptions(json.DefaultMetaFactory, nil, nil, json.SerializerOptions{Yaml: true})
 
 	for _, obj := range objects {
@@ -85,52 +74,56 @@ func toYAML(objects []client.Object, out io.Writer) error {
 	return nil
 }
 
-func usage() {
-	println("usage: go run ./cmd/generate/main.go -cr path/to/microservices/cr.yaml")
+func generate(c *cobra.Command, crPath string, outPath string, params manifests.Params) error {
+	rootCmdConfig := c.Context().Value(cmd.RootConfigKey{}).(cmd.RootConfig)
+	ctrlConfig, options := rootCmdConfig.CtrlConfig, rootCmdConfig.Options
+
+	spec, err := loadSpec(crPath)
+	if err != nil {
+		return fmt.Errorf("error loading spec: %w", err)
+	}
+
+	params.Tempo = spec
+	objects, err := build(ctrlConfig, params)
+	if err != nil {
+		return fmt.Errorf("error building manifests: %w", err)
+	}
+
+	outFile, err := os.OpenFile(outPath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o600)
+	if err != nil {
+		return fmt.Errorf("error opening output file: %w", err)
+	}
+	defer outFile.Close()
+
+	err = toYAML(options.Scheme, objects, outFile)
+	if err != nil {
+		return fmt.Errorf("error generating yaml: %w", err)
+	}
+
+	return nil
 }
 
-func main() {
-	var configFile string
+func NewGenerateCommand() *cobra.Command {
 	var crPath string
+	var outPath string
 	params := manifests.Params{
 		StorageParams: manifests.StorageParams{
 			S3: manifests.S3{},
 		},
 	}
 
-	flag.StringVar(&configFile, "config", "config/manager/controller_manager_config.yaml", "The controller configuration")
-	flag.StringVar(&crPath, "cr", "", "Input CR")
-	flag.StringVar(&params.StorageParams.S3.Endpoint, "storage.endpoint", "http://minio.minio.svc:9000", "S3 storage endpoint (taken from storage secret)")
-	flag.StringVar(&params.StorageParams.S3.Bucket, "storage.bucket", "tempo", "S3 storage bucket (taken from storage secret)")
-	flag.Parse()
-
-	if crPath == "" {
-		usage()
-		os.Exit(1)
+	cmd := &cobra.Command{
+		Use:   "generate",
+		Short: "Generate YAML manifests from a Tempo CR",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return generate(cmd, crPath, outPath, params)
+		},
 	}
+	cmd.Flags().StringVar(&crPath, "cr", "/dev/stdin", "Input CR")
+	_ = cmd.MarkFlagRequired("cr")
+	cmd.Flags().StringVar(&outPath, "output", "/dev/stdout", "File to store the manifests")
+	cmd.Flags().StringVar(&params.StorageParams.S3.Endpoint, "storage.endpoint", "http://minio.minio.svc:9000", "S3 storage endpoint (taken from storage secret)")
+	cmd.Flags().StringVar(&params.StorageParams.S3.Bucket, "storage.bucket", "tempo", "S3 storage bucket (taken from storage secret)")
 
-	ctrlConfig := configtempov1alpha1.ProjectConfig{}
-	options := ctrl.Options{Scheme: scheme}
-	if configFile != "" {
-		_, err := options.AndFrom(ctrl.ConfigFile().AtPath(configFile).OfKind(&ctrlConfig))
-		if err != nil {
-			log.Fatalf("unable to load the config file: %v", err)
-		}
-	}
-
-	spec, err := loadSpec(crPath)
-	if err != nil {
-		log.Fatalf("error loading spec: %v", err)
-	}
-
-	params.Tempo = spec
-	objects, err := build(ctrlConfig, params)
-	if err != nil {
-		log.Fatalf("error building manifests: %v", err)
-	}
-
-	err = toYAML(objects, os.Stdout)
-	if err != nil {
-		log.Fatalf("error generating yaml: %v", err)
-	}
+	return cmd
 }
