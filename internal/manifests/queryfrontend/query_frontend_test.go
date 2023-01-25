@@ -76,6 +76,7 @@ func getExpectedFrontendDiscoveryService(withJaeger bool) *corev1.Service {
 			Labels:    labels,
 		},
 		Spec: corev1.ServiceSpec{
+			ClusterIP: "None",
 			Ports: []corev1.ServicePort{
 				{
 					Name:       manifestutils.HttpPortName,

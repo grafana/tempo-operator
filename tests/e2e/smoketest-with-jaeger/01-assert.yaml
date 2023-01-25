@@ -289,6 +289,7 @@ metadata:
     app.kubernetes.io/name: tempo
   name: tempo-simplest-query-frontend-discovery
 spec:
+  clusterIP: None
   ports:
     - name: http
       port: 3100
