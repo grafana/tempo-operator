@@ -125,7 +125,7 @@ build: generate fmt vet ## Build manager binary.
 run: manifests generate fmt vet ## Run a controller from your host.
 	# Disabled webhooks only affects local runs, not the build or in-cluster deployments.
 	@echo -e "\033[33mWebhooks are disabled! Use the normal deployment method to enable full operator functionality.\033[0m"
-	ENABLE_WEBHOOKS=false go run ./main.go
+	ENABLE_WEBHOOKS=false go run ./main.go start
 
 .PHONY: docker-build
 docker-build: ## Build docker image with the manager.
@@ -303,7 +303,7 @@ e2e:
 	$(KUTTL) test
 
 .PHONY: prepare-e2e
-prepare-e2e: kuttl start-kind cert-manager deploy-minio set-test-image-vars docker-build load-image-operator deploy
+prepare-e2e: kuttl start-kind cert-manager deploy-minio set-test-image-vars build docker-build load-image-operator deploy
 
 .PHONY: set-test-image-vars
 set-test-image-vars:

@@ -1,0 +1,8 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: Microservices
+metadata:
+  name: generated-tempo
+spec:
+  storage:
+    secret: minio-test
+  storageSize: 1Gi

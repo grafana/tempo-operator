@@ -33,23 +33,30 @@ var microserviceslog = logf.Log.WithName("microservices-resource")
 func (r *Microservices) SetupWebhookWithManager(mgr ctrl.Manager, defaultImages ImagesSpec) error {
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(r).
-		WithDefaulter(&defaulter{defaultImages: defaultImages}).
+		WithDefaulter(NewDefaulter(defaultImages)).
 		WithValidator(&validator{client: mgr.GetClient()}).
 		Complete()
 }
 
 //+kubebuilder:webhook:path=/mutate-tempo-grafana-com-v1alpha1-microservices,mutating=true,failurePolicy=fail,sideEffects=None,groups=tempo.grafana.com,resources=microservices,verbs=create;update,versions=v1alpha1,name=mmicroservices.kb.io,admissionReviewVersions=v1
 
-type defaulter struct {
+// NewDefaulter creates a new instance of Defaulter, which implements functions for setting defaults on the Tempo CR.
+func NewDefaulter(defaultImages ImagesSpec) *Defaulter {
+	return &Defaulter{
+		defaultImages: defaultImages,
+	}
+}
+
+type Defaulter struct {
 	defaultImages ImagesSpec
 }
 
-func (d *defaulter) Default(ctx context.Context, obj runtime.Object) error {
+func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 	r, ok := obj.(*Microservices)
 	if !ok {
 		return apierrors.NewBadRequest(fmt.Sprintf("expected a Microservices object but got %T", obj))
 	}
-	microserviceslog.Info("default", "name", r.Name)
+	microserviceslog.V(1).Info("default", "name", r.Name)
 
 	if r.Spec.Images.Tempo == "" {
 		if d.defaultImages.Tempo == "" {
@@ -190,7 +197,7 @@ func (v *validator) validate(ctx context.Context, obj runtime.Object) error {
 	if !ok {
 		return apierrors.NewBadRequest(fmt.Sprintf("expected a Microservices object but got %T", obj))
 	}
-	microserviceslog.Info("validate", "name", tempo.Name)
+	microserviceslog.V(1).Info("validate", "name", tempo.Name)
 
 	var allErrs field.ErrorList
 	allErrs = append(allErrs, v.validateServiceAccount(ctx, tempo)...)
