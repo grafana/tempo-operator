@@ -2,14 +2,15 @@ package generate
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
 
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v2"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/serializer/json"
-	"k8s.io/apimachinery/pkg/util/yaml"
+	k8syaml "k8s.io/apimachinery/pkg/util/yaml"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	configtempov1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
@@ -26,7 +27,7 @@ func loadSpec(path string) (v1alpha1.Microservices, error) {
 	defer file.Close()
 
 	spec := v1alpha1.Microservices{}
-	decoder := yaml.NewYAMLOrJSONDecoder(file, 8192)
+	decoder := k8syaml.NewYAMLOrJSONDecoder(file, 8192)
 	err = decoder.Decode(&spec)
 	if err != nil {
 		return v1alpha1.Microservices{}, err
@@ -51,11 +52,11 @@ func build(ctrlConfig configtempov1alpha1.ProjectConfig, params manifests.Params
 	return objects, nil
 }
 
-func toYAML(scheme *runtime.Scheme, objects []client.Object, out io.Writer) error {
-	encoder := json.NewSerializerWithOptions(json.DefaultMetaFactory, nil, nil, json.SerializerOptions{Yaml: true})
-
+func toYAMLManifest(scheme *runtime.Scheme, objects []client.Object, out io.Writer) error {
 	for _, obj := range objects {
 		fmt.Fprintln(out, "---")
+
+		// set Group, Version and Kind
 		types, _, err := scheme.ObjectKinds(obj)
 		if err != nil {
 			return fmt.Errorf("error getting object kind: %v", err)
@@ -63,11 +64,33 @@ func toYAML(scheme *runtime.Scheme, objects []client.Object, out io.Writer) erro
 		if len(types) == 0 {
 			return fmt.Errorf("could not find object kind for %v", obj)
 		}
-
 		obj.GetObjectKind().SetGroupVersionKind(types[0])
-		err = encoder.Encode(obj, out)
+
+		// Marshal to JSON first, to respect json tags in structs
+		jsonBytes, err := json.Marshal(obj)
 		if err != nil {
-			return fmt.Errorf("error: %v", err)
+			return err
+		}
+
+		// Unmarshal into a map and remove status field
+		// Use yaml.Unmarshal because it detects the correct number type,
+		// whereas json.Unmarshal uses float64 for every number
+		var jsonObj map[string]interface{}
+		err = yaml.Unmarshal(jsonBytes, &jsonObj)
+		if err != nil {
+			return err
+		}
+		delete(jsonObj, "status")
+
+		// Finally, marshal into yaml
+		yamlBytes, err := yaml.Marshal(jsonObj)
+		if err != nil {
+			return err
+		}
+
+		_, err = out.Write(yamlBytes)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -95,7 +118,7 @@ func generate(c *cobra.Command, crPath string, outPath string, params manifests.
 	}
 	defer outFile.Close()
 
-	err = toYAML(options.Scheme, objects, outFile)
+	err = toYAMLManifest(options.Scheme, objects, outFile)
 	if err != nil {
 		return fmt.Errorf("error generating yaml: %w", err)
 	}
