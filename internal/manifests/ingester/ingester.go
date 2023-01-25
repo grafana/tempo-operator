@@ -20,17 +20,19 @@ const (
 )
 
 // BuildIngester creates distributor objects.
-func BuildIngester(tempo v1alpha1.Microservices) ([]client.Object, error) {
-	ss, err := statefulSet(tempo)
+func BuildIngester(params manifestutils.Params) ([]client.Object, error) {
+	ss, err := statefulSet(params)
 	if err != nil {
 		return nil, err
 	}
 
-	return []client.Object{ss, service(tempo)}, nil
+	return []client.Object{ss, service(params.Tempo)}, nil
 }
 
-func statefulSet(tempo v1alpha1.Microservices) (*v1.StatefulSet, error) {
+func statefulSet(params manifestutils.Params) (*v1.StatefulSet, error) {
+	tempo := params.Tempo
 	labels := manifestutils.ComponentLabels(componentName, tempo.Name)
+	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
 	filesystem := corev1.PersistentVolumeFilesystem
 	cfg := &v1alpha1.TempoComponentSpec{}
 	if userCfg := tempo.Spec.Components.Ingester; userCfg != nil {
@@ -49,7 +51,8 @@ func statefulSet(tempo v1alpha1.Microservices) (*v1.StatefulSet, error) {
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: k8slabels.Merge(labels, memberlist.GossipSelector),
+					Labels:      k8slabels.Merge(labels, memberlist.GossipSelector),
+					Annotations: annotations,
 				},
 				Spec: corev1.PodSpec{
 					ServiceAccountName: tempo.Spec.ServiceAccount,

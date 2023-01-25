@@ -17,7 +17,7 @@ import (
 )
 
 func TestBuildCompactor(t *testing.T) {
-	objects, err := BuildCompactor(v1alpha1.Microservices{
+	objects, err := BuildCompactor(manifestutils.Params{Tempo: v1alpha1.Microservices{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test",
 			Namespace: "project1",
@@ -46,10 +46,11 @@ func TestBuildCompactor(t *testing.T) {
 				},
 			},
 		},
-	})
+	}})
 	require.NoError(t, err)
 
 	labels := manifestutils.ComponentLabels("compactor", "test")
+	annotations := manifestutils.CommonAnnotations("")
 	assert.Equal(t, 2, len(objects))
 
 	assert.Equal(t, &corev1.Service{
@@ -92,7 +93,8 @@ func TestBuildCompactor(t *testing.T) {
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: k8slabels.Merge(labels, map[string]string{"tempo-gossip-member": "true"}),
+					Labels:      k8slabels.Merge(labels, map[string]string{"tempo-gossip-member": "true"}),
+					Annotations: annotations,
 				},
 				Spec: corev1.PodSpec{
 					ServiceAccountName: "tempo-test-serviceaccount",

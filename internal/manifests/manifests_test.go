@@ -8,10 +8,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
 )
 
 func TestBuildAll(t *testing.T) {
-	objects, err := BuildAll(Params{Tempo: v1alpha1.Microservices{
+	objects, err := BuildAll(manifestutils.Params{Tempo: v1alpha1.Microservices{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "foo",
 			Namespace: "project1",
