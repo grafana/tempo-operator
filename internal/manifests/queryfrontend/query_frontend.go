@@ -113,6 +113,20 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 									Protocol:      corev1.ProtocolTCP,
 								},
 							},
+							ReadinessProbe: &corev1.Probe{
+								ProbeHandler: corev1.ProbeHandler{
+									HTTPGet: &corev1.HTTPGetAction{
+										// The query-frontend component returns ready once at least one querier connected it it.
+										// The querier tries to connect to query-frontend-discovery, however it can only connect
+										// once query-frontend is in ready state (otherwise the svc doesn't return any A records).
+										// To break this circular dependency we use the liveness probe as a workaround here.
+										Path: manifestutils.TempoLivenessPath,
+										Port: intstr.FromString(manifestutils.HttpPortName),
+									},
+								},
+								InitialDelaySeconds: 15,
+								TimeoutSeconds:      1,
+							},
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      manifestutils.ConfigVolumeName,

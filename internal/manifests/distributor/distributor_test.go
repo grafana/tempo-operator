@@ -112,6 +112,16 @@ func TestBuildDistributor(t *testing.T) {
 									Protocol:      corev1.ProtocolTCP,
 								},
 							},
+							ReadinessProbe: &corev1.Probe{
+								ProbeHandler: corev1.ProbeHandler{
+									HTTPGet: &corev1.HTTPGetAction{
+										Path: manifestutils.TempoReadinessPath,
+										Port: intstr.FromString(manifestutils.HttpPortName),
+									},
+								},
+								InitialDelaySeconds: 15,
+								TimeoutSeconds:      1,
+							},
 							Resources: corev1.ResourceRequirements{
 								Limits: corev1.ResourceList{
 									corev1.ResourceCPU:    *resource.NewMilliQuantity(270, resource.BinarySI),

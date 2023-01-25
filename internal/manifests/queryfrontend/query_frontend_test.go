@@ -174,6 +174,16 @@ func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 									Protocol:      corev1.ProtocolTCP,
 								},
 							},
+							ReadinessProbe: &corev1.Probe{
+								ProbeHandler: corev1.ProbeHandler{
+									HTTPGet: &corev1.HTTPGetAction{
+										Path: manifestutils.TempoLivenessPath,
+										Port: intstr.FromString(manifestutils.HttpPortName),
+									},
+								},
+								InitialDelaySeconds: 15,
+								TimeoutSeconds:      1,
+							},
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      manifestutils.ConfigVolumeName,
