@@ -14,7 +14,7 @@ import (
 
 	configtempov1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
-	"github.com/os-observability/tempo-operator/internal/manifests"
+	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
 )
 
 func TestBuild(t *testing.T) {
@@ -24,9 +24,9 @@ func TestBuild(t *testing.T) {
 			TempoQuery: "tempo-query-image",
 		},
 	}
-	params := manifests.Params{
-		StorageParams: manifests.StorageParams{
-			S3: manifests.S3{},
+	params := manifestutils.Params{
+		StorageParams: manifestutils.StorageParams{
+			S3: manifestutils.S3{},
 		},
 	}
 

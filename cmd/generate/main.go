@@ -17,6 +17,7 @@ import (
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/os-observability/tempo-operator/cmd"
 	"github.com/os-observability/tempo-operator/internal/manifests"
+	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
 )
 
 // yamlOrJsonDecoderBufferSize determines how far into the stream
@@ -40,7 +41,7 @@ func loadSpec(path string) (v1alpha1.Microservices, error) {
 	return spec, nil
 }
 
-func build(ctrlConfig configtempov1alpha1.ProjectConfig, params manifests.Params) ([]client.Object, error) {
+func build(ctrlConfig configtempov1alpha1.ProjectConfig, params manifestutils.Params) ([]client.Object, error) {
 	// apply default values from Defaulter webhook
 	defaulterWebhook := v1alpha1.NewDefaulter(ctrlConfig.DefaultImages)
 	err := defaulterWebhook.Default(context.Background(), &params.Tempo)
@@ -101,7 +102,7 @@ func toYAMLManifest(scheme *runtime.Scheme, objects []client.Object, out io.Writ
 	return nil
 }
 
-func generate(c *cobra.Command, crPath string, outPath string, params manifests.Params) error {
+func generate(c *cobra.Command, crPath string, outPath string, params manifestutils.Params) error {
 	rootCmdConfig := c.Context().Value(cmd.RootConfigKey{}).(cmd.RootConfig)
 	ctrlConfig, options := rootCmdConfig.CtrlConfig, rootCmdConfig.Options
 
@@ -133,9 +134,9 @@ func generate(c *cobra.Command, crPath string, outPath string, params manifests.
 func NewGenerateCommand() *cobra.Command {
 	var crPath string
 	var outPath string
-	params := manifests.Params{
-		StorageParams: manifests.StorageParams{
-			S3: manifests.S3{},
+	params := manifestutils.Params{
+		StorageParams: manifestutils.StorageParams{
+			S3: manifestutils.S3{},
 		},
 	}
 
