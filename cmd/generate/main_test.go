@@ -51,7 +51,7 @@ func TestYAMLEncoding(t *testing.T) {
 	var buf bytes.Buffer
 	err := toYAMLManifest(scheme, []client.Object{&cm}, &buf)
 	require.NoError(t, err)
-	require.Equal(t, `---
+	require.YAMLEq(t, `---
 apiVersion: v1
 data:
   tempo.yaml: |

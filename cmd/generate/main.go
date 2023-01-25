@@ -19,6 +19,10 @@ import (
 	"github.com/os-observability/tempo-operator/internal/manifests"
 )
 
+// yamlOrJsonDecoderBufferSize determines how far into the stream
+// the decoder will look to figure out whether this is a JSON stream.
+const yamlOrJsonDecoderBufferSize = 8192
+
 func loadSpec(path string) (v1alpha1.Microservices, error) {
 	file, err := os.Open(path)
 	if err != nil {
@@ -27,7 +31,7 @@ func loadSpec(path string) (v1alpha1.Microservices, error) {
 	defer file.Close()
 
 	spec := v1alpha1.Microservices{}
-	decoder := k8syaml.NewYAMLOrJSONDecoder(file, 8192)
+	decoder := k8syaml.NewYAMLOrJSONDecoder(file, yamlOrJsonDecoderBufferSize)
 	err = decoder.Decode(&spec)
 	if err != nil {
 		return v1alpha1.Microservices{}, err
