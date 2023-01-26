@@ -6,7 +6,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 )
 
-// DefaultAffinity returns the default affinity for (most) of the Tempo components.
+// DefaultAffinity returns the default affinity for Tempo components.
 // It defines that two pods with the same labels (i.e. same component)
 // should not be scheduled on the same node or failure domain.
 func DefaultAffinity(labels labels.Set) *corev1.Affinity {
