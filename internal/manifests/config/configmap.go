@@ -1,6 +1,9 @@
 package config
 
 import (
+	"crypto/sha256"
+	"fmt"
+
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -22,15 +25,18 @@ type S3 struct {
 	Bucket   string
 }
 
-func BuildConfigMap(tempo v1alpha1.Microservices, params Params) (*corev1.ConfigMap, error) {
+// BuildConfigMap builds the tempo configuration file and the tenant-specific overrides configuration.
+// It returns a ConfigMap containing both configuration files and the checksum of the main configuration file
+// (the tenant-specific configuration gets reloaded automatically, therefore no checksum is required).
+func BuildConfigMap(tempo v1alpha1.Microservices, params Params) (*corev1.ConfigMap, string, error) {
 	config, err := buildConfiguration(tempo, params)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
 	overridesConfig, err := buildTenantOverrides(tempo)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
 	labels := manifestutils.ComponentLabels("config", tempo.Name)
@@ -48,5 +54,10 @@ func BuildConfigMap(tempo v1alpha1.Microservices, params Params) (*corev1.Config
 		configMap.Data["tempo-query.yaml"] = "backend: 127.0.0.1:3100\n"
 	}
 
-	return configMap, nil
+	// We only need to hash the main ConfigMap, the per-tenant overrides
+	// is reloaded by tempo without requiring a restart
+	h := sha256.Sum256(config)
+	checksum := fmt.Sprintf("%x", h)
+
+	return configMap, checksum, nil
 }

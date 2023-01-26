@@ -26,12 +26,12 @@ const (
 )
 
 // BuildQueryFrontend creates the query-frontend objects.
-func BuildQueryFrontend(tempo v1alpha1.Microservices) ([]client.Object, error) {
-	d, err := deployment(tempo)
+func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
+	d, err := deployment(params)
 	if err != nil {
 		return nil, err
 	}
-	svcs := services(tempo)
+	svcs := services(params.Tempo)
 
 	var manifests []client.Object
 	manifests = append(manifests, d)
@@ -41,9 +41,10 @@ func BuildQueryFrontend(tempo v1alpha1.Microservices) ([]client.Object, error) {
 	return manifests, nil
 }
 
-func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
+func deployment(params manifestutils.Params) (*v1.Deployment, error) {
+	tempo := params.Tempo
 	labels := manifestutils.ComponentLabels(componentName, tempo.Name)
-
+	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
 	cfg := &v1alpha1.TempoComponentSpec{}
 	if userCfg := tempo.Spec.Components.QueryFrontend; userCfg != nil {
 		cfg = &userCfg.TempoComponentSpec
@@ -64,7 +65,8 @@ func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: k8slabels.Merge(labels, memberlist.GossipSelector),
+					Labels:      k8slabels.Merge(labels, memberlist.GossipSelector),
+					Annotations: annotations,
 				},
 				Spec: corev1.PodSpec{
 					ServiceAccountName: tempo.Spec.ServiceAccount,

@@ -16,7 +16,7 @@ import (
 )
 
 func TestBuildDistributor(t *testing.T) {
-	objects := BuildDistributor(v1alpha1.Microservices{
+	objects := BuildDistributor(manifestutils.Params{Tempo: v1alpha1.Microservices{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test",
 			Namespace: "project1",
@@ -45,9 +45,10 @@ func TestBuildDistributor(t *testing.T) {
 				},
 			},
 		},
-	})
+	}})
 
 	labels := manifestutils.ComponentLabels("distributor", "test")
+	annotations := manifestutils.CommonAnnotations("")
 	assert.Equal(t, 2, len(objects))
 	assert.Equal(t, &v1.Deployment{
 		TypeMeta: metav1.TypeMeta{
@@ -64,7 +65,8 @@ func TestBuildDistributor(t *testing.T) {
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: k8slabels.Merge(labels, map[string]string{"tempo-gossip-member": "true"}),
+					Labels:      k8slabels.Merge(labels, map[string]string{"tempo-gossip-member": "true"}),
+					Annotations: annotations,
 				},
 				Spec: corev1.PodSpec{
 					ServiceAccountName: "tempo-test-serviceaccount",

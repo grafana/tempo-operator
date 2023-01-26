@@ -15,7 +15,7 @@ import (
 )
 
 func TestDefault(t *testing.T) {
-	defaulter := &defaulter{
+	defaulter := &Defaulter{
 		defaultImages: ImagesSpec{
 			Tempo:      "docker.io/grafana/tempo:x.y.z",
 			TempoQuery: "docker.io/grafana/tempo-query:x.y.z",

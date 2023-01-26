@@ -3,11 +3,11 @@ package manifests
 import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/os-observability/tempo-operator/internal/manifests/compactor"
 	"github.com/os-observability/tempo-operator/internal/manifests/config"
 	"github.com/os-observability/tempo-operator/internal/manifests/distributor"
 	"github.com/os-observability/tempo-operator/internal/manifests/ingester"
+	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
 	"github.com/os-observability/tempo-operator/internal/manifests/memberlist"
 	"github.com/os-observability/tempo-operator/internal/manifests/naming"
 	"github.com/os-observability/tempo-operator/internal/manifests/querier"
@@ -15,48 +15,32 @@ import (
 	"github.com/os-observability/tempo-operator/internal/manifests/serviceaccount"
 )
 
-// Params holds parameters used to create Tempo objects.
-type Params struct {
-	StorageParams StorageParams
-	Tempo         v1alpha1.Microservices
-}
-
-// StorageParams holds storage configuration.
-type StorageParams struct {
-	S3 S3
-}
-
-// S3 holds S3 configuration.
-type S3 struct {
-	Endpoint string
-	Bucket   string
-}
-
 // BuildAll creates objects for Tempo deployment.
-func BuildAll(params Params) ([]client.Object, error) {
-	configMaps, err := config.BuildConfigMap(params.Tempo, config.Params{S3: config.S3{
+func BuildAll(params manifestutils.Params) ([]client.Object, error) {
+	configMaps, configChecksum, err := config.BuildConfigMap(params.Tempo, config.Params{S3: config.S3{
 		Endpoint: params.StorageParams.S3.Endpoint,
 		Bucket:   params.StorageParams.S3.Bucket,
 	}})
 	if err != nil {
 		return nil, err
 	}
+	params.ConfigChecksum = configChecksum
 
-	ingesterObjs, err := ingester.BuildIngester(params.Tempo)
+	ingesterObjs, err := ingester.BuildIngester(params)
 	if err != nil {
 		return nil, err
 	}
 
-	querierObjs, err := querier.BuildQuerier(params.Tempo)
+	querierObjs, err := querier.BuildQuerier(params)
 	if err != nil {
 		return nil, err
 	}
-	frontendObjs, err := queryfrontend.BuildQueryFrontend(params.Tempo)
+	frontendObjs, err := queryfrontend.BuildQueryFrontend(params)
 	if err != nil {
 		return nil, err
 	}
 
-	compactorObjs, err := compactor.BuildCompactor(params.Tempo)
+	compactorObjs, err := compactor.BuildCompactor(params)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +50,7 @@ func BuildAll(params Params) ([]client.Object, error) {
 	if params.Tempo.Spec.ServiceAccount == naming.DefaultServiceAccountName(params.Tempo.Name) {
 		manifests = append(manifests, serviceaccount.BuildDefaultServiceAccount(params.Tempo))
 	}
-	manifests = append(manifests, distributor.BuildDistributor(params.Tempo)...)
+	manifests = append(manifests, distributor.BuildDistributor(params)...)
 	manifests = append(manifests, ingesterObjs...)
 	manifests = append(manifests, memberlist.BuildGossip(params.Tempo))
 	manifests = append(manifests, frontendObjs...)

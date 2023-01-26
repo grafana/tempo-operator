@@ -107,6 +107,7 @@ func getExpectedFrontendDiscoveryService(withJaeger bool) *corev1.Service {
 
 func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 	labels := manifestutils.ComponentLabels("query-frontend", "test")
+	annotations := manifestutils.CommonAnnotations("")
 
 	expectedDeployment := &v1.Deployment{
 		TypeMeta: metav1.TypeMeta{
@@ -123,7 +124,8 @@ func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: k8slabels.Merge(labels, memberlist.GossipSelector),
+					Labels:      k8slabels.Merge(labels, memberlist.GossipSelector),
+					Annotations: annotations,
 				},
 				Spec: corev1.PodSpec{
 					ServiceAccountName: "tempo-test-serviceaccount",
@@ -278,7 +280,7 @@ func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 }
 
 func TestBuildQueryFrontend(t *testing.T) {
-	objects, err := BuildQueryFrontend(v1alpha1.Microservices{
+	objects, err := BuildQueryFrontend(manifestutils.Params{Tempo: v1alpha1.Microservices{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test",
 			Namespace: "project1",
@@ -297,7 +299,7 @@ func TestBuildQueryFrontend(t *testing.T) {
 				},
 			},
 		},
-	})
+	}})
 	require.NoError(t, err)
 	require.Equal(t, 3, len(objects))
 
@@ -316,7 +318,7 @@ func TestBuildQueryFrontend(t *testing.T) {
 
 func TestBuildQueryFrontendWithJaeger(t *testing.T) {
 	withJaeger := true
-	objects, err := BuildQueryFrontend(v1alpha1.Microservices{
+	objects, err := BuildQueryFrontend(manifestutils.Params{Tempo: v1alpha1.Microservices{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test",
 			Namespace: "project1",
@@ -351,7 +353,7 @@ func TestBuildQueryFrontendWithJaeger(t *testing.T) {
 				},
 			},
 		},
-	})
+	}})
 
 	require.NoError(t, err)
 	require.Equal(t, 3, len(objects))

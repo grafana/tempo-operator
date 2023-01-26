@@ -19,17 +19,19 @@ const (
 )
 
 // BuildCompactor creates distributor objects.
-func BuildCompactor(tempo v1alpha1.Microservices) ([]client.Object, error) {
-	d, err := deployment(tempo)
+func BuildCompactor(params manifestutils.Params) ([]client.Object, error) {
+	d, err := deployment(params)
 	if err != nil {
 		return nil, err
 	}
 
-	return []client.Object{d, service(tempo)}, nil
+	return []client.Object{d, service(params.Tempo)}, nil
 }
 
-func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
+func deployment(params manifestutils.Params) (*v1.Deployment, error) {
+	tempo := params.Tempo
 	labels := manifestutils.ComponentLabels(componentName, tempo.Name)
+	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
 	cfg := &v1alpha1.TempoComponentSpec{}
 	if userCfg := tempo.Spec.Components.Compactor; userCfg != nil {
 		cfg = userCfg
@@ -50,7 +52,8 @@ func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: k8slabels.Merge(labels, memberlist.GossipSelector),
+					Labels:      k8slabels.Merge(labels, memberlist.GossipSelector),
+					Annotations: annotations,
 				},
 				Spec: corev1.PodSpec{
 					ServiceAccountName: tempo.Spec.ServiceAccount,
