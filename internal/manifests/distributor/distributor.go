@@ -40,10 +40,12 @@ func deployment(tempo v1alpha1.Microservices) *v1.Deployment {
 			Labels:    labels,
 		},
 		Spec: v1.DeploymentSpec{
+			Replicas: tempo.Spec.Components.Distributor.Replicas,
 			Selector: &metav1.LabelSelector{
 				MatchLabels: labels,
 			},
 			Template: corev1.PodTemplateSpec{
+
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: k8slabels.Merge(labels, memberlist.GossipSelector),
 				},

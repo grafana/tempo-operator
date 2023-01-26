@@ -44,6 +44,7 @@ func statefulSet(tempo v1alpha1.Microservices) (*v1.StatefulSet, error) {
 			Labels:    labels,
 		},
 		Spec: v1.StatefulSetSpec{
+			Replicas: tempo.Spec.Components.Ingester.Replicas,
 			Selector: &metav1.LabelSelector{
 				MatchLabels: labels,
 			},
