@@ -6,6 +6,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8slabels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
@@ -31,7 +32,10 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 	if userCfg := tempo.Spec.Components.Distributor; userCfg != nil {
 		cfg = userCfg
 	}
-
+	replicas := pointer.Int32(1)
+	if tempo.Spec.Components.Distributor != nil && tempo.Spec.Components.Distributor.Replicas != nil {
+		replicas = tempo.Spec.Components.Distributor.Replicas
+	}
 	return &v1.Deployment{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: v1.SchemeGroupVersion.String(),
@@ -42,7 +46,7 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 			Labels:    labels,
 		},
 		Spec: v1.DeploymentSpec{
-			Replicas: tempo.Spec.Components.Distributor.Replicas,
+			Replicas: replicas,
 			Selector: &metav1.LabelSelector{
 				MatchLabels: labels,
 			},
