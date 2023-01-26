@@ -110,6 +110,7 @@ func TestBuildQuerier(t *testing.T) {
 							Key: "c",
 						},
 					},
+					Affinity: manifestutils.DefaultAffinity(labels),
 					Containers: []corev1.Container{
 						{
 							Name:  "tempo",
