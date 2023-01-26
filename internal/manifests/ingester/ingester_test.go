@@ -11,6 +11,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8slabels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/utils/pointer"
 
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
@@ -66,10 +67,12 @@ func TestBuildIngester(t *testing.T) {
 			Labels:    labels,
 		},
 		Spec: v1.StatefulSetSpec{
+			Replicas: pointer.Int32(1),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: labels,
 			},
 			Template: corev1.PodTemplateSpec{
+
 				ObjectMeta: metav1.ObjectMeta{
 					Labels:      k8slabels.Merge(labels, map[string]string{"tempo-gossip-member": "true"}),
 					Annotations: annotations,
