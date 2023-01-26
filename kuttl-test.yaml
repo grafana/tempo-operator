@@ -1,8 +1,5 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestSuite
-commands:
-  - command: make cert-manager
-  - command: sleep 5s
 testDirs:
   - ./tests/e2e/
 timeout: 150
