@@ -76,7 +76,8 @@ func getExpectedFrontendDiscoveryService(withJaeger bool) *corev1.Service {
 			Labels:    labels,
 		},
 		Spec: corev1.ServiceSpec{
-			ClusterIP: "None",
+			ClusterIP:                "None",
+			PublishNotReadyAddresses: true,
 			Ports: []corev1.ServicePort{
 				{
 					Name:       manifestutils.HttpPortName,
@@ -174,16 +175,7 @@ func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 									Protocol:      corev1.ProtocolTCP,
 								},
 							},
-							ReadinessProbe: &corev1.Probe{
-								ProbeHandler: corev1.ProbeHandler{
-									HTTPGet: &corev1.HTTPGetAction{
-										Path: manifestutils.TempoLivenessPath,
-										Port: intstr.FromString(manifestutils.HttpPortName),
-									},
-								},
-								InitialDelaySeconds: 15,
-								TimeoutSeconds:      1,
-							},
+							ReadinessProbe: manifestutils.TempoReadinessProbe(),
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      manifestutils.ConfigVolumeName,

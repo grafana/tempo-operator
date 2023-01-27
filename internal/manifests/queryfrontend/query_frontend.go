@@ -113,20 +113,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 									Protocol:      corev1.ProtocolTCP,
 								},
 							},
-							ReadinessProbe: &corev1.Probe{
-								ProbeHandler: corev1.ProbeHandler{
-									HTTPGet: &corev1.HTTPGetAction{
-										// The query-frontend component returns ready once at least one querier connected it it.
-										// The querier tries to connect to query-frontend-discovery, however it can only connect
-										// once query-frontend is in ready state (otherwise the svc doesn't return any A records).
-										// To break this circular dependency we use the liveness probe as a workaround here.
-										Path: manifestutils.TempoLivenessPath,
-										Port: intstr.FromString(manifestutils.HttpPortName),
-									},
-								},
-								InitialDelaySeconds: 15,
-								TimeoutSeconds:      1,
-							},
+							ReadinessProbe: manifestutils.TempoReadinessProbe(),
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      manifestutils.ConfigVolumeName,
@@ -252,6 +239,12 @@ func services(tempo v1alpha1.Microservices) []*corev1.Service {
 		},
 		Spec: corev1.ServiceSpec{
 			ClusterIP: "None",
+			// We set PublishNotReadyAddresses to true so that the service always returns the entire list
+			// of A records for matching pods, irrespective if they are in Ready state or not.
+			// This is especially useful during startup of query-frontend and querier, where query-frontend
+			// only gets Ready if at least one querier connects to it (and without this setting, querier could
+			// never connect to query-frontend-discovery-svc because it would not return A records of not-ready pods).
+			PublishNotReadyAddresses: true,
 			Ports: []corev1.ServicePort{
 				{
 					Name:       manifestutils.HttpPortName,
