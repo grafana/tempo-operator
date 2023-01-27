@@ -151,6 +151,7 @@ func TestBuildIngester(t *testing.T) {
 									corev1.ResourceMemory: *resource.NewQuantity(322122560, resource.BinarySI),
 								},
 							},
+							SecurityContext: manifestutils.TempoContainerSecurityContext(),
 						},
 					},
 					Volumes: []corev1.Volume{

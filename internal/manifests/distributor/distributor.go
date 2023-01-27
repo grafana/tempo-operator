@@ -82,8 +82,13 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 									MountPath: "/conf",
 									ReadOnly:  true,
 								},
+								{
+									Name:      manifestutils.TmpStorageVolumeName,
+									MountPath: manifestutils.TmpStoragePath,
+								},
 							},
-							Resources: manifestutils.Resources(tempo, componentName),
+							Resources:       manifestutils.Resources(tempo, componentName),
+							SecurityContext: manifestutils.TempoContainerSecurityContext(),
 						},
 					},
 					Volumes: []corev1.Volume{
@@ -95,6 +100,12 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 										Name: naming.Name("", tempo.Name),
 									},
 								},
+							},
+						},
+						{
+							Name: manifestutils.TmpStorageVolumeName,
+							VolumeSource: corev1.VolumeSource{
+								EmptyDir: &corev1.EmptyDirVolumeSource{},
 							},
 						},
 					},
