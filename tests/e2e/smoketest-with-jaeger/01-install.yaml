@@ -27,7 +27,3 @@ spec:
     queryFrontend:
       jaegerQuery:
         enabled: true
-  retention:
-    perTenant: {}
-  limits:
-    perTenant: {}
