@@ -111,10 +111,10 @@ func TestReconcile(t *testing.T) {
 
 	// test status condition
 	assert.Equal(t, []metav1.Condition{{
-		Type:               "Ready",
+		Type:               string(v1alpha1.ConditionReady),
 		Status:             "True",
 		LastTransitionTime: updatedTempo.Status.Conditions[0].LastTransitionTime,
-		Reason:             "Ready",
+		Reason:             string(v1alpha1.ReasonReady),
 		Message:            "All components are operational",
 	}}, updatedTempo.Status.Conditions)
 	// make sure LastTransitionTime is recent
@@ -144,10 +144,10 @@ func TestDegraded(t *testing.T) {
 	err = k8sClient.Get(context.Background(), nsn, &updatedTempo1)
 	require.NoError(t, err)
 	assert.Equal(t, []metav1.Condition{{
-		Type:               "Ready",
+		Type:               string(v1alpha1.ConditionReady),
 		Status:             "True",
 		LastTransitionTime: updatedTempo1.Status.Conditions[0].LastTransitionTime,
-		Reason:             "Ready",
+		Reason:             string(v1alpha1.ReasonReady),
 		Message:            "All components are operational",
 	}}, updatedTempo1.Status.Conditions)
 
@@ -170,17 +170,17 @@ func TestDegraded(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, []metav1.Condition{
 		{
-			Type:               "Ready",
+			Type:               string(v1alpha1.ConditionReady),
 			Status:             "False",
 			LastTransitionTime: updatedTempo2.Status.Conditions[0].LastTransitionTime,
-			Reason:             "Ready",
+			Reason:             string(v1alpha1.ReasonReady),
 			Message:            "All components are operational",
 		},
 		{
-			Type:               "Degraded",
+			Type:               string(v1alpha1.ConditionDegraded),
 			Status:             "True",
 			LastTransitionTime: updatedTempo2.Status.Conditions[1].LastTransitionTime,
-			Reason:             "InvalidStorageConfig",
+			Reason:             string(v1alpha1.ReasonInvalidStorageConfig),
 			Message:            "'endpoint' field of storage secret must be a valid URL",
 		},
 	}, updatedTempo2.Status.Conditions)
@@ -206,17 +206,17 @@ func TestDegraded(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, []metav1.Condition{
 		{
-			Type:               "Ready",
+			Type:               string(v1alpha1.ConditionReady),
 			Status:             "True",
 			LastTransitionTime: updatedTempo3.Status.Conditions[0].LastTransitionTime,
-			Reason:             "Ready",
+			Reason:             string(v1alpha1.ReasonReady),
 			Message:            "All components are operational",
 		},
 		{
-			Type:               "Degraded",
+			Type:               string(v1alpha1.ConditionDegraded),
 			Status:             "False",
 			LastTransitionTime: updatedTempo3.Status.Conditions[1].LastTransitionTime,
-			Reason:             "InvalidStorageConfig",
+			Reason:             string(v1alpha1.ReasonInvalidStorageConfig),
 			Message:            "'endpoint' field of storage secret must be a valid URL",
 		},
 	}, updatedTempo3.Status.Conditions)
