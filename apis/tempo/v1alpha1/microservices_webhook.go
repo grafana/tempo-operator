@@ -100,22 +100,22 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 		r.Spec.SearchSpec.DefaultResultLimit = &defaultDefaultResultLimit
 	}
 
-	// Default replicas for distibutor
-	if r.Spec.Components.Distributor == nil {
-		r.Spec.Components.Distributor = &TempoComponentSpec{}
-	}
+	defaultComponentReplicas := pointer.Int32(1)
+	defaultReplicationFactor := 1
 
-	if r.Spec.Components.Distributor.Replicas == nil {
-		r.Spec.Components.Distributor.Replicas = pointer.Int32(1)
-	}
-
-	// Default replicas for ingester
-	if r.Spec.Components.Ingester == nil {
-		r.Spec.Components.Ingester = &TempoComponentSpec{}
-	}
-
+	// Default replicas for ingester if not specified.
 	if r.Spec.Components.Ingester.Replicas == nil {
-		r.Spec.Components.Ingester.Replicas = pointer.Int32(1)
+		r.Spec.Components.Ingester.Replicas = defaultComponentReplicas
+	}
+
+	// Default replicas for distributor if not specified.
+	if r.Spec.Components.Distributor.Replicas == nil {
+		r.Spec.Components.Distributor.Replicas = defaultComponentReplicas
+	}
+
+	// Default replication factor if not specified.
+	if r.Spec.ReplicationFactor == 0 {
+		r.Spec.ReplicationFactor = defaultReplicationFactor
 	}
 
 	return nil
@@ -214,11 +214,12 @@ func (v *validator) validateStorage(ctx context.Context, tempo *Microservices) f
 func (v *validator) validateReplicationFactor(tempo *Microservices) field.ErrorList {
 	// Validate minimum quorum on ingestors according to replicas and replication factor
 	replicatonFactor := tempo.Spec.ReplicationFactor
-	ingesterReplicas := tempo.Spec.Components.Ingester.Replicas
-	quorum := int32(math.Floor(float64(replicatonFactor)/2.0) + 1)
+	// Ingester replicas should not be nil at this point, due defauler.
+	ingesterReplicas := int(*tempo.Spec.Components.Ingester.Replicas)
+	quorum := int(math.Floor(float64(replicatonFactor)/2.0) + 1)
 	// if ingester replicas less than quorum (which depends on replication factor), then doesn't allow to deploy as it is an
 	// invalid configuration. Quorum equal to replicas doesn't allow you to lose ingesters but is a valid configuration.
-	if (ingesterReplicas == nil && quorum > 1) || *ingesterReplicas < quorum {
+	if ingesterReplicas < quorum {
 		path := field.NewPath("spec").Child("ReplicationFactor")
 		return field.ErrorList{
 			field.Invalid(path, tempo.Spec.ReplicationFactor,

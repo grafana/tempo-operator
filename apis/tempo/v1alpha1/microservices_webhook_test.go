@@ -38,6 +38,7 @@ func TestDefault(t *testing.T) {
 					Name: "test",
 				},
 				Spec: MicroservicesSpec{
+					ReplicationFactor: 2,
 					Images: ImagesSpec{
 						Tempo:      "docker.io/grafana/tempo:1.2.3",
 						TempoQuery: "docker.io/grafana/tempo-query:1.2.3",
@@ -63,6 +64,7 @@ func TestDefault(t *testing.T) {
 					Name: "test",
 				},
 				Spec: MicroservicesSpec{
+					ReplicationFactor: 2,
 					Images: ImagesSpec{
 						Tempo:      "docker.io/grafana/tempo:1.2.3",
 						TempoQuery: "docker.io/grafana/tempo-query:1.2.3",
@@ -87,10 +89,10 @@ func TestDefault(t *testing.T) {
 						DefaultResultLimit: &defaultDefaultResultLimit,
 					},
 					Components: TempoComponentsSpec{
-						Distributor: &TempoComponentSpec{
+						Distributor: TempoComponentSpec{
 							Replicas: pointer.Int32(1),
 						},
-						Ingester: &TempoComponentSpec{
+						Ingester: TempoComponentSpec{
 							Replicas: pointer.Int32(1),
 						},
 					},
@@ -105,10 +107,12 @@ func TestDefault(t *testing.T) {
 				},
 			},
 			expected: &Microservices{
+
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "test",
 				},
 				Spec: MicroservicesSpec{
+					ReplicationFactor: 1,
 					Images: ImagesSpec{
 						Tempo:      "docker.io/grafana/tempo:x.y.z",
 						TempoQuery: "docker.io/grafana/tempo-query:x.y.z",
@@ -133,10 +137,10 @@ func TestDefault(t *testing.T) {
 						DefaultResultLimit: &defaultDefaultResultLimit,
 					},
 					Components: TempoComponentsSpec{
-						Distributor: &TempoComponentSpec{
+						Distributor: TempoComponentSpec{
 							Replicas: pointer.Int32(1),
 						},
-						Ingester: &TempoComponentSpec{
+						Ingester: TempoComponentSpec{
 							Replicas: pointer.Int32(1),
 						},
 					},
@@ -256,7 +260,7 @@ func TestValidateReplicationFactor(t *testing.T) {
 				Spec: MicroservicesSpec{
 					ReplicationFactor: 3,
 					Components: TempoComponentsSpec{
-						Ingester: &TempoComponentSpec{
+						Ingester: TempoComponentSpec{
 							Replicas: pointer.Int32(2),
 						},
 					},
@@ -270,7 +274,7 @@ func TestValidateReplicationFactor(t *testing.T) {
 				Spec: MicroservicesSpec{
 					ReplicationFactor: 3,
 					Components: TempoComponentsSpec{
-						Ingester: &TempoComponentSpec{
+						Ingester: TempoComponentSpec{
 							Replicas: pointer.Int32(3),
 						},
 					},
@@ -284,7 +288,7 @@ func TestValidateReplicationFactor(t *testing.T) {
 				Spec: MicroservicesSpec{
 					ReplicationFactor: 3,
 					Components: TempoComponentsSpec{
-						Ingester: &TempoComponentSpec{
+						Ingester: TempoComponentSpec{
 							Replicas: pointer.Int32(1),
 						},
 					},

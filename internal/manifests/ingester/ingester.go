@@ -6,7 +6,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8slabels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
@@ -35,14 +34,8 @@ func statefulSet(params manifestutils.Params) (*v1.StatefulSet, error) {
 	labels := manifestutils.ComponentLabels(componentName, tempo.Name)
 	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
 	filesystem := corev1.PersistentVolumeFilesystem
-	cfg := &v1alpha1.TempoComponentSpec{}
-	if userCfg := tempo.Spec.Components.Ingester; userCfg != nil {
-		cfg = userCfg
-	}
-	replicas := pointer.Int32(1)
-	if tempo.Spec.Components.Ingester != nil && tempo.Spec.Components.Ingester.Replicas != nil {
-		replicas = tempo.Spec.Components.Ingester.Replicas
-	}
+	cfg := tempo.Spec.Components.Ingester
+
 	ss := &v1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      naming.Name(componentName, tempo.Name),
@@ -50,7 +43,7 @@ func statefulSet(params manifestutils.Params) (*v1.StatefulSet, error) {
 			Labels:    labels,
 		},
 		Spec: v1.StatefulSetSpec{
-			Replicas: replicas,
+			Replicas: tempo.Spec.Components.Ingester.Replicas,
 			Selector: &metav1.LabelSelector{
 				MatchLabels: labels,
 			},

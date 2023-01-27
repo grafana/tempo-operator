@@ -201,35 +201,35 @@ type TempoComponentsSpec struct {
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Distributor pods"
-	Distributor *TempoComponentSpec `json:"distributor,omitempty"`
+	Distributor TempoComponentSpec `json:"distributor,omitempty"`
 
 	// Ingester defines the ingester component spec.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Ingester pods"
-	Ingester *TempoComponentSpec `json:"ingester,omitempty"`
+	Ingester TempoComponentSpec `json:"ingester,omitempty"`
 
 	// Compactor defines the lokistack compactor component spec.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Compactor pods"
-	Compactor *TempoComponentSpec `json:"compactor,omitempty"`
+	Compactor TempoComponentSpec `json:"compactor,omitempty"`
 
 	// Querier defines the querier component spec.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Querier pods"
-	Querier *TempoComponentSpec `json:"querier,omitempty"`
+	Querier TempoComponentSpec `json:"querier,omitempty"`
 
 	// TempoQueryFrontendSpec defines the query frontend spec.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Query Frontend pods"
-	QueryFrontend *TempoQueryFrontendSpec `json:"queryFrontend,omitempty"`
+	QueryFrontend TempoQueryFrontendSpec `json:"queryFrontend,omitempty"`
 }
 
 // TempoComponentSpec defines specific schedule settings for tempo components.

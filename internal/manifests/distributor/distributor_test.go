@@ -28,7 +28,7 @@ func TestBuildDistributor(t *testing.T) {
 			},
 			ServiceAccount: "tempo-test-serviceaccount",
 			Components: v1alpha1.TempoComponentsSpec{
-				Distributor: &v1alpha1.TempoComponentSpec{
+				Distributor: v1alpha1.TempoComponentSpec{
 					Replicas:     pointer.Int32(1),
 					NodeSelector: map[string]string{"a": "b"},
 					Tolerations: []corev1.Toleration{
