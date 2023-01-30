@@ -10,6 +10,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8slabels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/utils/pointer"
 
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
@@ -27,7 +28,8 @@ func TestBuildDistributor(t *testing.T) {
 			},
 			ServiceAccount: "tempo-test-serviceaccount",
 			Components: v1alpha1.TempoComponentsSpec{
-				Distributor: &v1alpha1.TempoComponentSpec{
+				Distributor: v1alpha1.TempoComponentSpec{
+					Replicas:     pointer.Int32(1),
 					NodeSelector: map[string]string{"a": "b"},
 					Tolerations: []corev1.Toleration{
 						{
@@ -60,6 +62,7 @@ func TestBuildDistributor(t *testing.T) {
 			Labels:    labels,
 		},
 		Spec: v1.DeploymentSpec{
+			Replicas: pointer.Int32(1),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: labels,
 			},

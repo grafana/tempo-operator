@@ -24,7 +24,7 @@ ingester:
     ring:
       kvstore:
         store: memberlist
-      replication_factor: 1
+      replication_factor: {{ .ReplicationFactor }}
     tokens_file_path: /var/tempo/tokens.json
   max_block_duration: 10m
 memberlist:

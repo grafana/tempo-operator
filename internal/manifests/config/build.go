@@ -64,6 +64,7 @@ func buildConfiguration(tempo v1alpha1.Microservices, params Params) ([]byte, er
 		QueryFrontendDiscovery: fmt.Sprintf("%s:9095", naming.Name("query-frontend-discovery", tempo.Name)),
 		GlobalRateLimits:       fromRateLimitSpecToRateLimitOptions(tempo.Spec.LimitSpec.Global),
 		Search:                 fromSearchSpecToOptions(tempo.Spec.SearchSpec),
+		ReplicationFactor:      tempo.Spec.ReplicationFactor,
 	}
 
 	if isTenantOverridesConfigRequired(tempo.Spec.LimitSpec) {

@@ -27,10 +27,7 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 	tempo := params.Tempo
 	labels := manifestutils.ComponentLabels(componentName, tempo.Name)
 	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
-	cfg := &v1alpha1.TempoComponentSpec{}
-	if userCfg := tempo.Spec.Components.Distributor; userCfg != nil {
-		cfg = userCfg
-	}
+	cfg := tempo.Spec.Components.Distributor
 
 	return &v1.Deployment{
 		TypeMeta: metav1.TypeMeta{
@@ -42,10 +39,12 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 			Labels:    labels,
 		},
 		Spec: v1.DeploymentSpec{
+			Replicas: tempo.Spec.Components.Distributor.Replicas,
 			Selector: &metav1.LabelSelector{
 				MatchLabels: labels,
 			},
 			Template: corev1.PodTemplateSpec{
+
 				ObjectMeta: metav1.ObjectMeta{
 					Labels:      k8slabels.Merge(labels, memberlist.GossipSelector),
 					Annotations: annotations,

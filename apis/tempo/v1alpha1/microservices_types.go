@@ -8,28 +8,34 @@ import (
 
 // MicroservicesSpec defines the desired state of Microservices.
 type MicroservicesSpec struct {
-	// Images defines the image for each container.
+	// LimitSpec is used to limit ingestion and querying rates.
 	//
 	// +optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Container Images"
-	Images ImagesSpec `json:"images,omitempty"`
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Ingestion and Querying Ratelimiting"
+	LimitSpec LimitSpec `json:"limits,omitempty"`
 
-	// ServiceAccount defines the service account to use for all tempo components.
+	// StorageClassName for PVCs used by ingester. Defaults to nil (default storage class in the cluster).
 	//
 	// +optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Service Account"
-	ServiceAccount string `json:"serviceAccount,omitempty"`
-
-	// Components defines requirements for a set of tempo components.
-	//
-	// +optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tempo Components"
-	Components TempoComponentsSpec `json:"template,omitempty"`
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="StorageClassName for PVCs"
+	StorageClassName *string `json:"storageClassName,omitempty"`
 
 	// Resources defines resources configuration.
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Resources"
 	Resources Resources `json:"resources,omitempty"`
+
+	// StorageSize for PVCs used by ingester. Defaults to 10Gi.
+	//
+	// +optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Storage size for PVCs"
+	StorageSize resource.Quantity `json:"storageSize,omitempty"`
+
+	// Images defines the image for each container.
+	//
+	// +optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Container Images"
+	Images ImagesSpec `json:"images,omitempty"`
 
 	// Storage defines S3 compatible object storage configuration.
 	// User is required to create secret and supply it.
@@ -46,29 +52,23 @@ type MicroservicesSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Retention Period"
 	Retention RetentionSpec `json:"retention,omitempty"`
 
-	// StorageClassName for PVCs used by ingester. Defaults to nil (default storage class in the cluster).
+	// ServiceAccount defines the service account to use for all tempo components.
 	//
 	// +optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="StorageClassName for PVCs"
-	StorageClassName *string `json:"storageClassName,omitempty"`
-
-	// LimitSpec is used to limit ingestion and querying rates.
-	//
-	// +optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Ingestion and Querying Ratelimiting"
-	LimitSpec LimitSpec `json:"limits,omitempty"`
-
-	// StorageSize for PVCs used by ingester. Defaults to 10Gi.
-	//
-	// +optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Storage size for PVCs"
-	StorageSize resource.Quantity `json:"storageSize,omitempty"`
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Service Account"
+	ServiceAccount string `json:"serviceAccount,omitempty"`
 
 	// SearchSpec control the configuration for the search capabilities.
 	//
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Search configuration options"
 	SearchSpec SearchSpec `json:"search,omitempty"`
+
+	// Components defines requirements for a set of tempo components.
+	//
+	// +optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tempo Components"
+	Components TempoComponentsSpec `json:"template,omitempty"`
 
 	// NOTE: currently this field is not considered.
 	// ReplicationFactor is used to define how many component replicas should exist.
@@ -201,35 +201,35 @@ type TempoComponentsSpec struct {
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Distributor pods"
-	Distributor *TempoComponentSpec `json:"distributor,omitempty"`
+	Distributor TempoComponentSpec `json:"distributor,omitempty"`
 
 	// Ingester defines the ingester component spec.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Ingester pods"
-	Ingester *TempoComponentSpec `json:"ingester,omitempty"`
+	Ingester TempoComponentSpec `json:"ingester,omitempty"`
 
 	// Compactor defines the lokistack compactor component spec.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Compactor pods"
-	Compactor *TempoComponentSpec `json:"compactor,omitempty"`
+	Compactor TempoComponentSpec `json:"compactor,omitempty"`
 
 	// Querier defines the querier component spec.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Querier pods"
-	Querier *TempoComponentSpec `json:"querier,omitempty"`
+	Querier TempoComponentSpec `json:"querier,omitempty"`
 
 	// TempoQueryFrontendSpec defines the query frontend spec.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Query Frontend pods"
-	QueryFrontend *TempoQueryFrontendSpec `json:"queryFrontend,omitempty"`
+	QueryFrontend TempoQueryFrontendSpec `json:"queryFrontend,omitempty"`
 }
 
 // TempoComponentSpec defines specific schedule settings for tempo components.

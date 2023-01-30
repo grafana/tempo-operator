@@ -50,7 +50,7 @@ func BuildConfigMap(tempo v1alpha1.Microservices, params Params) (*corev1.Config
 			"overrides.yaml": string(overridesConfig),
 		},
 	}
-	if tempo.Spec.Components.QueryFrontend != nil && tempo.Spec.Components.QueryFrontend.JaegerQuery.Enabled {
+	if tempo.Spec.Components.QueryFrontend.JaegerQuery.Enabled {
 		configMap.Data["tempo-query.yaml"] = "backend: 127.0.0.1:3100\n"
 	}
 
