@@ -181,8 +181,8 @@ func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 									ReadOnly:  true,
 								},
 								{
-									Name:      "data-querier-frontend",
-									MountPath: "/var/tempo",
+									Name:      manifestutils.TmpStorageVolumeName,
+									MountPath: manifestutils.TmpStoragePath,
 								},
 							},
 							Resources: corev1.ResourceRequirements{
@@ -195,6 +195,7 @@ func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 									corev1.ResourceMemory: *resource.NewQuantity(32212256, resource.BinarySI),
 								},
 							},
+							SecurityContext: manifestutils.TempoContainerSecurityContext(),
 						},
 					},
 					Volumes: []corev1.Volume{
@@ -209,7 +210,7 @@ func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 							},
 						},
 						{
-							Name: "data-querier-frontend",
+							Name: manifestutils.TmpStorageVolumeName,
 							VolumeSource: corev1.VolumeSource{
 								EmptyDir: &corev1.EmptyDirVolumeSource{},
 							},
@@ -248,8 +249,8 @@ func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 					ReadOnly:  true,
 				},
 				{
-					Name:      "data-query",
-					MountPath: "/var/tempo",
+					Name:      manifestutils.TmpStorageVolumeName + "-query",
+					MountPath: manifestutils.TmpStoragePath,
 				},
 			},
 			Resources: corev1.ResourceRequirements{
@@ -264,7 +265,7 @@ func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 			},
 		}
 		jaegerQueryVolume := corev1.Volume{
-			Name: "data-query",
+			Name: manifestutils.TmpStorageVolumeName + "-query",
 			VolumeSource: corev1.VolumeSource{
 				EmptyDir: &corev1.EmptyDirVolumeSource{},
 			},

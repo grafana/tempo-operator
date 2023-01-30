@@ -90,6 +90,10 @@ func TestBuildDistributor(t *testing.T) {
 									MountPath: "/conf",
 									ReadOnly:  true,
 								},
+								{
+									Name:      manifestutils.TmpStorageVolumeName,
+									MountPath: manifestutils.TmpStoragePath,
+								},
 							},
 							Ports: []corev1.ContainerPort{
 								{
@@ -118,6 +122,7 @@ func TestBuildDistributor(t *testing.T) {
 									corev1.ResourceMemory: *resource.NewQuantity(77309416, resource.BinarySI),
 								},
 							},
+							SecurityContext: manifestutils.TempoContainerSecurityContext(),
 						},
 					},
 					Volumes: []corev1.Volume{
@@ -129,6 +134,12 @@ func TestBuildDistributor(t *testing.T) {
 										Name: "tempo-test",
 									},
 								},
+							},
+						},
+						{
+							Name: manifestutils.TmpStorageVolumeName,
+							VolumeSource: corev1.VolumeSource{
+								EmptyDir: &corev1.EmptyDirVolumeSource{},
 							},
 						},
 					},

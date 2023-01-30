@@ -10,6 +10,12 @@ const (
 	// ConfigVolumeName declares the name of the volume containing the tempo configuration.
 	ConfigVolumeName = "tempo-conf"
 
+	// TmpStorageVolumeName declares the name of the volume containing temporary storage for tempo.
+	TmpStorageVolumeName = "tempo-tmp-storage"
+
+	// TmpStoragePath declares the path of temporary storage for tempo.
+	TmpStoragePath = "/var/tempo"
+
 	// HttpPortName declares the name of the tempo http port.
 	HttpPortName = "http"
 	// PortHTTPServer declares the port number of the tempo http port.
