@@ -331,7 +331,7 @@ func TestBuildQueryFrontendWithJaeger(t *testing.T) {
 			},
 			ServiceAccount: "tempo-test-serviceaccount",
 			Components: v1alpha1.TempoComponentsSpec{
-				QueryFrontend: &v1alpha1.TempoQueryFrontendSpec{
+				QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
 					TempoComponentSpec: v1alpha1.TempoComponentSpec{
 						NodeSelector: map[string]string{"a": "b"},
 						Tolerations: []corev1.Toleration{

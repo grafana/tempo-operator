@@ -32,10 +32,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 	tempo := params.Tempo
 	labels := manifestutils.ComponentLabels(componentName, tempo.Name)
 	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
-	cfg := &v1alpha1.TempoComponentSpec{}
-	if userCfg := tempo.Spec.Components.Querier; userCfg != nil {
-		cfg = userCfg
-	}
+	cfg := tempo.Spec.Components.Querier
 
 	d := &v1.Deployment{
 		TypeMeta: metav1.TypeMeta{

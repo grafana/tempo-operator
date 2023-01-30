@@ -45,10 +45,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 	tempo := params.Tempo
 	labels := manifestutils.ComponentLabels(componentName, tempo.Name)
 	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
-	cfg := &v1alpha1.TempoComponentSpec{}
-	if userCfg := tempo.Spec.Components.QueryFrontend; userCfg != nil {
-		cfg = &userCfg.TempoComponentSpec
-	}
+	cfg := tempo.Spec.Components.QueryFrontend
 
 	d := &v1.Deployment{
 		TypeMeta: metav1.TypeMeta{
@@ -153,7 +150,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 		},
 	}
 
-	if tempo.Spec.Components.QueryFrontend != nil && tempo.Spec.Components.QueryFrontend.JaegerQuery.Enabled {
+	if tempo.Spec.Components.QueryFrontend.JaegerQuery.Enabled {
 		jaegerQueryContainer := corev1.Container{
 			Name:  "tempo-query",
 			Image: tempo.Spec.Images.TempoQuery,
@@ -263,7 +260,7 @@ func services(tempo v1alpha1.Microservices) []*corev1.Service {
 		},
 	}
 
-	if tempo.Spec.Components.QueryFrontend != nil && tempo.Spec.Components.QueryFrontend.JaegerQuery.Enabled {
+	if tempo.Spec.Components.QueryFrontend.JaegerQuery.Enabled {
 		jaegerPorts := []corev1.ServicePort{
 			{
 				Name:       jaegerUIPortName,

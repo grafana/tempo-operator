@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 	"net/url"
 	"time"
 
@@ -13,6 +14,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/validation/field"
+	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -98,6 +100,24 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 		r.Spec.SearchSpec.DefaultResultLimit = &defaultDefaultResultLimit
 	}
 
+	defaultComponentReplicas := pointer.Int32(1)
+	defaultReplicationFactor := 1
+
+	// Default replicas for ingester if not specified.
+	if r.Spec.Components.Ingester.Replicas == nil {
+		r.Spec.Components.Ingester.Replicas = defaultComponentReplicas
+	}
+
+	// Default replicas for distributor if not specified.
+	if r.Spec.Components.Distributor.Replicas == nil {
+		r.Spec.Components.Distributor.Replicas = defaultComponentReplicas
+	}
+
+	// Default replication factor if not specified.
+	if r.Spec.ReplicationFactor == 0 {
+		r.Spec.ReplicationFactor = defaultReplicationFactor
+	}
+
 	return nil
 }
 
@@ -136,7 +156,6 @@ func (v *validator) validateServiceAccount(ctx context.Context, tempo *Microserv
 			))
 		}
 	}
-
 	return allErrs
 }
 
@@ -192,6 +211,24 @@ func (v *validator) validateStorage(ctx context.Context, tempo *Microservices) f
 	return v.validateStorageSecret(tempo, storageSecret)
 }
 
+func (v *validator) validateReplicationFactor(tempo *Microservices) field.ErrorList {
+	// Validate minimum quorum on ingestors according to replicas and replication factor
+	replicatonFactor := tempo.Spec.ReplicationFactor
+	// Ingester replicas should not be nil at this point, due defauler.
+	ingesterReplicas := int(*tempo.Spec.Components.Ingester.Replicas)
+	quorum := int(math.Floor(float64(replicatonFactor)/2.0) + 1)
+	// if ingester replicas less than quorum (which depends on replication factor), then doesn't allow to deploy as it is an
+	// invalid configuration. Quorum equal to replicas doesn't allow you to lose ingesters but is a valid configuration.
+	if ingesterReplicas < quorum {
+		path := field.NewPath("spec").Child("ReplicationFactor")
+		return field.ErrorList{
+			field.Invalid(path, tempo.Spec.ReplicationFactor,
+				fmt.Sprintf("replica factor of %d requires at least %d ingester replicas", replicatonFactor, quorum),
+			)}
+	}
+	return nil
+}
+
 func (v *validator) validate(ctx context.Context, obj runtime.Object) error {
 	tempo, ok := obj.(*Microservices)
 	if !ok {
@@ -202,6 +239,8 @@ func (v *validator) validate(ctx context.Context, obj runtime.Object) error {
 	var allErrs field.ErrorList
 	allErrs = append(allErrs, v.validateServiceAccount(ctx, tempo)...)
 	allErrs = append(allErrs, v.validateStorage(ctx, tempo)...)
+	allErrs = append(allErrs, v.validateReplicationFactor(tempo)...)
+
 	if len(allErrs) == 0 {
 		return nil
 	}

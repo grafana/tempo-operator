@@ -16,6 +16,7 @@ type options struct {
 	TenantRateLimitsPath   string
 	MemberList             []string
 	Search                 searchOptions
+	ReplicationFactor      int
 }
 
 type tenantOptions struct {

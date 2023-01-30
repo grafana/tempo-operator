@@ -35,7 +35,7 @@ func TestBuildIngester(t *testing.T) {
 			StorageSize:      resource.MustParse("10Gi"),
 			StorageClassName: &storageClassName,
 			Components: v1alpha1.TempoComponentsSpec{
-				Ingester: &v1alpha1.TempoComponentSpec{
+				Ingester: v1alpha1.TempoComponentSpec{
 					NodeSelector: map[string]string{"a": "b"},
 					Tolerations: []corev1.Toleration{
 						{
@@ -70,6 +70,7 @@ func TestBuildIngester(t *testing.T) {
 				MatchLabels: labels,
 			},
 			Template: corev1.PodTemplateSpec{
+
 				ObjectMeta: metav1.ObjectMeta{
 					Labels:      k8slabels.Merge(labels, map[string]string{"tempo-gossip-member": "true"}),
 					Annotations: annotations,

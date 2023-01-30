@@ -28,7 +28,7 @@ func TestBuildCompactor(t *testing.T) {
 			},
 			ServiceAccount: "tempo-test-serviceaccount",
 			Components: v1alpha1.TempoComponentsSpec{
-				Compactor: &v1alpha1.TempoComponentSpec{
+				Compactor: v1alpha1.TempoComponentSpec{
 					NodeSelector: map[string]string{"a": "b"},
 					Tolerations: []corev1.Toleration{
 						{

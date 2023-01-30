@@ -34,10 +34,7 @@ func statefulSet(params manifestutils.Params) (*v1.StatefulSet, error) {
 	labels := manifestutils.ComponentLabels(componentName, tempo.Name)
 	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
 	filesystem := corev1.PersistentVolumeFilesystem
-	cfg := &v1alpha1.TempoComponentSpec{}
-	if userCfg := tempo.Spec.Components.Ingester; userCfg != nil {
-		cfg = userCfg
-	}
+	cfg := tempo.Spec.Components.Ingester
 
 	ss := &v1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
@@ -46,6 +43,7 @@ func statefulSet(params manifestutils.Params) (*v1.StatefulSet, error) {
 			Labels:    labels,
 		},
 		Spec: v1.StatefulSetSpec{
+			Replicas: tempo.Spec.Components.Ingester.Replicas,
 			Selector: &metav1.LabelSelector{
 				MatchLabels: labels,
 			},
