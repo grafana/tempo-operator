@@ -105,6 +105,30 @@ spec:
 status:
   readyReplicas: 1
 #
+# StatefulSets
+#
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: tempo-simplest-ingester
+  labels:
+    app.kubernetes.io/component: ingester
+    app.kubernetes.io/created-by: tempo-controller
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/name: tempo
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: ingester
+      app.kubernetes.io/created-by: tempo-controller
+      app.kubernetes.io/instance: simplest
+      app.kubernetes.io/managed-by: tempo-controller
+      app.kubernetes.io/name: tempo
+status:
+  readyReplicas: 1
+#
 # Services
 #
 ---
