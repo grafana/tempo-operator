@@ -89,6 +89,7 @@ func statefulSet(params manifestutils.Params) (*v1.StatefulSet, error) {
 									Protocol:      corev1.ProtocolTCP,
 								},
 							},
+							ReadinessProbe:  manifestutils.TempoReadinessProbe(),
 							Resources:       manifestutils.Resources(tempo, componentName),
 							SecurityContext: manifestutils.TempoContainerSecurityContext(),
 						},
