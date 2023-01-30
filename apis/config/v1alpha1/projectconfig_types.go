@@ -12,18 +12,18 @@ import (
 // for the tempo-gateway.
 type BuiltInCertManagement struct {
 	// CACertValidity defines the total duration of the CA certificate validity.
-	CACertValidity string `json:"caValidity,omitempty"`
+	CACertValidity metav1.Duration `json:"caValidity,omitempty"`
 	// CACertRefresh defines the duration of the CA certificate validity until a rotation
 	// should happen. It can be set up to 80% of CA certificate validity or equal to the
 	// CA certificate validity. Latter should be used only for rotating only when expired.
-	CACertRefresh string `json:"caRefresh,omitempty"`
+	CACertRefresh metav1.Duration `json:"caRefresh,omitempty"`
 	// CertValidity defines the total duration of the validity for all Tempo certificates.
-	CertValidity string `json:"certValidity,omitempty"`
+	CertValidity metav1.Duration `json:"certValidity,omitempty"`
 	// CertRefresh defines the duration of the certificate validity until a rotation
 	// should happen. It can be set up to 80% of certificate validity or equal to the
 	// certificate validity. Latter should be used only for rotating only when expired.
 	// The refresh is applied to all Tempo certificates at once.
-	CertRefresh string `json:"certRefresh,omitempty"`
+	CertRefresh metav1.Duration `json:"certRefresh,omitempty"`
 	// Enabled defines to flag to enable/disable built-in certificate management feature gate.
 	Enabled bool `json:"enabled,omitempty"`
 }

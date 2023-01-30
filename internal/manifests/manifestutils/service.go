@@ -9,10 +9,12 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+// TempoServerGRPCTLSDir returns the mount path of the GRPC service certificates.
 func TempoServerGRPCTLSDir() string {
 	return path.Join(grpcTLSDir, "server")
 }
 
+// TempoServerHTTPTLSDir returns the mount path of the HTTP service certificates.
 func TempoServerHTTPTLSDir() string {
 	return path.Join(httpTLSDir, "server")
 }

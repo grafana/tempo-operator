@@ -14,17 +14,22 @@ import (
 )
 
 func TestCertificatesExpired(t *testing.T) {
+
 	var (
+		CACertValidity, _   = time.ParseDuration("10m")
+		CACertRefresh, _    = time.ParseDuration("5m")
+		CertValidity, _     = time.ParseDuration("2m")
+		CertRefresh, _      = time.ParseDuration("1m")
 		stackName           = "dev"
 		stackNamespce       = "ns"
 		invalidNotAfter, _  = time.Parse(time.RFC3339, "")
 		invalidNotBefore, _ = time.Parse(time.RFC3339, "")
 		rawCA, caBytes      = newTestCABundle(t, "dev-ca")
 		cfg                 = configv1alpha1.BuiltInCertManagement{
-			CACertValidity: "10m",
-			CACertRefresh:  "5m",
-			CertValidity:   "2m",
-			CertRefresh:    "1m",
+			CACertValidity: metav1.Duration{Duration: CACertValidity},
+			CACertRefresh:  metav1.Duration{Duration: CACertRefresh},
+			CertValidity:   metav1.Duration{Duration: CertValidity},
+			CertRefresh:    metav1.Duration{Duration: CertRefresh},
 		}
 	)
 
@@ -79,12 +84,16 @@ func TestCertificatesExpired(t *testing.T) {
 
 func TestBuildTargetCertKeyPairSecrets_Create(t *testing.T) {
 	var (
-		rawCA, _ = newTestCABundle(t, "test-ca")
-		cfg      = configv1alpha1.BuiltInCertManagement{
-			CACertValidity: "10m",
-			CACertRefresh:  "5m",
-			CertValidity:   "2m",
-			CertRefresh:    "1m",
+		CACertValidity, _ = time.ParseDuration("10m")
+		CACertRefresh, _  = time.ParseDuration("5m")
+		CertValidity, _   = time.ParseDuration("2m")
+		CertRefresh, _    = time.ParseDuration("1m")
+		rawCA, _          = newTestCABundle(t, "test-ca")
+		cfg               = configv1alpha1.BuiltInCertManagement{
+			CACertValidity: metav1.Duration{Duration: CACertValidity},
+			CACertRefresh:  metav1.Duration{Duration: CACertRefresh},
+			CertValidity:   metav1.Duration{Duration: CertValidity},
+			CertRefresh:    metav1.Duration{Duration: CertRefresh},
 		}
 	)
 
@@ -107,14 +116,18 @@ func TestBuildTargetCertKeyPairSecrets_Create(t *testing.T) {
 
 func TestBuildTargetCertKeyPairSecrets_Rotate(t *testing.T) {
 	var (
+		CACertValidity, _   = time.ParseDuration("10m")
+		CACertRefresh, _    = time.ParseDuration("5m")
+		CertValidity, _     = time.ParseDuration("2m")
+		CertRefresh, _      = time.ParseDuration("1m")
 		rawCA, _            = newTestCABundle(t, "test-ca")
 		invalidNotAfter, _  = time.Parse(time.RFC3339, "")
 		invalidNotBefore, _ = time.Parse(time.RFC3339, "")
 		cfg                 = configv1alpha1.BuiltInCertManagement{
-			CACertValidity: "10m",
-			CACertRefresh:  "5m",
-			CertValidity:   "2m",
-			CertRefresh:    "1m",
+			CACertValidity: metav1.Duration{Duration: CACertValidity},
+			CACertRefresh:  metav1.Duration{Duration: CACertRefresh},
+			CertValidity:   metav1.Duration{Duration: CertValidity},
+			CertRefresh:    metav1.Duration{Duration: CertRefresh},
 		}
 	)
 

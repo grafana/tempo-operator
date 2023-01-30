@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
@@ -13,13 +14,17 @@ import (
 )
 
 func TestBuildAll(t *testing.T) {
-	cfg := configv1alpha1.BuiltInCertManagement{
-		CACertValidity: "10m",
-		CACertRefresh:  "5m",
-		CertValidity:   "2m",
-		CertRefresh:    "1m",
-	}
+	CACertValidity, _ := time.ParseDuration("10m")
+	CACertRefresh, _ := time.ParseDuration("5m")
+	CertValidity, _ := time.ParseDuration("2m")
+	CertRefresh, _ := time.ParseDuration("1m")
 
+	cfg := configv1alpha1.BuiltInCertManagement{
+		CACertValidity: metav1.Duration{Duration: CACertValidity},
+		CACertRefresh:  metav1.Duration{Duration: CACertRefresh},
+		CertValidity:   metav1.Duration{Duration: CertValidity},
+		CertRefresh:    metav1.Duration{Duration: CertRefresh},
+	}
 	opts := Options{
 		StackName:      "dev",
 		StackNamespace: "ns",
@@ -46,11 +51,17 @@ func TestBuildAll(t *testing.T) {
 }
 
 func TestApplyDefaultSettings_EmptySecrets(t *testing.T) {
+
+	CACertValidity, _ := time.ParseDuration("10m")
+	CACertRefresh, _ := time.ParseDuration("5m")
+	CertValidity, _ := time.ParseDuration("2m")
+	CertRefresh, _ := time.ParseDuration("1m")
+
 	cfg := configv1alpha1.BuiltInCertManagement{
-		CACertValidity: "10m",
-		CACertRefresh:  "5m",
-		CertValidity:   "2m",
-		CertRefresh:    "1m",
+		CACertValidity: metav1.Duration{Duration: CACertValidity},
+		CACertRefresh:  metav1.Duration{Duration: CACertRefresh},
+		CertValidity:   metav1.Duration{Duration: CertValidity},
+		CertRefresh:    metav1.Duration{Duration: CertRefresh},
 	}
 
 	opts := Options{
@@ -85,11 +96,16 @@ func TestApplyDefaultSettings_ExistingSecrets(t *testing.T) {
 		stackNamespace = "ns"
 	)
 
+	CACertValidity, _ := time.ParseDuration("10m")
+	CACertRefresh, _ := time.ParseDuration("5m")
+	CertValidity, _ := time.ParseDuration("2m")
+	CertRefresh, _ := time.ParseDuration("1m")
+
 	cfg := configv1alpha1.BuiltInCertManagement{
-		CACertValidity: "10m",
-		CACertRefresh:  "5m",
-		CertValidity:   "2m",
-		CertRefresh:    "1m",
+		CACertValidity: metav1.Duration{Duration: CACertValidity},
+		CACertRefresh:  metav1.Duration{Duration: CACertRefresh},
+		CertValidity:   metav1.Duration{Duration: CertValidity},
+		CertRefresh:    metav1.Duration{Duration: CertRefresh},
 	}
 
 	opts := Options{
