@@ -13,10 +13,11 @@ var (
 
 // Version holds this Operator's version as well as the version of some of the components it uses.
 type Version struct {
-	Operator  string `json:"tempo-operator"`
+	Operator  string `json:"tempo-operator-version"`
 	BuildDate string `json:"build-date"`
 	Tempo     string `json:"tempo-version"`
 	Go        string `json:"go-version"`
+	GitHash	string `json:"commit-hash"`
 }
 
 // Get returns the Version object with the relevant information.
