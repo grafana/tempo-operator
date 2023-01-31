@@ -55,11 +55,13 @@ func start(c *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	v := version.Get()
+	v := version.Get(rootCmdConfig.CtrlConfig)
 	setupLog.Info("Starting Tempo Operator",
-		"tempo-operator", v.Operator,
-		"tempo", v.Tempo,
+		"tempo-operator", v.OperatorVersion,
+		"default-tempo-image", v.DefaultTempoImage,
+		"default-tempo-query-image", v.DefaultTempoQueryImage,
 		"build-date", v.BuildDate,
+		"git-hash", v.GitHash,
 		"go-version", v.Go,
 		"go-arch", runtime.GOARCH,
 		"go-os", runtime.GOOS,

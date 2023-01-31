@@ -3,50 +3,47 @@ package version
 import (
 	"fmt"
 	"runtime"
+
+	"github.com/os-observability/tempo-operator/apis/config/v1alpha1"
 )
 
 var (
 	version   string
 	buildDate string
-	tempo     string
+	commitSha string
 )
 
 // Version holds this Operator's version as well as the version of some of the components it uses.
 type Version struct {
-	Operator  string `json:"tempo-operator-version"`
-	BuildDate string `json:"build-date"`
-	Tempo     string `json:"tempo-version"`
-	Go        string `json:"go-version"`
-	GitHash	string `json:"commit-hash"`
+	OperatorVersion        string `json:"tempo-operator-version"`
+	BuildDate              string `json:"build-date"`
+	DefaultTempoImage      string `json:"tempo-image"`
+	DefaultTempoQueryImage string `json:"tempo-query-image"`
+	Go                     string `json:"go-version"`
+	GitHash                string `json:"commit-hash"`
 }
 
 // Get returns the Version object with the relevant information.
-func Get() Version {
-	return Version{
-		Operator:  version,
-		BuildDate: buildDate,
-		Tempo:     Tempo(),
-		Go:        runtime.Version(),
+func Get(config v1alpha1.ProjectConfig) Version {
+	v := Version{
+		OperatorVersion:        version,
+		BuildDate:              buildDate,
+		DefaultTempoImage:      config.DefaultImages.Tempo,
+		DefaultTempoQueryImage: config.DefaultImages.TempoQuery,
+		Go:                     runtime.Version(),
+		GitHash:                commitSha,
 	}
+	return v
 }
 
 func (v Version) String() string {
 	return fmt.Sprintf(
-		"Version(Operator='%v', BuildDate='%v', Tempo='%v', Go='%v')",
-		v.Operator,
+		"Version(OperatorVersion='%v', BuildDate='%v', DefaultTempoImage='%v', DefaultTempoQueryImage='%v', Go='%v', CommitHash='%v')",
+		v.OperatorVersion,
 		v.BuildDate,
-		v.Tempo,
+		v.DefaultTempoImage,
+		v.DefaultTempoQueryImage,
 		v.Go,
+		v.GitHash,
 	)
-}
-
-// Tempo returns the default Tempo to use when no versions are specified via CLI or configuration.
-func Tempo() string {
-	if len(tempo) > 0 {
-		// this should always be set, as it's specified during the build
-		return tempo
-	}
-
-	// fallback value, useful for tests
-	return "0.0.0"
 }
