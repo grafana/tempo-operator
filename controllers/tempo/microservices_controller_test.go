@@ -181,7 +181,7 @@ func TestDegraded(t *testing.T) {
 			Status:             "True",
 			LastTransitionTime: updatedTempo2.Status.Conditions[1].LastTransitionTime,
 			Reason:             string(v1alpha1.ReasonInvalidStorageConfig),
-			Message:            "'endpoint' field of storage secret must be a valid URL",
+			Message:            "invalid storage secret: 'endpoint' field of storage secret must be a valid URL",
 		},
 	}, updatedTempo2.Status.Conditions)
 	assert.Greater(t, updatedTempo2.Status.Conditions[0].LastTransitionTime.UnixNano(), updatedTempo1.Status.Conditions[0].LastTransitionTime.UnixNano())
@@ -217,7 +217,7 @@ func TestDegraded(t *testing.T) {
 			Status:             "False",
 			LastTransitionTime: updatedTempo3.Status.Conditions[1].LastTransitionTime,
 			Reason:             string(v1alpha1.ReasonInvalidStorageConfig),
-			Message:            "'endpoint' field of storage secret must be a valid URL",
+			Message:            "invalid storage secret: 'endpoint' field of storage secret must be a valid URL",
 		},
 	}, updatedTempo3.Status.Conditions)
 	assert.Greater(t, updatedTempo3.Status.Conditions[0].LastTransitionTime.UnixNano(), updatedTempo2.Status.Conditions[0].LastTransitionTime.UnixNano())
