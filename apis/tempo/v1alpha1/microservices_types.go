@@ -78,11 +78,38 @@ type MicroservicesSpec struct {
 	ReplicationFactor int `json:"replicationFactor,omitempty"`
 }
 
+// ConditionStatus defines the status of a condition (e.g. ready or degraded).
+type ConditionStatus string
+
+const (
+	// ConditionReady defines that all components are ready.
+	ConditionReady ConditionStatus = "Ready"
+	// ConditionDegraded defines that one or more components are in a degraded state.
+	ConditionDegraded ConditionStatus = "Degraded"
+)
+
+// ConditionReason defines possible reasons for each condition.
+type ConditionReason string
+
+const (
+	// ReasonReady defines a healthy tempo instance.
+	ReasonReady ConditionReason = "Ready"
+	// ReasonInvalidStorageConfig defines that the object storage configuration is invalid (missing or incomplete storage secret).
+	ReasonInvalidStorageConfig ConditionReason = "InvalidStorageConfig"
+)
+
 // MicroservicesStatus defines the observed state of Microservices.
 type MicroservicesStatus struct {
 	// Version of the managed Tempo instance.
 	// +optional
 	TempoVersion string `json:"tempoVersion,omitempty"`
+
+	// Conditions of the Tempo deployment health.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=status,xDescriptors="urn:alm:descriptor:io.kubernetes.conditions"
+	Conditions []metav1.Condition `json:"conditions,omitempty"`
 }
 
 //+kubebuilder:object:root=true

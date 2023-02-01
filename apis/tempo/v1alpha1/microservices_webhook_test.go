@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/validation/field"
@@ -154,93 +153,6 @@ func TestDefault(t *testing.T) {
 			err := defaulter.Default(context.Background(), test.input)
 			assert.NoError(t, err)
 			assert.Equal(t, test.expected, test.input)
-		})
-	}
-}
-
-func TestValidateStorageSecret(t *testing.T) {
-	tempo := &Microservices{
-		Spec: MicroservicesSpec{
-			Storage: ObjectStorageSpec{
-				Secret: "testsecret",
-			},
-		},
-	}
-	validator := &validator{}
-	path := field.NewPath("spec").Child("storage").Child("secret")
-
-	tests := []struct {
-		name     string
-		input    *corev1.Secret
-		expected field.ErrorList
-	}{
-		{
-			name:  "empty secret",
-			input: &corev1.Secret{},
-			expected: field.ErrorList{
-				field.Invalid(path, tempo.Spec.Storage.Secret, "storage secret is empty"),
-			},
-		},
-		{
-			name: "missing or empty fields",
-			input: &corev1.Secret{
-				Data: map[string][]byte{
-					"bucket": []byte(""),
-				},
-			},
-			expected: field.ErrorList{
-				field.Invalid(path, tempo.Spec.Storage.Secret, "storage secret must contain \"endpoint\" field"),
-				field.Invalid(path, tempo.Spec.Storage.Secret, "storage secret must contain \"bucket\" field"),
-				field.Invalid(path, tempo.Spec.Storage.Secret, "storage secret must contain \"access_key_id\" field"),
-				field.Invalid(path, tempo.Spec.Storage.Secret, "storage secret must contain \"access_key_secret\" field"),
-			},
-		},
-		{
-			name: "invalid endpoint 'invalid'",
-			input: &corev1.Secret{
-				Data: map[string][]byte{
-					"endpoint":          []byte("invalid"),
-					"bucket":            []byte("bucket"),
-					"access_key_id":     []byte("id"),
-					"access_key_secret": []byte("secret"),
-				},
-			},
-			expected: field.ErrorList{
-				field.Invalid(path, tempo.Spec.Storage.Secret, "\"endpoint\" field of storage secret must be a valid URL"),
-			},
-		},
-		{
-			name: "invalid endpoint '/invalid'",
-			input: &corev1.Secret{
-				Data: map[string][]byte{
-					"endpoint":          []byte("/invalid"),
-					"bucket":            []byte("bucket"),
-					"access_key_id":     []byte("id"),
-					"access_key_secret": []byte("secret"),
-				},
-			},
-			expected: field.ErrorList{
-				field.Invalid(path, tempo.Spec.Storage.Secret, "\"endpoint\" field of storage secret must be a valid URL"),
-			},
-		},
-		{
-			name: "valid storage secret",
-			input: &corev1.Secret{
-				Data: map[string][]byte{
-					"endpoint":          []byte("http://minio.minio.svc:9000"),
-					"bucket":            []byte("bucket"),
-					"access_key_id":     []byte("id"),
-					"access_key_secret": []byte("secret"),
-				},
-			},
-			expected: nil,
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			errs := validator.validateStorageSecret(tempo, test.input)
-			assert.Equal(t, test.expected, errs)
 		})
 	}
 }

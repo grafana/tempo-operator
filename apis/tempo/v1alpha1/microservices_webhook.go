@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	"net/url"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
@@ -159,58 +158,6 @@ func (v *validator) validateServiceAccount(ctx context.Context, tempo *Microserv
 	return allErrs
 }
 
-func (v *validator) validateStorageSecret(tempo *Microservices, storageSecret *corev1.Secret) field.ErrorList {
-	path := field.NewPath("spec").Child("storage").Child("secret")
-
-	if storageSecret.Data == nil {
-		return field.ErrorList{field.Invalid(path, tempo.Spec.Storage.Secret, "storage secret is empty")}
-	}
-
-	var allErrs field.ErrorList
-	for _, key := range []string{
-		"endpoint",
-		"bucket",
-		"access_key_id",
-		"access_key_secret",
-	} {
-		if storageSecret.Data[key] == nil || len(storageSecret.Data[key]) == 0 {
-			allErrs = append(allErrs, field.Invalid(
-				path,
-				tempo.Spec.Storage.Secret,
-				fmt.Sprintf("storage secret must contain \"%s\" field", key),
-			))
-		} else if key == "endpoint" {
-			u, err := url.ParseRequestURI(string(storageSecret.Data["endpoint"]))
-
-			// ParseRequestURI also accepts absolute paths, therefore we need to check if the URL scheme is set
-			if err != nil || u.Scheme == "" {
-				allErrs = append(allErrs, field.Invalid(
-					path,
-					tempo.Spec.Storage.Secret,
-					"\"endpoint\" field of storage secret must be a valid URL",
-				))
-			}
-		}
-	}
-	return allErrs
-}
-
-func (v *validator) validateStorage(ctx context.Context, tempo *Microservices) field.ErrorList {
-	path := field.NewPath("spec").Child("storage").Child("secret")
-
-	if tempo.Spec.Storage.Secret == "" {
-		return field.ErrorList{field.Invalid(path, tempo.Spec.Storage.Secret, "storage secret is required")}
-	}
-
-	storageSecret := &corev1.Secret{}
-	err := v.client.Get(ctx, types.NamespacedName{Namespace: tempo.Namespace, Name: tempo.Spec.Storage.Secret}, storageSecret)
-	if err != nil {
-		return field.ErrorList{field.Invalid(path, tempo.Spec.Storage.Secret, err.Error())}
-	}
-
-	return v.validateStorageSecret(tempo, storageSecret)
-}
-
 func (v *validator) validateReplicationFactor(tempo *Microservices) field.ErrorList {
 	// Validate minimum quorum on ingestors according to replicas and replication factor
 	replicatonFactor := tempo.Spec.ReplicationFactor
@@ -238,7 +185,6 @@ func (v *validator) validate(ctx context.Context, obj runtime.Object) error {
 
 	var allErrs field.ErrorList
 	allErrs = append(allErrs, v.validateServiceAccount(ctx, tempo)...)
-	allErrs = append(allErrs, v.validateStorage(ctx, tempo)...)
 	allErrs = append(allErrs, v.validateReplicationFactor(tempo)...)
 
 	if len(allErrs) == 0 {
