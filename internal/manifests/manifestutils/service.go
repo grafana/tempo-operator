@@ -7,6 +7,7 @@ import (
 	"github.com/ViaQ/logerr/v2/kverrors"
 	"github.com/imdario/mergo"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 // TempoServerGRPCTLSDir returns the mount path of the GRPC service certificates.
@@ -92,14 +93,13 @@ func ConfigureGRPCServicePKI(podSpec *corev1.PodSpec, componentName string, cont
 		return kverrors.Wrap(err, "failed to merge volumes")
 	}
 
-	if len(containers) > 0 {
-		for _, i := range containers {
-			if err := mergo.Merge(&podSpec.Containers[i], secretContainerSpec, mergo.WithAppendSlice); err != nil {
-				return kverrors.Wrap(err, "failed to merge container")
-			}
-		}
-	} else {
-		if err := mergo.Merge(&podSpec.Containers[0], secretContainerSpec, mergo.WithAppendSlice); err != nil {
+	containersSlice := []int{}
+	containersSlice = append(containersSlice, containers...)
+	if len(containers) == 0 {
+		containersSlice = append(containersSlice, 0)
+	}
+	for _, i := range containersSlice {
+		if err := mergo.Merge(&podSpec.Containers[i], secretContainerSpec, mergo.WithAppendSlice); err != nil {
 			return kverrors.Wrap(err, "failed to merge container")
 		}
 	}
@@ -131,21 +131,31 @@ func ConfigureHTTPServicePKI(podSpec *corev1.PodSpec, componentName string, cont
 		},
 	}
 
+	uriSchemeContainerSpec := TempoReadinessProbe()
+	uriSchemeContainerSpec.ProbeHandler.HTTPGet.Scheme = corev1.URISchemeHTTPS
+	uriSchemeContainerSpec.ProbeHandler.HTTPGet.Port = intstr.FromInt(PortInternalHTTPServer)
+
 	if err := mergo.Merge(podSpec, secretVolumeSpec, mergo.WithAppendSlice); err != nil {
 		return kverrors.Wrap(err, "failed to merge volumes")
 	}
 
-	if len(containers) > 0 {
-		for _, i := range containers {
-			if err := mergo.Merge(&podSpec.Containers[i], secretContainerSpec, mergo.WithAppendSlice); err != nil {
+	containersSlice := []int{}
+	containersSlice = append(containersSlice, containers...)
+	if len(containers) == 0 {
+		containersSlice = append(containersSlice, 0)
+	}
+	for _, i := range containersSlice {
+		if err := mergo.Merge(&podSpec.Containers[i], secretContainerSpec, mergo.WithAppendSlice); err != nil {
+			return kverrors.Wrap(err, "failed to merge container")
+		}
+
+		if podSpec.Containers[i].ReadinessProbe == nil {
+			podSpec.Containers[i].ReadinessProbe = uriSchemeContainerSpec
+		} else {
+			if err := mergo.Merge(podSpec.Containers[i].ReadinessProbe, uriSchemeContainerSpec, mergo.WithOverwriteWithEmptyValue); err != nil {
 				return kverrors.Wrap(err, "failed to merge container")
 			}
 		}
-	} else {
-		if err := mergo.Merge(&podSpec.Containers[0], secretContainerSpec, mergo.WithAppendSlice); err != nil {
-			return kverrors.Wrap(err, "failed to merge container")
-		}
 	}
-
 	return nil
 }

@@ -33,7 +33,6 @@ memberlist:
   {{- range .MemberList }}
   - {{ . }}
   {{- end }}
-metrics_generator_enabled: false
 multitenancy_enabled: false
 {{- if or
   .GlobalRateLimits.IngestionBurstSizeBytes
@@ -93,7 +92,14 @@ querier:
     external_hedge_requests_up_to: {{ .Search.ExternalHedgeRequestsUpTo }}
 {{- end }}
 {{- end }}
-search_enabled: {{ .Search.Enabled }}
+{{- if .Gates.HTTPEncryption }}
+internal_server:
+  enable: true
+  http_listen_address: ""
+  http_tls_config:
+    cert_file: {{ .TLS.Paths.HTTP.Certificate }}
+    key_file: {{ .TLS.Paths.HTTP.Key }}
+{{- end }}
 server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304

@@ -35,7 +35,7 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 
 	// Only consider query frontend an internal service if the JaegerQuery is enabled. otherwise query frontend
 	// should be considered an exposed service.
-	if tempo.Spec.Components.QueryFrontend != nil && tempo.Spec.Components.QueryFrontend.JaegerQuery.Enabled {
+	if tempo.Spec.Components.QueryFrontend.JaegerQuery.Enabled {
 		if gates.HTTPEncryption || gates.GRPCEncryption {
 			caBundleName := naming.SigningCABundleName(tempo.Name)
 			if err := manifestutils.ConfigureServiceCA(&d.Spec.Template.Spec, caBundleName, 0, 1); err != nil {
