@@ -33,28 +33,25 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 	gates := params.Gates
 	tempo := params.Tempo
 
-	// Only consider query frontend an internal service if the JaegerQuery is enabled. otherwise query frontend
-	// should be considered an exposed service.
-	if tempo.Spec.Components.QueryFrontend.JaegerQuery.Enabled {
-		if gates.HTTPEncryption || gates.GRPCEncryption {
-			caBundleName := naming.SigningCABundleName(tempo.Name)
-			if err := manifestutils.ConfigureServiceCA(&d.Spec.Template.Spec, caBundleName, 0, 1); err != nil {
-				return nil, err
-			}
-		}
-
-		if gates.HTTPEncryption {
-			if err := configureQuerierFrontEndHTTPServicePKI(d, tempo); err != nil {
-				return nil, err
-			}
-		}
-
-		if gates.GRPCEncryption {
-			if err := configureQuerierFrontEndGRPCServicePKI(d, tempo); err != nil {
-				return nil, err
-			}
+	if gates.HTTPEncryption || gates.GRPCEncryption {
+		caBundleName := naming.SigningCABundleName(tempo.Name)
+		if err := manifestutils.ConfigureServiceCA(&d.Spec.Template.Spec, caBundleName, 0, 1); err != nil {
+			return nil, err
 		}
 	}
+
+	if gates.HTTPEncryption {
+		if err := configureQuerierFrontEndHTTPServicePKI(d, tempo); err != nil {
+			return nil, err
+		}
+	}
+
+	if gates.GRPCEncryption {
+		if err := configureQuerierFrontEndGRPCServicePKI(d, tempo); err != nil {
+			return nil, err
+		}
+	}
+
 	svcs := services(tempo)
 
 	var manifests []client.Object

@@ -50,18 +50,22 @@ func ConfigureServiceCA(podSpec *corev1.PodSpec, caBundleName string, containers
 		return kverrors.Wrap(err, "failed to merge volumes")
 	}
 
-	if len(containers) > 0 {
-		for _, i := range containers {
-			if err := mergo.Merge(&podSpec.Containers[i], secretContainerSpec, mergo.WithAppendSlice); err != nil {
-				return kverrors.Wrap(err, "failed to merge container")
-			}
+	containersSlice := []int{}
+	containersSlice = append(containersSlice, containers...)
+	nContainers := len(podSpec.Containers)
+
+	if len(containersSlice) == 0 {
+		containersSlice = append(containersSlice, 0)
+	}
+
+	for _, i := range containersSlice {
+		if i >= nContainers {
+			continue
 		}
-	} else {
-		if err := mergo.Merge(&podSpec.Containers[0], secretContainerSpec, mergo.WithAppendSlice); err != nil {
+		if err := mergo.Merge(&podSpec.Containers[i], secretContainerSpec, mergo.WithAppendSlice); err != nil {
 			return kverrors.Wrap(err, "failed to merge container")
 		}
 	}
-
 	return nil
 }
 
@@ -95,10 +99,15 @@ func ConfigureGRPCServicePKI(podSpec *corev1.PodSpec, componentName string, cont
 
 	containersSlice := []int{}
 	containersSlice = append(containersSlice, containers...)
+	nContainers := len(podSpec.Containers)
+
 	if len(containers) == 0 {
 		containersSlice = append(containersSlice, 0)
 	}
 	for _, i := range containersSlice {
+		if i >= nContainers {
+			continue
+		}
 		if err := mergo.Merge(&podSpec.Containers[i], secretContainerSpec, mergo.WithAppendSlice); err != nil {
 			return kverrors.Wrap(err, "failed to merge container")
 		}
@@ -141,10 +150,17 @@ func ConfigureHTTPServicePKI(podSpec *corev1.PodSpec, componentName string, cont
 
 	containersSlice := []int{}
 	containersSlice = append(containersSlice, containers...)
+
+	nContainers := len(podSpec.Containers)
+
 	if len(containers) == 0 {
 		containersSlice = append(containersSlice, 0)
 	}
+
 	for _, i := range containersSlice {
+		if i >= nContainers {
+			continue
+		}
 		if err := mergo.Merge(&podSpec.Containers[i], secretContainerSpec, mergo.WithAppendSlice); err != nil {
 			return kverrors.Wrap(err, "failed to merge container")
 		}
