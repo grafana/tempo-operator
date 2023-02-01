@@ -113,6 +113,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 									Protocol:      corev1.ProtocolTCP,
 								},
 							},
+							ReadinessProbe: manifestutils.TempoReadinessProbe(),
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      manifestutils.ConfigVolumeName,
@@ -120,11 +121,12 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 									ReadOnly:  true,
 								},
 								{
-									Name:      "data-querier-frontend",
-									MountPath: "/var/tempo",
+									Name:      manifestutils.TmpStorageVolumeName,
+									MountPath: manifestutils.TmpStoragePath,
 								},
 							},
-							Resources: manifestutils.Resources(tempo, componentName),
+							Resources:       manifestutils.Resources(tempo, componentName),
+							SecurityContext: manifestutils.TempoContainerSecurityContext(),
 						},
 					},
 					Volumes: []corev1.Volume{
@@ -139,7 +141,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 							},
 						},
 						{
-							Name: "data-querier-frontend",
+							Name: manifestutils.TmpStorageVolumeName,
 							VolumeSource: corev1.VolumeSource{
 								EmptyDir: &corev1.EmptyDirVolumeSource{},
 							},
@@ -178,14 +180,14 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 					ReadOnly:  true,
 				},
 				{
-					Name:      "data-query",
-					MountPath: "/var/tempo",
+					Name:      manifestutils.TmpStorageVolumeName + "-query",
+					MountPath: manifestutils.TmpStoragePath,
 				},
 			},
 			Resources: manifestutils.Resources(tempo, componentName),
 		}
 		jaegerQueryVolume := corev1.Volume{
-			Name: "data-query",
+			Name: manifestutils.TmpStorageVolumeName + "-query",
 			VolumeSource: corev1.VolumeSource{
 				EmptyDir: &corev1.EmptyDirVolumeSource{},
 			},
@@ -237,6 +239,12 @@ func services(tempo v1alpha1.Microservices) []*corev1.Service {
 		},
 		Spec: corev1.ServiceSpec{
 			ClusterIP: "None",
+			// We set PublishNotReadyAddresses to true so that the service always returns the entire list
+			// of A records for matching pods, irrespective if they are in Ready state or not.
+			// This is especially useful during startup of query-frontend and querier, where query-frontend
+			// only gets Ready if at least one querier connects to it (and without this setting, querier could
+			// never connect to query-frontend-discovery-svc because it would not return A records of not-ready pods).
+			PublishNotReadyAddresses: true,
 			Ports: []corev1.ServicePort{
 				{
 					Name:       manifestutils.HttpPortName,

@@ -73,14 +73,20 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 									Protocol:      corev1.ProtocolTCP,
 								},
 							},
+							ReadinessProbe: manifestutils.TempoReadinessProbe(),
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      manifestutils.ConfigVolumeName,
 									MountPath: "/conf",
 									ReadOnly:  true,
 								},
+								{
+									Name:      manifestutils.TmpStorageVolumeName,
+									MountPath: manifestutils.TmpStoragePath,
+								},
 							},
-							Resources: manifestutils.Resources(tempo, componentName),
+							Resources:       manifestutils.Resources(tempo, componentName),
+							SecurityContext: manifestutils.TempoContainerSecurityContext(),
 						},
 					},
 					Volumes: []corev1.Volume{
@@ -92,6 +98,12 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 										Name: naming.Name("", tempo.Name),
 									},
 								},
+							},
+						},
+						{
+							Name: manifestutils.TmpStorageVolumeName,
+							VolumeSource: corev1.VolumeSource{
+								EmptyDir: &corev1.EmptyDirVolumeSource{},
 							},
 						},
 					},

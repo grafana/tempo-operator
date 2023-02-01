@@ -115,6 +115,10 @@ func TestBuildCompactor(t *testing.T) {
 									MountPath: "/conf",
 									ReadOnly:  true,
 								},
+								{
+									Name:      manifestutils.TmpStorageVolumeName,
+									MountPath: manifestutils.TmpStoragePath,
+								},
 							},
 							Ports: []corev1.ContainerPort{
 								{
@@ -128,6 +132,16 @@ func TestBuildCompactor(t *testing.T) {
 									Protocol:      corev1.ProtocolTCP,
 								},
 							},
+							ReadinessProbe: &corev1.Probe{
+								ProbeHandler: corev1.ProbeHandler{
+									HTTPGet: &corev1.HTTPGetAction{
+										Path: manifestutils.TempoReadinessPath,
+										Port: intstr.FromString(manifestutils.HttpPortName),
+									},
+								},
+								InitialDelaySeconds: 15,
+								TimeoutSeconds:      1,
+							},
 							Resources: corev1.ResourceRequirements{
 								Limits: corev1.ResourceList{
 									corev1.ResourceCPU:    *resource.NewMilliQuantity(160, resource.BinarySI),
@@ -138,6 +152,7 @@ func TestBuildCompactor(t *testing.T) {
 									corev1.ResourceMemory: *resource.NewQuantity(115964128, resource.BinarySI),
 								},
 							},
+							SecurityContext: manifestutils.TempoContainerSecurityContext(),
 						},
 					},
 					Volumes: []corev1.Volume{
@@ -149,6 +164,12 @@ func TestBuildCompactor(t *testing.T) {
 										Name: "tempo-test",
 									},
 								},
+							},
+						},
+						{
+							Name: manifestutils.TmpStorageVolumeName,
+							VolumeSource: corev1.VolumeSource{
+								EmptyDir: &corev1.EmptyDirVolumeSource{},
 							},
 						},
 					},

@@ -142,6 +142,16 @@ func TestBuildIngester(t *testing.T) {
 									Protocol:      corev1.ProtocolTCP,
 								},
 							},
+							ReadinessProbe: &corev1.Probe{
+								ProbeHandler: corev1.ProbeHandler{
+									HTTPGet: &corev1.HTTPGetAction{
+										Path: manifestutils.TempoReadinessPath,
+										Port: intstr.FromString(manifestutils.HttpPortName),
+									},
+								},
+								InitialDelaySeconds: 15,
+								TimeoutSeconds:      1,
+							},
 							Resources: corev1.ResourceRequirements{
 								Limits: corev1.ResourceList{
 									corev1.ResourceCPU:    *resource.NewMilliQuantity(380, resource.BinarySI),
@@ -152,6 +162,7 @@ func TestBuildIngester(t *testing.T) {
 									corev1.ResourceMemory: *resource.NewQuantity(322122560, resource.BinarySI),
 								},
 							},
+							SecurityContext: manifestutils.TempoContainerSecurityContext(),
 						},
 					},
 					Volumes: []corev1.Volume{
