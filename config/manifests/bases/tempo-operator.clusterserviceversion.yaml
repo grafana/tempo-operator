@@ -183,7 +183,7 @@ spec:
         displayName: TLS Config
         path: storage.tls
       - description: CA is the name of a ConfigMap containing a CA certificate. It
-          needs to be in the same namespace as the LokiStack custom resource.
+          needs to be in the same namespace as the Tempo custom resource.
         displayName: CA ConfigMap Name
         path: storage.tls.caName
         x-descriptors:
@@ -198,7 +198,7 @@ spec:
       - description: Components defines requirements for a set of tempo components.
         displayName: Tempo Components
         path: template
-      - description: Compactor defines the lokistack compactor component spec.
+      - description: Compactor defines the tempo compactor component spec.
         displayName: Compactor pods
         path: template.compactor
       - description: NodeSelector is the simplest recommended form of node selection
@@ -226,6 +226,27 @@ spec:
       - description: Tolerations defines component specific pod tolerations.
         displayName: Tolerations
         path: template.distributor.tolerations
+      - description: Gateway defines the tempo gateway spec.
+        displayName: Gateway pods
+        path: template.gateway
+      - description: JaegerQuerySpec defines Jaeger Query spefic options.
+        displayName: Jaeger Query Settings
+        path: template.gateway.jaegerQuery
+      - description: Enabled is used to define if a tempo gateway component should
+          be created.
+        displayName: Jaeger Query Enabled
+        path: template.gateway.jaegerQuery.enabled
+      - description: NodeSelector is the simplest recommended form of node selection
+          constraint.
+        displayName: Node Selector
+        path: template.gateway.nodeSelector
+      - description: Replicas represents the number of replicas to create for this
+          component.
+        displayName: Component Replicas
+        path: template.gateway.replicas
+      - description: Tolerations defines component specific pod tolerations.
+        displayName: Tolerations
+        path: template.gateway.tolerations
       - description: Ingester defines the ingester component spec.
         displayName: Ingester pods
         path: template.ingester
@@ -275,6 +296,54 @@ spec:
       - description: Tolerations defines component specific pod tolerations.
         displayName: Tolerations
         path: template.queryFrontend.tolerations
+      - description: Tenants defines the per-tenant authentication and authorization
+          spec.
+        displayName: Tenants Configuration
+        path: tenants
+      - description: Authentication defines the tempo-gateway component authentication
+          configuration spec per tenant.
+        displayName: Authentication
+        path: tenants.authentication
+      - description: OIDC defines the spec for the OIDC tenant's authentication.
+        displayName: OIDC Configuration
+        path: tenants.authentication[0].oidc
+      - description: IssuerURL defines the URL for issuer.
+        displayName: Issuer URL
+        path: tenants.authentication[0].oidc.issuerURL
+      - description: RedirectURL defines the URL for redirect.
+        displayName: Redirect URL
+        path: tenants.authentication[0].oidc.redirectURL
+      - description: Secret defines the spec for the clientID, clientSecret and issuerCAPath
+          for tenant's authentication.
+        displayName: Tenant Secret
+        path: tenants.authentication[0].oidc.secret
+      - description: Name of a secret in the namespace configured for tenant secrets.
+        displayName: Tenant Secret Name
+        path: tenants.authentication[0].oidc.secret.name
+        x-descriptors:
+        - urn:alm:descriptor:io.kubernetes:Secret
+      - description: TenantID defines the id of the tenant.
+        displayName: Tenant ID
+        path: tenants.authentication[0].tenantId
+      - description: TenantName defines the name of the tenant.
+        displayName: Tenant Name
+        path: tenants.authentication[0].tenantName
+      - description: Authorization defines the tempo-gateway component authorization
+          configuration spec per tenant.
+        displayName: Authorization
+        path: tenants.authorization
+      - description: RoleBindings defines configuration to bind a set of roles to
+          a set of subjects.
+        displayName: Static Role Bindings
+        path: tenants.authorization.roleBindings
+      - description: Roles defines a set of permissions to interact with a tenant.
+        displayName: Static Roles
+        path: tenants.authorization.roles
+      - description: Mode defines the multitenancy mode.
+        displayName: Mode
+        path: tenants.mode
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:select:dynamic
       statusDescriptors:
       - description: Conditions of the Tempo deployment health.
         displayName: Conditions

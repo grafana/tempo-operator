@@ -76,6 +76,63 @@ type MicroservicesSpec struct {
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Replication Factor"
 	ReplicationFactor int `json:"replicationFactor,omitempty"`
+
+	// Tenants defines the per-tenant authentication and authorization spec.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tenants Configuration"
+	Tenants *TenantsSpec `json:"tenants,omitempty"`
+}
+
+// MicroservicesStatus defines the observed state of Microservices.
+type MicroservicesStatus struct {
+	// Version of the managed Tempo instance.
+	// +optional
+	TempoVersion string `json:"tempoVersion,omitempty"`
+
+	// Conditions of the Tempo deployment health.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=status,xDescriptors="urn:alm:descriptor:io.kubernetes.conditions"
+	Conditions []metav1.Condition `json:"conditions,omitempty"`
+}
+
+// ModeType is the authentication/authorization mode in which Tempo Gateway
+// will be configured.
+//
+// +kubebuilder:validation:Enum=dynamic
+type ModeType string
+
+const (
+	// Dynamic mode delegates the authorization to a third-party OPA-compatible endpoint.
+	Dynamic ModeType = "dynamic"
+)
+
+// TenantsSpec defines the mode, authentication and authorization
+// configuration of the tempo gateway component.
+type TenantsSpec struct {
+	// Mode defines the multitenancy mode.
+	//
+	// +required
+	// +kubebuilder:validation:Required
+	// +kubebuilder:default:=dynamic
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors={"urn:alm:descriptor:com.tectonic.ui:select:dynamic"},displayName="Mode"
+	Mode ModeType `json:"mode"`
+
+	// Authentication defines the tempo-gateway component authentication configuration spec per tenant.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Authentication"
+	Authentication []AuthenticationSpec `json:"authentication,omitempty"`
+	// Authorization defines the tempo-gateway component authorization configuration spec per tenant.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Authorization"
+	Authorization *AuthorizationSpec `json:"authorization,omitempty"`
 }
 
 // ConditionStatus defines the status of a condition (e.g. ready or degraded).
@@ -98,18 +155,131 @@ const (
 	ReasonInvalidStorageConfig ConditionReason = "InvalidStorageConfig"
 )
 
-// MicroservicesStatus defines the observed state of Microservices.
-type MicroservicesStatus struct {
-	// Version of the managed Tempo instance.
-	// +optional
-	TempoVersion string `json:"tempoVersion,omitempty"`
+// PermissionType is a Tempo Gateway RBAC permission.
+//
+// +kubebuilder:validation:Enum=read;write
+type PermissionType string
 
-	// Conditions of the Tempo deployment health.
+const (
+	// Write gives access to write data to a tenant.
+	Write PermissionType = "write"
+	// Read gives access to read data from a tenant.
+	Read PermissionType = "read"
+)
+
+// SubjectKind is a kind of Tempo Gateway RBAC subject.
+//
+// +kubebuilder:validation:Enum=user;group
+type SubjectKind string
+
+const (
+	// User represents a subject that is a user.
+	User SubjectKind = "user"
+	// Group represents a subject that is a group.
+	Group SubjectKind = "group"
+)
+
+// Subject represents a subject that has been bound to a role.
+type Subject struct {
+	Name string      `json:"name"`
+	Kind SubjectKind `json:"kind"`
+}
+
+// RoleBindingsSpec binds a set of roles to a set of subjects.
+type RoleBindingsSpec struct {
+	Name     string    `json:"name"`
+	Subjects []Subject `json:"subjects"`
+	Roles    []string  `json:"roles"`
+}
+
+// AuthorizationSpec defines the opa, role bindings and roles
+// configuration per tenant for tempo Gateway component.
+type AuthorizationSpec struct {
+	// Roles defines a set of permissions to interact with a tenant.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=status,xDescriptors="urn:alm:descriptor:io.kubernetes.conditions"
-	Conditions []metav1.Condition `json:"conditions,omitempty"`
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Static Roles"
+	Roles []RoleSpec `json:"roles"`
+	// RoleBindings defines configuration to bind a set of roles to a set of subjects.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Static Role Bindings"
+	RoleBindings []RoleBindingsSpec `json:"roleBindings"`
+}
+
+// RoleSpec describes a set of permissions to interact with a tenant.
+type RoleSpec struct {
+	Name        string           `json:"name"`
+	Resources   []string         `json:"resources"`
+	Tenants     []string         `json:"tenants"`
+	Permissions []PermissionType `json:"permissions"`
+}
+
+// TenantSecretSpec is a secret reference containing name only
+// for a secret living in the same namespace as the (Tempo) Microservices custom resource.
+type TenantSecretSpec struct {
+	// Name of a secret in the namespace configured for tenant secrets.
+	//
+	// +required
+	// +kubebuilder:validation:Required
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors="urn:alm:descriptor:io.kubernetes:Secret",displayName="Tenant Secret Name"
+	Name string `json:"name"`
+}
+
+// OIDCSpec defines the oidc configuration spec for Tempo Gateway component.
+type OIDCSpec struct {
+	// Secret defines the spec for the clientID, clientSecret and issuerCAPath for tenant's authentication.
+	//
+	// +required
+	// +kubebuilder:validation:Required
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tenant Secret"
+	Secret *TenantSecretSpec `json:"secret"`
+	// IssuerURL defines the URL for issuer.
+	//
+	// +required
+	// +kubebuilder:validation:Required
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Issuer URL"
+	IssuerURL string `json:"issuerURL"`
+	// RedirectURL defines the URL for redirect.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Redirect URL"
+	RedirectURL string `json:"redirectURL,omitempty"`
+	// Group claim field from ID Token
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	GroupClaim string `json:"groupClaim,omitempty"`
+	// User claim field from ID Token
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	UsernameClaim string `json:"usernameClaim,omitempty"`
+}
+
+// AuthenticationSpec defines the oidc configuration per tenant for tempo Gateway component.
+type AuthenticationSpec struct {
+	// TenantName defines the name of the tenant.
+	//
+	// +required
+	// +kubebuilder:validation:Required
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tenant Name"
+	TenantName string `json:"tenantName"`
+	// TenantID defines the id of the tenant.
+	//
+	// +required
+	// +kubebuilder:validation:Required
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tenant ID"
+	TenantID string `json:"tenantId"`
+	// OIDC defines the spec for the OIDC tenant's authentication.
+	//
+	// +required
+	// +kubebuilder:validation:Required
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="OIDC Configuration"
+	OIDC *OIDCSpec `json:"oidc"`
 }
 
 //+kubebuilder:object:root=true
@@ -145,6 +315,11 @@ type ImagesSpec struct {
 	//
 	// +optional
 	TempoQuery string `json:"tempoQuery,omitempty"`
+
+	// TempoGateway defines the tempo-gateway container image.
+	//
+	// +optional
+	TempoGateway string `json:"tempoGateway,omitempty"`
 }
 
 // Resources defines resources configuration.
@@ -212,7 +387,7 @@ type ObjectStorageSpec struct {
 // ObjectStorageTLSSpec is the TLS configuration for reaching the object storage endpoint.
 type ObjectStorageTLSSpec struct {
 	// CA is the name of a ConfigMap containing a CA certificate.
-	// It needs to be in the same namespace as the LokiStack custom resource.
+	// It needs to be in the same namespace as the Tempo custom resource.
 	//
 	// +optional
 	// +kubebuilder:validation:optional
@@ -237,7 +412,7 @@ type TempoComponentsSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Ingester pods"
 	Ingester TempoComponentSpec `json:"ingester,omitempty"`
 
-	// Compactor defines the lokistack compactor component spec.
+	// Compactor defines the tempo compactor component spec.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
@@ -257,6 +432,13 @@ type TempoComponentsSpec struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Query Frontend pods"
 	QueryFrontend TempoQueryFrontendSpec `json:"queryFrontend,omitempty"`
+
+	// Gateway defines the tempo gateway spec.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Gateway pods"
+	Gateway TempoGatewaySpec `json:"gateway,omitempty"`
 }
 
 // TempoComponentSpec defines specific schedule settings for tempo components.
@@ -278,6 +460,35 @@ type TempoComponentSpec struct {
 	// +listType=atomic
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tolerations"
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
+}
+
+// TempoGatewaySpec extends TempoComponentSpec with gateway parameters.
+type TempoGatewaySpec struct {
+	// TempoComponentSpec is embedded to extend this definition with further options.
+	//
+	// Currently there is no way to inline this field.
+	// See: https://github.com/golang/go/issues/6213
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	TempoComponentSpec `json:"component,omitempty"`
+
+	// JaegerQuerySpec defines Jaeger Query spefic options.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger Query Settings"
+	Gateway GatewaySpec `json:"jaegerQuery"`
+}
+
+// GatewaySpec defines Tempo Gateway options.
+type GatewaySpec struct {
+	// Enabled is used to define if a tempo gateway component should be created.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger Query Enabled"
+	Enabled bool `json:"enabled"`
 }
 
 // TempoQueryFrontendSpec extends TempoComponentSpec with frontend specific parameters.
