@@ -69,29 +69,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 					ServiceAccountName: tempo.Spec.ServiceAccount,
 					NodeSelector:       cfg.NodeSelector,
 					Tolerations:        cfg.Tolerations,
-					Affinity: &corev1.Affinity{
-						PodAntiAffinity: &corev1.PodAntiAffinity{
-							PreferredDuringSchedulingIgnoredDuringExecution: []corev1.WeightedPodAffinityTerm{
-								{
-									Weight: 100,
-									PodAffinityTerm: corev1.PodAffinityTerm{
-										LabelSelector: &metav1.LabelSelector{
-											MatchLabels: labels,
-										},
-										TopologyKey: "failure-domain.beta.kubernetes.io/zone",
-									},
-								},
-							},
-							RequiredDuringSchedulingIgnoredDuringExecution: []corev1.PodAffinityTerm{
-								{
-									LabelSelector: &metav1.LabelSelector{
-										MatchLabels: labels,
-									},
-									TopologyKey: "kubernetes.io/hostname",
-								},
-							},
-						},
-					},
+					Affinity:           manifestutils.DefaultAffinity(labels),
 					Containers: []corev1.Container{
 						{
 							Name:  "query-frontend",

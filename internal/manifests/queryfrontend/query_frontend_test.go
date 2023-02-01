@@ -131,29 +131,7 @@ func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 				},
 				Spec: corev1.PodSpec{
 					ServiceAccountName: "tempo-test-serviceaccount",
-					Affinity: &corev1.Affinity{
-						PodAntiAffinity: &corev1.PodAntiAffinity{
-							PreferredDuringSchedulingIgnoredDuringExecution: []corev1.WeightedPodAffinityTerm{
-								{
-									Weight: 100,
-									PodAffinityTerm: corev1.PodAffinityTerm{
-										LabelSelector: &metav1.LabelSelector{
-											MatchLabels: labels,
-										},
-										TopologyKey: "failure-domain.beta.kubernetes.io/zone",
-									},
-								},
-							},
-							RequiredDuringSchedulingIgnoredDuringExecution: []corev1.PodAffinityTerm{
-								{
-									LabelSelector: &metav1.LabelSelector{
-										MatchLabels: labels,
-									},
-									TopologyKey: "kubernetes.io/hostname",
-								},
-							},
-						},
-					},
+					Affinity:           manifestutils.DefaultAffinity(labels),
 					Containers: []corev1.Container{
 						{
 							Name:  "query-frontend",
