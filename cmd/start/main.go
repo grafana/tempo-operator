@@ -2,6 +2,7 @@ package start
 
 import (
 	"os"
+	"runtime"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
@@ -14,6 +15,7 @@ import (
 	tempov1alpha1 "github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/os-observability/tempo-operator/cmd"
 	controllers "github.com/os-observability/tempo-operator/controllers/tempo"
+	"github.com/os-observability/tempo-operator/internal/version"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -53,7 +55,18 @@ func start(c *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	setupLog.Info("starting manager")
+	v := version.Get(rootCmdConfig.CtrlConfig)
+	setupLog.Info("Starting Tempo Operator",
+		"tempo-operator", v.OperatorVersion,
+		"default-tempo-image", v.DefaultTempoImage,
+		"default-tempo-query-image", v.DefaultTempoQueryImage,
+		"build-date", v.BuildDate,
+		"git-hash", v.GitHash,
+		"go-version", v.Go,
+		"go-arch", runtime.GOARCH,
+		"go-os", runtime.GOOS,
+	)
+
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
