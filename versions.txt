@@ -1,0 +1,8 @@
+# this file contains the version of the Tempo components that will be used
+# by default with the Tempo Operator. This would usually be the latest
+# stable Tempo version. When you update this file, make sure to update the
+# the docs as well.
+tempo=1.5.0
+
+# Represents the current release of the Tempo Operator.
+operator=1.5.0
