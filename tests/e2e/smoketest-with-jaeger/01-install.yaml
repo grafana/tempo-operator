@@ -29,8 +29,4 @@ spec:
   template:
     queryFrontend:
       jaegerQuery:
-<<<<<<< HEAD
         enabled: true
-=======
-        enabled: true
->>>>>>> e9f05bf (fix unit tests for config)
