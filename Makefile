@@ -2,7 +2,7 @@
 VERSION_DATE ?= $(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
 VERSION_PKG ?= "github.com/os-observability/tempo-operator/internal/version"
 TEMPO_VERSION ?= "$(shell grep -v '\#' versions.txt | grep tempo | awk -F= '{print $$2}')"
-OPERATOR_VERSION ?= "$(shell grep -v '\#' versions.txt | grep operator | awk -F= '{print $$2}')"
+OPERATOR_VERSION ?= "$(shell git describe --tags --always --dirty="-dev")"
 COMMIT_SHA = "$(shell git rev-parse HEAD)"
 LD_FLAGS ?= "-X ${VERSION_PKG}.buildDate=${VERSION_DATE} -X ${VERSION_PKG}.version=${OPERATOR_VERSION} -X ${VERSION_PKG}.commitSha=${COMMIT_SHA}"
 ARCH ?= $(shell go env GOARCH)
