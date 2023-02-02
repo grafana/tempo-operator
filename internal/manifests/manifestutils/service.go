@@ -20,6 +20,7 @@ func TempoServerHTTPTLSDir() string {
 	return path.Join(httpTLSDir, "server")
 }
 
+// ConfigureServiceCA modify the PodSpec adding the volumes and volumeMounts to the specified containers.
 func ConfigureServiceCA(podSpec *corev1.PodSpec, caBundleName string, containers ...int) error {
 	secretVolumeSpec := corev1.PodSpec{
 		Volumes: []corev1.Volume{
@@ -69,6 +70,7 @@ func ConfigureServiceCA(podSpec *corev1.PodSpec, caBundleName string, containers
 	return nil
 }
 
+// ConfigureGRPCServicePKI modify the PodSpec adding cert the volumes and volumeMounts to the specified containers.
 func ConfigureGRPCServicePKI(podSpec *corev1.PodSpec, componentName string, containers ...int) error {
 	serviceName := fmt.Sprintf("%s-grpc", componentName)
 	secretVolumeSpec := corev1.PodSpec{
@@ -115,6 +117,7 @@ func ConfigureGRPCServicePKI(podSpec *corev1.PodSpec, componentName string, cont
 	return nil
 }
 
+// ConfigureHTTPServicePKI modify the PodSpec adding cert the volumes and volumeMounts to the specified containers.
 func ConfigureHTTPServicePKI(podSpec *corev1.PodSpec, componentName string, containers ...int) error {
 	serviceName := fmt.Sprintf("%s-http", componentName)
 	secretVolumeSpec := corev1.PodSpec{
