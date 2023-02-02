@@ -30,13 +30,6 @@ func CheckCertExpiry(ctx context.Context, log logr.Logger, req ctrl.Request, k c
 		return kverrors.Wrap(err, "failed to lookup microservices", "name", req.String())
 	}
 
-	/*var mode lokiv1.ModeType
-	if stack.Spec.Tenants != nil {
-		mode = stack.Spec.Tenants.Mode
-	}*/
-
-	// opts, err := GetOptions(ctx, k, req, mode)
-
 	opts, err := GetOptions(ctx, k, req)
 	if err != nil {
 		return kverrors.Wrap(err, "failed to lookup certificates secrets", "name", req.String())
