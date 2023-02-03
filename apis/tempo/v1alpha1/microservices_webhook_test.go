@@ -205,7 +205,7 @@ func TestValidateStorageSecret(t *testing.T) {
 				},
 			},
 			expected: field.ErrorList{
-				field.Invalid(path, tempo.Spec.Storage.Secret, "'endpoint' field of storage secret must be a valid URL"),
+				field.Invalid(path, tempo.Spec.Storage.Secret, "\"endpoint\" field of storage secret must be a valid URL"),
 			},
 		},
 		{
@@ -219,7 +219,7 @@ func TestValidateStorageSecret(t *testing.T) {
 				},
 			},
 			expected: field.ErrorList{
-				field.Invalid(path, tempo.Spec.Storage.Secret, "'endpoint' field of storage secret must be a valid URL"),
+				field.Invalid(path, tempo.Spec.Storage.Secret, "\"endpoint\" field of storage secret must be a valid URL"),
 			},
 		},
 		{

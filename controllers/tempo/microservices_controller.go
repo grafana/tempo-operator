@@ -271,20 +271,18 @@ func updateStatus(ctx context.Context, tempo v1alpha1.Microservices, statusWrite
 			}
 		}
 	} else {
-		// In case the degraded condition is not true yet, set degraded condition and unset ready condition
-		if !meta.IsStatusConditionTrue(changed.Status.Conditions, string(v1alpha1.ConditionDegraded)) {
-			meta.SetStatusCondition(&changed.Status.Conditions, metav1.Condition{
-				Type:    string(v1alpha1.ConditionDegraded),
-				Status:  metav1.ConditionTrue,
-				Reason:  string(degraded.Reason),
-				Message: degraded.Message,
-			})
+		// Always update the degraded condition, because the reason or message can change.
+		meta.SetStatusCondition(&changed.Status.Conditions, metav1.Condition{
+			Type:    string(v1alpha1.ConditionDegraded),
+			Status:  metav1.ConditionTrue,
+			Reason:  string(degraded.Reason),
+			Message: degraded.Message,
+		})
 
-			readyCond := meta.FindStatusCondition(changed.Status.Conditions, string(v1alpha1.ConditionReady))
-			if readyCond != nil {
-				readyCond.Status = metav1.ConditionFalse
-				readyCond.LastTransitionTime = metav1.NewTime(time.Now())
-			}
+		readyCond := meta.FindStatusCondition(changed.Status.Conditions, string(v1alpha1.ConditionReady))
+		if readyCond != nil && readyCond.Status == metav1.ConditionTrue {
+			readyCond.Status = metav1.ConditionFalse
+			readyCond.LastTransitionTime = metav1.NewTime(time.Now())
 		}
 	}
 

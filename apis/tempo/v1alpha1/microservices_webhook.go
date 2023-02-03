@@ -187,7 +187,7 @@ func ValidateStorageSecret(tempo Microservices, storageSecret corev1.Secret) fie
 				allErrs = append(allErrs, field.Invalid(
 					path,
 					tempo.Spec.Storage.Secret,
-					"'endpoint' field of storage secret must be a valid URL",
+					"\"endpoint\" field of storage secret must be a valid URL",
 				))
 			}
 		}
