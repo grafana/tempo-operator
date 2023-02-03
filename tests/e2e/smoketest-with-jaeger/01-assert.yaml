@@ -149,7 +149,7 @@ spec:
       protocol: TCP
       targetPort: http-memberlist
     - name: http
-      port: 3100
+      port: 3200
       protocol: TCP
       targetPort: http
   selector:
@@ -176,7 +176,7 @@ spec:
       protocol: TCP
       targetPort: otlp-grpc
     - name: http
-      port: 3100
+      port: 3200
       protocol: TCP
       targetPort: http
   selector:
@@ -222,7 +222,7 @@ metadata:
 spec:
   ports:
     - name: http
-      port: 3100
+      port: 3200
       protocol: TCP
       targetPort: http
     - name: grpc
@@ -253,7 +253,7 @@ spec:
       protocol: TCP
       targetPort: http-memberlist
     - name: http
-      port: 3100
+      port: 3200
       protocol: TCP
       targetPort: http
     - name: grpc
@@ -280,7 +280,7 @@ metadata:
 spec:
   ports:
     - name: http
-      port: 3100
+      port: 3200
       protocol: TCP
       targetPort: http
     - name: grpc
@@ -316,7 +316,7 @@ spec:
   clusterIP: None
   ports:
     - name: http
-      port: 3100
+      port: 3200
       protocol: TCP
       targetPort: http
     - name: grpc

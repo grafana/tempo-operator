@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
 	"github.com/os-observability/tempo-operator/internal/manifests/naming"
 )
 
@@ -61,7 +62,7 @@ func buildConfiguration(tempo v1alpha1.Microservices, params Params) ([]byte, er
 		MemberList: []string{
 			naming.Name("gossip-ring", tempo.Name),
 		},
-		QueryFrontendDiscovery: fmt.Sprintf("%s:9095", naming.Name("query-frontend-discovery", tempo.Name)),
+		QueryFrontendDiscovery: fmt.Sprintf("%s:%d", naming.Name("query-frontend-discovery", tempo.Name), manifestutils.PortGRPCServer),
 		GlobalRateLimits:       fromRateLimitSpecToRateLimitOptions(tempo.Spec.LimitSpec.Global),
 		Search:                 fromSearchSpecToOptions(tempo.Spec.SearchSpec),
 		ReplicationFactor:      tempo.Spec.ReplicationFactor,
