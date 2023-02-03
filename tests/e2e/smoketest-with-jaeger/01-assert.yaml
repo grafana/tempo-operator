@@ -197,6 +197,8 @@ metadata:
     app.kubernetes.io/name: tempo
   name: tempo-simplest-gossip-ring
 spec:
+  clusterIP: None
+  publishNotReadyAddresses: true
   ports:
     - name: http-memberlist
       port: 7946
@@ -314,6 +316,7 @@ metadata:
   name: tempo-simplest-query-frontend-discovery
 spec:
   clusterIP: None
+  publishNotReadyAddresses: true
   ports:
     - name: http
       port: 3100
