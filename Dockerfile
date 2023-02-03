@@ -10,25 +10,17 @@ COPY go.sum go.sum
 RUN go mod download
 
 # Copy the go source
-COPY main.go main.go
-COPY apis/ apis/
-COPY controllers/ controllers/
-COPY internal/ internal/
-COPY cmd/ cmd/
+COPY . .
 
-ARG VERSION_PKG
-ARG COMMIT_SHA
-ARG OPERATOR_VERSION
-ARG VERSION_DATE
 
 # Build
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-X ${VERSION_PKG}.buildDate=${VERSION_DATE} -X ${VERSION_PKG}.version=${OPERATOR_VERSION} -X ${VERSION_PKG}.commitSha=${COMMIT_SHA}" -a -o manager main.go
+RUN make build
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
 FROM gcr.io/distroless/static:nonroot
 WORKDIR /
-COPY --from=builder /workspace/manager .
+COPY --from=builder /workspace/bin/manager .
 USER 65532:65532
 
 ENTRYPOINT ["/manager"]

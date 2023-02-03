@@ -124,7 +124,7 @@ run: manifests generate fmt vet ## Run a controller from your host.
 
 .PHONY: docker-build
 docker-build: ## Build docker image with the manager.
-	docker buildx build --load --platform linux/${ARCH} -t ${IMG} --build-arg VERSION_PKG=${VERSION_PKG} --build-arg OPERATOR_VERSION=${OPERATOR_VERSION} --build-arg VERSION_DATE=${VERSION_DATE} --build-arg COMMIT_SHA=${COMMIT_SHA} .
+	docker buildx build --load --platform linux/${ARCH} -t ${IMG} .
 
 .PHONY: docker-push
 docker-push: ## Push docker image with the manager.
