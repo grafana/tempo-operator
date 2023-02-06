@@ -16,7 +16,6 @@ import (
 
 const (
 	dataVolumeName = "data"
-	componentName  = "ingester"
 )
 
 // BuildIngester creates distributor objects.
@@ -31,14 +30,14 @@ func BuildIngester(params manifestutils.Params) ([]client.Object, error) {
 
 func statefulSet(params manifestutils.Params) (*v1.StatefulSet, error) {
 	tempo := params.Tempo
-	labels := manifestutils.ComponentLabels(componentName, tempo.Name)
+	labels := manifestutils.ComponentLabels(manifestutils.IngesterComponentName, tempo.Name)
 	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
 	filesystem := corev1.PersistentVolumeFilesystem
 	cfg := tempo.Spec.Components.Ingester
 
 	ss := &v1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      naming.Name(componentName, tempo.Name),
+			Name:      naming.Name(manifestutils.IngesterComponentName, tempo.Name),
 			Namespace: tempo.Namespace,
 			Labels:    labels,
 		},
@@ -91,7 +90,7 @@ func statefulSet(params manifestutils.Params) (*v1.StatefulSet, error) {
 								},
 							},
 							ReadinessProbe:  manifestutils.TempoReadinessProbe(),
-							Resources:       manifestutils.Resources(tempo, componentName),
+							Resources:       manifestutils.Resources(tempo, manifestutils.IngesterComponentName),
 							SecurityContext: manifestutils.TempoContainerSecurityContext(),
 						},
 					},
@@ -136,10 +135,10 @@ func statefulSet(params manifestutils.Params) (*v1.StatefulSet, error) {
 }
 
 func service(tempo v1alpha1.Microservices) *corev1.Service {
-	labels := manifestutils.ComponentLabels(componentName, tempo.Name)
+	labels := manifestutils.ComponentLabels(manifestutils.IngesterComponentName, tempo.Name)
 	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      naming.Name(componentName, tempo.Name),
+			Name:      naming.Name(manifestutils.IngesterComponentName, tempo.Name),
 			Namespace: tempo.Namespace,
 			Labels:    labels,
 		},

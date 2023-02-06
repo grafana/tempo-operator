@@ -39,4 +39,10 @@ const (
 	HttpMemberlistPortName = "http-memberlist"
 	// PortMemberlist declares the port number of the tempo memberlist port.
 	PortMemberlist = 7946
+
+	CompactorComponentName     = "compactor"
+	QuerierComponentName       = "querier"
+	DistributorComponentName   = "distributor"
+	QueryFrontendComponentName = "query-frontend"
+	IngesterComponentName      = "ingester"
 )

@@ -1840,6 +1840,13 @@ MicroservicesStatus defines the observed state of Microservices.
         </tr>
     </thead>
     <tbody><tr>
+        <td><b><a href="#microservicesstatuscomponents">components</a></b></td>
+        <td>object</td>
+        <td>
+          Components provides summary of all Tempo pod status grouped per component.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b><a href="#microservicesstatusconditionsindex">conditions</a></b></td>
         <td>[]object</td>
         <td>
@@ -1851,6 +1858,61 @@ MicroservicesStatus defines the observed state of Microservices.
         <td>string</td>
         <td>
           Version of the managed Tempo instance.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### Microservices.status.components
+<sup><sup>[↩ Parent](#microservicesstatus)</sup></sup>
+
+
+
+Components provides summary of all Tempo pod status grouped per component.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>compactor</b></td>
+        <td>map[string][]string</td>
+        <td>
+          Compactor is a map to the pod status of the compactor pod.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>distributor</b></td>
+        <td>map[string][]string</td>
+        <td>
+          Distributor is a map to the per pod status of the distributor deployment<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>ingester</b></td>
+        <td>map[string][]string</td>
+        <td>
+          Ingester is a map to the per pod status of the ingester statefulset<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>querier</b></td>
+        <td>map[string][]string</td>
+        <td>
+          Querier is a map to the per pod status of the querier deployment<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>queryFrontend</b></td>
+        <td>map[string][]string</td>
+        <td>
+          QueryFrontend is a map to the per pod status of the query frontend deployment<br/>
         </td>
         <td>false</td>
       </tr></tbody>
