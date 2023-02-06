@@ -2,7 +2,7 @@
 VERSION_DATE ?= $(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
 VERSION_PKG ?= "github.com/os-observability/tempo-operator/internal/version"
 TEMPO_VERSION ?= "1.5.0"
-OPERATOR_VERSION ?= "$(shell git describe --tags --always --dirty="-dev")"
+OPERATOR_VERSION ?= $(TEMPO_VERSION)
 COMMIT_SHA = "$(shell git rev-parse HEAD)"
 LD_FLAGS ?= "-X ${VERSION_PKG}.buildDate=${VERSION_DATE} -X ${VERSION_PKG}.version=${OPERATOR_VERSION} -X ${VERSION_PKG}.commitSha=${COMMIT_SHA}"
 ARCH ?= $(shell go env GOARCH)
@@ -42,7 +42,7 @@ endif
 BUNDLE_METADATA_OPTS ?= $(BUNDLE_CHANNELS) $(BUNDLE_DEFAULT_CHANNEL)
 
 # BUNDLE_GEN_FLAGS are the flags passed to the operator-sdk generate bundle command
-BUNDLE_GEN_FLAGS ?= -q --overwrite --version $(VERSION) $(BUNDLE_METADATA_OPTS)
+BUNDLE_GEN_FLAGS ?= -q --overwrite --version $(OPERATOR_VERSION) $(BUNDLE_METADATA_OPTS)
 
 # USE_IMAGE_DIGESTS defines if images are resolved via tags or digests
 # You can enable this value if you would like to use SHA Based Digests
@@ -112,8 +112,7 @@ test: manifests generate fmt vet setup-envtest ## Run tests.
 
 .PHONE: prepare-release
 prepare-release:
-    TEMPO_VERSION=${TEMPO_VERSION} ./hack/prepare-release.sh
-
+	./hack/prepare-release.sh
 
 ##@ Build
 
@@ -232,7 +231,7 @@ endif
 BUNDLE_IMGS ?= $(BUNDLE_IMG)
 
 # The image tag given to the resulting catalog image (e.g. make catalog-build CATALOG_IMG=example.com/operator-catalog:v0.2.0).
-CATALOG_IMG ?= $(IMAGE_TAG_BASE)-catalog:v$(VERSION)
+CATALOG_IMG ?= $(IMAGE_TAG_BASE)-catalog:v$(OPERATOR_VERSION)
 
 # Set CATALOG_BASE_IMG to an existing catalog image tag to add $BUNDLE_IMGS to that image.
 ifneq ($(origin CATALOG_BASE_IMG), undefined)
