@@ -51,7 +51,7 @@ func BuildConfigMap(tempo v1alpha1.Microservices, params Params) (*corev1.Config
 		},
 	}
 	if tempo.Spec.Components.QueryFrontend.JaegerQuery.Enabled {
-		configMap.Data["tempo-query.yaml"] = "backend: 127.0.0.1:3100\n"
+		configMap.Data["tempo-query.yaml"] = fmt.Sprintf("backend: 127.0.0.1:%d\n", manifestutils.PortHTTPServer)
 	}
 
 	// We only need to hash the main ConfigMap, the per-tenant overrides

@@ -59,7 +59,7 @@ search_enabled: false
 server: 
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
-  http_listen_port: 3100
+  http_listen_port: 3200
   http_server_read_timeout: 3m
   http_server_write_timeout: 3m
   log_format: logfmt
@@ -154,7 +154,7 @@ search_enabled: false
 server: 
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
-  http_listen_port: 3100
+  http_listen_port: 3200
   http_server_read_timeout: 3m
   http_server_write_timeout: 3m
   log_format: logfmt
@@ -231,7 +231,7 @@ search_enabled: false
 server: 
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
-  http_listen_port: 3100
+  http_listen_port: 3200
   http_server_read_timeout: 3m
   http_server_write_timeout: 3m
   log_format: logfmt
@@ -307,7 +307,7 @@ search_enabled: false
 server: 
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
-  http_listen_port: 3100
+  http_listen_port: 3200
   http_server_read_timeout: 3m
   http_server_write_timeout: 3m
   log_format: logfmt
@@ -384,7 +384,7 @@ search_enabled: false
 server: 
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
-  http_listen_port: 3100
+  http_listen_port: 3200
   http_server_read_timeout: 3m
   http_server_write_timeout: 3m
   log_format: logfmt
@@ -461,7 +461,7 @@ search_enabled: false
 server: 
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
-  http_listen_port: 3100
+  http_listen_port: 3200
   http_server_read_timeout: 3m
   http_server_write_timeout: 3m
   log_format: logfmt
@@ -538,7 +538,7 @@ search_enabled: false
 server: 
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
-  http_listen_port: 3100
+  http_listen_port: 3200
   http_server_read_timeout: 3m
   http_server_write_timeout: 3m
   log_format: logfmt
@@ -615,7 +615,7 @@ search_enabled: false
 server: 
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
-  http_listen_port: 3100
+  http_listen_port: 3200
   http_server_read_timeout: 3m
   http_server_write_timeout: 3m
   log_format: logfmt
@@ -704,7 +704,7 @@ search_enabled: false
 server: 
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
-  http_listen_port: 3100
+  http_listen_port: 3200
   http_server_read_timeout: 3m
   http_server_write_timeout: 3m
   log_format: logfmt
@@ -791,7 +791,7 @@ search_enabled: false
 server: 
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
-  http_listen_port: 3100
+  http_listen_port: 3200
   http_server_read_timeout: 3m
   http_server_write_timeout: 3m
   log_format: logfmt
@@ -930,7 +930,7 @@ search_enabled: true
 server: 
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
-  http_listen_port: 3100
+  http_listen_port: 3200
   http_server_read_timeout: 3m
   http_server_write_timeout: 3m
   log_format: logfmt
@@ -1026,7 +1026,7 @@ search_enabled: false
 server: 
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
-  http_listen_port: 3100
+  http_listen_port: 3200
   http_server_read_timeout: 3m
   http_server_write_timeout: 3m
   log_format: logfmt

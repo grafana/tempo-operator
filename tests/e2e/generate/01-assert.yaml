@@ -37,7 +37,7 @@ spec:
       protocol: TCP
       targetPort: otlp-grpc
     - name: http
-      port: 3100
+      port: 3200
       protocol: TCP
       targetPort: http
   selector:
