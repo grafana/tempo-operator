@@ -1,7 +1,7 @@
 # Current Operator version
 VERSION_DATE ?= $(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
 VERSION_PKG ?= "github.com/os-observability/tempo-operator/internal/version"
-TEMPO_VERSION ?= "$(shell grep -v '\#' versions.txt | grep tempo | awk -F= '{print $$2}')"
+TEMPO_VERSION ?= "1.5.0"
 OPERATOR_VERSION ?= "$(shell git describe --tags --always --dirty="-dev")"
 COMMIT_SHA = "$(shell git rev-parse HEAD)"
 LD_FLAGS ?= "-X ${VERSION_PKG}.buildDate=${VERSION_DATE} -X ${VERSION_PKG}.version=${OPERATOR_VERSION} -X ${VERSION_PKG}.commitSha=${COMMIT_SHA}"
@@ -120,7 +120,7 @@ build: generate fmt vet ## Build manager binary.
 run: manifests generate fmt vet ## Run a controller from your host.
 	# Disabled webhooks only affects local runs, not the build or in-cluster deployments.
 	@echo -e "\033[33mWebhooks are disabled! Use the normal deployment method to enable full operator functionality.\033[0m"
-	ENABLE_WEBHOOKS=false go run -ldflags ${LD_FLAGS} ./main.go version --config config/manager/controller_manager_config.yaml
+	ENABLE_WEBHOOKS=false go run ./main.go start
 
 .PHONY: docker-build
 docker-build: ## Build docker image with the manager.
