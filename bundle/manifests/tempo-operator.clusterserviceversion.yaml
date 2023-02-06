@@ -462,7 +462,7 @@ spec:
                 - --config=controller_manager_config.yaml
                 command:
                 - /manager
-                image: controller:latest
+                image: ghcr.io/os-observability/tempo-operator/tempo-operator:0.0.1
                 livenessProbe:
                   httpGet:
                     path: /healthz
