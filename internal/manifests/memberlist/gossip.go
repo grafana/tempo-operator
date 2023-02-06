@@ -31,7 +31,9 @@ func BuildGossip(tempo v1alpha1.Microservices) *corev1.Service {
 			Labels:    labels,
 		},
 		Spec: corev1.ServiceSpec{
-			Selector: selector,
+			ClusterIP:                "None",
+			PublishNotReadyAddresses: true,
+			Selector:                 selector,
 			Ports: []corev1.ServicePort{
 				{
 					Name:       manifestutils.HttpMemberlistPortName,
