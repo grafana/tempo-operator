@@ -15,7 +15,7 @@ spec:
       protocol: TCP
       targetPort: http-memberlist
     - name: http
-      port: 3100
+      port: 3200
       protocol: TCP
       targetPort: http
     - name: grpc
