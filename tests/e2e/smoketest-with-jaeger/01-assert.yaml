@@ -149,7 +149,7 @@ spec:
       protocol: TCP
       targetPort: http-memberlist
     - name: http
-      port: 3100
+      port: 3200
       protocol: TCP
       targetPort: http
   selector:
@@ -176,7 +176,7 @@ spec:
       protocol: TCP
       targetPort: otlp-grpc
     - name: http
-      port: 3100
+      port: 3200
       protocol: TCP
       targetPort: http
   selector:
@@ -197,6 +197,8 @@ metadata:
     app.kubernetes.io/name: tempo
   name: tempo-simplest-gossip-ring
 spec:
+  clusterIP: None
+  publishNotReadyAddresses: true
   ports:
     - name: http-memberlist
       port: 7946
@@ -222,7 +224,7 @@ metadata:
 spec:
   ports:
     - name: http
-      port: 3100
+      port: 3200
       protocol: TCP
       targetPort: http
     - name: grpc
@@ -253,7 +255,7 @@ spec:
       protocol: TCP
       targetPort: http-memberlist
     - name: http
-      port: 3100
+      port: 3200
       protocol: TCP
       targetPort: http
     - name: grpc
@@ -280,7 +282,7 @@ metadata:
 spec:
   ports:
     - name: http
-      port: 3100
+      port: 3200
       protocol: TCP
       targetPort: http
     - name: grpc
@@ -314,9 +316,10 @@ metadata:
   name: tempo-simplest-query-frontend-discovery
 spec:
   clusterIP: None
+  publishNotReadyAddresses: true
   ports:
     - name: http
-      port: 3100
+      port: 3200
       protocol: TCP
       targetPort: http
     - name: grpc

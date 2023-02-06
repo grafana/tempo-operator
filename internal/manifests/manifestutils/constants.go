@@ -19,7 +19,7 @@ const (
 	// HttpPortName declares the name of the tempo http port.
 	HttpPortName = "http"
 	// PortHTTPServer declares the port number of the tempo http port.
-	PortHTTPServer = 3100
+	PortHTTPServer = 3200
 	// TempoReadinessPath specifies the path for the readiness probe.
 	TempoReadinessPath = "/ready"
 	// TempoLivenessPath specifies the path for the liveness probe.
