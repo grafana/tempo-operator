@@ -107,6 +107,8 @@ type ModeType string
 
 const (
 	// Dynamic mode delegates the authorization to a third-party OPA-compatible endpoint.
+	Static ModeType = "static"
+	// Dynamic mode delegates the authorization to a third-party OPA-compatible endpoint.
 	Dynamic ModeType = "dynamic"
 )
 
@@ -118,7 +120,7 @@ type TenantsSpec struct {
 	// +required
 	// +kubebuilder:validation:Required
 	// +kubebuilder:default:=dynamic
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors={"urn:alm:descriptor:com.tectonic.ui:select:dynamic"},displayName="Mode"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors={"urn:alm:descriptor:com.tectonic.ui:select:static","urn:alm:descriptor:com.tectonic.ui:select:dynamic"},displayName="Mode"
 	Mode ModeType `json:"mode"`
 
 	// Authentication defines the tempo-gateway component authentication configuration spec per tenant.

@@ -19,6 +19,7 @@ type Version struct {
 	BuildDate              string `json:"build-date"`
 	DefaultTempoImage      string `json:"tempo-image"`
 	DefaultTempoQueryImage string `json:"tempo-query-image"`
+	DefaultGatewayImage    string `json:"tempo-gateway-image"`
 	Go                     string `json:"go-version"`
 	GitHash                string `json:"commit-hash"`
 }
@@ -30,6 +31,7 @@ func Get(config v1alpha1.ProjectConfig) Version {
 		BuildDate:              buildDate,
 		DefaultTempoImage:      config.DefaultImages.Tempo,
 		DefaultTempoQueryImage: config.DefaultImages.TempoQuery,
+		DefaultGatewayImage:    config.DefaultImages.TempoGateway,
 		Go:                     runtime.Version(),
 		GitHash:                commitSha,
 	}
@@ -38,11 +40,12 @@ func Get(config v1alpha1.ProjectConfig) Version {
 
 func (v Version) String() string {
 	return fmt.Sprintf(
-		"Version(OperatorVersion='%v', BuildDate='%v', DefaultTempoImage='%v', DefaultTempoQueryImage='%v', Go='%v', CommitHash='%v')",
+		"Version(OperatorVersion='%v', BuildDate='%v', DefaultTempoImage='%v', DefaultTempoQueryImage='%v', DefaultTempoGatewayImage='%v', Go='%v', CommitHash='%v')",
 		v.OperatorVersion,
 		v.BuildDate,
 		v.DefaultTempoImage,
 		v.DefaultTempoQueryImage,
+		v.DefaultGatewayImage,
 		v.Go,
 		v.GitHash,
 	)
