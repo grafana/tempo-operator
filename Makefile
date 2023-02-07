@@ -10,8 +10,8 @@ ARCH ?= $(shell go env GOARCH)
 # Image URL to use all building/pushing image targets
 IMG_PREFIX ?= ghcr.io/${USER}/tempo-operator
 IMG_REPO ?= tempo-operator
-IMG ?= ${IMG_PREFIX}/${IMG_REPO}:${OPERATOR_VERSION}
-BUNDLE_IMG ?= ${IMG_PREFIX}/${IMG_REPO}-bundle:${OPERATOR_VERSION}
+IMG ?= ${IMG_PREFIX}/${IMG_REPO}:v${OPERATOR_VERSION}
+BUNDLE_IMG ?= ${IMG_PREFIX}/${IMG_REPO}-bundle:v${OPERATOR_VERSION}
 
 # When the VERBOSE variable is set to 1, all the commands are shown
 ifeq ("$(VERBOSE)","true")
