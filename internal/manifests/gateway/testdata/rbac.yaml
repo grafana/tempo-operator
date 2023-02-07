@@ -1,0 +1,18 @@
+roleBindings:
+  - name: "test"
+    roles:
+      - read-write
+    subjects:
+      - kind: "user"
+        name: "admin@example.com"
+roles:
+  - name: "read-write"
+    permissions:
+      - "read"
+      - "write"
+    resources:
+      - "logs"
+      - "metrics"
+      - "traces"
+    tenants:
+      - "test-oidc"
