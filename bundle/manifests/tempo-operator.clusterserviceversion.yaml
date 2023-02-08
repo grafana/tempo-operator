@@ -397,6 +397,7 @@ spec:
           - ""
           resources:
           - configmaps
+          - pods
           - secrets
           - serviceaccounts
           - services
