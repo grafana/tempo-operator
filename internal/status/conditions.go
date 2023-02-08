@@ -29,7 +29,7 @@ func (e *DegradedError) Error() string {
 
 // SetReadyCondition updates or appends the condition Ready to the Microservice status conditions.
 // In addition it resets all other Status conditions to false.
-func SetReadyCondition(ctx context.Context, k StatusClient, tempo v1alpha1.Microservices) error {
+func SetReadyCondition(ctx context.Context, k StatusClient, tempo v1alpha1.Microservices) (bool, error) {
 	ready := metav1.Condition{
 		Type:    string(v1alpha1.ConditionReady),
 		Message: messageReady,
@@ -41,7 +41,7 @@ func SetReadyCondition(ctx context.Context, k StatusClient, tempo v1alpha1.Micro
 
 // SetFailedCondition updates or appends the condition Failed to the Microservice status conditions.
 // In addition it resets all other Status conditions to false.
-func SetFailedCondition(ctx context.Context, k StatusClient, tempo v1alpha1.Microservices) error {
+func SetFailedCondition(ctx context.Context, k StatusClient, tempo v1alpha1.Microservices) (bool, error) {
 	failed := metav1.Condition{
 		Type:    string(v1alpha1.ConditionFailed),
 		Message: messageFailed,
@@ -53,7 +53,7 @@ func SetFailedCondition(ctx context.Context, k StatusClient, tempo v1alpha1.Micr
 
 // SetPendingCondition updates or appends the condition Pending to the Microservice status conditions.
 // In addition it resets all other Status conditions to false.
-func SetPendingCondition(ctx context.Context, k StatusClient, tempo v1alpha1.Microservices) error {
+func SetPendingCondition(ctx context.Context, k StatusClient, tempo v1alpha1.Microservices) (bool, error) {
 	pending := metav1.Condition{
 		Type:    string(v1alpha1.ConditionPending),
 		Message: messagePending,
@@ -64,7 +64,7 @@ func SetPendingCondition(ctx context.Context, k StatusClient, tempo v1alpha1.Mic
 }
 
 // SetDegradedCondition appends the condition Degraded to the Microservice status conditions.
-func SetDegradedCondition(ctx context.Context, k StatusClient, tempo v1alpha1.Microservices, msg string, reason v1alpha1.ConditionReason) error {
+func SetDegradedCondition(ctx context.Context, k StatusClient, tempo v1alpha1.Microservices, msg string, reason v1alpha1.ConditionReason) (bool, error) {
 	degraded := metav1.Condition{
 		Type:    string(v1alpha1.ConditionDegraded),
 		Message: msg,
@@ -74,11 +74,11 @@ func SetDegradedCondition(ctx context.Context, k StatusClient, tempo v1alpha1.Mi
 	return updateCondition(ctx, k, tempo, degraded)
 }
 
-func updateCondition(ctx context.Context, k StatusClient, tempo v1alpha1.Microservices, condition metav1.Condition) error {
+func updateCondition(ctx context.Context, k StatusClient, tempo v1alpha1.Microservices, condition metav1.Condition) (bool, error) {
 
 	tempoImage, err := dockerparser.Parse(tempo.Spec.Images.Tempo)
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	for _, c := range tempo.Status.Conditions {
@@ -87,7 +87,7 @@ func updateCondition(ctx context.Context, k StatusClient, tempo v1alpha1.Microse
 			c.Message == condition.Message &&
 			c.Status == metav1.ConditionTrue {
 			// resource already has desired condition
-			return nil
+			return false, nil
 		}
 	}
 
@@ -116,5 +116,10 @@ func updateCondition(ctx context.Context, k StatusClient, tempo v1alpha1.Microse
 		changed.Status.Conditions[index] = condition
 	}
 
-	return k.PatchStatus(ctx, changed, &tempo)
+	err = k.PatchStatus(ctx, changed, &tempo)
+	if err != nil {
+		return true, err
+	}
+
+	return false, nil
 }

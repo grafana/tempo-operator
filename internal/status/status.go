@@ -11,9 +11,9 @@ import (
 // Refresh executes an aggregate update of the Microservice Status struct, i.e.
 // - It recreates the Status.Components pod status map per component.
 // - It sets the appropriate Status.Condition to true that matches the pod status maps.
-func Refresh(ctx context.Context, k StatusClient, s v1alpha1.Microservices) error {
+func Refresh(ctx context.Context, k StatusClient, s v1alpha1.Microservices) (bool, error) {
 	if err := SetComponentsStatus(ctx, k, s); err != nil {
-		return err
+		return false, err
 	}
 
 	cs := s.Status.Components

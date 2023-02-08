@@ -111,7 +111,7 @@ func TestSetReadyCondition(t *testing.T) {
 				},
 			}
 
-			err := SetReadyCondition(context.Background(), client, stack)
+			_, err := SetReadyCondition(context.Background(), client, stack)
 			assert.Equal(t, tc.expectedError, err)
 			assert.Equal(t, statucPatchCallsCount, tc.statusPatchCallCount)
 
@@ -218,7 +218,7 @@ func TestSetFailedCondition(t *testing.T) {
 				},
 			}
 
-			err := SetFailedCondition(context.Background(), client, stack)
+			_, err := SetFailedCondition(context.Background(), client, stack)
 			assert.Equal(t, tc.expectedError, err)
 			assert.Equal(t, statucPatchCallsCount, tc.statusPatchCallCount)
 
@@ -325,7 +325,7 @@ func TestSetPendingCondition(t *testing.T) {
 				},
 			}
 
-			err := SetPendingCondition(context.Background(), client, stack)
+			_, err := SetPendingCondition(context.Background(), client, stack)
 			assert.Equal(t, tc.expectedError, err)
 			assert.Equal(t, statucPatchCallsCount, tc.statusPatchCallCount)
 
@@ -435,7 +435,7 @@ func TestSetDegradedCondition(t *testing.T) {
 				},
 			}
 
-			err := SetDegradedCondition(context.Background(), client, stack, degradedMessage, reason)
+			_, err := SetDegradedCondition(context.Background(), client, stack, degradedMessage, reason)
 			assert.Equal(t, tc.expectedError, err)
 			assert.Equal(t, statucPatchCallsCount, tc.statusPatchCallCount)
 

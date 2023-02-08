@@ -77,9 +77,12 @@ func (r *MicroservicesReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		return res, derr
 	}
 
-	err = status.Refresh(ctx, r, tempo)
+	requeue, err := status.Refresh(ctx, r, tempo)
 	if err != nil {
-		return ctrl.Result{}, err
+		return ctrl.Result{
+			Requeue:      requeue,
+			RequeueAfter: time.Second,
+		}, err
 	}
 
 	return ctrl.Result{}, nil
@@ -88,10 +91,10 @@ func (r *MicroservicesReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 func (r *MicroservicesReconciler) handleDegradedError(ctx context.Context, tempo v1alpha1.Microservices, err error) (ctrl.Result, error) {
 	var degraded *status.DegradedError
 	if errors.As(err, &degraded) {
-		err = status.SetDegradedCondition(ctx, r, tempo, degraded.Message, degraded.Reason)
+		requeue, err := status.SetDegradedCondition(ctx, r, tempo, degraded.Message, degraded.Reason)
 		if err != nil {
 			return ctrl.Result{
-				Requeue:      true,
+				Requeue:      requeue,
 				RequeueAfter: time.Second,
 			}, err
 		}
