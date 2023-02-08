@@ -355,6 +355,7 @@ spec:
         displayName: Mode
         path: tenants.mode
         x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:select:static
         - urn:alm:descriptor:com.tectonic.ui:select:dynamic
       statusDescriptors:
       - description: Conditions of the Tempo deployment health.

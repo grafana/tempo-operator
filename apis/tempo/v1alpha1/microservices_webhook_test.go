@@ -16,8 +16,9 @@ import (
 func TestDefault(t *testing.T) {
 	defaulter := &Defaulter{
 		defaultImages: ImagesSpec{
-			Tempo:      "docker.io/grafana/tempo:x.y.z",
-			TempoQuery: "docker.io/grafana/tempo-query:x.y.z",
+			Tempo:        "docker.io/grafana/tempo:x.y.z",
+			TempoQuery:   "docker.io/grafana/tempo-query:x.y.z",
+			TempoGateway: "docker.io/observatorium/gateway:1.2.3",
 		},
 	}
 
@@ -39,8 +40,9 @@ func TestDefault(t *testing.T) {
 				Spec: MicroservicesSpec{
 					ReplicationFactor: 2,
 					Images: ImagesSpec{
-						Tempo:      "docker.io/grafana/tempo:1.2.3",
-						TempoQuery: "docker.io/grafana/tempo-query:1.2.3",
+						Tempo:        "docker.io/grafana/tempo:1.2.3",
+						TempoQuery:   "docker.io/grafana/tempo-query:1.2.3",
+						TempoGateway: "docker.io/observatorium/gateway:1.2.3",
 					},
 					ServiceAccount: "tempo-test-serviceaccount",
 					Retention: RetentionSpec{
@@ -65,8 +67,9 @@ func TestDefault(t *testing.T) {
 				Spec: MicroservicesSpec{
 					ReplicationFactor: 2,
 					Images: ImagesSpec{
-						Tempo:      "docker.io/grafana/tempo:1.2.3",
-						TempoQuery: "docker.io/grafana/tempo-query:1.2.3",
+						Tempo:        "docker.io/grafana/tempo:1.2.3",
+						TempoQuery:   "docker.io/grafana/tempo-query:1.2.3",
+						TempoGateway: "docker.io/observatorium/gateway:1.2.3",
 					},
 					ServiceAccount: "tempo-test-serviceaccount",
 					Retention: RetentionSpec{
@@ -113,8 +116,9 @@ func TestDefault(t *testing.T) {
 				Spec: MicroservicesSpec{
 					ReplicationFactor: 1,
 					Images: ImagesSpec{
-						Tempo:      "docker.io/grafana/tempo:x.y.z",
-						TempoQuery: "docker.io/grafana/tempo-query:x.y.z",
+						Tempo:        "docker.io/grafana/tempo:x.y.z",
+						TempoQuery:   "docker.io/grafana/tempo-query:x.y.z",
+						TempoGateway: "docker.io/observatorium/gateway:1.2.3",
 					},
 					ServiceAccount: "tempo-test-serviceaccount",
 					Retention: RetentionSpec{

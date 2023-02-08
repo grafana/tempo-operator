@@ -22,10 +22,11 @@ import (
 )
 
 var (
-	zeroQuantity                = resource.MustParse("0Gi")
-	tenGBQuantity               = resource.MustParse("10Gi")
-	errNoDefaultTempoImage      = errors.New("please specify a tempo image in the CR or in the operator configuration")
-	errNoDefaultTempoQueryImage = errors.New("please specify a tempo-query image in the CR or in the operator configuration")
+	zeroQuantity                  = resource.MustParse("0Gi")
+	tenGBQuantity                 = resource.MustParse("10Gi")
+	errNoDefaultTempoImage        = errors.New("please specify a tempo image in the CR or in the operator configuration")
+	errNoDefaultTempoGatewayImage = errors.New("please specify a tempo-gateway image in the CR or in the operator configuration")
+	errNoDefaultTempoQueryImage   = errors.New("please specify a tempo-query image in the CR or in the operator configuration")
 )
 
 // log is for logging in this package.
@@ -115,6 +116,13 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 	// Default replication factor if not specified.
 	if r.Spec.ReplicationFactor == 0 {
 		r.Spec.ReplicationFactor = defaultReplicationFactor
+	}
+
+	if r.Spec.Images.TempoGateway == "" {
+		if d.defaultImages.TempoGateway == "" {
+			return errNoDefaultTempoGatewayImage
+		}
+		r.Spec.Images.TempoGateway = d.defaultImages.TempoGateway
 	}
 
 	return nil

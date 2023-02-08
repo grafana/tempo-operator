@@ -20,8 +20,9 @@ import (
 func TestBuild(t *testing.T) {
 	ctrlConfig := configtempov1alpha1.ProjectConfig{
 		DefaultImages: v1alpha1.ImagesSpec{
-			Tempo:      "tempo-image",
-			TempoQuery: "tempo-query-image",
+			Tempo:        "tempo-image",
+			TempoQuery:   "tempo-query-image",
+			TempoGateway: "tempo-gateway-image",
 		},
 	}
 	params := manifestutils.Params{
