@@ -792,7 +792,7 @@ spec:
             description: MicroservicesStatus defines the observed state of Microservices.
             properties:
               components:
-                description: Components provides summary of all Loki pod status grouped
+                description: Components provides summary of all Tempo pod status grouped
                   per component.
                 properties:
                   compactor:
