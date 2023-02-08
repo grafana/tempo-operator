@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	messageReady   = "All components ready"
+	messageReady   = "All components are operational"
 	messageFailed  = "Some Microservice components failed"
 	messagePending = "Some Microservice components pending on dependencies"
 )
@@ -80,6 +80,17 @@ func updateCondition(ctx context.Context, k StatusClient, tempo v1alpha1.Microse
 	if err != nil {
 		return err
 	}
+
+	for _, c := range tempo.Status.Conditions {
+		if c.Type == condition.Type &&
+			c.Reason == condition.Reason &&
+			c.Message == condition.Message &&
+			c.Status == metav1.ConditionTrue {
+			// resource already has desired condition
+			return nil
+		}
+	}
+
 	changed := tempo.DeepCopy()
 	changed.Status.TempoVersion = tempoImage.Tag()
 

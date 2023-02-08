@@ -271,7 +271,7 @@ func (r *MicroservicesReconciler) UpdateStatus(ctx context.Context, s v1alpha1.M
 	return r.Client.Status().Update(ctx, &s, &client.UpdateOptions{})
 }
 
-func (r *MicroservicesReconciler) PatchStatus(ctx context.Context, original, changed *v1alpha1.Microservices) error {
+func (r *MicroservicesReconciler) PatchStatus(ctx context.Context, changed, original *v1alpha1.Microservices) error {
 	statusPatch := client.MergeFrom(original)
 	return r.Client.Status().Patch(ctx, changed, statusPatch)
 }
