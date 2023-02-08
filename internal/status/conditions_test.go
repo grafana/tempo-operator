@@ -33,7 +33,7 @@ func TestSetReadyCondition(t *testing.T) {
 				{
 					Type:    string(v1alpha1.ConditionReady),
 					Message: messageReady,
-					Reason:  string(v1alpha1.ReasonReadyComponents),
+					Reason:  string(v1alpha1.ReasonReady),
 					Status:  metav1.ConditionFalse,
 				},
 			},
@@ -41,7 +41,7 @@ func TestSetReadyCondition(t *testing.T) {
 				{
 					Type:    string(v1alpha1.ConditionReady),
 					Message: messageReady,
-					Reason:  string(v1alpha1.ReasonReadyComponents),
+					Reason:  string(v1alpha1.ReasonReady),
 					Status:  metav1.ConditionTrue,
 				},
 			},
@@ -54,7 +54,7 @@ func TestSetReadyCondition(t *testing.T) {
 				{
 					Type:    string(v1alpha1.ConditionReady),
 					Message: messageReady,
-					Reason:  string(v1alpha1.ReasonReadyComponents),
+					Reason:  string(v1alpha1.ReasonReady),
 					Status:  metav1.ConditionTrue,
 				},
 			},
@@ -66,7 +66,7 @@ func TestSetReadyCondition(t *testing.T) {
 				{
 					Type:    string(v1alpha1.ConditionReady),
 					Message: messageReady,
-					Reason:  string(v1alpha1.ReasonReadyComponents),
+					Reason:  string(v1alpha1.ReasonReady),
 					Status:  metav1.ConditionTrue,
 				},
 			},

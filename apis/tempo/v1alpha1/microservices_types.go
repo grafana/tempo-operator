@@ -210,8 +210,6 @@ const (
 	ReasonFailedComponents ConditionReason = "FailedComponents"
 	// ReasonPendingComponents when all/some Tempo components pending dependencies.
 	ReasonPendingComponents ConditionReason = "PendingComponents"
-	// ReasonReadyComponents when all Tempo components are ready to serve traffic.
-	ReasonReadyComponents ConditionReason = "ReadyComponents"
 )
 
 // PermissionType is a Tempo Gateway RBAC permission.

@@ -104,8 +104,8 @@ func TestSetComponentsStatus_WhenPodListExisting_SetPodStatusMap(t *testing.T) {
 		"Running": []string{"pod-b"},
 	}
 
-	k.UpdateStatusStub = func(ctx context.Context, s v1alpha1.Microservices) error {
-		assert.Equal(t, expected, s.Status.Components.Compactor)
+	k.PatchStatusStub = func(ctx context.Context, changed, original *v1alpha1.Microservices) error {
+		assert.Equal(t, expected, changed.Status.Components.Compactor)
 		return nil
 	}
 	err := SetComponentsStatus(context.TODO(), k, s)

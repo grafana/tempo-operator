@@ -13,6 +13,7 @@ import (
 func SetComponentsStatus(ctx context.Context, c StatusClient, s v1alpha1.Microservices) error {
 
 	var err error
+	original := s.DeepCopy()
 	s.Status.Components = v1alpha1.ComponentStatus{}
 	s.Status.Components.Compactor, err = appendPodStatus(ctx, c, manifestutils.CompactorComponentName, s)
 	if err != nil {
@@ -39,7 +40,7 @@ func SetComponentsStatus(ctx context.Context, c StatusClient, s v1alpha1.Microse
 		return kverrors.Wrap(err, "failed lookup Microservice component pods status", "name", manifestutils.IngesterComponentName)
 	}
 
-	return c.UpdateStatus(ctx, s)
+	return c.PatchStatus(ctx, &s, original)
 }
 
 func appendPodStatus(ctx context.Context, c StatusClient, componentName string, stack v1alpha1.Microservices) (v1alpha1.PodStatusMap, error) {

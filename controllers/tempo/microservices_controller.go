@@ -40,16 +40,6 @@ type MicroservicesReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-type DegradedError struct {
-	Reason  v1alpha1.ConditionReason
-	Message string
-	Requeue bool
-}
-
-func (e *DegradedError) Error() string {
-	return fmt.Sprintf("cluster degraded: %s: %s", e.Reason, e.Message)
-}
-
 // +kubebuilder:rbac:groups="",resources=services;configmaps;serviceaccounts;secrets,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=apps,resources=deployments;statefulsets,verbs=get;list;watch;create;update;patch;delete
 
@@ -123,7 +113,7 @@ func (r *MicroservicesReconciler) handleDegradedError(ctx context.Context, tempo
 func (r *MicroservicesReconciler) reconcileManifests(ctx context.Context, log logr.Logger, req ctrl.Request, tempo v1alpha1.Microservices) error {
 	storageConfig, err := r.getStorageConfig(ctx, tempo)
 	if err != nil {
-		return &DegradedError{
+		return &status.DegradedError{
 			Reason:  v1alpha1.ReasonInvalidStorageConfig,
 			Message: err.Error(),
 			Requeue: false,
@@ -265,10 +255,6 @@ func (r *MicroservicesReconciler) GetPodsComponent(ctx context.Context, componen
 	}
 	err := r.Client.List(ctx, pods, opts...)
 	return pods, err
-}
-
-func (r *MicroservicesReconciler) UpdateStatus(ctx context.Context, s v1alpha1.Microservices) error {
-	return r.Client.Status().Update(ctx, &s, &client.UpdateOptions{})
 }
 
 func (r *MicroservicesReconciler) PatchStatus(ctx context.Context, changed, original *v1alpha1.Microservices) error {

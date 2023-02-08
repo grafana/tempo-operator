@@ -33,7 +33,7 @@ func SetReadyCondition(ctx context.Context, k StatusClient, tempo v1alpha1.Micro
 	ready := metav1.Condition{
 		Type:    string(v1alpha1.ConditionReady),
 		Message: messageReady,
-		Reason:  string(v1alpha1.ReasonReadyComponents),
+		Reason:  string(v1alpha1.ReasonReady),
 	}
 
 	return updateCondition(ctx, k, tempo, ready)
