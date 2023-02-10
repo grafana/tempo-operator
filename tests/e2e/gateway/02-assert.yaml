@@ -1,0 +1,212 @@
+apiVersion: v1
+data:
+  rbac.yaml: "tenants:\n- name: test-oidc\n  id: test-oidc\n  oidc:\n    issuerURL: https://dex.klimlive.de/dex\n    \n  opa:\n    query: data.tempo.allow\n    paths:\n \   - /etc/tempo-gateway/cm/rbac.yaml\n    - /etc/tempo-gateway/cm/tempo-gateway.regodc"
+  tempo-gateway.rego: |
+    package tempo
+
+    import input
+    import data.roles
+    import data.roleBindings
+
+    default allow = false
+
+    allow {
+      some roleNames
+      roleNames = roleBindings[matched_role_binding[_]].roles
+      roles[i].name == roleNames[_]
+      roles[i].resources[_] = input.resource
+      roles[i].permissions[_] = input.permission
+      roles[i].tenants[_] = input.tenant
+    }
+
+    matched_role_binding[i] {
+      roleBindings[i].subjects[_] == {"name": input.subject, "kind": "user"}
+    }
+
+    matched_role_binding[i] {
+      roleBindings[i].subjects[_] == {"name": input.groups[_], "kind": "group"}
+    }
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/component: gateway
+    app.kubernetes.io/created-by: tempo-controller
+    app.kubernetes.io/instance: foo
+    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/name: tempo
+  name: tempo-foo-gateway
+  ownerReferences:
+  - apiVersion: tempo.grafana.com/v1alpha1
+    kind: Microservices
+    name: foo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: gateway
+    app.kubernetes.io/created-by: tempo-controller
+    app.kubernetes.io/instance: foo
+    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/name: tempo
+  name: tempo-foo-gateway
+  ownerReferences:
+  - apiVersion: tempo.grafana.com/v1alpha1
+    kind: Microservices
+    name: foo
+spec:
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ports:
+  - name: http-memberlist
+    port: 7946
+    protocol: TCP
+    targetPort: http-memberlist
+  - name: http
+    port: 3200
+    protocol: TCP
+    targetPort: http
+  - name: grpc
+    port: 9095
+    protocol: TCP
+    targetPort: grpc
+  selector:
+    app.kubernetes.io/component: gateway
+    app.kubernetes.io/created-by: tempo-controller
+    app.kubernetes.io/instance: foo
+    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/name: tempo
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/component: gateway
+    app.kubernetes.io/created-by: tempo-controller
+    app.kubernetes.io/instance: foo
+    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/name: tempo
+  name: tempo-foo-gateway
+  ownerReferences:
+  - apiVersion: tempo.grafana.com/v1alpha1
+    kind: Microservices
+    name: foo
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: gateway
+      app.kubernetes.io/created-by: tempo-controller
+      app.kubernetes.io/instance: foo
+      app.kubernetes.io/managed-by: tempo-controller
+      app.kubernetes.io/name: tempo
+  template:
+    metadata:
+      annotations:
+        tempo.grafana.com/config.hash: f7c3becc49167650e0d9dc187d685dc9c7ab21db6ba9097b6b10b9db5dabd9e1
+      labels:
+        app.kubernetes.io/component: gateway
+        app.kubernetes.io/created-by: tempo-controller
+        app.kubernetes.io/instance: foo
+        app.kubernetes.io/managed-by: tempo-controller
+        app.kubernetes.io/name: tempo
+    spec:
+      containers:
+      - args:
+        - --web.listen=0.0.0.0:8080
+        - --web.internal.listen=0.0.0.0:8081
+        - --traces.write.endpoint=tempo-foo-distributor:4317
+        - --traces.read.endpoint=tempo-foo-query:16686
+        - --grpc.listen=0.0.0.0:8090
+        - --rbac.config=/etc/tempo-gateway/cm/rbac.yaml
+        - --tenants.config=/etc/tempo-gateway/secert/tenants.yaml
+        - --log.level=warn
+        image: pavolloffay/observatorium-api:001
+        livenessProbe:
+          failureThreshold: 10
+          httpGet:
+            path: /live
+            port: 8081
+            scheme: HTTP
+          periodSeconds: 30
+          successThreshold: 1
+          timeoutSeconds: 2
+        name: tempo-gateway
+        ports:
+        - containerPort: 8090
+          name: grpc-public
+          protocol: TCP
+        - containerPort: 8081
+          name: internal
+          protocol: TCP
+        - containerPort: 8080
+          name: public
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 12
+          httpGet:
+            path: /ready
+            port: 8081
+            scheme: HTTP
+          periodSeconds: 5
+          successThreshold: 1
+          timeoutSeconds: 1
+        resources: {}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+        volumeMounts:
+        - mountPath: /etc/tempo-gateway/cm
+          name: rbac-rego
+          readOnly: true
+        - mountPath: /etc/tempo-gateway/secert/tenants.yaml
+          name: tenant
+          readOnly: true
+          subPath: tenants.yaml
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      serviceAccount: tempo-foo-serviceaccount
+      serviceAccountName: tempo-foo-serviceaccount
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - configMap:
+          defaultMode: 420
+          items:
+          - key: rbac.yaml
+            path: rbac.yaml
+          - key: tempo-gateway.rego
+            path: tempo-gateway.rego
+          name: tempo-foo-gateway
+        name: rbac-rego
+      - name: tenant
+        secret:
+          defaultMode: 420
+          items:
+          - key: tenants.yaml
+            path: tenants.yaml
+          secretName: tempo-foo-gateway
+---
+apiVersion: v1
+data:
+  tenants.yaml: dGVuYW50czoKLSBuYW1lOiB0ZXN0LW9pZGMKICBpZDogdGVzdC1vaWRjCiAgb2lkYzoKICAgIGlzc3VlclVSTDogaHR0cHM6Ly9kZXgua2xpbWxpdmUuZGUvZGV4CiAgICAKICBvcGE6CiAgICBxdWVyeTogZGF0YS50ZW1wby5hbGxvdwogICAgcGF0aHM6CiAgICAtIC9ldGMvdGVtcG8tZ2F0ZXdheS9jbS9yYmFjLnlhbWwKICAgIC0gL2V0Yy90ZW1wby1nYXRld2F5L2NtL3RlbXBvLWdhdGV3YXkucmVnbw==
+kind: Secret
+metadata:
+  labels:
+    app.kubernetes.io/component: gateway
+    app.kubernetes.io/created-by: tempo-controller
+    app.kubernetes.io/instance: foo
+    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/name: tempo
+  name: tempo-foo-gateway
+  ownerReferences:
+  - apiVersion: tempo.grafana.com/v1alpha1
+    kind: Microservices
+    name: foo
+type: Opaque
