@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/url"
+	"strings"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -159,24 +159,6 @@ func (r *MicroservicesReconciler) reconcileManifests(ctx context.Context, log lo
 	return nil
 }
 
-func validateStorageSecret(storageSecret *corev1.Secret) error {
-	if storageSecret.Data == nil ||
-		storageSecret.Data["endpoint"] == nil ||
-		storageSecret.Data["bucket"] == nil ||
-		storageSecret.Data["access_key_id"] == nil ||
-		storageSecret.Data["access_key_secret"] == nil {
-		return fmt.Errorf("storage secret should contain endpoint and bucket, access_key_id and access_key_secret fields")
-	}
-
-	u, err := url.ParseRequestURI(string(storageSecret.Data["endpoint"]))
-	// ParseRequestURI also accepts absolute paths, therefore we need to check if the URL scheme is set
-	if err != nil || u.Scheme == "" {
-		return fmt.Errorf("'endpoint' field of storage secret must be a valid URL")
-	}
-
-	return nil
-}
-
 func (r *MicroservicesReconciler) getStorageConfig(ctx context.Context, tempo v1alpha1.Microservices) (*manifestutils.StorageParams, error) {
 	storageSecret := &corev1.Secret{}
 	err := r.Get(ctx, types.NamespacedName{Namespace: tempo.Namespace, Name: tempo.Spec.Storage.Secret}, storageSecret)
@@ -184,9 +166,13 @@ func (r *MicroservicesReconciler) getStorageConfig(ctx context.Context, tempo v1
 		return nil, fmt.Errorf("could not fetch storage secret: %w", err)
 	}
 
-	err = validateStorageSecret(storageSecret)
-	if err != nil {
-		return nil, fmt.Errorf("invalid storage secret: %w", err)
+	fieldErrs := v1alpha1.ValidateStorageSecret(tempo, *storageSecret)
+	if len(fieldErrs) > 0 {
+		msgs := make([]string, len(fieldErrs))
+		for i, fieldErr := range fieldErrs {
+			msgs[i] = fieldErr.Detail
+		}
+		return nil, fmt.Errorf("invalid storage secret: %s", strings.Join(msgs, ", "))
 	}
 
 	return &manifestutils.StorageParams{S3: manifestutils.S3{
@@ -285,20 +271,18 @@ func updateStatus(ctx context.Context, tempo v1alpha1.Microservices, statusWrite
 			}
 		}
 	} else {
-		// In case the degraded condition is not true yet, set degraded condition and unset ready condition
-		if !meta.IsStatusConditionTrue(changed.Status.Conditions, string(v1alpha1.ConditionDegraded)) {
-			meta.SetStatusCondition(&changed.Status.Conditions, metav1.Condition{
-				Type:    string(v1alpha1.ConditionDegraded),
-				Status:  metav1.ConditionTrue,
-				Reason:  string(degraded.Reason),
-				Message: degraded.Message,
-			})
+		// Always update the degraded condition, because the reason or message can change.
+		meta.SetStatusCondition(&changed.Status.Conditions, metav1.Condition{
+			Type:    string(v1alpha1.ConditionDegraded),
+			Status:  metav1.ConditionTrue,
+			Reason:  string(degraded.Reason),
+			Message: degraded.Message,
+		})
 
-			readyCond := meta.FindStatusCondition(changed.Status.Conditions, string(v1alpha1.ConditionReady))
-			if readyCond != nil {
-				readyCond.Status = metav1.ConditionFalse
-				readyCond.LastTransitionTime = metav1.NewTime(time.Now())
-			}
+		readyCond := meta.FindStatusCondition(changed.Status.Conditions, string(v1alpha1.ConditionReady))
+		if readyCond != nil && readyCond.Status == metav1.ConditionTrue {
+			readyCond.Status = metav1.ConditionFalse
+			readyCond.LastTransitionTime = metav1.NewTime(time.Now())
 		}
 	}
 

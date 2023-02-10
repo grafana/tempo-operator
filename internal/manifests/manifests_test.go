@@ -21,9 +21,7 @@ func TestBuildAll(t *testing.T) {
 			Spec: v1alpha1.MicroservicesSpec{
 				Components: v1alpha1.TempoComponentsSpec{
 					Gateway: v1alpha1.TempoGatewaySpec{
-						Gateway: v1alpha1.GatewaySpec{
-							Enabled: true,
-						},
+						Enabled: true,
 					},
 				},
 				Tenants: &v1alpha1.TenantsSpec{
