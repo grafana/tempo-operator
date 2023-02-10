@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"embed"
 	"fmt"
-	"io"
 	"path"
 	"text/template"
 
@@ -75,36 +74,27 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 // generate gateway configuration files.
 func getCfgs(opts options) (rbacCfg []byte, tenantsCfg []byte, regoCfg []byte, err error) {
 	// Build tempo gateway rbac yaml
-	w := bytes.NewBuffer(nil)
-	err = tempoGatewayRbacYAMLTmpl.Execute(w, opts)
+	byteBuffer := &bytes.Buffer{}
+	err = tempoGatewayRbacYAMLTmpl.Execute(byteBuffer, opts)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("failed to create tempo gateway rbac configuration, err: %w", err)
 	}
-	rbacCfg, err = io.ReadAll(w)
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("failed to read rbac configuration, err: %w", err)
-	}
+	rbacCfg = byteBuffer.Bytes()
 	// Build tempo gateway tenants yaml
-	w = bytes.NewBuffer(nil)
-	err = tempoGatewayTenantsYAMLTmpl.Execute(w, opts)
+	byteBuffer.Reset()
+	err = tempoGatewayTenantsYAMLTmpl.Execute(byteBuffer, opts)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("failed to create tempo gateway tenants configuration, err: %w", err)
 	}
-	tenantsCfg, err = io.ReadAll(w)
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("failed to read tenant configuration, err: %w", err)
-	}
+	tenantsCfg = byteBuffer.Bytes()
 	// Build tempo gateway observatorium rego for static mode.
 	if opts.Tenants.Mode == tempov1alpha1.Static {
-		w = bytes.NewBuffer(nil)
-		err = tempoGatewayRegoTmpl.Execute(w, opts)
+		byteBuffer.Reset()
+		err = tempoGatewayRegoTmpl.Execute(byteBuffer, opts)
 		if err != nil {
 			return nil, nil, nil, fmt.Errorf("failed to create tempo gateway rego configuration, err: %w", err)
 		}
-		regoCfg, err = io.ReadAll(w)
-		if err != nil {
-			return nil, nil, nil, fmt.Errorf("failed to read tempo rego configuration, err: %w", err)
-		}
+		regoCfg = byteBuffer.Bytes()
 		return rbacCfg, tenantsCfg, regoCfg, nil
 	}
 	return rbacCfg, tenantsCfg, nil, nil
@@ -146,7 +136,7 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 					Tolerations:        cfg.Tolerations,
 					Containers: []corev1.Container{
 						{
-							Name:  "tempo",
+							Name:  "tempo-gateway",
 							Image: tempo.Spec.Images.TempoGateway,
 							Args: []string{
 								fmt.Sprintf("--web.listen=0.0.0.0:%d", portPublic),
@@ -154,9 +144,9 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 								fmt.Sprintf("--traces.write.endpoint=%s:4317", naming.Name("distributor", tempo.Name)),
 								fmt.Sprintf("--traces.read.endpoint=%s:16686", naming.Name("query", tempo.Name)),
 								fmt.Sprintf("--grpc.listen=0.0.0.0:%d", portGRPC),
-								fmt.Sprintf("--rbac.config=/etc/observatorium/%s", tempoGatewayRbacFileName),
-								fmt.Sprintf("--tenants.config=/etc/observatorium/%s", tempoGatewayTenantFileName),
-								"--log.level=error",
+								fmt.Sprintf("--rbac.config=%s", path.Join(tempoGatewayMountDir, "cm", tempoGatewayRbacFileName)),
+								fmt.Sprintf("--tenants.config=%s", path.Join(tempoGatewayMountDir, "secert", tempoGatewayTenantFileName)),
+								"--log.level=warn",
 							},
 							Ports: []corev1.ContainerPort{
 								{
@@ -201,22 +191,15 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 							},
 							VolumeMounts: []corev1.VolumeMount{
 								{
-									Name:      "rbac",
+									Name:      "rbac-rego",
 									ReadOnly:  true,
-									MountPath: path.Join(tempoGatewayMountDir, tempoGatewayRbacFileName),
-									SubPath:   "rbac.yaml",
+									MountPath: path.Join(tempoGatewayMountDir, "cm"),
 								},
 								{
-									Name:      "tenants",
+									Name:      "tenant",
 									ReadOnly:  true,
-									MountPath: path.Join(tempoGatewayMountDir, tempoGatewayTenantFileName),
-									SubPath:   "tenants.yaml",
-								},
-								{
-									Name:      "tempo-gateway",
-									ReadOnly:  true,
-									MountPath: path.Join(tempoGatewayMountDir, tempoGatewayRegoFileName),
-									SubPath:   "lokistack-gateway.rego",
+									MountPath: path.Join(tempoGatewayMountDir, "secert", tempoGatewayTenantFileName),
+									SubPath:   tempoGatewayTenantFileName,
 								},
 							},
 							// TODO(frzifus): add gateway to resource pool.
@@ -226,30 +209,36 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 					},
 					Volumes: []corev1.Volume{
 						{
-							Name: "rbac",
+							Name: "rbac-rego",
 							VolumeSource: corev1.VolumeSource{
 								ConfigMap: &corev1.ConfigMapVolumeSource{
 									LocalObjectReference: corev1.LocalObjectReference{
 										Name: naming.Name(tempoComponentName, tempo.Name),
 									},
-								},
-							},
-						},
-						{
-							Name: "tenants",
-							VolumeSource: corev1.VolumeSource{
-								ConfigMap: &corev1.ConfigMapVolumeSource{
-									LocalObjectReference: corev1.LocalObjectReference{
-										Name: naming.Name(tempoComponentName, tempo.Name),
+									Items: []corev1.KeyToPath{
+										{
+											Key:  tempoGatewayRbacFileName,
+											Path: tempoGatewayRbacFileName,
+										},
+										{
+											Key:  tempoGatewayRegoFileName,
+											Path: tempoGatewayRegoFileName,
+										},
 									},
 								},
 							},
 						},
 						{
-							Name: "tempo-gateway",
+							Name: "tenant",
 							VolumeSource: corev1.VolumeSource{
 								Secret: &corev1.SecretVolumeSource{
 									SecretName: naming.Name(tempoComponentName, tempo.Name),
+									Items: []corev1.KeyToPath{
+										{
+											Key:  tempoGatewayTenantFileName,
+											Path: tempoGatewayTenantFileName,
+										},
+									},
 								},
 							},
 						},

@@ -700,7 +700,6 @@ spec:
                           description: TenantName defines the name of the tenant.
                           type: string
                       required:
-                      - oidc
                       - tenantId
                       - tenantName
                       type: object
@@ -785,6 +784,7 @@ spec:
                     default: dynamic
                     description: Mode defines the multitenancy mode.
                     enum:
+                    - static
                     - dynamic
                     type: string
                 required:
