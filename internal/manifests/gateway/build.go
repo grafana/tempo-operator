@@ -52,7 +52,7 @@ var (
 
 // BuildGateway creates gateway objects.
 func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
-	if !params.Tempo.Spec.Components.Gateway.Gateway.Enabled ||
+	if !params.Tempo.Spec.Components.Gateway.Enabled ||
 		params.Tempo.Spec.Tenants == nil {
 		return []client.Object{}, nil
 	}

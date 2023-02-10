@@ -476,21 +476,6 @@ type TempoGatewaySpec struct {
 	// +kubebuilder:validation:Optional
 	TempoComponentSpec `json:"component,omitempty"`
 
-	// Gateway defines Tempo gateway spefic options.
-	//
-	// +optional
-	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tempo Gateway Settings"
-	Gateway GatewaySpec `json:"tempoGateway"`
-}
-
-// GatewaySpec defines Tempo Gateway options.
-type GatewaySpec struct {
-	// Enabled is used to define if a tempo gateway component should be created.
-	//
-	// +optional
-	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger Query Enabled"
 	Enabled bool `json:"enabled"`
 }
 

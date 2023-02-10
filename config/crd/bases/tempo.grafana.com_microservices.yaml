@@ -449,14 +449,10 @@ spec:
                             type: array
                             x-kubernetes-list-type: atomic
                         type: object
-                      tempoGateway:
-                        description: Gateway defines Tempo gateway spefic options.
-                        properties:
-                          enabled:
-                            description: Enabled is used to define if a tempo gateway
-                              component should be created.
-                            type: boolean
-                        type: object
+                      enabled:
+                        type: boolean
+                    required:
+                    - enabled
                     type: object
                   ingester:
                     description: Ingester defines the ingester component spec.

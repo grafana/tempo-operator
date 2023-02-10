@@ -237,13 +237,6 @@ spec:
           component.
         displayName: Component Replicas
         path: template.gateway.replicas
-      - description: Gateway defines Tempo gateway spefic options.
-        displayName: Tempo Gateway Settings
-        path: template.gateway.tempoGateway
-      - description: Enabled is used to define if a tempo gateway component should
-          be created.
-        displayName: Jaeger Query Enabled
-        path: template.gateway.tempoGateway.enabled
       - description: Tolerations defines component specific pod tolerations.
         displayName: Tolerations
         path: template.gateway.tolerations
