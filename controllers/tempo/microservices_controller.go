@@ -73,55 +73,55 @@ func (r *MicroservicesReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	}
 
 	err := r.reconcileManifests(ctx, log, req, tempo)
-	if res, derr := r.handleDegradedError(ctx, tempo, err); derr != nil {
-		return res, derr
-	}
-
-	return r.refreshComponents(ctx, tempo)
+	return r.handleStatus(ctx, tempo, err)
 }
 
-// handleDegradedError verify if an error is type status.DegradedError, if that is the case, it will update the CR
+// handleStatus set all components status, then verify if an error is type status.DegradedError, if that is the case, it will update the CR
 // status conditions to Degraded. if not it will throw an error as usual.
-func (r *MicroservicesReconciler) handleDegradedError(ctx context.Context, tempo v1alpha1.Microservices, err error) (ctrl.Result, error) {
+func (r *MicroservicesReconciler) handleStatus(ctx context.Context, tempo v1alpha1.Microservices, err error) (ctrl.Result, error) {
+	// First refresh components
+	newStatus, rerr := status.GetComponetsStatus(ctx, r, tempo)
+	requeue := false
+
+	if rerr != nil {
+		return ctrl.Result{
+			Requeue:      requeue,
+			RequeueAfter: time.Second,
+		}, err
+	}
+
+	// If is not degraded error, refresh and return error
 	var degraded *status.DegradedError
-	if errors.As(err, &degraded) {
-		s := tempo.Status.DeepCopy()
-		s.Conditions = status.DegradedCondition(tempo, degraded.Message, degraded.Reason)
-		requeue, err := status.Refresh(ctx, r, tempo, s)
-		if err != nil {
+	if !errors.As(err, &degraded) {
+		requeue, rerr := status.Refresh(ctx, r, tempo, &newStatus)
+		// Error refreshing components status
+		if rerr != nil {
 			return ctrl.Result{
 				Requeue:      requeue,
 				RequeueAfter: time.Second,
 			}, err
 		}
-
+		// Return original error
 		return ctrl.Result{
-			Requeue:      degraded.Requeue,
-			RequeueAfter: time.Second,
-		}, nil
+			Requeue: false,
+		}, err
 	}
 
-	if err != nil {
-		return ctrl.Result{}, err
-	}
+	// Degraded error
+	newStatus.Conditions = status.DegradedCondition(tempo, degraded.Message, degraded.Reason)
 
-	return ctrl.Result{}, nil
-}
+	// Refresh status
+	requeue, err = status.Refresh(ctx, r, tempo, &newStatus)
 
-// refreshComponents refresh component status in the status field of the CR.
-func (r *MicroservicesReconciler) refreshComponents(ctx context.Context, tempo v1alpha1.Microservices) (ctrl.Result, error) {
-	s, err := status.GetComponetsStatus(ctx, r, tempo)
+	// Error refreshing status
 	if err != nil {
 		return ctrl.Result{
-			Requeue:      false,
+			Requeue:      requeue || degraded.Requeue,
 			RequeueAfter: time.Second,
 		}, err
 	}
-	requeue, err := status.Refresh(ctx, r, tempo, &s)
-	return ctrl.Result{
-		Requeue:      requeue,
-		RequeueAfter: time.Second,
-	}, err
+	// No errors at all.
+	return ctrl.Result{}, nil
 }
 
 func (r *MicroservicesReconciler) reconcileManifests(ctx context.Context, log logr.Logger, req ctrl.Request, tempo v1alpha1.Microservices) error {
