@@ -1546,7 +1546,7 @@ Tenants defines the per-tenant authentication and authorization spec.
         <td>
           Mode defines the multitenancy mode.<br/>
           <br/>
-            <i>Enum</i>: dynamic<br/>
+            <i>Enum</i>: static, dynamic<br/>
             <i>Default</i>: dynamic<br/>
         </td>
         <td>true</td>
@@ -1585,13 +1585,6 @@ AuthenticationSpec defines the oidc configuration per tenant for tempo Gateway c
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#microservicesspectenantsauthenticationindexoidc">oidc</a></b></td>
-        <td>object</td>
-        <td>
-          OIDC defines the spec for the OIDC tenant's authentication.<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
         <td><b>tenantId</b></td>
         <td>string</td>
         <td>
@@ -1605,6 +1598,13 @@ AuthenticationSpec defines the oidc configuration per tenant for tempo Gateway c
           TenantName defines the name of the tenant.<br/>
         </td>
         <td>true</td>
+      </tr><tr>
+        <td><b><a href="#microservicesspectenantsauthenticationindexoidc">oidc</a></b></td>
+        <td>object</td>
+        <td>
+          OIDC defines the spec for the OIDC tenant's authentication.<br/>
+        </td>
+        <td>false</td>
       </tr></tbody>
 </table>
 

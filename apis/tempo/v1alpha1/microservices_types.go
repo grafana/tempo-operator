@@ -102,7 +102,7 @@ type MicroservicesStatus struct {
 // ModeType is the authentication/authorization mode in which Tempo Gateway
 // will be configured.
 //
-// +kubebuilder:validation:Enum=dynamic
+// +kubebuilder:validation:Enum=static;dynamic
 type ModeType string
 
 const (
@@ -278,8 +278,8 @@ type AuthenticationSpec struct {
 	TenantID string `json:"tenantId"`
 	// OIDC defines the spec for the OIDC tenant's authentication.
 	//
-	// +required
-	// +kubebuilder:validation:Required
+	// +optional
+	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="OIDC Configuration"
 	OIDC *OIDCSpec `json:"oidc"`
 }
