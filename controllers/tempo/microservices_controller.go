@@ -80,6 +80,8 @@ func (r *MicroservicesReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	return r.refreshComponents(ctx, tempo)
 }
 
+// handleDegradedError verify if an error is type status.DegradedError, if that is the case, it will update the CR
+// status conditions to Degraded. if not it will throw an error as usual.
 func (r *MicroservicesReconciler) handleDegradedError(ctx context.Context, tempo v1alpha1.Microservices, err error) (ctrl.Result, error) {
 	var degraded *status.DegradedError
 	if errors.As(err, &degraded) {
@@ -99,7 +101,6 @@ func (r *MicroservicesReconciler) handleDegradedError(ctx context.Context, tempo
 		}, nil
 	}
 
-	// return early for non-degraded errors
 	if err != nil {
 		return ctrl.Result{}, err
 	}
@@ -107,6 +108,7 @@ func (r *MicroservicesReconciler) handleDegradedError(ctx context.Context, tempo
 	return ctrl.Result{}, nil
 }
 
+// refreshComponents refresh component status in the status field of the CR.
 func (r *MicroservicesReconciler) refreshComponents(ctx context.Context, tempo v1alpha1.Microservices) (ctrl.Result, error) {
 	s, err := status.GetComponetsStatus(ctx, r, tempo)
 	if err != nil {
@@ -258,6 +260,7 @@ func (r *MicroservicesReconciler) findMicroservicesForStorageSecret(secret clien
 	return requests
 }
 
+// StatusClient methods, used for fetch component pod status and refresh the status of the CR.
 func (r *MicroservicesReconciler) GetPodsComponent(ctx context.Context, componentName string, stack v1alpha1.Microservices) (*corev1.PodList, error) {
 	pods := &corev1.PodList{}
 
