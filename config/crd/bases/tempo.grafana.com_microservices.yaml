@@ -449,8 +449,8 @@ spec:
                             type: array
                             x-kubernetes-list-type: atomic
                         type: object
-                      jaegerQuery:
-                        description: JaegerQuerySpec defines Jaeger Query spefic options.
+                      tempoGateway:
+                        description: Gateway defines Tempo gateway spefic options.
                         properties:
                           enabled:
                             description: Enabled is used to define if a tempo gateway
@@ -782,10 +782,10 @@ spec:
                         type: array
                     type: object
                   mode:
-                    default: dynamic
+                    default: static
                     description: Mode defines the multitenancy mode.
                     enum:
-                    - dynamic
+                    - static
                     type: string
                 required:
                 - mode

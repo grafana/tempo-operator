@@ -1023,10 +1023,10 @@ Gateway defines the tempo gateway spec.
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#microservicesspectemplategatewayjaegerquery">jaegerQuery</a></b></td>
+        <td><b><a href="#microservicesspectemplategatewaytempogateway">tempoGateway</a></b></td>
         <td>object</td>
         <td>
-          JaegerQuerySpec defines Jaeger Query spefic options.<br/>
+          Gateway defines Tempo gateway spefic options.<br/>
         </td>
         <td>false</td>
       </tr></tbody>
@@ -1134,12 +1134,12 @@ The pod this Toleration is attached to tolerates any taint that matches the trip
 </table>
 
 
-### Microservices.spec.template.gateway.jaegerQuery
+### Microservices.spec.template.gateway.tempoGateway
 <sup><sup>[↩ Parent](#microservicesspectemplategateway)</sup></sup>
 
 
 
-JaegerQuerySpec defines Jaeger Query spefic options.
+Gateway defines Tempo gateway spefic options.
 
 <table>
     <thead>
@@ -1546,8 +1546,8 @@ Tenants defines the per-tenant authentication and authorization spec.
         <td>
           Mode defines the multitenancy mode.<br/>
           <br/>
-            <i>Enum</i>: dynamic<br/>
-            <i>Default</i>: dynamic<br/>
+            <i>Enum</i>: static<br/>
+            <i>Default</i>: static<br/>
         </td>
         <td>true</td>
       </tr><tr>
