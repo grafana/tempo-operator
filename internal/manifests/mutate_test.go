@@ -81,6 +81,25 @@ func TestGetMutateFunc_MutateConfigMap(t *testing.T) {
 	require.Equal(t, got.Data, want.Data)
 }
 
+func TestGetMutateFunc_MutateSecert(t *testing.T) {
+	got := &corev1.Secret{
+		Data: map[string][]byte{},
+	}
+
+	want := &corev1.Secret{
+		Data: map[string][]byte{"btest": []byte("btestss")},
+	}
+
+	f := manifests.MutateFuncFor(got, want)
+	err := f()
+	require.NoError(t, err)
+
+	// Ensure partial mutation applied
+	require.Equal(t, got.Labels, want.Labels)
+	require.Equal(t, got.Annotations, want.Annotations)
+	require.Equal(t, got.Data, want.Data)
+}
+
 func TestGetMutateFunc_MutateServiceSpec(t *testing.T) {
 	got := &corev1.Service{
 		Spec: corev1.ServiceSpec{
