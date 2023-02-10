@@ -14,7 +14,7 @@ import (
 )
 
 func TestRefreshTagError(t *testing.T) {
-	c := &StatusClientStub{}
+	c := &statusClientStub{}
 	stack := v1alpha1.Microservices{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "my-stack",
@@ -33,7 +33,7 @@ func TestRefreshTagError(t *testing.T) {
 }
 
 func TestRefreshPatchError(t *testing.T) {
-	c := &StatusClientStub{}
+	c := &statusClientStub{}
 	c.PatchStatusStub = func(ctx context.Context, changed, original *v1alpha1.Microservices) error {
 		return apierrors.NewConflict(schema.GroupResource{}, original.Name,
 			errors.New("patching error, likely some other thing modified this and the patch was rejected"))
@@ -57,7 +57,7 @@ func TestRefreshPatchError(t *testing.T) {
 }
 
 func TestRefreshNoError(t *testing.T) {
-	c := &StatusClientStub{}
+	c := &statusClientStub{}
 	callPatchCount := 0
 
 	stack := v1alpha1.Microservices{

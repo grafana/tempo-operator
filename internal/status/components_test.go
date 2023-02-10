@@ -36,7 +36,7 @@ func TestSetComponentsStatus_WhenListReturnError_ReturnError(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(tc.componentNotFound, func(t *testing.T) {
-			k := &StatusClientStub{}
+			k := &statusClientStub{}
 
 			k.GetPodsComponentStub = func(ctx context.Context, componentName string, stack v1alpha1.Microservices) (*corev1.PodList, error) {
 				if tc.componentNotFound == componentName {
@@ -64,7 +64,7 @@ func TestSetComponentsStatus_WhenListReturnError_ReturnError(t *testing.T) {
 }
 
 func TestSetComponentsStatus_WhenSomePodPending(t *testing.T) {
-	k := &StatusClientStub{}
+	k := &statusClientStub{}
 
 	k.GetPodsComponentStub = func(ctx context.Context, componentName string, stack v1alpha1.Microservices) (*corev1.PodList, error) {
 		pods := v1.PodList{
@@ -131,7 +131,7 @@ func TestSetComponentsStatus_WhenSomePodPending(t *testing.T) {
 }
 
 func TestSetComponentsStatus_WhenSomePodFailed(t *testing.T) {
-	k := &StatusClientStub{}
+	k := &statusClientStub{}
 
 	k.GetPodsComponentStub = func(ctx context.Context, componentName string, stack v1alpha1.Microservices) (*corev1.PodList, error) {
 		pods := v1.PodList{
@@ -198,7 +198,7 @@ func TestSetComponentsStatus_WhenSomePodFailed(t *testing.T) {
 }
 
 func TestSetComponentsStatus_WhenSomePodUnknow(t *testing.T) {
-	k := &StatusClientStub{}
+	k := &statusClientStub{}
 
 	k.GetPodsComponentStub = func(ctx context.Context, componentName string, stack v1alpha1.Microservices) (*corev1.PodList, error) {
 		pods := v1.PodList{
@@ -265,7 +265,7 @@ func TestSetComponentsStatus_WhenSomePodUnknow(t *testing.T) {
 }
 
 func TestSetComponentsStatus_WhenAllReady(t *testing.T) {
-	k := &StatusClientStub{}
+	k := &statusClientStub{}
 
 	k.GetPodsComponentStub = func(ctx context.Context, componentName string, stack v1alpha1.Microservices) (*corev1.PodList, error) {
 		pods := v1.PodList{

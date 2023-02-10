@@ -70,7 +70,7 @@ func TestReadyCondition(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 
-			client := &StatusClientStub{}
+			client := &statusClientStub{}
 
 			stack := v1alpha1.Microservices{
 				ObjectMeta: metav1.ObjectMeta{
@@ -161,7 +161,7 @@ func TestFailedCondition(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 
-			client := &StatusClientStub{}
+			client := &statusClientStub{}
 
 			stack := v1alpha1.Microservices{
 				ObjectMeta: metav1.ObjectMeta{
@@ -252,7 +252,7 @@ func TestPendingCondition(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 
-			client := &StatusClientStub{}
+			client := &statusClientStub{}
 
 			stack := v1alpha1.Microservices{
 				ObjectMeta: metav1.ObjectMeta{
