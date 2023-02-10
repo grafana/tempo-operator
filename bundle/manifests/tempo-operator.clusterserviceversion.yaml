@@ -241,13 +241,6 @@ spec:
       - description: Gateway defines the tempo gateway spec.
         displayName: Gateway pods
         path: template.gateway
-      - description: JaegerQuerySpec defines Jaeger Query spefic options.
-        displayName: Jaeger Query Settings
-        path: template.gateway.jaegerQuery
-      - description: Enabled is used to define if a tempo gateway component should
-          be created.
-        displayName: Jaeger Query Enabled
-        path: template.gateway.jaegerQuery.enabled
       - description: NodeSelector is the simplest recommended form of node selection
           constraint.
         displayName: Node Selector

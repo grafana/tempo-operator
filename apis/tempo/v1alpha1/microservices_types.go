@@ -106,7 +106,8 @@ type MicroservicesStatus struct {
 type ModeType string
 
 const (
-	// Dynamic mode delegates the authorization to a third-party OPA-compatible endpoint.
+	// Static mode asserts the Authorization Spec's Roles and RoleBindings
+	// using an in-process OpenPolicyAgent Rego authorizer.
 	Static ModeType = "static"
 	// Dynamic mode delegates the authorization to a third-party OPA-compatible endpoint.
 	Dynamic ModeType = "dynamic"
@@ -119,7 +120,7 @@ type TenantsSpec struct {
 	//
 	// +required
 	// +kubebuilder:validation:Required
-	// +kubebuilder:default:=dynamic
+	// +kubebuilder:default:=static
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors={"urn:alm:descriptor:com.tectonic.ui:select:static","urn:alm:descriptor:com.tectonic.ui:select:dynamic"},displayName="Mode"
 	Mode ModeType `json:"mode"`
 
@@ -475,21 +476,6 @@ type TempoGatewaySpec struct {
 	// +kubebuilder:validation:Optional
 	TempoComponentSpec `json:"component,omitempty"`
 
-	// JaegerQuerySpec defines Jaeger Query spefic options.
-	//
-	// +optional
-	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger Query Settings"
-	Gateway GatewaySpec `json:"jaegerQuery"`
-}
-
-// GatewaySpec defines Tempo Gateway options.
-type GatewaySpec struct {
-	// Enabled is used to define if a tempo gateway component should be created.
-	//
-	// +optional
-	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger Query Enabled"
 	Enabled bool `json:"enabled"`
 }
 

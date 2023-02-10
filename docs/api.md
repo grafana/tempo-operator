@@ -1015,18 +1015,18 @@ Gateway defines the tempo gateway spec.
         </tr>
     </thead>
     <tbody><tr>
+        <td><b>enabled</b></td>
+        <td>boolean</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
         <td><b><a href="#microservicesspectemplategatewaycomponent">component</a></b></td>
         <td>object</td>
         <td>
           TempoComponentSpec is embedded to extend this definition with further options. 
  Currently there is no way to inline this field. See: https://github.com/golang/go/issues/6213<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#microservicesspectemplategatewayjaegerquery">jaegerQuery</a></b></td>
-        <td>object</td>
-        <td>
-          JaegerQuerySpec defines Jaeger Query spefic options.<br/>
         </td>
         <td>false</td>
       </tr></tbody>
@@ -1128,33 +1128,6 @@ The pod this Toleration is attached to tolerates any taint that matches the trip
         <td>string</td>
         <td>
           Value is the taint value the toleration matches to. If the operator is Exists, the value should be empty, otherwise just a regular string.<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-
-### Microservices.spec.template.gateway.jaegerQuery
-<sup><sup>[↩ Parent](#microservicesspectemplategateway)</sup></sup>
-
-
-
-JaegerQuerySpec defines Jaeger Query spefic options.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>enabled</b></td>
-        <td>boolean</td>
-        <td>
-          Enabled is used to define if a tempo gateway component should be created.<br/>
         </td>
         <td>false</td>
       </tr></tbody>
@@ -1547,7 +1520,7 @@ Tenants defines the per-tenant authentication and authorization spec.
           Mode defines the multitenancy mode.<br/>
           <br/>
             <i>Enum</i>: static, dynamic<br/>
-            <i>Default</i>: dynamic<br/>
+            <i>Default</i>: static<br/>
         </td>
         <td>true</td>
       </tr><tr>
