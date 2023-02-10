@@ -130,6 +130,9 @@ type MicroservicesStatus struct {
 	// Version of the managed Tempo instance.
 	// +optional
 	TempoVersion string `json:"tempoVersion,omitempty"`
+	// Version of the Tempo Query component used.
+	// +optional
+	TempoQueryVersion string `json:"tempoQueryVersion,omitempty"`
 	// Components provides summary of all Tempo pod status grouped
 	// per component.
 	//

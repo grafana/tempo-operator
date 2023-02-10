@@ -1854,6 +1854,13 @@ MicroservicesStatus defines the observed state of Microservices.
         </td>
         <td>false</td>
       </tr><tr>
+        <td><b>tempoQueryVersion</b></td>
+        <td>string</td>
+        <td>
+          Version of the Tempo Query component used.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b>tempoVersion</b></td>
         <td>string</td>
         <td>

@@ -905,6 +905,9 @@ spec:
                   - type
                   type: object
                 type: array
+              tempoQueryVersion:
+                description: Version of the Tempo Query component used.
+                type: string
               tempoVersion:
                 description: Version of the managed Tempo instance.
                 type: string
