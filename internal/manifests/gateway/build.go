@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"embed"
 	"fmt"
-	"io"
 	"path"
 	"text/template"
 
@@ -75,36 +74,27 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 // generate gateway configuration files.
 func getCfgs(opts options) (rbacCfg []byte, tenantsCfg []byte, regoCfg []byte, err error) {
 	// Build tempo gateway rbac yaml
-	w := bytes.NewBuffer(nil)
-	err = tempoGatewayRbacYAMLTmpl.Execute(w, opts)
+	byteBuffer := &bytes.Buffer{}
+	err = tempoGatewayRbacYAMLTmpl.Execute(byteBuffer, opts)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("failed to create tempo gateway rbac configuration, err: %w", err)
 	}
-	rbacCfg, err = io.ReadAll(w)
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("failed to read rbac configuration, err: %w", err)
-	}
+	rbacCfg = byteBuffer.Bytes()
 	// Build tempo gateway tenants yaml
-	w = bytes.NewBuffer(nil)
-	err = tempoGatewayTenantsYAMLTmpl.Execute(w, opts)
+	byteBuffer.Reset()
+	err = tempoGatewayTenantsYAMLTmpl.Execute(byteBuffer, opts)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("failed to create tempo gateway tenants configuration, err: %w", err)
 	}
-	tenantsCfg, err = io.ReadAll(w)
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("failed to read tenant configuration, err: %w", err)
-	}
+	tenantsCfg = byteBuffer.Bytes()
 	// Build tempo gateway observatorium rego for static mode.
 	if opts.Tenants.Mode == tempov1alpha1.Static {
-		w = bytes.NewBuffer(nil)
-		err = tempoGatewayRegoTmpl.Execute(w, opts)
+		byteBuffer.Reset()
+		err = tempoGatewayRegoTmpl.Execute(byteBuffer, opts)
 		if err != nil {
 			return nil, nil, nil, fmt.Errorf("failed to create tempo gateway rego configuration, err: %w", err)
 		}
-		regoCfg, err = io.ReadAll(w)
-		if err != nil {
-			return nil, nil, nil, fmt.Errorf("failed to read tempo rego configuration, err: %w", err)
-		}
+		regoCfg = byteBuffer.Bytes()
 		return rbacCfg, tenantsCfg, regoCfg, nil
 	}
 	return rbacCfg, tenantsCfg, nil, nil
@@ -146,7 +136,7 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 					Tolerations:        cfg.Tolerations,
 					Containers: []corev1.Container{
 						{
-							Name:  "tempo",
+							Name:  "tempo-gateway",
 							Image: tempo.Spec.Images.TempoGateway,
 							Args: []string{
 								fmt.Sprintf("--web.listen=0.0.0.0:%d", portPublic),
