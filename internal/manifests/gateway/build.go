@@ -154,9 +154,9 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 								fmt.Sprintf("--traces.write.endpoint=%s:4317", naming.Name("distributor", tempo.Name)),
 								fmt.Sprintf("--traces.read.endpoint=%s:16686", naming.Name("query", tempo.Name)),
 								fmt.Sprintf("--grpc.listen=0.0.0.0:%d", portGRPC),
-								fmt.Sprintf("--rbac.config=/etc/observatorium/%s", tempoGatewayRbacFileName),
-								fmt.Sprintf("--tenants.config=/etc/observatorium/%s", tempoGatewayTenantFileName),
-								"--log.level=error",
+								fmt.Sprintf("--rbac.config=%s", path.Join(tempoGatewayMountDir, "cm", tempoGatewayRbacFileName)),
+								fmt.Sprintf("--tenants.config=%s", path.Join(tempoGatewayMountDir, "secert", tempoGatewayTenantFileName)),
+								"--log.level=warn",
 							},
 							Ports: []corev1.ContainerPort{
 								{
@@ -201,22 +201,15 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 							},
 							VolumeMounts: []corev1.VolumeMount{
 								{
-									Name:      "rbac",
+									Name:      "rbac-rego",
 									ReadOnly:  true,
-									MountPath: path.Join(tempoGatewayMountDir, tempoGatewayRbacFileName),
-									SubPath:   "rbac.yaml",
+									MountPath: path.Join(tempoGatewayMountDir, "cm"),
 								},
 								{
-									Name:      "tenants",
+									Name:      "tenant",
 									ReadOnly:  true,
-									MountPath: path.Join(tempoGatewayMountDir, tempoGatewayTenantFileName),
-									SubPath:   "tenants.yaml",
-								},
-								{
-									Name:      "tempo-gateway",
-									ReadOnly:  true,
-									MountPath: path.Join(tempoGatewayMountDir, tempoGatewayRegoFileName),
-									SubPath:   "lokistack-gateway.rego",
+									MountPath: path.Join(tempoGatewayMountDir, "secert", tempoGatewayTenantFileName),
+									SubPath:   tempoGatewayTenantFileName,
 								},
 							},
 							// TODO(frzifus): add gateway to resource pool.
@@ -226,30 +219,36 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 					},
 					Volumes: []corev1.Volume{
 						{
-							Name: "rbac",
+							Name: "rbac-rego",
 							VolumeSource: corev1.VolumeSource{
 								ConfigMap: &corev1.ConfigMapVolumeSource{
 									LocalObjectReference: corev1.LocalObjectReference{
 										Name: naming.Name(tempoComponentName, tempo.Name),
 									},
-								},
-							},
-						},
-						{
-							Name: "tenants",
-							VolumeSource: corev1.VolumeSource{
-								ConfigMap: &corev1.ConfigMapVolumeSource{
-									LocalObjectReference: corev1.LocalObjectReference{
-										Name: naming.Name(tempoComponentName, tempo.Name),
+									Items: []corev1.KeyToPath{
+										{
+											Key:  tempoGatewayRbacFileName,
+											Path: tempoGatewayRbacFileName,
+										},
+										{
+											Key:  tempoGatewayRegoFileName,
+											Path: tempoGatewayRegoFileName,
+										},
 									},
 								},
 							},
 						},
 						{
-							Name: "tempo-gateway",
+							Name: "tenant",
 							VolumeSource: corev1.VolumeSource{
 								Secret: &corev1.SecretVolumeSource{
 									SecretName: naming.Name(tempoComponentName, tempo.Name),
+									Items: []corev1.KeyToPath{
+										{
+											Key:  tempoGatewayTenantFileName,
+											Path: tempoGatewayTenantFileName,
+										},
+									},
 								},
 							},
 						},

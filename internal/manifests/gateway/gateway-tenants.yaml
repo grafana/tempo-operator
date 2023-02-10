@@ -31,8 +31,8 @@ tenants:
   opa:
     query: data.tempo.allow
     paths:
-    - /etc/tempo-gateway/rbac.yaml
-    - /etc/tempo-gateway/tempo-gateway.rego
+    - /etc/tempo-gateway/cm/rbac.yaml
+    - /etc/tempo-gateway/cm/tempo-gateway.rego
 {{- end -}}
 {{- end -}}
 {{- end -}}
