@@ -1015,18 +1015,18 @@ Gateway defines the tempo gateway spec.
         </tr>
     </thead>
     <tbody><tr>
+        <td><b>enabled</b></td>
+        <td>boolean</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
         <td><b><a href="#microservicesspectemplategatewaycomponent">component</a></b></td>
         <td>object</td>
         <td>
           TempoComponentSpec is embedded to extend this definition with further options. 
  Currently there is no way to inline this field. See: https://github.com/golang/go/issues/6213<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#microservicesspectemplategatewaytempogateway">tempoGateway</a></b></td>
-        <td>object</td>
-        <td>
-          Gateway defines Tempo gateway spefic options.<br/>
         </td>
         <td>false</td>
       </tr></tbody>
@@ -1128,33 +1128,6 @@ The pod this Toleration is attached to tolerates any taint that matches the trip
         <td>string</td>
         <td>
           Value is the taint value the toleration matches to. If the operator is Exists, the value should be empty, otherwise just a regular string.<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-
-### Microservices.spec.template.gateway.tempoGateway
-<sup><sup>[↩ Parent](#microservicesspectemplategateway)</sup></sup>
-
-
-
-Gateway defines Tempo gateway spefic options.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>enabled</b></td>
-        <td>boolean</td>
-        <td>
-          Enabled is used to define if a tempo gateway component should be created.<br/>
         </td>
         <td>false</td>
       </tr></tbody>
