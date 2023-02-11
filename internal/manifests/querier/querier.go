@@ -14,10 +14,6 @@ import (
 	"github.com/os-observability/tempo-operator/internal/manifests/naming"
 )
 
-const (
-	componentName = "querier"
-)
-
 // BuildQuerier creates querier objects.
 func BuildQuerier(params manifestutils.Params) ([]client.Object, error) {
 	d, err := deployment(params)
@@ -30,7 +26,7 @@ func BuildQuerier(params manifestutils.Params) ([]client.Object, error) {
 
 func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 	tempo := params.Tempo
-	labels := manifestutils.ComponentLabels(componentName, tempo.Name)
+	labels := manifestutils.ComponentLabels(manifestutils.QuerierComponentName, tempo.Name)
 	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
 	cfg := tempo.Spec.Components.Querier
 
@@ -39,7 +35,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 			APIVersion: v1.SchemeGroupVersion.String(),
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      naming.Name(componentName, tempo.Name),
+			Name:      naming.Name(manifestutils.QuerierComponentName, tempo.Name),
 			Namespace: tempo.Namespace,
 			Labels:    labels,
 		},
@@ -86,7 +82,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 									MountPath: manifestutils.TmpStoragePath,
 								},
 							},
-							Resources:       manifestutils.Resources(tempo, componentName),
+							Resources:       manifestutils.Resources(tempo, manifestutils.QuerierComponentName),
 							SecurityContext: manifestutils.TempoContainerSecurityContext(),
 						},
 					},
@@ -121,10 +117,10 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 }
 
 func service(tempo v1alpha1.Microservices) *corev1.Service {
-	labels := manifestutils.ComponentLabels(componentName, tempo.Name)
+	labels := manifestutils.ComponentLabels(manifestutils.QuerierComponentName, tempo.Name)
 	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      naming.Name(componentName, tempo.Name),
+			Name:      naming.Name(manifestutils.QuerierComponentName, tempo.Name),
 			Namespace: tempo.Namespace,
 			Labels:    labels,
 		},

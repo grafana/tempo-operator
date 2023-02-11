@@ -14,10 +14,6 @@ import (
 	"github.com/os-observability/tempo-operator/internal/manifests/naming"
 )
 
-const (
-	componentName = "compactor"
-)
-
 // BuildCompactor creates distributor objects.
 func BuildCompactor(params manifestutils.Params) ([]client.Object, error) {
 	d, err := deployment(params)
@@ -30,7 +26,7 @@ func BuildCompactor(params manifestutils.Params) ([]client.Object, error) {
 
 func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 	tempo := params.Tempo
-	labels := manifestutils.ComponentLabels(componentName, tempo.Name)
+	labels := manifestutils.ComponentLabels(manifestutils.CompactorComponentName, tempo.Name)
 	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
 	cfg := tempo.Spec.Components.Compactor
 
@@ -39,7 +35,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 			APIVersion: v1.SchemeGroupVersion.String(),
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      naming.Name(componentName, tempo.Name),
+			Name:      naming.Name(manifestutils.CompactorComponentName, tempo.Name),
 			Namespace: tempo.Namespace,
 			Labels:    labels,
 		},
@@ -85,7 +81,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 									MountPath: manifestutils.TmpStoragePath,
 								},
 							},
-							Resources:       manifestutils.Resources(tempo, componentName),
+							Resources:       manifestutils.Resources(tempo, manifestutils.CompactorComponentName),
 							SecurityContext: manifestutils.TempoContainerSecurityContext(),
 						},
 					},
@@ -120,10 +116,10 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 }
 
 func service(tempo v1alpha1.Microservices) *corev1.Service {
-	labels := manifestutils.ComponentLabels(componentName, tempo.Name)
+	labels := manifestutils.ComponentLabels(manifestutils.CompactorComponentName, tempo.Name)
 	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      naming.Name(componentName, tempo.Name),
+			Name:      naming.Name(manifestutils.CompactorComponentName, tempo.Name),
 			Namespace: tempo.Namespace,
 			Labels:    labels,
 		},

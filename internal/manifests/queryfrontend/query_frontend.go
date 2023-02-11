@@ -16,7 +16,6 @@ import (
 )
 
 const (
-	componentName         = "query-frontend"
 	grpclbPortName        = "grpclb"
 	jaegerMetricsPortName = "jaeger-metrics"
 	jaegerUIPortName      = "jaeger-ui"
@@ -43,7 +42,7 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 
 func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 	tempo := params.Tempo
-	labels := manifestutils.ComponentLabels(componentName, tempo.Name)
+	labels := manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, tempo.Name)
 	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
 	cfg := tempo.Spec.Components.QueryFrontend
 
@@ -52,7 +51,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 			APIVersion: v1.SchemeGroupVersion.String(),
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      naming.Name(componentName, tempo.Name),
+			Name:      naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name),
 			Namespace: tempo.Namespace,
 			Labels:    labels,
 		},
@@ -103,7 +102,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 									MountPath: manifestutils.TmpStoragePath,
 								},
 							},
-							Resources:       manifestutils.Resources(tempo, componentName),
+							Resources:       manifestutils.Resources(tempo, manifestutils.QueryFrontendComponentName),
 							SecurityContext: manifestutils.TempoContainerSecurityContext(),
 						},
 					},
@@ -162,7 +161,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 					MountPath: manifestutils.TmpStoragePath,
 				},
 			},
-			Resources: manifestutils.Resources(tempo, componentName),
+			Resources: manifestutils.Resources(tempo, manifestutils.QueryFrontendComponentName),
 		}
 		jaegerQueryVolume := corev1.Volume{
 			Name: manifestutils.TmpStorageVolumeName + "-query",
@@ -183,11 +182,11 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 }
 
 func services(tempo v1alpha1.Microservices) []*corev1.Service {
-	labels := manifestutils.ComponentLabels(componentName, tempo.Name)
+	labels := manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, tempo.Name)
 
 	frontEndService := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      naming.Name(componentName, tempo.Name),
+			Name:      naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name),
 			Namespace: tempo.Namespace,
 			Labels:    labels,
 		},
@@ -211,7 +210,7 @@ func services(tempo v1alpha1.Microservices) []*corev1.Service {
 
 	frontEndDiscoveryService := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      naming.Name(componentName+"-discovery", tempo.Name),
+			Name:      naming.Name(manifestutils.QueryFrontendComponentName+"-discovery", tempo.Name),
 			Namespace: tempo.Namespace,
 			Labels:    labels,
 		},

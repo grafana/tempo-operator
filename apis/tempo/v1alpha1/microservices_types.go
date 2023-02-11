@@ -85,11 +85,60 @@ type MicroservicesSpec struct {
 	Tenants *TenantsSpec `json:"tenants,omitempty"`
 }
 
+// PodStatusMap defines the type for mapping pod status to pod name.
+type PodStatusMap map[corev1.PodPhase][]string
+
+type ComponentStatus struct {
+	// Compactor is a map to the pod status of the compactor pod.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=status,xDescriptors="urn:alm:descriptor:com.tectonic.ui:podStatuses",displayName="Compactor",order=5
+	Compactor PodStatusMap `json:"compactor,omitempty"`
+
+	// Distributor is a map to the per pod status of the distributor deployment
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=status,xDescriptors="urn:alm:descriptor:com.tectonic.ui:podStatuses",displayName="Distributor",order=1
+	Distributor PodStatusMap `json:"distributor,omitempty"`
+
+	// Ingester is a map to the per pod status of the ingester statefulset
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=status,xDescriptors="urn:alm:descriptor:com.tectonic.ui:podStatuses",displayName="Ingester",order=2
+	Ingester PodStatusMap `json:"ingester,omitempty"`
+
+	// Querier is a map to the per pod status of the querier deployment
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=status,xDescriptors="urn:alm:descriptor:com.tectonic.ui:podStatuses",displayName="Querier",order=3
+	Querier PodStatusMap `json:"querier,omitempty"`
+
+	// QueryFrontend is a map to the per pod status of the query frontend deployment
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=status,xDescriptors="urn:alm:descriptor:com.tectonic.ui:podStatuses",displayName="Query Frontend",order=4
+	QueryFrontend PodStatusMap `json:"queryFrontend,omitempty"`
+}
+
 // MicroservicesStatus defines the observed state of Microservices.
 type MicroservicesStatus struct {
 	// Version of the managed Tempo instance.
 	// +optional
 	TempoVersion string `json:"tempoVersion,omitempty"`
+	// Version of the Tempo Query component used.
+	// +optional
+	TempoQueryVersion string `json:"tempoQueryVersion,omitempty"`
+	// Components provides summary of all Tempo pod status grouped
+	// per component.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	Components ComponentStatus `json:"components,omitempty"`
 
 	// Conditions of the Tempo deployment health.
 	//
@@ -146,6 +195,10 @@ const (
 	ConditionReady ConditionStatus = "Ready"
 	// ConditionDegraded defines that one or more components are in a degraded state.
 	ConditionDegraded ConditionStatus = "Degraded"
+	// ConditionFailed defines that one or more components are in a failed state.
+	ConditionFailed ConditionStatus = "Failed"
+	// ConditionDegraded defines that one or more components are in a degraded state.
+	ConditionPending ConditionStatus = "Pending"
 )
 
 // ConditionReason defines possible reasons for each condition.
@@ -156,6 +209,10 @@ const (
 	ReasonReady ConditionReason = "Ready"
 	// ReasonInvalidStorageConfig defines that the object storage configuration is invalid (missing or incomplete storage secret).
 	ReasonInvalidStorageConfig ConditionReason = "InvalidStorageConfig"
+	// ReasonFailedComponents when all/some Tempo components fail to roll out.
+	ReasonFailedComponents ConditionReason = "FailedComponents"
+	// ReasonPendingComponents when all/some Tempo components pending dependencies.
+	ReasonPendingComponents ConditionReason = "PendingComponents"
 )
 
 // PermissionType is a Tempo Gateway RBAC permission.
