@@ -16,6 +16,7 @@ const (
 )
 
 var (
+	// GossipSelector declares the labels for each gossip member.
 	GossipSelector = map[string]string{"tempo-gossip-member": "true"}
 )
 

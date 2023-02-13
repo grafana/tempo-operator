@@ -8,6 +8,7 @@ import (
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 )
 
+// Refresh updates the status field with the tempo container image versions.
 func Refresh(ctx context.Context, k StatusClient, tempo v1alpha1.Microservices, status *v1alpha1.MicroservicesStatus) (bool, error) {
 
 	changed := tempo.DeepCopy()
