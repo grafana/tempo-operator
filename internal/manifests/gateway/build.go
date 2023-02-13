@@ -106,11 +106,22 @@ const (
 	portPublic   = 8080
 )
 
+func getTenantHeaderFlag(t *tempov1alpha1.TenantsSpec) []string {
+	if t == nil {
+		return nil
+	}
+	if !t.Multitenancy {
+		return nil
+	}
+	return []string{fmt.Sprintf("--traces.tenant-header=%s", manifestutils.MultitenancyHeader)}
+}
+
 func deployment(params manifestutils.Params) *v1.Deployment {
 	tempo := params.Tempo
 	labels := manifestutils.ComponentLabels(tempoComponentName, tempo.Name)
 	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
 	cfg := tempo.Spec.Components.Gateway
+	headerFlags := getTenantHeaderFlag(params.Tempo.Spec.Tenants)
 
 	return &v1.Deployment{
 		TypeMeta: metav1.TypeMeta{
@@ -138,7 +149,7 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 						{
 							Name:  "tempo-gateway",
 							Image: tempo.Spec.Images.TempoGateway,
-							Args: []string{
+							Args: append([]string{
 								fmt.Sprintf("--web.listen=0.0.0.0:%d", portPublic),
 								fmt.Sprintf("--web.internal.listen=0.0.0.0:%d", portInternal),
 								fmt.Sprintf("--traces.write.endpoint=%s:4317", naming.Name(manifestutils.DistributorComponentName, tempo.Name)),
@@ -147,7 +158,7 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 								fmt.Sprintf("--rbac.config=%s", path.Join(tempoGatewayMountDir, "cm", tempoGatewayRbacFileName)),
 								fmt.Sprintf("--tenants.config=%s", path.Join(tempoGatewayMountDir, "secert", tempoGatewayTenantFileName)),
 								"--log.level=warn",
-							},
+							}, headerFlags...),
 							Ports: []corev1.ContainerPort{
 								{
 									Name:          "grpc-public",

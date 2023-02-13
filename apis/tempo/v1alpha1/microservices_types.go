@@ -166,6 +166,14 @@ const (
 // TenantsSpec defines the mode, authentication and authorization
 // configuration of the tempo gateway component.
 type TenantsSpec struct {
+	// Multitenancy support in tempo. Default is false.
+	//
+	// +required
+	// +kubebuilder:validation:Required
+	// +kubebuilder:default:=false
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Multitenancy enabled"
+	Multitenancy bool `json:"multitenancy"`
+
 	// Mode defines the multitenancy mode.
 	//
 	// +required

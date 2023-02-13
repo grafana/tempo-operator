@@ -50,4 +50,6 @@ const (
 	QueryFrontendComponentName = "query-frontend"
 	// IngesterComponentName declares the internal name of the ingester component.
 	IngesterComponentName = "ingester"
+	// MultitenancyHeader declares the internal used header to identify tenants.
+	MultitenancyHeader = "X-Scope-OrgID"
 )
