@@ -100,17 +100,17 @@ func getCfgs(opts options) (rbacCfg []byte, tenantsCfg []byte, regoCfg []byte, e
 	return rbacCfg, tenantsCfg, nil, nil
 }
 
+const (
+	portGRPC     = 8090
+	portInternal = 8081
+	portPublic   = 8080
+)
+
 func deployment(params manifestutils.Params) *v1.Deployment {
 	tempo := params.Tempo
 	labels := manifestutils.ComponentLabels(tempoComponentName, tempo.Name)
 	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
 	cfg := tempo.Spec.Components.Gateway
-
-	const (
-		portGRPC     = 8090
-		portInternal = 8081
-		portPublic   = 8080
-	)
 
 	return &v1.Deployment{
 		TypeMeta: metav1.TypeMeta{
@@ -260,22 +260,22 @@ func service(tempo tempov1alpha1.Microservices) *corev1.Service {
 		Spec: corev1.ServiceSpec{
 			Ports: []corev1.ServicePort{
 				{
-					Name:       manifestutils.HttpMemberlistPortName,
+					Name:       "grpc-public",
+					Port:       portGRPC,
 					Protocol:   corev1.ProtocolTCP,
-					Port:       manifestutils.PortMemberlist,
-					TargetPort: intstr.FromString(manifestutils.HttpMemberlistPortName),
+					TargetPort: intstr.FromInt(portGRPC),
 				},
 				{
-					Name:       manifestutils.HttpPortName,
+					Name:       "internal",
+					Port:       portInternal,
 					Protocol:   corev1.ProtocolTCP,
-					Port:       manifestutils.PortHTTPServer,
-					TargetPort: intstr.FromString(manifestutils.HttpPortName),
+					TargetPort: intstr.FromInt(portInternal),
 				},
 				{
-					Name:       manifestutils.GrpcPortName,
+					Name:       "public",
+					Port:       portPublic,
 					Protocol:   corev1.ProtocolTCP,
-					Port:       manifestutils.PortGRPCServer,
-					TargetPort: intstr.FromString(manifestutils.GrpcPortName),
+					TargetPort: intstr.FromInt(portPublic),
 				},
 			},
 			Selector: labels,
