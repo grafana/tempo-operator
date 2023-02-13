@@ -88,6 +88,7 @@ type MicroservicesSpec struct {
 // PodStatusMap defines the type for mapping pod status to pod name.
 type PodStatusMap map[corev1.PodPhase][]string
 
+// ComponentStatus defines the status of each component.
 type ComponentStatus struct {
 	// Compactor is a map to the pod status of the compactor pod.
 	//
@@ -197,7 +198,7 @@ const (
 	ConditionDegraded ConditionStatus = "Degraded"
 	// ConditionFailed defines that one or more components are in a failed state.
 	ConditionFailed ConditionStatus = "Failed"
-	// ConditionDegraded defines that one or more components are in a degraded state.
+	// ConditionPending defines that one or more components are in a degraded state.
 	ConditionPending ConditionStatus = "Pending"
 )
 

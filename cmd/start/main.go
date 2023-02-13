@@ -74,6 +74,7 @@ func start(c *cobra.Command, args []string) {
 	}
 }
 
+// NewStartCommand returns a new start command.
 func NewStartCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:   "start",

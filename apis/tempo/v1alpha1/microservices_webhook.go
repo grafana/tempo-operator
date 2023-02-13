@@ -33,6 +33,7 @@ var (
 // log is for logging in this package.
 var microserviceslog = logf.Log.WithName("microservices-resource")
 
+// SetupWebhookWithManager initializes the webhook.
 func (r *Microservices) SetupWebhookWithManager(mgr ctrl.Manager, defaultImages ImagesSpec) error {
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(r).
@@ -50,10 +51,12 @@ func NewDefaulter(defaultImages ImagesSpec) *Defaulter {
 	}
 }
 
+// Defaulter implements the CustomDefaulter interface.
 type Defaulter struct {
 	defaultImages ImagesSpec
 }
 
+// Default applies default values to a Kubernetes object.
 func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 	r, ok := obj.(*Microservices)
 	if !ok {
@@ -167,6 +170,7 @@ func (v *validator) validateServiceAccount(ctx context.Context, tempo Microservi
 	return allErrs
 }
 
+// ValidateStorageSecret validates the object storage secret required for tempo.
 func ValidateStorageSecret(tempo Microservices, storageSecret corev1.Secret) field.ErrorList {
 	path := field.NewPath("spec").Child("storage").Child("secret")
 

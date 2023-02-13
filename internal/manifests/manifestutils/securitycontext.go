@@ -5,6 +5,7 @@ import (
 	"k8s.io/utils/pointer"
 )
 
+// TempoContainerSecurityContext returns the default container security context.
 func TempoContainerSecurityContext() *corev1.SecurityContext {
 	return &corev1.SecurityContext{
 		AllowPrivilegeEscalation: pointer.Bool(false),

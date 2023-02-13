@@ -260,7 +260,7 @@ func (r *MicroservicesReconciler) findMicroservicesForStorageSecret(secret clien
 	return requests
 }
 
-// StatusClient methods, used for fetch component pod status and refresh the status of the CR.
+// GetPodsComponent is used for fetching component pod status and refreshing the status of the CR.
 func (r *MicroservicesReconciler) GetPodsComponent(ctx context.Context, componentName string, stack v1alpha1.Microservices) (*corev1.PodList, error) {
 	pods := &corev1.PodList{}
 
@@ -272,6 +272,7 @@ func (r *MicroservicesReconciler) GetPodsComponent(ctx context.Context, componen
 	return pods, err
 }
 
+// PatchStatus patches the status field of the CR.
 func (r *MicroservicesReconciler) PatchStatus(ctx context.Context, changed, original *v1alpha1.Microservices) error {
 	statusPatch := client.MergeFrom(original)
 	return r.Client.Status().Patch(ctx, changed, statusPatch)

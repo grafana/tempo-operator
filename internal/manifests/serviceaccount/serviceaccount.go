@@ -13,7 +13,7 @@ const (
 	componentName = "serviceaccount"
 )
 
-// BuildServiceAccount creates a Kubernetes service account for tempo.
+// BuildDefaultServiceAccount creates a Kubernetes service account for tempo.
 func BuildDefaultServiceAccount(tempo v1alpha1.Microservices) *corev1.ServiceAccount {
 	labels := manifestutils.ComponentLabels(componentName, tempo.Name)
 	return &corev1.ServiceAccount{
