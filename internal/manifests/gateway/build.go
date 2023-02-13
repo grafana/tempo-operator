@@ -141,8 +141,8 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 							Args: []string{
 								fmt.Sprintf("--web.listen=0.0.0.0:%d", portPublic),
 								fmt.Sprintf("--web.internal.listen=0.0.0.0:%d", portInternal),
-								fmt.Sprintf("--traces.write.endpoint=%s:4317", naming.Name("distributor", tempo.Name)),
-								fmt.Sprintf("--traces.read.endpoint=%s:16686", naming.Name("query", tempo.Name)),
+								fmt.Sprintf("--traces.write.endpoint=%s:4317", naming.Name(manifestutils.DistributorComponentName, tempo.Name)),
+								fmt.Sprintf("--traces.read.endpoint=%s:16686", "http://"+naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name)),
 								fmt.Sprintf("--grpc.listen=0.0.0.0:%d", portGRPC),
 								fmt.Sprintf("--rbac.config=%s", path.Join(tempoGatewayMountDir, "cm", tempoGatewayRbacFileName)),
 								fmt.Sprintf("--tenants.config=%s", path.Join(tempoGatewayMountDir, "secert", tempoGatewayTenantFileName)),
