@@ -110,10 +110,6 @@ vet: ## Run go vet against code.
 test: manifests generate fmt vet setup-envtest ## Run tests.
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./... -coverprofile cover.out
 
-.PHONE: prepare-release
-prepare-release:
-	./hack/prepare-release.sh
-
 ##@ Build
 
 .PHONY: build
