@@ -138,11 +138,11 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 }
 
 func configureQuerierHTTPServicePKI(deployment *v1.Deployment, tempo v1alpha1.Microservices) error {
-	return manifestutils.ConfigureHTTPServicePKI(&deployment.Spec.Template.Spec, naming.Name(componentName, tempo.Name))
+	return manifestutils.ConfigureHTTPServicePKI(&deployment.Spec.Template.Spec, naming.Name(manifestutils.QuerierComponentName, tempo.Name))
 }
 
 func configureQuerierGRPCServicePKI(deployment *v1.Deployment, tempo v1alpha1.Microservices) error {
-	return manifestutils.ConfigureGRPCServicePKI(&deployment.Spec.Template.Spec, naming.Name(componentName, tempo.Name))
+	return manifestutils.ConfigureGRPCServicePKI(&deployment.Spec.Template.Spec, naming.Name(manifestutils.QuerierComponentName, tempo.Name))
 }
 
 func service(tempo v1alpha1.Microservices) *corev1.Service {

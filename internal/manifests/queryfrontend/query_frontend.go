@@ -63,11 +63,11 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 }
 
 func configureQuerierFrontEndHTTPServicePKI(deployment *v1.Deployment, tempo v1alpha1.Microservices) error {
-	return manifestutils.ConfigureHTTPServicePKI(&deployment.Spec.Template.Spec, naming.Name(componentName, tempo.Name), 0, 1)
+	return manifestutils.ConfigureHTTPServicePKI(&deployment.Spec.Template.Spec, naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name), 0, 1)
 }
 
 func configureQuerierFrontEndGRPCServicePKI(deployment *v1.Deployment, tempo v1alpha1.Microservices) error {
-	return manifestutils.ConfigureGRPCServicePKI(&deployment.Spec.Template.Spec, naming.Name(componentName, tempo.Name), 0, 1)
+	return manifestutils.ConfigureGRPCServicePKI(&deployment.Spec.Template.Spec, naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name), 0, 1)
 }
 func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 	tempo := params.Tempo

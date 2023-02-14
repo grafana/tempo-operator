@@ -45,12 +45,12 @@ func BuildCompactor(params manifestutils.Params) ([]client.Object, error) {
 }
 
 func configureCompactorGRPCServicePKI(sts *v1.Deployment, tempo v1alpha1.Microservices) error {
-	serviceName := naming.Name(componentName, tempo.Name)
+	serviceName := naming.Name(manifestutils.CompactorComponentName, tempo.Name)
 	return manifestutils.ConfigureGRPCServicePKI(&sts.Spec.Template.Spec, serviceName)
 }
 
 func configureCompactorHTTPServicePKI(sts *v1.Deployment, tempo v1alpha1.Microservices) error {
-	serviceName := naming.Name(componentName, tempo.Name)
+	serviceName := naming.Name(manifestutils.CompactorComponentName, tempo.Name)
 	return manifestutils.ConfigureHTTPServicePKI(&sts.Spec.Template.Spec, serviceName)
 }
 

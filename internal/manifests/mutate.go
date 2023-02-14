@@ -140,12 +140,6 @@ func mutateConfigMap(existing, desired *corev1.ConfigMap) {
 	existing.Data = desired.Data
 }
 
-func mutateSecret(existing, desired *corev1.Secret) {
-	existing.Annotations = desired.Annotations
-	existing.Labels = desired.Labels
-	existing.Data = desired.Data
-}
-
 func mutateServiceAccount(existing, desired *corev1.ServiceAccount) {
 	existing.Annotations = desired.Annotations
 	existing.Labels = desired.Labels

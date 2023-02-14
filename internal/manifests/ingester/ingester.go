@@ -159,12 +159,12 @@ func statefulSet(params manifestutils.Params) (*v1.StatefulSet, error) {
 }
 
 func configureIngesterHTTPServicePKI(statefulSet *v1.StatefulSet, tempo v1alpha1.Microservices) error {
-	serviceName := naming.Name(componentName, tempo.Name)
+	serviceName := naming.Name(manifestutils.IngesterComponentName, tempo.Name)
 	return manifestutils.ConfigureHTTPServicePKI(&statefulSet.Spec.Template.Spec, serviceName)
 }
 
 func configureIngesterGRPCServicePKI(sts *v1.StatefulSet, tempo v1alpha1.Microservices) error {
-	serviceName := naming.Name(componentName, tempo.Name)
+	serviceName := naming.Name(manifestutils.IngesterComponentName, tempo.Name)
 	return manifestutils.ConfigureGRPCServicePKI(&sts.Spec.Template.Spec, serviceName)
 }
 

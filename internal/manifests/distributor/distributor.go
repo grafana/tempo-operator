@@ -42,12 +42,12 @@ func BuildDistributor(params manifestutils.Params) ([]client.Object, error) {
 }
 
 func configureDistributorGRPCServicePKI(sts *v1.Deployment, tempo v1alpha1.Microservices) error {
-	serviceName := naming.Name(componentName, tempo.Name)
+	serviceName := naming.Name(manifestutils.DistributorComponentName, tempo.Name)
 	return manifestutils.ConfigureGRPCServicePKI(&sts.Spec.Template.Spec, serviceName)
 }
 
 func configureDistributorHTTPServicePKI(sts *v1.Deployment, tempo v1alpha1.Microservices) error {
-	serviceName := naming.Name(componentName, tempo.Name)
+	serviceName := naming.Name(manifestutils.DistributorComponentName, tempo.Name)
 	return manifestutils.ConfigureHTTPServicePKI(&sts.Spec.Template.Spec, serviceName)
 }
 
