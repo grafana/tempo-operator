@@ -241,13 +241,6 @@ spec:
       - description: Gateway defines the tempo gateway spec.
         displayName: Gateway pods
         path: template.gateway
-      - description: JaegerQuerySpec defines Jaeger Query spefic options.
-        displayName: Jaeger Query Settings
-        path: template.gateway.jaegerQuery
-      - description: Enabled is used to define if a tempo gateway component should
-          be created.
-        displayName: Jaeger Query Enabled
-        path: template.gateway.jaegerQuery.enabled
       - description: NodeSelector is the simplest recommended form of node selection
           constraint.
         displayName: Node Selector
@@ -355,8 +348,36 @@ spec:
         displayName: Mode
         path: tenants.mode
         x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:select:static
         - urn:alm:descriptor:com.tectonic.ui:select:dynamic
       statusDescriptors:
+      - description: Distributor is a map to the per pod status of the distributor
+          deployment
+        displayName: Distributor
+        path: components.distributor
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:podStatuses
+      - description: Ingester is a map to the per pod status of the ingester statefulset
+        displayName: Ingester
+        path: components.ingester
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:podStatuses
+      - description: Querier is a map to the per pod status of the querier deployment
+        displayName: Querier
+        path: components.querier
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:podStatuses
+      - description: QueryFrontend is a map to the per pod status of the query frontend
+          deployment
+        displayName: Query Frontend
+        path: components.queryFrontend
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:podStatuses
+      - description: Compactor is a map to the pod status of the compactor pod.
+        displayName: Compactor
+        path: components.compactor
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:podStatuses
       - description: Conditions of the Tempo deployment health.
         displayName: Conditions
         path: conditions
@@ -376,6 +397,7 @@ spec:
           - ""
           resources:
           - configmaps
+          - pods
           - secrets
           - serviceaccounts
           - services

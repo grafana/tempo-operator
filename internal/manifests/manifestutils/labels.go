@@ -11,6 +11,7 @@ func ComponentLabels(component, instanceName string) labels.Set {
 	})
 }
 
+// CommonLabels returns common labels for each object created by the operator.
 func CommonLabels(instanceName string) map[string]string {
 	return map[string]string{
 		"app.kubernetes.io/name":       "tempo",

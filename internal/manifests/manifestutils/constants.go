@@ -39,4 +39,15 @@ const (
 	HttpMemberlistPortName = "http-memberlist"
 	// PortMemberlist declares the port number of the tempo memberlist port.
 	PortMemberlist = 7946
+
+	// CompactorComponentName declares the internal name of the compactor component.
+	CompactorComponentName = "compactor"
+	// QuerierComponentName declares the internal name of the querier component.
+	QuerierComponentName = "querier"
+	// DistributorComponentName declares the internal name of the distributor component.
+	DistributorComponentName = "distributor"
+	// QueryFrontendComponentName declares the internal name of the query-frontend component.
+	QueryFrontendComponentName = "query-frontend"
+	// IngesterComponentName declares the internal name of the ingester component.
+	IngesterComponentName = "ingester"
 )

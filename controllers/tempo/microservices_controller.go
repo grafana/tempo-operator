@@ -4,17 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/url"
+	"strings"
 	"time"
 
 	"github.com/go-logr/logr"
-	dockerparser "github.com/novln/docker-parser"
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/api/meta"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -30,6 +27,7 @@ import (
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/os-observability/tempo-operator/internal/manifests"
 	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
+	"github.com/os-observability/tempo-operator/internal/status"
 )
 
 const (
@@ -42,17 +40,7 @@ type MicroservicesReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-type DegradedError struct {
-	Reason  v1alpha1.ConditionReason
-	Message string
-	Requeue bool
-}
-
-func (e *DegradedError) Error() string {
-	return fmt.Sprintf("cluster degraded: %s: %s", e.Reason, e.Message)
-}
-
-// +kubebuilder:rbac:groups="",resources=services;configmaps;serviceaccounts;secrets,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="",resources=services;configmaps;serviceaccounts;secrets;pods,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=apps,resources=deployments;statefulsets,verbs=get;list;watch;create;update;patch;delete
 
 //+kubebuilder:rbac:groups=tempo.grafana.com,resources=microservices,verbs=get;list;watch;create;update;patch;delete
@@ -84,34 +72,62 @@ func (r *MicroservicesReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		return ctrl.Result{}, nil
 	}
 
-	var degraded *DegradedError
 	err := r.reconcileManifests(ctx, log, req, tempo)
+	return r.handleStatus(ctx, tempo, err)
+}
 
-	// return early for non-degraded errors
-	if err != nil && !errors.As(err, &degraded) {
+// handleStatus set all components status, then verify if an error is type status.DegradedError, if that is the case, it will update the CR
+// status conditions to Degraded. if not it will throw an error as usual.
+func (r *MicroservicesReconciler) handleStatus(ctx context.Context, tempo v1alpha1.Microservices, err error) (ctrl.Result, error) {
+	// First refresh components
+	newStatus, rerr := status.GetComponetsStatus(ctx, r, tempo)
+	requeue := false
+
+	if rerr != nil {
 		return ctrl.Result{
-			Requeue:      true,
+			Requeue:      requeue,
 			RequeueAfter: time.Second,
-		}, fmt.Errorf("failed to reconcile objects for tempo %s", req.NamespacedName)
+		}, err
 	}
 
-	// update status conditions on success or on degraded errors
-	requeue, err := updateStatus(ctx, tempo, r.Client.Status(), degraded)
+	// If is not degraded error, refresh and return error
+	var degraded *status.DegradedError
+	if !errors.As(err, &degraded) {
+		requeue, rerr := status.Refresh(ctx, r, tempo, &newStatus)
+		// Error refreshing components status
+		if rerr != nil {
+			return ctrl.Result{
+				Requeue:      requeue,
+				RequeueAfter: time.Second,
+			}, err
+		}
+		// Return original error
+		return ctrl.Result{
+			Requeue: false,
+		}, err
+	}
+
+	// Degraded error
+	newStatus.Conditions = status.DegradedCondition(tempo, degraded.Message, degraded.Reason)
+
+	// Refresh status
+	requeue, err = status.Refresh(ctx, r, tempo, &newStatus)
+
+	// Error refreshing status
 	if err != nil {
 		return ctrl.Result{
-			Requeue:      true,
+			Requeue:      requeue || degraded.Requeue,
 			RequeueAfter: time.Second,
-		}, fmt.Errorf("failed to update status for %s, requeueing reconcile event: %w", req.NamespacedName, err)
+		}, err
 	}
-	return ctrl.Result{
-		Requeue: requeue,
-	}, nil
+	// No errors at all.
+	return ctrl.Result{}, nil
 }
 
 func (r *MicroservicesReconciler) reconcileManifests(ctx context.Context, log logr.Logger, req ctrl.Request, tempo v1alpha1.Microservices) error {
 	storageConfig, err := r.getStorageConfig(ctx, tempo)
 	if err != nil {
-		return &DegradedError{
+		return &status.DegradedError{
 			Reason:  v1alpha1.ReasonInvalidStorageConfig,
 			Message: err.Error(),
 			Requeue: false,
@@ -159,24 +175,6 @@ func (r *MicroservicesReconciler) reconcileManifests(ctx context.Context, log lo
 	return nil
 }
 
-func validateStorageSecret(storageSecret *corev1.Secret) error {
-	if storageSecret.Data == nil ||
-		storageSecret.Data["endpoint"] == nil ||
-		storageSecret.Data["bucket"] == nil ||
-		storageSecret.Data["access_key_id"] == nil ||
-		storageSecret.Data["access_key_secret"] == nil {
-		return fmt.Errorf("storage secret should contain endpoint and bucket, access_key_id and access_key_secret fields")
-	}
-
-	u, err := url.ParseRequestURI(string(storageSecret.Data["endpoint"]))
-	// ParseRequestURI also accepts absolute paths, therefore we need to check if the URL scheme is set
-	if err != nil || u.Scheme == "" {
-		return fmt.Errorf("'endpoint' field of storage secret must be a valid URL")
-	}
-
-	return nil
-}
-
 func (r *MicroservicesReconciler) getStorageConfig(ctx context.Context, tempo v1alpha1.Microservices) (*manifestutils.StorageParams, error) {
 	storageSecret := &corev1.Secret{}
 	err := r.Get(ctx, types.NamespacedName{Namespace: tempo.Namespace, Name: tempo.Spec.Storage.Secret}, storageSecret)
@@ -184,9 +182,13 @@ func (r *MicroservicesReconciler) getStorageConfig(ctx context.Context, tempo v1
 		return nil, fmt.Errorf("could not fetch storage secret: %w", err)
 	}
 
-	err = validateStorageSecret(storageSecret)
-	if err != nil {
-		return nil, fmt.Errorf("invalid storage secret: %w", err)
+	fieldErrs := v1alpha1.ValidateStorageSecret(tempo, *storageSecret)
+	if len(fieldErrs) > 0 {
+		msgs := make([]string, len(fieldErrs))
+		for i, fieldErr := range fieldErrs {
+			msgs[i] = fieldErr.Detail
+		}
+		return nil, fmt.Errorf("invalid storage secret: %s", strings.Join(msgs, ", "))
 	}
 
 	return &manifestutils.StorageParams{S3: manifestutils.S3{
@@ -258,53 +260,20 @@ func (r *MicroservicesReconciler) findMicroservicesForStorageSecret(secret clien
 	return requests
 }
 
-func updateStatus(ctx context.Context, tempo v1alpha1.Microservices, statusWriter client.StatusWriter, degraded *DegradedError) (bool, error) {
-	tempoImage, err := dockerparser.Parse(tempo.Spec.Images.Tempo)
-	if err != nil {
-		return false, err
+// GetPodsComponent is used for fetching component pod status and refreshing the status of the CR.
+func (r *MicroservicesReconciler) GetPodsComponent(ctx context.Context, componentName string, stack v1alpha1.Microservices) (*corev1.PodList, error) {
+	pods := &corev1.PodList{}
+
+	opts := []client.ListOption{
+		client.MatchingLabels(manifestutils.ComponentLabels(componentName, stack.Name)),
+		client.InNamespace(stack.Namespace),
 	}
+	err := r.Client.List(ctx, pods, opts...)
+	return pods, err
+}
 
-	changed := tempo.DeepCopy()
-	changed.Status.TempoVersion = tempoImage.Tag()
-
-	// Update status conditions
-	if degraded == nil {
-		// In case the ready condition is not true yet, set ready condition and unset degraded condition
-		if !meta.IsStatusConditionTrue(changed.Status.Conditions, string(v1alpha1.ConditionReady)) {
-			meta.SetStatusCondition(&changed.Status.Conditions, metav1.Condition{
-				Type:    string(v1alpha1.ConditionReady),
-				Status:  metav1.ConditionTrue,
-				Reason:  string(v1alpha1.ReasonReady),
-				Message: "All components are operational",
-			})
-
-			degradedCond := meta.FindStatusCondition(changed.Status.Conditions, string(v1alpha1.ConditionDegraded))
-			if degradedCond != nil {
-				degradedCond.Status = metav1.ConditionFalse
-				degradedCond.LastTransitionTime = metav1.NewTime(time.Now())
-			}
-		}
-	} else {
-		// In case the degraded condition is not true yet, set degraded condition and unset ready condition
-		if !meta.IsStatusConditionTrue(changed.Status.Conditions, string(v1alpha1.ConditionDegraded)) {
-			meta.SetStatusCondition(&changed.Status.Conditions, metav1.Condition{
-				Type:    string(v1alpha1.ConditionDegraded),
-				Status:  metav1.ConditionTrue,
-				Reason:  string(degraded.Reason),
-				Message: degraded.Message,
-			})
-
-			readyCond := meta.FindStatusCondition(changed.Status.Conditions, string(v1alpha1.ConditionReady))
-			if readyCond != nil {
-				readyCond.Status = metav1.ConditionFalse
-				readyCond.LastTransitionTime = metav1.NewTime(time.Now())
-			}
-		}
-	}
-
-	statusPatch := client.MergeFrom(&tempo)
-	if err := statusWriter.Patch(ctx, changed, statusPatch); err != nil {
-		return true, err
-	}
-	return false, nil
+// PatchStatus patches the status field of the CR.
+func (r *MicroservicesReconciler) PatchStatus(ctx context.Context, changed, original *v1alpha1.Microservices) error {
+	statusPatch := client.MergeFrom(original)
+	return r.Client.Status().Patch(ctx, changed, statusPatch)
 }

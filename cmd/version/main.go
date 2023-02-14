@@ -10,6 +10,7 @@ import (
 	"github.com/os-observability/tempo-operator/internal/version"
 )
 
+// NewVersionCommand returns a new version command.
 func NewVersionCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "version",

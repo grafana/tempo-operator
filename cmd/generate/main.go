@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
@@ -25,11 +27,16 @@ import (
 const yamlOrJsonDecoderBufferSize = 8192
 
 func loadSpec(path string) (v1alpha1.Microservices, error) {
-	file, err := os.Open(path)
+	pathCleaned := filepath.Clean(path)
+	file, err := os.Open(pathCleaned)
 	if err != nil {
 		return v1alpha1.Microservices{}, err
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			log.Fatalf("Error closing file %s: %v", pathCleaned, err)
+		}
+	}()
 
 	spec := v1alpha1.Microservices{}
 	decoder := k8syaml.NewYAMLOrJSONDecoder(file, yamlOrJsonDecoderBufferSize)
@@ -117,11 +124,16 @@ func generate(c *cobra.Command, crPath string, outPath string, params manifestut
 		return fmt.Errorf("error building manifests: %w", err)
 	}
 
-	outFile, err := os.OpenFile(outPath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o600)
+	outPathCleaned := filepath.Clean(outPath)
+	outFile, err := os.OpenFile(outPathCleaned, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o600)
 	if err != nil {
 		return fmt.Errorf("error opening output file: %w", err)
 	}
-	defer outFile.Close()
+	defer func() {
+		if err := outFile.Close(); err != nil {
+			log.Fatalf("Error closing file %s: %v", outPathCleaned, err)
+		}
+	}()
 
 	err = toYAMLManifest(options.Scheme, objects, outFile)
 	if err != nil {
@@ -131,6 +143,7 @@ func generate(c *cobra.Command, crPath string, outPath string, params manifestut
 	return nil
 }
 
+// NewGenerateCommand returns a new generate command.
 func NewGenerateCommand() *cobra.Command {
 	var crPath string
 	var outPath string

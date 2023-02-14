@@ -38,7 +38,7 @@ func getExpectedFrontEndService(withJaeger bool) *corev1.Service {
 	labels := manifestutils.ComponentLabels("query-frontend", "test")
 	expectedFrontEndService := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      naming.Name(componentName, "test"),
+			Name:      naming.Name(manifestutils.QueryFrontendComponentName, "test"),
 			Namespace: "project1",
 			Labels:    labels,
 		},
@@ -71,7 +71,7 @@ func getExpectedFrontendDiscoveryService(withJaeger bool) *corev1.Service {
 
 	expectedFrontendDiscoveryService := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      naming.Name(componentName+"-discovery", "test"),
+			Name:      naming.Name(manifestutils.QueryFrontendComponentName+"-discovery", "test"),
 			Namespace: "project1",
 			Labels:    labels,
 		},
@@ -116,7 +116,7 @@ func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 			APIVersion: v1.SchemeGroupVersion.String(),
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      naming.Name(componentName, "test"),
+			Name:      naming.Name(manifestutils.QueryFrontendComponentName, "test"),
 			Namespace: "project1",
 			Labels:    labels,
 		},
