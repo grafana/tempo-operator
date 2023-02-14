@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"net/url"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
@@ -22,15 +23,17 @@ import (
 )
 
 var (
-	zeroQuantity                = resource.MustParse("0Gi")
-	tenGBQuantity               = resource.MustParse("10Gi")
-	errNoDefaultTempoImage      = errors.New("please specify a tempo image in the CR or in the operator configuration")
-	errNoDefaultTempoQueryImage = errors.New("please specify a tempo-query image in the CR or in the operator configuration")
+	zeroQuantity                  = resource.MustParse("0Gi")
+	tenGBQuantity                 = resource.MustParse("10Gi")
+	errNoDefaultTempoImage        = errors.New("please specify a tempo image in the CR or in the operator configuration")
+	errNoDefaultTempoGatewayImage = errors.New("please specify a tempo-gateway image in the CR or in the operator configuration")
+	errNoDefaultTempoQueryImage   = errors.New("please specify a tempo-query image in the CR or in the operator configuration")
 )
 
 // log is for logging in this package.
 var microserviceslog = logf.Log.WithName("microservices-resource")
 
+// SetupWebhookWithManager initializes the webhook.
 func (r *Microservices) SetupWebhookWithManager(mgr ctrl.Manager, defaultImages ImagesSpec) error {
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(r).
@@ -48,10 +51,12 @@ func NewDefaulter(defaultImages ImagesSpec) *Defaulter {
 	}
 }
 
+// Defaulter implements the CustomDefaulter interface.
 type Defaulter struct {
 	defaultImages ImagesSpec
 }
 
+// Default applies default values to a Kubernetes object.
 func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 	r, ok := obj.(*Microservices)
 	if !ok {
@@ -117,6 +122,13 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 		r.Spec.ReplicationFactor = defaultReplicationFactor
 	}
 
+	if r.Spec.Images.TempoGateway == "" {
+		if d.defaultImages.TempoGateway == "" {
+			return errNoDefaultTempoGatewayImage
+		}
+		r.Spec.Images.TempoGateway = d.defaultImages.TempoGateway
+	}
+
 	return nil
 }
 
@@ -139,7 +151,7 @@ func (v *validator) ValidateDelete(ctx context.Context, obj runtime.Object) erro
 	return nil
 }
 
-func (v *validator) validateServiceAccount(ctx context.Context, tempo *Microservices) field.ErrorList {
+func (v *validator) validateServiceAccount(ctx context.Context, tempo Microservices) field.ErrorList {
 	var allErrs field.ErrorList
 
 	// the default service account gets created later in the reconciliation loop
@@ -158,7 +170,56 @@ func (v *validator) validateServiceAccount(ctx context.Context, tempo *Microserv
 	return allErrs
 }
 
-func (v *validator) validateReplicationFactor(tempo *Microservices) field.ErrorList {
+// ValidateStorageSecret validates the object storage secret required for tempo.
+func ValidateStorageSecret(tempo Microservices, storageSecret corev1.Secret) field.ErrorList {
+	path := field.NewPath("spec").Child("storage").Child("secret")
+
+	if storageSecret.Data == nil {
+		return field.ErrorList{field.Invalid(path, tempo.Spec.Storage.Secret, "storage secret is empty")}
+	}
+
+	var allErrs field.ErrorList
+	for _, key := range []string{
+		"endpoint",
+		"bucket",
+		"access_key_id",
+		"access_key_secret",
+	} {
+		if storageSecret.Data[key] == nil || len(storageSecret.Data[key]) == 0 {
+			allErrs = append(allErrs, field.Invalid(
+				path,
+				tempo.Spec.Storage.Secret,
+				fmt.Sprintf("storage secret must contain \"%s\" field", key),
+			))
+		} else if key == "endpoint" {
+			u, err := url.ParseRequestURI(string(storageSecret.Data["endpoint"]))
+
+			// ParseRequestURI also accepts absolute paths, therefore we need to check if the URL scheme is set
+			if err != nil || u.Scheme == "" {
+				allErrs = append(allErrs, field.Invalid(
+					path,
+					tempo.Spec.Storage.Secret,
+					"\"endpoint\" field of storage secret must be a valid URL",
+				))
+			}
+		}
+	}
+	return allErrs
+}
+
+func (v *validator) validateStorage(ctx context.Context, tempo Microservices) field.ErrorList {
+	storageSecret := &corev1.Secret{}
+	err := v.client.Get(ctx, types.NamespacedName{Namespace: tempo.Namespace, Name: tempo.Spec.Storage.Secret}, storageSecret)
+	if err != nil {
+		// Do not fail the validation here, the user can create the storage secret later.
+		// The operator will remain in a degraded condition until the storage secret is set.
+		return field.ErrorList{}
+	}
+
+	return ValidateStorageSecret(tempo, *storageSecret)
+}
+
+func (v *validator) validateReplicationFactor(tempo Microservices) field.ErrorList {
 	// Validate minimum quorum on ingestors according to replicas and replication factor
 	replicatonFactor := tempo.Spec.ReplicationFactor
 	// Ingester replicas should not be nil at this point, due defauler.
@@ -184,8 +245,9 @@ func (v *validator) validate(ctx context.Context, obj runtime.Object) error {
 	microserviceslog.V(1).Info("validate", "name", tempo.Name)
 
 	var allErrs field.ErrorList
-	allErrs = append(allErrs, v.validateServiceAccount(ctx, tempo)...)
-	allErrs = append(allErrs, v.validateReplicationFactor(tempo)...)
+	allErrs = append(allErrs, v.validateServiceAccount(ctx, *tempo)...)
+	allErrs = append(allErrs, v.validateStorage(ctx, *tempo)...)
+	allErrs = append(allErrs, v.validateReplicationFactor(*tempo)...)
 
 	if len(allErrs) == 0 {
 		return nil

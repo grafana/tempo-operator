@@ -1,0 +1,16 @@
+tenants:
+- id: "1610b0c3-c509-4592-a256-a1871353dbfa"
+  name: "test-oidc"
+  oidc:
+    clientID: "test"
+    issuerURL: "https://dex.klimlive.de/dex"
+    clientSecret: "super-secret"
+    redirectURL: "https://observatorium.klimlive.de/oidc/test-oidc/callback"
+    usernameClaim: "email"
+  rateLimits:
+  - endpoint: "/api/metrics/v1/.+/api/v1/receive"
+    limit: 1000
+    window: "1s"
+  - endpoint: "/api/logs/v1/.*"
+    limit: 1000
+    window: "1s"

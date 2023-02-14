@@ -1015,18 +1015,18 @@ Gateway defines the tempo gateway spec.
         </tr>
     </thead>
     <tbody><tr>
+        <td><b>enabled</b></td>
+        <td>boolean</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
         <td><b><a href="#microservicesspectemplategatewaycomponent">component</a></b></td>
         <td>object</td>
         <td>
           TempoComponentSpec is embedded to extend this definition with further options. 
  Currently there is no way to inline this field. See: https://github.com/golang/go/issues/6213<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#microservicesspectemplategatewayjaegerquery">jaegerQuery</a></b></td>
-        <td>object</td>
-        <td>
-          JaegerQuerySpec defines Jaeger Query spefic options.<br/>
         </td>
         <td>false</td>
       </tr></tbody>
@@ -1128,33 +1128,6 @@ The pod this Toleration is attached to tolerates any taint that matches the trip
         <td>string</td>
         <td>
           Value is the taint value the toleration matches to. If the operator is Exists, the value should be empty, otherwise just a regular string.<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-
-### Microservices.spec.template.gateway.jaegerQuery
-<sup><sup>[↩ Parent](#microservicesspectemplategateway)</sup></sup>
-
-
-
-JaegerQuerySpec defines Jaeger Query spefic options.
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>enabled</b></td>
-        <td>boolean</td>
-        <td>
-          Enabled is used to define if a tempo gateway component should be created.<br/>
         </td>
         <td>false</td>
       </tr></tbody>
@@ -1546,8 +1519,8 @@ Tenants defines the per-tenant authentication and authorization spec.
         <td>
           Mode defines the multitenancy mode.<br/>
           <br/>
-            <i>Enum</i>: dynamic<br/>
-            <i>Default</i>: dynamic<br/>
+            <i>Enum</i>: static, dynamic<br/>
+            <i>Default</i>: static<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -1585,13 +1558,6 @@ AuthenticationSpec defines the oidc configuration per tenant for tempo Gateway c
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#microservicesspectenantsauthenticationindexoidc">oidc</a></b></td>
-        <td>object</td>
-        <td>
-          OIDC defines the spec for the OIDC tenant's authentication.<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
         <td><b>tenantId</b></td>
         <td>string</td>
         <td>
@@ -1605,6 +1571,13 @@ AuthenticationSpec defines the oidc configuration per tenant for tempo Gateway c
           TenantName defines the name of the tenant.<br/>
         </td>
         <td>true</td>
+      </tr><tr>
+        <td><b><a href="#microservicesspectenantsauthenticationindexoidc">oidc</a></b></td>
+        <td>object</td>
+        <td>
+          OIDC defines the spec for the OIDC tenant's authentication.<br/>
+        </td>
+        <td>false</td>
       </tr></tbody>
 </table>
 
@@ -1867,6 +1840,13 @@ MicroservicesStatus defines the observed state of Microservices.
         </tr>
     </thead>
     <tbody><tr>
+        <td><b><a href="#microservicesstatuscomponents">components</a></b></td>
+        <td>object</td>
+        <td>
+          Components provides summary of all Tempo pod status grouped per component.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b><a href="#microservicesstatusconditionsindex">conditions</a></b></td>
         <td>[]object</td>
         <td>
@@ -1874,10 +1854,72 @@ MicroservicesStatus defines the observed state of Microservices.
         </td>
         <td>false</td>
       </tr><tr>
+        <td><b>tempoQueryVersion</b></td>
+        <td>string</td>
+        <td>
+          Version of the Tempo Query component used.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b>tempoVersion</b></td>
         <td>string</td>
         <td>
           Version of the managed Tempo instance.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### Microservices.status.components
+<sup><sup>[↩ Parent](#microservicesstatus)</sup></sup>
+
+
+
+Components provides summary of all Tempo pod status grouped per component.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>compactor</b></td>
+        <td>map[string][]string</td>
+        <td>
+          Compactor is a map to the pod status of the compactor pod.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>distributor</b></td>
+        <td>map[string][]string</td>
+        <td>
+          Distributor is a map to the per pod status of the distributor deployment<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>ingester</b></td>
+        <td>map[string][]string</td>
+        <td>
+          Ingester is a map to the per pod status of the ingester statefulset<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>querier</b></td>
+        <td>map[string][]string</td>
+        <td>
+          Querier is a map to the per pod status of the querier deployment<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>queryFrontend</b></td>
+        <td>map[string][]string</td>
+        <td>
+          QueryFrontend is a map to the per pod status of the query frontend deployment<br/>
         </td>
         <td>false</td>
       </tr></tbody>

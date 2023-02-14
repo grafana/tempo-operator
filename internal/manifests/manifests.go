@@ -6,6 +6,7 @@ import (
 	"github.com/os-observability/tempo-operator/internal/manifests/compactor"
 	"github.com/os-observability/tempo-operator/internal/manifests/config"
 	"github.com/os-observability/tempo-operator/internal/manifests/distributor"
+	"github.com/os-observability/tempo-operator/internal/manifests/gateway"
 	"github.com/os-observability/tempo-operator/internal/manifests/ingester"
 	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
 	"github.com/os-observability/tempo-operator/internal/manifests/memberlist"
@@ -45,6 +46,11 @@ func BuildAll(params manifestutils.Params) ([]client.Object, error) {
 		return nil, err
 	}
 
+	gw, err := gateway.BuildGateway(params)
+	if err != nil {
+		return nil, err
+	}
+
 	var manifests []client.Object
 	manifests = append(manifests, configMaps)
 	if params.Tempo.Spec.ServiceAccount == naming.DefaultServiceAccountName(params.Tempo.Name) {
@@ -56,5 +62,6 @@ func BuildAll(params manifestutils.Params) ([]client.Object, error) {
 	manifests = append(manifests, frontendObjs...)
 	manifests = append(manifests, querierObjs...)
 	manifests = append(manifests, compactorObjs...)
+	manifests = append(manifests, gw...)
 	return manifests, nil
 }

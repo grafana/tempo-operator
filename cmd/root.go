@@ -20,7 +20,10 @@ var (
 	scheme = runtime.NewScheme()
 )
 
+// RootConfigKey contains the key to RootConfig in the context object.
 type RootConfigKey struct{}
+
+// RootConfig contains configuration relevant for all commands.
 type RootConfig struct {
 	Options    ctrl.Options
 	CtrlConfig configtempov1alpha1.ProjectConfig
@@ -57,6 +60,7 @@ func readConfig(cmd *cobra.Command, configFile string) error {
 	return nil
 }
 
+// NewRootCommand creates a new cobra root command.
 func NewRootCommand() *cobra.Command {
 	var configFile string
 

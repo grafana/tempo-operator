@@ -60,6 +60,7 @@ func start(c *cobra.Command, args []string) {
 		"tempo-operator", v.OperatorVersion,
 		"default-tempo-image", v.DefaultTempoImage,
 		"default-tempo-query-image", v.DefaultTempoQueryImage,
+		"default-tempo-gateway-image", v.DefaultGatewayImage,
 		"build-date", v.BuildDate,
 		"git-hash", v.GitHash,
 		"go-version", v.Go,
@@ -73,6 +74,7 @@ func start(c *cobra.Command, args []string) {
 	}
 }
 
+// NewStartCommand returns a new start command.
 func NewStartCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:   "start",
