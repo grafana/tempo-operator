@@ -1,3 +1,18 @@
+# Current Operator version
+VERSION_DATE ?= $(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
+VERSION_PKG ?= "github.com/os-observability/tempo-operator/internal/version"
+TEMPO_VERSION ?= "1.5.0"
+OPERATOR_VERSION ?= 0.0.1
+COMMIT_SHA = "$(shell git rev-parse HEAD)"
+LD_FLAGS ?= "-X ${VERSION_PKG}.buildDate=${VERSION_DATE} -X ${VERSION_PKG}.version=${OPERATOR_VERSION} -X ${VERSION_PKG}.commitSha=${COMMIT_SHA}"
+ARCH ?= $(shell go env GOARCH)
+
+# Image URL to use all building/pushing image targets
+IMG_PREFIX ?= ghcr.io/${USER}/tempo-operator
+IMG_REPO ?= tempo-operator
+IMG ?= ${IMG_PREFIX}/${IMG_REPO}:v${OPERATOR_VERSION}
+BUNDLE_IMG ?= ${IMG_PREFIX}/${IMG_REPO}-bundle:v${OPERATOR_VERSION}
+
 # When the VERBOSE variable is set to 1, all the commands are shown
 ifeq ("$(VERBOSE)","true")
 echo_prefix=">>>>"
@@ -6,13 +21,6 @@ VECHO = @
 endif
 
 ECHO ?= @echo $(echo_prefix)
-
-# VERSION defines the project version for the bundle.
-# Update this value when you upgrade the version of your project.
-# To re-generate a bundle for another specific version without changing the standard setup, you can:
-# - use the VERSION as arg of the bundle target (e.g make bundle VERSION=0.0.2)
-# - use environment variables to overwrite this value (e.g export VERSION=0.0.2)
-VERSION ?= 0.0.1
 
 # CHANNELS define the bundle channels used in the bundle.
 # Add a new line here if you would like to change its default config. (E.g CHANNELS = "candidate,fast,stable")
@@ -33,19 +41,8 @@ BUNDLE_DEFAULT_CHANNEL := --default-channel=$(DEFAULT_CHANNEL)
 endif
 BUNDLE_METADATA_OPTS ?= $(BUNDLE_CHANNELS) $(BUNDLE_DEFAULT_CHANNEL)
 
-# IMAGE_TAG_BASE defines the docker.io namespace and part of the image name for remote images.
-# This variable is used to construct full image tags for bundle and catalog images.
-#
-# For example, running 'make bundle-build bundle-push catalog-build catalog-push' will build and push both
-# grafana.com/tempo-operator-bundle:$VERSION and grafana.com/tempo-operator-catalog:$VERSION.
-IMAGE_TAG_BASE ?= grafana.com/tempo-operator
-
-# BUNDLE_IMG defines the image:tag used for the bundle.
-# You can use it as an arg. (E.g make bundle-build BUNDLE_IMG=<some-registry>/<project-name-bundle>:<tag>)
-BUNDLE_IMG ?= $(IMAGE_TAG_BASE)-bundle:v$(VERSION)
-
 # BUNDLE_GEN_FLAGS are the flags passed to the operator-sdk generate bundle command
-BUNDLE_GEN_FLAGS ?= -q --overwrite --version $(VERSION) $(BUNDLE_METADATA_OPTS)
+BUNDLE_GEN_FLAGS ?= -q --overwrite --version $(OPERATOR_VERSION) $(BUNDLE_METADATA_OPTS)
 
 # USE_IMAGE_DIGESTS defines if images are resolved via tags or digests
 # You can enable this value if you would like to use SHA Based Digests
@@ -55,8 +52,6 @@ ifeq ($(USE_IMAGE_DIGESTS), true)
 	BUNDLE_GEN_FLAGS += --use-image-digests
 endif
 
-# Image URL to use all building/pushing image targets
-IMG ?= controller:latest
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by setup-envtest binary.
 ENVTEST_K8S_VERSION = 1.24.2
 
@@ -119,7 +114,7 @@ test: manifests generate fmt vet setup-envtest ## Run tests.
 
 .PHONY: build
 build: generate fmt vet ## Build manager binary.
-	go build -o bin/manager main.go
+	CGO_ENABLED=0 go build -o bin/manager -ldflags ${LD_FLAGS} main.go
 
 .PHONY: run
 run: manifests generate fmt vet ## Run a controller from your host.
@@ -129,7 +124,7 @@ run: manifests generate fmt vet ## Run a controller from your host.
 
 .PHONY: docker-build
 docker-build: ## Build docker image with the manager.
-	docker build -t ${IMG} .
+	docker buildx build --load --platform linux/${ARCH} -t ${IMG} .
 
 .PHONY: docker-push
 docker-push: ## Push docker image with the manager.
@@ -232,7 +227,7 @@ endif
 BUNDLE_IMGS ?= $(BUNDLE_IMG)
 
 # The image tag given to the resulting catalog image (e.g. make catalog-build CATALOG_IMG=example.com/operator-catalog:v0.2.0).
-CATALOG_IMG ?= $(IMAGE_TAG_BASE)-catalog:v$(VERSION)
+CATALOG_IMG ?= ${IMG_PREFIX}/${IMG_REPO}-catalog:v$(OPERATOR_VERSION)
 
 # Set CATALOG_BASE_IMG to an existing catalog image tag to add $BUNDLE_IMGS to that image.
 ifneq ($(origin CATALOG_BASE_IMG), undefined)
