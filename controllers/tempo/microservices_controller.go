@@ -78,7 +78,7 @@ func (r *MicroservicesReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	if r.FeatureGates.BuiltInCertManagement.Enabled {
 		err := handlers.CreateOrRotateCertificates(ctx, log, req, r.Client, r.Scheme, r.FeatureGates)
 		if err != nil {
-			return ctrl.Result{}, fmt.Errorf("build in cert manager error: %w", err)
+			return ctrl.Result{}, fmt.Errorf("built in cert manager error: %w", err)
 		}
 	}
 

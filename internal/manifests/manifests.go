@@ -3,8 +3,6 @@ package manifests
 import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	configtempov1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
-	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/os-observability/tempo-operator/internal/manifests/compactor"
 	"github.com/os-observability/tempo-operator/internal/manifests/config"
 	"github.com/os-observability/tempo-operator/internal/manifests/distributor"
@@ -17,13 +15,6 @@ import (
 	"github.com/os-observability/tempo-operator/internal/manifests/queryfrontend"
 	"github.com/os-observability/tempo-operator/internal/manifests/serviceaccount"
 )
-
-// Params holds parameters used to create Tempo objects.
-type Params struct {
-	StorageParams StorageParams
-	Tempo         v1alpha1.Microservices
-	Gates         configtempov1alpha1.FeatureGates
-}
 
 // StorageParams holds storage configuration.
 type StorageParams struct {

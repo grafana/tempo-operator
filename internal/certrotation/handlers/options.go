@@ -12,8 +12,6 @@ import (
 	"github.com/os-observability/tempo-operator/internal/certrotation"
 )
 
-//var serviceCAnnotationsRe = regexp.MustCompile(`^service.(?:alpha|beta)\.openshift\.io\/.+`)
-
 // GetOptions return a certrotation options struct filled with all found client and serving certificate secrets if any found.
 // Return an error only if either the k8s client returns any other error except IsNotFound or if merging options fails.
 func GetOptions(ctx context.Context, k client.Client, req ctrl.Request) (certrotation.Options, error) {
