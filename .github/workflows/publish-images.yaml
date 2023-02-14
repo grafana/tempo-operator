@@ -22,14 +22,13 @@ jobs:
 
       - name: Set env vars for the job
         run: |
-          echo "VERSION_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_ENV
-          echo "VERSION=$(git describe --tags --always | sed 's/^v//')" >> $GITHUB_ENV
+          echo "OPERATOR_VERSION=$(git describe --tags --always | sed 's/^v//')" >> $GITHUB_ENV
 
       - name: Docker meta
         id: docker_meta
         uses: docker/metadata-action@v4.3.0
         with:
-          images: ghcr.io/os-observability/tempo-operator/tempo-operator
+          images: ghcr.io/${{ github.repository }}/tempo-operator
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
@@ -77,3 +76,9 @@ jobs:
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
         shell: bash
+
+      - name: Publish operator bundle and catalog
+        if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+        run: make bundle bundle-build bundle-push catalog-build catalog-push
+        env:
+          USER: ${{ github.repository_owner }}
