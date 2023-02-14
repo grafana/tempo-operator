@@ -17,6 +17,7 @@ func DefaultServiceAccountName(name string) string {
 	return Name("serviceaccount", name)
 }
 
+// SigningCABundleName return CA bundle configmap name.
 func SigningCABundleName(name string) string {
 	return fmt.Sprintf("tempo-%s-ca-bundle", name)
 }
