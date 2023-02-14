@@ -15,8 +15,6 @@ kind: Microservices
 metadata:
   name: simplest
 spec:
-  images:
-    tempo: quay.io/rvargasp/tempo:latest
   storage:
     secret: minio-test
   storageSize: 200M

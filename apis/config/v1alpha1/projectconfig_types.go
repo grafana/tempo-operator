@@ -31,13 +31,9 @@ type BuiltInCertManagement struct {
 // FeatureGates is the supported set of all operator feature gates.
 type FeatureGates struct {
 	// BuiltInCertManagement enables the built-in facility for generating and rotating
-	// TLS client and serving certificates for all Tempo component services and internal clients except
-	// for the tempo-gateway, In detail all internal Tempo HTTP and GRPC communication is lifted
-	// to require mTLS. For the tempo-gateway you need to provide a secret with or use the `ServingCertsS
-	// ervice`
-	// on OpenShift:
-	// - `tls.crt`: The TLS server side certificate.
-	// - `tls.key`: The TLS key for server-side encryption.
+	// TLS client and serving certificates for the communication between ingesters and distributors and also between
+	// query and queryfrontend, In detail all internal Tempo HTTP and GRPC communication is lifted
+	// to require mTLS.
 	// In addition each service requires a configmap named as the MicroService CR with the
 	// suffix `-ca-bundle`, e.g. `tempo-dev-ca-bundle` and the following data:
 	// - `service-ca.crt`: The CA signing the service certificate in `tls.crt`.
@@ -49,6 +45,9 @@ type FeatureGates struct {
 	// In addition each service requires a configmap named as the Microservices CR with the
 	// suffix `-ca-bundle`, e.g. `tempo-dev-ca-bundle` and the following data:
 	// - `service-ca.crt`: The CA signing the service certificate in `tls.crt`.
+	// This will protect all internal communication between the distributors and ingestors and also
+	// between ingestor and queriers, and between the queriers and the query-frontend component
+	// The only component remains unprotected is the tempo-query (jaeger query UI).
 	HTTPEncryption bool `json:"httpEncryption,omitempty"`
 	// GRPCEncryption enables TLS encryption for all GRPC Microservices services.
 	// Each GRPC service requires a secret named as the service with the following data:
@@ -57,6 +56,9 @@ type FeatureGates struct {
 	// In addition each service requires a configmap named as the Microservices CR with the
 	// suffix `-ca-bundle`, e.g. `tempo-dev-ca-bundle` and the following data:
 	// - `service-ca.crt`: The CA signing the service certificate in `tls.crt`.
+	// This will protect all internal communication between the distributors and ingestors and also
+	// between ingestor and queriers, and between the queriers and the query-frontend component.
+	// The only component remains unprotected is the tempo-query (jaeger query UI).
 	GRPCEncryption bool `json:"grpcEncryption,omitempty"`
 }
 

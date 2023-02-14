@@ -24,10 +24,10 @@ images:
   tempoQuery: docker.io/grafana/tempo-query:main-0c1eb27
   tempoGateway: quay.io/observatorium/api:main-2023-02-09-v0.1.2-329-g1ff4f11
 featureGates:
-  httpEncryption: true
-  grpcEncryption: true
+  httpEncryption: false
+  grpcEncryption: false
   builtInCertManagement:
-    enabled: true
+    enabled: false
     # CA certificate validity: 5 years
     caValidity: 43830h
     # CA certificate refresh at 80% of validity
