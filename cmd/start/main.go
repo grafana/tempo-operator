@@ -30,9 +30,21 @@ func start(c *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
+	if ctrlConfig.Gates.BuiltInCertManagement.Enabled {
+		if err = (&controllers.CertRotationReconciler{
+			Client:       mgr.GetClient(),
+			Scheme:       mgr.GetScheme(),
+			FeatureGates: ctrlConfig.Gates,
+		}).SetupWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create controller", "controller", "certrotation")
+			os.Exit(1)
+		}
+	}
+
 	if err = (&controllers.MicroservicesReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
+		Client:       mgr.GetClient(),
+		Scheme:       mgr.GetScheme(),
+		FeatureGates: ctrlConfig.Gates,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Microservices")
 		os.Exit(1)

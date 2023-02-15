@@ -9,10 +9,12 @@ require (
 	github.com/novln/docker-parser v1.0.0
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.26.0
+	github.com/openshift/library-go v0.0.0-20220622115547-84d884f4c9f6
 	github.com/spf13/cobra v1.6.1
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.25.4
 	k8s.io/apimachinery v0.26.1
+	k8s.io/apiserver v0.25.4
 	k8s.io/client-go v12.0.0+incompatible
 	sigs.k8s.io/controller-runtime v0.13.1
 )

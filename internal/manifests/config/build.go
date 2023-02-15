@@ -21,6 +21,10 @@ var (
 	//go:embed tempo-overrides.yaml
 	tempoTenantsOverridesYAMLTmplFile embed.FS
 	tempoTenantsOverridesYAMLTmpl     = template.Must(template.ParseFS(tempoTenantsOverridesYAMLTmplFile, "tempo-overrides.yaml"))
+
+	//go:embed tempo-query.yaml
+	tempoQueryYAMLTmplFile embed.FS
+	tempoQueryYAMLTmpl     = template.Must(template.ParseFS(tempoQueryYAMLTmplFile, "tempo-query.yaml"))
 )
 
 func s3FromParams(params Params) s3 {
@@ -66,6 +70,11 @@ func buildConfiguration(tempo v1alpha1.Microservices, params Params) ([]byte, er
 		GlobalRateLimits:       fromRateLimitSpecToRateLimitOptions(tempo.Spec.LimitSpec.Global),
 		Search:                 fromSearchSpecToOptions(tempo.Spec.SearchSpec),
 		ReplicationFactor:      tempo.Spec.ReplicationFactor,
+		Gates: featureGates{
+			GRPCEncryption: params.GRPCEncryption,
+			HTTPEncryption: params.HTTPEncryption,
+		},
+		TLS: buildTLSConfig(tempo),
 	}
 
 	if isTenantOverridesConfigRequired(tempo.Spec.LimitSpec) {
@@ -82,6 +91,43 @@ func isTenantOverridesConfigRequired(limitSpec v1alpha1.LimitSpec) bool {
 func buildTenantOverrides(tempo v1alpha1.Microservices) ([]byte, error) {
 	return renderTenantOverridesTemplate(tenantOptions{
 		RateLimits: fromRateLimitSpecToRateLimitOptionsMap(tempo.Spec.LimitSpec.PerTenant),
+	})
+}
+
+func buildTLSConfig(tempo v1alpha1.Microservices) tlsOptions {
+	return tlsOptions{
+		Paths: tlsFilePaths{
+			CA: fmt.Sprintf("%s/service-ca.crt", manifestutils.CABundleDir),
+			GRPC: tlsCertPath{
+				Key:         fmt.Sprintf("%s/tls.key", manifestutils.TempoServerGRPCTLSDir()),
+				Certificate: fmt.Sprintf("%s/tls.crt", manifestutils.TempoServerGRPCTLSDir()),
+			},
+			HTTP: tlsCertPath{
+				Key:         fmt.Sprintf("%s/tls.key", manifestutils.TempoServerHTTPTLSDir()),
+				Certificate: fmt.Sprintf("%s/tls.crt", manifestutils.TempoServerHTTPTLSDir()),
+			},
+		},
+		ServerNames: tlsServerNames{
+			GRPC: grpcServerNames{
+				QueryFrontend: fqdn(naming.Name("query-frontend-grpc", tempo.Name), tempo.Namespace),
+				Ingester:      fqdn(naming.Name("ingester-grpc", tempo.Name), tempo.Namespace),
+			},
+			HTTP: httpServerNames{
+				QueryFrontend: fqdn(naming.Name("query-frontend-http", tempo.Name), tempo.Namespace),
+			},
+		},
+	}
+
+}
+
+func buildTempoQueryConfig(tempo v1alpha1.Microservices, params Params) ([]byte, error) {
+	return renderTempoQueryTemplate(tempoQueryOptions{
+		TLS:      buildTLSConfig(tempo),
+		HTTPPort: manifestutils.PortHTTPServer,
+		Gates: featureGates{
+			GRPCEncryption: params.GRPCEncryption,
+			HTTPEncryption: params.HTTPEncryption,
+		},
 	})
 }
 
@@ -138,4 +184,19 @@ func fromSearchSpecToOptions(spec v1alpha1.SearchSpec) searchOptions {
 	}
 
 	return options
+}
+
+func renderTempoQueryTemplate(opts tempoQueryOptions) ([]byte, error) {
+	// Build tempo query config yaml
+	w := bytes.NewBuffer(nil)
+	err := tempoQueryYAMLTmpl.Execute(w, opts)
+	if err != nil {
+		return nil, err
+	}
+	cfg, err := io.ReadAll(w)
+	if err != nil {
+		return nil, err
+	}
+
+	return cfg, nil
 }

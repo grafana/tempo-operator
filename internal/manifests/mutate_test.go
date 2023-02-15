@@ -29,11 +29,11 @@ func TestGetMutateFunc_MutateObjectMeta(t *testing.T) {
 			},
 			OwnerReferences: []metav1.OwnerReference{
 				{
-					APIVersion:         "loki.grafana.com/v1",
+					APIVersion:         "tempo.grafana.com/v1alpha1",
 					BlockOwnerDeletion: pointer.Bool(true),
 					Controller:         pointer.Bool(true),
-					Kind:               "LokiStack",
-					Name:               "lokistack-testing",
+					Kind:               "Microservices",
+					Name:               "microservices-testing",
 					UID:                "6128aa83-de7f-47c0-abf2-4a380713b599",
 				},
 			},
@@ -811,13 +811,13 @@ func TestGetMutateFunc_MutateServiceMonitorSpec(t *testing.T) {
 					JobLabel: "some-job",
 					Endpoints: []monitoringv1.Endpoint{
 						{
-							Port:            "loki-test",
+							Port:            "tempo-test",
 							Path:            "/some-path",
 							Scheme:          "https",
 							BearerTokenFile: manifestutils.BearerTokenFile,
 							TLSConfig: &monitoringv1.TLSConfig{
 								SafeTLSConfig: monitoringv1.SafeTLSConfig{
-									ServerName: "loki-test.some-ns.svc.cluster.local",
+									ServerName: "tempo-test.some-ns.svc.cluster.local",
 								},
 								CAFile: manifestutils.PrometheusCAFile,
 							},
@@ -838,25 +838,25 @@ func TestGetMutateFunc_MutateServiceMonitorSpec(t *testing.T) {
 					JobLabel: "some-job-new",
 					Endpoints: []monitoringv1.Endpoint{
 						{
-							Port:            "loki-test",
+							Port:            "tempo-test",
 							Path:            "/some-path",
 							Scheme:          "https",
 							BearerTokenFile: manifestutils.BearerTokenFile,
 							TLSConfig: &monitoringv1.TLSConfig{
 								SafeTLSConfig: monitoringv1.SafeTLSConfig{
-									ServerName: "loki-test.some-ns.svc.cluster.local",
+									ServerName: "tempo-test.some-ns.svc.cluster.local",
 								},
 								CAFile: manifestutils.PrometheusCAFile,
 							},
 						},
 						{
-							Port:            "loki-test",
+							Port:            "tempo-test",
 							Path:            "/some-new-path",
 							Scheme:          "https",
 							BearerTokenFile: manifestutils.BearerTokenFile,
 							TLSConfig: &monitoringv1.TLSConfig{
 								SafeTLSConfig: monitoringv1.SafeTLSConfig{
-									ServerName: "loki-test.some-ns.svc.cluster.local",
+									ServerName: "tempo-test.some-ns.svc.cluster.local",
 								},
 								CAFile: manifestutils.PrometheusCAFile,
 							},
@@ -882,13 +882,13 @@ func TestGetMutateFunc_MutateServiceMonitorSpec(t *testing.T) {
 					JobLabel: "some-job",
 					Endpoints: []monitoringv1.Endpoint{
 						{
-							Port:            "loki-test",
+							Port:            "tempo-test",
 							Path:            "/some-path",
 							Scheme:          "https",
 							BearerTokenFile: manifestutils.BearerTokenFile,
 							TLSConfig: &monitoringv1.TLSConfig{
 								SafeTLSConfig: monitoringv1.SafeTLSConfig{
-									ServerName: "loki-test.some-ns.svc.cluster.local",
+									ServerName: "tempo-test.some-ns.svc.cluster.local",
 								},
 								CAFile: manifestutils.PrometheusCAFile,
 							},
@@ -910,25 +910,25 @@ func TestGetMutateFunc_MutateServiceMonitorSpec(t *testing.T) {
 					JobLabel: "some-job-new",
 					Endpoints: []monitoringv1.Endpoint{
 						{
-							Port:            "loki-test",
+							Port:            "tempo-test",
 							Path:            "/some-path",
 							Scheme:          "https",
 							BearerTokenFile: manifestutils.BearerTokenFile,
 							TLSConfig: &monitoringv1.TLSConfig{
 								SafeTLSConfig: monitoringv1.SafeTLSConfig{
-									ServerName: "loki-test.some-ns.svc.cluster.local",
+									ServerName: "tempo-test.some-ns.svc.cluster.local",
 								},
 								CAFile: manifestutils.PrometheusCAFile,
 							},
 						},
 						{
-							Port:            "loki-test",
+							Port:            "tempo-test",
 							Path:            "/some-new-path",
 							Scheme:          "https",
 							BearerTokenFile: manifestutils.BearerTokenFile,
 							TLSConfig: &monitoringv1.TLSConfig{
 								SafeTLSConfig: monitoringv1.SafeTLSConfig{
-									ServerName: "loki-test.some-ns.svc.cluster.local",
+									ServerName: "tempo-test.some-ns.svc.cluster.local",
 								},
 								CAFile: manifestutils.PrometheusCAFile,
 							},

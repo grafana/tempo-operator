@@ -22,7 +22,8 @@ import (
 // - Service
 // - Deployment
 // - StatefulSet
-// - ServiceMonitor.
+// - ServiceMonitor
+// - Secret.
 func MutateFuncFor(existing, desired client.Object) controllerutil.MutateFn {
 	return func() error {
 		existingAnnotations := existing.GetAnnotations()
@@ -108,9 +109,9 @@ func MutateFuncFor(existing, desired client.Object) controllerutil.MutateFn {
 			mutatePrometheusRule(pr, wantPr)
 
 		case *corev1.Secret:
-			s := existing.(*corev1.Secret)
-			wantS := desired.(*corev1.Secret)
-			mutateSecret(s, wantS)
+			pr := existing.(*corev1.Secret)
+			wantPr := desired.(*corev1.Secret)
+			mutateSecret(pr, wantPr)
 
 		default:
 			t := reflect.TypeOf(existing).String()

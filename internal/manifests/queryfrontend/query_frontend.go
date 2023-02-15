@@ -30,7 +30,29 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 	if err != nil {
 		return nil, err
 	}
-	svcs := services(params.Tempo)
+	gates := params.Gates
+	tempo := params.Tempo
+
+	if gates.HTTPEncryption || gates.GRPCEncryption {
+		caBundleName := naming.SigningCABundleName(tempo.Name)
+		if err := manifestutils.ConfigureServiceCA(&d.Spec.Template.Spec, caBundleName, 0, 1); err != nil {
+			return nil, err
+		}
+	}
+
+	if gates.HTTPEncryption {
+		if err := configureQuerierFrontEndHTTPServicePKI(d, tempo); err != nil {
+			return nil, err
+		}
+	}
+
+	if gates.GRPCEncryption {
+		if err := configureQuerierFrontEndGRPCServicePKI(d, tempo); err != nil {
+			return nil, err
+		}
+	}
+
+	svcs := services(tempo)
 
 	var manifests []client.Object
 	manifests = append(manifests, d)
@@ -40,6 +62,13 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 	return manifests, nil
 }
 
+func configureQuerierFrontEndHTTPServicePKI(deployment *v1.Deployment, tempo v1alpha1.Microservices) error {
+	return manifestutils.ConfigureHTTPServicePKI(&deployment.Spec.Template.Spec, naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name), 0, 1)
+}
+
+func configureQuerierFrontEndGRPCServicePKI(deployment *v1.Deployment, tempo v1alpha1.Microservices) error {
+	return manifestutils.ConfigureGRPCServicePKI(&deployment.Spec.Template.Spec, naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name), 0, 1)
+}
 func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 	tempo := params.Tempo
 	labels := manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, tempo.Name)
