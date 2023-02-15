@@ -1,4 +1,4 @@
-backend: 127.0.0.1:3100
+backend: 127.0.0.1:{{ .HTTPPort }}
 tls_enabled: true
 tls_cert_path: {{ .TLS.Paths.HTTP.Certificate }}
 tls_key_path: {{ .TLS.Paths.HTTP.Key }}
