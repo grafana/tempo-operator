@@ -33,7 +33,6 @@ memberlist:
   {{- range .MemberList }}
   - {{ . }}
   {{- end }}
-metrics_generator_enabled: false
 multitenancy_enabled: false
 {{- if or
   .GlobalRateLimits.IngestionBurstSizeBytes
@@ -68,9 +67,7 @@ overrides:
 {{- end }}
 {{- end }}
 querier:
-{{- if .Search.Enabled }}
   max_concurrent_queries: {{ .Search.MaxConcurrentQueries }}
-{{- end }}
   frontend_worker:
     frontend_address: {{ .QueryFrontendDiscovery }}
 {{- if .Gates.GRPCEncryption }}
@@ -81,7 +78,6 @@ querier:
       tls_ca_path: {{ .TLS.Paths.CA }}
       tls_server_name: {{ .TLS.ServerNames.GRPC.QueryFrontend }}
 {{- end }}
-{{- if .Search.Enabled }}
   search:
 {{- if .Search.QueryTimeout }}
     query_timeout: {{ .Search.QueryTimeout }}
@@ -92,8 +88,6 @@ querier:
 {{- if .Search.ExternalHedgeRequestsUpTo }}
     external_hedge_requests_up_to: {{ .Search.ExternalHedgeRequestsUpTo }}
 {{- end }}
-{{- end }}
-search_enabled: {{ .Search.Enabled }}
 {{- if .Gates.HTTPEncryption }}
 internal_server:
   enable: true
@@ -139,7 +133,6 @@ storage:
       path: /var/tempo/wal
 usage_report:
   reporting_enabled: false
-{{- if .Search.Enabled }}
 query_frontend:
   search:
 {{- if .Search.ConcurrentJobs }}
@@ -153,7 +146,6 @@ query_frontend:
 {{- end }}
 {{- if .Search.MaxResultLimit }}
     max_result_limit: {{ .Search.MaxResultLimit }}
-{{- end }}
 {{- end }}
 {{- if .Gates.GRPCEncryption }}
 ingester_client:

@@ -397,12 +397,6 @@ type Resources struct {
 
 // SearchSpec specified the global search parameters.
 type SearchSpec struct {
-	// Enable tempo search feature, default to true
-	//
-	// +optional
-	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Search enabled"
-	Enabled *bool `json:"enabled,omitempty"`
 	// Limit used for search requests if none is set by the caller (default: 20)
 	//
 	// +optional

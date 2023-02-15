@@ -712,13 +712,6 @@ SearchSpec control the configuration for the search capabilities.
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b>enabled</b></td>
-        <td>boolean</td>
-        <td>
-          Enable tempo search feature, default to true<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
         <td><b>maxDuration</b></td>
         <td>string</td>
         <td>

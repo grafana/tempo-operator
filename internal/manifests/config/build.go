@@ -179,10 +179,6 @@ func fromSearchSpecToOptions(spec v1alpha1.SearchSpec) searchOptions {
 		options.DefaultResultLimit = *spec.DefaultResultLimit
 	}
 
-	if spec.Enabled != nil {
-		options.Enabled = *spec.Enabled
-	}
-
 	return options
 }
 
