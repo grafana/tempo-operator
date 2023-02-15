@@ -120,10 +120,14 @@ func buildTLSConfig(tempo v1alpha1.Microservices) tlsOptions {
 
 }
 
-func buildTempoQueryConfig(tempo v1alpha1.Microservices) ([]byte, error) {
+func buildTempoQueryConfig(tempo v1alpha1.Microservices, params Params) ([]byte, error) {
 	return renderTempoQueryTemplate(tempoQueryOptions{
 		TLS:      buildTLSConfig(tempo),
 		HTTPPort: manifestutils.PortHTTPServer,
+		Gates: featureGates{
+			GRPCEncryption: params.GRPCEncryption,
+			HTTPEncryption: params.HTTPEncryption,
+		},
 	})
 }
 

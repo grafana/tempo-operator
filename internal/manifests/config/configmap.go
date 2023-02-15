@@ -53,7 +53,7 @@ func BuildConfigMap(tempo v1alpha1.Microservices, params Params) (*corev1.Config
 		},
 	}
 	if tempo.Spec.Components.QueryFrontend.JaegerQuery.Enabled {
-		tempoQueryConfig, err := buildTempoQueryConfig(tempo)
+		tempoQueryConfig, err := buildTempoQueryConfig(tempo, params)
 		if err != nil {
 			return nil, "", err
 		}

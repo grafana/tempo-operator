@@ -33,6 +33,7 @@ memberlist:
   {{- range .MemberList }}
   - {{ . }}
   {{- end }}
+metrics_generator_enabled: false
 multitenancy_enabled: false
 {{- if or
   .GlobalRateLimits.IngestionBurstSizeBytes
@@ -92,6 +93,7 @@ querier:
     external_hedge_requests_up_to: {{ .Search.ExternalHedgeRequestsUpTo }}
 {{- end }}
 {{- end }}
+search_enabled: {{ .Search.Enabled }}
 {{- if .Gates.HTTPEncryption }}
 internal_server:
   enable: true

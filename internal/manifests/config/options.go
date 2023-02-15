@@ -22,6 +22,7 @@ type options struct {
 }
 
 type tempoQueryOptions struct {
+	Gates    featureGates
 	TLS      tlsOptions
 	HTTPPort int
 }
@@ -57,6 +58,7 @@ type searchOptions struct {
 }
 
 type tlsOptions struct {
+	Enabled     bool
 	Paths       tlsFilePaths
 	ServerNames tlsServerNames
 }
