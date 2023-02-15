@@ -211,9 +211,6 @@ spec:
                     description: 'Limit used for search requests if none is set by
                       the caller (default: 20)'
                     type: integer
-                  enabled:
-                    description: Enable tempo search feature, default to true
-                    type: boolean
                   maxDuration:
                     description: 'The maximum allowed time range for a search, default:
                       0s which means unlimited.'

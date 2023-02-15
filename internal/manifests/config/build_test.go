@@ -50,12 +50,14 @@ memberlist:
   abort_if_cluster_join_fails: false
   join_members: 
     - tempo-test-gossip-ring
-metrics_generator_enabled: false
 multitenancy_enabled: false
-querier:
+querier: 
+  max_concurrent_queries: 20
+  search:
+    external_hedge_requests_at: 8s
+    external_hedge_requests_up_to: 2
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
-search_enabled: false
 server: 
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
@@ -79,6 +81,10 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
+query_frontend:
+  search:
+    concurrent_jobs: 2000
+    max_duration: 0s
 `
 	cfg, err := buildConfiguration(v1alpha1.Microservices{
 		ObjectMeta: metav1.ObjectMeta{
@@ -145,12 +151,14 @@ memberlist:
   abort_if_cluster_join_fails: false
   join_members: 
     - tempo-test-gossip-ring
-metrics_generator_enabled: false
 multitenancy_enabled: false
 querier: 
+  max_concurrent_queries: 20
+  search:
+    external_hedge_requests_at: 8s
+    external_hedge_requests_up_to: 2
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
-search_enabled: false
 server: 
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
@@ -174,6 +182,10 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
+query_frontend:
+  search:
+    concurrent_jobs: 2000
+    max_duration: 0s
       `,
 		},
 		{
@@ -220,14 +232,16 @@ memberlist:
   abort_if_cluster_join_fails: false
   join_members: 
     - tempo-test-gossip-ring
-metrics_generator_enabled: false
 multitenancy_enabled: false
 overrides:
   ingestion_rate_limit_bytes: 100
 querier: 
+  max_concurrent_queries: 20
+  search:
+    external_hedge_requests_at: 8s
+    external_hedge_requests_up_to: 2
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
-search_enabled: false
 server: 
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
@@ -251,6 +265,10 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
+query_frontend:
+  search:
+    concurrent_jobs: 2000
+    max_duration: 0s
       `,
 		},
 		{
@@ -296,14 +314,16 @@ memberlist:
   abort_if_cluster_join_fails: false
   join_members: 
     - tempo-test-gossip-ring
-metrics_generator_enabled: false
 multitenancy_enabled: false
 overrides:
   ingestion_burst_size_bytes: 100
 querier: 
+  max_concurrent_queries: 20
+  search:
+    external_hedge_requests_at: 8s
+    external_hedge_requests_up_to: 2
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
-search_enabled: false
 server: 
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
@@ -327,6 +347,10 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
+query_frontend:
+  search:
+    concurrent_jobs: 2000
+    max_duration: 0s
       `,
 		},
 		{
@@ -373,14 +397,16 @@ memberlist:
   abort_if_cluster_join_fails: false
   join_members: 
     - tempo-test-gossip-ring
-metrics_generator_enabled: false
 multitenancy_enabled: false
 overrides:
   max_bytes_per_trace: 100
-querier:
+querier: 
+  max_concurrent_queries: 20
+  search:
+    external_hedge_requests_at: 8s
+    external_hedge_requests_up_to: 2
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
-search_enabled: false
 server: 
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
@@ -404,6 +430,10 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
+query_frontend:
+  search:
+    concurrent_jobs: 2000
+    max_duration: 0s
       `,
 		},
 		{
@@ -450,14 +480,16 @@ memberlist:
   abort_if_cluster_join_fails: false
   join_members: 
     - tempo-test-gossip-ring
-metrics_generator_enabled: false
 multitenancy_enabled: false
 overrides:
   max_traces_per_user: 100
-querier:
+querier: 
+  max_concurrent_queries: 20
+  search:
+    external_hedge_requests_at: 8s
+    external_hedge_requests_up_to: 2
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
-search_enabled: false
 server: 
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
@@ -481,6 +513,10 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
+query_frontend:
+  search:
+    concurrent_jobs: 2000
+    max_duration: 0s
       `,
 		},
 		{
@@ -527,14 +563,16 @@ memberlist:
   abort_if_cluster_join_fails: false
   join_members: 
     - tempo-test-gossip-ring
-metrics_generator_enabled: false
 multitenancy_enabled: false
 overrides:
   max_bytes_per_tag_values_query: 100
-querier:
+querier: 
+  max_concurrent_queries: 20
+  search:
+    external_hedge_requests_at: 8s
+    external_hedge_requests_up_to: 2
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
-search_enabled: false
 server: 
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
@@ -558,6 +596,10 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
+query_frontend:
+  search:
+    concurrent_jobs: 2000
+    max_duration: 0s
       `,
 		},
 		{
@@ -604,14 +646,16 @@ memberlist:
   abort_if_cluster_join_fails: false
   join_members: 
     - tempo-test-gossip-ring
-metrics_generator_enabled: false
 multitenancy_enabled: false
 overrides:
   max_search_bytes_per_trace: 1000
-querier:
+querier: 
+  max_concurrent_queries: 20
+  search:
+    external_hedge_requests_at: 8s
+    external_hedge_requests_up_to: 2
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
-search_enabled: false
 server: 
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
@@ -635,6 +679,10 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
+query_frontend:
+  search:
+    concurrent_jobs: 2000
+    max_duration: 0s
       `,
 		},
 		{
@@ -688,7 +736,6 @@ memberlist:
   abort_if_cluster_join_fails: false
   join_members: 
     - tempo-test-gossip-ring
-metrics_generator_enabled: false
 multitenancy_enabled: false
 overrides:
   ingestion_burst_size_bytes: 100
@@ -698,9 +745,12 @@ overrides:
   max_bytes_per_tag_values_query: 500
   max_search_bytes_per_trace: 1000
 querier: 
+  max_concurrent_queries: 20
+  search:
+    external_hedge_requests_at: 8s
+    external_hedge_requests_up_to: 2
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
-search_enabled: false
 server: 
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
@@ -724,6 +774,10 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
+query_frontend:
+  search:
+    concurrent_jobs: 2000
+    max_duration: 0s
       `,
 		},
 		{
@@ -780,14 +834,16 @@ memberlist:
   abort_if_cluster_join_fails: false
   join_members: 
     - tempo-test-gossip-ring
-metrics_generator_enabled: false
 multitenancy_enabled: false
 overrides:
   per_tenant_override_config: /conf/overrides.yaml
 querier: 
+  max_concurrent_queries: 20
+  search:
+    external_hedge_requests_at: 8s
+    external_hedge_requests_up_to: 2
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
-search_enabled: false
 server: 
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
@@ -811,6 +867,10 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
+query_frontend:
+  search:
+    concurrent_jobs: 2000
+    max_duration: 0s
       `,
 		},
 	}
@@ -869,7 +929,6 @@ overrides:
 }
 
 func TestBuildConfiguration_SearchConfig(t *testing.T) {
-	searchEnabled := true
 	defaultResultLimit := 20
 	testCases := []struct {
 		name   string
@@ -879,7 +938,6 @@ func TestBuildConfiguration_SearchConfig(t *testing.T) {
 		{
 			name: "defaults",
 			spec: v1alpha1.SearchSpec{
-				Enabled:            &searchEnabled,
 				DefaultResultLimit: &defaultResultLimit,
 			},
 			expect: `
@@ -917,7 +975,6 @@ memberlist:
   abort_if_cluster_join_fails: false
   join_members: 
     - tempo-test-gossip-ring
-metrics_generator_enabled: false
 multitenancy_enabled: false
 querier: 
   max_concurrent_queries: 20
@@ -926,7 +983,6 @@ querier:
     external_hedge_requests_up_to: 2
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
-search_enabled: true
 server: 
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
@@ -1017,12 +1073,14 @@ memberlist:
   abort_if_cluster_join_fails: false
   join_members: 
     - tempo-test-gossip-ring
-metrics_generator_enabled: false
 multitenancy_enabled: false
 querier: 
+  max_concurrent_queries: 20
+  search:
+    external_hedge_requests_at: 8s
+    external_hedge_requests_up_to: 2
   frontend_worker: 
     frontend_address: "tempo-test-query-frontend-discovery:9095"
-search_enabled: false
 server: 
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
@@ -1046,6 +1104,10 @@ storage:
       path: /var/tempo/wal
 usage_report: 
   reporting_enabled: false
+query_frontend:
+  search:
+    concurrent_jobs: 2000
+    max_duration: 0s
       `
 
 	cfg, err := buildConfiguration(v1alpha1.Microservices{

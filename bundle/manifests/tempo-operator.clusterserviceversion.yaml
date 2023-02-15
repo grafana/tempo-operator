@@ -165,9 +165,6 @@ spec:
         displayName: Limit used for search requests if none is set by the caller,
           this limit the number of traces returned by the query
         path: search.defaultResultLimit
-      - description: Enable tempo search feature, default to true
-        displayName: Search enabled
-        path: search.enabled
       - description: 'The maximum allowed time range for a search, default: 0s which
           means unlimited.'
         displayName: Max search time range allowed

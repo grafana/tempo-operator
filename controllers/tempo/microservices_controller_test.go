@@ -237,11 +237,14 @@ func TestDegradedToDegraded(t *testing.T) {
 	updatedTempo2 := v1alpha1.Microservices{}
 	err = k8sClient.Get(context.Background(), nsn, &updatedTempo2)
 	require.NoError(t, err)
+
+	// We don't want to compare LastTransitionTime because it could change
+	lastTransitionTime := updatedTempo2.Status.Conditions[0].LastTransitionTime
 	assert.Equal(t, []metav1.Condition{
 		{
 			Type:               string(v1alpha1.ConditionDegraded),
 			Status:             "True",
-			LastTransitionTime: updatedTempo1.Status.Conditions[0].LastTransitionTime,
+			LastTransitionTime: lastTransitionTime,
 			Reason:             string(v1alpha1.ReasonInvalidStorageConfig),
 			Message:            "invalid storage secret: \"endpoint\" field of storage secret must be a valid URL, storage secret must contain \"access_key_id\" field",
 		},
