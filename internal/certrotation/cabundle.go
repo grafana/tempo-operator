@@ -9,6 +9,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/util/cert"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
 )
 
 // buildCABundle returns a ConfigMap including all known non-expired signing CAs across rotations.
@@ -39,6 +41,7 @@ func newConfigMap(opts Options) *corev1.ConfigMap {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      CABundleName(opts.StackName),
 			Namespace: opts.StackNamespace,
+			Labels:    manifestutils.CommonLabels(opts.StackName),
 		},
 	}
 
