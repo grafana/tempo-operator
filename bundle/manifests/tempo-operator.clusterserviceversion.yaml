@@ -364,6 +364,12 @@ spec:
         path: components.querier
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:podStatuses
+      - description: Gateway is a map to the per pod status of the query frontend
+          deployment
+        displayName: Query Frontend
+        path: components.gateway
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:podStatuses
       - description: QueryFrontend is a map to the per pod status of the query frontend
           deployment
         displayName: Query Frontend

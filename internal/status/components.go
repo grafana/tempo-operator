@@ -40,6 +40,11 @@ func componentsStatus(ctx context.Context, c StatusClient, s v1alpha1.Microservi
 		return v1alpha1.ComponentStatus{}, kverrors.Wrap(err, "failed lookup Microservice component pods status", "name", manifestutils.IngesterComponentName)
 	}
 
+	components.Gateway, err = appendPodStatus(ctx, c, manifestutils.GatewayComponentName, s)
+	if err != nil {
+		return v1alpha1.ComponentStatus{}, kverrors.Wrap(err, "failed lookup Microservice component pods status", "name", manifestutils.GatewayComponentName)
+	}
+
 	return components, nil
 }
 
