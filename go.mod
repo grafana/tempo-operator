@@ -8,7 +8,7 @@ require (
 	github.com/imdario/mergo v0.3.13
 	github.com/novln/docker-parser v1.0.0
 	github.com/onsi/ginkgo v1.16.5
-	github.com/onsi/gomega v1.27.0
+	github.com/onsi/gomega v1.27.1
 	github.com/openshift/library-go v0.0.0-20220622115547-84d884f4c9f6
 	github.com/spf13/cobra v1.6.1
 	gopkg.in/yaml.v2 v2.4.0
@@ -76,7 +76,7 @@ require (
 	go.uber.org/multierr v1.8.0 // indirect
 	go.uber.org/zap v1.21.0 // indirect
 	golang.org/x/crypto v0.1.0 // indirect
-	golang.org/x/net v0.6.0 // indirect
+	golang.org/x/net v0.7.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20220608161450-d0670ef3b1eb // indirect
 	golang.org/x/sys v0.5.0 // indirect
 	golang.org/x/term v0.5.0 // indirect
