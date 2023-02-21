@@ -9,6 +9,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
 )
 
 // CertificatesExpired returns an error if any certificates expired and the list of expiry reasons.
@@ -61,7 +63,7 @@ func buildTargetCertKeyPairSecrets(opts Options) ([]client.Object, error) {
 	)
 
 	for name, cert := range opts.Certificates {
-		secret := newTargetCertificateSecret(name, ns, cert.Secret)
+		secret := newTargetCertificateSecret(name, opts.StackName, ns, cert.Secret)
 		reason := cert.Rotation.NeedNewCertificate(secret.Annotations, rawCA, caBundle, refresh)
 		if len(reason) > 0 {
 			if err := setTargetCertKeyPairSecret(secret, validity, rawCA, cert.Rotation); err != nil {
@@ -75,13 +77,14 @@ func buildTargetCertKeyPairSecrets(opts Options) ([]client.Object, error) {
 	return res, nil
 }
 
-func newTargetCertificateSecret(name, ns string, s *corev1.Secret) *corev1.Secret {
+func newTargetCertificateSecret(name, stackName, ns string, s *corev1.Secret) *corev1.Secret {
 	current := s.DeepCopy()
 
 	ss := &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: ns,
+			Labels:    manifestutils.CommonLabels(stackName),
 		},
 		Type: corev1.SecretTypeTLS,
 	}
