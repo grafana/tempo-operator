@@ -1,11 +1,8 @@
 package gateway
 
 import (
-	"bytes"
-	"embed"
 	"fmt"
 	"path"
-	"text/template"
 
 	"github.com/imdario/mergo"
 	routev1 "github.com/openshift/api/route/v1"
@@ -16,7 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	tempov1alpha1 "github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
 	"github.com/os-observability/tempo-operator/internal/manifests/naming"
 )
@@ -31,18 +28,10 @@ const (
 
 	// tempoGatewayMountDir is the path that is mounted from the configmap.
 	tempoGatewayMountDir = "/etc/tempo-gateway"
-)
 
-var (
-	//go:embed gateway-rbac.yaml
-	tempoGatewayRbacYAMLTmplFile embed.FS
-
-	//go:embed gateway-tenants.yaml
-	tempoGatewayTenantsYAMLTmplFile embed.FS
-
-	rbacTemplate = template.Must(template.ParseFS(tempoGatewayRbacYAMLTmplFile, "gateway-rbac.yaml"))
-
-	tenantsTemplate = template.Must(template.ParseFS(tempoGatewayTenantsYAMLTmplFile, "gateway-tenants.yaml"))
+	portGRPC     = 8090
+	portInternal = 8081
+	portPublic   = 8080
 )
 
 // BuildGateway creates gateway objects.
@@ -51,7 +40,7 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 		params.Tempo.Spec.Tenants == nil {
 		return []client.Object{}, nil
 	}
-	rbacCfg, tenantsCfg, err := getCfgs(options{
+	rbacCfg, tenantsCfg, err := buildConfigFiles(options{
 		Namespace: params.Tempo.Namespace,
 		Name:      params.Tempo.Name,
 		Tenants:   params.Tempo.Spec.Tenants,
@@ -62,7 +51,7 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 
 	objs := []client.Object{
 		configMap(params.Tempo, rbacCfg),
-		secrert(params.Tempo, tenantsCfg),
+		secret(params.Tempo, tenantsCfg),
 		service(params.Tempo, params.Gates.OpenShift.ServingCertsService),
 		clusterRole(params.Tempo),
 		clusterRoleBinding(params.Tempo),
@@ -85,26 +74,7 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 	return objs, nil
 }
 
-// generate gateway configuration files.
-func getCfgs(opts options) (rbacCfg string, tenantsCfg string, err error) {
-	// Build tempo gateway rbac yaml
-	byteBuffer := &bytes.Buffer{}
-	err = rbacTemplate.Execute(byteBuffer, opts)
-	if err != nil {
-		return "", "", fmt.Errorf("failed to create tempo gateway rbac configuration, err: %w", err)
-	}
-	rbacCfg = byteBuffer.String()
-	// Build tempo gateway tenants yaml
-	byteBuffer.Reset()
-	err = tenantsTemplate.Execute(byteBuffer, opts)
-	if err != nil {
-		return "", "", fmt.Errorf("failed to create tempo gateway tenants configuration, err: %w", err)
-	}
-	tenantsCfg = byteBuffer.String()
-	return rbacCfg, tenantsCfg, nil
-}
-
-func serviceAccount(tempo tempov1alpha1.Microservices) *corev1.ServiceAccount {
+func serviceAccount(tempo v1alpha1.Microservices) *corev1.ServiceAccount {
 	tt := true
 	labels := manifestutils.ComponentLabels(tempoComponentName, tempo.Name)
 	annotations := map[string]string{}
@@ -124,7 +94,7 @@ func serviceAccount(tempo tempov1alpha1.Microservices) *corev1.ServiceAccount {
 	}
 }
 
-func clusterRole(tempo tempov1alpha1.Microservices) *rbacv1.ClusterRole {
+func clusterRole(tempo v1alpha1.Microservices) *rbacv1.ClusterRole {
 	return &rbacv1.ClusterRole{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      naming.Name(tempoComponentName, tempo.Name),
@@ -141,7 +111,7 @@ func clusterRole(tempo tempov1alpha1.Microservices) *rbacv1.ClusterRole {
 	}
 }
 
-func clusterRoleBinding(tempo tempov1alpha1.Microservices) *rbacv1.ClusterRoleBinding {
+func clusterRoleBinding(tempo v1alpha1.Microservices) *rbacv1.ClusterRoleBinding {
 	return &rbacv1.ClusterRoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      naming.Name(tempoComponentName, tempo.Name),
@@ -162,12 +132,6 @@ func clusterRoleBinding(tempo tempov1alpha1.Microservices) *rbacv1.ClusterRoleBi
 		},
 	}
 }
-
-const (
-	portGRPC     = 8090
-	portInternal = 8081
-	portPublic   = 8080
-)
 
 func deployment(params manifestutils.Params) *v1.Deployment {
 	tempo := params.Tempo
@@ -311,7 +275,7 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 	}
 }
 
-func patchOCPServingCerts(tempo tempov1alpha1.Microservices, dep *v1.Deployment) (*v1.Deployment, error) {
+func patchOCPServingCerts(tempo v1alpha1.Microservices, dep *v1.Deployment) (*v1.Deployment, error) {
 	container := corev1.Container{
 		VolumeMounts: []corev1.VolumeMount{
 			{
@@ -349,7 +313,7 @@ func patchOCPServingCerts(tempo tempov1alpha1.Microservices, dep *v1.Deployment)
 	return dep, err
 }
 
-func service(tempo tempov1alpha1.Microservices, ocpServingCerts bool) *corev1.Service {
+func service(tempo v1alpha1.Microservices, ocpServingCerts bool) *corev1.Service {
 	labels := manifestutils.ComponentLabels(tempoComponentName, tempo.Name)
 	annotations := map[string]string{}
 	if ocpServingCerts {
@@ -388,7 +352,7 @@ func service(tempo tempov1alpha1.Microservices, ocpServingCerts bool) *corev1.Se
 	}
 }
 
-func configMap(tempo tempov1alpha1.Microservices, rbacCfg string) *corev1.ConfigMap {
+func configMap(tempo v1alpha1.Microservices, rbacCfg string) *corev1.ConfigMap {
 	labels := manifestutils.ComponentLabels(tempoComponentName, tempo.Name)
 	return &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
@@ -402,7 +366,7 @@ func configMap(tempo tempov1alpha1.Microservices, rbacCfg string) *corev1.Config
 	}
 }
 
-func route(tempo tempov1alpha1.Microservices) *routev1.Route {
+func route(tempo v1alpha1.Microservices) *routev1.Route {
 	labels := manifestutils.ComponentLabels(tempoComponentName, tempo.Name)
 	return &routev1.Route{
 		ObjectMeta: metav1.ObjectMeta{
@@ -428,7 +392,7 @@ func route(tempo tempov1alpha1.Microservices) *routev1.Route {
 	}
 }
 
-func secrert(tempo tempov1alpha1.Microservices, tenantsCfg string) *corev1.Secret {
+func secret(tempo v1alpha1.Microservices, tenantsCfg string) *corev1.Secret {
 	labels := manifestutils.ComponentLabels(tempoComponentName, tempo.Name)
 	secret := &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
@@ -441,20 +405,4 @@ func secrert(tempo tempov1alpha1.Microservices, tenantsCfg string) *corev1.Secre
 		},
 	}
 	return secret
-}
-
-// options is used to render the rbac.yaml and tenants.yaml file template.
-type options struct {
-	Namespace     string
-	Name          string
-	Tenants       *tempov1alpha1.TenantsSpec
-	TenantSecrets []*secret
-}
-
-// secret for clientID, clientSecret and issuerCAPath for tenant's authentication.
-type secret struct {
-	TenantName   string
-	ClientID     string
-	ClientSecret string
-	IssuerCAPath string
 }
