@@ -1,9 +1,15 @@
 tenants:
 {{- if $opt := . -}}
-{{- if eq $opt.Tenants.Mode "static" -}}
+{{- if or (eq $opt.Tenants.Mode "static") (eq $opt.Tenants.Mode "openshift")  -}}
 {{- range $spec := $opt.Tenants.Authentication }}
 - name: {{ $spec.TenantName }}
   id: {{ $spec.TenantID }}
+{{- if eq $opt.Tenants.Mode "openshift" }}
+  openshift:
+    serviceAccount: tempo-{{ $opt.Name }}-serviceaccount
+    redirectURL: https://{{ $opt.Name}}-{{ $opt.Namespace }}.apps-crc.testing/openshift/dev/callback
+{{- end -}}
+{{- if $spec.OIDC -}}
   oidc:
     {{- range $secret := $opt.TenantSecrets }}
     {{- if eq $secret.TenantName $spec.TenantName -}}
@@ -28,11 +34,7 @@ tenants:
     {{- if $spec.OIDC.GroupClaim }}
     groupClaim: {{ $spec.OIDC.GroupClaim }}
     {{- end }}
-  opa:
-    query: data.tempo.allow
-    paths:
-    - /etc/tempo-gateway/cm/rbac.yaml
-    - /etc/tempo-gateway/cm/tempo-gateway.rego
+{{- end -}}
 {{- end -}}
 {{- end -}}
 {{- end -}}

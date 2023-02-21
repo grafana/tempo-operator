@@ -24,6 +24,9 @@ images:
   tempoQuery: docker.io/grafana/tempo-query:main-0c1eb27
   tempoGateway: quay.io/observatorium/api:main-2023-02-09-v0.1.2-329-g1ff4f11
 featureGates:
+  openshift:
+    gatewayRoute: false
+    servingCertsService: false
   httpEncryption: false
   grpcEncryption: false
   builtInCertManagement:

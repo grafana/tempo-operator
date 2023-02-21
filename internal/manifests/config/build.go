@@ -70,6 +70,7 @@ func buildConfiguration(tempo v1alpha1.Microservices, params Params) ([]byte, er
 		GlobalRateLimits:       fromRateLimitSpecToRateLimitOptions(tempo.Spec.LimitSpec.Global),
 		Search:                 fromSearchSpecToOptions(tempo.Spec.SearchSpec),
 		ReplicationFactor:      tempo.Spec.ReplicationFactor,
+		Multitenancy:           tempo.Spec.Tenants != nil,
 		Gates: featureGates{
 			GRPCEncryption: params.GRPCEncryption,
 			HTTPEncryption: params.HTTPEncryption,
@@ -128,6 +129,7 @@ func buildTempoQueryConfig(tempo v1alpha1.Microservices, params Params) ([]byte,
 			GRPCEncryption: params.GRPCEncryption,
 			HTTPEncryption: params.HTTPEncryption,
 		},
+		TenantHeader: manifestutils.TenantHeader,
 	})
 }
 

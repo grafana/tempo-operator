@@ -28,8 +28,25 @@ type BuiltInCertManagement struct {
 	Enabled bool `json:"enabled,omitempty"`
 }
 
+// OpenShiftFeatureGates is the supported set of all operator features gates on OpenShift.
+type OpenShiftFeatureGates struct {
+	// ServingCertsService enables OpenShift service-ca annotations on the TempoStack gateway service only
+	// to use the in-platform CA and generate a TLS cert/key pair per service for
+	// in-cluster data-in-transit encryption.
+	// More details: https://docs.openshift.com/container-platform/latest/security/certificate_types_descriptions/service-ca-certificates.html
+	ServingCertsService bool `json:"servingCertsService,omitempty"`
+
+	// GatewayRoute enables creating an OpenShift Route for the TempoStack
+	// gateway to expose the service to public internet access.
+	// More details: https://docs.openshift.com/container-platform/latest/networking/understanding-networking.html
+	GatewayRoute bool `json:"gatewayRoute,omitempty"`
+}
+
 // FeatureGates is the supported set of all operator feature gates.
 type FeatureGates struct {
+	// OpenShift contains a set of feature gates supported only on OpenShift.
+	OpenShift OpenShiftFeatureGates `json:"openshift,omitempty"`
+
 	// BuiltInCertManagement enables the built-in facility for generating and rotating
 	// TLS client and serving certificates for the communication between ingesters and distributors and also between
 	// query and queryfrontend, In detail all internal Tempo HTTP and GRPC communication is lifted

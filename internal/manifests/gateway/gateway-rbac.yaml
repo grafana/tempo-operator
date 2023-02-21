@@ -1,4 +1,4 @@
-{{- if eq .Tenants.Mode "static" -}}
+{{- if or (eq .Tenants.Mode "static") (eq .Tenants.Mode "openshift") -}}
 roleBindings:
 {{- range $spec := .Tenants.Authorization.RoleBindings }}
 - name: {{ $spec.Name }}

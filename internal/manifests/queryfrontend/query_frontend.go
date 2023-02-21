@@ -1,8 +1,9 @@
 package queryfrontend
 
 import (
-	v1 "k8s.io/api/apps/v1"
+	"fmt"
 
+	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8slabels "k8s.io/apimachinery/pkg/labels"
@@ -197,6 +198,14 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 			VolumeSource: corev1.VolumeSource{
 				EmptyDir: &corev1.EmptyDirVolumeSource{},
 			},
+		}
+
+		// TODO it should be possible to enable multitenancy just for tempo, without the gateway
+		if tempo.Spec.Tenants != nil {
+			jaegerQueryContainer.Args = append(jaegerQueryContainer.Args, []string{
+				"--multi-tenancy.enabled=true",
+				fmt.Sprintf("--multi-tenancy.header=%s", manifestutils.TenantHeader),
+			}...)
 		}
 
 		d.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, jaegerQueryContainer)
