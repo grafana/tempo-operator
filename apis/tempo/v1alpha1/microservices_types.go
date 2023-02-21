@@ -152,7 +152,7 @@ type MicroservicesStatus struct {
 // ModeType is the authentication/authorization mode in which Tempo Gateway
 // will be configured.
 //
-// +kubebuilder:validation:Enum=static;dynamic
+// +kubebuilder:validation:Enum=static;dynamic;openshift
 type ModeType string
 
 const (
@@ -161,6 +161,8 @@ const (
 	Static ModeType = "static"
 	// Dynamic mode delegates the authorization to a third-party OPA-compatible endpoint.
 	Dynamic ModeType = "dynamic"
+	// OpenShift mode uses TokenReview API for authentication and subject access review for authorization.
+	OpenShift ModeType = "openshift"
 )
 
 // TenantsSpec defines the mode, authentication and authorization
@@ -283,8 +285,8 @@ type RoleSpec struct {
 type TenantSecretSpec struct {
 	// Name of a secret in the namespace configured for tenant secrets.
 	//
-	// +required
-	// +kubebuilder:validation:Required
+	// +optional
+	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors="urn:alm:descriptor:io.kubernetes:Secret",displayName="Tenant Secret Name"
 	Name string `json:"name"`
 }
@@ -293,14 +295,14 @@ type TenantSecretSpec struct {
 type OIDCSpec struct {
 	// Secret defines the spec for the clientID, clientSecret and issuerCAPath for tenant's authentication.
 	//
-	// +required
-	// +kubebuilder:validation:Required
+	// +optional
+	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tenant Secret"
 	Secret *TenantSecretSpec `json:"secret"`
 	// IssuerURL defines the URL for issuer.
 	//
-	// +required
-	// +kubebuilder:validation:Required
+	// +optional
+	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Issuer URL"
 	IssuerURL string `json:"issuerURL"`
 	// RedirectURL defines the URL for redirect.
@@ -340,7 +342,7 @@ type AuthenticationSpec struct {
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="OIDC Configuration"
-	OIDC *OIDCSpec `json:"oidc"`
+	OIDC *OIDCSpec `json:"oidc,omitempty"`
 }
 
 //+kubebuilder:object:root=true

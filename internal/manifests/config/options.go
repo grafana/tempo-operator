@@ -18,13 +18,15 @@ type options struct {
 	MemberList             []string
 	Search                 searchOptions
 	ReplicationFactor      int
+	Multitenancy           bool
 	Gates                  featureGates
 }
 
 type tempoQueryOptions struct {
-	Gates    featureGates
-	TLS      tlsOptions
-	HTTPPort int
+	Gates        featureGates
+	TLS          tlsOptions
+	HTTPPort     int
+	TenantHeader string
 }
 
 type featureGates struct {

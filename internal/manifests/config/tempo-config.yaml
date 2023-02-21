@@ -33,7 +33,7 @@ memberlist:
   {{- range .MemberList }}
   - {{ . }}
   {{- end }}
-multitenancy_enabled: false
+multitenancy_enabled: {{ .Multitenancy }}
 {{- if or
   .GlobalRateLimits.IngestionBurstSizeBytes
   .GlobalRateLimits.IngestionRateLimitBytes

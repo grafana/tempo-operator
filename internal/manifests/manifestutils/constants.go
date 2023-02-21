@@ -52,4 +52,7 @@ const (
 	QueryFrontendComponentName = "query-frontend"
 	// IngesterComponentName declares the internal name of the ingester component.
 	IngesterComponentName = "ingester"
+
+	// TenantHeader is the header name that contains tenant name.
+	TenantHeader = "x-scope-orgid"
 )
