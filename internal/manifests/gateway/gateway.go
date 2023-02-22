@@ -39,9 +39,10 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 		return []client.Object{}, nil
 	}
 	rbacCfg, tenantsCfg, err := buildConfigFiles(options{
-		Namespace: params.Tempo.Namespace,
-		Name:      params.Tempo.Name,
-		Tenants:   params.Tempo.Spec.Tenants,
+		Namespace:  params.Tempo.Namespace,
+		Name:       params.Tempo.Name,
+		BaseDomain: params.Gates.OpenShift.BaseDomain,
+		Tenants:    params.Tempo.Spec.Tenants,
 	})
 	if err != nil {
 		return nil, err
