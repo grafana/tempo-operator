@@ -433,6 +433,17 @@ spec:
           - update
           - watch
         - apiGroups:
+          - route.openshift.io
+          resources:
+          - routes
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - update
+          - watch
+        - apiGroups:
           - tempo.grafana.com
           resources:
           - microservices
