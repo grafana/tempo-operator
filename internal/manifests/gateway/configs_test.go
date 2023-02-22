@@ -127,8 +127,8 @@ func TestTenantsTemplate(t *testing.T) {
 - name: dev
   id: abcd1
   openshift:
-    serviceAccount: tempo-foo-serviceaccount
-    redirectURL: https://foo-default.apps-crc.testing/openshift/dev/callback`,
+    serviceAccount: tempo-foo-gateway
+    redirectURL: https://tempo-foo-gateway-default.apps-crc.testing/openshift/dev/callback`,
 		},
 	}
 
