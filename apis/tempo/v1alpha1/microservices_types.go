@@ -214,6 +214,8 @@ const (
 	ReasonFailedComponents ConditionReason = "FailedComponents"
 	// ReasonPendingComponents when all/some Tempo components pending dependencies.
 	ReasonPendingComponents ConditionReason = "PendingComponents"
+	// ReasonCouldNotGetOpenShiftBaseDomain when operator cannot get OpenShift base domain, that is used for OAuth redirect URL.
+	ReasonCouldNotGetOpenShiftBaseDomain ConditionReason = "CouldNotGetOpenShiftBaseDomain"
 )
 
 // PermissionType is a Tempo Gateway RBAC permission.

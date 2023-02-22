@@ -27,6 +27,7 @@ import (
 	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/os-observability/tempo-operator/internal/certrotation/handlers"
+	"github.com/os-observability/tempo-operator/internal/handlers/gateway"
 	"github.com/os-observability/tempo-operator/internal/manifests"
 	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
 	"github.com/os-observability/tempo-operator/internal/status"
@@ -47,6 +48,8 @@ type MicroservicesReconciler struct {
 // +kubebuilder:rbac:groups=apps,resources=deployments;statefulsets,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=clusterrolebindings;clusterroles,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=route.openshift.io,resources=routes,verbs=get;list;watch;create;update;delete
+// +kubebuilder:rbac:groups=operator.openshift.io,resources=ingresscontrollers,verbs=get;list;watch
+// +kubebuilder:rbac:groups=config.openshift.io,resources=dnses,verbs=get;list;watch
 
 //+kubebuilder:rbac:groups=tempo.grafana.com,resources=microservices,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=tempo.grafana.com,resources=microservices/status,verbs=get;update;patch
@@ -144,6 +147,15 @@ func (r *MicroservicesReconciler) reconcileManifests(ctx context.Context, log lo
 			Message: err.Error(),
 			Requeue: false,
 		}
+	}
+
+	if tempo.Spec.Tenants != nil && tempo.Spec.Tenants.Mode == v1alpha1.OpenShift && r.FeatureGates.OpenShift.BaseDomain == "" {
+		domain, err := gateway.GetOpenShiftBaseDomain(ctx, r.Client)
+		if err != nil {
+			return err
+		}
+		log.Info("OpenShift base domain set", "openshift-base-domain", domain)
+		r.FeatureGates.OpenShift.BaseDomain = domain
 	}
 
 	objects, err := manifests.BuildAll(manifestutils.Params{Tempo: tempo, StorageParams: *storageConfig, Gates: r.FeatureGates})

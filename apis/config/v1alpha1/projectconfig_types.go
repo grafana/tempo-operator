@@ -40,6 +40,10 @@ type OpenShiftFeatureGates struct {
 	// gateway to expose the service to public internet access.
 	// More details: https://docs.openshift.com/container-platform/latest/networking/understanding-networking.html
 	GatewayRoute bool `json:"gatewayRoute,omitempty"`
+
+	// BaseDomain is used internally for redirect URL in gateway OpenShift auth mode.
+	// If empty the operator automatically derives the domain from the cluster.
+	BaseDomain string `json:"baseDomain,omitempty"`
 }
 
 // FeatureGates is the supported set of all operator feature gates.

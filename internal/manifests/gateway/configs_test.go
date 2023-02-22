@@ -112,6 +112,7 @@ func TestTenantsTemplate(t *testing.T) {
 			opts: options{
 				Namespace:     "default",
 				Name:          "foo",
+				BaseDomain:    "apps-crc.testing",
 				TenantSecrets: nil,
 				Tenants: &v1alpha1.TenantsSpec{
 					Mode: v1alpha1.OpenShift,

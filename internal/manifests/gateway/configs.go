@@ -44,6 +44,7 @@ func buildConfigFiles(opts options) (rbacCfg string, tenantsCfg string, err erro
 type options struct {
 	Namespace     string
 	Name          string
+	BaseDomain    string
 	Tenants       *v1alpha1.TenantsSpec
 	TenantSecrets []*tenantSecret
 }
