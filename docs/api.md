@@ -1512,7 +1512,7 @@ Tenants defines the per-tenant authentication and authorization spec.
         <td>
           Mode defines the multitenancy mode.<br/>
           <br/>
-            <i>Enum</i>: static, dynamic, openshift<br/>
+            <i>Enum</i>: static, openshift<br/>
             <i>Default</i>: static<br/>
         </td>
         <td>true</td>
