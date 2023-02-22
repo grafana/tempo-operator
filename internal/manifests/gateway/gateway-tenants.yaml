@@ -6,8 +6,8 @@ tenants:
   id: {{ $spec.TenantID }}
 {{- if eq $opt.Tenants.Mode "openshift" }}
   openshift:
-    serviceAccount: tempo-{{ $opt.Name }}-serviceaccount
-    redirectURL: https://{{ $opt.Name}}-{{ $opt.Namespace }}.apps-crc.testing/openshift/dev/callback
+    serviceAccount: tempo-{{ $opt.Name }}-gateway
+    redirectURL: https://tempo-{{ $opt.Name}}-gateway-{{ $opt.Namespace }}.apps-crc.testing/openshift/dev/callback
 {{- end -}}
 {{- if $spec.OIDC -}}
   oidc:

@@ -19,8 +19,6 @@ import (
 )
 
 const (
-	// tempoComponentName is the name of the build tempo component.
-	tempoComponentName = "gateway"
 	// tempoGatewayTenantFileName is the name of the tenant config file in the configmap.
 	tempoGatewayTenantFileName = "tenants.yaml"
 	// tempoGatewayRbacFileName is the name of the rbac config file in the configmap.
@@ -49,24 +47,28 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 		return nil, err
 	}
 
+	dep := deployment(params)
 	objs := []client.Object{
 		configMap(params.Tempo, rbacCfg),
 		secret(params.Tempo, tenantsCfg),
 		service(params.Tempo, params.Gates.OpenShift.ServingCertsService),
-		clusterRole(params.Tempo),
-		clusterRoleBinding(params.Tempo),
-		// TODO create conditionally https://github.com/os-observability/tempo-operator/issues/243
-		serviceAccount(params.Tempo),
 	}
 
-	if params.Gates.OpenShift.GatewayRoute {
-		objs = append(objs, route(params.Tempo))
-	}
-	dep := deployment(params)
-	if params.Gates.OpenShift.ServingCertsService {
-		dep, err = patchOCPServingCerts(params.Tempo, dep)
-		if err != nil {
-			return nil, err
+	if params.Tempo.Spec.Tenants.Mode == v1alpha1.OpenShift {
+		dep = patchServiceAccount(params.Tempo, dep)
+		objs = append(objs, []client.Object{
+			clusterRole(params.Tempo),
+			clusterRoleBinding(params.Tempo),
+			serviceAccount(params.Tempo),
+		}...)
+		if params.Gates.OpenShift.ServingCertsService {
+			dep, err = patchOCPServingCerts(params.Tempo, dep)
+			if err != nil {
+				return nil, err
+			}
+		}
+		if params.Gates.OpenShift.GatewayRoute {
+			objs = append(objs, route(params.Tempo))
 		}
 	}
 
@@ -76,16 +78,16 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 
 func serviceAccount(tempo v1alpha1.Microservices) *corev1.ServiceAccount {
 	tt := true
-	labels := manifestutils.ComponentLabels(tempoComponentName, tempo.Name)
+	labels := manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name)
 	annotations := map[string]string{}
 	for _, tenantAuth := range tempo.Spec.Tenants.Authentication {
 		key := fmt.Sprintf("serviceaccounts.openshift.io/oauth-redirectreference.%s", tenantAuth.TenantName)
-		val := fmt.Sprintf(`{"kind":"OAuthRedirectReference","apiVersion":"v1","reference":{"kind":"Route","name":"%s"}}`, tempo.Name)
+		val := fmt.Sprintf(`{"kind":"OAuthRedirectReference","apiVersion":"v1","reference":{"kind":"Route","name":"%s"}}`, naming.Name(manifestutils.GatewayComponentName, tempo.Name))
 		annotations[key] = val
 	}
 	return &corev1.ServiceAccount{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        naming.Name(tempoComponentName, tempo.Name),
+			Name:        naming.Name(manifestutils.GatewayComponentName, tempo.Name),
 			Namespace:   tempo.Namespace,
 			Labels:      labels,
 			Annotations: annotations,
@@ -97,9 +99,9 @@ func serviceAccount(tempo v1alpha1.Microservices) *corev1.ServiceAccount {
 func clusterRole(tempo v1alpha1.Microservices) *rbacv1.ClusterRole {
 	return &rbacv1.ClusterRole{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      naming.Name(tempoComponentName, tempo.Name),
+			Name:      naming.Name(manifestutils.GatewayComponentName, tempo.Name),
 			Namespace: tempo.Namespace,
-			Labels:    manifestutils.ComponentLabels(tempoComponentName, tempo.Name),
+			Labels:    manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name),
 		},
 		Rules: []rbacv1.PolicyRule{
 			{
@@ -114,20 +116,20 @@ func clusterRole(tempo v1alpha1.Microservices) *rbacv1.ClusterRole {
 func clusterRoleBinding(tempo v1alpha1.Microservices) *rbacv1.ClusterRoleBinding {
 	return &rbacv1.ClusterRoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      naming.Name(tempoComponentName, tempo.Name),
+			Name:      naming.Name(manifestutils.GatewayComponentName, tempo.Name),
 			Namespace: tempo.Namespace,
-			Labels:    manifestutils.ComponentLabels(tempoComponentName, tempo.Name),
+			Labels:    manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name),
 		},
 		Subjects: []rbacv1.Subject{
 			{
-				Name:      naming.Name(tempoComponentName, tempo.Name),
+				Name:      naming.Name(manifestutils.GatewayComponentName, tempo.Name),
 				Kind:      "ServiceAccount",
 				Namespace: tempo.Namespace,
 			},
 		},
 		RoleRef: rbacv1.RoleRef{
 			Kind:     "ClusterRole",
-			Name:     naming.Name(tempoComponentName, tempo.Name),
+			Name:     naming.Name(manifestutils.GatewayComponentName, tempo.Name),
 			APIGroup: "rbac.authorization.k8s.io",
 		},
 	}
@@ -135,7 +137,7 @@ func clusterRoleBinding(tempo v1alpha1.Microservices) *rbacv1.ClusterRoleBinding
 
 func deployment(params manifestutils.Params) *v1.Deployment {
 	tempo := params.Tempo
-	labels := manifestutils.ComponentLabels(tempoComponentName, tempo.Name)
+	labels := manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name)
 	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
 	cfg := tempo.Spec.Components.Gateway
 
@@ -144,7 +146,7 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 			APIVersion: v1.SchemeGroupVersion.String(),
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      naming.Name(tempoComponentName, tempo.Name),
+			Name:      naming.Name(manifestutils.GatewayComponentName, tempo.Name),
 			Namespace: tempo.Namespace,
 			Labels:    labels,
 		},
@@ -158,8 +160,7 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 					Annotations: annotations,
 				},
 				Spec: corev1.PodSpec{
-					// Gateway needs elevated permissions to call token review API
-					ServiceAccountName: naming.Name(tempoComponentName, tempo.Name),
+					ServiceAccountName: tempo.Spec.ServiceAccount,
 					NodeSelector:       cfg.NodeSelector,
 					Tolerations:        cfg.Tolerations,
 					Containers: []corev1.Container{
@@ -243,7 +244,7 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 							VolumeSource: corev1.VolumeSource{
 								ConfigMap: &corev1.ConfigMapVolumeSource{
 									LocalObjectReference: corev1.LocalObjectReference{
-										Name: naming.Name(tempoComponentName, tempo.Name),
+										Name: naming.Name(manifestutils.GatewayComponentName, tempo.Name),
 									},
 									Items: []corev1.KeyToPath{
 										{
@@ -258,7 +259,7 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 							Name: "tenant",
 							VolumeSource: corev1.VolumeSource{
 								Secret: &corev1.SecretVolumeSource{
-									SecretName: naming.Name(tempoComponentName, tempo.Name),
+									SecretName: naming.Name(manifestutils.GatewayComponentName, tempo.Name),
 									Items: []corev1.KeyToPath{
 										{
 											Key:  tempoGatewayTenantFileName,
@@ -313,15 +314,20 @@ func patchOCPServingCerts(tempo v1alpha1.Microservices, dep *v1.Deployment) (*v1
 	return dep, err
 }
 
+func patchServiceAccount(tempo v1alpha1.Microservices, dep *v1.Deployment) *v1.Deployment {
+	dep.Spec.Template.Spec.ServiceAccountName = naming.Name(manifestutils.GatewayComponentName, tempo.Name)
+	return dep
+}
+
 func service(tempo v1alpha1.Microservices, ocpServingCerts bool) *corev1.Service {
-	labels := manifestutils.ComponentLabels(tempoComponentName, tempo.Name)
+	labels := manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name)
 	annotations := map[string]string{}
 	if ocpServingCerts {
 		annotations["service.beta.openshift.io/serving-cert-secret-name"] = naming.Name("gateway-tls", tempo.Name)
 	}
 	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        naming.Name(tempoComponentName, tempo.Name),
+			Name:        naming.Name(manifestutils.GatewayComponentName, tempo.Name),
 			Namespace:   tempo.Namespace,
 			Labels:      labels,
 			Annotations: annotations,
@@ -352,37 +358,21 @@ func service(tempo v1alpha1.Microservices, ocpServingCerts bool) *corev1.Service
 	}
 }
 
-func configMap(tempo v1alpha1.Microservices, rbacCfg string) *corev1.ConfigMap {
-	labels := manifestutils.ComponentLabels(tempoComponentName, tempo.Name)
-	return &corev1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      naming.Name(tempoComponentName, tempo.Name),
-			Labels:    labels,
-			Namespace: tempo.Namespace,
-		},
-		Data: map[string]string{
-			tempoGatewayRbacFileName: rbacCfg,
-		},
-	}
-}
-
 func route(tempo v1alpha1.Microservices) *routev1.Route {
-	labels := manifestutils.ComponentLabels(tempoComponentName, tempo.Name)
+	labels := manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name)
 	return &routev1.Route{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      naming.Name("", tempo.Name),
+			Name:      naming.Name(manifestutils.GatewayComponentName, tempo.Name),
 			Namespace: tempo.Namespace,
 			Labels:    labels,
 		},
 		Spec: routev1.RouteSpec{
 			To: routev1.RouteTargetReference{
 				Kind: "Service",
-				Name: naming.Name(tempoComponentName, tempo.Name),
+				Name: naming.Name(manifestutils.GatewayComponentName, tempo.Name),
 			},
 			Port: &routev1.RoutePort{
-				TargetPort: intstr.IntOrString{
-					StrVal: "public",
-				},
+				TargetPort: intstr.FromString("public"),
 			},
 			TLS: &routev1.TLSConfig{
 				Termination: routev1.TLSTerminationPassthrough,
@@ -392,11 +382,25 @@ func route(tempo v1alpha1.Microservices) *routev1.Route {
 	}
 }
 
+func configMap(tempo v1alpha1.Microservices, rbacCfg string) *corev1.ConfigMap {
+	labels := manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name)
+	return &corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      naming.Name(manifestutils.GatewayComponentName, tempo.Name),
+			Labels:    labels,
+			Namespace: tempo.Namespace,
+		},
+		Data: map[string]string{
+			tempoGatewayRbacFileName: rbacCfg,
+		},
+	}
+}
+
 func secret(tempo v1alpha1.Microservices, tenantsCfg string) *corev1.Secret {
-	labels := manifestutils.ComponentLabels(tempoComponentName, tempo.Name)
+	labels := manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name)
 	secret := &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      naming.Name(tempoComponentName, tempo.Name),
+			Name:      naming.Name(manifestutils.GatewayComponentName, tempo.Name),
 			Labels:    labels,
 			Namespace: tempo.Namespace,
 		},
