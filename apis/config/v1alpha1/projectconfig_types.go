@@ -42,6 +42,7 @@ type OpenShiftFeatureGates struct {
 	GatewayRoute bool `json:"gatewayRoute,omitempty"`
 
 	// BaseDomain is used internally for redirect URL in gateway OpenShift auth mode.
+	// If empty the operator automatically derives the domain from the cluster.
 	BaseDomain string `json:"baseDomain,omitempty"`
 }
 
