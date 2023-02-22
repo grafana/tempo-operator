@@ -152,15 +152,13 @@ type MicroservicesStatus struct {
 // ModeType is the authentication/authorization mode in which Tempo Gateway
 // will be configured.
 //
-// +kubebuilder:validation:Enum=static;dynamic;openshift
+// +kubebuilder:validation:Enum=static;openshift
 type ModeType string
 
 const (
 	// Static mode asserts the Authorization Spec's Roles and RoleBindings
 	// using an in-process OpenPolicyAgent Rego authorizer.
 	Static ModeType = "static"
-	// Dynamic mode delegates the authorization to a third-party OPA-compatible endpoint.
-	Dynamic ModeType = "dynamic"
 	// OpenShift mode uses TokenReview API for authentication and subject access review for authorization.
 	OpenShift ModeType = "openshift"
 )

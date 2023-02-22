@@ -772,7 +772,6 @@ spec:
                     description: Mode defines the multitenancy mode.
                     enum:
                     - static
-                    - dynamic
                     - openshift
                     type: string
                 required:
