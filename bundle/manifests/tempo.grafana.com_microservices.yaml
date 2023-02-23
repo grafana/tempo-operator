@@ -211,9 +211,6 @@ spec:
                     description: 'Limit used for search requests if none is set by
                       the caller (default: 20)'
                     type: integer
-                  enabled:
-                    description: Enable tempo search feature, default to true
-                    type: boolean
                   maxDuration:
                     description: 'The maximum allowed time range for a search, default:
                       0s which means unlimited.'
@@ -678,15 +675,10 @@ spec:
                                   description: Name of a secret in the namespace configured
                                     for tenant secrets.
                                   type: string
-                              required:
-                              - name
                               type: object
                             usernameClaim:
                               description: User claim field from ID Token
                               type: string
-                          required:
-                          - issuerURL
-                          - secret
                           type: object
                         tenantId:
                           description: TenantID defines the id of the tenant.
@@ -780,7 +772,7 @@ spec:
                     description: Mode defines the multitenancy mode.
                     enum:
                     - static
-                    - dynamic
+                    - openshift
                     type: string
                 required:
                 - mode

@@ -5,6 +5,9 @@ import (
 	"flag"
 	"fmt"
 
+	configv1 "github.com/openshift/api/config/v1"
+	openshiftoperatorv1 "github.com/openshift/api/operator/v1"
+	routev1 "github.com/openshift/api/route/v1"
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -34,6 +37,9 @@ func init() {
 
 	utilruntime.Must(tempov1alpha1.AddToScheme(scheme))
 	utilruntime.Must(configtempov1alpha1.AddToScheme(scheme))
+	utilruntime.Must(routev1.Install(scheme))
+	utilruntime.Must(openshiftoperatorv1.Install(scheme))
+	utilruntime.Must(configv1.Install(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 

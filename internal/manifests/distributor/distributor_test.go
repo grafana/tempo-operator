@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -17,7 +18,7 @@ import (
 )
 
 func TestBuildDistributor(t *testing.T) {
-	objects := BuildDistributor(manifestutils.Params{Tempo: v1alpha1.Microservices{
+	objects, err := BuildDistributor(manifestutils.Params{Tempo: v1alpha1.Microservices{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test",
 			Namespace: "project1",
@@ -48,6 +49,7 @@ func TestBuildDistributor(t *testing.T) {
 			},
 		},
 	}})
+	require.NoError(t, err)
 
 	labels := manifestutils.ComponentLabels("distributor", "test")
 	annotations := manifestutils.CommonAnnotations("")
@@ -158,6 +160,8 @@ func TestBuildDistributor(t *testing.T) {
 			},
 		},
 	}, objects[0])
+
+	assert.NoError(t, err)
 	assert.Equal(t, &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "tempo-test-distributor",

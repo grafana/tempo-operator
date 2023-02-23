@@ -21,11 +21,34 @@ const (
 // BuildIngester creates distributor objects.
 func BuildIngester(params manifestutils.Params) ([]client.Object, error) {
 	ss, err := statefulSet(params)
+
 	if err != nil {
 		return nil, err
 	}
 
-	return []client.Object{ss, service(params.Tempo)}, nil
+	gates := params.Gates
+	tempo := params.Tempo
+
+	if gates.HTTPEncryption || gates.GRPCEncryption {
+		caBundleName := naming.SigningCABundleName(tempo.Name)
+		if err := manifestutils.ConfigureServiceCA(&ss.Spec.Template.Spec, caBundleName); err != nil {
+			return nil, err
+		}
+	}
+
+	if gates.HTTPEncryption {
+		if err := configureIngesterHTTPServicePKI(ss, tempo); err != nil {
+			return nil, err
+		}
+	}
+
+	if gates.GRPCEncryption {
+		if err := configureIngesterGRPCServicePKI(ss, tempo); err != nil {
+			return nil, err
+		}
+	}
+
+	return []client.Object{ss, service(tempo)}, nil
 }
 
 func statefulSet(params manifestutils.Params) (*v1.StatefulSet, error) {
@@ -127,11 +150,22 @@ func statefulSet(params manifestutils.Params) (*v1.StatefulSet, error) {
 			},
 		},
 	}
+
 	err := manifestutils.ConfigureStorage(tempo, &ss.Spec.Template.Spec)
 	if err != nil {
 		return nil, err
 	}
 	return ss, nil
+}
+
+func configureIngesterHTTPServicePKI(statefulSet *v1.StatefulSet, tempo v1alpha1.Microservices) error {
+	serviceName := naming.Name(manifestutils.IngesterComponentName, tempo.Name)
+	return manifestutils.ConfigureHTTPServicePKI(&statefulSet.Spec.Template.Spec, serviceName)
+}
+
+func configureIngesterGRPCServicePKI(sts *v1.StatefulSet, tempo v1alpha1.Microservices) error {
+	serviceName := naming.Name(manifestutils.IngesterComponentName, tempo.Name)
+	return manifestutils.ConfigureGRPCServicePKI(&sts.Spec.Template.Spec, serviceName)
 }
 
 func service(tempo v1alpha1.Microservices) *corev1.Service {

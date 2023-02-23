@@ -14,9 +14,24 @@ type options struct {
 	S3                     s3
 	GlobalRateLimits       rateLimitsOptions
 	TenantRateLimitsPath   string
+	TLS                    tlsOptions
 	MemberList             []string
 	Search                 searchOptions
 	ReplicationFactor      int
+	Multitenancy           bool
+	Gates                  featureGates
+}
+
+type tempoQueryOptions struct {
+	Gates        featureGates
+	TLS          tlsOptions
+	HTTPPort     int
+	TenantHeader string
+}
+
+type featureGates struct {
+	HTTPEncryption bool
+	GRPCEncryption bool
 }
 
 type tenantOptions struct {
@@ -42,4 +57,37 @@ type searchOptions struct {
 	DefaultResultLimit        int
 	MaxResultLimit            int
 	Enabled                   bool
+}
+
+type tlsOptions struct {
+	Enabled     bool
+	Paths       tlsFilePaths
+	ServerNames tlsServerNames
+}
+
+type tlsFilePaths struct {
+	CA   string
+	GRPC tlsCertPath
+	HTTP tlsCertPath
+}
+
+type tlsCertPath struct {
+	Certificate string
+	Key         string
+}
+
+type tlsServerNames struct {
+	GRPC grpcServerNames
+	HTTP httpServerNames
+}
+
+type grpcServerNames struct {
+	Compactor     string
+	Ingester      string
+	QueryFrontend string
+}
+
+type httpServerNames struct {
+	Querier       string
+	QueryFrontend string
 }

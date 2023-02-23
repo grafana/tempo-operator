@@ -1,8 +1,9 @@
 package queryfrontend
 
 import (
-	v1 "k8s.io/api/apps/v1"
+	"fmt"
 
+	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8slabels "k8s.io/apimachinery/pkg/labels"
@@ -30,7 +31,29 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 	if err != nil {
 		return nil, err
 	}
-	svcs := services(params.Tempo)
+	gates := params.Gates
+	tempo := params.Tempo
+
+	if gates.HTTPEncryption || gates.GRPCEncryption {
+		caBundleName := naming.SigningCABundleName(tempo.Name)
+		if err := manifestutils.ConfigureServiceCA(&d.Spec.Template.Spec, caBundleName, 0, 1); err != nil {
+			return nil, err
+		}
+	}
+
+	if gates.HTTPEncryption {
+		if err := configureQuerierFrontEndHTTPServicePKI(d, tempo); err != nil {
+			return nil, err
+		}
+	}
+
+	if gates.GRPCEncryption {
+		if err := configureQuerierFrontEndGRPCServicePKI(d, tempo); err != nil {
+			return nil, err
+		}
+	}
+
+	svcs := services(tempo)
 
 	var manifests []client.Object
 	manifests = append(manifests, d)
@@ -40,6 +63,13 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 	return manifests, nil
 }
 
+func configureQuerierFrontEndHTTPServicePKI(deployment *v1.Deployment, tempo v1alpha1.Microservices) error {
+	return manifestutils.ConfigureHTTPServicePKI(&deployment.Spec.Template.Spec, naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name), 0, 1)
+}
+
+func configureQuerierFrontEndGRPCServicePKI(deployment *v1.Deployment, tempo v1alpha1.Microservices) error {
+	return manifestutils.ConfigureGRPCServicePKI(&deployment.Spec.Template.Spec, naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name), 0, 1)
+}
 func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 	tempo := params.Tempo
 	labels := manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, tempo.Name)
@@ -168,6 +198,14 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 			VolumeSource: corev1.VolumeSource{
 				EmptyDir: &corev1.EmptyDirVolumeSource{},
 			},
+		}
+
+		// TODO it should be possible to enable multitenancy just for tempo, without the gateway
+		if tempo.Spec.Tenants != nil {
+			jaegerQueryContainer.Args = append(jaegerQueryContainer.Args, []string{
+				"--multi-tenancy.enabled=true",
+				fmt.Sprintf("--multi-tenancy.header=%s", manifestutils.TenantHeader),
+			}...)
 		}
 
 		d.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, jaegerQueryContainer)

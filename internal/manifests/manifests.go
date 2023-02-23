@@ -16,12 +16,24 @@ import (
 	"github.com/os-observability/tempo-operator/internal/manifests/serviceaccount"
 )
 
+// StorageParams holds storage configuration.
+type StorageParams struct {
+	S3 S3
+}
+
+// S3 holds S3 configuration.
+type S3 struct {
+	Endpoint string
+	Bucket   string
+}
+
 // BuildAll creates objects for Tempo deployment.
 func BuildAll(params manifestutils.Params) ([]client.Object, error) {
 	configMaps, configChecksum, err := config.BuildConfigMap(params.Tempo, config.Params{S3: config.S3{
 		Endpoint: params.StorageParams.S3.Endpoint,
 		Bucket:   params.StorageParams.S3.Bucket,
-	}})
+	}, HTTPEncryption: params.Gates.HTTPEncryption,
+		GRPCEncryption: params.Gates.GRPCEncryption})
 	if err != nil {
 		return nil, err
 	}
@@ -51,12 +63,17 @@ func BuildAll(params manifestutils.Params) ([]client.Object, error) {
 		return nil, err
 	}
 
+	distributorObjs, err := distributor.BuildDistributor(params)
+	if err != nil {
+		return nil, err
+	}
+
 	var manifests []client.Object
 	manifests = append(manifests, configMaps)
 	if params.Tempo.Spec.ServiceAccount == naming.DefaultServiceAccountName(params.Tempo.Name) {
 		manifests = append(manifests, serviceaccount.BuildDefaultServiceAccount(params.Tempo))
 	}
-	manifests = append(manifests, distributor.BuildDistributor(params)...)
+	manifests = append(manifests, distributorObjs...)
 	manifests = append(manifests, ingesterObjs...)
 	manifests = append(manifests, memberlist.BuildGossip(params.Tempo))
 	manifests = append(manifests, frontendObjs...)

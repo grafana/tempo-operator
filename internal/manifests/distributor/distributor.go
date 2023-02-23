@@ -15,8 +15,40 @@ import (
 )
 
 // BuildDistributor creates distributor objects.
-func BuildDistributor(params manifestutils.Params) []client.Object {
-	return []client.Object{deployment(params), service(params.Tempo)}
+func BuildDistributor(params manifestutils.Params) ([]client.Object, error) {
+	dep := deployment(params)
+	gates := params.Gates
+	tempo := params.Tempo
+	if gates.HTTPEncryption || gates.GRPCEncryption {
+		caBundleName := naming.SigningCABundleName(tempo.Name)
+		if err := manifestutils.ConfigureServiceCA(&dep.Spec.Template.Spec, caBundleName); err != nil {
+			return nil, err
+		}
+	}
+
+	if gates.GRPCEncryption {
+		if err := configureDistributorGRPCServicePKI(dep, tempo); err != nil {
+			return nil, err
+		}
+	}
+
+	if gates.HTTPEncryption {
+		if err := configureDistributorHTTPServicePKI(dep, tempo); err != nil {
+			return nil, err
+		}
+	}
+
+	return []client.Object{dep, service(tempo)}, nil
+}
+
+func configureDistributorGRPCServicePKI(sts *v1.Deployment, tempo v1alpha1.Microservices) error {
+	serviceName := naming.Name(manifestutils.DistributorComponentName, tempo.Name)
+	return manifestutils.ConfigureGRPCServicePKI(&sts.Spec.Template.Spec, serviceName)
+}
+
+func configureDistributorHTTPServicePKI(sts *v1.Deployment, tempo v1alpha1.Microservices) error {
+	serviceName := naming.Name(manifestutils.DistributorComponentName, tempo.Name)
+	return manifestutils.ConfigureHTTPServicePKI(&sts.Spec.Template.Spec, serviceName)
 }
 
 func deployment(params manifestutils.Params) *v1.Deployment {

@@ -165,9 +165,6 @@ spec:
         displayName: Limit used for search requests if none is set by the caller,
           this limit the number of traces returned by the query
         path: search.defaultResultLimit
-      - description: Enable tempo search feature, default to true
-        displayName: Search enabled
-        path: search.enabled
       - description: 'The maximum allowed time range for a search, default: 0s which
           means unlimited.'
         displayName: Max search time range allowed
@@ -420,6 +417,46 @@ spec:
           - get
           - list
           - patch
+          - update
+          - watch
+        - apiGroups:
+          - config.openshift.io
+          resources:
+          - dnses
+          verbs:
+          - get
+          - list
+          - watch
+        - apiGroups:
+          - operator.openshift.io
+          resources:
+          - ingresscontrollers
+          verbs:
+          - get
+          - list
+          - watch
+        - apiGroups:
+          - rbac.authorization.k8s.io
+          resources:
+          - clusterrolebindings
+          - clusterroles
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - route.openshift.io
+          resources:
+          - routes
+          verbs:
+          - create
+          - delete
+          - get
+          - list
           - update
           - watch
         - apiGroups:

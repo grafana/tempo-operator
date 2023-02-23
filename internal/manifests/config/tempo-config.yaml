@@ -33,8 +33,7 @@ memberlist:
   {{- range .MemberList }}
   - {{ . }}
   {{- end }}
-metrics_generator_enabled: false
-multitenancy_enabled: false
+multitenancy_enabled: {{ .Multitenancy }}
 {{- if or
   .GlobalRateLimits.IngestionBurstSizeBytes
   .GlobalRateLimits.IngestionRateLimitBytes
@@ -68,12 +67,17 @@ overrides:
 {{- end }}
 {{- end }}
 querier:
-{{- if .Search.Enabled }}
   max_concurrent_queries: {{ .Search.MaxConcurrentQueries }}
-{{- end }}
   frontend_worker:
     frontend_address: {{ .QueryFrontendDiscovery }}
-{{- if .Search.Enabled }}
+{{- if .Gates.GRPCEncryption }}
+    grpc_client_config:
+      tls_enabled: true
+      tls_cert_path:  {{ .TLS.Paths.GRPC.Certificate }}
+      tls_key_path: {{ .TLS.Paths.GRPC.Key }}
+      tls_ca_path: {{ .TLS.Paths.CA }}
+      tls_server_name: {{ .TLS.ServerNames.GRPC.QueryFrontend }}
+{{- end }}
   search:
 {{- if .Search.QueryTimeout }}
     query_timeout: {{ .Search.QueryTimeout }}
@@ -84,8 +88,14 @@ querier:
 {{- if .Search.ExternalHedgeRequestsUpTo }}
     external_hedge_requests_up_to: {{ .Search.ExternalHedgeRequestsUpTo }}
 {{- end }}
+{{- if .Gates.HTTPEncryption }}
+internal_server:
+  enable: true
+  http_listen_address: ""
+  http_tls_config:
+    cert_file: {{ .TLS.Paths.HTTP.Certificate }}
+    key_file: {{ .TLS.Paths.HTTP.Key }}
 {{- end }}
-search_enabled: {{ .Search.Enabled }}
 server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
@@ -94,6 +104,20 @@ server:
   http_server_write_timeout: 3m
   log_format: logfmt
   log_level: debug
+{{- if .Gates.GRPCEncryption }}
+  grpc_tls_config:
+    cert_file:  {{ .TLS.Paths.GRPC.Certificate }}
+    key_file: {{ .TLS.Paths.GRPC.Key }}
+    client_ca_file: {{ .TLS.Paths.CA }}
+    client_auth_type: RequireAndVerifyClientCert
+{{- end }}
+{{- if .Gates.HTTPEncryption }}
+  http_tls_config:
+    cert_file:  {{ .TLS.Paths.HTTP.Certificate }}
+    key_file: {{ .TLS.Paths.HTTP.Key }}
+    client_ca_file: {{ .TLS.Paths.CA }}
+    client_auth_type: RequireAndVerifyClientCert
+{{- end }}
 storage:
   trace:
     backend: s3
@@ -109,7 +133,6 @@ storage:
       path: /var/tempo/wal
 usage_report:
   reporting_enabled: false
-{{- if .Search.Enabled }}
 query_frontend:
   search:
 {{- if .Search.ConcurrentJobs }}
@@ -124,4 +147,12 @@ query_frontend:
 {{- if .Search.MaxResultLimit }}
     max_result_limit: {{ .Search.MaxResultLimit }}
 {{- end }}
+{{- if .Gates.GRPCEncryption }}
+ingester_client:
+  grpc_client_config:
+    tls_enabled: true
+    tls_cert_path:  {{ .TLS.Paths.GRPC.Certificate }}
+    tls_key_path: {{ .TLS.Paths.GRPC.Key }}
+    tls_ca_path: {{ .TLS.Paths.CA }}
+    tls_server_name: {{ .TLS.ServerNames.GRPC.Ingester }}
 {{- end }}

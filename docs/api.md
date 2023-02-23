@@ -712,13 +712,6 @@ SearchSpec control the configuration for the search capabilities.
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b>enabled</b></td>
-        <td>boolean</td>
-        <td>
-          Enable tempo search feature, default to true<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
         <td><b>maxDuration</b></td>
         <td>string</td>
         <td>
@@ -1519,7 +1512,7 @@ Tenants defines the per-tenant authentication and authorization spec.
         <td>
           Mode defines the multitenancy mode.<br/>
           <br/>
-            <i>Enum</i>: static, dynamic<br/>
+            <i>Enum</i>: static, openshift<br/>
             <i>Default</i>: static<br/>
         </td>
         <td>true</td>
@@ -1599,20 +1592,6 @@ OIDC defines the spec for the OIDC tenant's authentication.
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>issuerURL</b></td>
-        <td>string</td>
-        <td>
-          IssuerURL defines the URL for issuer.<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b><a href="#microservicesspectenantsauthenticationindexoidcsecret">secret</a></b></td>
-        <td>object</td>
-        <td>
-          Secret defines the spec for the clientID, clientSecret and issuerCAPath for tenant's authentication.<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
         <td><b>groupClaim</b></td>
         <td>string</td>
         <td>
@@ -1620,10 +1599,24 @@ OIDC defines the spec for the OIDC tenant's authentication.
         </td>
         <td>false</td>
       </tr><tr>
+        <td><b>issuerURL</b></td>
+        <td>string</td>
+        <td>
+          IssuerURL defines the URL for issuer.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b>redirectURL</b></td>
         <td>string</td>
         <td>
           RedirectURL defines the URL for redirect.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#microservicesspectenantsauthenticationindexoidcsecret">secret</a></b></td>
+        <td>object</td>
+        <td>
+          Secret defines the spec for the clientID, clientSecret and issuerCAPath for tenant's authentication.<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -1659,7 +1652,7 @@ Secret defines the spec for the clientID, clientSecret and issuerCAPath for tena
         <td>
           Name of a secret in the namespace configured for tenant secrets.<br/>
         </td>
-        <td>true</td>
+        <td>false</td>
       </tr></tbody>
 </table>
 

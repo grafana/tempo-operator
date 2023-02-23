@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -14,6 +15,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 )
 
@@ -237,11 +239,14 @@ func TestDegradedToDegraded(t *testing.T) {
 	updatedTempo2 := v1alpha1.Microservices{}
 	err = k8sClient.Get(context.Background(), nsn, &updatedTempo2)
 	require.NoError(t, err)
+
+	// We don't want to compare LastTransitionTime because it could change
+	lastTransitionTime := updatedTempo2.Status.Conditions[0].LastTransitionTime
 	assert.Equal(t, []metav1.Condition{
 		{
 			Type:               string(v1alpha1.ConditionDegraded),
 			Status:             "True",
-			LastTransitionTime: updatedTempo1.Status.Conditions[0].LastTransitionTime,
+			LastTransitionTime: lastTransitionTime,
 			Reason:             string(v1alpha1.ReasonInvalidStorageConfig),
 			Message:            "invalid storage secret: \"endpoint\" field of storage secret must be a valid URL, storage secret must contain \"access_key_id\" field",
 		},
@@ -318,4 +323,86 @@ func TestDegradedToReady(t *testing.T) {
 	}, updatedTempo2.Status.Conditions)
 	assert.Greater(t, updatedTempo2.Status.Conditions[0].LastTransitionTime.UnixNano(), updatedTempo1.Status.Conditions[0].LastTransitionTime.UnixNano())
 	assert.Greater(t, updatedTempo2.Status.Conditions[1].LastTransitionTime.UnixNano(), updatedTempo1.Status.Conditions[0].LastTransitionTime.UnixNano())
+}
+
+func TestTLSEnable(t *testing.T) {
+	nsn := types.NamespacedName{Name: "tls-enabled-test", Namespace: "default"}
+	storageSecret := createSecret(t, nsn)
+	createTempoCR(t, nsn, storageSecret)
+
+	reconciler := MicroservicesReconciler{
+		Client: k8sClient,
+		Scheme: testScheme,
+		FeatureGates: configv1alpha1.FeatureGates{
+			BuiltInCertManagement: configv1alpha1.BuiltInCertManagement{
+				Enabled: true,
+				CACertValidity: metav1.Duration{
+					Duration: time.Hour * 43830,
+				},
+				CACertRefresh: metav1.Duration{
+					Duration: time.Hour * 35064,
+				},
+				CertValidity: metav1.Duration{
+					Duration: time.Hour * 2160,
+				},
+				CertRefresh: metav1.Duration{
+					Duration: time.Hour * 1728,
+				},
+			},
+			HTTPEncryption: true,
+			GRPCEncryption: true,
+		},
+	}
+	req := ctrl.Request{
+		NamespacedName: nsn,
+	}
+	reconcile, err := reconciler.Reconcile(context.Background(), req)
+	require.NoError(t, err)
+	assert.Equal(t, false, reconcile.Requeue)
+	opts := []client.ListOption{
+		client.InNamespace(nsn.Namespace),
+		client.MatchingLabels(map[string]string{
+			"app.kubernetes.io/instance":   nsn.Name,
+			"app.kubernetes.io/managed-by": "tempo-controller",
+		}),
+	}
+	{
+		list := &corev1.SecretList{}
+		err = k8sClient.List(context.Background(), list, opts...)
+		assert.NoError(t, err)
+		assert.NotEmpty(t, list.Items)
+		names := []string{}
+		for _, cm := range list.Items {
+			names = append(names, cm.Name)
+		}
+
+		expectedNames := []string{
+			"compactor-grpc",
+			"compactor-http",
+			"distributor-grpc",
+			"distributor-http",
+			"ingester-grpc",
+			"ingester-http",
+			"querier-grpc",
+			"querier-http",
+			"query-frontend-grpc",
+			"query-frontend-http",
+			"signing-ca",
+		}
+		for _, expected := range expectedNames {
+			assert.Contains(t, names, fmt.Sprintf("tempo-%s-%s", nsn.Name, expected))
+
+		}
+	}
+	{
+		list := &corev1.ConfigMapList{}
+		err = k8sClient.List(context.Background(), list, opts...)
+		assert.NoError(t, err)
+		assert.NotEmpty(t, list.Items)
+		names := []string{}
+		for _, cm := range list.Items {
+			names = append(names, cm.Name)
+		}
+		assert.Contains(t, names, fmt.Sprintf("tempo-%s-ca-bundle", nsn.Name))
+	}
 }

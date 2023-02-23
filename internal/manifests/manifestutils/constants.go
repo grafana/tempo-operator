@@ -20,6 +20,8 @@ const (
 	HttpPortName = "http"
 	// PortHTTPServer declares the port number of the tempo http port.
 	PortHTTPServer = 3200
+	// PortInternalHTTPServer declares the port number of the tempo http port.
+	PortInternalHTTPServer = 3101
 	// TempoReadinessPath specifies the path for the readiness probe.
 	TempoReadinessPath = "/ready"
 	// TempoLivenessPath specifies the path for the liveness probe.
@@ -50,4 +52,9 @@ const (
 	QueryFrontendComponentName = "query-frontend"
 	// IngesterComponentName declares the internal name of the ingester component.
 	IngesterComponentName = "ingester"
+	// GatewayComponentName declares the internal name of the gateway component.
+	GatewayComponentName = "gateway"
+
+	// TenantHeader is the header name that contains tenant name.
+	TenantHeader = "x-scope-orgid"
 )
