@@ -13,6 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/utils/pointer"
 
+	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
 )
@@ -24,7 +25,7 @@ func TestBuildDistributor(t *testing.T) {
 			Namespace: "project1",
 		},
 		Spec: v1alpha1.MicroservicesSpec{
-			Images: v1alpha1.ImagesSpec{
+			Images: configv1alpha1.ImagesSpec{
 				Tempo: "docker.io/grafana/tempo:1.5.0",
 			},
 			ServiceAccount: "tempo-test-serviceaccount",

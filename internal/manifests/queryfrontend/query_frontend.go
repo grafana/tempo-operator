@@ -3,8 +3,10 @@ package queryfrontend
 import (
 	"fmt"
 
+	routev1 "github.com/openshift/api/route/v1"
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8slabels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -27,6 +29,8 @@ const (
 
 // BuildQueryFrontend creates the query-frontend objects.
 func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
+	var manifests []client.Object
+
 	d, err := deployment(params)
 	if err != nil {
 		return nil, err
@@ -53,13 +57,21 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 		}
 	}
 
-	svcs := services(tempo)
-
-	var manifests []client.Object
 	manifests = append(manifests, d)
+
+	svcs := services(tempo)
 	for _, s := range svcs {
 		manifests = append(manifests, s)
 	}
+
+	if tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress != nil && tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Enabled {
+		manifests = append(manifests, ingress(tempo))
+	}
+
+	if tempo.Spec.Components.QueryFrontend.JaegerQuery.Route != nil && tempo.Spec.Components.QueryFrontend.JaegerQuery.Route.Enabled {
+		manifests = append(manifests, route(tempo))
+	}
+
 	return manifests, nil
 }
 
@@ -70,6 +82,7 @@ func configureQuerierFrontEndHTTPServicePKI(deployment *v1.Deployment, tempo v1a
 func configureQuerierFrontEndGRPCServicePKI(deployment *v1.Deployment, tempo v1alpha1.Microservices) error {
 	return manifestutils.ConfigureGRPCServicePKI(&deployment.Spec.Template.Spec, naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name), 0, 1)
 }
+
 func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 	tempo := params.Tempo
 	labels := manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, tempo.Name)
@@ -302,4 +315,74 @@ func services(tempo v1alpha1.Microservices) []*corev1.Service {
 	}
 
 	return []*corev1.Service{frontEndService, frontEndDiscoveryService}
+}
+
+func ingress(tempo v1alpha1.Microservices) *networkingv1.Ingress {
+	queryFrontendName := naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name)
+	labels := manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, tempo.Name)
+
+	ingress := &networkingv1.Ingress{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        queryFrontendName,
+			Namespace:   tempo.Namespace,
+			Labels:      labels,
+			Annotations: tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Annotations,
+		},
+		Spec: networkingv1.IngressSpec{},
+	}
+
+	backend := networkingv1.IngressBackend{
+		Service: &networkingv1.IngressServiceBackend{
+			Name: queryFrontendName,
+			Port: networkingv1.ServiceBackendPort{
+				Name: jaegerUIPortName,
+			},
+		},
+	}
+
+	if tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Host == "" {
+		ingress.Spec.DefaultBackend = &backend
+	} else {
+		pathType := networkingv1.PathTypePrefix
+		ingress.Spec.Rules = []networkingv1.IngressRule{
+			{
+				Host: tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Host,
+				IngressRuleValue: networkingv1.IngressRuleValue{
+					HTTP: &networkingv1.HTTPIngressRuleValue{
+						Paths: []networkingv1.HTTPIngressPath{
+							{
+								Path:     "/",
+								PathType: &pathType,
+								Backend:  backend,
+							},
+						},
+					},
+				},
+			},
+		}
+	}
+
+	return ingress
+}
+
+func route(tempo v1alpha1.Microservices) *routev1.Route {
+	queryFrontendName := naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name)
+	labels := manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, tempo.Name)
+
+	return &routev1.Route{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      queryFrontendName,
+			Namespace: tempo.Namespace,
+			Labels:    labels,
+		},
+		Spec: routev1.RouteSpec{
+			To: routev1.RouteTargetReference{
+				Kind: "Service",
+				Name: queryFrontendName,
+			},
+			Port: &routev1.RoutePort{
+				TargetPort: intstr.FromString(jaegerUIPortName),
+			},
+		},
+	}
 }

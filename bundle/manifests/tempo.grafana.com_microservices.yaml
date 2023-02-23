@@ -634,12 +634,41 @@ spec:
                             x-kubernetes-list-type: atomic
                         type: object
                       jaegerQuery:
-                        description: JaegerQuerySpec defines Jaeger Query spefic options.
+                        description: JaegerQuerySpec defines Jaeger Query specific
+                          options.
                         properties:
                           enabled:
                             description: Enabled is used to define if Jaeger Query
                               component should be created.
                             type: boolean
+                          ingress:
+                            description: Ingress defines Jaeger Query Ingress specific
+                              options.
+                            properties:
+                              annotations:
+                                additionalProperties:
+                                  type: string
+                                description: Annotations is used to define the annotations
+                                  of the Ingress object.
+                                type: object
+                              enabled:
+                                description: Enabled is used to define if an Ingress
+                                  object should be created for the Jaeger Query component.
+                                type: boolean
+                              host:
+                                description: Host is used to define the hostname of
+                                  the Ingress object.
+                                type: string
+                            type: object
+                          route:
+                            description: Route defines Jaeger Query Route specific
+                              options.
+                            properties:
+                              enabled:
+                                description: Enabled is used to define if an Route
+                                  object should be created for the Jaeger Query component.
+                                type: boolean
+                            type: object
                         type: object
                     type: object
                 type: object

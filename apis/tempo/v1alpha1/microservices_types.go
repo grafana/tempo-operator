@@ -4,6 +4,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/os-observability/tempo-operator/apis/config/v1alpha1"
 )
 
 // MicroservicesSpec defines the desired state of Microservices.
@@ -35,7 +37,7 @@ type MicroservicesSpec struct {
 	//
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Container Images"
-	Images ImagesSpec `json:"images,omitempty"`
+	Images v1alpha1.ImagesSpec `json:"images,omitempty"`
 
 	// Storage defines S3 compatible object storage configuration.
 	// User is required to create secret and supply it.
@@ -367,24 +369,6 @@ type MicroservicesList struct {
 	Items           []Microservices `json:"items"`
 }
 
-// ImagesSpec defines the image for each container.
-type ImagesSpec struct {
-	// Tempo defines the tempo container image.
-	//
-	// +optional
-	Tempo string `json:"tempo,omitempty"`
-
-	// TempoQuery defines the tempo-query container image.
-	//
-	// +optional
-	TempoQuery string `json:"tempoQuery,omitempty"`
-
-	// TempoGateway defines the tempo-gateway container image.
-	//
-	// +optional
-	TempoGateway string `json:"tempoGateway,omitempty"`
-}
-
 // Resources defines resources configuration.
 type Resources struct {
 	// The total amount of resources for Tempo instance.
@@ -544,7 +528,7 @@ type TempoQueryFrontendSpec struct {
 	// +kubebuilder:validation:Optional
 	TempoComponentSpec `json:"component,omitempty"`
 
-	// JaegerQuerySpec defines Jaeger Query spefic options.
+	// JaegerQuerySpec defines Jaeger Query specific options.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
@@ -560,6 +544,56 @@ type JaegerQuerySpec struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger Query Enabled"
 	Enabled bool `json:"enabled"`
+
+	// Ingress defines Jaeger Query Ingress specific options.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger Query Ingress Settings"
+	Ingress *JaegerQueryIngressSpec `json:"ingress,omitempty"`
+	// Ingress will be enabled by default in the Defaulter webhook on Kubernetes.
+
+	// Route defines Jaeger Query Route specific options.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger Query Route Settings"
+	Route *JaegerQueryRouteSpec `json:"route,omitempty"`
+	// Route will be enabled by default in the Defaulter webhook on OpenShift.
+}
+
+// JaegerQueryIngressSpec defines Jaeger Query Ingress options.
+type JaegerQueryIngressSpec struct {
+	// Enabled is used to define if an Ingress object should be created for the Jaeger Query component.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enable Ingress for Jaeger Query"
+	Enabled bool `json:"enabled,omitempty"`
+
+	// Host is used to define the hostname of the Ingress object.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Ingress Host"
+	Host string `json:"host,omitempty"`
+
+	// Annotations is used to define the annotations of the Ingress object.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Ingress Annotations"
+	Annotations map[string]string `json:"annotations,omitempty"`
+}
+
+// JaegerQueryRouteSpec defines Jaeger Query Route options.
+type JaegerQueryRouteSpec struct {
+	// Enabled is used to define if an Route object should be created for the Jaeger Query component.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enable Route for Jaeger Query"
+	Enabled bool `json:"enabled,omitempty"`
 }
 
 // LimitSpec defines Global and PerTenant rate limits.

@@ -268,13 +268,34 @@ spec:
       - description: TempoQueryFrontendSpec defines the query frontend spec.
         displayName: Query Frontend pods
         path: template.queryFrontend
-      - description: JaegerQuerySpec defines Jaeger Query spefic options.
+      - description: JaegerQuerySpec defines Jaeger Query specific options.
         displayName: Jaeger Query Settings
         path: template.queryFrontend.jaegerQuery
       - description: Enabled is used to define if Jaeger Query component should be
           created.
         displayName: Jaeger Query Enabled
         path: template.queryFrontend.jaegerQuery.enabled
+      - description: Ingress defines Jaeger Query Ingress specific options.
+        displayName: Jaeger Query Ingress Settings
+        path: template.queryFrontend.jaegerQuery.ingress
+      - description: Annotations is used to define the annotations of the Ingress
+          object.
+        displayName: Ingress Annotations
+        path: template.queryFrontend.jaegerQuery.ingress.annotations
+      - description: Enabled is used to define if an Ingress object should be created
+          for the Jaeger Query component.
+        displayName: Enable Ingress for Jaeger Query
+        path: template.queryFrontend.jaegerQuery.ingress.enabled
+      - description: Host is used to define the hostname of the Ingress object.
+        displayName: Ingress Host
+        path: template.queryFrontend.jaegerQuery.ingress.host
+      - description: Route defines Jaeger Query Route specific options.
+        displayName: Jaeger Query Route Settings
+        path: template.queryFrontend.jaegerQuery.route
+      - description: Enabled is used to define if an Route object should be created
+          for the Jaeger Query component.
+        displayName: Enable Route for Jaeger Query
+        path: template.queryFrontend.jaegerQuery.route.enabled
       - description: NodeSelector is the simplest recommended form of node selection
           constraint.
         displayName: Node Selector

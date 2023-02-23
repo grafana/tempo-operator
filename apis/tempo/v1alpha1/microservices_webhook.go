@@ -19,6 +19,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
+	"github.com/os-observability/tempo-operator/apis/config/v1alpha1"
 	"github.com/os-observability/tempo-operator/internal/manifests/naming"
 )
 
@@ -34,10 +35,10 @@ var (
 var microserviceslog = logf.Log.WithName("microservices-resource")
 
 // SetupWebhookWithManager initializes the webhook.
-func (r *Microservices) SetupWebhookWithManager(mgr ctrl.Manager, defaultImages ImagesSpec) error {
+func (r *Microservices) SetupWebhookWithManager(mgr ctrl.Manager, ctrlConfig v1alpha1.ProjectConfig) error {
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(r).
-		WithDefaulter(NewDefaulter(defaultImages)).
+		WithDefaulter(NewDefaulter(ctrlConfig)).
 		WithValidator(&validator{client: mgr.GetClient()}).
 		Complete()
 }
@@ -45,15 +46,15 @@ func (r *Microservices) SetupWebhookWithManager(mgr ctrl.Manager, defaultImages 
 //+kubebuilder:webhook:path=/mutate-tempo-grafana-com-v1alpha1-microservices,mutating=true,failurePolicy=fail,sideEffects=None,groups=tempo.grafana.com,resources=microservices,verbs=create;update,versions=v1alpha1,name=mmicroservices.kb.io,admissionReviewVersions=v1
 
 // NewDefaulter creates a new instance of Defaulter, which implements functions for setting defaults on the Tempo CR.
-func NewDefaulter(defaultImages ImagesSpec) *Defaulter {
+func NewDefaulter(ctrlConfig v1alpha1.ProjectConfig) *Defaulter {
 	return &Defaulter{
-		defaultImages: defaultImages,
+		ctrlConfig: ctrlConfig,
 	}
 }
 
 // Defaulter implements the CustomDefaulter interface.
 type Defaulter struct {
-	defaultImages ImagesSpec
+	ctrlConfig v1alpha1.ProjectConfig
 }
 
 // Default applies default values to a Kubernetes object.
@@ -65,16 +66,22 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 	microserviceslog.V(1).Info("default", "name", r.Name)
 
 	if r.Spec.Images.Tempo == "" {
-		if d.defaultImages.Tempo == "" {
+		if d.ctrlConfig.DefaultImages.Tempo == "" {
 			return errNoDefaultTempoImage
 		}
-		r.Spec.Images.Tempo = d.defaultImages.Tempo
+		r.Spec.Images.Tempo = d.ctrlConfig.DefaultImages.Tempo
 	}
 	if r.Spec.Images.TempoQuery == "" {
-		if d.defaultImages.TempoQuery == "" {
+		if d.ctrlConfig.DefaultImages.TempoQuery == "" {
 			return errNoDefaultTempoQueryImage
 		}
-		r.Spec.Images.TempoQuery = d.defaultImages.TempoQuery
+		r.Spec.Images.TempoQuery = d.ctrlConfig.DefaultImages.TempoQuery
+	}
+	if r.Spec.Images.TempoGateway == "" {
+		if d.ctrlConfig.DefaultImages.TempoGateway == "" {
+			return errNoDefaultTempoGatewayImage
+		}
+		r.Spec.Images.TempoGateway = d.ctrlConfig.DefaultImages.TempoGateway
 	}
 
 	if r.Spec.ServiceAccount == "" {
@@ -117,11 +124,18 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 		r.Spec.ReplicationFactor = defaultReplicationFactor
 	}
 
-	if r.Spec.Images.TempoGateway == "" {
-		if d.defaultImages.TempoGateway == "" {
-			return errNoDefaultTempoGatewayImage
+	// Create an Ingress or Route to Jaeger UI by default if jaegerQuery is enabled
+	if r.Spec.Components.QueryFrontend.JaegerQuery.Enabled {
+		if r.Spec.Components.QueryFrontend.JaegerQuery.Ingress == nil && !d.ctrlConfig.Gates.OpenShift.Route {
+			r.Spec.Components.QueryFrontend.JaegerQuery.Ingress = &JaegerQueryIngressSpec{
+				Enabled: true,
+			}
 		}
-		r.Spec.Images.TempoGateway = d.defaultImages.TempoGateway
+		if r.Spec.Components.QueryFrontend.JaegerQuery.Route == nil && d.ctrlConfig.Gates.OpenShift.Route {
+			r.Spec.Components.QueryFrontend.JaegerQuery.Route = &JaegerQueryRouteSpec{
+				Enabled: true,
+			}
+		}
 	}
 
 	return nil
@@ -232,6 +246,27 @@ func (v *validator) validateReplicationFactor(tempo Microservices) field.ErrorLi
 	return nil
 }
 
+func (v *validator) validateQueryFrontend(tempo Microservices) field.ErrorList {
+	path := field.NewPath("spec").Child("template").Child("queryFrontend").Child("jaegerQuery")
+	if !tempo.Spec.Components.QueryFrontend.JaegerQuery.Enabled {
+		if tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress != nil && tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Enabled {
+			return field.ErrorList{field.Invalid(
+				path.Child("ingress").Child("enabled"),
+				tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Enabled,
+				"Ingress cannot be enabled if jaegerQuery is disabled",
+			)}
+		}
+
+		if tempo.Spec.Components.QueryFrontend.JaegerQuery.Route != nil && tempo.Spec.Components.QueryFrontend.JaegerQuery.Route.Enabled {
+			return field.ErrorList{field.Invalid(
+				path.Child("route").Child("enabled"),
+				tempo.Spec.Components.QueryFrontend.JaegerQuery.Route.Enabled,
+				"Route cannot be enabled if jaegerQuery is disabled",
+			)}
+		}
+	}
+	return nil
+}
 func (v *validator) validate(ctx context.Context, obj runtime.Object) error {
 	tempo, ok := obj.(*Microservices)
 	if !ok {
@@ -243,6 +278,7 @@ func (v *validator) validate(ctx context.Context, obj runtime.Object) error {
 	allErrs = append(allErrs, v.validateServiceAccount(ctx, *tempo)...)
 	allErrs = append(allErrs, v.validateStorage(ctx, *tempo)...)
 	allErrs = append(allErrs, v.validateReplicationFactor(*tempo)...)
+	allErrs = append(allErrs, v.validateQueryFrontend(*tempo)...)
 
 	if len(allErrs) == 0 {
 		return nil

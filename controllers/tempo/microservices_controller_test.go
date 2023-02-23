@@ -44,7 +44,7 @@ func createTempoCR(t *testing.T, nsn types.NamespacedName, storageSecret *corev1
 			Namespace: nsn.Namespace,
 		},
 		Spec: v1alpha1.MicroservicesSpec{
-			Images: v1alpha1.ImagesSpec{
+			Images: configv1alpha1.ImagesSpec{
 				Tempo: "docker.io/grafana/tempo:1.5.0",
 			},
 			LimitSpec: v1alpha1.LimitSpec{

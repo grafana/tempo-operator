@@ -51,7 +51,7 @@ func start(c *cobra.Command, args []string) {
 
 	}
 	if os.Getenv("ENABLE_WEBHOOKS") != "false" {
-		if err = (&tempov1alpha1.Microservices{}).SetupWebhookWithManager(mgr, ctrlConfig.DefaultImages); err != nil {
+		if err = (&tempov1alpha1.Microservices{}).SetupWebhookWithManager(mgr, ctrlConfig); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "Microservices")
 			os.Exit(1)
 		}

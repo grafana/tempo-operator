@@ -1355,7 +1355,7 @@ TempoQueryFrontendSpec defines the query frontend spec.
         <td><b><a href="#microservicesspectemplatequeryfrontendjaegerquery">jaegerQuery</a></b></td>
         <td>object</td>
         <td>
-          JaegerQuerySpec defines Jaeger Query spefic options.<br/>
+          JaegerQuerySpec defines Jaeger Query specific options.<br/>
         </td>
         <td>false</td>
       </tr></tbody>
@@ -1468,7 +1468,7 @@ The pod this Toleration is attached to tolerates any taint that matches the trip
 
 
 
-JaegerQuerySpec defines Jaeger Query spefic options.
+JaegerQuerySpec defines Jaeger Query specific options.
 
 <table>
     <thead>
@@ -1484,6 +1484,88 @@ JaegerQuerySpec defines Jaeger Query spefic options.
         <td>boolean</td>
         <td>
           Enabled is used to define if Jaeger Query component should be created.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#microservicesspectemplatequeryfrontendjaegerqueryingress">ingress</a></b></td>
+        <td>object</td>
+        <td>
+          Ingress defines Jaeger Query Ingress specific options.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#microservicesspectemplatequeryfrontendjaegerqueryroute">route</a></b></td>
+        <td>object</td>
+        <td>
+          Route defines Jaeger Query Route specific options.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### Microservices.spec.template.queryFrontend.jaegerQuery.ingress
+<sup><sup>[↩ Parent](#microservicesspectemplatequeryfrontendjaegerquery)</sup></sup>
+
+
+
+Ingress defines Jaeger Query Ingress specific options.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>annotations</b></td>
+        <td>map[string]string</td>
+        <td>
+          Annotations is used to define the annotations of the Ingress object.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>enabled</b></td>
+        <td>boolean</td>
+        <td>
+          Enabled is used to define if an Ingress object should be created for the Jaeger Query component.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>host</b></td>
+        <td>string</td>
+        <td>
+          Host is used to define the hostname of the Ingress object.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### Microservices.spec.template.queryFrontend.jaegerQuery.route
+<sup><sup>[↩ Parent](#microservicesspectemplatequeryfrontendjaegerquery)</sup></sup>
+
+
+
+Route defines Jaeger Query Route specific options.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>enabled</b></td>
+        <td>boolean</td>
+        <td>
+          Enabled is used to define if an Route object should be created for the Jaeger Query component.<br/>
         </td>
         <td>false</td>
       </tr></tbody>

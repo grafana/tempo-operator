@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 )
 
@@ -78,7 +79,7 @@ func TestReadyCondition(t *testing.T) {
 					Namespace: "some-ns",
 				},
 				Spec: v1alpha1.MicroservicesSpec{
-					Images: v1alpha1.ImagesSpec{
+					Images: configv1alpha1.ImagesSpec{
 						Tempo: "local:2.0",
 					},
 				},
@@ -169,7 +170,7 @@ func TestFailedCondition(t *testing.T) {
 					Namespace: "some-ns",
 				},
 				Spec: v1alpha1.MicroservicesSpec{
-					Images: v1alpha1.ImagesSpec{
+					Images: configv1alpha1.ImagesSpec{
 						Tempo: "local:2.0",
 					},
 				},
@@ -260,7 +261,7 @@ func TestPendingCondition(t *testing.T) {
 					Namespace: "some-ns",
 				},
 				Spec: v1alpha1.MicroservicesSpec{
-					Images: v1alpha1.ImagesSpec{
+					Images: configv1alpha1.ImagesSpec{
 						Tempo: "local:2.0",
 					},
 				},
@@ -354,7 +355,7 @@ func TestDegradedCondition(t *testing.T) {
 					Namespace: "some-ns",
 				},
 				Spec: v1alpha1.MicroservicesSpec{
-					Images: v1alpha1.ImagesSpec{
+					Images: configv1alpha1.ImagesSpec{
 						Tempo: "local:2.0",
 					},
 				},

@@ -3,15 +3,18 @@ package queryfrontend
 import (
 	"testing"
 
+	routev1 "github.com/openshift/api/route/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	networkingv1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8slabels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
+	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
 	"github.com/os-observability/tempo-operator/internal/manifests/memberlist"
@@ -268,7 +271,7 @@ func TestBuildQueryFrontend(t *testing.T) {
 			Namespace: "project1",
 		},
 		Spec: v1alpha1.MicroservicesSpec{
-			Images: v1alpha1.ImagesSpec{
+			Images: configv1alpha1.ImagesSpec{
 				Tempo: "docker.io/grafana/tempo:1.5.0",
 			},
 			ServiceAccount: "tempo-test-serviceaccount",
@@ -306,7 +309,7 @@ func TestBuildQueryFrontendWithJaeger(t *testing.T) {
 			Namespace: "project1",
 		},
 		Spec: v1alpha1.MicroservicesSpec{
-			Images: v1alpha1.ImagesSpec{
+			Images: configv1alpha1.ImagesSpec{
 				Tempo:      "docker.io/grafana/tempo:1.5.0",
 				TempoQuery: "docker.io/grafana/tempo-query:1.5.0",
 			},
@@ -353,4 +356,108 @@ func TestBuildQueryFrontendWithJaeger(t *testing.T) {
 	deployment := objects[0].(*v1.Deployment)
 	expectedDeployment := getExpectedDeployment(withJaeger)
 	assert.Equal(t, expectedDeployment, deployment)
+}
+
+func TestQueryFrontendJaegerIngress(t *testing.T) {
+	objects, err := BuildQueryFrontend(manifestutils.Params{Tempo: v1alpha1.Microservices{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test",
+			Namespace: "project1",
+		},
+		Spec: v1alpha1.MicroservicesSpec{
+			Components: v1alpha1.TempoComponentsSpec{
+				QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+					JaegerQuery: v1alpha1.JaegerQuerySpec{
+						Enabled: true,
+						Ingress: &v1alpha1.JaegerQueryIngressSpec{
+							Enabled: true,
+							Host:    "jaeger.example.com",
+							Annotations: map[string]string{
+								"traefik.ingress.kubernetes.io/router.tls": "true",
+							},
+						},
+					},
+				},
+			},
+		},
+	}})
+
+	require.NoError(t, err)
+	require.Equal(t, 4, len(objects))
+	pathType := networkingv1.PathTypePrefix
+	assert.Equal(t, &networkingv1.Ingress{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      naming.Name(manifestutils.QueryFrontendComponentName, "test"),
+			Namespace: "project1",
+			Labels:    manifestutils.ComponentLabels("query-frontend", "test"),
+			Annotations: map[string]string{
+				"traefik.ingress.kubernetes.io/router.tls": "true",
+			},
+		},
+		Spec: networkingv1.IngressSpec{
+			Rules: []networkingv1.IngressRule{
+				{
+					Host: "jaeger.example.com",
+					IngressRuleValue: networkingv1.IngressRuleValue{
+						HTTP: &networkingv1.HTTPIngressRuleValue{
+							Paths: []networkingv1.HTTPIngressPath{
+								{
+									Path:     "/",
+									PathType: &pathType,
+									Backend: networkingv1.IngressBackend{
+										Service: &networkingv1.IngressServiceBackend{
+											Name: naming.Name(manifestutils.QueryFrontendComponentName, "test"),
+											Port: networkingv1.ServiceBackendPort{
+												Name: jaegerUIPortName,
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}, objects[3].(*networkingv1.Ingress))
+}
+
+func TestQueryFrontendJaegerRoute(t *testing.T) {
+	objects, err := BuildQueryFrontend(manifestutils.Params{Tempo: v1alpha1.Microservices{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test",
+			Namespace: "project1",
+		},
+		Spec: v1alpha1.MicroservicesSpec{
+			Components: v1alpha1.TempoComponentsSpec{
+				QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+					JaegerQuery: v1alpha1.JaegerQuerySpec{
+						Enabled: true,
+						Route: &v1alpha1.JaegerQueryRouteSpec{
+							Enabled: true,
+						},
+					},
+				},
+			},
+		},
+	}})
+
+	require.NoError(t, err)
+	require.Equal(t, 4, len(objects))
+	assert.Equal(t, &routev1.Route{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      naming.Name(manifestutils.QueryFrontendComponentName, "test"),
+			Namespace: "project1",
+			Labels:    manifestutils.ComponentLabels("query-frontend", "test"),
+		},
+		Spec: routev1.RouteSpec{
+			To: routev1.RouteTargetReference{
+				Kind: "Service",
+				Name: naming.Name(manifestutils.QueryFrontendComponentName, "test"),
+			},
+			Port: &routev1.RoutePort{
+				TargetPort: intstr.FromString(jaegerUIPortName),
+			},
+		},
+	}, objects[3].(*routev1.Route))
 }
