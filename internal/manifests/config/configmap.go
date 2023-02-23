@@ -19,6 +19,7 @@ type Params struct {
 	S3             S3
 	HTTPEncryption bool
 	GRPCEncryption bool
+	TLSProfile     manifestutils.TLSProfileOptions
 }
 
 // S3 holds S3 object storage configuration options.

@@ -77,6 +77,8 @@ querier:
       tls_key_path: {{ .TLS.Paths.GRPC.Key }}
       tls_ca_path: {{ .TLS.Paths.CA }}
       tls_server_name: {{ .TLS.ServerNames.GRPC.QueryFrontend }}
+      tls_cipher_suites: {{ .TLS.Profile.Ciphers }}
+      tls_min_version: {{ .TLS.Profile.MinTLSVersion }}
 {{- end }}
   search:
 {{- if .Search.QueryTimeout }}
@@ -95,6 +97,8 @@ internal_server:
   http_tls_config:
     cert_file: {{ .TLS.Paths.HTTP.Certificate }}
     key_file: {{ .TLS.Paths.HTTP.Key }}
+    tls_cipher_suites: {{ .TLS.Profile.Ciphers }}
+    tls_min_version: {{ .TLS.Profile.MinTLSVersion }}
 {{- end }}
 server:
   grpc_server_max_recv_msg_size: 4194304
@@ -110,6 +114,8 @@ server:
     key_file: {{ .TLS.Paths.GRPC.Key }}
     client_ca_file: {{ .TLS.Paths.CA }}
     client_auth_type: RequireAndVerifyClientCert
+    tls_cipher_suites: {{ .TLS.Profile.Ciphers }}
+    tls_min_version: {{ .TLS.Profile.MinTLSVersion }}
 {{- end }}
 {{- if .Gates.HTTPEncryption }}
   http_tls_config:
@@ -117,6 +123,8 @@ server:
     key_file: {{ .TLS.Paths.HTTP.Key }}
     client_ca_file: {{ .TLS.Paths.CA }}
     client_auth_type: RequireAndVerifyClientCert
+    tls_cipher_suites: {{ .TLS.Profile.Ciphers }}
+    tls_min_version: {{ .TLS.Profile.MinTLSVersion }}
 {{- end }}
 storage:
   trace:
@@ -155,4 +163,7 @@ ingester_client:
     tls_key_path: {{ .TLS.Paths.GRPC.Key }}
     tls_ca_path: {{ .TLS.Paths.CA }}
     tls_server_name: {{ .TLS.ServerNames.GRPC.Ingester }}
+    tls_insecure_skip_verify: false
+    tls_cipher_suites: {{ .TLS.Profile.Ciphers }}
+    tls_min_version: {{ .TLS.Profile.MinTLSVersion }}
 {{- end }}

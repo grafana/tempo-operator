@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/go-logr/logr"
+	openshiftconfigv1 "github.com/openshift/api/config/v1"
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -31,6 +32,7 @@ import (
 	"github.com/os-observability/tempo-operator/internal/manifests"
 	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
 	"github.com/os-observability/tempo-operator/internal/status"
+	"github.com/os-observability/tempo-operator/internal/tlsprofile"
 )
 
 const (
@@ -139,6 +141,28 @@ func (r *MicroservicesReconciler) handleStatus(ctx context.Context, tempo v1alph
 	return ctrl.Result{}, nil
 }
 
+func (r *MicroservicesReconciler) getTLSProfile(ctx context.Context) (manifestutils.TLSProfileOptions, error) {
+	var tlsProfileType *openshiftconfigv1.TLSSecurityProfile
+	var err error
+
+	// If ClusterTLSPolicy is enabled get the policy from the cluster
+	if r.FeatureGates.OpenShift.ClusterTLSPolicy {
+		tlsProfileType, err = tlsprofile.GetTLSProfileFromCluster(ctx, r.Client)
+	} else {
+		tlsProfileType, err = tlsprofile.GetTLSSecurityProfile(configv1alpha1.TLSProfileType(r.FeatureGates.TLSProfile))
+	}
+
+	if err != nil {
+		return manifestutils.TLSProfileOptions{}, err
+	}
+	// Transform the policy type to concrete settings (cpyhers and minVersion).
+	tlsProfile, err := tlsprofile.GetTLSSettings(tlsProfileType)
+	if err != nil {
+		return manifestutils.TLSProfileOptions{}, err
+	}
+	return tlsProfile, nil
+}
+
 func (r *MicroservicesReconciler) reconcileManifests(ctx context.Context, log logr.Logger, req ctrl.Request, tempo v1alpha1.Microservices) error {
 	storageConfig, err := r.getStorageConfig(ctx, tempo)
 	if err != nil {
@@ -158,7 +182,17 @@ func (r *MicroservicesReconciler) reconcileManifests(ctx context.Context, log lo
 		r.FeatureGates.OpenShift.BaseDomain = domain
 	}
 
-	objects, err := manifests.BuildAll(manifestutils.Params{Tempo: tempo, StorageParams: *storageConfig, Gates: r.FeatureGates})
+	tlsProfile, err := r.getTLSProfile(ctx)
+	if err != nil {
+		return err
+	}
+
+	objects, err := manifests.BuildAll(manifestutils.Params{
+		Tempo:         tempo,
+		StorageParams: *storageConfig,
+		Gates:         r.FeatureGates,
+		TLSProfile:    tlsProfile,
+	})
 	// TODO (pavolloffay) check error type and change return appropriately
 	if err != nil {
 		return fmt.Errorf("error building manifests: %w", err)

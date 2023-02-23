@@ -75,7 +75,7 @@ func buildConfiguration(tempo v1alpha1.Microservices, params Params) ([]byte, er
 			GRPCEncryption: params.GRPCEncryption,
 			HTTPEncryption: params.HTTPEncryption,
 		},
-		TLS: buildTLSConfig(tempo),
+		TLS: buildTLSConfig(tempo, params),
 	}
 
 	if isTenantOverridesConfigRequired(tempo.Spec.LimitSpec) {
@@ -95,7 +95,7 @@ func buildTenantOverrides(tempo v1alpha1.Microservices) ([]byte, error) {
 	})
 }
 
-func buildTLSConfig(tempo v1alpha1.Microservices) tlsOptions {
+func buildTLSConfig(tempo v1alpha1.Microservices, params Params) tlsOptions {
 	return tlsOptions{
 		Paths: tlsFilePaths{
 			CA: fmt.Sprintf("%s/service-ca.crt", manifestutils.CABundleDir),
@@ -117,13 +117,17 @@ func buildTLSConfig(tempo v1alpha1.Microservices) tlsOptions {
 				QueryFrontend: fqdn(naming.Name("query-frontend-http", tempo.Name), tempo.Namespace),
 			},
 		},
+		Profile: tlsProfileOptions{
+			MinTLSVersion: params.TLSProfile.MinTLSVersion,
+			Ciphers:       params.TLSProfile.TLSCipherSuites(),
+		},
 	}
 
 }
 
 func buildTempoQueryConfig(tempo v1alpha1.Microservices, params Params) ([]byte, error) {
 	return renderTempoQueryTemplate(tempoQueryOptions{
-		TLS:      buildTLSConfig(tempo),
+		TLS:      buildTLSConfig(tempo, params),
 		HTTPPort: manifestutils.PortHTTPServer,
 		Gates: featureGates{
 			GRPCEncryption: params.GRPCEncryption,

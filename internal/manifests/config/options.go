@@ -63,6 +63,17 @@ type tlsOptions struct {
 	Enabled     bool
 	Paths       tlsFilePaths
 	ServerNames tlsServerNames
+	Profile     tlsProfileOptions
+}
+
+// TLSProfileSpec is the desired behavior of a TLSProfileType.
+type tlsProfileOptions struct {
+	// Ciphers is used to specify the cipher algorithms that are negotiated
+	// during the TLS handshake.
+	Ciphers string
+	// MinTLSVersion is used to specify the minimal version of the TLS protocol
+	// that is negotiated during the TLS handshake.
+	MinTLSVersion string
 }
 
 type tlsFilePaths struct {
