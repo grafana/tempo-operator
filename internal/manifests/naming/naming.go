@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-// Name returns component name.
+// Name returns the manifest name of a component.
 func Name(component string, instanceName string) string {
 	if component == "" {
 		return fmt.Sprintf("tempo-%s", instanceName)
@@ -14,7 +14,7 @@ func Name(component string, instanceName string) string {
 
 // DefaultServiceAccountName returns the name of the default tempo service account to use.
 func DefaultServiceAccountName(name string) string {
-	return Name("serviceaccount", name)
+	return Name("", name)
 }
 
 // SigningCABundleName return CA bundle configmap name.

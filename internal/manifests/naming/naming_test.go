@@ -31,5 +31,5 @@ func TestName(t *testing.T) {
 
 func TestDefaultServiceAccountName(t *testing.T) {
 	serviceAccountName := DefaultServiceAccountName("test")
-	assert.Equal(t, "tempo-test-serviceaccount", serviceAccountName)
+	assert.Equal(t, "tempo-test", serviceAccountName)
 }
