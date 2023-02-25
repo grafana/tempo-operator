@@ -9,9 +9,9 @@ import (
 	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
 )
 
-// Get the profile according to the feature gateway configuration, if the policy is invalid or is not specified (empty string) it
-// should return default policy, if openshift.ClusterTLSPolicy is enabled, it should get the profile from the cluster, if the cluster
-// return a unknow policy this should return an error.
+// Get the profile according to the features configuration, if the policy is invalid or is not specified (empty string) this
+// should return the default profile (Intermediate), if openshift.ClusterTLSPolicy is enabled, it should get the profile
+// from the cluster, if the cluster return a unknow profile this should return an error.
 func Get(ctx context.Context, fg configv1alpha1.FeatureGates, c k8getter, log logr.Logger) (TLSProfileOptions, error) {
 	var tlsProfileType openshiftconfigv1.TLSSecurityProfile
 	var err error
