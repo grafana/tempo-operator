@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/go-logr/logr"
-	openshiftconfigv1 "github.com/openshift/api/config/v1"
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -141,32 +140,7 @@ func (r *MicroservicesReconciler) handleStatus(ctx context.Context, tempo v1alph
 	return ctrl.Result{}, nil
 }
 
-func (r *MicroservicesReconciler) getTLSProfile(ctx context.Context) (manifestutils.TLSProfileOptions, error) {
-	var tlsProfileType openshiftconfigv1.TLSSecurityProfile
-	var err error
-
-	// If ClusterTLSPolicy is enabled get the policy from the cluster
-	if r.FeatureGates.OpenShift.ClusterTLSPolicy {
-		tlsProfileType, err = tlsprofile.GetTLSProfileFromCluster(ctx, r.Client)
-	} else {
-		tlsProfileType, err = tlsprofile.GetTLSSecurityProfile(configv1alpha1.TLSProfileType(r.FeatureGates.TLSProfile))
-	}
-
-	if err != nil {
-		log.Log.Error(err, "failed to get security profile. will use default tls profile.")
-		tlsProfileType = tlsprofile.GetDefaultTLSSecurityProfile()
-	}
-
-	// Transform the policy type to concrete settings (cpyhers and minVersion).
-	tlsProfile, err := tlsprofile.GetTLSSettings(tlsProfileType)
-	if err != nil {
-		return manifestutils.TLSProfileOptions{}, err
-	}
-	return tlsProfile, nil
-}
-
 func (r *MicroservicesReconciler) reconcileManifests(ctx context.Context, log logr.Logger, req ctrl.Request, tempo v1alpha1.Microservices) error {
-
 	storageConfig, err := r.getStorageConfig(ctx, tempo)
 	if err != nil {
 		return &status.DegradedError{
@@ -185,7 +159,7 @@ func (r *MicroservicesReconciler) reconcileManifests(ctx context.Context, log lo
 		r.FeatureGates.OpenShift.BaseDomain = domain
 	}
 
-	tlsProfile, err := r.getTLSProfile(ctx)
+	tlsProfile, err := tlsprofile.Get(ctx, r.FeatureGates, r.Client, log)
 	if err != nil {
 		return err
 	}

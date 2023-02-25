@@ -1,0 +1,38 @@
+package tlsprofile
+
+import (
+	"context"
+
+	"github.com/go-logr/logr"
+	openshiftconfigv1 "github.com/openshift/api/config/v1"
+
+	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
+)
+
+// Get the profile according to the feature gateway configuration, if the policy is invalid or is not specified (empty string) it
+// should return default policy, if openshift.ClusterTLSPolicy is enabled, it should get the profile from the cluster, if the cluster
+// return a unknow policy this should return an error.
+func Get(ctx context.Context, fg configv1alpha1.FeatureGates, c k8getter, log logr.Logger) (TLSProfileOptions, error) {
+	var tlsProfileType openshiftconfigv1.TLSSecurityProfile
+	var err error
+
+	// If ClusterTLSPolicy is enabled get the policy from the cluster
+	if fg.OpenShift.ClusterTLSPolicy {
+		tlsProfileType, err = getTLSProfileFromCluster(ctx, c)
+	} else {
+		tlsProfileType, err = getTLSSecurityProfile(configv1alpha1.TLSProfileType(fg.TLSProfile))
+	}
+
+	if err != nil {
+		log.Error(err, "failed to get security profile. will use default tls profile.")
+		tlsProfileType = getDefaultTLSSecurityProfile()
+	}
+
+	// Transform the policy type to concrete settings (cpyhers and minVersion).
+	tlsProfile, err := getTLSSettings(tlsProfileType)
+	if err != nil {
+		return TLSProfileOptions{}, err
+	}
+
+	return tlsProfile, nil
+}
