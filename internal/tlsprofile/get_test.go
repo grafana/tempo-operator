@@ -6,11 +6,10 @@ import (
 
 	openshiftconfigv1 "github.com/openshift/api/config/v1"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/types"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
@@ -61,17 +60,17 @@ func TestGetWithClusterError(t *testing.T) {
 		},
 	}
 	l := log.FromContext(ctx)
+	cl := &clientStub{}
 
-	cl := &clientStub{
-		GetStub: func(_ context.Context, name types.NamespacedName, object client.Object, _ ...client.GetOption) error {
-			return apierrors.NewNotFound(schema.GroupResource{}, "something wasn't found")
-		},
-	}
-
+	returnErr := apierrors.NewNotFound(schema.GroupResource{}, "something wasn't found")
+	cl.On("Get", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(returnErr)
 	defaultSettings, err := getTLSSettings(getDefaultTLSSecurityProfile())
 	require.NoError(t, err)
 
 	options, err := Get(ctx, fg, cl, l)
+	cl.AssertExpectations(t)
+	cl.AssertNumberOfCalls(t, "Get", 1)
+
 	assert.NoError(t, err)
 	assert.Equal(t, defaultSettings, options)
 }
@@ -85,18 +84,13 @@ func TestGetWithClusterPolicy(t *testing.T) {
 		},
 	}
 	l := log.FromContext(ctx)
-
-	cl := &clientStub{
-		GetStub: func(_ context.Context, name types.NamespacedName, object client.Object, _ ...client.GetOption) error {
-			switch v := object.(type) {
-			case *openshiftconfigv1.APIServer:
-				v.Spec.TLSSecurityProfile = &openshiftconfigv1.TLSSecurityProfile{
-					Type: openshiftconfigv1.TLSProfileModernType,
-				}
-			}
-			return nil
-		},
-	}
+	cl := &clientStub{}
+	cl.On("Get", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Run(func(args mock.Arguments) {
+		v := args.Get(2).(*openshiftconfigv1.APIServer)
+		v.Spec.TLSSecurityProfile = &openshiftconfigv1.TLSSecurityProfile{
+			Type: openshiftconfigv1.TLSProfileModernType,
+		}
+	})
 
 	modernSettings, err := getTLSSettings(openshiftconfigv1.TLSSecurityProfile{
 		Type: openshiftconfigv1.TLSProfileModernType,
@@ -104,6 +98,10 @@ func TestGetWithClusterPolicy(t *testing.T) {
 	require.NoError(t, err)
 
 	options, err := Get(ctx, fg, cl, l)
+
+	cl.AssertExpectations(t)
+	cl.AssertNumberOfCalls(t, "Get", 1)
+
 	assert.NoError(t, err)
 	assert.Equal(t, modernSettings, options)
 }
@@ -117,18 +115,18 @@ func TestGetWithInvalidClusterPolicy(t *testing.T) {
 		},
 	}
 	l := log.FromContext(ctx)
+	cl := &clientStub{}
+	cl.On("Get", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Run(func(args mock.Arguments) {
+		v := args.Get(2).(*openshiftconfigv1.APIServer)
+		v.Spec.TLSSecurityProfile = &openshiftconfigv1.TLSSecurityProfile{
+			Type: openshiftconfigv1.TLSProfileType("wedontknowwhattodowiththis"),
+		}
+	})
 
-	cl := &clientStub{
-		GetStub: func(_ context.Context, name types.NamespacedName, object client.Object, _ ...client.GetOption) error {
-			switch v := object.(type) {
-			case *openshiftconfigv1.APIServer:
-				v.Spec.TLSSecurityProfile = &openshiftconfigv1.TLSSecurityProfile{
-					Type: openshiftconfigv1.TLSProfileType("wedontknowwhattodowiththis"),
-				}
-			}
-			return nil
-		},
-	}
 	_, err := Get(ctx, fg, cl, l)
+
+	cl.AssertExpectations(t)
+	cl.AssertNumberOfCalls(t, "Get", 1)
+
 	assert.Error(t, err)
 }

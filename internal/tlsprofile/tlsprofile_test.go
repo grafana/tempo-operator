@@ -8,10 +8,9 @@ import (
 	openshiftconfigv1 "github.com/openshift/api/config/v1"
 	"github.com/openshift/library-go/pkg/crypto"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/types"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
 )
@@ -153,30 +152,27 @@ func TestGetTLSSecurityProfile_APIServerNotFound(t *testing.T) {
 
 	type tt struct {
 		desc            string
-		getFn           func(_ context.Context, name types.NamespacedName, object client.Object, _ ...client.GetOption) error
+		mockFn          func(args mock.Arguments)
+		returnErr       error
 		expectedProfile openshiftconfigv1.TLSSecurityProfile
-		expectedErr     bool
 	}
+
+	nopFn := func(args mock.Arguments) {}
 
 	tc := []tt{
 		{
-			desc: "Profile not found",
-			getFn: func(_ context.Context, name types.NamespacedName, object client.Object, _ ...client.GetOption) error {
-				return apierrors.NewNotFound(schema.GroupResource{}, "something wasn't found")
-			},
-			expectedErr:     true,
+			desc:            "Profile not found",
+			returnErr:       apierrors.NewNotFound(schema.GroupResource{}, "something wasn't found"),
 			expectedProfile: openshiftconfigv1.TLSSecurityProfile{},
+			mockFn:          nopFn,
 		},
 		{
 			desc: "Profile found",
-			getFn: func(_ context.Context, name types.NamespacedName, object client.Object, _ ...client.GetOption) error {
-				switch v := object.(type) {
-				case *openshiftconfigv1.APIServer:
-					v.Spec.TLSSecurityProfile = &openshiftconfigv1.TLSSecurityProfile{
-						Type: openshiftconfigv1.TLSProfileModernType,
-					}
+			mockFn: func(args mock.Arguments) {
+				v := args.Get(2).(*openshiftconfigv1.APIServer)
+				v.Spec.TLSSecurityProfile = &openshiftconfigv1.TLSSecurityProfile{
+					Type: openshiftconfigv1.TLSProfileModernType,
 				}
-				return nil
 			},
 			expectedProfile: openshiftconfigv1.TLSSecurityProfile{
 				Type: openshiftconfigv1.TLSProfileModernType,
@@ -186,17 +182,17 @@ func TestGetTLSSecurityProfile_APIServerNotFound(t *testing.T) {
 
 	for _, tc := range tc {
 		t.Run(tc.desc, func(t *testing.T) {
-			sw := &clientStub{
-				GetStub: tc.getFn,
-			}
+			sw := &clientStub{}
+			sw.On("Get", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tc.returnErr).Run(tc.mockFn)
 			profile, err := getTLSProfileFromCluster(context.TODO(), sw)
-			if tc.expectedErr {
+			if tc.returnErr != nil {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
 			}
+			sw.AssertExpectations(t)
+			sw.AssertNumberOfCalls(t, "Get", 1)
 			assert.Equal(t, tc.expectedProfile, profile)
-
 		})
 	}
 }
