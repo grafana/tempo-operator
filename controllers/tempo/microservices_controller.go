@@ -142,7 +142,7 @@ func (r *MicroservicesReconciler) handleStatus(ctx context.Context, tempo v1alph
 }
 
 func (r *MicroservicesReconciler) getTLSProfile(ctx context.Context) (manifestutils.TLSProfileOptions, error) {
-	var tlsProfileType *openshiftconfigv1.TLSSecurityProfile
+	var tlsProfileType openshiftconfigv1.TLSSecurityProfile
 	var err error
 
 	// If ClusterTLSPolicy is enabled get the policy from the cluster
@@ -153,8 +153,10 @@ func (r *MicroservicesReconciler) getTLSProfile(ctx context.Context) (manifestut
 	}
 
 	if err != nil {
-		return manifestutils.TLSProfileOptions{}, err
+		log.Log.Error(err, "failed to get security profile. will use default tls profile.")
+		tlsProfileType = tlsprofile.GetDefaultTLSSecurityProfile()
 	}
+
 	// Transform the policy type to concrete settings (cpyhers and minVersion).
 	tlsProfile, err := tlsprofile.GetTLSSettings(tlsProfileType)
 	if err != nil {
@@ -164,6 +166,7 @@ func (r *MicroservicesReconciler) getTLSProfile(ctx context.Context) (manifestut
 }
 
 func (r *MicroservicesReconciler) reconcileManifests(ctx context.Context, log logr.Logger, req ctrl.Request, tempo v1alpha1.Microservices) error {
+
 	storageConfig, err := r.getStorageConfig(ctx, tempo)
 	if err != nil {
 		return &status.DegradedError{
