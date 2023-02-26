@@ -45,6 +45,8 @@ type OpenShiftFeatureGates struct {
 	// If empty the operator automatically derives the domain from the cluster.
 	BaseDomain string `json:"baseDomain,omitempty"`
 
+	// ClusterTLSPolicy enables usage of TLS policies set in the API Server.
+	// More details: https://docs.openshift.com/container-platform/4.11/security/tls-security-profiles.html
 	ClusterTLSPolicy bool
 }
 
