@@ -1895,6 +1895,13 @@ Components provides summary of all Tempo pod status grouped per component.
         </td>
         <td>false</td>
       </tr><tr>
+        <td><b>gateway</b></td>
+        <td>map[string][]string</td>
+        <td>
+          Gateway is a map to the per pod status of the query frontend deployment<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b>ingester</b></td>
         <td>map[string][]string</td>
         <td>

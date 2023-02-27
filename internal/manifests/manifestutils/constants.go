@@ -54,7 +54,6 @@ const (
 	IngesterComponentName = "ingester"
 	// GatewayComponentName declares the internal name of the gateway component.
 	GatewayComponentName = "gateway"
-
 	// TenantHeader is the header name that contains tenant name.
 	TenantHeader = "x-scope-orgid"
 )
