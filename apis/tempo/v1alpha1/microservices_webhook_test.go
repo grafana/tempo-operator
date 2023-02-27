@@ -43,7 +43,7 @@ func TestDefault(t *testing.T) {
 						TempoQuery:   "docker.io/grafana/tempo-query:1.2.3",
 						TempoGateway: "docker.io/observatorium/gateway:1.2.3",
 					},
-					ServiceAccount: "tempo-test-serviceaccount",
+					ServiceAccount: "tempo-test",
 					Retention: RetentionSpec{
 						Global: RetentionConfig{
 							Traces: metav1.Duration{Duration: time.Hour},
@@ -70,7 +70,7 @@ func TestDefault(t *testing.T) {
 						TempoQuery:   "docker.io/grafana/tempo-query:1.2.3",
 						TempoGateway: "docker.io/observatorium/gateway:1.2.3",
 					},
-					ServiceAccount: "tempo-test-serviceaccount",
+					ServiceAccount: "tempo-test",
 					Retention: RetentionSpec{
 						Global: RetentionConfig{
 							Traces: metav1.Duration{Duration: time.Hour},
@@ -118,7 +118,7 @@ func TestDefault(t *testing.T) {
 						TempoQuery:   "docker.io/grafana/tempo-query:x.y.z",
 						TempoGateway: "docker.io/observatorium/gateway:1.2.3",
 					},
-					ServiceAccount: "tempo-test-serviceaccount",
+					ServiceAccount: "tempo-test",
 					Retention: RetentionSpec{
 						Global: RetentionConfig{
 							Traces: metav1.Duration{Duration: 48 * time.Hour},
