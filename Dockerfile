@@ -4,7 +4,7 @@ FROM golang:1.19 as builder
 WORKDIR /workspace
 # Cache tool dependencies
 COPY Makefile Makefile
-RUN make controller-gen crdoc kustomize
+RUN make controller-gen gen-crd-api-reference-docs kustomize
 # Copy the Go Modules manifests
 COPY go.mod go.mod
 COPY go.sum go.sum

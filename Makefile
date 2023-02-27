@@ -12,6 +12,13 @@ IMG_REPO ?= tempo-operator
 IMG ?= ${IMG_PREFIX}/${IMG_REPO}:v${OPERATOR_VERSION}
 BUNDLE_IMG ?= ${IMG_PREFIX}/${IMG_REPO}-bundle:v${OPERATOR_VERSION}
 
+
+# Website generation variables
+WEBSITE_DIR ?= website
+WEBSITE_BASE_URL ?= https://tempo-operator.dev
+HUGO_VERSION = v0.80.0
+
+
 # When the VERBOSE variable is set to 1, all the commands are shown
 ifeq ("$(VERBOSE)","true")
 echo_prefix=">>>>"
@@ -163,19 +170,20 @@ $(LOCALBIN):
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v4.5.5
 CONTROLLER_TOOLS_VERSION ?= v0.9.2
-CRDOC_VERSION ?= v0.5.2
-OPERATOR_SDK_VERSION ?= 1.27.0
+GEN_CRD_VERSION ?= v0.0.5
 ENVTEST_VERSION ?= latest
+OPERATOR_SDK_VERSION ?= 1.27.0
 CERTMANAGER_VERSION ?= 1.9.1
 
 ## Tool Binaries
 KUSTOMIZE ?= $(LOCALBIN)/kustomize-$(KUSTOMIZE_VERSION)
 CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen-$(CONTROLLER_TOOLS_VERSION)
 ENVTEST ?= $(LOCALBIN)/setup-envtest-$(ENVTEST_VERSION)
-CRDOC = $(LOCALBIN)/crdoc-$(CRDOC_VERSION)
+GEN_CRD = $(LOCALBIN)/gen-crd-api-reference-docs-$(GEN_CRD_VERSION)
 OPERATOR_SDK ?= $(LOCALBIN)/operator-sdk-$(OPERATOR_SDK_VERSION)
 KIND ?= $(LOCALBIN)/kind
 KUTTL ?= $(LOCALBIN)/kubectl-kuttl
+HUGO ?= $(LOCALBIN)/hugo-$(HUGO_VERSION)
 
 # Options for KIND version to use
 export KUBE_VERSION ?= 1.25
@@ -255,18 +263,10 @@ ci: test ensure-generate-is-noop
 lint:
 	golangci-lint run
 
-.PHONY: api-docs
-api-docs: crdoc kustomize
-	@{ \
-	set -e ;\
-	TMP_DIR=$$(mktemp -d) ; \
-	$(KUSTOMIZE) build config/crd -o $$TMP_DIR/crd-output.yaml ;\
-	$(CRDOC) --resources $$TMP_DIR/crd-output.yaml --output docs/api.md ;\
-	}
 
-.PHONY: crdoc
-crdoc: ## Download crdoc locally if necessary.
-	test -s $(LOCALBIN)/crdoc-$(CRDOC_VERSION) || $(call go-get-tool,$(CRDOC), fybrik.io/crdoc,$(CRDOC_VERSION))
+.PHONY: gen-crd-api-reference-docs
+gen-crd-api-reference-docs: ## Download gen-crd-api-reference-docs locally if necessary.
+	test -s $(GEN_CRD) || $(call go-get-tool,$(GEN_CRD),github.com/ViaQ/gen-crd-api-reference-docs,$(GEN_CRD_VERSION))
 
 
 .PHONY: kustomize
@@ -357,7 +357,8 @@ ensure-generate-is-noop: generate bundle
 	@git diff -s --exit-code apis/config/v1alpha1/zz_generated.*.go || (echo "Build failed: a model has been changed but the generated resources aren't up to date. Run 'make generate' and update your PR." && exit 1)
 	@git diff -s --exit-code bundle config || (echo "Build failed: the bundle, config files has been changed but the generated bundle, config files aren't up to date. Run 'make bundle' and update your PR." && git diff && exit 1)
 	@git diff -s --exit-code bundle.Dockerfile || (echo "Build failed: the bundle.Dockerfile file has been changed. The file should be the same as generated one. Run 'make bundle' and update your PR." && git diff && exit 1)
-	@git diff -s --exit-code docs/api.md || (echo "Build failed: the api.md file has been changed but the generated api.md file isn't up to date. Run 'make api-docs' and update your PR." && git diff && exit 1)
+	@git diff -s --exit-code docs/operator/api.md || (echo "Build failed: the api.md file has been changed but the generated api.md file isn't up to date. Run 'make api-docs' and update your PR." && git diff && exit 1)
+	@git diff -s --exit-code docs/operator/feature-gates.md || (echo "Build failed: the feature-gates.md file has been changed but the generated feature-gates.md file isn't up to date. Run 'make api-docs' and update your PR." && git diff && exit 1)
 
 .PHONY: cert-manager
 cert-manager: cmctl
@@ -381,3 +382,42 @@ cmctl:
 	mv $$TMP_DIR/cmctl $(CMCTL) ;\
 	rm -rf $$TMP_DIR ;\
 	}
+
+.PHONY: api-docs
+api-docs: docs/operator/api.md docs/operator/feature-gates.md
+
+##@ Website
+TYPES_TARGET := $(shell find apis/tempo -type f -iname "*_types.go")
+docs/operator/api.md: $(TYPES_TARGET) gen-crd-api-reference-docs
+	$(GEN_CRD) -api-dir "github.com/os-observability/tempo-operator/apis/tempo/" -config "$(PWD)/config/docs/config.json" -template-dir "$(PWD)/config/docs/templates" -out-file "$(PWD)/$@"
+	sed -i 's/+docs:/  docs:/' $@
+	sed -i 's/+parent:/    parent:/' $@
+	sed -i 's/##/\n##/' $@
+	sed -i 's/+newline/\n/' $@
+
+
+FEATURE_GATES_TARGET := $(shell find apis/config -type f -iname "*_types.go")
+docs/operator/feature-gates.md: $(FEATURE_GATES_TARGET) gen-crd-api-reference-docs
+	$(GEN_CRD) -api-dir "github.com/os-observability/tempo-operator/apis/config/v1alpha1/" -config "$(PWD)/config/docs/config.json" -template-dir "$(PWD)/config/docs/templates" -out-file "$(PWD)/$@"
+	sed -i 's/title: "API"/title: "Feature Gates"/' $@
+	sed -i 's/+docs:/  docs:/' $@
+	sed -i 's/+parent:/    parent:/' $@
+	sed -i 's/##/\n##/' $@
+	sed -i 's/+newline/\n/' $@
+
+.PHONY: web-pre
+web-pre: docs/operator/api.md docs/operator/feature-gates.md
+	@echo ">> preprocessing docs for website"
+	@git submodule update --init --recursive
+	cd $(WEBSITE_DIR)/themes/doks/ && npm install && rm -rf content
+
+.PHONY: web
+web: web-pre hugo ## Run production build of the tempo-operator.dev website
+	cd $(WEBSITE_DIR) && $(HUGO) -b $(WEBSITE_BASE_URL)
+
+.PHONY: web-serve
+web-serve: web-pre ## Run local preview version of the tempo-operator.dev website
+	@cd $(WEBSITE_DIR) && $(HUGO) serve
+
+hugo:
+	test -s $(HUGO) || $(call go-get-tool,$(HUGO),--tags extended github.com/gohugoio/hugo,$(HUGO_VERSION))
