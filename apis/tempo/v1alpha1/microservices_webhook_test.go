@@ -374,3 +374,158 @@ func TestValidateReplicationFactor(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateIngressAndRoute(t *testing.T) {
+	basePath := field.NewPath("spec").Child("template").Child("queryFrontend").Child("jaegerQuery")
+
+	tests := []struct {
+		name       string
+		input      Microservices
+		ctrlConfig v1alpha1.ProjectConfig
+		expected   field.ErrorList
+	}{
+		{
+			name: "valid ingress configuration",
+			input: Microservices{
+				Spec: MicroservicesSpec{
+					ReplicationFactor: 3,
+					Components: TempoComponentsSpec{
+						QueryFrontend: TempoQueryFrontendSpec{
+							JaegerQuery: JaegerQuerySpec{
+								Enabled: true,
+								Ingress: &JaegerQueryIngressSpec{
+									Enabled: true,
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: nil,
+		},
+		{
+			name: "valid route configuration",
+			input: Microservices{
+				Spec: MicroservicesSpec{
+					ReplicationFactor: 3,
+					Components: TempoComponentsSpec{
+						QueryFrontend: TempoQueryFrontendSpec{
+							JaegerQuery: JaegerQuerySpec{
+								Enabled: true,
+								Route: &JaegerQueryRouteSpec{
+									Enabled: true,
+								},
+							},
+						},
+					},
+				},
+			},
+			ctrlConfig: v1alpha1.ProjectConfig{
+				Gates: v1alpha1.FeatureGates{
+					OpenShift: v1alpha1.OpenShiftFeatureGates{
+						OpenShiftRoute: true,
+					},
+				},
+			},
+			expected: nil,
+		},
+		{
+			name: "both enabled",
+			input: Microservices{
+				Spec: MicroservicesSpec{
+					ReplicationFactor: 3,
+					Components: TempoComponentsSpec{
+						QueryFrontend: TempoQueryFrontendSpec{
+							JaegerQuery: JaegerQuerySpec{
+								Enabled: true,
+								Ingress: &JaegerQueryIngressSpec{
+									Enabled: true,
+								},
+								Route: &JaegerQueryRouteSpec{
+									Enabled: true,
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: field.ErrorList{
+				field.Invalid(
+					basePath.Child("ingress").Child("enabled"),
+					true,
+					"Ingress and Route cannot be enabled at the same time",
+				),
+				field.Invalid(
+					basePath.Child("route").Child("enabled"),
+					true,
+					"Ingress and Route cannot be enabled at the same time",
+				),
+			},
+		},
+		{
+			name: "ingress enabled but queryfrontend disabled",
+			input: Microservices{
+				Spec: MicroservicesSpec{
+					ReplicationFactor: 3,
+					Components: TempoComponentsSpec{
+						QueryFrontend: TempoQueryFrontendSpec{
+							JaegerQuery: JaegerQuerySpec{
+								Enabled: false,
+								Ingress: &JaegerQueryIngressSpec{
+									Enabled: true,
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: field.ErrorList{
+				field.Invalid(
+					basePath.Child("ingress").Child("enabled"),
+					true,
+					"Ingress cannot be enabled if jaegerQuery is disabled",
+				),
+			},
+		},
+		{
+			name: "route enabled but route feature gate disabled",
+			input: Microservices{
+				Spec: MicroservicesSpec{
+					ReplicationFactor: 3,
+					Components: TempoComponentsSpec{
+						QueryFrontend: TempoQueryFrontendSpec{
+							JaegerQuery: JaegerQuerySpec{
+								Enabled: true,
+								Route: &JaegerQueryRouteSpec{
+									Enabled: true,
+								},
+							},
+						},
+					},
+				},
+			},
+			ctrlConfig: v1alpha1.ProjectConfig{
+				Gates: v1alpha1.FeatureGates{
+					OpenShift: v1alpha1.OpenShiftFeatureGates{
+						OpenShiftRoute: false,
+					},
+				},
+			},
+			expected: field.ErrorList{
+				field.Invalid(
+					basePath.Child("route").Child("enabled"),
+					true,
+					"Please enable the openShift.openshiftRoute feature gate to use Routes",
+				),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			validator := &validator{ctrlConfig: test.ctrlConfig}
+			errs := validator.validateQueryFrontend(test.input)
+			assert.Equal(t, test.expected, errs)
+		})
+	}
+}

@@ -39,7 +39,7 @@ func (r *Microservices) SetupWebhookWithManager(mgr ctrl.Manager, ctrlConfig v1a
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(r).
 		WithDefaulter(NewDefaulter(ctrlConfig)).
-		WithValidator(&validator{client: mgr.GetClient()}).
+		WithValidator(&validator{client: mgr.GetClient(), ctrlConfig: ctrlConfig}).
 		Complete()
 }
 
@@ -144,7 +144,8 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 //+kubebuilder:webhook:path=/validate-tempo-grafana-com-v1alpha1-microservices,mutating=false,failurePolicy=fail,sideEffects=None,groups=tempo.grafana.com,resources=microservices,verbs=create;update,versions=v1alpha1,name=vmicroservices.kb.io,admissionReviewVersions=v1
 
 type validator struct {
-	client client.Client
+	client     client.Client
+	ctrlConfig v1alpha1.ProjectConfig
 }
 
 func (v *validator) ValidateCreate(ctx context.Context, obj runtime.Object) error {
@@ -247,24 +248,50 @@ func (v *validator) validateReplicationFactor(tempo Microservices) field.ErrorLi
 }
 
 func (v *validator) validateQueryFrontend(tempo Microservices) field.ErrorList {
-	path := field.NewPath("spec").Child("template").Child("queryFrontend").Child("jaegerQuery")
+	basePath := field.NewPath("spec").Child("template").Child("queryFrontend").Child("jaegerQuery")
+	ingressEnabled := tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress != nil && tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Enabled
+	routeEnabled := tempo.Spec.Components.QueryFrontend.JaegerQuery.Route != nil && tempo.Spec.Components.QueryFrontend.JaegerQuery.Route.Enabled
+
 	if !tempo.Spec.Components.QueryFrontend.JaegerQuery.Enabled {
-		if tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress != nil && tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Enabled {
+		if ingressEnabled {
 			return field.ErrorList{field.Invalid(
-				path.Child("ingress").Child("enabled"),
+				basePath.Child("ingress").Child("enabled"),
 				tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Enabled,
 				"Ingress cannot be enabled if jaegerQuery is disabled",
 			)}
 		}
-
-		if tempo.Spec.Components.QueryFrontend.JaegerQuery.Route != nil && tempo.Spec.Components.QueryFrontend.JaegerQuery.Route.Enabled {
+		if routeEnabled {
 			return field.ErrorList{field.Invalid(
-				path.Child("route").Child("enabled"),
+				basePath.Child("route").Child("enabled"),
 				tempo.Spec.Components.QueryFrontend.JaegerQuery.Route.Enabled,
 				"Route cannot be enabled if jaegerQuery is disabled",
 			)}
 		}
 	}
+
+	if ingressEnabled && routeEnabled {
+		return field.ErrorList{
+			field.Invalid(
+				basePath.Child("ingress").Child("enabled"),
+				tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Enabled,
+				"Ingress and Route cannot be enabled at the same time",
+			),
+			field.Invalid(
+				basePath.Child("route").Child("enabled"),
+				tempo.Spec.Components.QueryFrontend.JaegerQuery.Route.Enabled,
+				"Ingress and Route cannot be enabled at the same time",
+			),
+		}
+	}
+
+	if routeEnabled && !v.ctrlConfig.Gates.OpenShift.OpenShiftRoute {
+		return field.ErrorList{field.Invalid(
+			basePath.Child("route").Child("enabled"),
+			tempo.Spec.Components.QueryFrontend.JaegerQuery.Route.Enabled,
+			"Please enable the openShift.openshiftRoute feature gate to use Routes",
+		)}
+	}
+
 	return nil
 }
 func (v *validator) validate(ctx context.Context, obj runtime.Object) error {

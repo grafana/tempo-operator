@@ -66,9 +66,7 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 
 	if tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress != nil && tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Enabled {
 		manifests = append(manifests, ingress(tempo))
-	}
-
-	if tempo.Spec.Components.QueryFrontend.JaegerQuery.Route != nil && tempo.Spec.Components.QueryFrontend.JaegerQuery.Route.Enabled {
+	} else if tempo.Spec.Components.QueryFrontend.JaegerQuery.Route != nil && tempo.Spec.Components.QueryFrontend.JaegerQuery.Route.Enabled {
 		manifests = append(manifests, route(tempo))
 	}
 
