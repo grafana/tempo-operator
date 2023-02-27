@@ -27,10 +27,10 @@ const (
 	// TLSRouteTerminationTypeEdge indicates that encryption should be terminated
 	// at the edge router.
 	TLSRouteTerminationTypeEdge TLSRouteTerminationType = "edge"
-	// TLSTerminationPassthrough indicates that the destination service is
+	// TLSRouteTerminationTypePassthrough indicates that the destination service is
 	// responsible for decrypting traffic.
 	TLSRouteTerminationTypePassthrough TLSRouteTerminationType = "passthrough"
-	// TLSTerminationReencrypt indicates that traffic will be decrypted on the edge
+	// TLSRouteTerminationTypeReencrypt indicates that traffic will be decrypted on the edge
 	// and re-encrypt using a new certificate.
 	TLSRouteTerminationTypeReencrypt TLSRouteTerminationType = "reencrypt"
 )
