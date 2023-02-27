@@ -24,7 +24,7 @@ func TestBuildDefaultServiceAccount(t *testing.T) {
 	require.NotNil(t, serviceAccount)
 	assert.Equal(t, &v1.ServiceAccount{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "tempo-test-serviceaccount",
+			Name:      "tempo-test",
 			Namespace: "ns1",
 			Labels:    labels,
 		},

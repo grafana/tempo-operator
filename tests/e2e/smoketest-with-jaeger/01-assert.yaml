@@ -9,7 +9,7 @@ metadata:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: tempo-simplest-serviceaccount
+  name: tempo-simplest
   labels:
     app.kubernetes.io/component: serviceaccount
     app.kubernetes.io/created-by: tempo-controller
