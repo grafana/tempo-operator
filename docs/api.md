@@ -1490,14 +1490,7 @@ JaegerQuerySpec defines Jaeger Query specific options.
         <td><b><a href="#microservicesspectemplatequeryfrontendjaegerqueryingress">ingress</a></b></td>
         <td>object</td>
         <td>
-          Ingress defines Jaeger Query Ingress specific options.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b><a href="#microservicesspectemplatequeryfrontendjaegerqueryroute">route</a></b></td>
-        <td>object</td>
-        <td>
-          Route defines Jaeger Query Route specific options.<br/>
+          Ingress defines Jaeger Query Ingress options.<br/>
         </td>
         <td>false</td>
       </tr></tbody>
@@ -1509,7 +1502,7 @@ JaegerQuerySpec defines Jaeger Query specific options.
 
 
 
-Ingress defines Jaeger Query Ingress specific options.
+Ingress defines Jaeger Query Ingress options.
 
 <table>
     <thead>
@@ -1524,33 +1517,49 @@ Ingress defines Jaeger Query Ingress specific options.
         <td><b>annotations</b></td>
         <td>map[string]string</td>
         <td>
-          Annotations is used to define the annotations of the Ingress object.<br/>
-        </td>
-        <td>false</td>
-      </tr><tr>
-        <td><b>enabled</b></td>
-        <td>boolean</td>
-        <td>
-          Enabled is used to define if an Ingress object should be created for the Jaeger Query component.<br/>
+          Annotations defines the annotations of the Ingress object.<br/>
         </td>
         <td>false</td>
       </tr><tr>
         <td><b>host</b></td>
         <td>string</td>
         <td>
-          Host is used to define the hostname of the Ingress object.<br/>
+          Host defines the hostname of the Ingress object.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>ingressClassName</b></td>
+        <td>string</td>
+        <td>
+          IngressClassName is the name of an IngressClass cluster resource. Ingress controller implementations use this field to know whether they should be serving this Ingress resource.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#microservicesspectemplatequeryfrontendjaegerqueryingressroute">route</a></b></td>
+        <td>object</td>
+        <td>
+          Route defines OpenShift Route specific options.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>type</b></td>
+        <td>enum</td>
+        <td>
+          Type defines the type of Ingress for the Jaeger Query UI. Currently ingress, route and none are supported.<br/>
+          <br/>
+            <i>Enum</i>: none, ingress, route<br/>
         </td>
         <td>false</td>
       </tr></tbody>
 </table>
 
 
-### Microservices.spec.template.queryFrontend.jaegerQuery.route
-<sup><sup>[↩ Parent](#microservicesspectemplatequeryfrontendjaegerquery)</sup></sup>
+### Microservices.spec.template.queryFrontend.jaegerQuery.ingress.route
+<sup><sup>[↩ Parent](#microservicesspectemplatequeryfrontendjaegerqueryingress)</sup></sup>
 
 
 
-Route defines Jaeger Query Route specific options.
+Route defines OpenShift Route specific options.
 
 <table>
     <thead>
@@ -1562,10 +1571,12 @@ Route defines Jaeger Query Route specific options.
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>enabled</b></td>
-        <td>boolean</td>
+        <td><b>termination</b></td>
+        <td>enum</td>
         <td>
-          Enabled is used to define if an Route object should be created for the Jaeger Query component.<br/>
+          Termination specifies the termination type. By default "edge" is used.<br/>
+          <br/>
+            <i>Enum</i>: insecure, edge, passthrough, reencrypt<br/>
         </td>
         <td>false</td>
       </tr></tbody>

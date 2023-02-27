@@ -1,7 +1,6 @@
 package v1alpha1
 
 import (
-	routev1 "github.com/openshift/api/route/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -543,80 +542,63 @@ type JaegerQuerySpec struct {
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger Query Enabled"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enable Jaeger Query UI"
 	Enabled bool `json:"enabled"`
 
-	// Ingress defines Jaeger Query Ingress specific options.
+	// Ingress defines Jaeger Query Ingress options.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger Query Ingress Settings"
-	Ingress *JaegerQueryIngressSpec `json:"ingress,omitempty"`
-	// Ingress will be enabled by default in the Defaulter webhook on Kubernetes.
-
-	// Route defines Jaeger Query Route specific options.
-	//
-	// +optional
-	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger Query Route Settings"
-	Route *JaegerQueryRouteSpec `json:"route,omitempty"`
-	// Route will be enabled by default in the Defaulter webhook on OpenShift.
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger Query UI Ingress Settings"
+	Ingress JaegerQueryIngressSpec `json:"ingress,omitempty"`
 }
 
 // JaegerQueryIngressSpec defines Jaeger Query Ingress options.
 type JaegerQueryIngressSpec struct {
-	// Enabled is used to define if an Ingress object should be created for the Jaeger Query component.
+	// Type defines the type of Ingress for the Jaeger Query UI.
+	// Currently ingress, route and none are supported.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enable Ingress for Jaeger Query"
-	Enabled bool `json:"enabled,omitempty"`
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Type"
+	Type IngressType `json:"type,omitempty"`
 
-	// Host is used to define the hostname of the Ingress object.
+	// Annotations defines the annotations of the Ingress object.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Ingress Host"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Annotations"
+	Annotations map[string]string `json:"annotations,omitempty"`
+
+	// Host defines the hostname of the Ingress object.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Host"
 	Host string `json:"host,omitempty"`
 
-	// Annotations is used to define the annotations of the Ingress object.
+	// IngressClassName is the name of an IngressClass cluster resource. Ingress
+	// controller implementations use this field to know whether they should be
+	// serving this Ingress resource.
+	// +optional
+	IngressClassName *string `json:"ingressClassName,omitempty"`
+
+	// Route defines OpenShift Route specific options.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Ingress Annotations"
-	Annotations map[string]string `json:"annotations,omitempty"`
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Route Configuration"
+	Route JaegerQueryRouteSpec `json:"route,omitempty"`
 }
 
-// JaegerQueryRouteSpec defines Jaeger Query Route options.
+// JaegerQueryRouteSpec defines OpenShift Route specific options.
 type JaegerQueryRouteSpec struct {
-	// Enabled is used to define if an Route object should be created for the Jaeger Query component.
-	//
-	// +optional
-	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enable Route for Jaeger Query"
-	Enabled bool `json:"enabled,omitempty"`
-
-	// Host is used to define the hostname of the Route object.
-	//
-	// +optional
-	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Route Host"
-	Host string `json:"host,omitempty"`
-
-	// Annotations is used to define the annotations of the Route object.
-	//
-	// +optional
-	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Route Annotations"
-	Annotations map[string]string `json:"annotations,omitempty"`
-
 	// Termination specifies the termination type. By default "edge" is used.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
-	// +kubebuilder:validation:Enum=edge;passthrough;reencrypt
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="TLS Termination Policy"
-	Termination routev1.TLSTerminationType `json:"termination,omitempty"`
+	Termination TLSRouteTerminationType `json:"termination,omitempty"`
 }
 
 // LimitSpec defines Global and PerTenant rate limits.

@@ -642,49 +642,46 @@ spec:
                               component should be created.
                             type: boolean
                           ingress:
-                            description: Ingress defines Jaeger Query Ingress specific
-                              options.
+                            description: Ingress defines Jaeger Query Ingress options.
                             properties:
                               annotations:
                                 additionalProperties:
                                   type: string
-                                description: Annotations is used to define the annotations
-                                  of the Ingress object.
-                                type: object
-                              enabled:
-                                description: Enabled is used to define if an Ingress
-                                  object should be created for the Jaeger Query component.
-                                type: boolean
-                              host:
-                                description: Host is used to define the hostname of
+                                description: Annotations defines the annotations of
                                   the Ingress object.
-                                type: string
-                            type: object
-                          route:
-                            description: Route defines Jaeger Query Route specific
-                              options.
-                            properties:
-                              annotations:
-                                additionalProperties:
-                                  type: string
-                                description: Annotations is used to define the annotations
-                                  of the Route object.
                                 type: object
-                              enabled:
-                                description: Enabled is used to define if an Route
-                                  object should be created for the Jaeger Query component.
-                                type: boolean
                               host:
-                                description: Host is used to define the hostname of
-                                  the Route object.
+                                description: Host defines the hostname of the Ingress
+                                  object.
                                 type: string
-                              termination:
-                                description: Termination specifies the termination
-                                  type. By default "edge" is used.
+                              ingressClassName:
+                                description: IngressClassName is the name of an IngressClass
+                                  cluster resource. Ingress controller implementations
+                                  use this field to know whether they should be serving
+                                  this Ingress resource.
+                                type: string
+                              route:
+                                description: Route defines OpenShift Route specific
+                                  options.
+                                properties:
+                                  termination:
+                                    description: Termination specifies the termination
+                                      type. By default "edge" is used.
+                                    enum:
+                                    - insecure
+                                    - edge
+                                    - passthrough
+                                    - reencrypt
+                                    type: string
+                                type: object
+                              type:
+                                description: Type defines the type of Ingress for
+                                  the Jaeger Query UI. Currently ingress, route and
+                                  none are supported.
                                 enum:
-                                - edge
-                                - passthrough
-                                - reencrypt
+                                - none
+                                - ingress
+                                - route
                                 type: string
                             type: object
                         type: object

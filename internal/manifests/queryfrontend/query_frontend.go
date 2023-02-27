@@ -64,9 +64,9 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 		manifests = append(manifests, s)
 	}
 
-	if tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress != nil && tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Enabled {
+	if tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Type == v1alpha1.IngressTypeIngress {
 		manifests = append(manifests, ingress(tempo))
-	} else if tempo.Spec.Components.QueryFrontend.JaegerQuery.Route != nil && tempo.Spec.Components.QueryFrontend.JaegerQuery.Route.Enabled {
+	} else if tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Type == v1alpha1.IngressTypeRoute {
 		manifests = append(manifests, route(tempo))
 	}
 
@@ -326,7 +326,9 @@ func ingress(tempo v1alpha1.Microservices) *networkingv1.Ingress {
 			Labels:      labels,
 			Annotations: tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Annotations,
 		},
-		Spec: networkingv1.IngressSpec{},
+		Spec: networkingv1.IngressSpec{
+			IngressClassName: tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress.IngressClassName,
+		},
 	}
 
 	backend := networkingv1.IngressBackend{
@@ -367,9 +369,18 @@ func route(tempo v1alpha1.Microservices) *routev1.Route {
 	queryFrontendName := naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name)
 	labels := manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, tempo.Name)
 
-	var tlsSpec *routev1.TLSConfig
-	if tempo.Spec.Components.QueryFrontend.JaegerQuery.Route.Termination != "" {
-		tlsSpec = &routev1.TLSConfig{Termination: tempo.Spec.Components.QueryFrontend.JaegerQuery.Route.Termination}
+	var tlsCfg *routev1.TLSConfig
+	switch tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Route.Termination {
+	case v1alpha1.TLSRouteTerminationTypeInsecure:
+		// NOTE: insecure, no tls cfg.
+	case v1alpha1.TLSRouteTerminationTypeEdge:
+		tlsCfg = &routev1.TLSConfig{Termination: routev1.TLSTerminationEdge}
+	case v1alpha1.TLSRouteTerminationTypePassthrough:
+		tlsCfg = &routev1.TLSConfig{Termination: routev1.TLSTerminationPassthrough}
+	case v1alpha1.TLSRouteTerminationTypeReencrypt:
+		tlsCfg = &routev1.TLSConfig{Termination: routev1.TLSTerminationReencrypt}
+	default: // NOTE: if unsupported, end here.
+		return nil
 	}
 
 	return &routev1.Route{
@@ -377,10 +388,10 @@ func route(tempo v1alpha1.Microservices) *routev1.Route {
 			Name:        queryFrontendName,
 			Namespace:   tempo.Namespace,
 			Labels:      labels,
-			Annotations: tempo.Spec.Components.QueryFrontend.JaegerQuery.Route.Annotations,
+			Annotations: tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Annotations,
 		},
 		Spec: routev1.RouteSpec{
-			Host: tempo.Spec.Components.QueryFrontend.JaegerQuery.Route.Host,
+			Host: tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Host,
 			To: routev1.RouteTargetReference{
 				Kind: "Service",
 				Name: queryFrontendName,
@@ -388,7 +399,7 @@ func route(tempo v1alpha1.Microservices) *routev1.Route {
 			Port: &routev1.RoutePort{
 				TargetPort: intstr.FromString(jaegerUIPortName),
 			},
-			TLS: tlsSpec,
+			TLS: tlsCfg,
 		},
 	}
 }

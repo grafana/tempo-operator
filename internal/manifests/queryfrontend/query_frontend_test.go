@@ -369,9 +369,9 @@ func TestQueryFrontendJaegerIngress(t *testing.T) {
 				QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
 					JaegerQuery: v1alpha1.JaegerQuerySpec{
 						Enabled: true,
-						Ingress: &v1alpha1.JaegerQueryIngressSpec{
-							Enabled: true,
-							Host:    "jaeger.example.com",
+						Ingress: v1alpha1.JaegerQueryIngressSpec{
+							Type: "ingress",
+							Host: "jaeger.example.com",
 							Annotations: map[string]string{
 								"traefik.ingress.kubernetes.io/router.tls": "true",
 							},
@@ -433,8 +433,11 @@ func TestQueryFrontendJaegerRoute(t *testing.T) {
 				QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
 					JaegerQuery: v1alpha1.JaegerQuerySpec{
 						Enabled: true,
-						Route: &v1alpha1.JaegerQueryRouteSpec{
-							Enabled: true,
+						Ingress: v1alpha1.JaegerQueryIngressSpec{
+							Type: v1alpha1.IngressTypeRoute,
+							Route: v1alpha1.JaegerQueryRouteSpec{
+								Termination: v1alpha1.TLSRouteTerminationTypeEdge,
+							},
 						},
 					},
 				},
@@ -457,6 +460,9 @@ func TestQueryFrontendJaegerRoute(t *testing.T) {
 			},
 			Port: &routev1.RoutePort{
 				TargetPort: intstr.FromString(jaegerUIPortName),
+			},
+			TLS: &routev1.TLSConfig{
+				Termination: routev1.TLSTerminationEdge,
 			},
 		},
 	}, objects[3].(*routev1.Route))

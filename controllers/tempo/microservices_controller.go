@@ -248,7 +248,6 @@ func (r *MicroservicesReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&corev1.Secret{}).
 		Owns(&appsv1.StatefulSet{}).
 		Owns(&appsv1.Deployment{}).
-		Owns(&networkingv1.Ingress{}).
 		Watches(
 			&source.Kind{Type: &corev1.Secret{}},
 			handler.EnqueueRequestsFromMapFunc(r.findMicroservicesForStorageSecret),
@@ -257,6 +256,8 @@ func (r *MicroservicesReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	if r.FeatureGates.OpenShift.OpenShiftRoute {
 		builder = builder.Owns(&routev1.Route{})
+	} else {
+		builder = builder.Owns(&networkingv1.Ingress{})
 	}
 
 	return builder.Complete(r)
