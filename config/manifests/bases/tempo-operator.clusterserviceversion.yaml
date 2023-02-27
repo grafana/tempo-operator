@@ -292,10 +292,20 @@ spec:
       - description: Route defines Jaeger Query Route specific options.
         displayName: Jaeger Query Route Settings
         path: template.queryFrontend.jaegerQuery.route
+      - description: Annotations is used to define the annotations of the Route object.
+        displayName: Route Annotations
+        path: template.queryFrontend.jaegerQuery.route.annotations
       - description: Enabled is used to define if an Route object should be created
           for the Jaeger Query component.
         displayName: Enable Route for Jaeger Query
         path: template.queryFrontend.jaegerQuery.route.enabled
+      - description: Host is used to define the hostname of the Route object.
+        displayName: Route Host
+        path: template.queryFrontend.jaegerQuery.route.host
+      - description: Termination specifies the termination type. By default "edge"
+          is used.
+        displayName: TLS Termination Policy
+        path: template.queryFrontend.jaegerQuery.route.termination
       - description: NodeSelector is the simplest recommended form of node selection
           constraint.
         displayName: Node Selector

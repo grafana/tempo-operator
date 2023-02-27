@@ -1,6 +1,7 @@
 package v1alpha1
 
 import (
+	routev1 "github.com/openshift/api/route/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -594,6 +595,28 @@ type JaegerQueryRouteSpec struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enable Route for Jaeger Query"
 	Enabled bool `json:"enabled,omitempty"`
+
+	// Host is used to define the hostname of the Route object.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Route Host"
+	Host string `json:"host,omitempty"`
+
+	// Annotations is used to define the annotations of the Route object.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Route Annotations"
+	Annotations map[string]string `json:"annotations,omitempty"`
+
+	// Termination specifies the termination type. By default "edge" is used.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:validation:Enum=edge;passthrough;reencrypt
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="TLS Termination Policy"
+	Termination routev1.TLSTerminationType `json:"termination,omitempty"`
 }
 
 // LimitSpec defines Global and PerTenant rate limits.

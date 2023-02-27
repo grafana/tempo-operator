@@ -367,13 +367,20 @@ func route(tempo v1alpha1.Microservices) *routev1.Route {
 	queryFrontendName := naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name)
 	labels := manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, tempo.Name)
 
+	var tlsSpec *routev1.TLSConfig
+	if tempo.Spec.Components.QueryFrontend.JaegerQuery.Route.Termination != "" {
+		tlsSpec = &routev1.TLSConfig{Termination: tempo.Spec.Components.QueryFrontend.JaegerQuery.Route.Termination}
+	}
+
 	return &routev1.Route{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      queryFrontendName,
-			Namespace: tempo.Namespace,
-			Labels:    labels,
+			Name:        queryFrontendName,
+			Namespace:   tempo.Namespace,
+			Labels:      labels,
+			Annotations: tempo.Spec.Components.QueryFrontend.JaegerQuery.Route.Annotations,
 		},
 		Spec: routev1.RouteSpec{
+			Host: tempo.Spec.Components.QueryFrontend.JaegerQuery.Route.Host,
 			To: routev1.RouteTargetReference{
 				Kind: "Service",
 				Name: queryFrontendName,
@@ -381,6 +388,7 @@ func route(tempo v1alpha1.Microservices) *routev1.Route {
 			Port: &routev1.RoutePort{
 				TargetPort: intstr.FromString(jaegerUIPortName),
 			},
+			TLS: tlsSpec,
 		},
 	}
 }

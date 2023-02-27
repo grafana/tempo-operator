@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"time"
 
+	routev1 "github.com/openshift/api/route/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -136,6 +137,11 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 				Enabled: true,
 			}
 		}
+	}
+
+	// Terminate TLS on the Edge by default
+	if r.Spec.Components.QueryFrontend.JaegerQuery.Route != nil && r.Spec.Components.QueryFrontend.JaegerQuery.Route.Termination == "" {
+		r.Spec.Components.QueryFrontend.JaegerQuery.Route.Termination = routev1.TLSTerminationEdge
 	}
 
 	return nil
