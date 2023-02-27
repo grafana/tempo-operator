@@ -255,7 +255,7 @@ func (r *MicroservicesReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			builder.WithPredicates(predicate.ResourceVersionChangedPredicate{}),
 		)
 
-	if r.FeatureGates.OpenShift.Route {
+	if r.FeatureGates.OpenShift.OpenShiftRoute {
 		builder = builder.Owns(&routev1.Route{})
 	}
 

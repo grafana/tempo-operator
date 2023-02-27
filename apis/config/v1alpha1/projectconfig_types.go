@@ -57,9 +57,9 @@ type OpenShiftFeatureGates struct {
 	// More details: https://docs.openshift.com/container-platform/latest/networking/understanding-networking.html
 	GatewayRoute bool `json:"gatewayRoute,omitempty"`
 
-	// Route enables creating OpenShift Route objects instead of Ingress objects by default.
+	// OpenShiftRoute enables creating OpenShift Route objects instead of Ingress objects.
 	// More details: https://docs.openshift.com/container-platform/latest/networking/understanding-networking.html
-	Route bool `json:"route,omitempty"`
+	OpenShiftRoute bool `json:"openshiftRoute,omitempty"`
 
 	// BaseDomain is used internally for redirect URL in gateway OpenShift auth mode.
 	// If empty the operator automatically derives the domain from the cluster.

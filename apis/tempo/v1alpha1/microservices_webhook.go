@@ -126,12 +126,12 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 
 	// Create an Ingress or Route to Jaeger UI by default if jaegerQuery is enabled
 	if r.Spec.Components.QueryFrontend.JaegerQuery.Enabled {
-		if r.Spec.Components.QueryFrontend.JaegerQuery.Ingress == nil && !d.ctrlConfig.Gates.OpenShift.Route {
+		if r.Spec.Components.QueryFrontend.JaegerQuery.Ingress == nil && !d.ctrlConfig.Gates.OpenShift.OpenShiftRoute {
 			r.Spec.Components.QueryFrontend.JaegerQuery.Ingress = &JaegerQueryIngressSpec{
 				Enabled: true,
 			}
 		}
-		if r.Spec.Components.QueryFrontend.JaegerQuery.Route == nil && d.ctrlConfig.Gates.OpenShift.Route {
+		if r.Spec.Components.QueryFrontend.JaegerQuery.Route == nil && d.ctrlConfig.Gates.OpenShift.OpenShiftRoute {
 			r.Spec.Components.QueryFrontend.JaegerQuery.Route = &JaegerQueryRouteSpec{
 				Enabled: true,
 			}
