@@ -803,6 +803,14 @@ spec:
                     description: Distributor is a map to the per pod status of the
                       distributor deployment
                     type: object
+                  gateway:
+                    additionalProperties:
+                      items:
+                        type: string
+                      type: array
+                    description: Gateway is a map to the per pod status of the query
+                      frontend deployment
+                    type: object
                   ingester:
                     additionalProperties:
                       items:
