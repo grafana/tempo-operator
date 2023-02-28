@@ -28,7 +28,7 @@ func Get(ctx context.Context, fg configv1alpha1.FeatureGates, c k8getter, log lo
 		tlsProfileType = getDefaultTLSSecurityProfile()
 	}
 
-	// Transform the policy type to concrete settings (cpyhers and minVersion).
+// Transform the policy type to concrete settings (ciphers and minVersion).
 	tlsProfile, err := getTLSSettings(tlsProfileType)
 	if err != nil {
 		return TLSProfileOptions{}, err
