@@ -70,6 +70,9 @@ func TestReconcile(t *testing.T) {
 	reconciler := MicroservicesReconciler{
 		Client: k8sClient,
 		Scheme: testScheme,
+		FeatureGates: configv1alpha1.FeatureGates{
+			TLSProfile: string(configv1alpha1.TLSProfileIntermediateType),
+		},
 	}
 	req := ctrl.Request{
 		NamespacedName: nsn,
@@ -133,6 +136,9 @@ func TestReadyToDegraded(t *testing.T) {
 	reconciler := MicroservicesReconciler{
 		Client: k8sClient,
 		Scheme: testScheme,
+		FeatureGates: configv1alpha1.FeatureGates{
+			TLSProfile: string(configv1alpha1.TLSProfileIntermediateType),
+		},
 	}
 	req := ctrl.Request{
 		NamespacedName: nsn,
@@ -205,6 +211,9 @@ func TestDegradedToDegraded(t *testing.T) {
 	reconciler := MicroservicesReconciler{
 		Client: k8sClient,
 		Scheme: testScheme,
+		FeatureGates: configv1alpha1.FeatureGates{
+			TLSProfile: string(configv1alpha1.TLSProfileIntermediateType),
+		},
 	}
 	req := ctrl.Request{
 		NamespacedName: nsn,
@@ -268,6 +277,9 @@ func TestDegradedToReady(t *testing.T) {
 	reconciler := MicroservicesReconciler{
 		Client: k8sClient,
 		Scheme: testScheme,
+		FeatureGates: configv1alpha1.FeatureGates{
+			TLSProfile: string(configv1alpha1.TLSProfileIntermediateType),
+		},
 	}
 	req := ctrl.Request{
 		NamespacedName: nsn,
@@ -351,6 +363,7 @@ func TestTLSEnable(t *testing.T) {
 			},
 			HTTPEncryption: true,
 			GRPCEncryption: true,
+			TLSProfile:     string(configv1alpha1.TLSProfileIntermediateType),
 		},
 	}
 	req := ctrl.Request{
