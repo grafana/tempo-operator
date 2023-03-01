@@ -1547,7 +1547,7 @@ Ingress defines Jaeger Query Ingress options.
         <td>
           Type defines the type of Ingress for the Jaeger Query UI. Currently ingress, route and none are supported.<br/>
           <br/>
-            <i>Enum</i>: none, ingress, route<br/>
+            <i>Enum</i>: ingress, route<br/>
         </td>
         <td>false</td>
       </tr></tbody>

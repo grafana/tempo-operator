@@ -57,7 +57,7 @@ type OpenShiftFeatureGates struct {
 	// More details: https://docs.openshift.com/container-platform/latest/networking/understanding-networking.html
 	GatewayRoute bool `json:"gatewayRoute,omitempty"`
 
-	// OpenShiftRoute enables creating OpenShift Route objects instead of Ingress objects.
+	// OpenShiftRoute enables creating OpenShift Route objects.
 	// More details: https://docs.openshift.com/container-platform/latest/networking/understanding-networking.html
 	OpenShiftRoute bool `json:"openshiftRoute,omitempty"`
 

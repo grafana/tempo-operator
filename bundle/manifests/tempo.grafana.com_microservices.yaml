@@ -679,7 +679,6 @@ spec:
                                   the Jaeger Query UI. Currently ingress, route and
                                   none are supported.
                                 enum:
-                                - none
                                 - ingress
                                 - route
                                 type: string

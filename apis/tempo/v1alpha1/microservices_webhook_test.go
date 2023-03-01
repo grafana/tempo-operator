@@ -151,7 +151,7 @@ func TestDefault(t *testing.T) {
 			},
 		},
 		{
-			name: "enable ingress if queryFrontend is enabled",
+			name: "use Edge TLS termination if unset",
 			input: &Microservices{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "test",
@@ -161,6 +161,9 @@ func TestDefault(t *testing.T) {
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: true,
+								Ingress: JaegerQueryIngressSpec{
+									Type: IngressTypeRoute,
+								},
 							},
 						},
 					},
@@ -206,7 +209,10 @@ func TestDefault(t *testing.T) {
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: true,
 								Ingress: JaegerQueryIngressSpec{
-									Type: "ingress",
+									Type: "route",
+									Route: JaegerQueryRouteSpec{
+										Termination: "edge",
+									},
 								},
 							},
 						},
@@ -483,38 +489,6 @@ func TestValidateIngressAndRoute(t *testing.T) {
 					path,
 					IngressTypeRoute,
 					"Please enable the featureGates.openshift.openshiftRoute feature gate to use Routes",
-				),
-			},
-		},
-		{
-			name: "ingress enabled but route feature gate enabled",
-			input: Microservices{
-				Spec: MicroservicesSpec{
-					ReplicationFactor: 3,
-					Components: TempoComponentsSpec{
-						QueryFrontend: TempoQueryFrontendSpec{
-							JaegerQuery: JaegerQuerySpec{
-								Enabled: true,
-								Ingress: JaegerQueryIngressSpec{
-									Type: "ingress",
-								},
-							},
-						},
-					},
-				},
-			},
-			ctrlConfig: v1alpha1.ProjectConfig{
-				Gates: v1alpha1.FeatureGates{
-					OpenShift: v1alpha1.OpenShiftFeatureGates{
-						OpenShiftRoute: true,
-					},
-				},
-			},
-			expected: field.ErrorList{
-				field.Invalid(
-					path,
-					IngressTypeIngress,
-					"Please disable the featureGates.openshift.openshiftRoute feature gate to use Ingress",
 				),
 			},
 		},

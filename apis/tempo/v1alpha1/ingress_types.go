@@ -2,13 +2,13 @@ package v1alpha1
 
 type (
 	// IngressType represents how a service should be exposed (ingress vs route).
-	// +kubebuilder:validation:Enum=none;ingress;route
+	// +kubebuilder:validation:Enum=ingress;route
 	IngressType string
 )
 
 const (
 	// IngressTypeNone specifies that no ingress or route entry should be created.
-	IngressTypeNone IngressType = "none"
+	IngressTypeNone IngressType = ""
 	// IngressTypeIngress specifies that an ingress entry should be created.
 	IngressTypeIngress IngressType = "ingress"
 	// IngressTypeRoute specifies that a route entry should be created.

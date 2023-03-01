@@ -124,15 +124,6 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 		r.Spec.ReplicationFactor = defaultReplicationFactor
 	}
 
-	// Create an Ingress or Route to Jaeger UI by default if jaegerQuery is enabled
-	if r.Spec.Components.QueryFrontend.JaegerQuery.Enabled && r.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Type == "" {
-		if d.ctrlConfig.Gates.OpenShift.OpenShiftRoute {
-			r.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Type = IngressTypeRoute
-		} else {
-			r.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Type = IngressTypeIngress
-		}
-	}
-
 	// Terminate TLS of the JaegerQuery Route on the Edge by default
 	if r.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Type == IngressTypeRoute && r.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Route.Termination == "" {
 		r.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Route.Termination = TLSRouteTerminationTypeEdge
@@ -249,9 +240,8 @@ func (v *validator) validateReplicationFactor(tempo Microservices) field.ErrorLi
 
 func (v *validator) validateQueryFrontend(tempo Microservices) field.ErrorList {
 	path := field.NewPath("spec").Child("template").Child("queryFrontend").Child("jaegerQuery").Child("ingress").Child("type")
-	ingressEnabled := tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Type != "" && tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Type != IngressTypeNone
 
-	if ingressEnabled && !tempo.Spec.Components.QueryFrontend.JaegerQuery.Enabled {
+	if tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Type != IngressTypeNone && !tempo.Spec.Components.QueryFrontend.JaegerQuery.Enabled {
 		return field.ErrorList{field.Invalid(
 			path,
 			tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Type,
@@ -264,14 +254,6 @@ func (v *validator) validateQueryFrontend(tempo Microservices) field.ErrorList {
 			path,
 			tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Type,
 			"Please enable the featureGates.openshift.openshiftRoute feature gate to use Routes",
-		)}
-	}
-
-	if tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Type == IngressTypeIngress && v.ctrlConfig.Gates.OpenShift.OpenShiftRoute {
-		return field.ErrorList{field.Invalid(
-			path,
-			tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Type,
-			"Please disable the featureGates.openshift.openshiftRoute feature gate to use Ingress",
 		)}
 	}
 
