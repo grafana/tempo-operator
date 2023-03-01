@@ -14,6 +14,7 @@ metadata:
         }
       ]
     capabilities: Basic Install
+    createdAt: "2023-03-01T18:24:59Z"
     operators.operatorframework.io/builder: operator-sdk-v1.27.0
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
   name: tempo-operator.v0.0.1
@@ -527,7 +528,7 @@ spec:
                 - --config=controller_manager_config.yaml
                 command:
                 - /manager
-                image: ghcr.io/os-observability/tempo-operator/tempo-operator:v0.0.1
+                image: ghcr.io/rvargasp/tempo-operator/tempo-operator:v0.0.1
                 livenessProbe:
                   httpGet:
                     path: /healthz

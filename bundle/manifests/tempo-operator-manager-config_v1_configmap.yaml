@@ -32,6 +32,7 @@ data:
         servingCertsService: false
       httpEncryption: false
       grpcEncryption: false
+      tlsProfile: Modern
       builtInCertManagement:
         enabled: false
         # CA certificate validity: 5 years
