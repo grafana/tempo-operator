@@ -33,6 +33,7 @@ func TestSetComponentsStatus_WhenListReturnError_ReturnError(t *testing.T) {
 		{componentNotFound: "ingester"},
 		{componentNotFound: "distributor"},
 		{componentNotFound: "query-frontend"},
+		{componentNotFound: "gateway"},
 	}
 	for _, tc := range tests {
 		t.Run(tc.componentNotFound, func(t *testing.T) {
@@ -110,6 +111,7 @@ func TestSetComponentsStatus_WhenSomePodPending(t *testing.T) {
 			Distributor:   expectedComponents,
 			Querier:       expectedComponents,
 			QueryFrontend: expectedComponents,
+			Gateway:       expectedComponents,
 		},
 	}
 
@@ -177,6 +179,7 @@ func TestSetComponentsStatus_WhenSomePodFailed(t *testing.T) {
 			Distributor:   expectedComponents,
 			Querier:       expectedComponents,
 			QueryFrontend: expectedComponents,
+			Gateway:       expectedComponents,
 		},
 	}
 
@@ -244,6 +247,7 @@ func TestSetComponentsStatus_WhenSomePodUnknow(t *testing.T) {
 			Distributor:   expectedComponents,
 			Querier:       expectedComponents,
 			QueryFrontend: expectedComponents,
+			Gateway:       expectedComponents,
 		},
 	}
 
@@ -310,6 +314,7 @@ func TestSetComponentsStatus_WhenAllReady(t *testing.T) {
 			Distributor:   expectedComponents,
 			Querier:       expectedComponents,
 			QueryFrontend: expectedComponents,
+			Gateway:       expectedComponents,
 		},
 	}
 

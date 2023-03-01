@@ -124,6 +124,13 @@ type ComponentStatus struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=status,xDescriptors="urn:alm:descriptor:com.tectonic.ui:podStatuses",displayName="Query Frontend",order=4
 	QueryFrontend PodStatusMap `json:"queryFrontend,omitempty"`
+
+	// Gateway is a map to the per pod status of the query frontend deployment
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=status,xDescriptors="urn:alm:descriptor:com.tectonic.ui:podStatuses",displayName="Query Frontend",order=4
+	Gateway PodStatusMap `json:"gateway,omitempty"`
 }
 
 // MicroservicesStatus defines the observed state of Microservices.
