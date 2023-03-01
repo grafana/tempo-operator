@@ -1,0 +1,29 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+   name: minio-test
+stringData:
+  endpoint: http://minio.minio.svc:9000
+  bucket: tempo
+  access_key_id: tempo
+  access_key_secret: supersecret
+type: Opaque
+---
+apiVersion: tempo.grafana.com/v1alpha1
+kind: Microservices
+metadata:
+  name: simplest
+spec:
+  storage:
+    secret: minio-test
+  storageSize: 200M
+  template:
+    queryFrontend:
+      jaegerQuery:
+        enabled: true
+        ingress:
+          type: route
+          host: example.com
+          annotations:
+            example_annotation: example_value
