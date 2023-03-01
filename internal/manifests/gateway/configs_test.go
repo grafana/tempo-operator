@@ -108,6 +108,32 @@ func TestTenantsTemplate(t *testing.T) {
   id: abcd1`,
 		},
 		{
+			name: "with oidc",
+			opts: options{
+				Namespace:     "default",
+				Name:          "foo",
+				TenantSecrets: nil,
+				Tenants: &v1alpha1.TenantsSpec{
+					Mode: v1alpha1.Static,
+					Authentication: []v1alpha1.AuthenticationSpec{
+						{
+							TenantName: "dev",
+							TenantID:   "abcd1",
+							OIDC: &v1alpha1.OIDCSpec{
+								IssuerURL: "https://something.com",
+							},
+						},
+					},
+				},
+			},
+			expected: `tenants:
+- name: dev
+  id: abcd1
+  oidc:
+    issuerURL: https://something.com
+    `,
+		},
+		{
 			name: "openshift",
 			opts: options{
 				Namespace:     "default",
