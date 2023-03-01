@@ -161,6 +161,13 @@ func (r *MicroservicesReconciler) reconcileManifests(ctx context.Context, log lo
 
 	tlsProfile, err := tlsprofile.Get(ctx, r.FeatureGates, r.Client, log)
 	if err != nil {
+		if err == tlsprofile.ErrGetProfileFromCluster {
+			return &status.DegradedError{
+				Message: err.Error(),
+				Reason:  v1alpha1.ReasonCouldNotGetOpenShiftTLSPolicy,
+				Requeue: false,
+			}
+		}
 		return err
 	}
 

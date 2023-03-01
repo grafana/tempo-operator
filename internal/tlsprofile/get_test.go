@@ -71,7 +71,7 @@ func TestGetWithClusterError(t *testing.T) {
 	cl.AssertExpectations(t)
 	cl.AssertNumberOfCalls(t, "Get", 1)
 
-	assert.NoError(t, err)
+	assert.Equal(t, ErrGetProfileFromCluster, err)
 	assert.Equal(t, defaultSettings, options)
 }
 
