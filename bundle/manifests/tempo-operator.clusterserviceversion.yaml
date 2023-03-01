@@ -14,7 +14,7 @@ metadata:
         }
       ]
     capabilities: Basic Install
-    operators.operatorframework.io/builder: operator-sdk-v1.23.0
+    operators.operatorframework.io/builder: operator-sdk-v1.27.0
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
   name: tempo-operator.v0.0.1
   namespace: placeholder
@@ -382,6 +382,12 @@ spec:
       - description: Querier is a map to the per pod status of the querier deployment
         displayName: Querier
         path: components.querier
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:podStatuses
+      - description: Gateway is a map to the per pod status of the query frontend
+          deployment
+        displayName: Query Frontend
+        path: components.gateway
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:podStatuses
       - description: QueryFrontend is a map to the per pod status of the query frontend
