@@ -10,11 +10,14 @@ import (
 	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
 )
 
-// ErrGetProfileFromCluster return when failed to get the cluster security policy in openshift.
+// ErrGetProfileFromCluster happens when failed to get the cluster security policy in openshift.
 var ErrGetProfileFromCluster = errors.New("failed to get profile from cluster, using default TLS profile")
 
+// ErrGetInvalidProfile happens when the profile is invalid or unknow.
+var ErrGetInvalidProfile = errors.New("failed to get profile from cluster, using default TLS profile")
+
 // Get the profile according to the features configuration, if the policy is invalid or is not specified (empty string) this
-// should return the default profile (Intermediate), if openshift.ClusterTLSPolicy is enabled, it should get the profile
+// should return an error, if openshift.ClusterTLSPolicy is enabled, it should get the profile
 // from the cluster, if the cluster return a unknow profile this should return an error.
 func Get(ctx context.Context, fg configv1alpha1.FeatureGates, c k8getter, log logr.Logger) (TLSProfileOptions, error) {
 	var tlsProfileType openshiftconfigv1.TLSSecurityProfile
@@ -24,19 +27,17 @@ func Get(ctx context.Context, fg configv1alpha1.FeatureGates, c k8getter, log lo
 	if fg.OpenShift.ClusterTLSPolicy {
 		tlsProfileType, err = getTLSProfileFromCluster(ctx, c)
 		if err != nil {
-			returnedErr = ErrGetProfileFromCluster
-			tlsProfileType = getDefaultTLSSecurityProfile()
+			return TLSProfileOptions{}, ErrGetProfileFromCluster
 		}
 	} else {
 		tlsProfileType, err = getTLSSecurityProfile(configv1alpha1.TLSProfileType(fg.TLSProfile))
 		if err != nil {
-			log.Error(err, "failed to get security profile. will use default tls profile.")
-			tlsProfileType = getDefaultTLSSecurityProfile()
+			return TLSProfileOptions{}, ErrGetInvalidProfile
 		}
 	}
 
 	// Transform the policy type to concrete settings (ciphers and minVersion).
-	tlsProfile, err := getTLSSettings(tlsProfileType)
+	tlsProfile, err := GetTLSSettings(tlsProfileType)
 	if err != nil {
 		return TLSProfileOptions{}, err
 	}

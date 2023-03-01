@@ -161,14 +161,18 @@ func (r *MicroservicesReconciler) reconcileManifests(ctx context.Context, log lo
 
 	tlsProfile, err := tlsprofile.Get(ctx, r.FeatureGates, r.Client, log)
 	if err != nil {
-		if err == tlsprofile.ErrGetProfileFromCluster {
+		switch err {
+		case tlsprofile.ErrGetProfileFromCluster:
+		case tlsprofile.ErrGetInvalidProfile:
 			return &status.DegradedError{
 				Message: err.Error(),
 				Reason:  v1alpha1.ReasonCouldNotGetOpenShiftTLSPolicy,
 				Requeue: false,
 			}
+		default:
+			return err
 		}
-		return err
+
 	}
 
 	objects, err := manifests.BuildAll(manifestutils.Params{
@@ -214,6 +218,7 @@ func (r *MicroservicesReconciler) reconcileManifests(ctx context.Context, log lo
 	if errCount > 0 {
 		return fmt.Errorf("failed to create objects for Tempo %s", req.NamespacedName)
 	}
+
 	return nil
 }
 

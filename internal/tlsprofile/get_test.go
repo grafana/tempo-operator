@@ -24,12 +24,9 @@ func TestGetInvalidOrEmptyTLSProfile(t *testing.T) {
 
 	cl := &clientStub{}
 
-	defaultSettings, err := getTLSSettings(getDefaultTLSSecurityProfile())
-	require.NoError(t, err)
-
 	options, err := Get(ctx, fg, cl, l)
-	assert.NoError(t, err)
-	assert.Equal(t, defaultSettings, options)
+	assert.Equal(t, err, ErrGetInvalidProfile)
+	assert.Equal(t, TLSProfileOptions{}, options)
 }
 
 func TestGetSpecificProfile(t *testing.T) {
@@ -41,7 +38,7 @@ func TestGetSpecificProfile(t *testing.T) {
 
 	cl := &clientStub{}
 
-	oldSettings, err := getTLSSettings(openshiftconfigv1.TLSSecurityProfile{
+	oldSettings, err := GetTLSSettings(openshiftconfigv1.TLSSecurityProfile{
 		Type: openshiftconfigv1.TLSProfileOldType,
 	})
 	require.NoError(t, err)
@@ -64,15 +61,13 @@ func TestGetWithClusterError(t *testing.T) {
 
 	returnErr := apierrors.NewNotFound(schema.GroupResource{}, "something wasn't found")
 	cl.On("Get", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(returnErr)
-	defaultSettings, err := getTLSSettings(getDefaultTLSSecurityProfile())
-	require.NoError(t, err)
 
 	options, err := Get(ctx, fg, cl, l)
 	cl.AssertExpectations(t)
 	cl.AssertNumberOfCalls(t, "Get", 1)
 
 	assert.Equal(t, ErrGetProfileFromCluster, err)
-	assert.Equal(t, defaultSettings, options)
+	assert.Equal(t, TLSProfileOptions{}, options)
 }
 
 func TestGetWithClusterPolicy(t *testing.T) {
@@ -92,7 +87,7 @@ func TestGetWithClusterPolicy(t *testing.T) {
 		}
 	})
 
-	modernSettings, err := getTLSSettings(openshiftconfigv1.TLSSecurityProfile{
+	modernSettings, err := GetTLSSettings(openshiftconfigv1.TLSSecurityProfile{
 		Type: openshiftconfigv1.TLSProfileModernType,
 	})
 	require.NoError(t, err)

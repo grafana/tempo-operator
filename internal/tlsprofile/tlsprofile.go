@@ -44,14 +44,14 @@ func getTLSSecurityProfile(tlsProfileType configv1alpha1.TLSProfileType) (opensh
 }
 
 // GetDefaultTLSSecurityProfile get the default tls profile settings if none is specified.
-func getDefaultTLSSecurityProfile() openshiftconfigv1.TLSSecurityProfile {
+func GetDefaultTLSSecurityProfile() openshiftconfigv1.TLSSecurityProfile {
 	return openshiftconfigv1.TLSSecurityProfile{
 		Type: openshiftconfigv1.TLSProfileIntermediateType,
 	}
 }
 
 // GetTLSSettings get the tls settings that belongs to the TLS profile specifications.
-func getTLSSettings(profile openshiftconfigv1.TLSSecurityProfile) (TLSProfileOptions, error) {
+func GetTLSSettings(profile openshiftconfigv1.TLSSecurityProfile) (TLSProfileOptions, error) {
 	var (
 		minTLSVersion openshiftconfigv1.TLSProtocolVersion
 		ciphers       []string

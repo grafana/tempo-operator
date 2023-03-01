@@ -106,7 +106,7 @@ func TestGetTLSSettings(t *testing.T) {
 	for _, tc := range tc {
 		tc := tc
 		t.Run(tc.desc, func(t *testing.T) {
-			options, err := getTLSSettings(tc.profile)
+			options, err := GetTLSSettings(tc.profile)
 			assert.Equal(t, tc.expectedErr, err)
 			if tc.expectedErr == nil {
 				expected := TLSProfileOptions{
@@ -135,13 +135,13 @@ func TestGetTLSSettingsCustom(t *testing.T) {
 		MinTLSVersion: "TLSv1.1",
 	}
 
-	options, err := getTLSSettings(profile)
+	options, err := GetTLSSettings(profile)
 	assert.NoError(t, err)
 	assert.EqualValues(t, expected, options)
 }
 
 func TestGetDefaultTLSSecurityProfile(t *testing.T) {
-	profile := getDefaultTLSSecurityProfile()
+	profile := GetDefaultTLSSecurityProfile()
 	assert.EqualValues(t, openshiftconfigv1.TLSSecurityProfile{
 		Type: openshiftconfigv1.TLSProfileIntermediateType,
 	}, profile)
