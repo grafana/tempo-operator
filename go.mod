@@ -8,12 +8,12 @@ require (
 	github.com/imdario/mergo v0.3.13
 	github.com/novln/docker-parser v1.0.0
 	github.com/onsi/ginkgo v1.16.5
-	github.com/onsi/gomega v1.27.1
+	github.com/onsi/gomega v1.27.2
 	github.com/openshift/library-go v0.0.0-20220622115547-84d884f4c9f6
 	github.com/spf13/cobra v1.6.1
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.26.1
-	k8s.io/apimachinery v0.26.1
+	k8s.io/apimachinery v0.26.2
 	k8s.io/apiserver v0.26.1
 	k8s.io/client-go v12.0.0+incompatible
 	sigs.k8s.io/controller-runtime v0.13.1
