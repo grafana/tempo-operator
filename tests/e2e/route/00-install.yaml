@@ -18,14 +18,12 @@ spec:
   storage:
     secret: minio-test
   storageSize: 200M
-  resources:
-    total:
-      limits:
-        memory: 2Gi
-        cpu: 2000m
   template:
     queryFrontend:
       jaegerQuery:
         enabled: true
         ingress:
-          type: ingress
+          type: route
+          host: example.com
+          annotations:
+            example_annotation: example_value

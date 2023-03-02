@@ -10,6 +10,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
+	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 )
 
@@ -21,7 +22,7 @@ func TestRefreshTagError(t *testing.T) {
 			Namespace: "some-ns",
 		},
 		Spec: v1alpha1.MicroservicesSpec{
-			Images: v1alpha1.ImagesSpec{
+			Images: configv1alpha1.ImagesSpec{
 				Tempo: "",
 			},
 		},
@@ -45,7 +46,7 @@ func TestRefreshPatchError(t *testing.T) {
 			Namespace: "some-ns",
 		},
 		Spec: v1alpha1.MicroservicesSpec{
-			Images: v1alpha1.ImagesSpec{
+			Images: configv1alpha1.ImagesSpec{
 				Tempo: "local:2.0",
 			},
 		},
@@ -66,7 +67,7 @@ func TestRefreshNoError(t *testing.T) {
 			Namespace: "some-ns",
 		},
 		Spec: v1alpha1.MicroservicesSpec{
-			Images: v1alpha1.ImagesSpec{
+			Images: configv1alpha1.ImagesSpec{
 				Tempo: "local:2.0",
 			},
 		},

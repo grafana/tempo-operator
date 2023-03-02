@@ -12,14 +12,13 @@ import (
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	configtempov1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
-	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
+	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
 	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
 )
 
 func TestBuild(t *testing.T) {
-	ctrlConfig := configtempov1alpha1.ProjectConfig{
-		DefaultImages: v1alpha1.ImagesSpec{
+	ctrlConfig := configv1alpha1.ProjectConfig{
+		DefaultImages: configv1alpha1.ImagesSpec{
 			Tempo:        "tempo-image",
 			TempoQuery:   "tempo-query-image",
 			TempoGateway: "tempo-gateway-image",
@@ -33,7 +32,7 @@ func TestBuild(t *testing.T) {
 
 	objects, err := build(ctrlConfig, params)
 	require.NoError(t, err)
-	require.GreaterOrEqual(t, 14, len(objects))
+	require.Equal(t, 14, len(objects))
 }
 
 func TestYAMLEncoding(t *testing.T) {

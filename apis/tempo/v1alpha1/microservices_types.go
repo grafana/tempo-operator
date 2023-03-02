@@ -4,6 +4,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/os-observability/tempo-operator/apis/config/v1alpha1"
 )
 
 // MicroservicesSpec defines the desired state of Microservices.
@@ -35,7 +37,7 @@ type MicroservicesSpec struct {
 	//
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Container Images"
-	Images ImagesSpec `json:"images,omitempty"`
+	Images v1alpha1.ImagesSpec `json:"images,omitempty"`
 
 	// Storage defines S3 compatible object storage configuration.
 	// User is required to create secret and supply it.
@@ -374,24 +376,6 @@ type MicroservicesList struct {
 	Items           []Microservices `json:"items"`
 }
 
-// ImagesSpec defines the image for each container.
-type ImagesSpec struct {
-	// Tempo defines the tempo container image.
-	//
-	// +optional
-	Tempo string `json:"tempo,omitempty"`
-
-	// TempoQuery defines the tempo-query container image.
-	//
-	// +optional
-	TempoQuery string `json:"tempoQuery,omitempty"`
-
-	// TempoGateway defines the tempo-gateway container image.
-	//
-	// +optional
-	TempoGateway string `json:"tempoGateway,omitempty"`
-}
-
 // Resources defines resources configuration.
 type Resources struct {
 	// The total amount of resources for Tempo instance.
@@ -551,7 +535,7 @@ type TempoQueryFrontendSpec struct {
 	// +kubebuilder:validation:Optional
 	TempoComponentSpec `json:"component,omitempty"`
 
-	// JaegerQuerySpec defines Jaeger Query spefic options.
+	// JaegerQuerySpec defines Jaeger Query specific options.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
@@ -565,8 +549,63 @@ type JaegerQuerySpec struct {
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger Query Enabled"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enable Jaeger Query UI"
 	Enabled bool `json:"enabled"`
+
+	// Ingress defines Jaeger Query Ingress options.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger Query UI Ingress Settings"
+	Ingress JaegerQueryIngressSpec `json:"ingress,omitempty"`
+}
+
+// JaegerQueryIngressSpec defines Jaeger Query Ingress options.
+type JaegerQueryIngressSpec struct {
+	// Type defines the type of Ingress for the Jaeger Query UI.
+	// Currently ingress, route and none are supported.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Type"
+	Type IngressType `json:"type,omitempty"`
+
+	// Annotations defines the annotations of the Ingress object.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Annotations"
+	Annotations map[string]string `json:"annotations,omitempty"`
+
+	// Host defines the hostname of the Ingress object.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Host"
+	Host string `json:"host,omitempty"`
+
+	// IngressClassName is the name of an IngressClass cluster resource. Ingress
+	// controller implementations use this field to know whether they should be
+	// serving this Ingress resource.
+	// +optional
+	IngressClassName *string `json:"ingressClassName,omitempty"`
+
+	// Route defines OpenShift Route specific options.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Route Configuration"
+	Route JaegerQueryRouteSpec `json:"route,omitempty"`
+}
+
+// JaegerQueryRouteSpec defines OpenShift Route specific options.
+type JaegerQueryRouteSpec struct {
+	// Termination specifies the termination type. By default "edge" is used.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="TLS Termination Policy"
+	Termination TLSRouteTerminationType `json:"termination,omitempty"`
 }
 
 // LimitSpec defines Global and PerTenant rate limits.
