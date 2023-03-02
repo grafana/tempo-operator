@@ -20,12 +20,12 @@ import (
 func TestBuildIngester(t *testing.T) {
 	storageClassName := "default"
 	filesystem := corev1.PersistentVolumeFilesystem
-	objects, err := BuildIngester(manifestutils.Params{Tempo: v1alpha1.Microservices{
+	objects, err := BuildIngester(manifestutils.Params{Tempo: v1alpha1.TempoStack{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test",
 			Namespace: "project1",
 		},
-		Spec: v1alpha1.MicroservicesSpec{
+		Spec: v1alpha1.TempoStackSpec{
 			Images: configv1alpha1.ImagesSpec{
 				Tempo: "docker.io/grafana/tempo:1.5.0",
 			},

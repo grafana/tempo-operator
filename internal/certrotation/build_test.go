@@ -65,7 +65,7 @@ func TestApplyDefaultSettings_EmptySecrets(t *testing.T) {
 	}
 
 	opts := Options{
-		StackName:      "microservices-dev",
+		StackName:      "tempostacks-dev",
 		StackNamespace: "ns",
 	}
 

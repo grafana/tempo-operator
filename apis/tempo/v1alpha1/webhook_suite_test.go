@@ -88,7 +88,7 @@ var _ = BeforeSuite(func() {
 	})
 	Expect(err).NotTo(HaveOccurred())
 
-	err = (&Microservices{}).SetupWebhookWithManager(mgr, v1alpha1.ProjectConfig{})
+	err = (&TempoStack{}).SetupWebhookWithManager(mgr, v1alpha1.ProjectConfig{})
 	Expect(err).NotTo(HaveOccurred())
 
 	//+kubebuilder:scaffold:webhook

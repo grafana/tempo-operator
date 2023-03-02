@@ -75,11 +75,11 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 	return manifests, nil
 }
 
-func configureQuerierFrontEndHTTPServicePKI(deployment *v1.Deployment, tempo v1alpha1.Microservices) error {
+func configureQuerierFrontEndHTTPServicePKI(deployment *v1.Deployment, tempo v1alpha1.TempoStack) error {
 	return manifestutils.ConfigureHTTPServicePKI(&deployment.Spec.Template.Spec, naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name), 0, 1)
 }
 
-func configureQuerierFrontEndGRPCServicePKI(deployment *v1.Deployment, tempo v1alpha1.Microservices) error {
+func configureQuerierFrontEndGRPCServicePKI(deployment *v1.Deployment, tempo v1alpha1.TempoStack) error {
 	return manifestutils.ConfigureGRPCServicePKI(&deployment.Spec.Template.Spec, naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name), 0, 1)
 }
 
@@ -232,7 +232,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 	return d, nil
 }
 
-func services(tempo v1alpha1.Microservices) []*corev1.Service {
+func services(tempo v1alpha1.TempoStack) []*corev1.Service {
 	labels := manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, tempo.Name)
 
 	frontEndService := &corev1.Service{
@@ -317,7 +317,7 @@ func services(tempo v1alpha1.Microservices) []*corev1.Service {
 	return []*corev1.Service{frontEndService, frontEndDiscoveryService}
 }
 
-func ingress(tempo v1alpha1.Microservices) *networkingv1.Ingress {
+func ingress(tempo v1alpha1.TempoStack) *networkingv1.Ingress {
 	queryFrontendName := naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name)
 	labels := manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, tempo.Name)
 
@@ -367,7 +367,7 @@ func ingress(tempo v1alpha1.Microservices) *networkingv1.Ingress {
 	return ingress
 }
 
-func route(tempo v1alpha1.Microservices) *routev1.Route {
+func route(tempo v1alpha1.TempoStack) *routev1.Route {
 	queryFrontendName := naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name)
 	labels := manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, tempo.Name)
 

@@ -41,12 +41,12 @@ func BuildDistributor(params manifestutils.Params) ([]client.Object, error) {
 	return []client.Object{dep, service(tempo)}, nil
 }
 
-func configureDistributorGRPCServicePKI(sts *v1.Deployment, tempo v1alpha1.Microservices) error {
+func configureDistributorGRPCServicePKI(sts *v1.Deployment, tempo v1alpha1.TempoStack) error {
 	serviceName := naming.Name(manifestutils.DistributorComponentName, tempo.Name)
 	return manifestutils.ConfigureGRPCServicePKI(&sts.Spec.Template.Spec, serviceName)
 }
 
-func configureDistributorHTTPServicePKI(sts *v1.Deployment, tempo v1alpha1.Microservices) error {
+func configureDistributorHTTPServicePKI(sts *v1.Deployment, tempo v1alpha1.TempoStack) error {
 	serviceName := naming.Name(manifestutils.DistributorComponentName, tempo.Name)
 	return manifestutils.ConfigureHTTPServicePKI(&sts.Spec.Template.Spec, serviceName)
 }
@@ -144,7 +144,7 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 	}
 }
 
-func service(tempo v1alpha1.Microservices) *corev1.Service {
+func service(tempo v1alpha1.TempoStack) *corev1.Service {
 	labels := manifestutils.ComponentLabels(manifestutils.DistributorComponentName, tempo.Name)
 	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{

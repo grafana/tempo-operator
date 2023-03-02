@@ -20,12 +20,12 @@ const (
 	CAFile = "service-ca.crt"
 )
 
-// SigningCASecretName returns the microservices signing CA secret name.
+// SigningCASecretName returns the tempostacks signing CA secret name.
 func SigningCASecretName(stackName string) string {
 	return fmt.Sprintf("tempo-%s-signing-ca", stackName)
 }
 
-// CABundleName returns the microservices ca bundle configmap name.
+// CABundleName returns the tempostacks ca bundle configmap name.
 func CABundleName(stackName string) string {
 	return fmt.Sprintf("tempo-%s-ca-bundle", stackName)
 }

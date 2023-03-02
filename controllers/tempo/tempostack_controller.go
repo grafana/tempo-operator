@@ -40,8 +40,8 @@ const (
 	storageSecretField = ".spec.storage.secret" // nolint #nosec
 )
 
-// MicroservicesReconciler reconciles a Microservices object.
-type MicroservicesReconciler struct {
+// TempoStackReconciler reconciles a TempoStack object.
+type TempoStackReconciler struct {
 	client.Client
 	Scheme       *runtime.Scheme
 	FeatureGates configv1alpha1.FeatureGates
@@ -55,26 +55,26 @@ type MicroservicesReconciler struct {
 // +kubebuilder:rbac:groups=operator.openshift.io,resources=ingresscontrollers,verbs=get;list;watch
 // +kubebuilder:rbac:groups=config.openshift.io,resources=dnses,verbs=get;list;watch
 
-//+kubebuilder:rbac:groups=tempo.grafana.com,resources=microservices,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=tempo.grafana.com,resources=microservices/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=tempo.grafana.com,resources=microservices/finalizers,verbs=update
+//+kubebuilder:rbac:groups=tempo.grafana.com,resources=tempostacks,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=tempo.grafana.com,resources=tempostacks/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=tempo.grafana.com,resources=tempostacks/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
 // TODO(user): Modify the Reconcile function to compare the state specified by
-// the Microservices object against the actual cluster state, and then
+// the TempoStack object against the actual cluster state, and then
 // perform operations to make the cluster state reflect the state specified by
 // the user.
 //
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.12.2/pkg/reconcile
-func (r *MicroservicesReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *TempoStackReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := log.FromContext(ctx)
 	log = log.WithValues("tempo", req.NamespacedName)
-	tempo := v1alpha1.Microservices{}
+	tempo := v1alpha1.TempoStack{}
 	if err := r.Get(ctx, req.NamespacedName, &tempo); err != nil {
 		if !apierrors.IsNotFound(err) {
-			log.Error(err, "unable to fetch TempoMicroservices")
+			log.Error(err, "unable to fetch TempoTempoStack")
 			return ctrl.Result{}, fmt.Errorf("could not fetch tempo: %w", err)
 		}
 
@@ -97,7 +97,7 @@ func (r *MicroservicesReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 
 // handleStatus set all components status, then verify if an error is type status.DegradedError, if that is the case, it will update the CR
 // status conditions to Degraded. if not it will throw an error as usual.
-func (r *MicroservicesReconciler) handleStatus(ctx context.Context, tempo v1alpha1.Microservices, err error) (ctrl.Result, error) {
+func (r *TempoStackReconciler) handleStatus(ctx context.Context, tempo v1alpha1.TempoStack, err error) (ctrl.Result, error) {
 	// First refresh components
 	newStatus, rerr := status.GetComponetsStatus(ctx, r, tempo)
 	requeue := false
@@ -143,7 +143,7 @@ func (r *MicroservicesReconciler) handleStatus(ctx context.Context, tempo v1alph
 	return ctrl.Result{}, nil
 }
 
-func (r *MicroservicesReconciler) reconcileManifests(ctx context.Context, log logr.Logger, req ctrl.Request, tempo v1alpha1.Microservices) error {
+func (r *TempoStackReconciler) reconcileManifests(ctx context.Context, log logr.Logger, req ctrl.Request, tempo v1alpha1.TempoStack) error {
 	storageConfig, err := r.getStorageConfig(ctx, tempo)
 	if err != nil {
 		return &status.DegradedError{
@@ -225,7 +225,7 @@ func (r *MicroservicesReconciler) reconcileManifests(ctx context.Context, log lo
 	return nil
 }
 
-func (r *MicroservicesReconciler) getStorageConfig(ctx context.Context, tempo v1alpha1.Microservices) (*manifestutils.StorageParams, error) {
+func (r *TempoStackReconciler) getStorageConfig(ctx context.Context, tempo v1alpha1.TempoStack) (*manifestutils.StorageParams, error) {
 	storageSecret := &corev1.Secret{}
 	err := r.Get(ctx, types.NamespacedName{Namespace: tempo.Namespace, Name: tempo.Spec.Storage.Secret}, storageSecret)
 	if err != nil {
@@ -248,23 +248,23 @@ func (r *MicroservicesReconciler) getStorageConfig(ctx context.Context, tempo v1
 }
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *MicroservicesReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	// Add an index to the storage secret field in the Microservices CRD.
-	// If the content of any secret in the cluster changes, the watcher can identify related Microservices CRs
+func (r *TempoStackReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	// Add an index to the storage secret field in the TempoStack CRD.
+	// If the content of any secret in the cluster changes, the watcher can identify related TempoStack CRs
 	// and reconcile them (i.e. update the tempo configuration file and restart the pods)
-	err := mgr.GetFieldIndexer().IndexField(context.Background(), &v1alpha1.Microservices{}, storageSecretField, func(rawObj client.Object) []string {
-		microservices := rawObj.(*v1alpha1.Microservices)
-		if microservices.Spec.Storage.Secret == "" {
+	err := mgr.GetFieldIndexer().IndexField(context.Background(), &v1alpha1.TempoStack{}, storageSecretField, func(rawObj client.Object) []string {
+		tempostacks := rawObj.(*v1alpha1.TempoStack)
+		if tempostacks.Spec.Storage.Secret == "" {
 			return nil
 		}
-		return []string{microservices.Spec.Storage.Secret}
+		return []string{tempostacks.Spec.Storage.Secret}
 	})
 	if err != nil {
 		return err
 	}
 
 	builder := ctrl.NewControllerManagedBy(mgr).
-		For(&v1alpha1.Microservices{}).
+		For(&v1alpha1.TempoStack{}).
 		Owns(&corev1.ConfigMap{}).
 		Owns(&corev1.ServiceAccount{}).
 		Owns(&corev1.Service{}).
@@ -274,7 +274,7 @@ func (r *MicroservicesReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&networkingv1.Ingress{}).
 		Watches(
 			&source.Kind{Type: &corev1.Secret{}},
-			handler.EnqueueRequestsFromMapFunc(r.findMicroservicesForStorageSecret),
+			handler.EnqueueRequestsFromMapFunc(r.findTempoStackForStorageSecret),
 			builder.WithPredicates(predicate.ResourceVersionChangedPredicate{}),
 		)
 
@@ -294,19 +294,19 @@ func isNamespaceScoped(obj client.Object) bool {
 	}
 }
 
-func (r *MicroservicesReconciler) findMicroservicesForStorageSecret(secret client.Object) []reconcile.Request {
-	microservices := &v1alpha1.MicroservicesList{}
+func (r *TempoStackReconciler) findTempoStackForStorageSecret(secret client.Object) []reconcile.Request {
+	tempostacks := &v1alpha1.TempoStackList{}
 	listOps := &client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(storageSecretField, secret.GetName()),
 		Namespace:     secret.GetNamespace(),
 	}
-	err := r.List(context.TODO(), microservices, listOps)
+	err := r.List(context.TODO(), tempostacks, listOps)
 	if err != nil {
 		return []reconcile.Request{}
 	}
 
-	requests := make([]reconcile.Request, len(microservices.Items))
-	for i, item := range microservices.Items {
+	requests := make([]reconcile.Request, len(tempostacks.Items))
+	for i, item := range tempostacks.Items {
 		requests[i] = reconcile.Request{
 			NamespacedName: types.NamespacedName{
 				Name:      item.GetName(),
@@ -318,7 +318,7 @@ func (r *MicroservicesReconciler) findMicroservicesForStorageSecret(secret clien
 }
 
 // GetPodsComponent is used for fetching component pod status and refreshing the status of the CR.
-func (r *MicroservicesReconciler) GetPodsComponent(ctx context.Context, componentName string, stack v1alpha1.Microservices) (*corev1.PodList, error) {
+func (r *TempoStackReconciler) GetPodsComponent(ctx context.Context, componentName string, stack v1alpha1.TempoStack) (*corev1.PodList, error) {
 	pods := &corev1.PodList{}
 
 	opts := []client.ListOption{
@@ -330,7 +330,7 @@ func (r *MicroservicesReconciler) GetPodsComponent(ctx context.Context, componen
 }
 
 // PatchStatus patches the status field of the CR.
-func (r *MicroservicesReconciler) PatchStatus(ctx context.Context, changed, original *v1alpha1.Microservices) error {
+func (r *TempoStackReconciler) PatchStatus(ctx context.Context, changed, original *v1alpha1.TempoStack) error {
 	statusPatch := client.MergeFrom(original)
 	return r.Client.Status().Patch(ctx, changed, statusPatch)
 }

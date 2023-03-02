@@ -18,7 +18,7 @@ import (
 )
 
 // CertRotationReconciler reconciles the `tempo.grafana.com/certRotationRequiredAt` annotation on
-// any Microservices object associated with any of the owned signer/client/serving certificates secrets
+// any TempoStack object associated with any of the owned signer/client/serving certificates secrets
 // and CA bundle configmap.
 type CertRotationReconciler struct {
 	client.Client
@@ -28,7 +28,7 @@ type CertRotationReconciler struct {
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
-// Compare the state specified by the Microservices object against the actual cluster state,
+// Compare the state specified by the TempoStack object against the actual cluster state,
 // and then perform operations to make the cluster state reflect the state specified by
 // the user.
 //
@@ -45,7 +45,7 @@ func (r *CertRotationReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	}
 
 	checkExpiryAfter := expiryRetryAfter(rt.TargetCertRefresh)
-	log.Info("Checking if Microservices certificates expired", "name", req.String(), "interval", checkExpiryAfter.String())
+	log.Info("Checking if TempoStack certificates expired", "name", req.String(), "interval", checkExpiryAfter.String())
 
 	var expired *certrotation.CertExpiredError
 
@@ -56,13 +56,13 @@ func (r *CertRotationReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	case err != nil:
 		return ctrl.Result{}, err
 	default:
-		log.Info("Skipping cert rotation, all Microservices certificates still valid", "name", req.String())
+		log.Info("Skipping cert rotation, all TempoStack certificates still valid", "name", req.String())
 		return ctrl.Result{
 			RequeueAfter: checkExpiryAfter,
 		}, nil
 	}
 
-	log.Error(err, "Microservices certificates expired", "name", req.String())
+	log.Error(err, "TempoStack certificates expired", "name", req.String())
 	err = handlers.AnnotateForRequiredCertRotation(ctx, r.Client, req.Name, req.Namespace)
 	if err != nil {
 		log.Error(err, "failed to annotate required cert rotation", "name", req.String())
@@ -77,7 +77,7 @@ func (r *CertRotationReconciler) Reconcile(ctx context.Context, req ctrl.Request
 // SetupWithManager sets up the controller with the Manager.
 func (r *CertRotationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&v1alpha1.Microservices{}).
+		For(&v1alpha1.TempoStack{}).
 		Owns(&corev1.Secret{}).
 		Complete(r)
 }

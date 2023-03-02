@@ -10,11 +10,11 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-// ComponentCertificates is a map of Microservices component names to TLS certificates.
+// ComponentCertificates is a map of TempoStack component names to TLS certificates.
 type ComponentCertificates map[string]SelfSignedCertKey
 
 // Options is a set of configuration values to use when
-// building manifests for Microservices certificates.
+// building manifests for TempoStack certificates.
 type Options struct {
 	Certificates   ComponentCertificates
 	CABundle       *corev1.ConfigMap

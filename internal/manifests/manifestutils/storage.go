@@ -9,7 +9,7 @@ import (
 )
 
 // ConfigureStorage configures storage.
-func ConfigureStorage(tempo v1alpha1.Microservices, pod *corev1.PodSpec) error {
+func ConfigureStorage(tempo v1alpha1.TempoStack, pod *corev1.PodSpec) error {
 	if tempo.Spec.Storage.Secret != "" {
 		ingesterContainer := pod.Containers[0].DeepCopy()
 		ingesterContainer.Env = append(ingesterContainer.Env,

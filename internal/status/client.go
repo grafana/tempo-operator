@@ -10,6 +10,6 @@ import (
 
 // StatusClient defines a interface for fetching status information.
 type StatusClient interface {
-	GetPodsComponent(ctx context.Context, componentName string, stack v1alpha1.Microservices) (*corev1.PodList, error)
-	PatchStatus(ctx context.Context, changed, original *v1alpha1.Microservices) error
+	GetPodsComponent(ctx context.Context, componentName string, stack v1alpha1.TempoStack) (*corev1.PodList, error)
+	PatchStatus(ctx context.Context, changed, original *v1alpha1.TempoStack) error
 }

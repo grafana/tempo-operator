@@ -9,7 +9,7 @@ import (
 )
 
 // Refresh updates the status field with the tempo container image versions.
-func Refresh(ctx context.Context, k StatusClient, tempo v1alpha1.Microservices, status *v1alpha1.MicroservicesStatus) (bool, error) {
+func Refresh(ctx context.Context, k StatusClient, tempo v1alpha1.TempoStack, status *v1alpha1.TempoStackStatus) (bool, error) {
 
 	changed := tempo.DeepCopy()
 	changed.Status = *status

@@ -99,22 +99,22 @@ type FeatureGates struct {
 	// suffix `-ca-bundle`, e.g. `tempo-dev-ca-bundle` and the following data:
 	// - `service-ca.crt`: The CA signing the service certificate in `tls.crt`.
 	BuiltInCertManagement BuiltInCertManagement `json:"builtInCertManagement,omitempty"`
-	// HTTPEncryption enables TLS encryption for all HTTP Microservices services.
+	// HTTPEncryption enables TLS encryption for all HTTP TempoStack services.
 	// Each HTTP service requires a secret named as the service with the following data:
 	// - `tls.crt`: The TLS server side certificate.
 	// - `tls.key`: The TLS key for server-side encryption.
-	// In addition each service requires a configmap named as the Microservices CR with the
+	// In addition each service requires a configmap named as the TempoStack CR with the
 	// suffix `-ca-bundle`, e.g. `tempo-dev-ca-bundle` and the following data:
 	// - `service-ca.crt`: The CA signing the service certificate in `tls.crt`.
 	// This will protect all internal communication between the distributors and ingestors and also
 	// between ingestor and queriers, and between the queriers and the query-frontend component
 	// The only component remains unprotected is the tempo-query (jaeger query UI).
 	HTTPEncryption bool `json:"httpEncryption,omitempty"`
-	// GRPCEncryption enables TLS encryption for all GRPC Microservices services.
+	// GRPCEncryption enables TLS encryption for all GRPC TempoStack services.
 	// Each GRPC service requires a secret named as the service with the following data:
 	// - `tls.crt`: The TLS server side certificate.
 	// - `tls.key`: The TLS key for server-side encryption.
-	// In addition each service requires a configmap named as the Microservices CR with the
+	// In addition each service requires a configmap named as the TempoStack CR with the
 	// suffix `-ca-bundle`, e.g. `tempo-dev-ca-bundle` and the following data:
 	// - `service-ca.crt`: The CA signing the service certificate in `tls.crt`.
 	// This will protect all internal communication between the distributors and ingestors and also

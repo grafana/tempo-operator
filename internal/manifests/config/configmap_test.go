@@ -13,11 +13,11 @@ import (
 )
 
 func TestConfigmap(t *testing.T) {
-	cm, checksum, err := BuildConfigMap(v1alpha1.Microservices{
+	cm, checksum, err := BuildConfigMap(v1alpha1.TempoStack{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "test",
 		},
-		Spec: v1alpha1.MicroservicesSpec{
+		Spec: v1alpha1.TempoStackSpec{
 			Retention: v1alpha1.RetentionSpec{
 				Global: v1alpha1.RetentionConfig{
 					Traces: metav1.Duration{Duration: 48 * time.Hour},

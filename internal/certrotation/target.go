@@ -51,7 +51,7 @@ func CertificatesExpired(opts Options) error {
 	return &CertExpiredError{Message: "certificates expired", Reasons: reasons}
 }
 
-// buildTargetCertKeyPairSecrets returns a slice of all rotated client and serving microservices certificates.
+// buildTargetCertKeyPairSecrets returns a slice of all rotated client and serving tempostacks certificates.
 func buildTargetCertKeyPairSecrets(opts Options) ([]client.Object, error) {
 	var (
 		res      = make([]client.Object, 0)

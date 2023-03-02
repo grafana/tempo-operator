@@ -26,11 +26,11 @@ import (
 // the decoder will look to figure out whether this is a JSON stream.
 const yamlOrJsonDecoderBufferSize = 8192
 
-func loadSpec(path string) (v1alpha1.Microservices, error) {
+func loadSpec(path string) (v1alpha1.TempoStack, error) {
 	pathCleaned := filepath.Clean(path)
 	file, err := os.Open(pathCleaned)
 	if err != nil {
-		return v1alpha1.Microservices{}, err
+		return v1alpha1.TempoStack{}, err
 	}
 	defer func() {
 		if err := file.Close(); err != nil {
@@ -38,11 +38,11 @@ func loadSpec(path string) (v1alpha1.Microservices, error) {
 		}
 	}()
 
-	spec := v1alpha1.Microservices{}
+	spec := v1alpha1.TempoStack{}
 	decoder := k8syaml.NewYAMLOrJSONDecoder(file, yamlOrJsonDecoderBufferSize)
 	err = decoder.Decode(&spec)
 	if err != nil {
-		return v1alpha1.Microservices{}, err
+		return v1alpha1.TempoStack{}, err
 	}
 
 	return spec, nil

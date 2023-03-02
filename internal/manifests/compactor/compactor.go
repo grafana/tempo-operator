@@ -44,12 +44,12 @@ func BuildCompactor(params manifestutils.Params) ([]client.Object, error) {
 	return []client.Object{d, service(tempo)}, nil
 }
 
-func configureCompactorGRPCServicePKI(sts *v1.Deployment, tempo v1alpha1.Microservices) error {
+func configureCompactorGRPCServicePKI(sts *v1.Deployment, tempo v1alpha1.TempoStack) error {
 	serviceName := naming.Name(manifestutils.CompactorComponentName, tempo.Name)
 	return manifestutils.ConfigureGRPCServicePKI(&sts.Spec.Template.Spec, serviceName)
 }
 
-func configureCompactorHTTPServicePKI(sts *v1.Deployment, tempo v1alpha1.Microservices) error {
+func configureCompactorHTTPServicePKI(sts *v1.Deployment, tempo v1alpha1.TempoStack) error {
 	serviceName := naming.Name(manifestutils.CompactorComponentName, tempo.Name)
 	return manifestutils.ConfigureHTTPServicePKI(&sts.Spec.Template.Spec, serviceName)
 }
@@ -145,7 +145,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 	return d, nil
 }
 
-func service(tempo v1alpha1.Microservices) *corev1.Service {
+func service(tempo v1alpha1.TempoStack) *corev1.Service {
 	labels := manifestutils.ComponentLabels(manifestutils.CompactorComponentName, tempo.Name)
 	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{

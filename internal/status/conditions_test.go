@@ -73,17 +73,17 @@ func TestReadyCondition(t *testing.T) {
 
 			client := &statusClientStub{}
 
-			stack := v1alpha1.Microservices{
+			stack := v1alpha1.TempoStack{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "my-stack",
 					Namespace: "some-ns",
 				},
-				Spec: v1alpha1.MicroservicesSpec{
+				Spec: v1alpha1.TempoStackSpec{
 					Images: configv1alpha1.ImagesSpec{
 						Tempo: "local:2.0",
 					},
 				},
-				Status: v1alpha1.MicroservicesStatus{
+				Status: v1alpha1.TempoStackStatus{
 					Conditions: tc.inputConditions,
 				},
 			}
@@ -164,17 +164,17 @@ func TestFailedCondition(t *testing.T) {
 
 			client := &statusClientStub{}
 
-			stack := v1alpha1.Microservices{
+			stack := v1alpha1.TempoStack{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "my-stack",
 					Namespace: "some-ns",
 				},
-				Spec: v1alpha1.MicroservicesSpec{
+				Spec: v1alpha1.TempoStackSpec{
 					Images: configv1alpha1.ImagesSpec{
 						Tempo: "local:2.0",
 					},
 				},
-				Status: v1alpha1.MicroservicesStatus{
+				Status: v1alpha1.TempoStackStatus{
 					Conditions: tc.inputConditions,
 				},
 			}
@@ -255,17 +255,17 @@ func TestPendingCondition(t *testing.T) {
 
 			client := &statusClientStub{}
 
-			stack := v1alpha1.Microservices{
+			stack := v1alpha1.TempoStack{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "my-stack",
 					Namespace: "some-ns",
 				},
-				Spec: v1alpha1.MicroservicesSpec{
+				Spec: v1alpha1.TempoStackSpec{
 					Images: configv1alpha1.ImagesSpec{
 						Tempo: "local:2.0",
 					},
 				},
-				Status: v1alpha1.MicroservicesStatus{
+				Status: v1alpha1.TempoStackStatus{
 					Conditions: tc.inputConditions,
 				},
 			}
@@ -349,17 +349,17 @@ func TestDegradedCondition(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 
-			stack := v1alpha1.Microservices{
+			stack := v1alpha1.TempoStack{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "my-stack",
 					Namespace: "some-ns",
 				},
-				Spec: v1alpha1.MicroservicesSpec{
+				Spec: v1alpha1.TempoStackSpec{
 					Images: configv1alpha1.ImagesSpec{
 						Tempo: "local:2.0",
 					},
 				},
-				Status: v1alpha1.MicroservicesStatus{
+				Status: v1alpha1.TempoStackStatus{
 					Conditions: tc.inputConditions,
 				},
 			}

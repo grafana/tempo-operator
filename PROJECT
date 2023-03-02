@@ -14,7 +14,7 @@ resources:
   controller: true
   domain: grafana.com
   group: tempo
-  kind: Microservices
+  kind: TempoStack
   path: github.com/os-observability/tempo-operator/api/v1alpha1
   version: v1alpha1
   webhooks:
