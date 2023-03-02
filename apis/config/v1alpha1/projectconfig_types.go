@@ -64,7 +64,27 @@ type OpenShiftFeatureGates struct {
 	// BaseDomain is used internally for redirect URL in gateway OpenShift auth mode.
 	// If empty the operator automatically derives the domain from the cluster.
 	BaseDomain string `json:"baseDomain,omitempty"`
+
+	// ClusterTLSPolicy enables usage of TLS policies set in the API Server.
+	// More details: https://docs.openshift.com/container-platform/4.11/security/tls-security-profiles.html
+	ClusterTLSPolicy bool
 }
+
+// TLSProfileType is a TLS security profile based on the Mozilla definitions:
+// https://wiki.mozilla.org/Security/Server_Side_TLS
+type TLSProfileType string
+
+const (
+	// TLSProfileOldType is a TLS security profile based on:
+	// https://wiki.mozilla.org/Security/Server_Side_TLS#Old_backward_compatibility
+	TLSProfileOldType TLSProfileType = "Old"
+	// TLSProfileIntermediateType is a TLS security profile based on:
+	// https://wiki.mozilla.org/Security/Server_Side_TLS#Intermediate_compatibility_.28default.29
+	TLSProfileIntermediateType TLSProfileType = "Intermediate"
+	// TLSProfileModernType is a TLS security profile based on:
+	// https://wiki.mozilla.org/Security/Server_Side_TLS#Modern_compatibility
+	TLSProfileModernType TLSProfileType = "Modern"
+)
 
 // FeatureGates is the supported set of all operator feature gates.
 type FeatureGates struct {
@@ -101,6 +121,10 @@ type FeatureGates struct {
 	// between ingestor and queriers, and between the queriers and the query-frontend component.
 	// The only component remains unprotected is the tempo-query (jaeger query UI).
 	GRPCEncryption bool `json:"grpcEncryption,omitempty"`
+
+	// TLSProfile allows to chose a TLS security profile. Enforced
+	// when using HTTPEncryption or GRPCEncryption.
+	TLSProfile string `json:"tlsProfile,omitempty"`
 }
 
 //+kubebuilder:object:root=true

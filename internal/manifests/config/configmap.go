@@ -10,6 +10,7 @@ import (
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
 	"github.com/os-observability/tempo-operator/internal/manifests/naming"
+	"github.com/os-observability/tempo-operator/internal/tlsprofile"
 )
 
 const tenantOverridesMountPath = "/conf/overrides.yaml"
@@ -19,6 +20,7 @@ type Params struct {
 	S3             S3
 	HTTPEncryption bool
 	GRPCEncryption bool
+	TLSProfile     tlsprofile.TLSProfileOptions
 }
 
 // S3 holds S3 object storage configuration options.

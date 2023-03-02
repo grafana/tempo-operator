@@ -33,6 +33,7 @@ import (
 	"github.com/os-observability/tempo-operator/internal/manifests"
 	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
 	"github.com/os-observability/tempo-operator/internal/status"
+	"github.com/os-observability/tempo-operator/internal/tlsprofile"
 )
 
 const (
@@ -161,7 +162,28 @@ func (r *MicroservicesReconciler) reconcileManifests(ctx context.Context, log lo
 		r.FeatureGates.OpenShift.BaseDomain = domain
 	}
 
-	objects, err := manifests.BuildAll(manifestutils.Params{Tempo: tempo, StorageParams: *storageConfig, Gates: r.FeatureGates})
+	tlsProfile, err := tlsprofile.Get(ctx, r.FeatureGates, r.Client, log)
+	if err != nil {
+		switch err {
+		case tlsprofile.ErrGetProfileFromCluster:
+		case tlsprofile.ErrGetInvalidProfile:
+			return &status.DegradedError{
+				Message: err.Error(),
+				Reason:  v1alpha1.ReasonCouldNotGetOpenShiftTLSPolicy,
+				Requeue: false,
+			}
+		default:
+			return err
+		}
+
+	}
+
+	objects, err := manifests.BuildAll(manifestutils.Params{
+		Tempo:         tempo,
+		StorageParams: *storageConfig,
+		Gates:         r.FeatureGates,
+		TLSProfile:    tlsProfile,
+	})
 	// TODO (pavolloffay) check error type and change return appropriately
 	if err != nil {
 		return fmt.Errorf("error building manifests: %w", err)
@@ -199,6 +221,7 @@ func (r *MicroservicesReconciler) reconcileManifests(ctx context.Context, log lo
 	if errCount > 0 {
 		return fmt.Errorf("failed to create objects for Tempo %s", req.NamespacedName)
 	}
+
 	return nil
 }
 
