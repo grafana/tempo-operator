@@ -11,7 +11,7 @@ import (
 )
 
 // SetComponentsStatus updates the pod status map component.
-func componentsStatus(ctx context.Context, c StatusClient, s v1alpha1.Microservices) (v1alpha1.ComponentStatus, error) {
+func componentsStatus(ctx context.Context, c StatusClient, s v1alpha1.TempoStack) (v1alpha1.ComponentStatus, error) {
 
 	var err error
 	components := v1alpha1.ComponentStatus{}
@@ -48,7 +48,7 @@ func componentsStatus(ctx context.Context, c StatusClient, s v1alpha1.Microservi
 	return components, nil
 }
 
-func appendPodStatus(ctx context.Context, c StatusClient, componentName string, stack v1alpha1.Microservices) (v1alpha1.PodStatusMap, error) {
+func appendPodStatus(ctx context.Context, c StatusClient, componentName string, stack v1alpha1.TempoStack) (v1alpha1.PodStatusMap, error) {
 	psm := v1alpha1.PodStatusMap{}
 	pods, err := c.GetPodsComponent(ctx, componentName, stack)
 
@@ -66,11 +66,11 @@ func appendPodStatus(ctx context.Context, c StatusClient, componentName string, 
 // GetComponetsStatus executes an aggregate update of the Microservice Status struct, i.e.
 // - It recreates the Status.Components pod status map per component.
 // - It sets the appropriate Status.Condition to true that matches the pod status maps.
-func GetComponetsStatus(ctx context.Context, k StatusClient, s v1alpha1.Microservices) (v1alpha1.MicroservicesStatus, error) {
+func GetComponetsStatus(ctx context.Context, k StatusClient, s v1alpha1.TempoStack) (v1alpha1.TempoStackStatus, error) {
 
 	cs, err := componentsStatus(ctx, k, s)
 	if err != nil {
-		return v1alpha1.MicroservicesStatus{}, err
+		return v1alpha1.TempoStackStatus{}, err
 	}
 	s.Status.Components = cs
 

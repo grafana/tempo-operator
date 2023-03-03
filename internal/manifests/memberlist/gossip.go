@@ -21,7 +21,7 @@ var (
 )
 
 // BuildGossip creates Kubernetes objects that are needed for memberlist.
-func BuildGossip(tempo v1alpha1.Microservices) *corev1.Service {
+func BuildGossip(tempo v1alpha1.TempoStack) *corev1.Service {
 	labels := manifestutils.ComponentLabels(componentName, tempo.Name)
 	selector := k8slabels.Merge(manifestutils.CommonLabels(tempo.Name), GossipSelector)
 

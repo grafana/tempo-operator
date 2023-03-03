@@ -10,11 +10,11 @@ import (
 	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
 )
 
-var defaultUserInfo = &user.DefaultInfo{Name: "system:microservices", Groups: []string{"system:logging"}}
+var defaultUserInfo = &user.DefaultInfo{Name: "system:tempostacks", Groups: []string{"system:logging"}}
 
 // BuildAll builds all secrets and configmaps containing
 // CA certificates, CA bundles and client certificates for
-// a Microservices.
+// a TempoStack.
 func BuildAll(opts Options) ([]client.Object, error) {
 	res := make([]client.Object, 0)
 

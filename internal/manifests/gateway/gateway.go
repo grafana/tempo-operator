@@ -77,7 +77,7 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 	return objs, nil
 }
 
-func serviceAccount(tempo v1alpha1.Microservices) *corev1.ServiceAccount {
+func serviceAccount(tempo v1alpha1.TempoStack) *corev1.ServiceAccount {
 	tt := true
 	labels := manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name)
 	annotations := map[string]string{}
@@ -97,7 +97,7 @@ func serviceAccount(tempo v1alpha1.Microservices) *corev1.ServiceAccount {
 	}
 }
 
-func clusterRole(tempo v1alpha1.Microservices) *rbacv1.ClusterRole {
+func clusterRole(tempo v1alpha1.TempoStack) *rbacv1.ClusterRole {
 	return &rbacv1.ClusterRole{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      naming.Name(manifestutils.GatewayComponentName, tempo.Name),
@@ -114,7 +114,7 @@ func clusterRole(tempo v1alpha1.Microservices) *rbacv1.ClusterRole {
 	}
 }
 
-func clusterRoleBinding(tempo v1alpha1.Microservices) *rbacv1.ClusterRoleBinding {
+func clusterRoleBinding(tempo v1alpha1.TempoStack) *rbacv1.ClusterRoleBinding {
 	return &rbacv1.ClusterRoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      naming.Name(manifestutils.GatewayComponentName, tempo.Name),
@@ -277,7 +277,7 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 	}
 }
 
-func patchOCPServingCerts(tempo v1alpha1.Microservices, dep *v1.Deployment) (*v1.Deployment, error) {
+func patchOCPServingCerts(tempo v1alpha1.TempoStack, dep *v1.Deployment) (*v1.Deployment, error) {
 	container := corev1.Container{
 		VolumeMounts: []corev1.VolumeMount{
 			{
@@ -315,12 +315,12 @@ func patchOCPServingCerts(tempo v1alpha1.Microservices, dep *v1.Deployment) (*v1
 	return dep, err
 }
 
-func patchServiceAccount(tempo v1alpha1.Microservices, dep *v1.Deployment) *v1.Deployment {
+func patchServiceAccount(tempo v1alpha1.TempoStack, dep *v1.Deployment) *v1.Deployment {
 	dep.Spec.Template.Spec.ServiceAccountName = naming.Name(manifestutils.GatewayComponentName, tempo.Name)
 	return dep
 }
 
-func service(tempo v1alpha1.Microservices, ocpServingCerts bool) *corev1.Service {
+func service(tempo v1alpha1.TempoStack, ocpServingCerts bool) *corev1.Service {
 	labels := manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name)
 	annotations := map[string]string{}
 	if ocpServingCerts {
@@ -359,7 +359,7 @@ func service(tempo v1alpha1.Microservices, ocpServingCerts bool) *corev1.Service
 	}
 }
 
-func route(tempo v1alpha1.Microservices) *routev1.Route {
+func route(tempo v1alpha1.TempoStack) *routev1.Route {
 	labels := manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name)
 	return &routev1.Route{
 		ObjectMeta: metav1.ObjectMeta{
@@ -383,7 +383,7 @@ func route(tempo v1alpha1.Microservices) *routev1.Route {
 	}
 }
 
-func configMap(tempo v1alpha1.Microservices, rbacCfg string) *corev1.ConfigMap {
+func configMap(tempo v1alpha1.TempoStack, rbacCfg string) *corev1.ConfigMap {
 	labels := manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name)
 	return &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
@@ -397,7 +397,7 @@ func configMap(tempo v1alpha1.Microservices, rbacCfg string) *corev1.ConfigMap {
 	}
 }
 
-func secret(tempo v1alpha1.Microservices, tenantsCfg string) *corev1.Secret {
+func secret(tempo v1alpha1.TempoStack, tenantsCfg string) *corev1.Secret {
 	labels := manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name)
 	secret := &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{

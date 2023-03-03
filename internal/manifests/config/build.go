@@ -59,7 +59,7 @@ func fromRateLimitSpecToRateLimitOptionsMap(ratemaps map[string]v1alpha1.RateLim
 	return result
 }
 
-func buildConfiguration(tempo v1alpha1.Microservices, params Params) ([]byte, error) {
+func buildConfiguration(tempo v1alpha1.TempoStack, params Params) ([]byte, error) {
 	opts := options{
 		S3:              s3FromParams(params),
 		GlobalRetention: tempo.Spec.Retention.Global.Traces.Duration.String(),
@@ -89,13 +89,13 @@ func isTenantOverridesConfigRequired(limitSpec v1alpha1.LimitSpec) bool {
 	return len(limitSpec.PerTenant) > 0
 }
 
-func buildTenantOverrides(tempo v1alpha1.Microservices) ([]byte, error) {
+func buildTenantOverrides(tempo v1alpha1.TempoStack) ([]byte, error) {
 	return renderTenantOverridesTemplate(tenantOptions{
 		RateLimits: fromRateLimitSpecToRateLimitOptionsMap(tempo.Spec.LimitSpec.PerTenant),
 	})
 }
 
-func buildTLSConfig(tempo v1alpha1.Microservices, params Params) tlsOptions {
+func buildTLSConfig(tempo v1alpha1.TempoStack, params Params) tlsOptions {
 	return tlsOptions{
 		Paths: tlsFilePaths{
 			CA: fmt.Sprintf("%s/service-ca.crt", manifestutils.CABundleDir),
@@ -125,7 +125,7 @@ func buildTLSConfig(tempo v1alpha1.Microservices, params Params) tlsOptions {
 
 }
 
-func buildTempoQueryConfig(tempo v1alpha1.Microservices, params Params) ([]byte, error) {
+func buildTempoQueryConfig(tempo v1alpha1.TempoStack, params Params) ([]byte, error) {
 	return renderTempoQueryTemplate(tempoQueryOptions{
 		TLS:      buildTLSConfig(tempo, params),
 		HTTPPort: manifestutils.PortHTTPServer,

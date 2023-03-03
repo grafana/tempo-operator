@@ -87,11 +87,11 @@ query_frontend:
     concurrent_jobs: 2000
     max_duration: 0s
 `
-	cfg, err := buildConfiguration(v1alpha1.Microservices{
+	cfg, err := buildConfiguration(v1alpha1.TempoStack{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "test",
 		},
-		Spec: v1alpha1.MicroservicesSpec{
+		Spec: v1alpha1.TempoStackSpec{
 			ReplicationFactor: 1,
 			Retention: v1alpha1.RetentionSpec{
 				Global: v1alpha1.RetentionConfig{
@@ -878,11 +878,11 @@ query_frontend:
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			cfg, err := buildConfiguration(v1alpha1.Microservices{
+			cfg, err := buildConfiguration(v1alpha1.TempoStack{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "test",
 				},
-				Spec: v1alpha1.MicroservicesSpec{
+				Spec: v1alpha1.TempoStackSpec{
 					ReplicationFactor: 1,
 					Retention: v1alpha1.RetentionSpec{
 						Global: v1alpha1.RetentionConfig{
@@ -908,11 +908,11 @@ overrides:
   "mytenant":
     ingestion_burst_size_bytes: 100
 `
-	tempo := v1alpha1.Microservices{
+	tempo := v1alpha1.TempoStack{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "test",
 		},
-		Spec: v1alpha1.MicroservicesSpec{
+		Spec: v1alpha1.TempoStackSpec{
 			LimitSpec: v1alpha1.LimitSpec{
 				PerTenant: map[string]v1alpha1.RateLimitSpec{
 					"mytenant": {
@@ -1018,11 +1018,11 @@ query_frontend:
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			cfg, err := buildConfiguration(v1alpha1.Microservices{
+			cfg, err := buildConfiguration(v1alpha1.TempoStack{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "test",
 				},
-				Spec: v1alpha1.MicroservicesSpec{
+				Spec: v1alpha1.TempoStackSpec{
 					ReplicationFactor: 1,
 					SearchSpec:        tc.spec,
 				},
@@ -1111,11 +1111,11 @@ query_frontend:
     max_duration: 0s
       `
 
-	cfg, err := buildConfiguration(v1alpha1.Microservices{
+	cfg, err := buildConfiguration(v1alpha1.TempoStack{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "test",
 		},
-		Spec: v1alpha1.MicroservicesSpec{
+		Spec: v1alpha1.TempoStackSpec{
 			ReplicationFactor: replcationFactor,
 		},
 	}, Params{S3: S3{
@@ -1198,11 +1198,11 @@ query_frontend:
     concurrent_jobs: 2000
     max_duration: 0s
 `
-	cfg, err := buildConfiguration(v1alpha1.Microservices{
+	cfg, err := buildConfiguration(v1alpha1.TempoStack{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "test",
 		},
-		Spec: v1alpha1.MicroservicesSpec{
+		Spec: v1alpha1.TempoStackSpec{
 			ReplicationFactor: 1,
 			Retention: v1alpha1.RetentionSpec{
 				Global: v1alpha1.RetentionConfig{
@@ -1333,12 +1333,12 @@ ingester_client:
     tls_cipher_suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
     tls_min_version: VersionTLS12
 `
-	cfg, err := buildConfiguration(v1alpha1.Microservices{
+	cfg, err := buildConfiguration(v1alpha1.TempoStack{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test",
 			Namespace: "nstest",
 		},
-		Spec: v1alpha1.MicroservicesSpec{
+		Spec: v1alpha1.TempoStackSpec{
 			ReplicationFactor: 1,
 			Retention: v1alpha1.RetentionSpec{
 				Global: v1alpha1.RetentionConfig{

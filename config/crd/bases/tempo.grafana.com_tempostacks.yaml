@@ -5,14 +5,17 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.9.2
   creationTimestamp: null
-  name: microservices.tempo.grafana.com
+  name: tempostacks.tempo.grafana.com
 spec:
   group: tempo.grafana.com
   names:
-    kind: Microservices
-    listKind: MicroservicesList
-    plural: microservices
-    singular: microservices
+    kind: TempoStack
+    listKind: TempoStackList
+    plural: tempostacks
+    shortNames:
+    - tempo
+    - tempos
+    singular: tempostack
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
@@ -26,7 +29,7 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: Microservices is the Schema for the microservices API.
+        description: TempoStack is the Schema for the tempostacks API.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -41,7 +44,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: MicroservicesSpec defines the desired state of Microservices.
+            description: TempoStackSpec defines the desired state of TempoStack.
             properties:
               images:
                 description: Images defines the image for each container.
@@ -233,7 +236,7 @@ spec:
                 properties:
                   secret:
                     description: Secret for object storage authentication. Name of
-                      a secret in the same namespace as the tempo Microservices custom
+                      a secret in the same namespace as the tempo TempoStack custom
                       resource.
                     minLength: 1
                     type: string
@@ -825,7 +828,7 @@ spec:
             - storage
             type: object
           status:
-            description: MicroservicesStatus defines the observed state of Microservices.
+            description: TempoStackStatus defines the observed state of TempoStack.
             properties:
               components:
                 description: Components provides summary of all Tempo pod status grouped

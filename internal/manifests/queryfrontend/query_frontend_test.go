@@ -265,12 +265,12 @@ func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 }
 
 func TestBuildQueryFrontend(t *testing.T) {
-	objects, err := BuildQueryFrontend(manifestutils.Params{Tempo: v1alpha1.Microservices{
+	objects, err := BuildQueryFrontend(manifestutils.Params{Tempo: v1alpha1.TempoStack{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test",
 			Namespace: "project1",
 		},
-		Spec: v1alpha1.MicroservicesSpec{
+		Spec: v1alpha1.TempoStackSpec{
 			Images: configv1alpha1.ImagesSpec{
 				Tempo: "docker.io/grafana/tempo:1.5.0",
 			},
@@ -303,12 +303,12 @@ func TestBuildQueryFrontend(t *testing.T) {
 
 func TestBuildQueryFrontendWithJaeger(t *testing.T) {
 	withJaeger := true
-	objects, err := BuildQueryFrontend(manifestutils.Params{Tempo: v1alpha1.Microservices{
+	objects, err := BuildQueryFrontend(manifestutils.Params{Tempo: v1alpha1.TempoStack{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test",
 			Namespace: "project1",
 		},
-		Spec: v1alpha1.MicroservicesSpec{
+		Spec: v1alpha1.TempoStackSpec{
 			Images: configv1alpha1.ImagesSpec{
 				Tempo:      "docker.io/grafana/tempo:1.5.0",
 				TempoQuery: "docker.io/grafana/tempo-query:1.5.0",
@@ -359,12 +359,12 @@ func TestBuildQueryFrontendWithJaeger(t *testing.T) {
 }
 
 func TestQueryFrontendJaegerIngress(t *testing.T) {
-	objects, err := BuildQueryFrontend(manifestutils.Params{Tempo: v1alpha1.Microservices{
+	objects, err := BuildQueryFrontend(manifestutils.Params{Tempo: v1alpha1.TempoStack{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test",
 			Namespace: "project1",
 		},
-		Spec: v1alpha1.MicroservicesSpec{
+		Spec: v1alpha1.TempoStackSpec{
 			Components: v1alpha1.TempoComponentsSpec{
 				QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
 					JaegerQuery: v1alpha1.JaegerQuerySpec{
@@ -423,12 +423,12 @@ func TestQueryFrontendJaegerIngress(t *testing.T) {
 }
 
 func TestQueryFrontendJaegerRoute(t *testing.T) {
-	objects, err := BuildQueryFrontend(manifestutils.Params{Tempo: v1alpha1.Microservices{
+	objects, err := BuildQueryFrontend(manifestutils.Params{Tempo: v1alpha1.TempoStack{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test",
 			Namespace: "project1",
 		},
-		Spec: v1alpha1.MicroservicesSpec{
+		Spec: v1alpha1.TempoStackSpec{
 			Components: v1alpha1.TempoComponentsSpec{
 				QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
 					JaegerQuery: v1alpha1.JaegerQuerySpec{

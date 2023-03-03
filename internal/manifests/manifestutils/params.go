@@ -10,7 +10,7 @@ import (
 type Params struct {
 	StorageParams  StorageParams
 	ConfigChecksum string
-	Tempo          v1alpha1.Microservices
+	Tempo          v1alpha1.TempoStack
 	Gates          configv1alpha1.FeatureGates
 	TLSProfile     tlsprofile.TLSProfileOptions
 }

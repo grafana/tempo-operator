@@ -13,7 +13,7 @@ import (
 )
 
 func TestBuildDefaultServiceAccount(t *testing.T) {
-	serviceAccount := BuildDefaultServiceAccount(v1alpha1.Microservices{
+	serviceAccount := BuildDefaultServiceAccount(v1alpha1.TempoStack{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test",
 			Namespace: "ns1",

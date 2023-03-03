@@ -32,10 +32,10 @@ var (
 )
 
 // log is for logging in this package.
-var microserviceslog = logf.Log.WithName("microservices-resource")
+var tempostackslog = logf.Log.WithName("tempostacks-resource")
 
 // SetupWebhookWithManager initializes the webhook.
-func (r *Microservices) SetupWebhookWithManager(mgr ctrl.Manager, ctrlConfig v1alpha1.ProjectConfig) error {
+func (r *TempoStack) SetupWebhookWithManager(mgr ctrl.Manager, ctrlConfig v1alpha1.ProjectConfig) error {
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(r).
 		WithDefaulter(NewDefaulter(ctrlConfig)).
@@ -43,7 +43,7 @@ func (r *Microservices) SetupWebhookWithManager(mgr ctrl.Manager, ctrlConfig v1a
 		Complete()
 }
 
-//+kubebuilder:webhook:path=/mutate-tempo-grafana-com-v1alpha1-microservices,mutating=true,failurePolicy=fail,sideEffects=None,groups=tempo.grafana.com,resources=microservices,verbs=create;update,versions=v1alpha1,name=mmicroservices.kb.io,admissionReviewVersions=v1
+//+kubebuilder:webhook:path=/mutate-tempo-grafana-com-v1alpha1-tempostack,mutating=true,failurePolicy=fail,sideEffects=None,groups=tempo.grafana.com,resources=tempostacks,verbs=create;update,versions=v1alpha1,name=mtempostack.kb.io,admissionReviewVersions=v1
 
 // NewDefaulter creates a new instance of Defaulter, which implements functions for setting defaults on the Tempo CR.
 func NewDefaulter(ctrlConfig v1alpha1.ProjectConfig) *Defaulter {
@@ -59,11 +59,11 @@ type Defaulter struct {
 
 // Default applies default values to a Kubernetes object.
 func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
-	r, ok := obj.(*Microservices)
+	r, ok := obj.(*TempoStack)
 	if !ok {
-		return apierrors.NewBadRequest(fmt.Sprintf("expected a Microservices object but got %T", obj))
+		return apierrors.NewBadRequest(fmt.Sprintf("expected a TempoStack object but got %T", obj))
 	}
-	microserviceslog.V(1).Info("default", "name", r.Name)
+	tempostackslog.V(1).Info("default", "name", r.Name)
 
 	if r.Spec.Images.Tempo == "" {
 		if d.ctrlConfig.DefaultImages.Tempo == "" {
@@ -132,7 +132,7 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 	return nil
 }
 
-//+kubebuilder:webhook:path=/validate-tempo-grafana-com-v1alpha1-microservices,mutating=false,failurePolicy=fail,sideEffects=None,groups=tempo.grafana.com,resources=microservices,verbs=create;update,versions=v1alpha1,name=vmicroservices.kb.io,admissionReviewVersions=v1
+//+kubebuilder:webhook:path=/validate-tempo-grafana-com-v1alpha1-tempostack,mutating=false,failurePolicy=fail,sideEffects=None,groups=tempo.grafana.com,resources=tempostacks,verbs=create;update,versions=v1alpha1,name=vtempostack.kb.io,admissionReviewVersions=v1
 
 type validator struct {
 	client     client.Client
@@ -152,7 +152,7 @@ func (v *validator) ValidateDelete(ctx context.Context, obj runtime.Object) erro
 	return nil
 }
 
-func (v *validator) validateServiceAccount(ctx context.Context, tempo Microservices) field.ErrorList {
+func (v *validator) validateServiceAccount(ctx context.Context, tempo TempoStack) field.ErrorList {
 	var allErrs field.ErrorList
 
 	// the default service account gets created later in the reconciliation loop
@@ -172,7 +172,7 @@ func (v *validator) validateServiceAccount(ctx context.Context, tempo Microservi
 }
 
 // ValidateStorageSecret validates the object storage secret required for tempo.
-func ValidateStorageSecret(tempo Microservices, storageSecret corev1.Secret) field.ErrorList {
+func ValidateStorageSecret(tempo TempoStack, storageSecret corev1.Secret) field.ErrorList {
 	path := field.NewPath("spec").Child("storage").Child("secret")
 
 	if storageSecret.Data == nil {
@@ -208,7 +208,7 @@ func ValidateStorageSecret(tempo Microservices, storageSecret corev1.Secret) fie
 	return allErrs
 }
 
-func (v *validator) validateStorage(ctx context.Context, tempo Microservices) field.ErrorList {
+func (v *validator) validateStorage(ctx context.Context, tempo TempoStack) field.ErrorList {
 	storageSecret := &corev1.Secret{}
 	err := v.client.Get(ctx, types.NamespacedName{Namespace: tempo.Namespace, Name: tempo.Spec.Storage.Secret}, storageSecret)
 	if err != nil {
@@ -220,7 +220,7 @@ func (v *validator) validateStorage(ctx context.Context, tempo Microservices) fi
 	return ValidateStorageSecret(tempo, *storageSecret)
 }
 
-func (v *validator) validateReplicationFactor(tempo Microservices) field.ErrorList {
+func (v *validator) validateReplicationFactor(tempo TempoStack) field.ErrorList {
 	// Validate minimum quorum on ingestors according to replicas and replication factor
 	replicatonFactor := tempo.Spec.ReplicationFactor
 	// Ingester replicas should not be nil at this point, due defauler.
@@ -238,7 +238,7 @@ func (v *validator) validateReplicationFactor(tempo Microservices) field.ErrorLi
 	return nil
 }
 
-func (v *validator) validateQueryFrontend(tempo Microservices) field.ErrorList {
+func (v *validator) validateQueryFrontend(tempo TempoStack) field.ErrorList {
 	path := field.NewPath("spec").Child("template").Child("queryFrontend").Child("jaegerQuery").Child("ingress").Child("type")
 
 	if tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Type != IngressTypeNone && !tempo.Spec.Components.QueryFrontend.JaegerQuery.Enabled {
@@ -261,11 +261,11 @@ func (v *validator) validateQueryFrontend(tempo Microservices) field.ErrorList {
 }
 
 func (v *validator) validate(ctx context.Context, obj runtime.Object) error {
-	tempo, ok := obj.(*Microservices)
+	tempo, ok := obj.(*TempoStack)
 	if !ok {
-		return apierrors.NewBadRequest(fmt.Sprintf("expected a Microservices object but got %T", obj))
+		return apierrors.NewBadRequest(fmt.Sprintf("expected a TempoStack object but got %T", obj))
 	}
-	microserviceslog.V(1).Info("validate", "name", tempo.Name)
+	tempostackslog.V(1).Info("validate", "name", tempo.Name)
 
 	var allErrs field.ErrorList
 	allErrs = append(allErrs, v.validateServiceAccount(ctx, *tempo)...)

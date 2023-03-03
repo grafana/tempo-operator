@@ -8,8 +8,8 @@ import (
 	"github.com/os-observability/tempo-operator/apis/config/v1alpha1"
 )
 
-// MicroservicesSpec defines the desired state of Microservices.
-type MicroservicesSpec struct {
+// TempoStackSpec defines the desired state of TempoStack.
+type TempoStackSpec struct {
 	// LimitSpec is used to limit ingestion and querying rates.
 	//
 	// +optional
@@ -135,8 +135,8 @@ type ComponentStatus struct {
 	Gateway PodStatusMap `json:"gateway,omitempty"`
 }
 
-// MicroservicesStatus defines the observed state of Microservices.
-type MicroservicesStatus struct {
+// TempoStackStatus defines the observed state of TempoStack.
+type TempoStackStatus struct {
 	// Version of the managed Tempo instance.
 	// +optional
 	TempoVersion string `json:"tempoVersion,omitempty"`
@@ -292,7 +292,7 @@ type RoleSpec struct {
 }
 
 // TenantSecretSpec is a secret reference containing name only
-// for a secret living in the same namespace as the (Tempo) Microservices custom resource.
+// for a secret living in the same namespace as the (Tempo) TempoStack custom resource.
 type TenantSecretSpec struct {
 	// Name of a secret in the namespace configured for tenant secrets.
 	//
@@ -361,21 +361,24 @@ type AuthenticationSpec struct {
 //+kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 //+kubebuilder:printcolumn:name="Tempo version",type="string",JSONPath=".status.tempoVersion",description="Tempo Version"
 
-// Microservices is the Schema for the microservices API.
-type Microservices struct {
-	Status            MicroservicesStatus `json:"status,omitempty"`
+// TempoStack is the Schema for the tempostacks API.
+//
+// +operator-sdk:csv:customresourcedefinitions:displayName="TempoStack",resources={{ConfigMap,v1},{ServiceAccount,v1},{Service,v1},{Secret,v1},{StatefulSet,v1},{Deployment,v1},{Ingress,v1},{Route,v1}}
+// +kubebuilder:resource:shortName=tempo;tempos
+type TempoStack struct {
+	Status            TempoStackStatus `json:"status,omitempty"`
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              MicroservicesSpec `json:"spec,omitempty"`
+	Spec              TempoStackSpec `json:"spec,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 
-// MicroservicesList contains a list of Microservices.
-type MicroservicesList struct {
+// TempoStackList contains a list of TempoStack.
+type TempoStackList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Microservices `json:"items"`
+	Items           []TempoStack `json:"items"`
 }
 
 // Resources defines resources configuration.
@@ -425,13 +428,13 @@ type ObjectStorageSpec struct {
 	TLS *ObjectStorageTLSSpec `json:"tls,omitempty"`
 
 	// Secret for object storage authentication.
-	// Name of a secret in the same namespace as the tempo Microservices custom resource.
+	// Name of a secret in the same namespace as the tempo TempoStack custom resource.
 	//
 	// +kubebuilder:validation:Required
 	// +kubebuilder:validation:MinLength=1
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Object Storage Secret"
 	Secret string `json:"secret"`
-	// Don't forget to update storageSecretField in microservices_controller.go if this field name changes.
+	// Don't forget to update storageSecretField in tempostacks_controller.go if this field name changes.
 }
 
 // ObjectStorageTLSSpec is the TLS configuration for reaching the object storage endpoint.
@@ -722,5 +725,5 @@ type RetentionConfig struct {
 }
 
 func init() {
-	SchemeBuilder.Register(&Microservices{}, &MicroservicesList{})
+	SchemeBuilder.Register(&TempoStack{}, &TempoStackList{})
 }

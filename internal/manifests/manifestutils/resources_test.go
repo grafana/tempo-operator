@@ -25,19 +25,19 @@ func TestResources(t *testing.T) {
 	tests := []struct {
 		resources corev1.ResourceRequirements
 		name      string
-		tempo     v1alpha1.Microservices
+		tempo     v1alpha1.TempoStack
 	}{
 		{
 			name: "resources not set",
-			tempo: v1alpha1.Microservices{
-				Spec: v1alpha1.MicroservicesSpec{},
+			tempo: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{},
 			},
 			resources: corev1.ResourceRequirements{},
 		},
 		{
 			name: "cpu, memory resources set",
-			tempo: v1alpha1.Microservices{
-				Spec: v1alpha1.MicroservicesSpec{
+			tempo: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
 					Resources: v1alpha1.Resources{
 						Total: &corev1.ResourceRequirements{
 							Limits: map[corev1.ResourceName]resource.Quantity{
@@ -61,8 +61,8 @@ func TestResources(t *testing.T) {
 		},
 		{
 			name: "missing cpu resources",
-			tempo: v1alpha1.Microservices{
-				Spec: v1alpha1.MicroservicesSpec{
+			tempo: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
 					Resources: v1alpha1.Resources{
 						Total: &corev1.ResourceRequirements{
 							Limits: map[corev1.ResourceName]resource.Quantity{
@@ -83,8 +83,8 @@ func TestResources(t *testing.T) {
 		},
 		{
 			name: "missing memory resources",
-			tempo: v1alpha1.Microservices{
-				Spec: v1alpha1.MicroservicesSpec{
+			tempo: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
 					Resources: v1alpha1.Resources{
 						Total: &corev1.ResourceRequirements{
 							Limits: map[corev1.ResourceName]resource.Quantity{

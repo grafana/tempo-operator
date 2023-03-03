@@ -137,15 +137,15 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 	return d, nil
 }
 
-func configureQuerierHTTPServicePKI(deployment *v1.Deployment, tempo v1alpha1.Microservices) error {
+func configureQuerierHTTPServicePKI(deployment *v1.Deployment, tempo v1alpha1.TempoStack) error {
 	return manifestutils.ConfigureHTTPServicePKI(&deployment.Spec.Template.Spec, naming.Name(manifestutils.QuerierComponentName, tempo.Name))
 }
 
-func configureQuerierGRPCServicePKI(deployment *v1.Deployment, tempo v1alpha1.Microservices) error {
+func configureQuerierGRPCServicePKI(deployment *v1.Deployment, tempo v1alpha1.TempoStack) error {
 	return manifestutils.ConfigureGRPCServicePKI(&deployment.Spec.Template.Spec, naming.Name(manifestutils.QuerierComponentName, tempo.Name))
 }
 
-func service(tempo v1alpha1.Microservices) *corev1.Service {
+func service(tempo v1alpha1.TempoStack) *corev1.Service {
 	labels := manifestutils.ComponentLabels(manifestutils.QuerierComponentName, tempo.Name)
 	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{

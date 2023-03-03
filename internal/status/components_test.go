@@ -18,7 +18,7 @@ import (
 
 func TestSetComponentsStatus_WhenListReturnError_ReturnError(t *testing.T) {
 
-	s := v1alpha1.Microservices{
+	s := v1alpha1.TempoStack{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "my-stack",
 			Namespace: "some-ns",
@@ -39,7 +39,7 @@ func TestSetComponentsStatus_WhenListReturnError_ReturnError(t *testing.T) {
 		t.Run(tc.componentNotFound, func(t *testing.T) {
 			k := &statusClientStub{}
 
-			k.GetPodsComponentStub = func(ctx context.Context, componentName string, stack v1alpha1.Microservices) (*corev1.PodList, error) {
+			k.GetPodsComponentStub = func(ctx context.Context, componentName string, stack v1alpha1.TempoStack) (*corev1.PodList, error) {
 				if tc.componentNotFound == componentName {
 					return nil, apierrors.NewNotFound(schema.GroupResource{}, "something wasn't found")
 				}
@@ -67,7 +67,7 @@ func TestSetComponentsStatus_WhenListReturnError_ReturnError(t *testing.T) {
 func TestSetComponentsStatus_WhenSomePodPending(t *testing.T) {
 	k := &statusClientStub{}
 
-	k.GetPodsComponentStub = func(ctx context.Context, componentName string, stack v1alpha1.Microservices) (*corev1.PodList, error) {
+	k.GetPodsComponentStub = func(ctx context.Context, componentName string, stack v1alpha1.TempoStack) (*corev1.PodList, error) {
 		pods := v1.PodList{
 			Items: []v1.Pod{
 				{
@@ -92,7 +92,7 @@ func TestSetComponentsStatus_WhenSomePodPending(t *testing.T) {
 
 	}
 
-	s := v1alpha1.Microservices{
+	s := v1alpha1.TempoStack{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "my-stack",
 			Namespace: "some-ns",
@@ -104,7 +104,7 @@ func TestSetComponentsStatus_WhenSomePodPending(t *testing.T) {
 		"Running": []string{"pod-b"},
 	}
 
-	expected := v1alpha1.MicroservicesStatus{
+	expected := v1alpha1.TempoStackStatus{
 		Components: v1alpha1.ComponentStatus{
 			Compactor:     expectedComponents,
 			Ingester:      expectedComponents,
@@ -135,7 +135,7 @@ func TestSetComponentsStatus_WhenSomePodPending(t *testing.T) {
 func TestSetComponentsStatus_WhenSomePodFailed(t *testing.T) {
 	k := &statusClientStub{}
 
-	k.GetPodsComponentStub = func(ctx context.Context, componentName string, stack v1alpha1.Microservices) (*corev1.PodList, error) {
+	k.GetPodsComponentStub = func(ctx context.Context, componentName string, stack v1alpha1.TempoStack) (*corev1.PodList, error) {
 		pods := v1.PodList{
 			Items: []v1.Pod{
 				{
@@ -160,7 +160,7 @@ func TestSetComponentsStatus_WhenSomePodFailed(t *testing.T) {
 
 	}
 
-	s := v1alpha1.Microservices{
+	s := v1alpha1.TempoStack{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "my-stack",
 			Namespace: "some-ns",
@@ -172,7 +172,7 @@ func TestSetComponentsStatus_WhenSomePodFailed(t *testing.T) {
 		"Running": []string{"pod-b"},
 	}
 
-	expected := v1alpha1.MicroservicesStatus{
+	expected := v1alpha1.TempoStackStatus{
 		Components: v1alpha1.ComponentStatus{
 			Compactor:     expectedComponents,
 			Ingester:      expectedComponents,
@@ -203,7 +203,7 @@ func TestSetComponentsStatus_WhenSomePodFailed(t *testing.T) {
 func TestSetComponentsStatus_WhenSomePodUnknow(t *testing.T) {
 	k := &statusClientStub{}
 
-	k.GetPodsComponentStub = func(ctx context.Context, componentName string, stack v1alpha1.Microservices) (*corev1.PodList, error) {
+	k.GetPodsComponentStub = func(ctx context.Context, componentName string, stack v1alpha1.TempoStack) (*corev1.PodList, error) {
 		pods := v1.PodList{
 			Items: []v1.Pod{
 				{
@@ -228,7 +228,7 @@ func TestSetComponentsStatus_WhenSomePodUnknow(t *testing.T) {
 
 	}
 
-	s := v1alpha1.Microservices{
+	s := v1alpha1.TempoStack{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "my-stack",
 			Namespace: "some-ns",
@@ -240,7 +240,7 @@ func TestSetComponentsStatus_WhenSomePodUnknow(t *testing.T) {
 		"Running": []string{"pod-b"},
 	}
 
-	expected := v1alpha1.MicroservicesStatus{
+	expected := v1alpha1.TempoStackStatus{
 		Components: v1alpha1.ComponentStatus{
 			Compactor:     expectedComponents,
 			Ingester:      expectedComponents,
@@ -271,7 +271,7 @@ func TestSetComponentsStatus_WhenSomePodUnknow(t *testing.T) {
 func TestSetComponentsStatus_WhenAllReady(t *testing.T) {
 	k := &statusClientStub{}
 
-	k.GetPodsComponentStub = func(ctx context.Context, componentName string, stack v1alpha1.Microservices) (*corev1.PodList, error) {
+	k.GetPodsComponentStub = func(ctx context.Context, componentName string, stack v1alpha1.TempoStack) (*corev1.PodList, error) {
 		pods := v1.PodList{
 			Items: []v1.Pod{
 				{
@@ -296,7 +296,7 @@ func TestSetComponentsStatus_WhenAllReady(t *testing.T) {
 
 	}
 
-	s := v1alpha1.Microservices{
+	s := v1alpha1.TempoStack{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "my-stack",
 			Namespace: "some-ns",
@@ -307,7 +307,7 @@ func TestSetComponentsStatus_WhenAllReady(t *testing.T) {
 		"Running": []string{"pod-a", "pod-b"},
 	}
 
-	expected := v1alpha1.MicroservicesStatus{
+	expected := v1alpha1.TempoStackStatus{
 		Components: v1alpha1.ComponentStatus{
 			Compactor:     expectedComponents,
 			Ingester:      expectedComponents,

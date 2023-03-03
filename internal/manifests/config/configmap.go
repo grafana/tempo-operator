@@ -32,7 +32,7 @@ type S3 struct {
 // BuildConfigMap builds the tempo configuration file and the tenant-specific overrides configuration.
 // It returns a ConfigMap containing both configuration files and the checksum of the main configuration file
 // (the tenant-specific configuration gets reloaded automatically, therefore no checksum is required).
-func BuildConfigMap(tempo v1alpha1.Microservices, params Params) (*corev1.ConfigMap, string, error) {
+func BuildConfigMap(tempo v1alpha1.TempoStack, params Params) (*corev1.ConfigMap, string, error) {
 	config, err := buildConfiguration(tempo, params)
 	if err != nil {
 		return nil, "", err

@@ -15,7 +15,7 @@ import (
 )
 
 func TestBuildGossip(t *testing.T) {
-	service := BuildGossip(v1alpha1.Microservices{
+	service := BuildGossip(v1alpha1.TempoStack{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test",
 			Namespace: "ns1",

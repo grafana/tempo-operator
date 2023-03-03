@@ -13,12 +13,12 @@ import (
 
 func TestBuildAll(t *testing.T) {
 	objects, err := BuildAll(manifestutils.Params{
-		Tempo: v1alpha1.Microservices{
+		Tempo: v1alpha1.TempoStack{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "foo",
 				Namespace: "project1",
 			},
-			Spec: v1alpha1.MicroservicesSpec{
+			Spec: v1alpha1.TempoStackSpec{
 				Components: v1alpha1.TempoComponentsSpec{
 					Gateway: v1alpha1.TempoGatewaySpec{
 						Enabled: true,
