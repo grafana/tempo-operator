@@ -241,7 +241,7 @@ func (r *TempoStackReconciler) getStorageConfig(ctx context.Context, tempo v1alp
 		return nil, fmt.Errorf("invalid storage secret: %s", strings.Join(msgs, ", "))
 	}
 
-	return &manifestutils.StorageParams{S3: manifestutils.S3{
+	return &manifestutils.StorageParams{S3: &manifestutils.S3{
 		Endpoint: string(storageSecret.Data["endpoint"]),
 		Bucket:   string(storageSecret.Data["bucket"]),
 	}}, nil
