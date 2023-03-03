@@ -210,7 +210,7 @@ func ValidateStorageSecret(tempo TempoStack, storageSecret corev1.Secret) field.
 
 func (v *validator) validateStorage(ctx context.Context, tempo TempoStack) field.ErrorList {
 	storageSecret := &corev1.Secret{}
-	err := v.client.Get(ctx, types.NamespacedName{Namespace: tempo.Namespace, Name: tempo.Spec.Storage.Secret}, storageSecret)
+	err := v.client.Get(ctx, types.NamespacedName{Namespace: tempo.Namespace, Name: tempo.Spec.Storage.Secret.Name}, storageSecret)
 	if err != nil {
 		// Do not fail the validation here, the user can create the storage secret later.
 		// The operator will remain in a degraded condition until the storage secret is set.

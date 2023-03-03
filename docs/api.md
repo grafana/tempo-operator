@@ -188,8 +188,8 @@ Storage defines S3 compatible object storage configuration. User is required to 
         </tr>
     </thead>
     <tbody><tr>
-        <td><b>secret</b></td>
-        <td>string</td>
+        <td><b><a href="#tempostackspecstoragesecret">secret</a></b></td>
+        <td>object</td>
         <td>
           Secret for object storage authentication. Name of a secret in the same namespace as the tempo TempoStack custom resource.<br/>
         </td>
@@ -201,6 +201,42 @@ Storage defines S3 compatible object storage configuration. User is required to 
           TLS configuration for reaching the object storage endpoint.<br/>
         </td>
         <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### TempoStack.spec.storage.secret
+<sup><sup>[↩ Parent](#tempostackspecstorage)</sup></sup>
+
+
+
+Secret for object storage authentication. Name of a secret in the same namespace as the tempo TempoStack custom resource.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of a secret in the namespace configured for object storage secrets.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>type</b></td>
+        <td>enum</td>
+        <td>
+          Type of object storage that should be used<br/>
+          <br/>
+            <i>Enum</i>: s3<br/>
+        </td>
+        <td>true</td>
       </tr></tbody>
 </table>
 

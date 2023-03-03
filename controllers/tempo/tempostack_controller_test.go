@@ -54,7 +54,10 @@ func createTempoCR(t *testing.T, nsn types.NamespacedName, storageSecret *corev1
 				PerTenant: map[string]v1alpha1.RetentionConfig{},
 			},
 			Storage: v1alpha1.ObjectStorageSpec{
-				Secret: storageSecret.Name,
+				Secret: v1alpha1.ObjectStorageSecretSpec{
+					Name: storageSecret.Name,
+					Type: "s3",
+				},
 			},
 		},
 	}

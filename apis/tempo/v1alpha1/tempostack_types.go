@@ -417,6 +417,33 @@ type SearchSpec struct {
 	MaxResultLimit int `json:"maxResultLimit,omitempty"`
 }
 
+// ObjectStorageSecretType defines the type of storage which can be used with the Tempo cluster.
+//
+// +kubebuilder:validation:Enum=s3
+type ObjectStorageSecretType string
+
+const (
+	// ObjectStorageSecretS3 when using S3 for Tempo storage
+	ObjectStorageSecretS3 ObjectStorageSecretType = "s3"
+)
+
+// ObjectStorageSecretSpec is a secret reference containing name only, no namespace.
+type ObjectStorageSecretSpec struct {
+	// Type of object storage that should be used
+	//
+	// +required
+	// +kubebuilder:validation:Required
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors={"urn:alm:descriptor:com.tectonic.ui:select:azure","urn:alm:descriptor:com.tectonic.ui:select:gcs","urn:alm:descriptor:com.tectonic.ui:select:s3","urn:alm:descriptor:com.tectonic.ui:select:swift"},displayName="Object Storage Secret Type"
+	Type ObjectStorageSecretType `json:"type"`
+
+	// Name of a secret in the namespace configured for object storage secrets.
+	//
+	// +required
+	// +kubebuilder:validation:Required
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors="urn:alm:descriptor:io.kubernetes:Secret",displayName="Object Storage Secret Name"
+	Name string `json:"name"`
+}
+
 // ObjectStorageSpec defines the requirements to access the object
 // storage bucket to persist traces by the ingester component.
 type ObjectStorageSpec struct {
@@ -431,10 +458,9 @@ type ObjectStorageSpec struct {
 	// Name of a secret in the same namespace as the tempo TempoStack custom resource.
 	//
 	// +kubebuilder:validation:Required
-	// +kubebuilder:validation:MinLength=1
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Object Storage Secret"
-	Secret string `json:"secret"`
-	// Don't forget to update storageSecretField in tempostacks_controller.go if this field name changes.
+	Secret ObjectStorageSecretSpec `json:"secret"`
+	// Don't forget to update storageSecretField in tempostack_controller.go if this field name changes.
 }
 
 // ObjectStorageTLSSpec is the TLS configuration for reaching the object storage endpoint.
