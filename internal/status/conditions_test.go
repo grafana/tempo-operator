@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 )
 
@@ -72,17 +73,17 @@ func TestReadyCondition(t *testing.T) {
 
 			client := &statusClientStub{}
 
-			stack := v1alpha1.Microservices{
+			stack := v1alpha1.TempoStack{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "my-stack",
 					Namespace: "some-ns",
 				},
-				Spec: v1alpha1.MicroservicesSpec{
-					Images: v1alpha1.ImagesSpec{
+				Spec: v1alpha1.TempoStackSpec{
+					Images: configv1alpha1.ImagesSpec{
 						Tempo: "local:2.0",
 					},
 				},
-				Status: v1alpha1.MicroservicesStatus{
+				Status: v1alpha1.TempoStackStatus{
 					Conditions: tc.inputConditions,
 				},
 			}
@@ -163,17 +164,17 @@ func TestFailedCondition(t *testing.T) {
 
 			client := &statusClientStub{}
 
-			stack := v1alpha1.Microservices{
+			stack := v1alpha1.TempoStack{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "my-stack",
 					Namespace: "some-ns",
 				},
-				Spec: v1alpha1.MicroservicesSpec{
-					Images: v1alpha1.ImagesSpec{
+				Spec: v1alpha1.TempoStackSpec{
+					Images: configv1alpha1.ImagesSpec{
 						Tempo: "local:2.0",
 					},
 				},
-				Status: v1alpha1.MicroservicesStatus{
+				Status: v1alpha1.TempoStackStatus{
 					Conditions: tc.inputConditions,
 				},
 			}
@@ -254,17 +255,17 @@ func TestPendingCondition(t *testing.T) {
 
 			client := &statusClientStub{}
 
-			stack := v1alpha1.Microservices{
+			stack := v1alpha1.TempoStack{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "my-stack",
 					Namespace: "some-ns",
 				},
-				Spec: v1alpha1.MicroservicesSpec{
-					Images: v1alpha1.ImagesSpec{
+				Spec: v1alpha1.TempoStackSpec{
+					Images: configv1alpha1.ImagesSpec{
 						Tempo: "local:2.0",
 					},
 				},
-				Status: v1alpha1.MicroservicesStatus{
+				Status: v1alpha1.TempoStackStatus{
 					Conditions: tc.inputConditions,
 				},
 			}
@@ -348,17 +349,17 @@ func TestDegradedCondition(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 
-			stack := v1alpha1.Microservices{
+			stack := v1alpha1.TempoStack{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "my-stack",
 					Namespace: "some-ns",
 				},
-				Spec: v1alpha1.MicroservicesSpec{
-					Images: v1alpha1.ImagesSpec{
+				Spec: v1alpha1.TempoStackSpec{
+					Images: configv1alpha1.ImagesSpec{
 						Tempo: "local:2.0",
 					},
 				},
-				Status: v1alpha1.MicroservicesStatus{
+				Status: v1alpha1.TempoStackStatus{
 					Conditions: tc.inputConditions,
 				},
 			}

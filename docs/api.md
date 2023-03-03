@@ -8,12 +8,12 @@ Packages:
 
 Resource Types:
 
-- [Microservices](#microservices)
+- [TempoStack](#tempostack)
 
 
 
 
-## Microservices
+## TempoStack
 <sup><sup>[↩ Parent](#tempografanacomv1alpha1 )</sup></sup>
 
 
@@ -21,7 +21,7 @@ Resource Types:
 
 
 
-Microservices is the Schema for the microservices API.
+TempoStack is the Schema for the tempostacks API.
 
 <table>
     <thead>
@@ -41,7 +41,7 @@ Microservices is the Schema for the microservices API.
       <tr>
       <td><b>kind</b></td>
       <td>string</td>
-      <td>Microservices</td>
+      <td>TempoStack</td>
       <td>true</td>
       </tr>
       <tr>
@@ -50,29 +50,29 @@ Microservices is the Schema for the microservices API.
       <td>Refer to the Kubernetes API documentation for the fields of the `metadata` field.</td>
       <td>true</td>
       </tr><tr>
-        <td><b><a href="#microservicesspec">spec</a></b></td>
+        <td><b><a href="#tempostackspec">spec</a></b></td>
         <td>object</td>
         <td>
-          MicroservicesSpec defines the desired state of Microservices.<br/>
+          TempoStackSpec defines the desired state of TempoStack.<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#microservicesstatus">status</a></b></td>
+        <td><b><a href="#tempostackstatus">status</a></b></td>
         <td>object</td>
         <td>
-          MicroservicesStatus defines the observed state of Microservices.<br/>
+          TempoStackStatus defines the observed state of TempoStack.<br/>
         </td>
         <td>false</td>
       </tr></tbody>
 </table>
 
 
-### Microservices.spec
-<sup><sup>[↩ Parent](#microservices)</sup></sup>
+### TempoStack.spec
+<sup><sup>[↩ Parent](#tempostack)</sup></sup>
 
 
 
-MicroservicesSpec defines the desired state of Microservices.
+TempoStackSpec defines the desired state of TempoStack.
 
 <table>
     <thead>
@@ -84,21 +84,21 @@ MicroservicesSpec defines the desired state of Microservices.
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#microservicesspecstorage">storage</a></b></td>
+        <td><b><a href="#tempostackspecstorage">storage</a></b></td>
         <td>object</td>
         <td>
           Storage defines S3 compatible object storage configuration. User is required to create secret and supply it.<br/>
         </td>
         <td>true</td>
       </tr><tr>
-        <td><b><a href="#microservicesspecimages">images</a></b></td>
+        <td><b><a href="#tempostackspecimages">images</a></b></td>
         <td>object</td>
         <td>
           Images defines the image for each container.<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#microservicesspeclimits">limits</a></b></td>
+        <td><b><a href="#tempostackspeclimits">limits</a></b></td>
         <td>object</td>
         <td>
           LimitSpec is used to limit ingestion and querying rates.<br/>
@@ -112,21 +112,21 @@ MicroservicesSpec defines the desired state of Microservices.
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#microservicesspecresources">resources</a></b></td>
+        <td><b><a href="#tempostackspecresources">resources</a></b></td>
         <td>object</td>
         <td>
           Resources defines resources configuration.<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#microservicesspecretention">retention</a></b></td>
+        <td><b><a href="#tempostackspecretention">retention</a></b></td>
         <td>object</td>
         <td>
           NOTE: currently this field is not considered. Retention period defined by dataset. User can specify how long data should be stored.<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#microservicesspecsearch">search</a></b></td>
+        <td><b><a href="#tempostackspecsearch">search</a></b></td>
         <td>object</td>
         <td>
           SearchSpec control the configuration for the search capabilities.<br/>
@@ -154,14 +154,14 @@ MicroservicesSpec defines the desired state of Microservices.
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#microservicesspectemplate">template</a></b></td>
+        <td><b><a href="#tempostackspectemplate">template</a></b></td>
         <td>object</td>
         <td>
           Components defines requirements for a set of tempo components.<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#microservicesspectenants">tenants</a></b></td>
+        <td><b><a href="#tempostackspectenants">tenants</a></b></td>
         <td>object</td>
         <td>
           Tenants defines the per-tenant authentication and authorization spec.<br/>
@@ -171,8 +171,8 @@ MicroservicesSpec defines the desired state of Microservices.
 </table>
 
 
-### Microservices.spec.storage
-<sup><sup>[↩ Parent](#microservicesspec)</sup></sup>
+### TempoStack.spec.storage
+<sup><sup>[↩ Parent](#tempostackspec)</sup></sup>
 
 
 
@@ -191,11 +191,11 @@ Storage defines S3 compatible object storage configuration. User is required to 
         <td><b>secret</b></td>
         <td>string</td>
         <td>
-          Secret for object storage authentication. Name of a secret in the same namespace as the tempo Microservices custom resource.<br/>
+          Secret for object storage authentication. Name of a secret in the same namespace as the tempo TempoStack custom resource.<br/>
         </td>
         <td>true</td>
       </tr><tr>
-        <td><b><a href="#microservicesspecstoragetls">tls</a></b></td>
+        <td><b><a href="#tempostackspecstoragetls">tls</a></b></td>
         <td>object</td>
         <td>
           TLS configuration for reaching the object storage endpoint.<br/>
@@ -205,8 +205,8 @@ Storage defines S3 compatible object storage configuration. User is required to 
 </table>
 
 
-### Microservices.spec.storage.tls
-<sup><sup>[↩ Parent](#microservicesspecstorage)</sup></sup>
+### TempoStack.spec.storage.tls
+<sup><sup>[↩ Parent](#tempostackspecstorage)</sup></sup>
 
 
 
@@ -232,8 +232,8 @@ TLS configuration for reaching the object storage endpoint.
 </table>
 
 
-### Microservices.spec.images
-<sup><sup>[↩ Parent](#microservicesspec)</sup></sup>
+### TempoStack.spec.images
+<sup><sup>[↩ Parent](#tempostackspec)</sup></sup>
 
 
 
@@ -273,8 +273,8 @@ Images defines the image for each container.
 </table>
 
 
-### Microservices.spec.limits
-<sup><sup>[↩ Parent](#microservicesspec)</sup></sup>
+### TempoStack.spec.limits
+<sup><sup>[↩ Parent](#tempostackspec)</sup></sup>
 
 
 
@@ -290,14 +290,14 @@ LimitSpec is used to limit ingestion and querying rates.
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#microservicesspeclimitsglobal">global</a></b></td>
+        <td><b><a href="#tempostackspeclimitsglobal">global</a></b></td>
         <td>object</td>
         <td>
           Global is used to define global rate limits.<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#microservicesspeclimitspertenantkey">perTenant</a></b></td>
+        <td><b><a href="#tempostackspeclimitspertenantkey">perTenant</a></b></td>
         <td>map[string]object</td>
         <td>
           PerTenant is used to define rate limits per tenant.<br/>
@@ -307,8 +307,8 @@ LimitSpec is used to limit ingestion and querying rates.
 </table>
 
 
-### Microservices.spec.limits.global
-<sup><sup>[↩ Parent](#microservicesspeclimits)</sup></sup>
+### TempoStack.spec.limits.global
+<sup><sup>[↩ Parent](#tempostackspeclimits)</sup></sup>
 
 
 
@@ -324,14 +324,14 @@ Global is used to define global rate limits.
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#microservicesspeclimitsglobalingestion">ingestion</a></b></td>
+        <td><b><a href="#tempostackspeclimitsglobalingestion">ingestion</a></b></td>
         <td>object</td>
         <td>
           Ingestion is used to define ingestion rate limits.<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#microservicesspeclimitsglobalquery">query</a></b></td>
+        <td><b><a href="#tempostackspeclimitsglobalquery">query</a></b></td>
         <td>object</td>
         <td>
           Query is used to define query rate limits.<br/>
@@ -341,8 +341,8 @@ Global is used to define global rate limits.
 </table>
 
 
-### Microservices.spec.limits.global.ingestion
-<sup><sup>[↩ Parent](#microservicesspeclimitsglobal)</sup></sup>
+### TempoStack.spec.limits.global.ingestion
+<sup><sup>[↩ Parent](#tempostackspeclimitsglobal)</sup></sup>
 
 
 
@@ -389,8 +389,8 @@ Ingestion is used to define ingestion rate limits.
 </table>
 
 
-### Microservices.spec.limits.global.query
-<sup><sup>[↩ Parent](#microservicesspeclimitsglobal)</sup></sup>
+### TempoStack.spec.limits.global.query
+<sup><sup>[↩ Parent](#tempostackspeclimitsglobal)</sup></sup>
 
 
 
@@ -423,8 +423,8 @@ Query is used to define query rate limits.
 </table>
 
 
-### Microservices.spec.limits.perTenant[key]
-<sup><sup>[↩ Parent](#microservicesspeclimits)</sup></sup>
+### TempoStack.spec.limits.perTenant[key]
+<sup><sup>[↩ Parent](#tempostackspeclimits)</sup></sup>
 
 
 
@@ -440,14 +440,14 @@ RateLimitSpec defines rate limits for Ingestion and Query components.
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#microservicesspeclimitspertenantkeyingestion">ingestion</a></b></td>
+        <td><b><a href="#tempostackspeclimitspertenantkeyingestion">ingestion</a></b></td>
         <td>object</td>
         <td>
           Ingestion is used to define ingestion rate limits.<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#microservicesspeclimitspertenantkeyquery">query</a></b></td>
+        <td><b><a href="#tempostackspeclimitspertenantkeyquery">query</a></b></td>
         <td>object</td>
         <td>
           Query is used to define query rate limits.<br/>
@@ -457,8 +457,8 @@ RateLimitSpec defines rate limits for Ingestion and Query components.
 </table>
 
 
-### Microservices.spec.limits.perTenant[key].ingestion
-<sup><sup>[↩ Parent](#microservicesspeclimitspertenantkey)</sup></sup>
+### TempoStack.spec.limits.perTenant[key].ingestion
+<sup><sup>[↩ Parent](#tempostackspeclimitspertenantkey)</sup></sup>
 
 
 
@@ -505,8 +505,8 @@ Ingestion is used to define ingestion rate limits.
 </table>
 
 
-### Microservices.spec.limits.perTenant[key].query
-<sup><sup>[↩ Parent](#microservicesspeclimitspertenantkey)</sup></sup>
+### TempoStack.spec.limits.perTenant[key].query
+<sup><sup>[↩ Parent](#tempostackspeclimitspertenantkey)</sup></sup>
 
 
 
@@ -539,8 +539,8 @@ Query is used to define query rate limits.
 </table>
 
 
-### Microservices.spec.resources
-<sup><sup>[↩ Parent](#microservicesspec)</sup></sup>
+### TempoStack.spec.resources
+<sup><sup>[↩ Parent](#tempostackspec)</sup></sup>
 
 
 
@@ -556,7 +556,7 @@ Resources defines resources configuration.
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#microservicesspecresourcestotal">total</a></b></td>
+        <td><b><a href="#tempostackspecresourcestotal">total</a></b></td>
         <td>object</td>
         <td>
           The total amount of resources for Tempo instance. The operator autonomously splits resources between deployed Tempo components. Only limits are supported, the operator calculates requests automatically. See http://github.com/grafana/tempo/issues/1540.<br/>
@@ -566,8 +566,8 @@ Resources defines resources configuration.
 </table>
 
 
-### Microservices.spec.resources.total
-<sup><sup>[↩ Parent](#microservicesspecresources)</sup></sup>
+### TempoStack.spec.resources.total
+<sup><sup>[↩ Parent](#tempostackspecresources)</sup></sup>
 
 
 
@@ -600,8 +600,8 @@ The total amount of resources for Tempo instance. The operator autonomously spli
 </table>
 
 
-### Microservices.spec.retention
-<sup><sup>[↩ Parent](#microservicesspec)</sup></sup>
+### TempoStack.spec.retention
+<sup><sup>[↩ Parent](#tempostackspec)</sup></sup>
 
 
 
@@ -617,14 +617,14 @@ NOTE: currently this field is not considered. Retention period defined by datase
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#microservicesspecretentionglobal">global</a></b></td>
+        <td><b><a href="#tempostackspecretentionglobal">global</a></b></td>
         <td>object</td>
         <td>
           Global is used to configure global retention.<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#microservicesspecretentionpertenantkey">perTenant</a></b></td>
+        <td><b><a href="#tempostackspecretentionpertenantkey">perTenant</a></b></td>
         <td>map[string]object</td>
         <td>
           PerTenant is used to configure retention per tenant.<br/>
@@ -634,8 +634,8 @@ NOTE: currently this field is not considered. Retention period defined by datase
 </table>
 
 
-### Microservices.spec.retention.global
-<sup><sup>[↩ Parent](#microservicesspecretention)</sup></sup>
+### TempoStack.spec.retention.global
+<sup><sup>[↩ Parent](#tempostackspecretention)</sup></sup>
 
 
 
@@ -661,8 +661,8 @@ Global is used to configure global retention.
 </table>
 
 
-### Microservices.spec.retention.perTenant[key]
-<sup><sup>[↩ Parent](#microservicesspecretention)</sup></sup>
+### TempoStack.spec.retention.perTenant[key]
+<sup><sup>[↩ Parent](#tempostackspecretention)</sup></sup>
 
 
 
@@ -688,8 +688,8 @@ RetentionConfig defines how long data should be provided.
 </table>
 
 
-### Microservices.spec.search
-<sup><sup>[↩ Parent](#microservicesspec)</sup></sup>
+### TempoStack.spec.search
+<sup><sup>[↩ Parent](#tempostackspec)</sup></sup>
 
 
 
@@ -729,8 +729,8 @@ SearchSpec control the configuration for the search capabilities.
 </table>
 
 
-### Microservices.spec.template
-<sup><sup>[↩ Parent](#microservicesspec)</sup></sup>
+### TempoStack.spec.template
+<sup><sup>[↩ Parent](#tempostackspec)</sup></sup>
 
 
 
@@ -746,42 +746,42 @@ Components defines requirements for a set of tempo components.
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#microservicesspectemplatecompactor">compactor</a></b></td>
+        <td><b><a href="#tempostackspectemplatecompactor">compactor</a></b></td>
         <td>object</td>
         <td>
           Compactor defines the tempo compactor component spec.<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#microservicesspectemplatedistributor">distributor</a></b></td>
+        <td><b><a href="#tempostackspectemplatedistributor">distributor</a></b></td>
         <td>object</td>
         <td>
           Distributor defines the distributor component spec.<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#microservicesspectemplategateway">gateway</a></b></td>
+        <td><b><a href="#tempostackspectemplategateway">gateway</a></b></td>
         <td>object</td>
         <td>
           Gateway defines the tempo gateway spec.<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#microservicesspectemplateingester">ingester</a></b></td>
+        <td><b><a href="#tempostackspectemplateingester">ingester</a></b></td>
         <td>object</td>
         <td>
           Ingester defines the ingester component spec.<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#microservicesspectemplatequerier">querier</a></b></td>
+        <td><b><a href="#tempostackspectemplatequerier">querier</a></b></td>
         <td>object</td>
         <td>
           Querier defines the querier component spec.<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#microservicesspectemplatequeryfrontend">queryFrontend</a></b></td>
+        <td><b><a href="#tempostackspectemplatequeryfrontend">queryFrontend</a></b></td>
         <td>object</td>
         <td>
           TempoQueryFrontendSpec defines the query frontend spec.<br/>
@@ -791,8 +791,8 @@ Components defines requirements for a set of tempo components.
 </table>
 
 
-### Microservices.spec.template.compactor
-<sup><sup>[↩ Parent](#microservicesspectemplate)</sup></sup>
+### TempoStack.spec.template.compactor
+<sup><sup>[↩ Parent](#tempostackspectemplate)</sup></sup>
 
 
 
@@ -824,7 +824,7 @@ Compactor defines the tempo compactor component spec.
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#microservicesspectemplatecompactortolerationsindex">tolerations</a></b></td>
+        <td><b><a href="#tempostackspectemplatecompactortolerationsindex">tolerations</a></b></td>
         <td>[]object</td>
         <td>
           Tolerations defines component specific pod tolerations.<br/>
@@ -834,8 +834,8 @@ Compactor defines the tempo compactor component spec.
 </table>
 
 
-### Microservices.spec.template.compactor.tolerations[index]
-<sup><sup>[↩ Parent](#microservicesspectemplatecompactor)</sup></sup>
+### TempoStack.spec.template.compactor.tolerations[index]
+<sup><sup>[↩ Parent](#tempostackspectemplatecompactor)</sup></sup>
 
 
 
@@ -891,8 +891,8 @@ The pod this Toleration is attached to tolerates any taint that matches the trip
 </table>
 
 
-### Microservices.spec.template.distributor
-<sup><sup>[↩ Parent](#microservicesspectemplate)</sup></sup>
+### TempoStack.spec.template.distributor
+<sup><sup>[↩ Parent](#tempostackspectemplate)</sup></sup>
 
 
 
@@ -924,7 +924,7 @@ Distributor defines the distributor component spec.
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#microservicesspectemplatedistributortolerationsindex">tolerations</a></b></td>
+        <td><b><a href="#tempostackspectemplatedistributortolerationsindex">tolerations</a></b></td>
         <td>[]object</td>
         <td>
           Tolerations defines component specific pod tolerations.<br/>
@@ -934,8 +934,8 @@ Distributor defines the distributor component spec.
 </table>
 
 
-### Microservices.spec.template.distributor.tolerations[index]
-<sup><sup>[↩ Parent](#microservicesspectemplatedistributor)</sup></sup>
+### TempoStack.spec.template.distributor.tolerations[index]
+<sup><sup>[↩ Parent](#tempostackspectemplatedistributor)</sup></sup>
 
 
 
@@ -991,8 +991,8 @@ The pod this Toleration is attached to tolerates any taint that matches the trip
 </table>
 
 
-### Microservices.spec.template.gateway
-<sup><sup>[↩ Parent](#microservicesspectemplate)</sup></sup>
+### TempoStack.spec.template.gateway
+<sup><sup>[↩ Parent](#tempostackspectemplate)</sup></sup>
 
 
 
@@ -1015,7 +1015,7 @@ Gateway defines the tempo gateway spec.
         </td>
         <td>true</td>
       </tr><tr>
-        <td><b><a href="#microservicesspectemplategatewaycomponent">component</a></b></td>
+        <td><b><a href="#tempostackspectemplategatewaycomponent">component</a></b></td>
         <td>object</td>
         <td>
           TempoComponentSpec is embedded to extend this definition with further options. 
@@ -1026,8 +1026,8 @@ Gateway defines the tempo gateway spec.
 </table>
 
 
-### Microservices.spec.template.gateway.component
-<sup><sup>[↩ Parent](#microservicesspectemplategateway)</sup></sup>
+### TempoStack.spec.template.gateway.component
+<sup><sup>[↩ Parent](#tempostackspectemplategateway)</sup></sup>
 
 
 
@@ -1060,7 +1060,7 @@ TempoComponentSpec is embedded to extend this definition with further options.
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#microservicesspectemplategatewaycomponenttolerationsindex">tolerations</a></b></td>
+        <td><b><a href="#tempostackspectemplategatewaycomponenttolerationsindex">tolerations</a></b></td>
         <td>[]object</td>
         <td>
           Tolerations defines component specific pod tolerations.<br/>
@@ -1070,8 +1070,8 @@ TempoComponentSpec is embedded to extend this definition with further options.
 </table>
 
 
-### Microservices.spec.template.gateway.component.tolerations[index]
-<sup><sup>[↩ Parent](#microservicesspectemplategatewaycomponent)</sup></sup>
+### TempoStack.spec.template.gateway.component.tolerations[index]
+<sup><sup>[↩ Parent](#tempostackspectemplategatewaycomponent)</sup></sup>
 
 
 
@@ -1127,8 +1127,8 @@ The pod this Toleration is attached to tolerates any taint that matches the trip
 </table>
 
 
-### Microservices.spec.template.ingester
-<sup><sup>[↩ Parent](#microservicesspectemplate)</sup></sup>
+### TempoStack.spec.template.ingester
+<sup><sup>[↩ Parent](#tempostackspectemplate)</sup></sup>
 
 
 
@@ -1160,7 +1160,7 @@ Ingester defines the ingester component spec.
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#microservicesspectemplateingestertolerationsindex">tolerations</a></b></td>
+        <td><b><a href="#tempostackspectemplateingestertolerationsindex">tolerations</a></b></td>
         <td>[]object</td>
         <td>
           Tolerations defines component specific pod tolerations.<br/>
@@ -1170,8 +1170,8 @@ Ingester defines the ingester component spec.
 </table>
 
 
-### Microservices.spec.template.ingester.tolerations[index]
-<sup><sup>[↩ Parent](#microservicesspectemplateingester)</sup></sup>
+### TempoStack.spec.template.ingester.tolerations[index]
+<sup><sup>[↩ Parent](#tempostackspectemplateingester)</sup></sup>
 
 
 
@@ -1227,8 +1227,8 @@ The pod this Toleration is attached to tolerates any taint that matches the trip
 </table>
 
 
-### Microservices.spec.template.querier
-<sup><sup>[↩ Parent](#microservicesspectemplate)</sup></sup>
+### TempoStack.spec.template.querier
+<sup><sup>[↩ Parent](#tempostackspectemplate)</sup></sup>
 
 
 
@@ -1260,7 +1260,7 @@ Querier defines the querier component spec.
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#microservicesspectemplatequeriertolerationsindex">tolerations</a></b></td>
+        <td><b><a href="#tempostackspectemplatequeriertolerationsindex">tolerations</a></b></td>
         <td>[]object</td>
         <td>
           Tolerations defines component specific pod tolerations.<br/>
@@ -1270,8 +1270,8 @@ Querier defines the querier component spec.
 </table>
 
 
-### Microservices.spec.template.querier.tolerations[index]
-<sup><sup>[↩ Parent](#microservicesspectemplatequerier)</sup></sup>
+### TempoStack.spec.template.querier.tolerations[index]
+<sup><sup>[↩ Parent](#tempostackspectemplatequerier)</sup></sup>
 
 
 
@@ -1327,8 +1327,8 @@ The pod this Toleration is attached to tolerates any taint that matches the trip
 </table>
 
 
-### Microservices.spec.template.queryFrontend
-<sup><sup>[↩ Parent](#microservicesspectemplate)</sup></sup>
+### TempoStack.spec.template.queryFrontend
+<sup><sup>[↩ Parent](#tempostackspectemplate)</sup></sup>
 
 
 
@@ -1344,7 +1344,7 @@ TempoQueryFrontendSpec defines the query frontend spec.
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#microservicesspectemplatequeryfrontendcomponent">component</a></b></td>
+        <td><b><a href="#tempostackspectemplatequeryfrontendcomponent">component</a></b></td>
         <td>object</td>
         <td>
           TempoComponentSpec is embedded to extend this definition with further options. 
@@ -1352,18 +1352,18 @@ TempoQueryFrontendSpec defines the query frontend spec.
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#microservicesspectemplatequeryfrontendjaegerquery">jaegerQuery</a></b></td>
+        <td><b><a href="#tempostackspectemplatequeryfrontendjaegerquery">jaegerQuery</a></b></td>
         <td>object</td>
         <td>
-          JaegerQuerySpec defines Jaeger Query spefic options.<br/>
+          JaegerQuerySpec defines Jaeger Query specific options.<br/>
         </td>
         <td>false</td>
       </tr></tbody>
 </table>
 
 
-### Microservices.spec.template.queryFrontend.component
-<sup><sup>[↩ Parent](#microservicesspectemplatequeryfrontend)</sup></sup>
+### TempoStack.spec.template.queryFrontend.component
+<sup><sup>[↩ Parent](#tempostackspectemplatequeryfrontend)</sup></sup>
 
 
 
@@ -1396,7 +1396,7 @@ TempoComponentSpec is embedded to extend this definition with further options.
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#microservicesspectemplatequeryfrontendcomponenttolerationsindex">tolerations</a></b></td>
+        <td><b><a href="#tempostackspectemplatequeryfrontendcomponenttolerationsindex">tolerations</a></b></td>
         <td>[]object</td>
         <td>
           Tolerations defines component specific pod tolerations.<br/>
@@ -1406,8 +1406,8 @@ TempoComponentSpec is embedded to extend this definition with further options.
 </table>
 
 
-### Microservices.spec.template.queryFrontend.component.tolerations[index]
-<sup><sup>[↩ Parent](#microservicesspectemplatequeryfrontendcomponent)</sup></sup>
+### TempoStack.spec.template.queryFrontend.component.tolerations[index]
+<sup><sup>[↩ Parent](#tempostackspectemplatequeryfrontendcomponent)</sup></sup>
 
 
 
@@ -1463,12 +1463,12 @@ The pod this Toleration is attached to tolerates any taint that matches the trip
 </table>
 
 
-### Microservices.spec.template.queryFrontend.jaegerQuery
-<sup><sup>[↩ Parent](#microservicesspectemplatequeryfrontend)</sup></sup>
+### TempoStack.spec.template.queryFrontend.jaegerQuery
+<sup><sup>[↩ Parent](#tempostackspectemplatequeryfrontend)</sup></sup>
 
 
 
-JaegerQuerySpec defines Jaeger Query spefic options.
+JaegerQuerySpec defines Jaeger Query specific options.
 
 <table>
     <thead>
@@ -1486,12 +1486,105 @@ JaegerQuerySpec defines Jaeger Query spefic options.
           Enabled is used to define if Jaeger Query component should be created.<br/>
         </td>
         <td>false</td>
+      </tr><tr>
+        <td><b><a href="#tempostackspectemplatequeryfrontendjaegerqueryingress">ingress</a></b></td>
+        <td>object</td>
+        <td>
+          Ingress defines Jaeger Query Ingress options.<br/>
+        </td>
+        <td>false</td>
       </tr></tbody>
 </table>
 
 
-### Microservices.spec.tenants
-<sup><sup>[↩ Parent](#microservicesspec)</sup></sup>
+### TempoStack.spec.template.queryFrontend.jaegerQuery.ingress
+<sup><sup>[↩ Parent](#tempostackspectemplatequeryfrontendjaegerquery)</sup></sup>
+
+
+
+Ingress defines Jaeger Query Ingress options.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>annotations</b></td>
+        <td>map[string]string</td>
+        <td>
+          Annotations defines the annotations of the Ingress object.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>host</b></td>
+        <td>string</td>
+        <td>
+          Host defines the hostname of the Ingress object.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>ingressClassName</b></td>
+        <td>string</td>
+        <td>
+          IngressClassName is the name of an IngressClass cluster resource. Ingress controller implementations use this field to know whether they should be serving this Ingress resource.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#tempostackspectemplatequeryfrontendjaegerqueryingressroute">route</a></b></td>
+        <td>object</td>
+        <td>
+          Route defines OpenShift Route specific options.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>type</b></td>
+        <td>enum</td>
+        <td>
+          Type defines the type of Ingress for the Jaeger Query UI. Currently ingress, route and none are supported.<br/>
+          <br/>
+            <i>Enum</i>: ingress, route<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### TempoStack.spec.template.queryFrontend.jaegerQuery.ingress.route
+<sup><sup>[↩ Parent](#tempostackspectemplatequeryfrontendjaegerqueryingress)</sup></sup>
+
+
+
+Route defines OpenShift Route specific options.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>termination</b></td>
+        <td>enum</td>
+        <td>
+          Termination specifies the termination type. By default "edge" is used.<br/>
+          <br/>
+            <i>Enum</i>: insecure, edge, passthrough, reencrypt<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+### TempoStack.spec.tenants
+<sup><sup>[↩ Parent](#tempostackspec)</sup></sup>
 
 
 
@@ -1517,14 +1610,14 @@ Tenants defines the per-tenant authentication and authorization spec.
         </td>
         <td>true</td>
       </tr><tr>
-        <td><b><a href="#microservicesspectenantsauthenticationindex">authentication</a></b></td>
+        <td><b><a href="#tempostackspectenantsauthenticationindex">authentication</a></b></td>
         <td>[]object</td>
         <td>
           Authentication defines the tempo-gateway component authentication configuration spec per tenant.<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#microservicesspectenantsauthorization">authorization</a></b></td>
+        <td><b><a href="#tempostackspectenantsauthorization">authorization</a></b></td>
         <td>object</td>
         <td>
           Authorization defines the tempo-gateway component authorization configuration spec per tenant.<br/>
@@ -1534,8 +1627,8 @@ Tenants defines the per-tenant authentication and authorization spec.
 </table>
 
 
-### Microservices.spec.tenants.authentication[index]
-<sup><sup>[↩ Parent](#microservicesspectenants)</sup></sup>
+### TempoStack.spec.tenants.authentication[index]
+<sup><sup>[↩ Parent](#tempostackspectenants)</sup></sup>
 
 
 
@@ -1565,7 +1658,7 @@ AuthenticationSpec defines the oidc configuration per tenant for tempo Gateway c
         </td>
         <td>true</td>
       </tr><tr>
-        <td><b><a href="#microservicesspectenantsauthenticationindexoidc">oidc</a></b></td>
+        <td><b><a href="#tempostackspectenantsauthenticationindexoidc">oidc</a></b></td>
         <td>object</td>
         <td>
           OIDC defines the spec for the OIDC tenant's authentication.<br/>
@@ -1575,8 +1668,8 @@ AuthenticationSpec defines the oidc configuration per tenant for tempo Gateway c
 </table>
 
 
-### Microservices.spec.tenants.authentication[index].oidc
-<sup><sup>[↩ Parent](#microservicesspectenantsauthenticationindex)</sup></sup>
+### TempoStack.spec.tenants.authentication[index].oidc
+<sup><sup>[↩ Parent](#tempostackspectenantsauthenticationindex)</sup></sup>
 
 
 
@@ -1613,7 +1706,7 @@ OIDC defines the spec for the OIDC tenant's authentication.
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#microservicesspectenantsauthenticationindexoidcsecret">secret</a></b></td>
+        <td><b><a href="#tempostackspectenantsauthenticationindexoidcsecret">secret</a></b></td>
         <td>object</td>
         <td>
           Secret defines the spec for the clientID, clientSecret and issuerCAPath for tenant's authentication.<br/>
@@ -1630,8 +1723,8 @@ OIDC defines the spec for the OIDC tenant's authentication.
 </table>
 
 
-### Microservices.spec.tenants.authentication[index].oidc.secret
-<sup><sup>[↩ Parent](#microservicesspectenantsauthenticationindexoidc)</sup></sup>
+### TempoStack.spec.tenants.authentication[index].oidc.secret
+<sup><sup>[↩ Parent](#tempostackspectenantsauthenticationindexoidc)</sup></sup>
 
 
 
@@ -1657,8 +1750,8 @@ Secret defines the spec for the clientID, clientSecret and issuerCAPath for tena
 </table>
 
 
-### Microservices.spec.tenants.authorization
-<sup><sup>[↩ Parent](#microservicesspectenants)</sup></sup>
+### TempoStack.spec.tenants.authorization
+<sup><sup>[↩ Parent](#tempostackspectenants)</sup></sup>
 
 
 
@@ -1674,14 +1767,14 @@ Authorization defines the tempo-gateway component authorization configuration sp
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#microservicesspectenantsauthorizationrolebindingsindex">roleBindings</a></b></td>
+        <td><b><a href="#tempostackspectenantsauthorizationrolebindingsindex">roleBindings</a></b></td>
         <td>[]object</td>
         <td>
           RoleBindings defines configuration to bind a set of roles to a set of subjects.<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#microservicesspectenantsauthorizationrolesindex">roles</a></b></td>
+        <td><b><a href="#tempostackspectenantsauthorizationrolesindex">roles</a></b></td>
         <td>[]object</td>
         <td>
           Roles defines a set of permissions to interact with a tenant.<br/>
@@ -1691,8 +1784,8 @@ Authorization defines the tempo-gateway component authorization configuration sp
 </table>
 
 
-### Microservices.spec.tenants.authorization.roleBindings[index]
-<sup><sup>[↩ Parent](#microservicesspectenantsauthorization)</sup></sup>
+### TempoStack.spec.tenants.authorization.roleBindings[index]
+<sup><sup>[↩ Parent](#tempostackspectenantsauthorization)</sup></sup>
 
 
 
@@ -1722,7 +1815,7 @@ RoleBindingsSpec binds a set of roles to a set of subjects.
         </td>
         <td>true</td>
       </tr><tr>
-        <td><b><a href="#microservicesspectenantsauthorizationrolebindingsindexsubjectsindex">subjects</a></b></td>
+        <td><b><a href="#tempostackspectenantsauthorizationrolebindingsindexsubjectsindex">subjects</a></b></td>
         <td>[]object</td>
         <td>
           <br/>
@@ -1732,8 +1825,8 @@ RoleBindingsSpec binds a set of roles to a set of subjects.
 </table>
 
 
-### Microservices.spec.tenants.authorization.roleBindings[index].subjects[index]
-<sup><sup>[↩ Parent](#microservicesspectenantsauthorizationrolebindingsindex)</sup></sup>
+### TempoStack.spec.tenants.authorization.roleBindings[index].subjects[index]
+<sup><sup>[↩ Parent](#tempostackspectenantsauthorizationrolebindingsindex)</sup></sup>
 
 
 
@@ -1768,8 +1861,8 @@ Subject represents a subject that has been bound to a role.
 </table>
 
 
-### Microservices.spec.tenants.authorization.roles[index]
-<sup><sup>[↩ Parent](#microservicesspectenantsauthorization)</sup></sup>
+### TempoStack.spec.tenants.authorization.roles[index]
+<sup><sup>[↩ Parent](#tempostackspectenantsauthorization)</sup></sup>
 
 
 
@@ -1816,12 +1909,12 @@ RoleSpec describes a set of permissions to interact with a tenant.
 </table>
 
 
-### Microservices.status
-<sup><sup>[↩ Parent](#microservices)</sup></sup>
+### TempoStack.status
+<sup><sup>[↩ Parent](#tempostack)</sup></sup>
 
 
 
-MicroservicesStatus defines the observed state of Microservices.
+TempoStackStatus defines the observed state of TempoStack.
 
 <table>
     <thead>
@@ -1833,14 +1926,14 @@ MicroservicesStatus defines the observed state of Microservices.
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#microservicesstatuscomponents">components</a></b></td>
+        <td><b><a href="#tempostackstatuscomponents">components</a></b></td>
         <td>object</td>
         <td>
           Components provides summary of all Tempo pod status grouped per component.<br/>
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#microservicesstatusconditionsindex">conditions</a></b></td>
+        <td><b><a href="#tempostackstatusconditionsindex">conditions</a></b></td>
         <td>[]object</td>
         <td>
           Conditions of the Tempo deployment health.<br/>
@@ -1864,8 +1957,8 @@ MicroservicesStatus defines the observed state of Microservices.
 </table>
 
 
-### Microservices.status.components
-<sup><sup>[↩ Parent](#microservicesstatus)</sup></sup>
+### TempoStack.status.components
+<sup><sup>[↩ Parent](#tempostackstatus)</sup></sup>
 
 
 
@@ -1926,8 +2019,8 @@ Components provides summary of all Tempo pod status grouped per component.
 </table>
 
 
-### Microservices.status.conditions[index]
-<sup><sup>[↩ Parent](#microservicesstatus)</sup></sup>
+### TempoStack.status.conditions[index]
+<sup><sup>[↩ Parent](#tempostackstatus)</sup></sup>
 
 
 

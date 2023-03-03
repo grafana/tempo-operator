@@ -28,10 +28,12 @@ data:
       tempoGateway: quay.io/observatorium/api:main-2023-02-09-v0.1.2-329-g1ff4f11
     featureGates:
       openshift:
+        openshiftRoute: false
         gatewayRoute: false
         servingCertsService: false
       httpEncryption: false
       grpcEncryption: false
+      tlsProfile: Modern
       builtInCertManagement:
         enabled: false
         # CA certificate validity: 5 years

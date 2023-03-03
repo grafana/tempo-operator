@@ -13,7 +13,7 @@ import (
 )
 
 func TestPatchOCPServingCerts(t *testing.T) {
-	tempo := v1alpha1.Microservices{}
+	tempo := v1alpha1.TempoStack{}
 	dep := &appsv1.Deployment{
 		Spec: appsv1.DeploymentSpec{
 			Template: corev1.PodTemplateSpec{

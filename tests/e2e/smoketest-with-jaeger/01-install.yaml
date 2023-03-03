@@ -11,7 +11,7 @@ stringData:
 type: Opaque
 ---
 apiVersion: tempo.grafana.com/v1alpha1
-kind: Microservices
+kind: TempoStack
 metadata:
   name: simplest
 spec:
@@ -27,3 +27,5 @@ spec:
     queryFrontend:
       jaegerQuery:
         enabled: true
+        ingress:
+          type: ingress

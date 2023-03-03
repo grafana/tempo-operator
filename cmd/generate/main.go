@@ -15,7 +15,7 @@ import (
 	k8syaml "k8s.io/apimachinery/pkg/util/yaml"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	configtempov1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
+	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/os-observability/tempo-operator/cmd"
 	"github.com/os-observability/tempo-operator/internal/manifests"
@@ -26,11 +26,11 @@ import (
 // the decoder will look to figure out whether this is a JSON stream.
 const yamlOrJsonDecoderBufferSize = 8192
 
-func loadSpec(path string) (v1alpha1.Microservices, error) {
+func loadSpec(path string) (v1alpha1.TempoStack, error) {
 	pathCleaned := filepath.Clean(path)
 	file, err := os.Open(pathCleaned)
 	if err != nil {
-		return v1alpha1.Microservices{}, err
+		return v1alpha1.TempoStack{}, err
 	}
 	defer func() {
 		if err := file.Close(); err != nil {
@@ -38,19 +38,19 @@ func loadSpec(path string) (v1alpha1.Microservices, error) {
 		}
 	}()
 
-	spec := v1alpha1.Microservices{}
+	spec := v1alpha1.TempoStack{}
 	decoder := k8syaml.NewYAMLOrJSONDecoder(file, yamlOrJsonDecoderBufferSize)
 	err = decoder.Decode(&spec)
 	if err != nil {
-		return v1alpha1.Microservices{}, err
+		return v1alpha1.TempoStack{}, err
 	}
 
 	return spec, nil
 }
 
-func build(ctrlConfig configtempov1alpha1.ProjectConfig, params manifestutils.Params) ([]client.Object, error) {
+func build(ctrlConfig configv1alpha1.ProjectConfig, params manifestutils.Params) ([]client.Object, error) {
 	// apply default values from Defaulter webhook
-	defaulterWebhook := v1alpha1.NewDefaulter(ctrlConfig.DefaultImages)
+	defaulterWebhook := v1alpha1.NewDefaulter(ctrlConfig)
 	err := defaulterWebhook.Default(context.Background(), &params.Tempo)
 	if err != nil {
 		return nil, err

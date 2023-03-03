@@ -1,5 +1,5 @@
 apiVersion: tempo.grafana.com/v1alpha1
-kind: Microservices
+kind: TempoStack
 metadata:
-  name: microservices-sample
+  name: tempostack-sample
 spec:

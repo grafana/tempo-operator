@@ -15,7 +15,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	configtempov1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
+	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
 	tempov1alpha1 "github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 )
 
@@ -29,14 +29,14 @@ type RootConfigKey struct{}
 // RootConfig contains configuration relevant for all commands.
 type RootConfig struct {
 	Options    ctrl.Options
-	CtrlConfig configtempov1alpha1.ProjectConfig
+	CtrlConfig configv1alpha1.ProjectConfig
 }
 
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
 	utilruntime.Must(tempov1alpha1.AddToScheme(scheme))
-	utilruntime.Must(configtempov1alpha1.AddToScheme(scheme))
+	utilruntime.Must(configv1alpha1.AddToScheme(scheme))
 	utilruntime.Must(routev1.Install(scheme))
 	utilruntime.Must(openshiftoperatorv1.Install(scheme))
 	utilruntime.Must(configv1.Install(scheme))
@@ -52,7 +52,7 @@ func readConfig(cmd *cobra.Command, configFile string) error {
 	opts.BindFlags(flag.CommandLine)
 	flag.Parse()
 
-	ctrlConfig := configtempov1alpha1.ProjectConfig{}
+	ctrlConfig := configv1alpha1.ProjectConfig{}
 	options := ctrl.Options{Scheme: scheme}
 	if configFile != "" {
 		options, err = options.AndFrom(ctrl.ConfigFile().AtPath(configFile).OfKind(&ctrlConfig))

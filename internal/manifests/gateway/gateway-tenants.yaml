@@ -9,7 +9,7 @@ tenants:
     serviceAccount: tempo-{{ $opt.Name }}-gateway
     redirectURL: https://tempo-{{ $opt.Name}}-gateway-{{ $opt.Namespace }}.{{ $opt.BaseDomain }}/openshift/dev/callback
 {{- end -}}
-{{- if $spec.OIDC -}}
+{{- if $spec.OIDC }}
   oidc:
     {{- range $secret := $opt.TenantSecrets }}
     {{- if eq $secret.TenantName $spec.TenantName -}}

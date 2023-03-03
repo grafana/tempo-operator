@@ -12,33 +12,37 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/utils/pointer"
+
+	"github.com/os-observability/tempo-operator/apis/config/v1alpha1"
 )
 
 func TestDefault(t *testing.T) {
 	defaulter := &Defaulter{
-		defaultImages: ImagesSpec{
-			Tempo:        "docker.io/grafana/tempo:x.y.z",
-			TempoQuery:   "docker.io/grafana/tempo-query:x.y.z",
-			TempoGateway: "docker.io/observatorium/gateway:1.2.3",
+		ctrlConfig: v1alpha1.ProjectConfig{
+			DefaultImages: v1alpha1.ImagesSpec{
+				Tempo:        "docker.io/grafana/tempo:x.y.z",
+				TempoQuery:   "docker.io/grafana/tempo-query:x.y.z",
+				TempoGateway: "docker.io/observatorium/gateway:1.2.3",
+			},
 		},
 	}
 	defaultMaxSearch := 0
 	defaultDefaultResultLimit := 20
 
 	tests := []struct {
-		input    *Microservices
-		expected *Microservices
+		input    *TempoStack
+		expected *TempoStack
 		name     string
 	}{
 		{
 			name: "no action default values are provided",
-			input: &Microservices{
+			input: &TempoStack{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "test",
 				},
-				Spec: MicroservicesSpec{
+				Spec: TempoStackSpec{
 					ReplicationFactor: 2,
-					Images: ImagesSpec{
+					Images: v1alpha1.ImagesSpec{
 						Tempo:        "docker.io/grafana/tempo:1.2.3",
 						TempoQuery:   "docker.io/grafana/tempo-query:1.2.3",
 						TempoGateway: "docker.io/observatorium/gateway:1.2.3",
@@ -59,13 +63,13 @@ func TestDefault(t *testing.T) {
 					},
 				},
 			},
-			expected: &Microservices{
+			expected: &TempoStack{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "test",
 				},
-				Spec: MicroservicesSpec{
+				Spec: TempoStackSpec{
 					ReplicationFactor: 2,
-					Images: ImagesSpec{
+					Images: v1alpha1.ImagesSpec{
 						Tempo:        "docker.io/grafana/tempo:1.2.3",
 						TempoQuery:   "docker.io/grafana/tempo-query:1.2.3",
 						TempoGateway: "docker.io/observatorium/gateway:1.2.3",
@@ -101,19 +105,18 @@ func TestDefault(t *testing.T) {
 		},
 		{
 			name: "default values are set in the webhook",
-			input: &Microservices{
+			input: &TempoStack{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "test",
 				},
 			},
-			expected: &Microservices{
-
+			expected: &TempoStack{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "test",
 				},
-				Spec: MicroservicesSpec{
+				Spec: TempoStackSpec{
 					ReplicationFactor: 1,
-					Images: ImagesSpec{
+					Images: v1alpha1.ImagesSpec{
 						Tempo:        "docker.io/grafana/tempo:x.y.z",
 						TempoQuery:   "docker.io/grafana/tempo-query:x.y.z",
 						TempoGateway: "docker.io/observatorium/gateway:1.2.3",
@@ -147,6 +150,76 @@ func TestDefault(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "use Edge TLS termination if unset",
+			input: &TempoStack{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+				},
+				Spec: TempoStackSpec{
+					Components: TempoComponentsSpec{
+						QueryFrontend: TempoQueryFrontendSpec{
+							JaegerQuery: JaegerQuerySpec{
+								Enabled: true,
+								Ingress: JaegerQueryIngressSpec{
+									Type: IngressTypeRoute,
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: &TempoStack{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+				},
+				Spec: TempoStackSpec{
+					ReplicationFactor: 1,
+					Images: v1alpha1.ImagesSpec{
+						Tempo:        "docker.io/grafana/tempo:x.y.z",
+						TempoQuery:   "docker.io/grafana/tempo-query:x.y.z",
+						TempoGateway: "docker.io/observatorium/gateway:1.2.3",
+					},
+					ServiceAccount: "tempo-test",
+					Retention: RetentionSpec{
+						Global: RetentionConfig{
+							Traces: metav1.Duration{Duration: 48 * time.Hour},
+						},
+					},
+					StorageSize: resource.MustParse("10Gi"),
+					LimitSpec: LimitSpec{
+						Global: RateLimitSpec{
+							Query: QueryLimit{
+								MaxSearchBytesPerTrace: &defaultMaxSearch,
+							},
+						},
+					},
+					SearchSpec: SearchSpec{
+						MaxDuration:        metav1.Duration{Duration: 0},
+						DefaultResultLimit: &defaultDefaultResultLimit,
+					},
+					Components: TempoComponentsSpec{
+						Distributor: TempoComponentSpec{
+							Replicas: pointer.Int32(1),
+						},
+						Ingester: TempoComponentSpec{
+							Replicas: pointer.Int32(1),
+						},
+						QueryFrontend: TempoQueryFrontendSpec{
+							JaegerQuery: JaegerQuerySpec{
+								Enabled: true,
+								Ingress: JaegerQueryIngressSpec{
+									Type: "route",
+									Route: JaegerQueryRouteSpec{
+										Termination: "edge",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -159,8 +232,8 @@ func TestDefault(t *testing.T) {
 }
 
 func TestValidateStorageSecret(t *testing.T) {
-	tempo := Microservices{
-		Spec: MicroservicesSpec{
+	tempo := TempoStack{
+		Spec: TempoStackSpec{
 			Storage: ObjectStorageSpec{
 				Secret: "testsecret",
 			},
@@ -251,12 +324,12 @@ func TestValidateReplicationFactor(t *testing.T) {
 	tests := []struct {
 		name     string
 		expected field.ErrorList
-		input    Microservices
+		input    TempoStack
 	}{
 		{
 			name: "no error replicas equal to floor(replication_factor/2) + 1",
-			input: Microservices{
-				Spec: MicroservicesSpec{
+			input: TempoStack{
+				Spec: TempoStackSpec{
 					ReplicationFactor: 3,
 					Components: TempoComponentsSpec{
 						Ingester: TempoComponentSpec{
@@ -269,8 +342,8 @@ func TestValidateReplicationFactor(t *testing.T) {
 		},
 		{
 			name: "no error replicas greater than floor(replication_factor/2) + 1",
-			input: Microservices{
-				Spec: MicroservicesSpec{
+			input: TempoStack{
+				Spec: TempoStackSpec{
 					ReplicationFactor: 3,
 					Components: TempoComponentsSpec{
 						Ingester: TempoComponentSpec{
@@ -283,8 +356,8 @@ func TestValidateReplicationFactor(t *testing.T) {
 		},
 		{
 			name: "error replicas less than floor(replication_factor/2) + 1",
-			input: Microservices{
-				Spec: MicroservicesSpec{
+			input: TempoStack{
+				Spec: TempoStackSpec{
 					ReplicationFactor: 3,
 					Components: TempoComponentsSpec{
 						Ingester: TempoComponentSpec{
@@ -303,6 +376,128 @@ func TestValidateReplicationFactor(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			errs := validator.validateReplicationFactor(test.input)
+			assert.Equal(t, test.expected, errs)
+		})
+	}
+}
+
+func TestValidateIngressAndRoute(t *testing.T) {
+	path := field.NewPath("spec").Child("template").Child("queryFrontend").Child("jaegerQuery").Child("ingress").Child("type")
+
+	tests := []struct {
+		name       string
+		input      TempoStack
+		ctrlConfig v1alpha1.ProjectConfig
+		expected   field.ErrorList
+	}{
+		{
+			name: "valid ingress configuration",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					ReplicationFactor: 3,
+					Components: TempoComponentsSpec{
+						QueryFrontend: TempoQueryFrontendSpec{
+							JaegerQuery: JaegerQuerySpec{
+								Enabled: true,
+								Ingress: JaegerQueryIngressSpec{
+									Type: "ingress",
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: nil,
+		},
+		{
+			name: "valid route configuration",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					ReplicationFactor: 3,
+					Components: TempoComponentsSpec{
+						QueryFrontend: TempoQueryFrontendSpec{
+							JaegerQuery: JaegerQuerySpec{
+								Enabled: true,
+								Ingress: JaegerQueryIngressSpec{
+									Type: "route",
+								},
+							},
+						},
+					},
+				},
+			},
+			ctrlConfig: v1alpha1.ProjectConfig{
+				Gates: v1alpha1.FeatureGates{
+					OpenShift: v1alpha1.OpenShiftFeatureGates{
+						OpenShiftRoute: true,
+					},
+				},
+			},
+			expected: nil,
+		},
+		{
+			name: "ingress enabled but queryfrontend disabled",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					ReplicationFactor: 3,
+					Components: TempoComponentsSpec{
+						QueryFrontend: TempoQueryFrontendSpec{
+							JaegerQuery: JaegerQuerySpec{
+								Enabled: false,
+								Ingress: JaegerQueryIngressSpec{
+									Type: "ingress",
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: field.ErrorList{
+				field.Invalid(
+					path,
+					IngressTypeIngress,
+					"Ingress cannot be enabled if jaegerQuery is disabled",
+				),
+			},
+		},
+		{
+			name: "route enabled but route feature gate disabled",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					ReplicationFactor: 3,
+					Components: TempoComponentsSpec{
+						QueryFrontend: TempoQueryFrontendSpec{
+							JaegerQuery: JaegerQuerySpec{
+								Enabled: true,
+								Ingress: JaegerQueryIngressSpec{
+									Type: "route",
+								},
+							},
+						},
+					},
+				},
+			},
+			ctrlConfig: v1alpha1.ProjectConfig{
+				Gates: v1alpha1.FeatureGates{
+					OpenShift: v1alpha1.OpenShiftFeatureGates{
+						OpenShiftRoute: false,
+					},
+				},
+			},
+			expected: field.ErrorList{
+				field.Invalid(
+					path,
+					IngressTypeRoute,
+					"Please enable the featureGates.openshift.openshiftRoute feature gate to use Routes",
+				),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			validator := &validator{ctrlConfig: test.ctrlConfig}
+			errs := validator.validateQueryFrontend(test.input)
 			assert.Equal(t, test.expected, errs)
 		})
 	}

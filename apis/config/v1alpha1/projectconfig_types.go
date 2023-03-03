@@ -3,9 +3,25 @@ package v1alpha1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	cfg "sigs.k8s.io/controller-runtime/pkg/config/v1alpha1"
-
-	apiv1alpha1 "github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 )
+
+// ImagesSpec defines the image for each container.
+type ImagesSpec struct {
+	// Tempo defines the tempo container image.
+	//
+	// +optional
+	Tempo string `json:"tempo,omitempty"`
+
+	// TempoQuery defines the tempo-query container image.
+	//
+	// +optional
+	TempoQuery string `json:"tempoQuery,omitempty"`
+
+	// TempoGateway defines the tempo-gateway container image.
+	//
+	// +optional
+	TempoGateway string `json:"tempoGateway,omitempty"`
+}
 
 // BuiltInCertManagement is the configuration for the built-in facility to generate and rotate
 // TLS client and serving certificates for all Tempo services and internal clients except
@@ -41,10 +57,34 @@ type OpenShiftFeatureGates struct {
 	// More details: https://docs.openshift.com/container-platform/latest/networking/understanding-networking.html
 	GatewayRoute bool `json:"gatewayRoute,omitempty"`
 
+	// OpenShiftRoute enables creating OpenShift Route objects.
+	// More details: https://docs.openshift.com/container-platform/latest/networking/understanding-networking.html
+	OpenShiftRoute bool `json:"openshiftRoute,omitempty"`
+
 	// BaseDomain is used internally for redirect URL in gateway OpenShift auth mode.
 	// If empty the operator automatically derives the domain from the cluster.
 	BaseDomain string `json:"baseDomain,omitempty"`
+
+	// ClusterTLSPolicy enables usage of TLS policies set in the API Server.
+	// More details: https://docs.openshift.com/container-platform/4.11/security/tls-security-profiles.html
+	ClusterTLSPolicy bool
 }
+
+// TLSProfileType is a TLS security profile based on the Mozilla definitions:
+// https://wiki.mozilla.org/Security/Server_Side_TLS
+type TLSProfileType string
+
+const (
+	// TLSProfileOldType is a TLS security profile based on:
+	// https://wiki.mozilla.org/Security/Server_Side_TLS#Old_backward_compatibility
+	TLSProfileOldType TLSProfileType = "Old"
+	// TLSProfileIntermediateType is a TLS security profile based on:
+	// https://wiki.mozilla.org/Security/Server_Side_TLS#Intermediate_compatibility_.28default.29
+	TLSProfileIntermediateType TLSProfileType = "Intermediate"
+	// TLSProfileModernType is a TLS security profile based on:
+	// https://wiki.mozilla.org/Security/Server_Side_TLS#Modern_compatibility
+	TLSProfileModernType TLSProfileType = "Modern"
+)
 
 // FeatureGates is the supported set of all operator feature gates.
 type FeatureGates struct {
@@ -59,28 +99,32 @@ type FeatureGates struct {
 	// suffix `-ca-bundle`, e.g. `tempo-dev-ca-bundle` and the following data:
 	// - `service-ca.crt`: The CA signing the service certificate in `tls.crt`.
 	BuiltInCertManagement BuiltInCertManagement `json:"builtInCertManagement,omitempty"`
-	// HTTPEncryption enables TLS encryption for all HTTP Microservices services.
+	// HTTPEncryption enables TLS encryption for all HTTP TempoStack services.
 	// Each HTTP service requires a secret named as the service with the following data:
 	// - `tls.crt`: The TLS server side certificate.
 	// - `tls.key`: The TLS key for server-side encryption.
-	// In addition each service requires a configmap named as the Microservices CR with the
+	// In addition each service requires a configmap named as the TempoStack CR with the
 	// suffix `-ca-bundle`, e.g. `tempo-dev-ca-bundle` and the following data:
 	// - `service-ca.crt`: The CA signing the service certificate in `tls.crt`.
 	// This will protect all internal communication between the distributors and ingestors and also
 	// between ingestor and queriers, and between the queriers and the query-frontend component
 	// The only component remains unprotected is the tempo-query (jaeger query UI).
 	HTTPEncryption bool `json:"httpEncryption,omitempty"`
-	// GRPCEncryption enables TLS encryption for all GRPC Microservices services.
+	// GRPCEncryption enables TLS encryption for all GRPC TempoStack services.
 	// Each GRPC service requires a secret named as the service with the following data:
 	// - `tls.crt`: The TLS server side certificate.
 	// - `tls.key`: The TLS key for server-side encryption.
-	// In addition each service requires a configmap named as the Microservices CR with the
+	// In addition each service requires a configmap named as the TempoStack CR with the
 	// suffix `-ca-bundle`, e.g. `tempo-dev-ca-bundle` and the following data:
 	// - `service-ca.crt`: The CA signing the service certificate in `tls.crt`.
 	// This will protect all internal communication between the distributors and ingestors and also
 	// between ingestor and queriers, and between the queriers and the query-frontend component.
 	// The only component remains unprotected is the tempo-query (jaeger query UI).
 	GRPCEncryption bool `json:"grpcEncryption,omitempty"`
+
+	// TLSProfile allows to chose a TLS security profile. Enforced
+	// when using HTTPEncryption or GRPCEncryption.
+	TLSProfile string `json:"tlsProfile,omitempty"`
 }
 
 //+kubebuilder:object:root=true
@@ -92,7 +136,7 @@ type ProjectConfig struct {
 	// ControllerManagerConfigurationSpec returns the configurations for controllers
 	cfg.ControllerManagerConfigurationSpec `json:",inline"`
 
-	DefaultImages apiv1alpha1.ImagesSpec `json:"images"`
+	DefaultImages ImagesSpec `json:"images"`
 
 	Gates FeatureGates `json:"featureGates,omitempty"`
 }

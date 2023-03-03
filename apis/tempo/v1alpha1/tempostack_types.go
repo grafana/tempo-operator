@@ -4,10 +4,12 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/os-observability/tempo-operator/apis/config/v1alpha1"
 )
 
-// MicroservicesSpec defines the desired state of Microservices.
-type MicroservicesSpec struct {
+// TempoStackSpec defines the desired state of TempoStack.
+type TempoStackSpec struct {
 	// LimitSpec is used to limit ingestion and querying rates.
 	//
 	// +optional
@@ -35,7 +37,7 @@ type MicroservicesSpec struct {
 	//
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Container Images"
-	Images ImagesSpec `json:"images,omitempty"`
+	Images v1alpha1.ImagesSpec `json:"images,omitempty"`
 
 	// Storage defines S3 compatible object storage configuration.
 	// User is required to create secret and supply it.
@@ -133,8 +135,8 @@ type ComponentStatus struct {
 	Gateway PodStatusMap `json:"gateway,omitempty"`
 }
 
-// MicroservicesStatus defines the observed state of Microservices.
-type MicroservicesStatus struct {
+// TempoStackStatus defines the observed state of TempoStack.
+type TempoStackStatus struct {
 	// Version of the managed Tempo instance.
 	// +optional
 	TempoVersion string `json:"tempoVersion,omitempty"`
@@ -223,6 +225,8 @@ const (
 	ReasonPendingComponents ConditionReason = "PendingComponents"
 	// ReasonCouldNotGetOpenShiftBaseDomain when operator cannot get OpenShift base domain, that is used for OAuth redirect URL.
 	ReasonCouldNotGetOpenShiftBaseDomain ConditionReason = "CouldNotGetOpenShiftBaseDomain"
+	// ReasonCouldNotGetOpenShiftTLSPolicy when operator cannot get OpenShift TLS security cluster policy.
+	ReasonCouldNotGetOpenShiftTLSPolicy ConditionReason = "CouldNotGetOpenShiftTLSPolicy"
 )
 
 // PermissionType is a Tempo Gateway RBAC permission.
@@ -288,7 +292,7 @@ type RoleSpec struct {
 }
 
 // TenantSecretSpec is a secret reference containing name only
-// for a secret living in the same namespace as the (Tempo) Microservices custom resource.
+// for a secret living in the same namespace as the (Tempo) TempoStack custom resource.
 type TenantSecretSpec struct {
 	// Name of a secret in the namespace configured for tenant secrets.
 	//
@@ -357,39 +361,24 @@ type AuthenticationSpec struct {
 //+kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 //+kubebuilder:printcolumn:name="Tempo version",type="string",JSONPath=".status.tempoVersion",description="Tempo Version"
 
-// Microservices is the Schema for the microservices API.
-type Microservices struct {
-	Status            MicroservicesStatus `json:"status,omitempty"`
+// TempoStack is the Schema for the tempostacks API.
+//
+// +operator-sdk:csv:customresourcedefinitions:displayName="TempoStack",resources={{ConfigMap,v1},{ServiceAccount,v1},{Service,v1},{Secret,v1},{StatefulSet,v1},{Deployment,v1},{Ingress,v1},{Route,v1}}
+// +kubebuilder:resource:shortName=tempo;tempos
+type TempoStack struct {
+	Status            TempoStackStatus `json:"status,omitempty"`
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              MicroservicesSpec `json:"spec,omitempty"`
+	Spec              TempoStackSpec `json:"spec,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 
-// MicroservicesList contains a list of Microservices.
-type MicroservicesList struct {
+// TempoStackList contains a list of TempoStack.
+type TempoStackList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Microservices `json:"items"`
-}
-
-// ImagesSpec defines the image for each container.
-type ImagesSpec struct {
-	// Tempo defines the tempo container image.
-	//
-	// +optional
-	Tempo string `json:"tempo,omitempty"`
-
-	// TempoQuery defines the tempo-query container image.
-	//
-	// +optional
-	TempoQuery string `json:"tempoQuery,omitempty"`
-
-	// TempoGateway defines the tempo-gateway container image.
-	//
-	// +optional
-	TempoGateway string `json:"tempoGateway,omitempty"`
+	Items           []TempoStack `json:"items"`
 }
 
 // Resources defines resources configuration.
@@ -439,13 +428,13 @@ type ObjectStorageSpec struct {
 	TLS *ObjectStorageTLSSpec `json:"tls,omitempty"`
 
 	// Secret for object storage authentication.
-	// Name of a secret in the same namespace as the tempo Microservices custom resource.
+	// Name of a secret in the same namespace as the tempo TempoStack custom resource.
 	//
 	// +kubebuilder:validation:Required
 	// +kubebuilder:validation:MinLength=1
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Object Storage Secret"
 	Secret string `json:"secret"`
-	// Don't forget to update storageSecretField in microservices_controller.go if this field name changes.
+	// Don't forget to update storageSecretField in tempostacks_controller.go if this field name changes.
 }
 
 // ObjectStorageTLSSpec is the TLS configuration for reaching the object storage endpoint.
@@ -551,7 +540,7 @@ type TempoQueryFrontendSpec struct {
 	// +kubebuilder:validation:Optional
 	TempoComponentSpec `json:"component,omitempty"`
 
-	// JaegerQuerySpec defines Jaeger Query spefic options.
+	// JaegerQuerySpec defines Jaeger Query specific options.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
@@ -565,8 +554,63 @@ type JaegerQuerySpec struct {
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger Query Enabled"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enable Jaeger Query UI"
 	Enabled bool `json:"enabled"`
+
+	// Ingress defines Jaeger Query Ingress options.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger Query UI Ingress Settings"
+	Ingress JaegerQueryIngressSpec `json:"ingress,omitempty"`
+}
+
+// JaegerQueryIngressSpec defines Jaeger Query Ingress options.
+type JaegerQueryIngressSpec struct {
+	// Type defines the type of Ingress for the Jaeger Query UI.
+	// Currently ingress, route and none are supported.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Type"
+	Type IngressType `json:"type,omitempty"`
+
+	// Annotations defines the annotations of the Ingress object.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Annotations"
+	Annotations map[string]string `json:"annotations,omitempty"`
+
+	// Host defines the hostname of the Ingress object.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Host"
+	Host string `json:"host,omitempty"`
+
+	// IngressClassName is the name of an IngressClass cluster resource. Ingress
+	// controller implementations use this field to know whether they should be
+	// serving this Ingress resource.
+	// +optional
+	IngressClassName *string `json:"ingressClassName,omitempty"`
+
+	// Route defines OpenShift Route specific options.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Route Configuration"
+	Route JaegerQueryRouteSpec `json:"route,omitempty"`
+}
+
+// JaegerQueryRouteSpec defines OpenShift Route specific options.
+type JaegerQueryRouteSpec struct {
+	// Termination specifies the termination type. By default "edge" is used.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="TLS Termination Policy"
+	Termination TLSRouteTerminationType `json:"termination,omitempty"`
 }
 
 // LimitSpec defines Global and PerTenant rate limits.
@@ -681,5 +725,5 @@ type RetentionConfig struct {
 }
 
 func init() {
-	SchemeBuilder.Register(&Microservices{}, &MicroservicesList{})
+	SchemeBuilder.Register(&TempoStack{}, &TempoStackList{})
 }

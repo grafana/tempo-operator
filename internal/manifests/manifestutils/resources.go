@@ -25,7 +25,7 @@ var (
 )
 
 // Resources calculates the resource requirements of a specific component.
-func Resources(tempo v1alpha1.Microservices, component string) corev1.ResourceRequirements {
+func Resources(tempo v1alpha1.TempoStack, component string) corev1.ResourceRequirements {
 	componentResources, ok := resourcesMap[component]
 	if tempo.Spec.Resources.Total == nil || !ok {
 		return corev1.ResourceRequirements{}

@@ -1,0 +1,21 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  annotations:
+    example_annotation: example_value
+  labels:
+    app.kubernetes.io/component: query-frontend
+    app.kubernetes.io/created-by: tempo-controller
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/name: tempo
+  name: tempo-simplest-query-frontend
+spec:
+  host: example.com
+  port:
+    targetPort: jaeger-ui
+  tls:
+    termination: edge
+  to:
+    kind: Service
+    name: tempo-simplest-query-frontend

@@ -14,20 +14,20 @@ import (
 	"github.com/os-observability/tempo-operator/internal/certrotation"
 )
 
-// CheckCertExpiry handles the case if the Microservices managed signing CA, client and/or serving
+// CheckCertExpiry handles the case if the TempoStack managed signing CA, client and/or serving
 // certificates expired. Returns true if any of those expired and an error representing the reason
 // of expiry.
 func CheckCertExpiry(ctx context.Context, log logr.Logger, req ctrl.Request, k client.Client, fg configv1alpha1.FeatureGates) error {
-	ll := log.WithValues("microservices", req.String(), "event", "checkCertExpiry")
+	ll := log.WithValues("tempostacks", req.String(), "event", "checkCertExpiry")
 
-	var stack v1alpha1.Microservices
+	var stack v1alpha1.TempoStack
 	if err := k.Get(ctx, req.NamespacedName, &stack); err != nil {
 		if apierrors.IsNotFound(err) {
 			// maybe the user deleted it before we could react? Either way this isn't an issue
-			ll.Error(err, "could not find the requested tempo microservices", "name", req.String())
+			ll.Error(err, "could not find the requested tempo tempostacks", "name", req.String())
 			return nil
 		}
-		return kverrors.Wrap(err, "failed to lookup microservices", "name", req.String())
+		return kverrors.Wrap(err, "failed to lookup tempostacks", "name", req.String())
 	}
 
 	opts, err := GetOptions(ctx, k, req)

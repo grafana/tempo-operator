@@ -19,20 +19,20 @@ import (
 	"github.com/os-observability/tempo-operator/internal/manifests"
 )
 
-// CreateOrRotateCertificates handles the Microservices client and serving certificate creation and rotation
+// CreateOrRotateCertificates handles the TempoStack client and serving certificate creation and rotation
 // including the signing CA and a ca bundle or else returns an error. It returns only a degrade-condition-worthy
 // error if building the manifests fails for any reason.
 func CreateOrRotateCertificates(ctx context.Context, log logr.Logger,
 	req ctrl.Request, k client.Client, s *runtime.Scheme, fg configv1alpha1.FeatureGates) error {
-	ll := log.WithValues("microservices", req.String(), "event", "createOrRotateCerts")
-	var stack v1alpha1.Microservices
+	ll := log.WithValues("tempostacks", req.String(), "event", "createOrRotateCerts")
+	var stack v1alpha1.TempoStack
 	if err := k.Get(ctx, req.NamespacedName, &stack); err != nil {
 		if apierrors.IsNotFound(err) {
 			// maybe the user deleted it before we could react? Either way this isn't an issue
-			ll.Error(err, "could not find the requested tempo microservices", "name", req.String())
+			ll.Error(err, "could not find the requested tempo tempostacks", "name", req.String())
 			return nil
 		}
-		return kverrors.Wrap(err, "failed to lookup microservices", "name", req.String())
+		return kverrors.Wrap(err, "failed to lookup tempostacks", "name", req.String())
 	}
 
 	opts, err := GetOptions(ctx, k, req)
@@ -93,7 +93,7 @@ func CreateOrRotateCertificates(ctx context.Context, log logr.Logger,
 	}
 
 	if errCount > 0 {
-		return kverrors.New("failed to create or rotate Microservices certificates", "name", req.String())
+		return kverrors.New("failed to create or rotate TempoStack certificates", "name", req.String())
 	}
 
 	return nil

@@ -12,6 +12,7 @@ import (
 	k8slabels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
+	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
 )
@@ -19,13 +20,13 @@ import (
 func TestBuildIngester(t *testing.T) {
 	storageClassName := "default"
 	filesystem := corev1.PersistentVolumeFilesystem
-	objects, err := BuildIngester(manifestutils.Params{Tempo: v1alpha1.Microservices{
+	objects, err := BuildIngester(manifestutils.Params{Tempo: v1alpha1.TempoStack{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test",
 			Namespace: "project1",
 		},
-		Spec: v1alpha1.MicroservicesSpec{
-			Images: v1alpha1.ImagesSpec{
+		Spec: v1alpha1.TempoStackSpec{
+			Images: configv1alpha1.ImagesSpec{
 				Tempo: "docker.io/grafana/tempo:1.5.0",
 			},
 			ServiceAccount: "tempo-test-serviceaccount",

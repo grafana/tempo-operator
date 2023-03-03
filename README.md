@@ -39,7 +39,7 @@ EOF
 ```yaml
 kubectl apply -f - <<EOF
 apiVersion: tempo.grafana.com/v1alpha1
-kind: Microservices
+kind: TempoStack
 metadata:
   name: simplest
 spec:

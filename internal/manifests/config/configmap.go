@@ -10,6 +10,7 @@ import (
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
 	"github.com/os-observability/tempo-operator/internal/manifests/naming"
+	"github.com/os-observability/tempo-operator/internal/tlsprofile"
 )
 
 const tenantOverridesMountPath = "/conf/overrides.yaml"
@@ -19,6 +20,7 @@ type Params struct {
 	S3             S3
 	HTTPEncryption bool
 	GRPCEncryption bool
+	TLSProfile     tlsprofile.TLSProfileOptions
 }
 
 // S3 holds S3 object storage configuration options.
@@ -30,7 +32,7 @@ type S3 struct {
 // BuildConfigMap builds the tempo configuration file and the tenant-specific overrides configuration.
 // It returns a ConfigMap containing both configuration files and the checksum of the main configuration file
 // (the tenant-specific configuration gets reloaded automatically, therefore no checksum is required).
-func BuildConfigMap(tempo v1alpha1.Microservices, params Params) (*corev1.ConfigMap, string, error) {
+func BuildConfigMap(tempo v1alpha1.TempoStack, params Params) (*corev1.ConfigMap, string, error) {
 	config, err := buildConfiguration(tempo, params)
 	if err != nil {
 		return nil, "", err

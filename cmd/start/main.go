@@ -41,18 +41,18 @@ func start(c *cobra.Command, args []string) {
 		}
 	}
 
-	if err = (&controllers.MicroservicesReconciler{
+	if err = (&controllers.TempoStackReconciler{
 		Client:       mgr.GetClient(),
 		Scheme:       mgr.GetScheme(),
 		FeatureGates: ctrlConfig.Gates,
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Microservices")
+		setupLog.Error(err, "unable to create controller", "controller", "TempoStack")
 		os.Exit(1)
 
 	}
 	if os.Getenv("ENABLE_WEBHOOKS") != "false" {
-		if err = (&tempov1alpha1.Microservices{}).SetupWebhookWithManager(mgr, ctrlConfig.DefaultImages); err != nil {
-			setupLog.Error(err, "unable to create webhook", "webhook", "Microservices")
+		if err = (&tempov1alpha1.TempoStack{}).SetupWebhookWithManager(mgr, ctrlConfig); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "TempoStack")
 			os.Exit(1)
 		}
 	}

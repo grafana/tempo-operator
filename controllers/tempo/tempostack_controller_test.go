@@ -38,13 +38,13 @@ func createSecret(t *testing.T, nsn types.NamespacedName) *corev1.Secret {
 }
 
 func createTempoCR(t *testing.T, nsn types.NamespacedName, storageSecret *corev1.Secret) {
-	tempo := &v1alpha1.Microservices{
+	tempo := &v1alpha1.TempoStack{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      nsn.Name,
 			Namespace: nsn.Namespace,
 		},
-		Spec: v1alpha1.MicroservicesSpec{
-			Images: v1alpha1.ImagesSpec{
+		Spec: v1alpha1.TempoStackSpec{
+			Images: configv1alpha1.ImagesSpec{
 				Tempo: "docker.io/grafana/tempo:1.5.0",
 			},
 			LimitSpec: v1alpha1.LimitSpec{
@@ -67,9 +67,12 @@ func TestReconcile(t *testing.T) {
 	storageSecret := createSecret(t, nsn)
 	createTempoCR(t, nsn, storageSecret)
 
-	reconciler := MicroservicesReconciler{
+	reconciler := TempoStackReconciler{
 		Client: k8sClient,
 		Scheme: testScheme,
+		FeatureGates: configv1alpha1.FeatureGates{
+			TLSProfile: string(configv1alpha1.TLSProfileIntermediateType),
+		},
 	}
 	req := ctrl.Request{
 		NamespacedName: nsn,
@@ -106,7 +109,7 @@ func TestReconcile(t *testing.T) {
 	}
 
 	// test status
-	updatedTempo := v1alpha1.Microservices{}
+	updatedTempo := v1alpha1.TempoStack{}
 	err = k8sClient.Get(context.Background(), nsn, &updatedTempo)
 	require.NoError(t, err)
 	assert.Equal(t, "1.5.0", updatedTempo.Status.TempoVersion)
@@ -130,9 +133,12 @@ func TestReadyToDegraded(t *testing.T) {
 	createTempoCR(t, nsn, storageSecret)
 
 	// Reconcile
-	reconciler := MicroservicesReconciler{
+	reconciler := TempoStackReconciler{
 		Client: k8sClient,
 		Scheme: testScheme,
+		FeatureGates: configv1alpha1.FeatureGates{
+			TLSProfile: string(configv1alpha1.TLSProfileIntermediateType),
+		},
 	}
 	req := ctrl.Request{
 		NamespacedName: nsn,
@@ -142,7 +148,7 @@ func TestReadyToDegraded(t *testing.T) {
 	assert.Equal(t, false, reconcileResult.Requeue)
 
 	// Verify status conditions: Ready=true
-	updatedTempo1 := v1alpha1.Microservices{}
+	updatedTempo1 := v1alpha1.TempoStack{}
 	err = k8sClient.Get(context.Background(), nsn, &updatedTempo1)
 	require.NoError(t, err)
 	assert.Equal(t, []metav1.Condition{{
@@ -167,7 +173,7 @@ func TestReadyToDegraded(t *testing.T) {
 	assert.Equal(t, false, reconcileResult.Requeue)
 
 	// Verify status conditions: Ready=false, Degraded=true
-	updatedTempo2 := v1alpha1.Microservices{}
+	updatedTempo2 := v1alpha1.TempoStack{}
 	err = k8sClient.Get(context.Background(), nsn, &updatedTempo2)
 	require.NoError(t, err)
 	assert.Equal(t, []metav1.Condition{
@@ -202,9 +208,12 @@ func TestDegradedToDegraded(t *testing.T) {
 	require.NoError(t, err)
 
 	// Reconcile
-	reconciler := MicroservicesReconciler{
+	reconciler := TempoStackReconciler{
 		Client: k8sClient,
 		Scheme: testScheme,
+		FeatureGates: configv1alpha1.FeatureGates{
+			TLSProfile: string(configv1alpha1.TLSProfileIntermediateType),
+		},
 	}
 	req := ctrl.Request{
 		NamespacedName: nsn,
@@ -214,7 +223,7 @@ func TestDegradedToDegraded(t *testing.T) {
 	assert.Equal(t, false, reconcileResult.Requeue)
 
 	// Verify status conditions: Degraded=true
-	updatedTempo1 := v1alpha1.Microservices{}
+	updatedTempo1 := v1alpha1.TempoStack{}
 	err = k8sClient.Get(context.Background(), nsn, &updatedTempo1)
 	require.NoError(t, err)
 	assert.Equal(t, []metav1.Condition{{
@@ -236,7 +245,7 @@ func TestDegradedToDegraded(t *testing.T) {
 	assert.Equal(t, false, reconcileResult.Requeue)
 
 	// Verify status conditions: Degraded=true
-	updatedTempo2 := v1alpha1.Microservices{}
+	updatedTempo2 := v1alpha1.TempoStack{}
 	err = k8sClient.Get(context.Background(), nsn, &updatedTempo2)
 	require.NoError(t, err)
 
@@ -265,9 +274,12 @@ func TestDegradedToReady(t *testing.T) {
 	require.NoError(t, err)
 
 	// Reconcile
-	reconciler := MicroservicesReconciler{
+	reconciler := TempoStackReconciler{
 		Client: k8sClient,
 		Scheme: testScheme,
+		FeatureGates: configv1alpha1.FeatureGates{
+			TLSProfile: string(configv1alpha1.TLSProfileIntermediateType),
+		},
 	}
 	req := ctrl.Request{
 		NamespacedName: nsn,
@@ -277,7 +289,7 @@ func TestDegradedToReady(t *testing.T) {
 	assert.Equal(t, false, reconcileResult.Requeue)
 
 	// Verify status conditions: Degraded=true
-	updatedTempo1 := v1alpha1.Microservices{}
+	updatedTempo1 := v1alpha1.TempoStack{}
 	err = k8sClient.Get(context.Background(), nsn, &updatedTempo1)
 	require.NoError(t, err)
 	assert.Equal(t, []metav1.Condition{{
@@ -302,7 +314,7 @@ func TestDegradedToReady(t *testing.T) {
 	assert.Equal(t, false, reconcileResult.Requeue)
 
 	// Verify status conditions: Ready=true, Degraded=false
-	updatedTempo2 := v1alpha1.Microservices{}
+	updatedTempo2 := v1alpha1.TempoStack{}
 	err = k8sClient.Get(context.Background(), nsn, &updatedTempo2)
 	require.NoError(t, err)
 	assert.Equal(t, []metav1.Condition{
@@ -330,7 +342,7 @@ func TestTLSEnable(t *testing.T) {
 	storageSecret := createSecret(t, nsn)
 	createTempoCR(t, nsn, storageSecret)
 
-	reconciler := MicroservicesReconciler{
+	reconciler := TempoStackReconciler{
 		Client: k8sClient,
 		Scheme: testScheme,
 		FeatureGates: configv1alpha1.FeatureGates{
@@ -351,6 +363,7 @@ func TestTLSEnable(t *testing.T) {
 			},
 			HTTPEncryption: true,
 			GRPCEncryption: true,
+			TLSProfile:     string(configv1alpha1.TLSProfileIntermediateType),
 		},
 	}
 	req := ctrl.Request{

@@ -1,5 +1,5 @@
 apiVersion: tempo.grafana.com/v1alpha1
-kind: Microservices
+kind: TempoStack
 metadata:
   name: simplest
 #
@@ -343,5 +343,23 @@ spec:
     app.kubernetes.io/created-by: tempo-controller
     app.kubernetes.io/instance: simplest
     app.kubernetes.io/managed-by: tempo-controller
-
-
+#
+# Ingresses
+#
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  labels:
+    app.kubernetes.io/component: query-frontend
+    app.kubernetes.io/created-by: tempo-controller
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/name: tempo
+  name: tempo-simplest-query-frontend
+spec:
+  defaultBackend:
+    service:
+      name: tempo-simplest-query-frontend
+      port:
+        name: jaeger-ui

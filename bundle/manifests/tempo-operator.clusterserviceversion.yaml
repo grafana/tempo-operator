@@ -6,14 +6,15 @@ metadata:
       [
         {
           "apiVersion": "tempo.grafana.com/v1alpha1",
-          "kind": "Microservices",
+          "kind": "TempoStack",
           "metadata": {
-            "name": "microservices-sample"
+            "name": "tempostack-sample"
           },
           "spec": null
         }
       ]
     capabilities: Basic Install
+    createdAt: "2023-03-02T18:06:41Z"
     operators.operatorframework.io/builder: operator-sdk-v1.27.0
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
   name: tempo-operator.v0.0.1
@@ -22,10 +23,35 @@ spec:
   apiservicedefinitions: {}
   customresourcedefinitions:
     owned:
-    - description: Microservices is the Schema for the microservices API.
-      displayName: Microservices
-      kind: Microservices
-      name: microservices.tempo.grafana.com
+    - description: TempoStack is the Schema for the tempostacks API.
+      displayName: TempoStack
+      kind: TempoStack
+      name: tempostacks.tempo.grafana.com
+      resources:
+      - kind: ConfigMap
+        name: ""
+        version: v1
+      - kind: Deployment
+        name: ""
+        version: v1
+      - kind: Ingress
+        name: ""
+        version: v1
+      - kind: Route
+        name: ""
+        version: v1
+      - kind: Secret
+        name: ""
+        version: v1
+      - kind: Service
+        name: ""
+        version: v1
+      - kind: ServiceAccount
+        name: ""
+        version: v1
+      - kind: StatefulSet
+        name: ""
+        version: v1
       specDescriptors:
       - description: Images defines the image for each container.
         displayName: Container Images
@@ -185,7 +211,7 @@ spec:
         displayName: Object Storage
         path: storage
       - description: Secret for object storage authentication. Name of a secret in
-          the same namespace as the tempo Microservices custom resource.
+          the same namespace as the tempo TempoStack custom resource.
         displayName: Object Storage Secret
         path: storage.secret
       - description: TLS configuration for reaching the object storage endpoint.
@@ -280,13 +306,33 @@ spec:
       - description: TempoQueryFrontendSpec defines the query frontend spec.
         displayName: Query Frontend pods
         path: template.queryFrontend
-      - description: JaegerQuerySpec defines Jaeger Query spefic options.
+      - description: JaegerQuerySpec defines Jaeger Query specific options.
         displayName: Jaeger Query Settings
         path: template.queryFrontend.jaegerQuery
       - description: Enabled is used to define if Jaeger Query component should be
           created.
-        displayName: Jaeger Query Enabled
+        displayName: Enable Jaeger Query UI
         path: template.queryFrontend.jaegerQuery.enabled
+      - description: Ingress defines Jaeger Query Ingress options.
+        displayName: Jaeger Query UI Ingress Settings
+        path: template.queryFrontend.jaegerQuery.ingress
+      - description: Annotations defines the annotations of the Ingress object.
+        displayName: Annotations
+        path: template.queryFrontend.jaegerQuery.ingress.annotations
+      - description: Host defines the hostname of the Ingress object.
+        displayName: Host
+        path: template.queryFrontend.jaegerQuery.ingress.host
+      - description: Route defines OpenShift Route specific options.
+        displayName: Route Configuration
+        path: template.queryFrontend.jaegerQuery.ingress.route
+      - description: Termination specifies the termination type. By default "edge"
+          is used.
+        displayName: TLS Termination Policy
+        path: template.queryFrontend.jaegerQuery.ingress.route.termination
+      - description: Type defines the type of Ingress for the Jaeger Query UI. Currently
+          ingress, route and none are supported.
+        displayName: Type
+        path: template.queryFrontend.jaegerQuery.ingress.type
       - description: NodeSelector is the simplest recommended form of node selection
           constraint.
         displayName: Node Selector
@@ -434,6 +480,18 @@ spec:
           - list
           - watch
         - apiGroups:
+          - networking.k8s.io
+          resources:
+          - ingresses
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
           - operator.openshift.io
           resources:
           - ingresscontrollers
@@ -458,6 +516,7 @@ spec:
           - route.openshift.io
           resources:
           - routes
+          - routes/custom-host
           verbs:
           - create
           - delete
@@ -468,7 +527,7 @@ spec:
         - apiGroups:
           - tempo.grafana.com
           resources:
-          - microservices
+          - tempostacks
           verbs:
           - create
           - delete
@@ -480,13 +539,13 @@ spec:
         - apiGroups:
           - tempo.grafana.com
           resources:
-          - microservices/finalizers
+          - tempostacks/finalizers
           verbs:
           - update
         - apiGroups:
           - tempo.grafana.com
           resources:
-          - microservices/status
+          - tempostacks/status
           verbs:
           - get
           - patch
@@ -669,7 +728,7 @@ spec:
     containerPort: 443
     deploymentName: tempo-operator-controller-manager
     failurePolicy: Fail
-    generateName: mmicroservices.kb.io
+    generateName: mtempostack.kb.io
     rules:
     - apiGroups:
       - tempo.grafana.com
@@ -679,17 +738,17 @@ spec:
       - CREATE
       - UPDATE
       resources:
-      - microservices
+      - tempostacks
     sideEffects: None
     targetPort: 9443
     type: MutatingAdmissionWebhook
-    webhookPath: /mutate-tempo-grafana-com-v1alpha1-microservices
+    webhookPath: /mutate-tempo-grafana-com-v1alpha1-tempostack
   - admissionReviewVersions:
     - v1
     containerPort: 443
     deploymentName: tempo-operator-controller-manager
     failurePolicy: Fail
-    generateName: vmicroservices.kb.io
+    generateName: vtempostack.kb.io
     rules:
     - apiGroups:
       - tempo.grafana.com
@@ -699,8 +758,8 @@ spec:
       - CREATE
       - UPDATE
       resources:
-      - microservices
+      - tempostacks
     sideEffects: None
     targetPort: 9443
     type: ValidatingAdmissionWebhook
-    webhookPath: /validate-tempo-grafana-com-v1alpha1-microservices
+    webhookPath: /validate-tempo-grafana-com-v1alpha1-tempostack
