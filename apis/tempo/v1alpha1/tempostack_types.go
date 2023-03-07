@@ -423,7 +423,7 @@ type SearchSpec struct {
 type ObjectStorageSecretType string
 
 const (
-	// ObjectStorageSecretS3 when using S3 for Tempo storage
+	// ObjectStorageSecretS3 when using S3 for Tempo storage.
 	ObjectStorageSecretS3 ObjectStorageSecretType = "s3"
 )
 
