@@ -22,3 +22,4 @@ kubeconfig
 
 website/public/*
 website/resources/*
+docs/prologue/contributing.md

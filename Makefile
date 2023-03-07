@@ -409,6 +409,9 @@ docs/operator/feature-gates.md: $(FEATURE_GATES_TARGET) gen-crd-api-reference-do
 web-pre: docs/operator/api.md docs/operator/feature-gates.md
 	@echo ">> preprocessing docs for website"
 	@git submodule update --init --recursive
+	cp CONTRIBUTING.md docs/prologue/contributing.md
+	sed -i 's/(LICENSE)/(https:\/\/raw.githubusercontent.com\/os-observability\/tempo-operator\/main\/LICENSE)/' docs/prologue/contributing.md
+	sed -i 's/(README.md)/(https:\/\/github.com\/os-observability\/tempo-operator#readme)/' docs/prologue/contributing.md
 	cd $(WEBSITE_DIR)/themes/doks/ && npm install && rm -rf content
 
 .PHONY: web
