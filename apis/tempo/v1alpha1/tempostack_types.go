@@ -433,7 +433,7 @@ type ObjectStorageSecretSpec struct {
 	//
 	// +required
 	// +kubebuilder:validation:Required
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors={"urn:alm:descriptor:com.tectonic.ui:select:azure","urn:alm:descriptor:com.tectonic.ui:select:gcs","urn:alm:descriptor:com.tectonic.ui:select:s3","urn:alm:descriptor:com.tectonic.ui:select:swift"},displayName="Object Storage Secret Type"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors={"urn:alm:descriptor:com.tectonic.ui:select:s3"},displayName="Object Storage Secret Type"
 	Type ObjectStorageSecretType `json:"type"`
 
 	// Name of a secret in the namespace configured for object storage secrets.

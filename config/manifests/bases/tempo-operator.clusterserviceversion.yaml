@@ -201,6 +201,17 @@ spec:
           the same namespace as the tempo TempoStack custom resource.
         displayName: Object Storage Secret
         path: storage.secret
+      - description: Name of a secret in the namespace configured for object storage
+          secrets.
+        displayName: Object Storage Secret Name
+        path: storage.secret.name
+        x-descriptors:
+        - urn:alm:descriptor:io.kubernetes:Secret
+      - description: Type of object storage that should be used
+        displayName: Object Storage Secret Type
+        path: storage.secret.type
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:select:s3
       - description: TLS configuration for reaching the object storage endpoint.
         displayName: TLS Config
         path: storage.tls

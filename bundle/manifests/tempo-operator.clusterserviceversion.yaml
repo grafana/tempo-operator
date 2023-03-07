@@ -14,7 +14,7 @@ metadata:
         }
       ]
     capabilities: Basic Install
-    createdAt: "2023-03-02T18:06:41Z"
+    createdAt: "2023-03-07T10:23:56Z"
     operators.operatorframework.io/builder: operator-sdk-v1.27.0
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
   name: tempo-operator.v0.0.1
@@ -214,6 +214,17 @@ spec:
           the same namespace as the tempo TempoStack custom resource.
         displayName: Object Storage Secret
         path: storage.secret
+      - description: Name of a secret in the namespace configured for object storage
+          secrets.
+        displayName: Object Storage Secret Name
+        path: storage.secret.name
+        x-descriptors:
+        - urn:alm:descriptor:io.kubernetes:Secret
+      - description: Type of object storage that should be used
+        displayName: Object Storage Secret Type
+        path: storage.secret.type
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:select:s3
       - description: TLS configuration for reaching the object storage endpoint.
         displayName: TLS Config
         path: storage.tls

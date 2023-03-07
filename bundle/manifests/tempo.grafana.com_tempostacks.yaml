@@ -237,8 +237,20 @@ spec:
                     description: Secret for object storage authentication. Name of
                       a secret in the same namespace as the tempo TempoStack custom
                       resource.
-                    minLength: 1
-                    type: string
+                    properties:
+                      name:
+                        description: Name of a secret in the namespace configured
+                          for object storage secrets.
+                        type: string
+                      type:
+                        description: Type of object storage that should be used
+                        enum:
+                        - s3
+                        type: string
+                    required:
+                    - name
+                    - type
+                    type: object
                   tls:
                     description: TLS configuration for reaching the object storage
                       endpoint.
