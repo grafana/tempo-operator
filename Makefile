@@ -15,7 +15,7 @@ BUNDLE_IMG ?= ${IMG_PREFIX}/${IMG_REPO}-bundle:v${OPERATOR_VERSION}
 
 # Website generation variables
 WEBSITE_DIR ?= website
-WEBSITE_BASE_URL ?= https://tempo-operator.dev
+WEBSITE_BASE_URL ?= https://tempo-operator.netlify.app
 HUGO_VERSION = v0.80.0
 
 
