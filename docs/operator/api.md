@@ -1451,7 +1451,7 @@ string
 
 <tbody><tr><td><p>&#34;s3&#34;</p></td>
 
-<td><p>ObjectStorageSecretS3 when using S3 for Tempo storage</p>
+<td><p>ObjectStorageSecretS3 when using S3 for Tempo storage.</p>
 </td>
 
 </tr></tbody>
