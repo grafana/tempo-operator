@@ -6,8 +6,9 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 
-	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 )
 
 func findEnvVar(name string, envVars *[]corev1.EnvVar) error {
