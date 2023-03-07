@@ -12,7 +12,7 @@ weight: 200
 toc: true
 ---
 
-This project is licensed under the [AGPLv3 license](../../LICENSE) and accept
+This project is licensed under the [AGPLv3 license](LICENSE) and accept
 contributions via GitHub pull requests. This document outlines some of the
 conventions on development workflow, contact points
 and other resources to make it easier to get your contribution accepted.
@@ -24,7 +24,8 @@ By contributing to this project you agree to the Contributor License Agreement.
 
 # Email and Chat
 
-TBD
+The project currently uses the [Grafana Slack](https://grafana.slack.com):
+- [#tempo-operator-dev](https://grafana.slack.com/archives/C0414EUU39A)
 
 ## Getting Started
 

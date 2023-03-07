@@ -19,9 +19,8 @@ The Tempo Operator supports a number of Kubernetes and Tempo releases.
 
 The Tempo Operator uses client-go to communicate with Kubernetes clusters. The supported Kubernetes cluster version is determined by client-go. The compatibility matrix for client-go and Kubernetes clusters can be found [here](https://github.com/kubernetes/client-go#compatibility-matrix). All additional compatibility is only best effort, or happens to still/already be supported. The currently used client-go version is "v0.25.0".
 
-Due to the use of CustomResourceDefinitions Kubernetes >= v1.7.0 is required.
+This operator was tested on Kubernetes >= v1.21.0, so at least that version is required.
 
-Due to the use of apiextensions.k8s.io/v1 CustomResourceDefinitions, requires Kubernetes >= v1.16.0.
 
 ## Tempo
 
