@@ -44,7 +44,9 @@ metadata:
   name: simplest
 spec:
   storage:
-    secret: minio-test
+    secret:
+      name: minio-test
+      type: s3
   storageSize: 1Gi
   resources:
     total:
