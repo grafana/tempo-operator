@@ -265,7 +265,7 @@ func (v *validator) validateGateway(tempo TempoStack) field.ErrorList {
 		path := field.NewPath("spec").Child("components").Child("gateway").Child("enabled")
 		return field.ErrorList{
 			field.Invalid(path, tempo.Spec.Components.Gateway.Enabled,
-				"gateway require enable jaeger query to work.",
+				"to use the gateway, please enable jaegerQuery",
 			)}
 	}
 	return nil
