@@ -502,3 +502,111 @@ func TestValidateIngressAndRoute(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateGatewayAndJaegerQuery(t *testing.T) {
+	path := field.NewPath("spec").Child("components").Child("gateway").Child("enabled")
+
+	tests := []struct {
+		name     string
+		input    TempoStack
+		expected field.ErrorList
+	}{
+		{
+			name: "valid configuration enabled both",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					ReplicationFactor: 3,
+					Components: TempoComponentsSpec{
+						QueryFrontend: TempoQueryFrontendSpec{
+							JaegerQuery: JaegerQuerySpec{
+								Enabled: true,
+							},
+						},
+						Gateway: TempoGatewaySpec{
+							Enabled: true,
+						},
+					},
+				},
+			},
+			expected: nil,
+		},
+		{
+			name: "valid config disable gateway and enable jaegerQuery",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					ReplicationFactor: 3,
+					Components: TempoComponentsSpec{
+						QueryFrontend: TempoQueryFrontendSpec{
+							JaegerQuery: JaegerQuerySpec{
+								Enabled: true,
+								Ingress: JaegerQueryIngressSpec{
+									Type: "route",
+								},
+							},
+						},
+						Gateway: TempoGatewaySpec{
+							Enabled: false,
+						},
+					},
+				},
+			},
+			expected: nil,
+		},
+		{
+			name: "valid config disable both",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					ReplicationFactor: 3,
+					Components: TempoComponentsSpec{
+						QueryFrontend: TempoQueryFrontendSpec{
+							JaegerQuery: JaegerQuerySpec{
+								Enabled: false,
+								Ingress: JaegerQueryIngressSpec{
+									Type: "route",
+								},
+							},
+						},
+						Gateway: TempoGatewaySpec{
+							Enabled: false,
+						},
+					},
+				},
+			},
+			expected: nil,
+		},
+		{
+			name: "invalid config disable jaegerQuery",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					ReplicationFactor: 3,
+					Components: TempoComponentsSpec{
+						QueryFrontend: TempoQueryFrontendSpec{
+							JaegerQuery: JaegerQuerySpec{
+								Enabled: false,
+								Ingress: JaegerQueryIngressSpec{
+									Type: "ingress",
+								},
+							},
+						},
+						Gateway: TempoGatewaySpec{
+							Enabled: true,
+						},
+					},
+				},
+			},
+			expected: field.ErrorList{
+				field.Invalid(path, true,
+					"gateway require enable jaeger query to work.",
+				),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			validator := &validator{ctrlConfig: v1alpha1.ProjectConfig{}}
+			errs := validator.validateGateway(test.input)
+			assert.Equal(t, test.expected, errs)
+		})
+	}
+}
