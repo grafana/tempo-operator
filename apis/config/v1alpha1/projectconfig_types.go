@@ -3,6 +3,7 @@ package v1alpha1
 import (
 	"fmt"
 
+	dockerparser "github.com/novln/docker-parser"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	cfg "sigs.k8s.io/controller-runtime/pkg/config/v1alpha1"
 )
@@ -156,6 +157,25 @@ func (c *ProjectConfig) Validate() error {
 		// valid setting
 	default:
 		return fmt.Errorf("invalid value '%s' for setting featureGates.tlsProfile (valid values: %s, %s and %s)", c.Gates.TLSProfile, TLSProfileOldType, TLSProfileIntermediateType, TLSProfileModernType)
+	}
+
+	if c.DefaultImages.Tempo != "" {
+		_, err := dockerparser.Parse(c.DefaultImages.Tempo)
+		if err != nil {
+			return fmt.Errorf("invalid value '%s' for setting images.tempo", c.DefaultImages.Tempo)
+		}
+	}
+	if c.DefaultImages.TempoQuery != "" {
+		_, err := dockerparser.Parse(c.DefaultImages.TempoQuery)
+		if err != nil {
+			return fmt.Errorf("invalid value '%s' for setting images.tempoQuery", c.DefaultImages.TempoQuery)
+		}
+	}
+	if c.DefaultImages.TempoGateway != "" {
+		_, err := dockerparser.Parse(c.DefaultImages.TempoGateway)
+		if err != nil {
+			return fmt.Errorf("invalid value '%s' for setting images.tempoGateway", c.DefaultImages.TempoGateway)
+		}
 	}
 
 	return nil

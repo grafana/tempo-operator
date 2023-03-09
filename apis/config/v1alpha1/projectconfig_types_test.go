@@ -36,6 +36,42 @@ func TestValidateProjectConfig(t *testing.T) {
 			input:    ProjectConfig{},
 			expected: errors.New("invalid value '' for setting featureGates.tlsProfile (valid values: Old, Intermediate and Modern)"),
 		},
+		{
+			name: "invalid tempo container image",
+			input: ProjectConfig{
+				DefaultImages: ImagesSpec{
+					Tempo: "abc@def",
+				},
+				Gates: FeatureGates{
+					TLSProfile: "Modern",
+				},
+			},
+			expected: errors.New("invalid value 'abc@def' for setting images.tempo"),
+		},
+		{
+			name: "invalid tempoQuery container image",
+			input: ProjectConfig{
+				DefaultImages: ImagesSpec{
+					TempoQuery: "abc@def",
+				},
+				Gates: FeatureGates{
+					TLSProfile: "Modern",
+				},
+			},
+			expected: errors.New("invalid value 'abc@def' for setting images.tempoQuery"),
+		},
+		{
+			name: "invalid tempoGateway container image",
+			input: ProjectConfig{
+				DefaultImages: ImagesSpec{
+					TempoGateway: "abc@def",
+				},
+				Gates: FeatureGates{
+					TLSProfile: "Modern",
+				},
+			},
+			expected: errors.New("invalid value 'abc@def' for setting images.tempoGateway"),
+		},
 	}
 
 	for _, test := range tests {
