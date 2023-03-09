@@ -372,7 +372,7 @@ func (r *TempoStackReconciler) findObjectsOwnedByTempoOperator(ctx context.Conte
 		routesList := &routev1.RouteList{}
 		err := r.List(ctx, routesList, listOps)
 		if err != nil {
-			return nil, fmt.Errorf("error listing ingress: %w", err)
+			return nil, fmt.Errorf("error listing routes: %w", err)
 		}
 		for i := range routesList.Items {
 			ownedObjects[routesList.Items[i].GetUID()] = &routesList.Items[i]
