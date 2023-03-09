@@ -260,6 +260,17 @@ func (v *validator) validateQueryFrontend(tempo TempoStack) field.ErrorList {
 	return nil
 }
 
+func (v *validator) validateGateway(tempo TempoStack) field.ErrorList {
+	if tempo.Spec.Components.Gateway.Enabled && !tempo.Spec.Components.QueryFrontend.JaegerQuery.Enabled {
+		path := field.NewPath("spec").Child("components").Child("gateway").Child("enabled")
+		return field.ErrorList{
+			field.Invalid(path, tempo.Spec.Components.Gateway.Enabled,
+				"to use the gateway, please enable jaegerQuery",
+			)}
+	}
+	return nil
+}
+
 func (v *validator) validate(ctx context.Context, obj runtime.Object) error {
 	tempo, ok := obj.(*TempoStack)
 	if !ok {
@@ -272,6 +283,7 @@ func (v *validator) validate(ctx context.Context, obj runtime.Object) error {
 	allErrs = append(allErrs, v.validateStorage(ctx, *tempo)...)
 	allErrs = append(allErrs, v.validateReplicationFactor(*tempo)...)
 	allErrs = append(allErrs, v.validateQueryFrontend(*tempo)...)
+	allErrs = append(allErrs, v.validateGateway(*tempo)...)
 
 	if len(allErrs) == 0 {
 		return nil
