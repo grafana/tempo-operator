@@ -1,6 +1,8 @@
 package v1alpha1
 
 import (
+	"fmt"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	cfg "sigs.k8s.io/controller-runtime/pkg/config/v1alpha1"
 )
@@ -143,4 +145,17 @@ type ProjectConfig struct {
 
 func init() {
 	SchemeBuilder.Register(&ProjectConfig{})
+}
+
+func (c *ProjectConfig) Validate() error {
+	switch c.Gates.TLSProfile {
+	case string(TLSProfileOldType),
+		string(TLSProfileIntermediateType),
+		string(TLSProfileModernType):
+		// valid setting
+	default:
+		return fmt.Errorf("invalid value '%s' for setting featureGates.tlsProfile (valid values: %s, %s and %s)", c.Gates.TLSProfile, TLSProfileOldType, TLSProfileIntermediateType, TLSProfileModernType)
+	}
+
+	return nil
 }
