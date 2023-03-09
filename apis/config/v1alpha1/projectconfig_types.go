@@ -147,6 +147,7 @@ func init() {
 	SchemeBuilder.Register(&ProjectConfig{})
 }
 
+// Validate validates the controller configuration (ProjectConfig).
 func (c *ProjectConfig) Validate() error {
 	switch c.Gates.TLSProfile {
 	case string(TLSProfileOldType),
