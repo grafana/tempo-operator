@@ -2,14 +2,38 @@ package cmd
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"io"
+	"os"
 	"testing"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
 )
+
+func TestSetupLogging(t *testing.T) {
+	prevStderr := os.Stderr
+	r, w, _ := os.Pipe()
+	os.Stderr = w
+
+	setupLogging()
+	log := log.FromContext(context.Background())
+	log = log.WithValues("tempo", "simplest")
+	log.Error(errors.New("test error"), "a test error occurred")
+
+	err := w.Close()
+	require.NoError(t, err)
+	output, _ := io.ReadAll(r)
+	os.Stderr = prevStderr
+
+	require.Regexp(t, fmt.Sprintf(`%d.+ERROR\s+a test error occurred\s+{"tempo": "simplest", "error": "test error"}`, time.Now().Year()), string(output))
+}
 
 func TestReadConfig(t *testing.T) {
 	tests := []struct {
