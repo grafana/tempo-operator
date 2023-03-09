@@ -596,7 +596,7 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 			},
 			expected: field.ErrorList{
 				field.Invalid(path, true,
-					"gateway require enable jaeger query to work.",
+					"to use the gateway, please enable jaegerQuery",
 				),
 			},
 		},
