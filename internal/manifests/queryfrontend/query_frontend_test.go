@@ -314,7 +314,7 @@ func TestBuildQueryFrontendWithJaeger(t *testing.T) {
 				TempoQuery: "docker.io/grafana/tempo-query:1.5.0",
 			},
 			ServiceAccount: "tempo-test-serviceaccount",
-			Components: v1alpha1.TempoComponentsSpec{
+			Template: v1alpha1.TempoTemplateSpec{
 				QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
 					TempoComponentSpec: v1alpha1.TempoComponentSpec{
 						NodeSelector: map[string]string{"a": "b"},
@@ -365,7 +365,7 @@ func TestQueryFrontendJaegerIngress(t *testing.T) {
 			Namespace: "project1",
 		},
 		Spec: v1alpha1.TempoStackSpec{
-			Components: v1alpha1.TempoComponentsSpec{
+			Template: v1alpha1.TempoTemplateSpec{
 				QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
 					JaegerQuery: v1alpha1.JaegerQuerySpec{
 						Enabled: true,
@@ -429,7 +429,7 @@ func TestQueryFrontendJaegerRoute(t *testing.T) {
 			Namespace: "project1",
 		},
 		Spec: v1alpha1.TempoStackSpec{
-			Components: v1alpha1.TempoComponentsSpec{
+			Template: v1alpha1.TempoTemplateSpec{
 				QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
 					JaegerQuery: v1alpha1.JaegerQuerySpec{
 						Enabled: true,

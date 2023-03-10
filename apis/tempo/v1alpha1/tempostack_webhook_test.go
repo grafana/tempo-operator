@@ -92,7 +92,7 @@ func TestDefault(t *testing.T) {
 						MaxDuration:        metav1.Duration{Duration: 0},
 						DefaultResultLimit: &defaultDefaultResultLimit,
 					},
-					Components: TempoComponentsSpec{
+					Template: TempoTemplateSpec{
 						Distributor: TempoComponentSpec{
 							Replicas: pointer.Int32(1),
 						},
@@ -139,7 +139,7 @@ func TestDefault(t *testing.T) {
 						MaxDuration:        metav1.Duration{Duration: 0},
 						DefaultResultLimit: &defaultDefaultResultLimit,
 					},
-					Components: TempoComponentsSpec{
+					Template: TempoTemplateSpec{
 						Distributor: TempoComponentSpec{
 							Replicas: pointer.Int32(1),
 						},
@@ -157,7 +157,7 @@ func TestDefault(t *testing.T) {
 					Name: "test",
 				},
 				Spec: TempoStackSpec{
-					Components: TempoComponentsSpec{
+					Template: TempoTemplateSpec{
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: true,
@@ -198,7 +198,7 @@ func TestDefault(t *testing.T) {
 						MaxDuration:        metav1.Duration{Duration: 0},
 						DefaultResultLimit: &defaultDefaultResultLimit,
 					},
-					Components: TempoComponentsSpec{
+					Template: TempoTemplateSpec{
 						Distributor: TempoComponentSpec{
 							Replicas: pointer.Int32(1),
 						},
@@ -331,7 +331,7 @@ func TestValidateReplicationFactor(t *testing.T) {
 			input: TempoStack{
 				Spec: TempoStackSpec{
 					ReplicationFactor: 3,
-					Components: TempoComponentsSpec{
+					Template: TempoTemplateSpec{
 						Ingester: TempoComponentSpec{
 							Replicas: pointer.Int32(2),
 						},
@@ -345,7 +345,7 @@ func TestValidateReplicationFactor(t *testing.T) {
 			input: TempoStack{
 				Spec: TempoStackSpec{
 					ReplicationFactor: 3,
-					Components: TempoComponentsSpec{
+					Template: TempoTemplateSpec{
 						Ingester: TempoComponentSpec{
 							Replicas: pointer.Int32(3),
 						},
@@ -359,7 +359,7 @@ func TestValidateReplicationFactor(t *testing.T) {
 			input: TempoStack{
 				Spec: TempoStackSpec{
 					ReplicationFactor: 3,
-					Components: TempoComponentsSpec{
+					Template: TempoTemplateSpec{
 						Ingester: TempoComponentSpec{
 							Replicas: pointer.Int32(1),
 						},
@@ -395,7 +395,7 @@ func TestValidateIngressAndRoute(t *testing.T) {
 			input: TempoStack{
 				Spec: TempoStackSpec{
 					ReplicationFactor: 3,
-					Components: TempoComponentsSpec{
+					Template: TempoTemplateSpec{
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: true,
@@ -414,7 +414,7 @@ func TestValidateIngressAndRoute(t *testing.T) {
 			input: TempoStack{
 				Spec: TempoStackSpec{
 					ReplicationFactor: 3,
-					Components: TempoComponentsSpec{
+					Template: TempoTemplateSpec{
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: true,
@@ -440,7 +440,7 @@ func TestValidateIngressAndRoute(t *testing.T) {
 			input: TempoStack{
 				Spec: TempoStackSpec{
 					ReplicationFactor: 3,
-					Components: TempoComponentsSpec{
+					Template: TempoTemplateSpec{
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: false,
@@ -465,7 +465,7 @@ func TestValidateIngressAndRoute(t *testing.T) {
 			input: TempoStack{
 				Spec: TempoStackSpec{
 					ReplicationFactor: 3,
-					Components: TempoComponentsSpec{
+					Template: TempoTemplateSpec{
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: true,
@@ -504,7 +504,7 @@ func TestValidateIngressAndRoute(t *testing.T) {
 }
 
 func TestValidateGatewayAndJaegerQuery(t *testing.T) {
-	path := field.NewPath("spec").Child("components").Child("gateway").Child("enabled")
+	path := field.NewPath("spec").Child("template").Child("gateway").Child("enabled")
 
 	tests := []struct {
 		name     string
@@ -516,7 +516,7 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 			input: TempoStack{
 				Spec: TempoStackSpec{
 					ReplicationFactor: 3,
-					Components: TempoComponentsSpec{
+					Template: TempoTemplateSpec{
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: true,
@@ -535,7 +535,7 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 			input: TempoStack{
 				Spec: TempoStackSpec{
 					ReplicationFactor: 3,
-					Components: TempoComponentsSpec{
+					Template: TempoTemplateSpec{
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: true,
@@ -557,7 +557,7 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 			input: TempoStack{
 				Spec: TempoStackSpec{
 					ReplicationFactor: 3,
-					Components: TempoComponentsSpec{
+					Template: TempoTemplateSpec{
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: false,
@@ -579,7 +579,7 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 			input: TempoStack{
 				Spec: TempoStackSpec{
 					ReplicationFactor: 3,
-					Components: TempoComponentsSpec{
+					Template: TempoTemplateSpec{
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: false,

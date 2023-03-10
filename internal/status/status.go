@@ -20,7 +20,7 @@ func Refresh(ctx context.Context, k StatusClient, tempo v1alpha1.TempoStack, sta
 	}
 	changed.Status.TempoVersion = tempoImage.Tag()
 
-	if tempo.Spec.Components.QueryFrontend.JaegerQuery.Enabled {
+	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled {
 		tempoQueryImage, err := dockerparser.Parse(tempo.Spec.Images.TempoQuery)
 		if err != nil {
 			return false, err
