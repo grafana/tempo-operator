@@ -14,7 +14,7 @@ metadata:
         }
       ]
     capabilities: Basic Install
-    createdAt: "2023-03-03T14:35:22Z"
+    createdAt: "2023-03-09T18:10:38Z"
     operators.operatorframework.io/builder: operator-sdk-v1.27.0
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
   name: tempo-operator.v0.0.1
@@ -604,13 +604,7 @@ spec:
                     port: 8081
                   initialDelaySeconds: 5
                   periodSeconds: 10
-                resources:
-                  limits:
-                    cpu: 500m
-                    memory: 128Mi
-                  requests:
-                    cpu: 10m
-                    memory: 64Mi
+                resources: {}
                 securityContext:
                   allowPrivilegeEscalation: false
                   capabilities:
@@ -728,7 +722,7 @@ spec:
     containerPort: 443
     deploymentName: tempo-operator-controller-manager
     failurePolicy: Fail
-    generateName: mtempostack.kb.io
+    generateName: mtempostack.tempo.grafana.com
     rules:
     - apiGroups:
       - tempo.grafana.com
@@ -748,7 +742,7 @@ spec:
     containerPort: 443
     deploymentName: tempo-operator-controller-manager
     failurePolicy: Fail
-    generateName: vtempostack.kb.io
+    generateName: vtempostack.tempo.grafana.com
     rules:
     - apiGroups:
       - tempo.grafana.com

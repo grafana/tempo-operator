@@ -43,7 +43,7 @@ func (r *TempoStack) SetupWebhookWithManager(mgr ctrl.Manager, ctrlConfig v1alph
 		Complete()
 }
 
-//+kubebuilder:webhook:path=/mutate-tempo-grafana-com-v1alpha1-tempostack,mutating=true,failurePolicy=fail,sideEffects=None,groups=tempo.grafana.com,resources=tempostacks,verbs=create;update,versions=v1alpha1,name=mtempostack.kb.io,admissionReviewVersions=v1
+//+kubebuilder:webhook:path=/mutate-tempo-grafana-com-v1alpha1-tempostack,mutating=true,failurePolicy=fail,sideEffects=None,groups=tempo.grafana.com,resources=tempostacks,verbs=create;update,versions=v1alpha1,name=mtempostack.tempo.grafana.com,admissionReviewVersions=v1
 
 // NewDefaulter creates a new instance of Defaulter, which implements functions for setting defaults on the Tempo CR.
 func NewDefaulter(ctrlConfig v1alpha1.ProjectConfig) *Defaulter {
@@ -132,7 +132,7 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 	return nil
 }
 
-//+kubebuilder:webhook:path=/validate-tempo-grafana-com-v1alpha1-tempostack,mutating=false,failurePolicy=fail,sideEffects=None,groups=tempo.grafana.com,resources=tempostacks,verbs=create;update,versions=v1alpha1,name=vtempostack.kb.io,admissionReviewVersions=v1
+//+kubebuilder:webhook:path=/validate-tempo-grafana-com-v1alpha1-tempostack,mutating=false,failurePolicy=fail,sideEffects=None,groups=tempo.grafana.com,resources=tempostacks,verbs=create;update,versions=v1alpha1,name=vtempostack.tempo.grafana.com,admissionReviewVersions=v1
 
 type validator struct {
 	client     client.Client
@@ -260,6 +260,17 @@ func (v *validator) validateQueryFrontend(tempo TempoStack) field.ErrorList {
 	return nil
 }
 
+func (v *validator) validateGateway(tempo TempoStack) field.ErrorList {
+	if tempo.Spec.Components.Gateway.Enabled && !tempo.Spec.Components.QueryFrontend.JaegerQuery.Enabled {
+		path := field.NewPath("spec").Child("components").Child("gateway").Child("enabled")
+		return field.ErrorList{
+			field.Invalid(path, tempo.Spec.Components.Gateway.Enabled,
+				"to use the gateway, please enable jaegerQuery",
+			)}
+	}
+	return nil
+}
+
 func (v *validator) validate(ctx context.Context, obj runtime.Object) error {
 	tempo, ok := obj.(*TempoStack)
 	if !ok {
@@ -272,6 +283,7 @@ func (v *validator) validate(ctx context.Context, obj runtime.Object) error {
 	allErrs = append(allErrs, v.validateStorage(ctx, *tempo)...)
 	allErrs = append(allErrs, v.validateReplicationFactor(*tempo)...)
 	allErrs = append(allErrs, v.validateQueryFrontend(*tempo)...)
+	allErrs = append(allErrs, v.validateGateway(*tempo)...)
 
 	if len(allErrs) == 0 {
 		return nil

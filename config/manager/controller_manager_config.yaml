@@ -21,7 +21,7 @@ leaderElection:
 # leaderElectionReleaseOnCancel: true
 images:
   tempo: docker.io/grafana/tempo:2.0.1
-  tempoQuery: docker.io/grafana/tempo-query:main-0c1eb27
+  tempoQuery: docker.io/grafana/tempo-query:2.0.1
   tempoGateway: quay.io/observatorium/api:main-2023-02-09-v0.1.2-329-g1ff4f11
 featureGates:
   openshift:
