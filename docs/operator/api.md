@@ -2426,7 +2426,7 @@ and re-encrypt using a new certificate.</p>
 
 <p>
 
-(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-TempoComponentsSpec">TempoComponentsSpec</a>, <a href="#tempo-grafana-com-v1alpha1-TempoGatewaySpec">TempoGatewaySpec</a>, <a href="#tempo-grafana-com-v1alpha1-TempoQueryFrontendSpec">TempoQueryFrontendSpec</a>)
+(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-TempoGatewaySpec">TempoGatewaySpec</a>, <a href="#tempo-grafana-com-v1alpha1-TempoQueryFrontendSpec">TempoQueryFrontendSpec</a>, <a href="#tempo-grafana-com-v1alpha1-TempoTemplateSpec">TempoTemplateSpec</a>)
 
 </p>
 
@@ -2529,208 +2529,11 @@ map[string]string
 </table>
 
 
-## TempoComponentsSpec { #tempo-grafana-com-v1alpha1-TempoComponentsSpec }
-
-<p>
-
-(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-TempoStackSpec">TempoStackSpec</a>)
-
-</p>
-
-<div>
-
-<p>TempoComponentsSpec defines the template of all requirements to configure
-scheduling of all Tempo components to be deployed.</p>
-
-</div>
-
-<table>
-
-<thead>
-
-<tr>
-
-<th>Field</th>
-
-<th>Description</th>
-
-</tr>
-
-</thead>
-
-<tbody>
-
-<tr>
-
-<td>
-
-<code>distributor</code><br/>
-
-<em>
-
-<a href="#tempo-grafana-com-v1alpha1-TempoComponentSpec">
-
-TempoComponentSpec
-
-</a>
-
-</em>
-
-</td>
-
-<td>
-
-<em>(Optional)</em>
-
-<p>Distributor defines the distributor component spec.</p>
-
-</td>
-</tr>
-
-<tr>
-
-<td>
-
-<code>ingester</code><br/>
-
-<em>
-
-<a href="#tempo-grafana-com-v1alpha1-TempoComponentSpec">
-
-TempoComponentSpec
-
-</a>
-
-</em>
-
-</td>
-
-<td>
-
-<em>(Optional)</em>
-
-<p>Ingester defines the ingester component spec.</p>
-
-</td>
-</tr>
-
-<tr>
-
-<td>
-
-<code>compactor</code><br/>
-
-<em>
-
-<a href="#tempo-grafana-com-v1alpha1-TempoComponentSpec">
-
-TempoComponentSpec
-
-</a>
-
-</em>
-
-</td>
-
-<td>
-
-<em>(Optional)</em>
-
-<p>Compactor defines the tempo compactor component spec.</p>
-
-</td>
-</tr>
-
-<tr>
-
-<td>
-
-<code>querier</code><br/>
-
-<em>
-
-<a href="#tempo-grafana-com-v1alpha1-TempoComponentSpec">
-
-TempoComponentSpec
-
-</a>
-
-</em>
-
-</td>
-
-<td>
-
-<em>(Optional)</em>
-
-<p>Querier defines the querier component spec.</p>
-
-</td>
-</tr>
-
-<tr>
-
-<td>
-
-<code>queryFrontend</code><br/>
-
-<em>
-
-<a href="#tempo-grafana-com-v1alpha1-TempoQueryFrontendSpec">
-
-TempoQueryFrontendSpec
-
-</a>
-
-</em>
-
-</td>
-
-<td>
-
-<em>(Optional)</em>
-
-<p>TempoQueryFrontendSpec defines the query frontend spec.</p>
-
-</td>
-</tr>
-
-<tr>
-
-<td>
-
-<code>gateway</code><br/>
-
-<em>
-
-<a href="#tempo-grafana-com-v1alpha1-TempoGatewaySpec">
-
-TempoGatewaySpec
-
-</a>
-
-</em>
-
-</td>
-
-<td>
-
-<em>(Optional)</em>
-
-<p>Gateway defines the tempo gateway spec.</p>
-
-</td>
-</tr>
-
-</tbody>
-</table>
-
-
 ## TempoGatewaySpec { #tempo-grafana-com-v1alpha1-TempoGatewaySpec }
 
 <p>
 
-(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-TempoComponentsSpec">TempoComponentsSpec</a>)
+(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-TempoTemplateSpec">TempoTemplateSpec</a>)
 
 </p>
 
@@ -2813,7 +2616,7 @@ bool
 
 <p>
 
-(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-TempoComponentsSpec">TempoComponentsSpec</a>)
+(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-TempoTemplateSpec">TempoTemplateSpec</a>)
 
 </p>
 
@@ -3271,9 +3074,9 @@ SearchSpec
 
 <em>
 
-<a href="#tempo-grafana-com-v1alpha1-TempoComponentsSpec">
+<a href="#tempo-grafana-com-v1alpha1-TempoTemplateSpec">
 
-TempoComponentsSpec
+TempoTemplateSpec
 
 </a>
 
@@ -3285,7 +3088,7 @@ TempoComponentsSpec
 
 <em>(Optional)</em>
 
-<p>Components defines requirements for a set of tempo components.</p>
+<p>Template defines requirements for a set of tempo components.</p>
 
 </td>
 </tr>
@@ -3472,6 +3275,203 @@ per component.</p>
 <em>(Optional)</em>
 
 <p>Conditions of the Tempo deployment health.</p>
+
+</td>
+</tr>
+
+</tbody>
+</table>
+
+
+## TempoTemplateSpec { #tempo-grafana-com-v1alpha1-TempoTemplateSpec }
+
+<p>
+
+(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-TempoStackSpec">TempoStackSpec</a>)
+
+</p>
+
+<div>
+
+<p>TempoTemplateSpec defines the template of all requirements to configure
+scheduling of all Tempo components to be deployed.</p>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Field</th>
+
+<th>Description</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td>
+
+<code>distributor</code><br/>
+
+<em>
+
+<a href="#tempo-grafana-com-v1alpha1-TempoComponentSpec">
+
+TempoComponentSpec
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>Distributor defines the distributor component spec.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>ingester</code><br/>
+
+<em>
+
+<a href="#tempo-grafana-com-v1alpha1-TempoComponentSpec">
+
+TempoComponentSpec
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>Ingester defines the ingester component spec.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>compactor</code><br/>
+
+<em>
+
+<a href="#tempo-grafana-com-v1alpha1-TempoComponentSpec">
+
+TempoComponentSpec
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>Compactor defines the tempo compactor component spec.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>querier</code><br/>
+
+<em>
+
+<a href="#tempo-grafana-com-v1alpha1-TempoComponentSpec">
+
+TempoComponentSpec
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>Querier defines the querier component spec.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>queryFrontend</code><br/>
+
+<em>
+
+<a href="#tempo-grafana-com-v1alpha1-TempoQueryFrontendSpec">
+
+TempoQueryFrontendSpec
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>TempoQueryFrontendSpec defines the query frontend spec.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>gateway</code><br/>
+
+<em>
+
+<a href="#tempo-grafana-com-v1alpha1-TempoGatewaySpec">
+
+TempoGatewaySpec
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>Gateway defines the tempo gateway spec.</p>
 
 </td>
 </tr>

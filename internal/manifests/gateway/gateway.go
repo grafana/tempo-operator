@@ -34,7 +34,7 @@ const (
 
 // BuildGateway creates gateway objects.
 func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
-	if !params.Tempo.Spec.Components.Gateway.Enabled ||
+	if !params.Tempo.Spec.Template.Gateway.Enabled ||
 		params.Tempo.Spec.Tenants == nil {
 		return []client.Object{}, nil
 	}
@@ -140,7 +140,7 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 	tempo := params.Tempo
 	labels := manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name)
 	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
-	cfg := tempo.Spec.Components.Gateway
+	cfg := tempo.Spec.Template.Gateway
 
 	return &v1.Deployment{
 		TypeMeta: metav1.TypeMeta{

@@ -19,7 +19,7 @@ func TestBuildAll(t *testing.T) {
 				Namespace: "project1",
 			},
 			Spec: v1alpha1.TempoStackSpec{
-				Components: v1alpha1.TempoComponentsSpec{
+				Template: v1alpha1.TempoTemplateSpec{
 					Gateway: v1alpha1.TempoGatewaySpec{
 						Enabled: true,
 					},

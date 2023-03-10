@@ -58,7 +58,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 	tempo := params.Tempo
 	labels := manifestutils.ComponentLabels(manifestutils.CompactorComponentName, tempo.Name)
 	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
-	cfg := tempo.Spec.Components.Compactor
+	cfg := tempo.Spec.Template.Compactor
 
 	d := &v1.Deployment{
 		TypeMeta: metav1.TypeMeta{
