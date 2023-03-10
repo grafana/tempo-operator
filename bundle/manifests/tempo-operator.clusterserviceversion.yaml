@@ -14,7 +14,7 @@ metadata:
         }
       ]
     capabilities: Basic Install
-    createdAt: "2023-03-09T18:10:38Z"
+    createdAt: "2023-03-10T14:08:04Z"
     operators.operatorframework.io/builder: operator-sdk-v1.27.0
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
   name: tempo-operator.v0.0.1
@@ -230,8 +230,8 @@ spec:
       - description: StorageSize for PVCs used by ingester. Defaults to 10Gi.
         displayName: Storage size for PVCs
         path: storageSize
-      - description: Components defines requirements for a set of tempo components.
-        displayName: Tempo Components
+      - description: Template defines requirements for a set of tempo components.
+        displayName: Tempo Component Templates
         path: template
       - description: Compactor defines the tempo compactor component spec.
         displayName: Compactor pods

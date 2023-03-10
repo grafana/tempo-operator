@@ -65,7 +65,7 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 	}
 
 	//exhaustive:ignore
-	switch tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Type {
+	switch tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type {
 	case v1alpha1.IngressTypeIngress:
 		manifests = append(manifests, ingress(tempo))
 	case v1alpha1.IngressTypeRoute:
@@ -87,7 +87,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 	tempo := params.Tempo
 	labels := manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, tempo.Name)
 	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
-	cfg := tempo.Spec.Components.QueryFrontend
+	cfg := tempo.Spec.Template.QueryFrontend
 
 	d := &v1.Deployment{
 		TypeMeta: metav1.TypeMeta{
@@ -172,7 +172,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 		},
 	}
 
-	if tempo.Spec.Components.QueryFrontend.JaegerQuery.Enabled {
+	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled {
 		jaegerQueryContainer := corev1.Container{
 			Name:  "tempo-query",
 			Image: tempo.Spec.Images.TempoQuery,
@@ -296,7 +296,7 @@ func services(tempo v1alpha1.TempoStack) []*corev1.Service {
 		},
 	}
 
-	if tempo.Spec.Components.QueryFrontend.JaegerQuery.Enabled {
+	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled {
 		jaegerPorts := []corev1.ServicePort{
 			{
 				Name:       jaegerUIPortName,
@@ -326,10 +326,10 @@ func ingress(tempo v1alpha1.TempoStack) *networkingv1.Ingress {
 			Name:        queryFrontendName,
 			Namespace:   tempo.Namespace,
 			Labels:      labels,
-			Annotations: tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Annotations,
+			Annotations: tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Annotations,
 		},
 		Spec: networkingv1.IngressSpec{
-			IngressClassName: tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress.IngressClassName,
+			IngressClassName: tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.IngressClassName,
 		},
 	}
 
@@ -342,13 +342,13 @@ func ingress(tempo v1alpha1.TempoStack) *networkingv1.Ingress {
 		},
 	}
 
-	if tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Host == "" {
+	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Host == "" {
 		ingress.Spec.DefaultBackend = &backend
 	} else {
 		pathType := networkingv1.PathTypePrefix
 		ingress.Spec.Rules = []networkingv1.IngressRule{
 			{
-				Host: tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Host,
+				Host: tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Host,
 				IngressRuleValue: networkingv1.IngressRuleValue{
 					HTTP: &networkingv1.HTTPIngressRuleValue{
 						Paths: []networkingv1.HTTPIngressPath{
@@ -372,7 +372,7 @@ func route(tempo v1alpha1.TempoStack) *routev1.Route {
 	labels := manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, tempo.Name)
 
 	var tlsCfg *routev1.TLSConfig
-	switch tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Route.Termination {
+	switch tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Route.Termination {
 	case v1alpha1.TLSRouteTerminationTypeInsecure:
 		// NOTE: insecure, no tls cfg.
 	case v1alpha1.TLSRouteTerminationTypeEdge:
@@ -390,10 +390,10 @@ func route(tempo v1alpha1.TempoStack) *routev1.Route {
 			Name:        queryFrontendName,
 			Namespace:   tempo.Namespace,
 			Labels:      labels,
-			Annotations: tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Annotations,
+			Annotations: tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Annotations,
 		},
 		Spec: routev1.RouteSpec{
-			Host: tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Host,
+			Host: tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Host,
 			To: routev1.RouteTargetReference{
 				Kind: "Service",
 				Name: queryFrontendName,
