@@ -18,7 +18,7 @@ spec:
   storage:
     secret: minio-test
   storageSize: 200M
-  template:
+  components:
     queryFrontend:
       jaegerQuery:
         enabled: true

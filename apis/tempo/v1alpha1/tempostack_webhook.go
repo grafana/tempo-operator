@@ -239,7 +239,7 @@ func (v *validator) validateReplicationFactor(tempo TempoStack) field.ErrorList 
 }
 
 func (v *validator) validateQueryFrontend(tempo TempoStack) field.ErrorList {
-	path := field.NewPath("spec").Child("template").Child("queryFrontend").Child("jaegerQuery").Child("ingress").Child("type")
+	path := field.NewPath("spec").Child("components").Child("queryFrontend").Child("jaegerQuery").Child("ingress").Child("type")
 
 	if tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Type != IngressTypeNone && !tempo.Spec.Components.QueryFrontend.JaegerQuery.Enabled {
 		return field.ErrorList{field.Invalid(

@@ -382,7 +382,7 @@ func TestValidateReplicationFactor(t *testing.T) {
 }
 
 func TestValidateIngressAndRoute(t *testing.T) {
-	path := field.NewPath("spec").Child("template").Child("queryFrontend").Child("jaegerQuery").Child("ingress").Child("type")
+	path := field.NewPath("spec").Child("components").Child("queryFrontend").Child("jaegerQuery").Child("ingress").Child("type")
 
 	tests := []struct {
 		name       string

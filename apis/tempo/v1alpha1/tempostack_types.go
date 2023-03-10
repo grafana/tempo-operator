@@ -70,7 +70,7 @@ type TempoStackSpec struct {
 	//
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tempo Components"
-	Components TempoComponentsSpec `json:"template,omitempty"`
+	Components TempoComponentsSpec `json:"components,omitempty"`
 
 	// NOTE: currently this field is not considered.
 	// ReplicationFactor is used to define how many component replicas should exist.

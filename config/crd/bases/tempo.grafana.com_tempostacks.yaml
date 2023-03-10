@@ -46,225 +46,7 @@ spec:
           spec:
             description: TempoStackSpec defines the desired state of TempoStack.
             properties:
-              images:
-                description: Images defines the image for each container.
-                properties:
-                  tempo:
-                    description: Tempo defines the tempo container image.
-                    type: string
-                  tempoGateway:
-                    description: TempoGateway defines the tempo-gateway container
-                      image.
-                    type: string
-                  tempoQuery:
-                    description: TempoQuery defines the tempo-query container image.
-                    type: string
-                type: object
-              limits:
-                description: LimitSpec is used to limit ingestion and querying rates.
-                properties:
-                  global:
-                    description: Global is used to define global rate limits.
-                    properties:
-                      ingestion:
-                        description: Ingestion is used to define ingestion rate limits.
-                        properties:
-                          ingestionBurstSizeBytes:
-                            description: IngestionBurstSizeBytes defines the burst
-                              size (bytes) used in ingestion.
-                            type: integer
-                          ingestionRateLimitBytes:
-                            description: IngestionRateLimitBytes defines the Per-user
-                              ingestion rate limit (bytes) used in ingestion.
-                            type: integer
-                          maxBytesPerTrace:
-                            description: MaxBytesPerTrace defines the maximum number
-                              of bytes of an acceptable trace.
-                            type: integer
-                          maxTracesPerUser:
-                            description: MaxTracesPerUser defines the maximum number
-                              of traces a user can send.
-                            type: integer
-                        type: object
-                      query:
-                        description: Query is used to define query rate limits.
-                        properties:
-                          maxBytesPerTagValues:
-                            description: MaxBytesPerTagValues defines the maximum
-                              size in bytes of a tag-values query.
-                            type: integer
-                          maxSearchBytesPerTrace:
-                            description: 'MaxSearchBytesPerTrace defines the maximum
-                              size of search data for a single trace in bytes. default:
-                              `0` to disable.'
-                            type: integer
-                        type: object
-                    type: object
-                  perTenant:
-                    additionalProperties:
-                      description: RateLimitSpec defines rate limits for Ingestion
-                        and Query components.
-                      properties:
-                        ingestion:
-                          description: Ingestion is used to define ingestion rate
-                            limits.
-                          properties:
-                            ingestionBurstSizeBytes:
-                              description: IngestionBurstSizeBytes defines the burst
-                                size (bytes) used in ingestion.
-                              type: integer
-                            ingestionRateLimitBytes:
-                              description: IngestionRateLimitBytes defines the Per-user
-                                ingestion rate limit (bytes) used in ingestion.
-                              type: integer
-                            maxBytesPerTrace:
-                              description: MaxBytesPerTrace defines the maximum number
-                                of bytes of an acceptable trace.
-                              type: integer
-                            maxTracesPerUser:
-                              description: MaxTracesPerUser defines the maximum number
-                                of traces a user can send.
-                              type: integer
-                          type: object
-                        query:
-                          description: Query is used to define query rate limits.
-                          properties:
-                            maxBytesPerTagValues:
-                              description: MaxBytesPerTagValues defines the maximum
-                                size in bytes of a tag-values query.
-                              type: integer
-                            maxSearchBytesPerTrace:
-                              description: 'MaxSearchBytesPerTrace defines the maximum
-                                size of search data for a single trace in bytes. default:
-                                `0` to disable.'
-                              type: integer
-                          type: object
-                      type: object
-                    description: PerTenant is used to define rate limits per tenant.
-                    type: object
-                type: object
-              replicationFactor:
-                description: 'NOTE: currently this field is not considered. ReplicationFactor
-                  is used to define how many component replicas should exist.'
-                type: integer
-              resources:
-                description: Resources defines resources configuration.
-                properties:
-                  total:
-                    description: The total amount of resources for Tempo instance.
-                      The operator autonomously splits resources between deployed
-                      Tempo components. Only limits are supported, the operator calculates
-                      requests automatically. See http://github.com/grafana/tempo/issues/1540.
-                    properties:
-                      limits:
-                        additionalProperties:
-                          anyOf:
-                          - type: integer
-                          - type: string
-                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
-                          x-kubernetes-int-or-string: true
-                        description: 'Limits describes the maximum amount of compute
-                          resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
-                        type: object
-                      requests:
-                        additionalProperties:
-                          anyOf:
-                          - type: integer
-                          - type: string
-                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
-                          x-kubernetes-int-or-string: true
-                        description: 'Requests describes the minimum amount of compute
-                          resources required. If Requests is omitted for a container,
-                          it defaults to Limits if that is explicitly specified, otherwise
-                          to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
-                        type: object
-                    type: object
-                type: object
-              retention:
-                description: 'NOTE: currently this field is not considered. Retention
-                  period defined by dataset. User can specify how long data should
-                  be stored.'
-                properties:
-                  global:
-                    description: Global is used to configure global retention.
-                    properties:
-                      traces:
-                        description: 'Traces defines retention period. Supported parameter
-                          suffixes are “s”, “m” and “h”. example: 336h default: value
-                          is 48h.'
-                        type: string
-                    type: object
-                  perTenant:
-                    additionalProperties:
-                      description: RetentionConfig defines how long data should be
-                        provided.
-                      properties:
-                        traces:
-                          description: 'Traces defines retention period. Supported
-                            parameter suffixes are “s”, “m” and “h”. example: 336h
-                            default: value is 48h.'
-                          type: string
-                      type: object
-                    description: PerTenant is used to configure retention per tenant.
-                    type: object
-                type: object
-              search:
-                description: SearchSpec control the configuration for the search capabilities.
-                properties:
-                  defaultResultLimit:
-                    description: 'Limit used for search requests if none is set by
-                      the caller (default: 20)'
-                    type: integer
-                  maxDuration:
-                    description: 'The maximum allowed time range for a search, default:
-                      0s which means unlimited.'
-                    type: string
-                  maxResultLimit:
-                    description: The maximum allowed value of the limit parameter
-                      on search requests. If the search request limit parameter exceeds
-                      the value configured here it will be set to the value configured
-                      here. The default value of 0 disables this limit.
-                    type: integer
-                type: object
-              serviceAccount:
-                description: ServiceAccount defines the service account to use for
-                  all tempo components.
-                type: string
-              storage:
-                description: Storage defines S3 compatible object storage configuration.
-                  User is required to create secret and supply it.
-                properties:
-                  secret:
-                    description: Secret for object storage authentication. Name of
-                      a secret in the same namespace as the tempo TempoStack custom
-                      resource.
-                    minLength: 1
-                    type: string
-                  tls:
-                    description: TLS configuration for reaching the object storage
-                      endpoint.
-                    properties:
-                      caName:
-                        description: CA is the name of a ConfigMap containing a CA
-                          certificate. It needs to be in the same namespace as the
-                          Tempo custom resource.
-                        type: string
-                    type: object
-                required:
-                - secret
-                type: object
-              storageClassName:
-                description: StorageClassName for PVCs used by ingester. Defaults
-                  to nil (default storage class in the cluster).
-                type: string
-              storageSize:
-                anyOf:
-                - type: integer
-                - type: string
-                description: StorageSize for PVCs used by ingester. Defaults to 10Gi.
-                pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
-                x-kubernetes-int-or-string: true
-              template:
+              components:
                 description: Components defines requirements for a set of tempo components.
                 properties:
                   compactor:
@@ -690,6 +472,224 @@ spec:
                         type: object
                     type: object
                 type: object
+              images:
+                description: Images defines the image for each container.
+                properties:
+                  tempo:
+                    description: Tempo defines the tempo container image.
+                    type: string
+                  tempoGateway:
+                    description: TempoGateway defines the tempo-gateway container
+                      image.
+                    type: string
+                  tempoQuery:
+                    description: TempoQuery defines the tempo-query container image.
+                    type: string
+                type: object
+              limits:
+                description: LimitSpec is used to limit ingestion and querying rates.
+                properties:
+                  global:
+                    description: Global is used to define global rate limits.
+                    properties:
+                      ingestion:
+                        description: Ingestion is used to define ingestion rate limits.
+                        properties:
+                          ingestionBurstSizeBytes:
+                            description: IngestionBurstSizeBytes defines the burst
+                              size (bytes) used in ingestion.
+                            type: integer
+                          ingestionRateLimitBytes:
+                            description: IngestionRateLimitBytes defines the Per-user
+                              ingestion rate limit (bytes) used in ingestion.
+                            type: integer
+                          maxBytesPerTrace:
+                            description: MaxBytesPerTrace defines the maximum number
+                              of bytes of an acceptable trace.
+                            type: integer
+                          maxTracesPerUser:
+                            description: MaxTracesPerUser defines the maximum number
+                              of traces a user can send.
+                            type: integer
+                        type: object
+                      query:
+                        description: Query is used to define query rate limits.
+                        properties:
+                          maxBytesPerTagValues:
+                            description: MaxBytesPerTagValues defines the maximum
+                              size in bytes of a tag-values query.
+                            type: integer
+                          maxSearchBytesPerTrace:
+                            description: 'MaxSearchBytesPerTrace defines the maximum
+                              size of search data for a single trace in bytes. default:
+                              `0` to disable.'
+                            type: integer
+                        type: object
+                    type: object
+                  perTenant:
+                    additionalProperties:
+                      description: RateLimitSpec defines rate limits for Ingestion
+                        and Query components.
+                      properties:
+                        ingestion:
+                          description: Ingestion is used to define ingestion rate
+                            limits.
+                          properties:
+                            ingestionBurstSizeBytes:
+                              description: IngestionBurstSizeBytes defines the burst
+                                size (bytes) used in ingestion.
+                              type: integer
+                            ingestionRateLimitBytes:
+                              description: IngestionRateLimitBytes defines the Per-user
+                                ingestion rate limit (bytes) used in ingestion.
+                              type: integer
+                            maxBytesPerTrace:
+                              description: MaxBytesPerTrace defines the maximum number
+                                of bytes of an acceptable trace.
+                              type: integer
+                            maxTracesPerUser:
+                              description: MaxTracesPerUser defines the maximum number
+                                of traces a user can send.
+                              type: integer
+                          type: object
+                        query:
+                          description: Query is used to define query rate limits.
+                          properties:
+                            maxBytesPerTagValues:
+                              description: MaxBytesPerTagValues defines the maximum
+                                size in bytes of a tag-values query.
+                              type: integer
+                            maxSearchBytesPerTrace:
+                              description: 'MaxSearchBytesPerTrace defines the maximum
+                                size of search data for a single trace in bytes. default:
+                                `0` to disable.'
+                              type: integer
+                          type: object
+                      type: object
+                    description: PerTenant is used to define rate limits per tenant.
+                    type: object
+                type: object
+              replicationFactor:
+                description: 'NOTE: currently this field is not considered. ReplicationFactor
+                  is used to define how many component replicas should exist.'
+                type: integer
+              resources:
+                description: Resources defines resources configuration.
+                properties:
+                  total:
+                    description: The total amount of resources for Tempo instance.
+                      The operator autonomously splits resources between deployed
+                      Tempo components. Only limits are supported, the operator calculates
+                      requests automatically. See http://github.com/grafana/tempo/issues/1540.
+                    properties:
+                      limits:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        description: 'Limits describes the maximum amount of compute
+                          resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                        type: object
+                      requests:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        description: 'Requests describes the minimum amount of compute
+                          resources required. If Requests is omitted for a container,
+                          it defaults to Limits if that is explicitly specified, otherwise
+                          to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                        type: object
+                    type: object
+                type: object
+              retention:
+                description: 'NOTE: currently this field is not considered. Retention
+                  period defined by dataset. User can specify how long data should
+                  be stored.'
+                properties:
+                  global:
+                    description: Global is used to configure global retention.
+                    properties:
+                      traces:
+                        description: 'Traces defines retention period. Supported parameter
+                          suffixes are “s”, “m” and “h”. example: 336h default: value
+                          is 48h.'
+                        type: string
+                    type: object
+                  perTenant:
+                    additionalProperties:
+                      description: RetentionConfig defines how long data should be
+                        provided.
+                      properties:
+                        traces:
+                          description: 'Traces defines retention period. Supported
+                            parameter suffixes are “s”, “m” and “h”. example: 336h
+                            default: value is 48h.'
+                          type: string
+                      type: object
+                    description: PerTenant is used to configure retention per tenant.
+                    type: object
+                type: object
+              search:
+                description: SearchSpec control the configuration for the search capabilities.
+                properties:
+                  defaultResultLimit:
+                    description: 'Limit used for search requests if none is set by
+                      the caller (default: 20)'
+                    type: integer
+                  maxDuration:
+                    description: 'The maximum allowed time range for a search, default:
+                      0s which means unlimited.'
+                    type: string
+                  maxResultLimit:
+                    description: The maximum allowed value of the limit parameter
+                      on search requests. If the search request limit parameter exceeds
+                      the value configured here it will be set to the value configured
+                      here. The default value of 0 disables this limit.
+                    type: integer
+                type: object
+              serviceAccount:
+                description: ServiceAccount defines the service account to use for
+                  all tempo components.
+                type: string
+              storage:
+                description: Storage defines S3 compatible object storage configuration.
+                  User is required to create secret and supply it.
+                properties:
+                  secret:
+                    description: Secret for object storage authentication. Name of
+                      a secret in the same namespace as the tempo TempoStack custom
+                      resource.
+                    minLength: 1
+                    type: string
+                  tls:
+                    description: TLS configuration for reaching the object storage
+                      endpoint.
+                    properties:
+                      caName:
+                        description: CA is the name of a ConfigMap containing a CA
+                          certificate. It needs to be in the same namespace as the
+                          Tempo custom resource.
+                        type: string
+                    type: object
+                required:
+                - secret
+                type: object
+              storageClassName:
+                description: StorageClassName for PVCs used by ingester. Defaults
+                  to nil (default storage class in the cluster).
+                type: string
+              storageSize:
+                anyOf:
+                - type: integer
+                - type: string
+                description: StorageSize for PVCs used by ingester. Defaults to 10Gi.
+                pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                x-kubernetes-int-or-string: true
               tenants:
                 description: Tenants defines the per-tenant authentication and authorization
                   spec.

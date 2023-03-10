@@ -51,7 +51,7 @@ spec:
       limits:
         memory: 2Gi
         cpu: 2000m
-  template:
+  components:
     queryFrontend:
       jaegerQuery:
         enabled: true

@@ -3267,7 +3267,7 @@ SearchSpec
 
 <td>
 
-<code>template</code><br/>
+<code>components</code><br/>
 
 <em>
 

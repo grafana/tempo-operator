@@ -14,7 +14,7 @@ metadata:
         }
       ]
     capabilities: Basic Install
-    createdAt: "2023-03-09T18:10:38Z"
+    createdAt: "2023-03-10T11:13:11Z"
     operators.operatorframework.io/builder: operator-sdk-v1.27.0
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
   name: tempo-operator.v0.0.1
@@ -53,6 +53,120 @@ spec:
         name: ""
         version: v1
       specDescriptors:
+      - description: Components defines requirements for a set of tempo components.
+        displayName: Tempo Components
+        path: components
+      - description: Compactor defines the tempo compactor component spec.
+        displayName: Compactor pods
+        path: components.compactor
+      - description: NodeSelector is the simplest recommended form of node selection
+          constraint.
+        displayName: Node Selector
+        path: components.compactor.nodeSelector
+      - description: Replicas represents the number of replicas to create for this
+          component.
+        displayName: Component Replicas
+        path: components.compactor.replicas
+      - description: Tolerations defines component specific pod tolerations.
+        displayName: Tolerations
+        path: components.compactor.tolerations
+      - description: Distributor defines the distributor component spec.
+        displayName: Distributor pods
+        path: components.distributor
+      - description: NodeSelector is the simplest recommended form of node selection
+          constraint.
+        displayName: Node Selector
+        path: components.distributor.nodeSelector
+      - description: Replicas represents the number of replicas to create for this
+          component.
+        displayName: Component Replicas
+        path: components.distributor.replicas
+      - description: Tolerations defines component specific pod tolerations.
+        displayName: Tolerations
+        path: components.distributor.tolerations
+      - description: Gateway defines the tempo gateway spec.
+        displayName: Gateway pods
+        path: components.gateway
+      - description: NodeSelector is the simplest recommended form of node selection
+          constraint.
+        displayName: Node Selector
+        path: components.gateway.nodeSelector
+      - description: Replicas represents the number of replicas to create for this
+          component.
+        displayName: Component Replicas
+        path: components.gateway.replicas
+      - description: Tolerations defines component specific pod tolerations.
+        displayName: Tolerations
+        path: components.gateway.tolerations
+      - description: Ingester defines the ingester component spec.
+        displayName: Ingester pods
+        path: components.ingester
+      - description: NodeSelector is the simplest recommended form of node selection
+          constraint.
+        displayName: Node Selector
+        path: components.ingester.nodeSelector
+      - description: Replicas represents the number of replicas to create for this
+          component.
+        displayName: Component Replicas
+        path: components.ingester.replicas
+      - description: Tolerations defines component specific pod tolerations.
+        displayName: Tolerations
+        path: components.ingester.tolerations
+      - description: Querier defines the querier component spec.
+        displayName: Querier pods
+        path: components.querier
+      - description: NodeSelector is the simplest recommended form of node selection
+          constraint.
+        displayName: Node Selector
+        path: components.querier.nodeSelector
+      - description: Replicas represents the number of replicas to create for this
+          component.
+        displayName: Component Replicas
+        path: components.querier.replicas
+      - description: Tolerations defines component specific pod tolerations.
+        displayName: Tolerations
+        path: components.querier.tolerations
+      - description: TempoQueryFrontendSpec defines the query frontend spec.
+        displayName: Query Frontend pods
+        path: components.queryFrontend
+      - description: JaegerQuerySpec defines Jaeger Query specific options.
+        displayName: Jaeger Query Settings
+        path: components.queryFrontend.jaegerQuery
+      - description: Enabled is used to define if Jaeger Query component should be
+          created.
+        displayName: Enable Jaeger Query UI
+        path: components.queryFrontend.jaegerQuery.enabled
+      - description: Ingress defines Jaeger Query Ingress options.
+        displayName: Jaeger Query UI Ingress Settings
+        path: components.queryFrontend.jaegerQuery.ingress
+      - description: Annotations defines the annotations of the Ingress object.
+        displayName: Annotations
+        path: components.queryFrontend.jaegerQuery.ingress.annotations
+      - description: Host defines the hostname of the Ingress object.
+        displayName: Host
+        path: components.queryFrontend.jaegerQuery.ingress.host
+      - description: Route defines OpenShift Route specific options.
+        displayName: Route Configuration
+        path: components.queryFrontend.jaegerQuery.ingress.route
+      - description: Termination specifies the termination type. By default "edge"
+          is used.
+        displayName: TLS Termination Policy
+        path: components.queryFrontend.jaegerQuery.ingress.route.termination
+      - description: Type defines the type of Ingress for the Jaeger Query UI. Currently
+          ingress, route and none are supported.
+        displayName: Type
+        path: components.queryFrontend.jaegerQuery.ingress.type
+      - description: NodeSelector is the simplest recommended form of node selection
+          constraint.
+        displayName: Node Selector
+        path: components.queryFrontend.nodeSelector
+      - description: Replicas represents the number of replicas to create for this
+          component.
+        displayName: Component Replicas
+        path: components.queryFrontend.replicas
+      - description: Tolerations defines component specific pod tolerations.
+        displayName: Tolerations
+        path: components.queryFrontend.tolerations
       - description: Images defines the image for each container.
         displayName: Container Images
         path: images
@@ -230,120 +344,6 @@ spec:
       - description: StorageSize for PVCs used by ingester. Defaults to 10Gi.
         displayName: Storage size for PVCs
         path: storageSize
-      - description: Components defines requirements for a set of tempo components.
-        displayName: Tempo Components
-        path: template
-      - description: Compactor defines the tempo compactor component spec.
-        displayName: Compactor pods
-        path: template.compactor
-      - description: NodeSelector is the simplest recommended form of node selection
-          constraint.
-        displayName: Node Selector
-        path: template.compactor.nodeSelector
-      - description: Replicas represents the number of replicas to create for this
-          component.
-        displayName: Component Replicas
-        path: template.compactor.replicas
-      - description: Tolerations defines component specific pod tolerations.
-        displayName: Tolerations
-        path: template.compactor.tolerations
-      - description: Distributor defines the distributor component spec.
-        displayName: Distributor pods
-        path: template.distributor
-      - description: NodeSelector is the simplest recommended form of node selection
-          constraint.
-        displayName: Node Selector
-        path: template.distributor.nodeSelector
-      - description: Replicas represents the number of replicas to create for this
-          component.
-        displayName: Component Replicas
-        path: template.distributor.replicas
-      - description: Tolerations defines component specific pod tolerations.
-        displayName: Tolerations
-        path: template.distributor.tolerations
-      - description: Gateway defines the tempo gateway spec.
-        displayName: Gateway pods
-        path: template.gateway
-      - description: NodeSelector is the simplest recommended form of node selection
-          constraint.
-        displayName: Node Selector
-        path: template.gateway.nodeSelector
-      - description: Replicas represents the number of replicas to create for this
-          component.
-        displayName: Component Replicas
-        path: template.gateway.replicas
-      - description: Tolerations defines component specific pod tolerations.
-        displayName: Tolerations
-        path: template.gateway.tolerations
-      - description: Ingester defines the ingester component spec.
-        displayName: Ingester pods
-        path: template.ingester
-      - description: NodeSelector is the simplest recommended form of node selection
-          constraint.
-        displayName: Node Selector
-        path: template.ingester.nodeSelector
-      - description: Replicas represents the number of replicas to create for this
-          component.
-        displayName: Component Replicas
-        path: template.ingester.replicas
-      - description: Tolerations defines component specific pod tolerations.
-        displayName: Tolerations
-        path: template.ingester.tolerations
-      - description: Querier defines the querier component spec.
-        displayName: Querier pods
-        path: template.querier
-      - description: NodeSelector is the simplest recommended form of node selection
-          constraint.
-        displayName: Node Selector
-        path: template.querier.nodeSelector
-      - description: Replicas represents the number of replicas to create for this
-          component.
-        displayName: Component Replicas
-        path: template.querier.replicas
-      - description: Tolerations defines component specific pod tolerations.
-        displayName: Tolerations
-        path: template.querier.tolerations
-      - description: TempoQueryFrontendSpec defines the query frontend spec.
-        displayName: Query Frontend pods
-        path: template.queryFrontend
-      - description: JaegerQuerySpec defines Jaeger Query specific options.
-        displayName: Jaeger Query Settings
-        path: template.queryFrontend.jaegerQuery
-      - description: Enabled is used to define if Jaeger Query component should be
-          created.
-        displayName: Enable Jaeger Query UI
-        path: template.queryFrontend.jaegerQuery.enabled
-      - description: Ingress defines Jaeger Query Ingress options.
-        displayName: Jaeger Query UI Ingress Settings
-        path: template.queryFrontend.jaegerQuery.ingress
-      - description: Annotations defines the annotations of the Ingress object.
-        displayName: Annotations
-        path: template.queryFrontend.jaegerQuery.ingress.annotations
-      - description: Host defines the hostname of the Ingress object.
-        displayName: Host
-        path: template.queryFrontend.jaegerQuery.ingress.host
-      - description: Route defines OpenShift Route specific options.
-        displayName: Route Configuration
-        path: template.queryFrontend.jaegerQuery.ingress.route
-      - description: Termination specifies the termination type. By default "edge"
-          is used.
-        displayName: TLS Termination Policy
-        path: template.queryFrontend.jaegerQuery.ingress.route.termination
-      - description: Type defines the type of Ingress for the Jaeger Query UI. Currently
-          ingress, route and none are supported.
-        displayName: Type
-        path: template.queryFrontend.jaegerQuery.ingress.type
-      - description: NodeSelector is the simplest recommended form of node selection
-          constraint.
-        displayName: Node Selector
-        path: template.queryFrontend.nodeSelector
-      - description: Replicas represents the number of replicas to create for this
-          component.
-        displayName: Component Replicas
-        path: template.queryFrontend.replicas
-      - description: Tolerations defines component specific pod tolerations.
-        displayName: Tolerations
-        path: template.queryFrontend.tolerations
       - description: Tenants defines the per-tenant authentication and authorization
           spec.
         displayName: Tenants Configuration
