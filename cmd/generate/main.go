@@ -83,6 +83,7 @@ func toYAMLManifest(scheme *runtime.Scheme, objects []client.Object, out io.Writ
 		if err != nil {
 			return err
 		}
+		delete(jsonObj["metadata"].(map[interface{}]interface{}), "creationTimestamp")
 		delete(jsonObj, "status")
 
 		// Finally, marshal into yaml

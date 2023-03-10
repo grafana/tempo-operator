@@ -61,7 +61,6 @@ data:
       setting: a
 kind: ConfigMap
 metadata:
-  creationTimestamp: null
   name: test-config-map
 `, buf.String())
 }
@@ -98,7 +97,6 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  creationTimestamp: null
   labels:
     app.kubernetes.io/component: distributor
     app.kubernetes.io/created-by: tempo-controller
