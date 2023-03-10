@@ -37,7 +37,7 @@ import (
 )
 
 const (
-	storageSecretField = ".spec.storage.secret" // nolint #nosec
+	storageSecretField = ".spec.storage.secret.name" // nolint #nosec
 )
 
 // TempoStackReconciler reconciles a TempoStack object.
