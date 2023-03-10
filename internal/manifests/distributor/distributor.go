@@ -55,7 +55,7 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 	tempo := params.Tempo
 	labels := manifestutils.ComponentLabels(manifestutils.DistributorComponentName, tempo.Name)
 	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
-	cfg := tempo.Spec.Components.Distributor
+	cfg := tempo.Spec.Template.Distributor
 
 	return &v1.Deployment{
 		TypeMeta: metav1.TypeMeta{
@@ -67,7 +67,7 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 			Labels:    labels,
 		},
 		Spec: v1.DeploymentSpec{
-			Replicas: tempo.Spec.Components.Distributor.Replicas,
+			Replicas: tempo.Spec.Template.Distributor.Replicas,
 			Selector: &metav1.LabelSelector{
 				MatchLabels: labels,
 			},

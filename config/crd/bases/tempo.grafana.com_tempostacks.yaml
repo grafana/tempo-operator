@@ -277,7 +277,7 @@ spec:
                 pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                 x-kubernetes-int-or-string: true
               template:
-                description: Components defines requirements for a set of tempo components.
+                description: Template defines requirements for a set of tempo components.
                 properties:
                   compactor:
                     description: Compactor defines the tempo compactor component spec.

@@ -92,7 +92,7 @@ func TestDefault(t *testing.T) {
 						MaxDuration:        metav1.Duration{Duration: 0},
 						DefaultResultLimit: &defaultDefaultResultLimit,
 					},
-					Components: TempoComponentsSpec{
+					Template: TempoTemplateSpec{
 						Distributor: TempoComponentSpec{
 							Replicas: pointer.Int32(1),
 						},
@@ -139,7 +139,7 @@ func TestDefault(t *testing.T) {
 						MaxDuration:        metav1.Duration{Duration: 0},
 						DefaultResultLimit: &defaultDefaultResultLimit,
 					},
-					Components: TempoComponentsSpec{
+					Template: TempoTemplateSpec{
 						Distributor: TempoComponentSpec{
 							Replicas: pointer.Int32(1),
 						},
@@ -157,7 +157,7 @@ func TestDefault(t *testing.T) {
 					Name: "test",
 				},
 				Spec: TempoStackSpec{
-					Components: TempoComponentsSpec{
+					Template: TempoTemplateSpec{
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: true,
@@ -198,7 +198,7 @@ func TestDefault(t *testing.T) {
 						MaxDuration:        metav1.Duration{Duration: 0},
 						DefaultResultLimit: &defaultDefaultResultLimit,
 					},
-					Components: TempoComponentsSpec{
+					Template: TempoTemplateSpec{
 						Distributor: TempoComponentSpec{
 							Replicas: pointer.Int32(1),
 						},
@@ -335,7 +335,7 @@ func TestValidateReplicationFactor(t *testing.T) {
 			input: TempoStack{
 				Spec: TempoStackSpec{
 					ReplicationFactor: 3,
-					Components: TempoComponentsSpec{
+					Template: TempoTemplateSpec{
 						Ingester: TempoComponentSpec{
 							Replicas: pointer.Int32(2),
 						},
@@ -349,7 +349,7 @@ func TestValidateReplicationFactor(t *testing.T) {
 			input: TempoStack{
 				Spec: TempoStackSpec{
 					ReplicationFactor: 3,
-					Components: TempoComponentsSpec{
+					Template: TempoTemplateSpec{
 						Ingester: TempoComponentSpec{
 							Replicas: pointer.Int32(3),
 						},
@@ -363,7 +363,7 @@ func TestValidateReplicationFactor(t *testing.T) {
 			input: TempoStack{
 				Spec: TempoStackSpec{
 					ReplicationFactor: 3,
-					Components: TempoComponentsSpec{
+					Template: TempoTemplateSpec{
 						Ingester: TempoComponentSpec{
 							Replicas: pointer.Int32(1),
 						},
@@ -399,7 +399,7 @@ func TestValidateIngressAndRoute(t *testing.T) {
 			input: TempoStack{
 				Spec: TempoStackSpec{
 					ReplicationFactor: 3,
-					Components: TempoComponentsSpec{
+					Template: TempoTemplateSpec{
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: true,
@@ -418,7 +418,7 @@ func TestValidateIngressAndRoute(t *testing.T) {
 			input: TempoStack{
 				Spec: TempoStackSpec{
 					ReplicationFactor: 3,
-					Components: TempoComponentsSpec{
+					Template: TempoTemplateSpec{
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: true,
@@ -444,7 +444,7 @@ func TestValidateIngressAndRoute(t *testing.T) {
 			input: TempoStack{
 				Spec: TempoStackSpec{
 					ReplicationFactor: 3,
-					Components: TempoComponentsSpec{
+					Template: TempoTemplateSpec{
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: false,
@@ -469,7 +469,7 @@ func TestValidateIngressAndRoute(t *testing.T) {
 			input: TempoStack{
 				Spec: TempoStackSpec{
 					ReplicationFactor: 3,
-					Components: TempoComponentsSpec{
+					Template: TempoTemplateSpec{
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: true,
@@ -502,6 +502,114 @@ func TestValidateIngressAndRoute(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			validator := &validator{ctrlConfig: test.ctrlConfig}
 			errs := validator.validateQueryFrontend(test.input)
+			assert.Equal(t, test.expected, errs)
+		})
+	}
+}
+
+func TestValidateGatewayAndJaegerQuery(t *testing.T) {
+	path := field.NewPath("spec").Child("template").Child("gateway").Child("enabled")
+
+	tests := []struct {
+		name     string
+		input    TempoStack
+		expected field.ErrorList
+	}{
+		{
+			name: "valid configuration enabled both",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					ReplicationFactor: 3,
+					Template: TempoTemplateSpec{
+						QueryFrontend: TempoQueryFrontendSpec{
+							JaegerQuery: JaegerQuerySpec{
+								Enabled: true,
+							},
+						},
+						Gateway: TempoGatewaySpec{
+							Enabled: true,
+						},
+					},
+				},
+			},
+			expected: nil,
+		},
+		{
+			name: "valid config disable gateway and enable jaegerQuery",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					ReplicationFactor: 3,
+					Template: TempoTemplateSpec{
+						QueryFrontend: TempoQueryFrontendSpec{
+							JaegerQuery: JaegerQuerySpec{
+								Enabled: true,
+								Ingress: JaegerQueryIngressSpec{
+									Type: "route",
+								},
+							},
+						},
+						Gateway: TempoGatewaySpec{
+							Enabled: false,
+						},
+					},
+				},
+			},
+			expected: nil,
+		},
+		{
+			name: "valid config disable both",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					ReplicationFactor: 3,
+					Template: TempoTemplateSpec{
+						QueryFrontend: TempoQueryFrontendSpec{
+							JaegerQuery: JaegerQuerySpec{
+								Enabled: false,
+								Ingress: JaegerQueryIngressSpec{
+									Type: "route",
+								},
+							},
+						},
+						Gateway: TempoGatewaySpec{
+							Enabled: false,
+						},
+					},
+				},
+			},
+			expected: nil,
+		},
+		{
+			name: "invalid config disable jaegerQuery",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					ReplicationFactor: 3,
+					Template: TempoTemplateSpec{
+						QueryFrontend: TempoQueryFrontendSpec{
+							JaegerQuery: JaegerQuerySpec{
+								Enabled: false,
+								Ingress: JaegerQueryIngressSpec{
+									Type: "ingress",
+								},
+							},
+						},
+						Gateway: TempoGatewaySpec{
+							Enabled: true,
+						},
+					},
+				},
+			},
+			expected: field.ErrorList{
+				field.Invalid(path, true,
+					"to use the gateway, please enable jaegerQuery",
+				),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			validator := &validator{ctrlConfig: v1alpha1.ProjectConfig{}}
+			errs := validator.validateGateway(test.input)
 			assert.Equal(t, test.expected, errs)
 		})
 	}

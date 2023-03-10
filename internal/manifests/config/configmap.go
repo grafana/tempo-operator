@@ -54,7 +54,7 @@ func BuildConfigMap(tempo v1alpha1.TempoStack, params Params) (*corev1.ConfigMap
 			"overrides.yaml": string(overridesConfig),
 		},
 	}
-	if tempo.Spec.Components.QueryFrontend.JaegerQuery.Enabled {
+	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled {
 		tempoQueryConfig, err := buildTempoQueryConfig(tempo, params)
 		if err != nil {
 			return nil, "", err

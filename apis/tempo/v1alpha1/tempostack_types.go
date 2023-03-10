@@ -66,11 +66,11 @@ type TempoStackSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Search configuration options"
 	SearchSpec SearchSpec `json:"search,omitempty"`
 
-	// Components defines requirements for a set of tempo components.
+	// Template defines requirements for a set of tempo components.
 	//
 	// +optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tempo Components"
-	Components TempoComponentsSpec `json:"template,omitempty"`
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tempo Component Templates"
+	Template TempoTemplateSpec `json:"template,omitempty"`
 
 	// NOTE: currently this field is not considered.
 	// ReplicationFactor is used to define how many component replicas should exist.
@@ -474,9 +474,9 @@ type ObjectStorageTLSSpec struct {
 	CA string `json:"caName,omitempty"`
 }
 
-// TempoComponentsSpec defines the template of all requirements to configure
+// TempoTemplateSpec defines the template of all requirements to configure
 // scheduling of all Tempo components to be deployed.
-type TempoComponentsSpec struct {
+type TempoTemplateSpec struct {
 	// Distributor defines the distributor component spec.
 	//
 	// +optional

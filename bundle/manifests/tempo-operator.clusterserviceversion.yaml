@@ -14,7 +14,7 @@ metadata:
         }
       ]
     capabilities: Basic Install
-    createdAt: "2023-03-07T10:23:56Z"
+    createdAt: "2023-03-10T14:08:04Z"
     operators.operatorframework.io/builder: operator-sdk-v1.27.0
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
   name: tempo-operator.v0.0.1
@@ -241,8 +241,8 @@ spec:
       - description: StorageSize for PVCs used by ingester. Defaults to 10Gi.
         displayName: Storage size for PVCs
         path: storageSize
-      - description: Components defines requirements for a set of tempo components.
-        displayName: Tempo Components
+      - description: Template defines requirements for a set of tempo components.
+        displayName: Tempo Component Templates
         path: template
       - description: Compactor defines the tempo compactor component spec.
         displayName: Compactor pods
@@ -615,13 +615,7 @@ spec:
                     port: 8081
                   initialDelaySeconds: 5
                   periodSeconds: 10
-                resources:
-                  limits:
-                    cpu: 500m
-                    memory: 128Mi
-                  requests:
-                    cpu: 10m
-                    memory: 64Mi
+                resources: {}
                 securityContext:
                   allowPrivilegeEscalation: false
                   capabilities:
@@ -739,7 +733,7 @@ spec:
     containerPort: 443
     deploymentName: tempo-operator-controller-manager
     failurePolicy: Fail
-    generateName: mtempostack.kb.io
+    generateName: mtempostack.tempo.grafana.com
     rules:
     - apiGroups:
       - tempo.grafana.com
@@ -759,7 +753,7 @@ spec:
     containerPort: 443
     deploymentName: tempo-operator-controller-manager
     failurePolicy: Fail
-    generateName: vtempostack.kb.io
+    generateName: vtempostack.tempo.grafana.com
     rules:
     - apiGroups:
       - tempo.grafana.com

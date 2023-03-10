@@ -228,8 +228,8 @@ spec:
       - description: StorageSize for PVCs used by ingester. Defaults to 10Gi.
         displayName: Storage size for PVCs
         path: storageSize
-      - description: Components defines requirements for a set of tempo components.
-        displayName: Tempo Components
+      - description: Template defines requirements for a set of tempo components.
+        displayName: Tempo Component Templates
         path: template
       - description: Compactor defines the tempo compactor component spec.
         displayName: Compactor pods

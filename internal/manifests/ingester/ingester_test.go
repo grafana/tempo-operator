@@ -38,7 +38,7 @@ func TestBuildIngester(t *testing.T) {
 			},
 			StorageSize:      resource.MustParse("10Gi"),
 			StorageClassName: &storageClassName,
-			Components: v1alpha1.TempoComponentsSpec{
+			Template: v1alpha1.TempoTemplateSpec{
 				Ingester: v1alpha1.TempoComponentSpec{
 					NodeSelector: map[string]string{"a": "b"},
 					Tolerations: []corev1.Toleration{

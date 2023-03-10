@@ -49,7 +49,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 	tempo := params.Tempo
 	labels := manifestutils.ComponentLabels(manifestutils.QuerierComponentName, tempo.Name)
 	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
-	cfg := tempo.Spec.Components.Querier
+	cfg := tempo.Spec.Template.Querier
 
 	d := &v1.Deployment{
 		TypeMeta: metav1.TypeMeta{

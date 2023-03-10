@@ -43,7 +43,7 @@ func (r *TempoStack) SetupWebhookWithManager(mgr ctrl.Manager, ctrlConfig v1alph
 		Complete()
 }
 
-//+kubebuilder:webhook:path=/mutate-tempo-grafana-com-v1alpha1-tempostack,mutating=true,failurePolicy=fail,sideEffects=None,groups=tempo.grafana.com,resources=tempostacks,verbs=create;update,versions=v1alpha1,name=mtempostack.kb.io,admissionReviewVersions=v1
+//+kubebuilder:webhook:path=/mutate-tempo-grafana-com-v1alpha1-tempostack,mutating=true,failurePolicy=fail,sideEffects=None,groups=tempo.grafana.com,resources=tempostacks,verbs=create;update,versions=v1alpha1,name=mtempostack.tempo.grafana.com,admissionReviewVersions=v1
 
 // NewDefaulter creates a new instance of Defaulter, which implements functions for setting defaults on the Tempo CR.
 func NewDefaulter(ctrlConfig v1alpha1.ProjectConfig) *Defaulter {
@@ -110,13 +110,13 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 	defaultReplicationFactor := 1
 
 	// Default replicas for ingester if not specified.
-	if r.Spec.Components.Ingester.Replicas == nil {
-		r.Spec.Components.Ingester.Replicas = defaultComponentReplicas
+	if r.Spec.Template.Ingester.Replicas == nil {
+		r.Spec.Template.Ingester.Replicas = defaultComponentReplicas
 	}
 
 	// Default replicas for distributor if not specified.
-	if r.Spec.Components.Distributor.Replicas == nil {
-		r.Spec.Components.Distributor.Replicas = defaultComponentReplicas
+	if r.Spec.Template.Distributor.Replicas == nil {
+		r.Spec.Template.Distributor.Replicas = defaultComponentReplicas
 	}
 
 	// Default replication factor if not specified.
@@ -125,14 +125,14 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 	}
 
 	// Terminate TLS of the JaegerQuery Route on the Edge by default
-	if r.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Type == IngressTypeRoute && r.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Route.Termination == "" {
-		r.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Route.Termination = TLSRouteTerminationTypeEdge
+	if r.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type == IngressTypeRoute && r.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Route.Termination == "" {
+		r.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Route.Termination = TLSRouteTerminationTypeEdge
 	}
 
 	return nil
 }
 
-//+kubebuilder:webhook:path=/validate-tempo-grafana-com-v1alpha1-tempostack,mutating=false,failurePolicy=fail,sideEffects=None,groups=tempo.grafana.com,resources=tempostacks,verbs=create;update,versions=v1alpha1,name=vtempostack.kb.io,admissionReviewVersions=v1
+//+kubebuilder:webhook:path=/validate-tempo-grafana-com-v1alpha1-tempostack,mutating=false,failurePolicy=fail,sideEffects=None,groups=tempo.grafana.com,resources=tempostacks,verbs=create;update,versions=v1alpha1,name=vtempostack.tempo.grafana.com,admissionReviewVersions=v1
 
 type validator struct {
 	client     client.Client
@@ -224,7 +224,7 @@ func (v *validator) validateReplicationFactor(tempo TempoStack) field.ErrorList 
 	// Validate minimum quorum on ingestors according to replicas and replication factor
 	replicatonFactor := tempo.Spec.ReplicationFactor
 	// Ingester replicas should not be nil at this point, due defauler.
-	ingesterReplicas := int(*tempo.Spec.Components.Ingester.Replicas)
+	ingesterReplicas := int(*tempo.Spec.Template.Ingester.Replicas)
 	quorum := int(math.Floor(float64(replicatonFactor)/2.0) + 1)
 	// if ingester replicas less than quorum (which depends on replication factor), then doesn't allow to deploy as it is an
 	// invalid configuration. Quorum equal to replicas doesn't allow you to lose ingesters but is a valid configuration.
@@ -241,22 +241,33 @@ func (v *validator) validateReplicationFactor(tempo TempoStack) field.ErrorList 
 func (v *validator) validateQueryFrontend(tempo TempoStack) field.ErrorList {
 	path := field.NewPath("spec").Child("template").Child("queryFrontend").Child("jaegerQuery").Child("ingress").Child("type")
 
-	if tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Type != IngressTypeNone && !tempo.Spec.Components.QueryFrontend.JaegerQuery.Enabled {
+	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type != IngressTypeNone && !tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled {
 		return field.ErrorList{field.Invalid(
 			path,
-			tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Type,
+			tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type,
 			"Ingress cannot be enabled if jaegerQuery is disabled",
 		)}
 	}
 
-	if tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Type == IngressTypeRoute && !v.ctrlConfig.Gates.OpenShift.OpenShiftRoute {
+	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type == IngressTypeRoute && !v.ctrlConfig.Gates.OpenShift.OpenShiftRoute {
 		return field.ErrorList{field.Invalid(
 			path,
-			tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Type,
+			tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type,
 			"Please enable the featureGates.openshift.openshiftRoute feature gate to use Routes",
 		)}
 	}
 
+	return nil
+}
+
+func (v *validator) validateGateway(tempo TempoStack) field.ErrorList {
+	if tempo.Spec.Template.Gateway.Enabled && !tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled {
+		path := field.NewPath("spec").Child("template").Child("gateway").Child("enabled")
+		return field.ErrorList{
+			field.Invalid(path, tempo.Spec.Template.Gateway.Enabled,
+				"to use the gateway, please enable jaegerQuery",
+			)}
+	}
 	return nil
 }
 
@@ -272,6 +283,7 @@ func (v *validator) validate(ctx context.Context, obj runtime.Object) error {
 	allErrs = append(allErrs, v.validateStorage(ctx, *tempo)...)
 	allErrs = append(allErrs, v.validateReplicationFactor(*tempo)...)
 	allErrs = append(allErrs, v.validateQueryFrontend(*tempo)...)
+	allErrs = append(allErrs, v.validateGateway(*tempo)...)
 
 	if len(allErrs) == 0 {
 		return nil
