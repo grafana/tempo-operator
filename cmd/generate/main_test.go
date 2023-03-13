@@ -80,7 +80,9 @@ spec:
     tempoQuery: docker.io/grafana/tempo-query:x.y.z
     tempoGateway: quay.io/observatorium/api
   storage:
-    secret: minio-test
+    secret:
+      name: minio-test
+      type: s3
   storageSize: 1Gi
 `
 	c.SetIn(strings.NewReader(cr))
