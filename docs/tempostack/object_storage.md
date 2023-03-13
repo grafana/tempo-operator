@@ -46,4 +46,5 @@ Tempo Operator supports [Minio](https://min.io/) for TempoStack object storage.
     storage:
       secret:
         name: tempostack-dev-minio
+        type: s3
   ```

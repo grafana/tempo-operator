@@ -13,6 +13,12 @@ import (
 
 func TestBuildAll(t *testing.T) {
 	objects, err := BuildAll(manifestutils.Params{
+		StorageParams: manifestutils.StorageParams{
+			S3: &manifestutils.S3{
+				Endpoint: "",
+				Bucket:   "",
+			},
+		},
 		Tempo: v1alpha1.TempoStack{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "foo",

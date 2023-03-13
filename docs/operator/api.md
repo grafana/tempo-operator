@@ -1339,6 +1339,125 @@ string
 </table>
 
 
+## ObjectStorageSecretSpec { #tempo-grafana-com-v1alpha1-ObjectStorageSecretSpec }
+
+<p>
+
+(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-ObjectStorageSpec">ObjectStorageSpec</a>)
+
+</p>
+
+<div>
+
+<p>ObjectStorageSecretSpec is a secret reference containing name only, no namespace.</p>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Field</th>
+
+<th>Description</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td>
+
+<code>type</code><br/>
+
+<em>
+
+<a href="#tempo-grafana-com-v1alpha1-ObjectStorageSecretType">
+
+ObjectStorageSecretType
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<p>Type of object storage that should be used</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>name</code><br/>
+
+<em>
+
+string
+
+</em>
+
+</td>
+
+<td>
+
+<p>Name of a secret in the namespace configured for object storage secrets.</p>
+
+</td>
+</tr>
+
+</tbody>
+</table>
+
+
+## ObjectStorageSecretType { #tempo-grafana-com-v1alpha1-ObjectStorageSecretType }
+
+(<code>string</code> alias)
+
+<p>
+
+(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-ObjectStorageSecretSpec">ObjectStorageSecretSpec</a>)
+
+</p>
+
+<div>
+
+<p>ObjectStorageSecretType defines the type of storage which can be used with the Tempo cluster.</p>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Value</th>
+
+<th>Description</th>
+
+</tr>
+
+</thead>
+
+<tbody><tr><td><p>&#34;s3&#34;</p></td>
+
+<td><p>ObjectStorageSecretS3 when using S3 for Tempo storage.</p>
+</td>
+
+</tr></tbody>
+</table>
+
+
 ## ObjectStorageSpec { #tempo-grafana-com-v1alpha1-ObjectStorageSpec }
 
 <p>
@@ -1405,7 +1524,11 @@ ObjectStorageTLSSpec
 
 <em>
 
-string
+<a href="#tempo-grafana-com-v1alpha1-ObjectStorageSecretSpec">
+
+ObjectStorageSecretSpec
+
+</a>
 
 </em>
 

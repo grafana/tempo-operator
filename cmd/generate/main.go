@@ -149,7 +149,7 @@ func NewGenerateCommand() *cobra.Command {
 	var outPath string
 	params := manifestutils.Params{
 		StorageParams: manifestutils.StorageParams{
-			S3: manifestutils.S3{},
+			S3: &manifestutils.S3{},
 		},
 	}
 

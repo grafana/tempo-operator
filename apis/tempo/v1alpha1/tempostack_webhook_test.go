@@ -235,10 +235,14 @@ func TestValidateStorageSecret(t *testing.T) {
 	tempo := TempoStack{
 		Spec: TempoStackSpec{
 			Storage: ObjectStorageSpec{
-				Secret: "testsecret",
+				Secret: ObjectStorageSecretSpec{
+					Name: "testsecret",
+					Type: "s3",
+				},
 			},
 		},
 	}
+
 	path := field.NewPath("spec").Child("storage").Child("secret")
 
 	tests := []struct {
