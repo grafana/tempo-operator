@@ -17,7 +17,7 @@ type Params struct {
 
 // StorageParams holds storage configuration.
 type StorageParams struct {
-	S3 S3
+	S3 *S3
 }
 
 // S3 holds S3 configuration.

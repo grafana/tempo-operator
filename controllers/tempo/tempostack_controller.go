@@ -37,7 +37,7 @@ import (
 )
 
 const (
-	storageSecretField = ".spec.storage.secret" // nolint #nosec
+	storageSecretField = ".spec.storage.secret.name" // nolint #nosec
 )
 
 // TempoStackReconciler reconciles a TempoStack object.
@@ -227,7 +227,7 @@ func (r *TempoStackReconciler) reconcileManifests(ctx context.Context, log logr.
 
 func (r *TempoStackReconciler) getStorageConfig(ctx context.Context, tempo v1alpha1.TempoStack) (*manifestutils.StorageParams, error) {
 	storageSecret := &corev1.Secret{}
-	err := r.Get(ctx, types.NamespacedName{Namespace: tempo.Namespace, Name: tempo.Spec.Storage.Secret}, storageSecret)
+	err := r.Get(ctx, types.NamespacedName{Namespace: tempo.Namespace, Name: tempo.Spec.Storage.Secret.Name}, storageSecret)
 	if err != nil {
 		return nil, fmt.Errorf("could not fetch storage secret: %w", err)
 	}
@@ -241,7 +241,7 @@ func (r *TempoStackReconciler) getStorageConfig(ctx context.Context, tempo v1alp
 		return nil, fmt.Errorf("invalid storage secret: %s", strings.Join(msgs, ", "))
 	}
 
-	return &manifestutils.StorageParams{S3: manifestutils.S3{
+	return &manifestutils.StorageParams{S3: &manifestutils.S3{
 		Endpoint: string(storageSecret.Data["endpoint"]),
 		Bucket:   string(storageSecret.Data["bucket"]),
 	}}, nil
@@ -254,10 +254,10 @@ func (r *TempoStackReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	// and reconcile them (i.e. update the tempo configuration file and restart the pods)
 	err := mgr.GetFieldIndexer().IndexField(context.Background(), &v1alpha1.TempoStack{}, storageSecretField, func(rawObj client.Object) []string {
 		tempostacks := rawObj.(*v1alpha1.TempoStack)
-		if tempostacks.Spec.Storage.Secret == "" {
+		if tempostacks.Spec.Storage.Secret.Name == "" {
 			return nil
 		}
-		return []string{tempostacks.Spec.Storage.Secret}
+		return []string{tempostacks.Spec.Storage.Secret.Name}
 	})
 	if err != nil {
 		return err
