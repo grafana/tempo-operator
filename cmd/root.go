@@ -44,17 +44,25 @@ func init() {
 	//+kubebuilder:scaffold:scheme
 }
 
-func readConfig(cmd *cobra.Command, configFile string) error {
-	var err error
-
+func setupLogging() {
 	opts := zap.Options{
 		Development: true,
 		TimeEncoder: zapcore.ISO8601TimeEncoder,
 	}
 	opts.BindFlags(flag.CommandLine)
 	flag.Parse()
+	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
+}
 
-	ctrlConfig := configv1alpha1.ProjectConfig{}
+func readConfig(cmd *cobra.Command, configFile string) error {
+	// default controller configuration
+	ctrlConfig := configv1alpha1.ProjectConfig{
+		Gates: configv1alpha1.FeatureGates{
+			TLSProfile: string(configv1.TLSProfileModernType),
+		},
+	}
+
+	var err error
 	options := ctrl.Options{Scheme: scheme}
 	if configFile != "" {
 		options, err = options.AndFrom(ctrl.ConfigFile().AtPath(configFile).OfKind(&ctrlConfig))
@@ -63,7 +71,11 @@ func readConfig(cmd *cobra.Command, configFile string) error {
 		}
 	}
 
-	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
+	err = ctrlConfig.Validate()
+	if err != nil {
+		return fmt.Errorf("controller config validation failed: %w", err)
+	}
+
 	cmd.SetContext(context.WithValue(cmd.Context(), RootConfigKey{}, RootConfig{options, ctrlConfig}))
 	return nil
 }
@@ -76,6 +88,7 @@ func NewRootCommand() *cobra.Command {
 		Use:          "tempo-operator",
 		SilenceUsage: true,
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			setupLogging()
 			return readConfig(cmd, configFile)
 		},
 	}
