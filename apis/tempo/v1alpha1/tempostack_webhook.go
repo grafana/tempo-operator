@@ -240,6 +240,18 @@ func (v *validator) validateGateway(tempo TempoStack) field.ErrorList {
 	return nil
 }
 
+func (v *validator) validateTenantConfigs(tempo TempoStack) field.ErrorList {
+	if err := ValidateTenantConfigs(tempo); err != nil {
+		return field.ErrorList{
+			field.Invalid(
+				field.NewPath("spec").Child("template").Child("tenants"),
+				tempo.Spec.Template.Gateway.Enabled,
+				err.Error(),
+			)}
+	}
+	return nil
+}
+
 func (v *validator) validate(ctx context.Context, obj runtime.Object) error {
 	tempo, ok := obj.(*TempoStack)
 	if !ok {
@@ -253,9 +265,35 @@ func (v *validator) validate(ctx context.Context, obj runtime.Object) error {
 	allErrs = append(allErrs, v.validateReplicationFactor(*tempo)...)
 	allErrs = append(allErrs, v.validateQueryFrontend(*tempo)...)
 	allErrs = append(allErrs, v.validateGateway(*tempo)...)
+	allErrs = append(allErrs, v.validateTenantConfigs(*tempo)...)
 
 	if len(allErrs) == 0 {
 		return nil
 	}
 	return apierrors.NewInvalid(tempo.GroupVersionKind().GroupKind(), tempo.Name, allErrs)
+}
+
+// ValidateTenantConfigs validates the tenants mode specification.
+func ValidateTenantConfigs(tempo TempoStack) error {
+	if tempo.Spec.Tenants == nil {
+		return nil
+	}
+
+	if tempo.Spec.Tenants.Mode == Static {
+		if tempo.Spec.Tenants.Authentication == nil {
+			return fmt.Errorf("mandatory configuration - missing tenants' authentication configuration")
+		}
+
+		if tempo.Spec.Tenants.Authorization.Roles == nil {
+			return fmt.Errorf("mandatory configuration - missing roles configuration")
+		}
+
+		if tempo.Spec.Tenants.Authorization.RoleBindings == nil {
+			return fmt.Errorf("mandatory configuration - missing role bindings configuration")
+		}
+	}
+
+	// TODO: validate openshift mode too.
+	// See: https://github.com/os-observability/tempo-operator/issues/315
+	return nil
 }
