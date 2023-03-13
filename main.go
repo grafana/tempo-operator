@@ -26,7 +26,13 @@ func main() {
 	}
 	opts.BindFlags(flag.CommandLine)
 	flag.Parse()
-	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
+
+	// pass remaining flags (excluding zap flags) to spf13/cobra commands
+	args := flag.Args()
+	rootCmd.SetArgs(args)
+
+	logger := zap.New(zap.UseFlagOptions(&opts))
+	ctrl.SetLogger(logger)
 
 	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
