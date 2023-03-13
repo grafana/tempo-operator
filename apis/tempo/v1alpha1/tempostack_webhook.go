@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"net"
+	"strconv"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
@@ -247,6 +249,34 @@ func (v *validator) validateGateway(tempo TempoStack) field.ErrorList {
 	return nil
 }
 
+func (v *validator) validateObservability(tempo TempoStack) field.ErrorList {
+	tracingBase := field.NewPath("spec").Child("template").Child("observability").Child("tracing")
+	if tempo.Spec.Observability.Tracing.SamplingFraction == "" {
+		return nil
+	}
+	if _, err := strconv.ParseFloat(tempo.Spec.Observability.Tracing.SamplingFraction, 64); err != nil {
+		return field.ErrorList{
+			field.Invalid(
+				tracingBase.Child("sampling_fraction"),
+				tempo.Spec.Observability.Tracing.SamplingFraction,
+				err.Error(),
+			)}
+	}
+
+	if tempo.Spec.Observability.Tracing.JaegerAgentEndpoint != "" {
+		_, _, err := net.SplitHostPort(tempo.Spec.Observability.Tracing.JaegerAgentEndpoint)
+		if err != nil {
+			return field.ErrorList{
+				field.Invalid(
+					tracingBase.Child("jaeger_agent_endpoint"),
+					tempo.Spec.Observability.Tracing.JaegerAgentEndpoint,
+					err.Error(),
+				)}
+		}
+	}
+	return nil
+}
+
 func (v *validator) validateTenantConfigs(tempo TempoStack) field.ErrorList {
 	if err := ValidateTenantConfigs(tempo); err != nil {
 		return field.ErrorList{
@@ -273,6 +303,7 @@ func (v *validator) validate(ctx context.Context, obj runtime.Object) error {
 	allErrs = append(allErrs, v.validateQueryFrontend(*tempo)...)
 	allErrs = append(allErrs, v.validateGateway(*tempo)...)
 	allErrs = append(allErrs, v.validateTenantConfigs(*tempo)...)
+	allErrs = append(allErrs, v.validateObservability(*tempo)...)
 
 	if len(allErrs) == 0 {
 		return nil

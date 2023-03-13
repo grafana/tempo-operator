@@ -85,6 +85,41 @@ type TempoStackSpec struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tenants Configuration"
 	Tenants *TenantsSpec `json:"tenants,omitempty"`
+
+	// ObservabilitySpec defines how telemetry data gets handled.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Observability"
+	Observability ObservabilitySpec `json:"observability,omitempty"`
+}
+
+// ObservabilitySpec defines how telemetry data gets handled.
+type ObservabilitySpec struct {
+	// Tracing defines a config for operands.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tracing Config"
+	Tracing TracingConfigSpec `json:"tracing,omitempty"`
+}
+
+// TracingConfigSpec defines a tracing config including endpoints and sampling.
+type TracingConfigSpec struct {
+	// SamplingFraction defines the sampling ratio. Valid values are 0 to 1.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Sampling Fraction"
+	SamplingFraction string `json:"sampling_fraction,omitempty"`
+
+	// JaegerAgentEndpoint defines the jaeger endpoint data gets send to.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default:="localhost:6831"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger-Agent-Endpoint"
+	JaegerAgentEndpoint string `json:"jaeger_agent_endpoint,omitempty"`
 }
 
 // PodStatusMap defines the type for mapping pod status to pod name.

@@ -35,6 +35,11 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	d.Spec.Template, err = manifestutils.PatchTracingJaegerEnv(params.Tempo, d.Spec.Template)
+	if err != nil {
+		return nil, err
+	}
 	gates := params.Gates
 	tempo := params.Tempo
 

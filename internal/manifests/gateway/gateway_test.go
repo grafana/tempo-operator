@@ -1,6 +1,7 @@
 package gateway
 
 import (
+	"net"
 	"reflect"
 	"testing"
 
@@ -205,4 +206,133 @@ func getObjectByTypeAndName(objects []client.Object, name string, t reflect.Type
 		}
 	}
 	return nil
+}
+
+func TestPatchTracing(t *testing.T) {
+	tt := []struct {
+		name       string
+		inputTempo v1alpha1.TempoStack
+		inputPod   corev1.PodTemplateSpec
+		expectPod  corev1.PodTemplateSpec
+		expectErr  error
+	}{
+		{
+			name: "valid settings",
+			inputTempo: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Observability: v1alpha1.ObservabilitySpec{
+						Tracing: v1alpha1.TracingConfigSpec{
+							SamplingFraction:    "1.0",
+							JaegerAgentEndpoint: "agent:1234",
+						},
+					},
+				},
+			},
+			inputPod: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"existing.com": "true",
+					},
+				},
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: "first",
+							Args: []string{
+								"--abc",
+							},
+						},
+					},
+				},
+			},
+			expectPod: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"existing.com":                    "true",
+						"sidecar.opentelemetry.io/inject": "true",
+					},
+				},
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: "first",
+							Args: []string{
+								"--abc",
+								"--internal.tracing.endpoint=agent:1234",
+								"--internal.tracing.endpoint-type=agent",
+								"--internal.tracing.sampling-fraction=1.0",
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "no sampling param",
+			inputTempo: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Observability: v1alpha1.ObservabilitySpec{
+						Tracing: v1alpha1.TracingConfigSpec{
+							SamplingFraction: "",
+						},
+					},
+				},
+			},
+			inputPod: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"existing.com": "true",
+					},
+				},
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: "first",
+						},
+					},
+				},
+			},
+			expectPod: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"existing.com": "true",
+					},
+				},
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: "first",
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "invalid agent address",
+			inputTempo: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Observability: v1alpha1.ObservabilitySpec{
+						Tracing: v1alpha1.TracingConfigSpec{
+							SamplingFraction:    "0.5",
+							JaegerAgentEndpoint: "---invalid----",
+						},
+					},
+				},
+			},
+			inputPod:  corev1.PodTemplateSpec{},
+			expectPod: corev1.PodTemplateSpec{},
+			expectErr: &net.AddrError{
+				Addr: "---invalid----",
+				Err:  "missing port in address",
+			},
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			pod, err := patchTracing(tc.inputTempo, tc.inputPod)
+			require.Equal(t, tc.expectErr, err)
+			assert.Equal(t, tc.expectPod, pod)
+		})
+	}
 }

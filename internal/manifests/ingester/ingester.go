@@ -155,6 +155,12 @@ func statefulSet(params manifestutils.Params) (*v1.StatefulSet, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	ss.Spec.Template, err = manifestutils.PatchTracingJaegerEnv(tempo, ss.Spec.Template)
+	if err != nil {
+		return nil, err
+	}
+
 	return ss, nil
 }
 
