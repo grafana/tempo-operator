@@ -65,7 +65,7 @@ metadata:
 `, buf.String())
 }
 
-func TestGenerateCmd(t *testing.T) {
+func TestGenerateCmdReadFromStdin(t *testing.T) {
 	c := cmd.NewRootCommand()
 	c.AddCommand(NewGenerateCommand())
 
@@ -90,6 +90,32 @@ spec:
 	c.SetErr(out)
 
 	c.SetArgs([]string{"generate"})
+	_, err := c.ExecuteC()
+	require.NoError(t, err)
+
+	require.Contains(t, out.String(), `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/component: distributor
+    app.kubernetes.io/created-by: tempo-controller
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/name: tempo
+  name: tempo-simplest-distributor
+`)
+}
+
+func TestGenerateCmdReadFromFile(t *testing.T) {
+	c := cmd.NewRootCommand()
+	c.AddCommand(NewGenerateCommand())
+
+	out := &strings.Builder{}
+	c.SetOut(out)
+	c.SetErr(out)
+
+	c.SetArgs([]string{"generate", "--cr", "testdata/cr.yaml"})
 	_, err := c.ExecuteC()
 	require.NoError(t, err)
 
