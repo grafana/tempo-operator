@@ -11,7 +11,7 @@ require (
 	github.com/onsi/gomega v1.27.3
 	github.com/openshift/library-go v0.0.0-20220622115547-84d884f4c9f6
 	github.com/spf13/cobra v1.6.1
-	go.uber.org/zap v1.21.0
+	go.uber.org/zap v1.24.0
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.26.1
 	k8s.io/apimachinery v0.26.2
