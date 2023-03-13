@@ -14,12 +14,7 @@ import (
 	"github.com/os-observability/tempo-operator/cmd/version"
 )
 
-func main() {
-	rootCmd := cmd.NewRootCommand()
-	rootCmd.AddCommand(start.NewStartCommand())
-	rootCmd.AddCommand(generate.NewGenerateCommand())
-	rootCmd.AddCommand(version.NewVersionCommand())
-
+func setupLogging() {
 	opts := zap.Options{
 		Development: true,
 		TimeEncoder: zapcore.ISO8601TimeEncoder,
@@ -27,12 +22,21 @@ func main() {
 	opts.BindFlags(flag.CommandLine)
 	flag.Parse()
 
+	logger := zap.New(zap.UseFlagOptions(&opts))
+	ctrl.SetLogger(logger)
+}
+
+func main() {
+	rootCmd := cmd.NewRootCommand()
+	rootCmd.AddCommand(start.NewStartCommand())
+	rootCmd.AddCommand(generate.NewGenerateCommand())
+	rootCmd.AddCommand(version.NewVersionCommand())
+
+	setupLogging()
+
 	// pass remaining flags (excluding zap flags) to spf13/cobra commands
 	args := flag.Args()
 	rootCmd.SetArgs(args)
-
-	logger := zap.New(zap.UseFlagOptions(&opts))
-	ctrl.SetLogger(logger)
 
 	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
