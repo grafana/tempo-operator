@@ -17,7 +17,15 @@ type Params struct {
 
 // StorageParams holds storage configuration.
 type StorageParams struct {
-	S3 *S3
+	S3           *S3
+	AzureStorage *AzureStorage
+}
+
+// AzureStorage for Azure Storage.
+type AzureStorage struct {
+	Container   string
+	AccountName string
+	AccountKey  string
 }
 
 // S3 holds S3 configuration.

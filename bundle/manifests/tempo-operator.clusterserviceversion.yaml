@@ -206,8 +206,8 @@ spec:
           components.
         displayName: Service Account
         path: serviceAccount
-      - description: Storage defines S3 compatible object storage configuration. User
-          is required to create secret and supply it.
+      - description: Storage defines the spec for the object storage endpoint to store
+          traces. User is required to create secret and supply it.
         displayName: Object Storage
         path: storage
       - description: Secret for object storage authentication. Name of a secret in
@@ -224,6 +224,7 @@ spec:
         displayName: Object Storage Secret Type
         path: storage.secret.type
         x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:select:azure
         - urn:alm:descriptor:com.tectonic.ui:select:s3
       - description: TLS configuration for reaching the object storage endpoint.
         displayName: TLS Config

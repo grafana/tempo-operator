@@ -128,9 +128,11 @@ server:
 {{- end }}
 storage:
   trace:
-    backend: s3
+    backend: {{ .StorageType }}
     blocklist_poll: 5m
     cache: none
+    azure:
+      container_name: {{ .AzureStorage.Container }}
     s3:
       endpoint: {{ .S3.Endpoint }}
       bucket: {{ .S3.Bucket }}

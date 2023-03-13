@@ -260,7 +260,7 @@ func TestDegradedToDegraded(t *testing.T) {
 			Status:             "True",
 			LastTransitionTime: lastTransitionTime,
 			Reason:             string(v1alpha1.ReasonInvalidStorageConfig),
-			Message:            "invalid storage secret: \"endpoint\" field of storage secret must be a valid URL, storage secret must contain \"access_key_id\" field",
+			Message:            "invalid storage secret: storage secret must contain \"access_key_id\" field, \"endpoint\" field of storage secret must be a valid URL",
 		},
 	}, updatedTempo2.Status.Conditions)
 }

@@ -14,9 +14,12 @@ import (
 func TestBuildAll(t *testing.T) {
 	objects, err := BuildAll(manifestutils.Params{
 		StorageParams: manifestutils.StorageParams{
+			AzureStorage: &manifestutils.AzureStorage{
+				Container: "image",
+			},
 			S3: &manifestutils.S3{
-				Endpoint: "",
-				Bucket:   "",
+				Endpoint: "https://localhost",
+				Bucket:   "test",
 			},
 		},
 		Tempo: v1alpha1.TempoStack{

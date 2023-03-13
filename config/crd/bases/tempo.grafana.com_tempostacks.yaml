@@ -231,8 +231,8 @@ spec:
                   all tempo components.
                 type: string
               storage:
-                description: Storage defines S3 compatible object storage configuration.
-                  User is required to create secret and supply it.
+                description: Storage defines the spec for the object storage endpoint
+                  to store traces. User is required to create secret and supply it.
                 properties:
                   secret:
                     description: Secret for object storage authentication. Name of
@@ -246,6 +246,7 @@ spec:
                       type:
                         description: Type of object storage that should be used
                         enum:
+                        - azure
                         - s3
                         type: string
                     required:

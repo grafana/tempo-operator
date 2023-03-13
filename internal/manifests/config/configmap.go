@@ -18,15 +18,22 @@ const tenantOverridesMountPath = "/conf/overrides.yaml"
 // Params holds configuration parameters.
 type Params struct {
 	S3             S3
+	AzureStorage   AzureStorage
 	HTTPEncryption bool
 	GRPCEncryption bool
 	TLSProfile     tlsprofile.TLSProfileOptions
+}
+
+// AzureStorage holds AzureStorage object storage configuration options.
+type AzureStorage struct {
+	Container string
 }
 
 // S3 holds S3 object storage configuration options.
 type S3 struct {
 	Endpoint string
 	Bucket   string
+	Insecure bool
 }
 
 // BuildConfigMap builds the tempo configuration file and the tenant-specific overrides configuration.

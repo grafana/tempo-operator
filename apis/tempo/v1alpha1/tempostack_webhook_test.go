@@ -232,7 +232,17 @@ func TestDefault(t *testing.T) {
 }
 
 func TestValidateStorageSecret(t *testing.T) {
-	tempo := TempoStack{
+	tempoAzure := TempoStack{
+		Spec: TempoStackSpec{
+			Storage: ObjectStorageSpec{
+				Secret: ObjectStorageSecretSpec{
+					Name: "testsecret",
+					Type: "azure",
+				},
+			},
+		},
+	}
+	tempoS3 := TempoStack{
 		Spec: TempoStackSpec{
 			Storage: ObjectStorageSpec{
 				Secret: ObjectStorageSecretSpec{
@@ -243,36 +253,110 @@ func TestValidateStorageSecret(t *testing.T) {
 		},
 	}
 
-	path := field.NewPath("spec").Child("storage").Child("secret")
+	tempoUnknown := TempoStack{
+		Spec: TempoStackSpec{
+			Storage: ObjectStorageSpec{
+				Secret: ObjectStorageSecretSpec{
+					Name: "testsecret",
+					Type: "unknown",
+				},
+			},
+		},
+	}
 
-	tests := []struct {
+	tempoEmtpyType := TempoStack{
+		Spec: TempoStackSpec{
+			Storage: ObjectStorageSpec{
+				Secret: ObjectStorageSecretSpec{
+					Name: "testsecret",
+					Type: "",
+				},
+			},
+		},
+	}
+
+	type Test struct {
 		name     string
+		tempo    TempoStack
 		input    corev1.Secret
 		expected field.ErrorList
-	}{
+	}
+
+	path := field.NewPath("spec").Child("storage").Child("secret")
+
+	tests := []Test{
 		{
-			name:  "empty secret",
-			input: corev1.Secret{},
+			name:  "unknown secret type",
+			tempo: tempoUnknown,
+			input: corev1.Secret{
+				Data: map[string][]byte{
+					"container": []byte("container-test"),
+				},
+			},
 			expected: field.ErrorList{
-				field.Invalid(path, tempo.Spec.Storage.Secret, "storage secret is empty"),
+				field.Invalid(path, tempoUnknown.Spec.Storage.Secret, "unknown is not an allowed storage secret type"),
 			},
 		},
 		{
-			name: "missing or empty fields",
+			name:  "empty secret type",
+			tempo: tempoEmtpyType,
+			input: corev1.Secret{
+				Data: map[string][]byte{
+					"container": []byte("container-test"),
+				},
+			},
+			expected: field.ErrorList{
+				field.Invalid(path, tempoEmtpyType.Spec.Storage.Secret, "storage secret must specify the type"),
+			},
+		},
+		{
+			name:  "empty Azure Storage secret",
+			tempo: tempoAzure,
+			input: corev1.Secret{},
+			expected: field.ErrorList{
+				field.Invalid(path, tempoAzure.Spec.Storage.Secret, "storage secret is empty"),
+			},
+		},
+		{
+			name:  "missing or empty fields in Azure secret",
+			tempo: tempoAzure,
+			input: corev1.Secret{
+				Data: map[string][]byte{
+					"container":    []byte("container-test"),
+					"account_name": []byte(""),
+				},
+			},
+			expected: field.ErrorList{
+				field.Invalid(path, tempoAzure.Spec.Storage.Secret, "storage secret must contain \"account_name\" field"),
+				field.Invalid(path, tempoAzure.Spec.Storage.Secret, "storage secret must contain \"account_key\" field"),
+			},
+		},
+		{
+			name:  "empty S3 secret",
+			tempo: tempoS3,
+			input: corev1.Secret{},
+			expected: field.ErrorList{
+				field.Invalid(path, tempoS3.Spec.Storage.Secret, "storage secret is empty"),
+			},
+		},
+		{
+			name:  "missing or empty fields in S3 secret",
+			tempo: tempoS3,
 			input: corev1.Secret{
 				Data: map[string][]byte{
 					"bucket": []byte(""),
 				},
 			},
 			expected: field.ErrorList{
-				field.Invalid(path, tempo.Spec.Storage.Secret, "storage secret must contain \"endpoint\" field"),
-				field.Invalid(path, tempo.Spec.Storage.Secret, "storage secret must contain \"bucket\" field"),
-				field.Invalid(path, tempo.Spec.Storage.Secret, "storage secret must contain \"access_key_id\" field"),
-				field.Invalid(path, tempo.Spec.Storage.Secret, "storage secret must contain \"access_key_secret\" field"),
+				field.Invalid(path, tempoS3.Spec.Storage.Secret, "storage secret must contain \"endpoint\" field"),
+				field.Invalid(path, tempoS3.Spec.Storage.Secret, "storage secret must contain \"bucket\" field"),
+				field.Invalid(path, tempoS3.Spec.Storage.Secret, "storage secret must contain \"access_key_id\" field"),
+				field.Invalid(path, tempoS3.Spec.Storage.Secret, "storage secret must contain \"access_key_secret\" field"),
 			},
 		},
 		{
-			name: "invalid endpoint 'invalid'",
+			name:  "invalid endpoint 'invalid'",
+			tempo: tempoS3,
 			input: corev1.Secret{
 				Data: map[string][]byte{
 					"endpoint":          []byte("invalid"),
@@ -282,11 +366,12 @@ func TestValidateStorageSecret(t *testing.T) {
 				},
 			},
 			expected: field.ErrorList{
-				field.Invalid(path, tempo.Spec.Storage.Secret, "\"endpoint\" field of storage secret must be a valid URL"),
+				field.Invalid(path, tempoS3.Spec.Storage.Secret, "\"endpoint\" field of storage secret must be a valid URL"),
 			},
 		},
 		{
-			name: "invalid endpoint '/invalid'",
+			name:  "invalid endpoint '/invalid'",
+			tempo: tempoS3,
 			input: corev1.Secret{
 				Data: map[string][]byte{
 					"endpoint":          []byte("/invalid"),
@@ -296,11 +381,12 @@ func TestValidateStorageSecret(t *testing.T) {
 				},
 			},
 			expected: field.ErrorList{
-				field.Invalid(path, tempo.Spec.Storage.Secret, "\"endpoint\" field of storage secret must be a valid URL"),
+				field.Invalid(path, tempoS3.Spec.Storage.Secret, "\"endpoint\" field of storage secret must be a valid URL"),
 			},
 		},
 		{
-			name: "valid storage secret",
+			name:  "valid storage secret",
+			tempo: tempoS3,
 			input: corev1.Secret{
 				Data: map[string][]byte{
 					"endpoint":          []byte("http://minio.minio.svc:9000"),
@@ -315,7 +401,7 @@ func TestValidateStorageSecret(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			errs := ValidateStorageSecret(tempo, test.input)
+			errs := ValidateStorageSecret(test.tempo, test.input)
 			assert.Equal(t, test.expected, errs)
 		})
 	}
