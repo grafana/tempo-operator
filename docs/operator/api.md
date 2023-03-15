@@ -459,6 +459,16 @@ PodStatusMap
 <td><p>ReasonInvalidStorageConfig defines that the object storage configuration is invalid (missing or incomplete storage secret).</p>
 </td>
 
+</tr><tr><td><p>&#34;InvalidTenantsConfiguration&#34;</p></td>
+
+<td><p>ReasonInvalidTenantsConfiguration when the tenant configuration provided is invalid.</p>
+</td>
+
+</tr><tr><td><p>&#34;ReasonMissingGatewayTenantSecret&#34;</p></td>
+
+<td><p>ReasonMissingGatewayTenantSecret when operator cannot get Secret containing sensitive Gateway information.</p>
+</td>
+
 </tr><tr><td><p>&#34;PendingComponents&#34;</p></td>
 
 <td><p>ReasonPendingComponents when all/some Tempo components pending dependencies.</p>
