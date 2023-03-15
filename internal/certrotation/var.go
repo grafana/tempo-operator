@@ -43,5 +43,8 @@ func ComponentCertSecretNames(stackName string) []string {
 		fmt.Sprintf("tempo-%s-query-frontend-grpc", stackName),
 		fmt.Sprintf("tempo-%s-compactor-http", stackName),
 		fmt.Sprintf("tempo-%s-compactor-grpc", stackName),
+		fmt.Sprintf("tempo-%s-gateway-http", stackName),
+		fmt.Sprintf("tempo-%s-gateway-grpc", stackName),
+		fmt.Sprintf("tempo-%s-jaeger-query-http", stackName),
 	}
 }

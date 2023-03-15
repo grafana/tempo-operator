@@ -86,6 +86,7 @@ func buildConfiguration(tempo v1alpha1.TempoStack, params Params) ([]byte, error
 		Search:                 fromSearchSpecToOptions(tempo.Spec.SearchSpec),
 		ReplicationFactor:      tempo.Spec.ReplicationFactor,
 		Multitenancy:           tempo.Spec.Tenants != nil,
+		Gateway:                tempo.Spec.Template.Gateway.Enabled,
 		Gates: featureGates{
 			GRPCEncryption: params.GRPCEncryption,
 			HTTPEncryption: params.HTTPEncryption,
@@ -133,8 +134,9 @@ func buildTLSConfig(tempo v1alpha1.TempoStack, params Params) tlsOptions {
 			},
 		},
 		Profile: tlsProfileOptions{
-			MinTLSVersion: params.TLSProfile.MinTLSVersion,
-			Ciphers:       params.TLSProfile.TLSCipherSuites(),
+			MinTLSVersion:      params.TLSProfile.MinTLSVersion,
+			MinTLSVersionShort: params.TLSProfile.MinVersionShort(),
+			Ciphers:            params.TLSProfile.TLSCipherSuites(),
 		},
 	}
 

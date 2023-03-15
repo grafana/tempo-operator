@@ -14,8 +14,22 @@ distributor:
       protocols:
         grpc:
           endpoint: 0.0.0.0:4317
+{{- if and .Gates.GRPCEncryption .Gateway }}
+          tls:
+            ca_file: {{ .TLS.Paths.CA }}
+            cert_file: {{ .TLS.Paths.GRPC.Certificate }}
+            key_file: {{ .TLS.Paths.GRPC.Key }}
+            min_version: {{ .TLS.Profile.MinTLSVersion }}
+{{- end }}
         http:
           endpoint: 0.0.0.0:4318
+{{- if and .Gates.HTTPEncryption .Gateway }}
+          tls:
+            ca_file: {{ .TLS.Paths.CA }}
+            cert_file: {{ .TLS.Paths.HTTP.Certificate }}
+            key_file: {{ .TLS.Paths.HTTP.Key }}
+            min_version: {{ .TLS.Profile.MinTLSVersion }}
+{{- end }}
   ring:
     kvstore:
       store: memberlist

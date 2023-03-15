@@ -225,6 +225,24 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 
 		d.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, jaegerQueryContainer)
 		d.Spec.Template.Spec.Volumes = append(d.Spec.Template.Spec.Volumes, jaegerQueryVolume)
+
+		if params.Gates.HTTPEncryption && tempo.Spec.Template.Gateway.Enabled {
+			jaegerQueryContainer.Args = append(jaegerQueryContainer.Args,
+				"--query.http.tls.enabled=true",
+				fmt.Sprintf("--query.http.tls.key=%s/tls.key", manifestutils.TempoServerHTTPTLSDir()),
+				fmt.Sprintf("--query.http.tls.cert=%s/tls.crt", manifestutils.TempoServerHTTPTLSDir()),
+				fmt.Sprintf("--query.http.tls.client-ca=%s/service-ca.crt", manifestutils.CABundleDir),
+			)
+		}
+
+		if params.Gates.GRPCEncryption && tempo.Spec.Template.Gateway.Enabled {
+			jaegerQueryContainer.Args = append(jaegerQueryContainer.Args,
+				"--query.http.tls.enabled=true",
+				fmt.Sprintf("--query.grpc.tls.key=%s/tls.key", manifestutils.TempoServerGRPCTLSDir()),
+				fmt.Sprintf("--query.grpc.tls.cert=%s/tls.crt", manifestutils.TempoServerGRPCTLSDir()),
+				fmt.Sprintf("--query.grpc.tls.client-ca=%s/service-ca.crt", manifestutils.CABundleDir),
+			)
+		}
 	}
 
 	err := manifestutils.ConfigureStorage(tempo, &d.Spec.Template.Spec)

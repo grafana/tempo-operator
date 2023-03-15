@@ -63,6 +63,24 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 
 	dep := deployment(params, rbacCfgHash, tenantsCfgHash)
 
+	if params.Gates.HTTPEncryption || params.Gates.GRPCEncryption {
+		caBundleName := naming.SigningCABundleName(params.Tempo.Name)
+		if err := manifestutils.ConfigureServiceCA(&dep.Spec.Template.Spec, caBundleName); err != nil {
+			return nil, err
+		}
+	}
+
+	if params.Gates.HTTPEncryption {
+		if err := configureGatewayHTTPServicePKI(dep, params.Tempo); err != nil {
+			return nil, err
+		}
+	}
+
+	if params.Gates.GRPCEncryption {
+		if err := configureGatewayGRPCServicePKI(dep, params.Tempo); err != nil {
+			return nil, err
+		}
+	}
 	if params.Tempo.Spec.Tenants.Mode == v1alpha1.OpenShift {
 		dep = patchServiceAccount(params.Tempo, dep)
 		objs = append(objs, []client.Object{
@@ -83,6 +101,14 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 
 	objs = append(objs, dep)
 	return objs, nil
+}
+
+func configureGatewayHTTPServicePKI(deployment *v1.Deployment, tempo v1alpha1.TempoStack) error {
+	return manifestutils.ConfigureHTTPServicePKI(&deployment.Spec.Template.Spec, naming.Name(manifestutils.GatewayComponentName, tempo.Name))
+}
+
+func configureGatewayGRPCServicePKI(deployment *v1.Deployment, tempo v1alpha1.TempoStack) error {
+	return manifestutils.ConfigureGRPCServicePKI(&deployment.Spec.Template.Spec, naming.Name(manifestutils.GatewayComponentName, tempo.Name))
 }
 
 func serviceAccount(tempo v1alpha1.TempoStack) *corev1.ServiceAccount {
@@ -151,7 +177,7 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 
 	cfg := tempo.Spec.Template.Gateway
 
-	return &v1.Deployment{
+	dep := &v1.Deployment{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: v1.SchemeGroupVersion.String(),
 		},
@@ -284,6 +310,16 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 			},
 		},
 	}
+
+	if params.Gates.HTTPEncryption {
+		dep.Spec.Template.Spec.Containers[0].Args = append(dep.Spec.Template.Spec.Containers[0].Args,
+			fmt.Sprintf("--traces.tls.key-file=%s/tls.key", manifestutils.TempoServerHTTPTLSDir()),
+			fmt.Sprintf("--traces.tls.cert-file=%s/tls.crt", manifestutils.TempoServerHTTPTLSDir()),
+			fmt.Sprintf("--traces.tls.ca-file=%s/service-ca.crt", manifestutils.CABundleDir),
+		)
+	}
+
+	return dep
 }
 
 func patchOCPServingCerts(tempo v1alpha1.TempoStack, dep *v1.Deployment) (*v1.Deployment, error) {
