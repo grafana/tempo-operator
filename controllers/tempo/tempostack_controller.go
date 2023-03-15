@@ -15,6 +15,7 @@ import (
 	rbacv1 "k8s.io/api/rbac/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/fields"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -178,7 +179,16 @@ func (r *TempoStackReconciler) reconcileManifests(ctx context.Context, log logr.
 
 	}
 
-	objects, err := manifests.BuildAll(manifestutils.Params{
+	// Collect all objects owned by the operator, to be able to prune objects
+	// which exist in the cluster but are not managed by the operator anymore.
+	// For example, when the Jaeger Query Ingress is enabled and later disabled,
+	// the Ingress object should be removed from the cluster.
+	pruneObjects, err := r.findObjectsOwnedByTempoOperator(ctx, tempo)
+	if err != nil {
+		return err
+	}
+
+	managedObjects, err := manifests.BuildAll(manifestutils.Params{
 		Tempo:         tempo,
 		StorageParams: *storageConfig,
 		Gates:         r.FeatureGates,
@@ -190,7 +200,7 @@ func (r *TempoStackReconciler) reconcileManifests(ctx context.Context, log logr.
 	}
 
 	errCount := 0
-	for _, obj := range objects {
+	for _, obj := range managedObjects {
 		l := log.WithValues(
 			"object_name", obj.GetName(),
 			"object_kind", obj.GetObjectKind(),
@@ -215,11 +225,33 @@ func (r *TempoStackReconciler) reconcileManifests(ctx context.Context, log logr.
 			continue
 		}
 
-		l.Info(fmt.Sprintf("Resource has been %s", op))
+		l.Info(fmt.Sprintf("resource has been %s", op))
+
+		// This object is still managed by the operator, remove it from the list of objects to prune
+		delete(pruneObjects, obj.GetUID())
 	}
 
 	if errCount > 0 {
-		return fmt.Errorf("failed to create objects for Tempo %s", req.NamespacedName)
+		return fmt.Errorf("failed to create objects for TempoStack %s", req.NamespacedName)
+	}
+
+	// Prune owned objects in the cluster which are not managed anymore.
+	pruneErrCount := 0
+	for _, obj := range pruneObjects {
+		l := log.WithValues(
+			"object_name", obj.GetName(),
+			"object_kind", obj.GetObjectKind(),
+		)
+		l.Info("pruning unmanaged resource")
+
+		err = r.Delete(ctx, obj)
+		if err != nil {
+			l.Error(err, "failed to delete resource")
+			pruneErrCount++
+		}
+	}
+	if pruneErrCount > 0 {
+		return fmt.Errorf("failed to prune objects of TempoStack %s", req.NamespacedName)
 	}
 
 	return nil
@@ -315,6 +347,39 @@ func (r *TempoStackReconciler) findTempoStackForStorageSecret(secret client.Obje
 		}
 	}
 	return requests
+}
+
+func (r *TempoStackReconciler) findObjectsOwnedByTempoOperator(ctx context.Context, tempo v1alpha1.TempoStack) (map[types.UID]client.Object, error) {
+	ownedObjects := map[types.UID]client.Object{}
+	listOps := &client.ListOptions{
+		Namespace:     tempo.GetNamespace(),
+		LabelSelector: labels.SelectorFromSet(manifestutils.CommonLabels(tempo.Name)),
+	}
+
+	// Add all resources where the operator can conditionally create an object.
+	// For example, Ingress and Route can be enabled or disabled in the CR.
+
+	ingressList := &networkingv1.IngressList{}
+	err := r.List(ctx, ingressList, listOps)
+	if err != nil {
+		return nil, fmt.Errorf("error listing ingress: %w", err)
+	}
+	for i := range ingressList.Items {
+		ownedObjects[ingressList.Items[i].GetUID()] = &ingressList.Items[i]
+	}
+
+	if r.FeatureGates.OpenShift.OpenShiftRoute {
+		routesList := &routev1.RouteList{}
+		err := r.List(ctx, routesList, listOps)
+		if err != nil {
+			return nil, fmt.Errorf("error listing routes: %w", err)
+		}
+		for i := range routesList.Items {
+			ownedObjects[routesList.Items[i].GetUID()] = &routesList.Items[i]
+		}
+	}
+
+	return ownedObjects, nil
 }
 
 // GetPodsComponent is used for fetching component pod status and refreshing the status of the CR.
