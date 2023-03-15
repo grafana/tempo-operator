@@ -1,0 +1,40 @@
+tenants:
+{{- if $opt := . -}}
+{{- if or (eq $opt.Tenants.Mode "static") (eq $opt.Tenants.Mode "openshift")  -}}
+{{- range $spec := $opt.Tenants.Authentication }}
+- name: {{ $spec.TenantName }}
+  id: {{ $spec.TenantID }}
+{{- if eq $opt.Tenants.Mode "openshift" }}
+  openshift:
+    serviceAccount: tempo-{{ $opt.Name }}-gateway
+    redirectURL: https://tempo-{{ $opt.Name}}-gateway-{{ $opt.Namespace }}.{{ $opt.BaseDomain }}/openshift/dev/callback
+{{- end -}}
+{{- if $spec.OIDC }}
+  oidc:
+    {{- range $secret := $opt.TenantSecrets }}
+    {{- if eq $secret.TenantName $spec.TenantName -}}
+    {{ if $secret.ClientID }}
+    clientID: {{ $secret.ClientID }}
+    {{- end -}}
+    {{ if $secret.ClientSecret }}
+    clientSecret: {{ $secret.ClientSecret }}
+    {{- end -}}
+    {{ if $secret.IssuerCAPath }}
+    issuerCAPath: {{ $secret.IssuerCAPath }}
+    {{- end -}}
+    {{- end -}}
+    {{- end }}
+    issuerURL: {{ $spec.OIDC.IssuerURL }}
+    {{ if $spec.OIDC.RedirectURL }}
+    redirectURL: {{ $spec.OIDC.RedirectURL }}
+    {{- end -}}
+    {{ if $spec.OIDC.UsernameClaim }}
+    usernameClaim: {{ $spec.OIDC.UsernameClaim }}
+    {{- end -}}
+    {{- if $spec.OIDC.GroupClaim }}
+    groupClaim: {{ $spec.OIDC.GroupClaim }}
+    {{- end }}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}

@@ -6,8 +6,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8slabels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
@@ -15,28 +15,31 @@ import (
 )
 
 func TestBuildGossip(t *testing.T) {
-	service := BuildGossip(v1alpha1.Microservices{
+	service := BuildGossip(v1alpha1.TempoStack{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test",
 			Namespace: "ns1",
 		},
 	})
 	labels := manifestutils.ComponentLabels("gossip-ring", "test")
+	selector := k8slabels.Merge(manifestutils.CommonLabels("test"), GossipSelector)
 	require.NotNil(t, service)
-	assert.Equal(t, &v1.Service{
+	assert.Equal(t, &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "tempo-test-gossip-ring",
 			Namespace: "ns1",
 			Labels:    labels,
 		},
-		Spec: v1.ServiceSpec{
-			Selector: GossipSelector,
+		Spec: corev1.ServiceSpec{
+			ClusterIP:                "None",
+			PublishNotReadyAddresses: true,
+			Selector:                 selector,
 			Ports: []corev1.ServicePort{
 				{
-					Name:       componentName,
+					Name:       manifestutils.HttpMemberlistPortName,
 					Protocol:   corev1.ProtocolTCP,
-					Port:       PortMemberlist,
-					TargetPort: intstr.FromString("http-memberlist"),
+					Port:       manifestutils.PortMemberlist,
+					TargetPort: intstr.FromString(manifestutils.HttpMemberlistPortName),
 				},
 			},
 		},

@@ -9,6 +9,7 @@ rules:
   - ""
   resources:
   - configmaps
+  - pods
   - secrets
   - serviceaccounts
   - services
@@ -34,9 +35,62 @@ rules:
   - update
   - watch
 - apiGroups:
+  - config.openshift.io
+  resources:
+  - dnses
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - ingresses
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - operator.openshift.io
+  resources:
+  - ingresscontrollers
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - clusterrolebindings
+  - clusterroles
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - route.openshift.io
+  resources:
+  - routes
+  - routes/custom-host
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - update
+  - watch
+- apiGroups:
   - tempo.grafana.com
   resources:
-  - microservices
+  - tempostacks
   verbs:
   - create
   - delete
@@ -48,13 +102,13 @@ rules:
 - apiGroups:
   - tempo.grafana.com
   resources:
-  - microservices/finalizers
+  - tempostacks/finalizers
   verbs:
   - update
 - apiGroups:
   - tempo.grafana.com
   resources:
-  - microservices/status
+  - tempostacks/status
   verbs:
   - get
   - patch

@@ -6,18 +6,15 @@ metadata:
       [
         {
           "apiVersion": "tempo.grafana.com/v1alpha1",
-          "kind": "Microservices",
+          "kind": "TempoStack",
           "metadata": {
-            "name": "microservices-sample"
+            "name": "tempostack-sample"
           },
           "spec": null
         }
       ]
     capabilities: Basic Install
-    categories: Tracing
-    certified: "false"
-    containerImage: ghcr.io/os-observability/tempo-operator/tempo-operator
-    operators.operatorframework.io/builder: operator-sdk-v1.23.0
+    operators.operatorframework.io/builder: operator-sdk-v1.27.0
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     repository: github.com/os-observability/tempo-operator
     support: Tempo Operator Community
@@ -27,13 +24,40 @@ spec:
   apiservicedefinitions: {}
   customresourcedefinitions:
     owned:
-    - description: Microservices is the Schema for the microservices API.
-      displayName: Microservices
-      kind: Microservices
-      name: microservices.tempo.grafana.com
+    - description: TempoStack is the Schema for the tempostacks API.
+      displayName: TempoStack
+      kind: TempoStack
+      name: tempostacks.tempo.grafana.com
+      resources:
+      - kind: ConfigMap
+        name: ""
+        version: v1
+      - kind: Deployment
+        name: ""
+        version: v1
+      - kind: Ingress
+        name: ""
+        version: v1
+      - kind: Route
+        name: ""
+        version: v1
+      - kind: Secret
+        name: ""
+        version: v1
+      - kind: Service
+        name: ""
+        version: v1
+      - kind: ServiceAccount
+        name: ""
+        version: v1
+      - kind: StatefulSet
+        name: ""
+        version: v1
       specDescriptors:
-      - description: 'NOTE: currently this field is not considered. LimitSpec is used
-          to limit ingestion and querying rates.'
+      - description: Images defines the image for each container.
+        displayName: Container Images
+        path: images
+      - description: LimitSpec is used to limit ingestion and querying rates.
         displayName: Ingestion and Querying Ratelimiting
         path: limits
       - description: Global is used to define global rate limits.
@@ -130,11 +154,14 @@ spec:
           is used to define how many component replicas should exist.'
         displayName: Replication Factor
         path: replicationFactor
-      - description: 'NOTE: currently this field is not considered. The resources
-          are split in between components. Tempo operator knows how to split them
-          appropriately based on grafana/tempo/issues/1540.'
-        displayName: Resource Requirements
+      - description: Resources defines resources configuration.
+        displayName: Resources
         path: resources
+      - description: The total amount of resources for Tempo instance. The operator
+          autonomously splits resources between deployed Tempo components. Only limits
+          are supported, the operator calculates requests automatically. See http://github.com/grafana/tempo/issues/1540.
+        displayName: Resource Requirements
+        path: resources.total
       - description: 'NOTE: currently this field is not considered. Retention period
           defined by dataset. User can specify how long data should be stored.'
         displayName: Retention Period
@@ -157,20 +184,53 @@ spec:
         path: retention.perTenant.traces
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:text
-      - description: 'NOTE: currently this field is not considered. Storage defines
-          S3 compatible object storage configuration. User is required to create secret
-          and supply it.'
+      - description: SearchSpec control the configuration for the search capabilities.
+        displayName: Search configuration options
+        path: search
+      - description: 'Limit used for search requests if none is set by the caller
+          (default: 20)'
+        displayName: Limit used for search requests if none is set by the caller,
+          this limit the number of traces returned by the query
+        path: search.defaultResultLimit
+      - description: 'The maximum allowed time range for a search, default: 0s which
+          means unlimited.'
+        displayName: Max search time range allowed
+        path: search.maxDuration
+      - description: The maximum allowed value of the limit parameter on search requests.
+          If the search request limit parameter exceeds the value configured here
+          it will be set to the value configured here. The default value of 0 disables
+          this limit.
+        displayName: The maximum allowed value of the limit parameter on search requests,
+          this determine the max number of traces allowed to be returned
+        path: search.maxResultLimit
+      - description: ServiceAccount defines the service account to use for all tempo
+          components.
+        displayName: Service Account
+        path: serviceAccount
+      - description: Storage defines S3 compatible object storage configuration. User
+          is required to create secret and supply it.
         displayName: Object Storage
         path: storage
       - description: Secret for object storage authentication. Name of a secret in
-          the same namespace as the tempo Microservices custom resource.
+          the same namespace as the tempo TempoStack custom resource.
         displayName: Object Storage Secret
         path: storage.secret
+      - description: Name of a secret in the namespace configured for object storage
+          secrets.
+        displayName: Object Storage Secret Name
+        path: storage.secret.name
+        x-descriptors:
+        - urn:alm:descriptor:io.kubernetes:Secret
+      - description: Type of object storage that should be used
+        displayName: Object Storage Secret Type
+        path: storage.secret.type
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:select:s3
       - description: TLS configuration for reaching the object storage endpoint.
         displayName: TLS Config
         path: storage.tls
       - description: CA is the name of a ConfigMap containing a CA certificate. It
-          needs to be in the same namespace as the LokiStack custom resource.
+          needs to be in the same namespace as the Tempo custom resource.
         displayName: CA ConfigMap Name
         path: storage.tls.caName
         x-descriptors:
@@ -182,11 +242,10 @@ spec:
       - description: StorageSize for PVCs used by ingester. Defaults to 10Gi.
         displayName: Storage size for PVCs
         path: storageSize
-      - description: 'NOTE: currently this field is not considered. Components defines
-          requierements for a set of tempo components.'
-        displayName: Tempo Components
+      - description: Template defines requirements for a set of tempo components.
+        displayName: Tempo Component Templates
         path: template
-      - description: Compactor defines the lokistack compactor component spec.
+      - description: Compactor defines the tempo compactor component spec.
         displayName: Compactor pods
         path: template.compactor
       - description: NodeSelector is the simplest recommended form of node selection
@@ -214,6 +273,20 @@ spec:
       - description: Tolerations defines component specific pod tolerations.
         displayName: Tolerations
         path: template.distributor.tolerations
+      - description: Gateway defines the tempo gateway spec.
+        displayName: Gateway pods
+        path: template.gateway
+      - description: NodeSelector is the simplest recommended form of node selection
+          constraint.
+        displayName: Node Selector
+        path: template.gateway.nodeSelector
+      - description: Replicas represents the number of replicas to create for this
+          component.
+        displayName: Component Replicas
+        path: template.gateway.replicas
+      - description: Tolerations defines component specific pod tolerations.
+        displayName: Tolerations
+        path: template.gateway.tolerations
       - description: Ingester defines the ingester component spec.
         displayName: Ingester pods
         path: template.ingester
@@ -245,13 +318,33 @@ spec:
       - description: TempoQueryFrontendSpec defines the query frontend spec.
         displayName: Query Frontend pods
         path: template.queryFrontend
-      - description: JaegerQuerySpec defines Jaeger Query spefic options.
+      - description: JaegerQuerySpec defines Jaeger Query specific options.
         displayName: Jaeger Query Settings
         path: template.queryFrontend.jaegerQuery
       - description: Enabled is used to define if Jaeger Query component should be
           created.
-        displayName: Jaeger Query Enabled
+        displayName: Enable Jaeger Query UI
         path: template.queryFrontend.jaegerQuery.enabled
+      - description: Ingress defines Jaeger Query Ingress options.
+        displayName: Jaeger Query UI Ingress Settings
+        path: template.queryFrontend.jaegerQuery.ingress
+      - description: Annotations defines the annotations of the Ingress object.
+        displayName: Annotations
+        path: template.queryFrontend.jaegerQuery.ingress.annotations
+      - description: Host defines the hostname of the Ingress object.
+        displayName: Host
+        path: template.queryFrontend.jaegerQuery.ingress.host
+      - description: Route defines OpenShift Route specific options.
+        displayName: Route Configuration
+        path: template.queryFrontend.jaegerQuery.ingress.route
+      - description: Termination specifies the termination type. By default "edge"
+          is used.
+        displayName: TLS Termination Policy
+        path: template.queryFrontend.jaegerQuery.ingress.route.termination
+      - description: Type defines the type of Ingress for the Jaeger Query UI. Currently
+          ingress, route and none are supported.
+        displayName: Type
+        path: template.queryFrontend.jaegerQuery.ingress.type
       - description: NodeSelector is the simplest recommended form of node selection
           constraint.
         displayName: Node Selector
@@ -263,6 +356,94 @@ spec:
       - description: Tolerations defines component specific pod tolerations.
         displayName: Tolerations
         path: template.queryFrontend.tolerations
+      - description: Tenants defines the per-tenant authentication and authorization
+          spec.
+        displayName: Tenants Configuration
+        path: tenants
+      - description: Authentication defines the tempo-gateway component authentication
+          configuration spec per tenant.
+        displayName: Authentication
+        path: tenants.authentication
+      - description: OIDC defines the spec for the OIDC tenant's authentication.
+        displayName: OIDC Configuration
+        path: tenants.authentication[0].oidc
+      - description: IssuerURL defines the URL for issuer.
+        displayName: Issuer URL
+        path: tenants.authentication[0].oidc.issuerURL
+      - description: RedirectURL defines the URL for redirect.
+        displayName: Redirect URL
+        path: tenants.authentication[0].oidc.redirectURL
+      - description: Secret defines the spec for the clientID, clientSecret and issuerCAPath
+          for tenant's authentication.
+        displayName: Tenant Secret
+        path: tenants.authentication[0].oidc.secret
+      - description: Name of a secret in the namespace configured for tenant secrets.
+        displayName: Tenant Secret Name
+        path: tenants.authentication[0].oidc.secret.name
+        x-descriptors:
+        - urn:alm:descriptor:io.kubernetes:Secret
+      - description: TenantID defines the id of the tenant.
+        displayName: Tenant ID
+        path: tenants.authentication[0].tenantId
+      - description: TenantName defines the name of the tenant.
+        displayName: Tenant Name
+        path: tenants.authentication[0].tenantName
+      - description: Authorization defines the tempo-gateway component authorization
+          configuration spec per tenant.
+        displayName: Authorization
+        path: tenants.authorization
+      - description: RoleBindings defines configuration to bind a set of roles to
+          a set of subjects.
+        displayName: Static Role Bindings
+        path: tenants.authorization.roleBindings
+      - description: Roles defines a set of permissions to interact with a tenant.
+        displayName: Static Roles
+        path: tenants.authorization.roles
+      - description: Mode defines the multitenancy mode.
+        displayName: Mode
+        path: tenants.mode
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:select:static
+        - urn:alm:descriptor:com.tectonic.ui:select:dynamic
+      statusDescriptors:
+      - description: Distributor is a map to the per pod status of the distributor
+          deployment
+        displayName: Distributor
+        path: components.distributor
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:podStatuses
+      - description: Ingester is a map to the per pod status of the ingester statefulset
+        displayName: Ingester
+        path: components.ingester
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:podStatuses
+      - description: Querier is a map to the per pod status of the querier deployment
+        displayName: Querier
+        path: components.querier
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:podStatuses
+      - description: Gateway is a map to the per pod status of the query frontend
+          deployment
+        displayName: Query Frontend
+        path: components.gateway
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:podStatuses
+      - description: QueryFrontend is a map to the per pod status of the query frontend
+          deployment
+        displayName: Query Frontend
+        path: components.queryFrontend
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:podStatuses
+      - description: Compactor is a map to the pod status of the compactor pod.
+        displayName: Compactor
+        path: components.compactor
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:podStatuses
+      - description: Conditions of the Tempo deployment health.
+        displayName: Conditions
+        path: conditions
+        x-descriptors:
+        - urn:alm:descriptor:io.kubernetes.conditions
       version: v1alpha1
   description: Simpilifes the deployment of tempo db.
   displayName: tempo-operator
@@ -277,6 +458,7 @@ spec:
           - ""
           resources:
           - configmaps
+          - pods
           - secrets
           - serviceaccounts
           - services
@@ -302,9 +484,62 @@ spec:
           - update
           - watch
         - apiGroups:
+          - config.openshift.io
+          resources:
+          - dnses
+          verbs:
+          - get
+          - list
+          - watch
+        - apiGroups:
+          - networking.k8s.io
+          resources:
+          - ingresses
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - operator.openshift.io
+          resources:
+          - ingresscontrollers
+          verbs:
+          - get
+          - list
+          - watch
+        - apiGroups:
+          - rbac.authorization.k8s.io
+          resources:
+          - clusterrolebindings
+          - clusterroles
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - route.openshift.io
+          resources:
+          - routes
+          - routes/custom-host
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - update
+          - watch
+        - apiGroups:
           - tempo.grafana.com
           resources:
-          - microservices
+          - tempostacks
           verbs:
           - create
           - delete
@@ -316,13 +551,13 @@ spec:
         - apiGroups:
           - tempo.grafana.com
           resources:
-          - microservices/finalizers
+          - tempostacks/finalizers
           verbs:
           - update
         - apiGroups:
           - tempo.grafana.com
           resources:
-          - microservices/status
+          - tempostacks/status
           verbs:
           - get
           - patch
@@ -359,10 +594,11 @@ spec:
             spec:
               containers:
               - args:
+                - start
                 - --config=controller_manager_config.yaml
                 command:
                 - /manager
-                image: controller:latest
+                image: ghcr.io/os-observability/tempo-operator/tempo-operator:v0.0.1
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -380,13 +616,7 @@ spec:
                     port: 8081
                   initialDelaySeconds: 5
                   periodSeconds: 10
-                resources:
-                  limits:
-                    cpu: 500m
-                    memory: 128Mi
-                  requests:
-                    cpu: 10m
-                    memory: 64Mi
+                resources: {}
                 securityContext:
                   allowPrivilegeEscalation: false
                   capabilities:
@@ -504,7 +734,7 @@ spec:
     containerPort: 443
     deploymentName: tempo-operator-controller-manager
     failurePolicy: Fail
-    generateName: mmicroservices.kb.io
+    generateName: mtempostack.tempo.grafana.com
     rules:
     - apiGroups:
       - tempo.grafana.com
@@ -514,17 +744,17 @@ spec:
       - CREATE
       - UPDATE
       resources:
-      - microservices
+      - tempostacks
     sideEffects: None
     targetPort: 9443
     type: MutatingAdmissionWebhook
-    webhookPath: /mutate-tempo-grafana-com-v1alpha1-microservices
+    webhookPath: /mutate-tempo-grafana-com-v1alpha1-tempostack
   - admissionReviewVersions:
     - v1
     containerPort: 443
     deploymentName: tempo-operator-controller-manager
     failurePolicy: Fail
-    generateName: vmicroservices.kb.io
+    generateName: vtempostack.tempo.grafana.com
     rules:
     - apiGroups:
       - tempo.grafana.com
@@ -534,8 +764,8 @@ spec:
       - CREATE
       - UPDATE
       resources:
-      - microservices
+      - tempostacks
     sideEffects: None
     targetPort: 9443
     type: ValidatingAdmissionWebhook
-    webhookPath: /validate-tempo-grafana-com-v1alpha1-microservices
+    webhookPath: /validate-tempo-grafana-com-v1alpha1-tempostack

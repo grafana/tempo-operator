@@ -11,35 +11,52 @@ import (
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
 	"github.com/os-observability/tempo-operator/internal/manifests/memberlist"
-)
-
-const (
-	configVolumeName = "tempo-conf"
-	componentName    = "querier"
-	httpPortName     = "http"
-	grpcPortName     = "grpc"
-	portHTTPServer   = 3100
-	portGRPCServer   = 9095
+	"github.com/os-observability/tempo-operator/internal/manifests/naming"
 )
 
 // BuildQuerier creates querier objects.
-func BuildQuerier(tempo v1alpha1.Microservices) ([]client.Object, error) {
-	d, err := deployment(tempo)
+func BuildQuerier(params manifestutils.Params) ([]client.Object, error) {
+	d, err := deployment(params)
 	if err != nil {
 		return nil, err
+	}
+	gates := params.Gates
+	tempo := params.Tempo
+
+	if gates.HTTPEncryption || gates.GRPCEncryption {
+		caBundleName := naming.SigningCABundleName(tempo.Name)
+		if err := manifestutils.ConfigureServiceCA(&d.Spec.Template.Spec, caBundleName); err != nil {
+			return nil, err
+		}
+	}
+
+	if gates.HTTPEncryption {
+		if err := configureQuerierHTTPServicePKI(d, tempo); err != nil {
+			return nil, err
+		}
+	}
+
+	if gates.GRPCEncryption {
+		if err := configureQuerierGRPCServicePKI(d, tempo); err != nil {
+			return nil, err
+		}
 	}
 
 	return []client.Object{d, service(tempo)}, nil
 }
 
-func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
-	labels := manifestutils.ComponentLabels(componentName, tempo.Name)
+func deployment(params manifestutils.Params) (*v1.Deployment, error) {
+	tempo := params.Tempo
+	labels := manifestutils.ComponentLabels(manifestutils.QuerierComponentName, tempo.Name)
+	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
+	cfg := tempo.Spec.Template.Querier
+
 	d := &v1.Deployment{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: v1.SchemeGroupVersion.String(),
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      manifestutils.Name(componentName, tempo.Name),
+			Name:      naming.Name(manifestutils.QuerierComponentName, tempo.Name),
 			Namespace: tempo.Namespace,
 			Labels:    labels,
 		},
@@ -49,44 +66,62 @@ func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: k8slabels.Merge(labels, memberlist.GossipSelector),
+					Labels:      k8slabels.Merge(labels, memberlist.GossipSelector),
+					Annotations: annotations,
 				},
 				Spec: corev1.PodSpec{
+					ServiceAccountName: tempo.Spec.ServiceAccount,
+					NodeSelector:       cfg.NodeSelector,
+					Tolerations:        cfg.Tolerations,
+					Affinity:           manifestutils.DefaultAffinity(labels),
 					Containers: []corev1.Container{
 						{
 							Name:  "tempo",
-							Image: "docker.io/grafana/tempo:1.5.0",
+							Image: tempo.Spec.Images.Tempo,
 							Args:  []string{"-target=querier", "-config.file=/conf/tempo.yaml"},
 							Ports: []corev1.ContainerPort{
 								{
-									Name:          httpPortName,
-									ContainerPort: portHTTPServer,
+									Name:          manifestutils.HttpPortName,
+									ContainerPort: manifestutils.PortHTTPServer,
 									Protocol:      corev1.ProtocolTCP,
 								},
 								{
-									Name:          "http-memberlist",
-									ContainerPort: memberlist.PortMemberlist,
+									Name:          manifestutils.HttpMemberlistPortName,
+									ContainerPort: manifestutils.PortMemberlist,
 									Protocol:      corev1.ProtocolTCP,
 								},
 							},
+							ReadinessProbe: manifestutils.TempoReadinessProbe(),
 							VolumeMounts: []corev1.VolumeMount{
 								{
-									Name:      configVolumeName,
+									Name:      manifestutils.ConfigVolumeName,
 									MountPath: "/conf",
 									ReadOnly:  true,
 								},
+								{
+									Name:      manifestutils.TmpStorageVolumeName,
+									MountPath: manifestutils.TmpStoragePath,
+								},
 							},
+							Resources:       manifestutils.Resources(tempo, manifestutils.QuerierComponentName),
+							SecurityContext: manifestutils.TempoContainerSecurityContext(),
 						},
 					},
 					Volumes: []corev1.Volume{
 						{
-							Name: configVolumeName,
+							Name: manifestutils.ConfigVolumeName,
 							VolumeSource: corev1.VolumeSource{
 								ConfigMap: &corev1.ConfigMapVolumeSource{
 									LocalObjectReference: corev1.LocalObjectReference{
-										Name: manifestutils.Name("", tempo.Name),
+										Name: naming.Name("", tempo.Name),
 									},
 								},
+							},
+						},
+						{
+							Name: manifestutils.TmpStorageVolumeName,
+							VolumeSource: corev1.VolumeSource{
+								EmptyDir: &corev1.EmptyDirVolumeSource{},
 							},
 						},
 					},
@@ -102,27 +137,41 @@ func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
 	return d, nil
 }
 
-func service(tempo v1alpha1.Microservices) *corev1.Service {
-	labels := manifestutils.ComponentLabels(componentName, tempo.Name)
+func configureQuerierHTTPServicePKI(deployment *v1.Deployment, tempo v1alpha1.TempoStack) error {
+	return manifestutils.ConfigureHTTPServicePKI(&deployment.Spec.Template.Spec, naming.Name(manifestutils.QuerierComponentName, tempo.Name))
+}
+
+func configureQuerierGRPCServicePKI(deployment *v1.Deployment, tempo v1alpha1.TempoStack) error {
+	return manifestutils.ConfigureGRPCServicePKI(&deployment.Spec.Template.Spec, naming.Name(manifestutils.QuerierComponentName, tempo.Name))
+}
+
+func service(tempo v1alpha1.TempoStack) *corev1.Service {
+	labels := manifestutils.ComponentLabels(manifestutils.QuerierComponentName, tempo.Name)
 	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      manifestutils.Name(componentName, tempo.Name),
+			Name:      naming.Name(manifestutils.QuerierComponentName, tempo.Name),
 			Namespace: tempo.Namespace,
 			Labels:    labels,
 		},
 		Spec: corev1.ServiceSpec{
 			Ports: []corev1.ServicePort{
 				{
-					Name:       httpPortName,
+					Name:       manifestutils.HttpMemberlistPortName,
 					Protocol:   corev1.ProtocolTCP,
-					Port:       memberlist.PortMemberlist,
-					TargetPort: intstr.FromInt(memberlist.PortMemberlist),
+					Port:       manifestutils.PortMemberlist,
+					TargetPort: intstr.FromString(manifestutils.HttpMemberlistPortName),
 				},
 				{
-					Name:       grpcPortName,
+					Name:       manifestutils.HttpPortName,
 					Protocol:   corev1.ProtocolTCP,
-					Port:       portGRPCServer,
-					TargetPort: intstr.FromString("grpc"),
+					Port:       manifestutils.PortHTTPServer,
+					TargetPort: intstr.FromString(manifestutils.HttpPortName),
+				},
+				{
+					Name:       manifestutils.GrpcPortName,
+					Protocol:   corev1.ProtocolTCP,
+					Port:       manifestutils.PortGRPCServer,
+					TargetPort: intstr.FromString(manifestutils.GrpcPortName),
 				},
 			},
 			Selector: labels,

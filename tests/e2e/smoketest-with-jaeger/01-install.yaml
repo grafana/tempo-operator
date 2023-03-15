@@ -11,18 +11,23 @@ stringData:
 type: Opaque
 ---
 apiVersion: tempo.grafana.com/v1alpha1
-kind: Microservices
+kind: TempoStack
 metadata:
   name: simplest
 spec:
   storage:
-    secret: minio-test
+    secret:
+      name: minio-test
+      type: s3
   storageSize: 200M
+  resources:
+    total:
+      limits:
+        memory: 2Gi
+        cpu: 2000m
   template:
     queryFrontend:
       jaegerQuery:
         enabled: true
-  retention:
-    perTenant: {}
-  limits:
-    perTenant: {}
+        ingress:
+          type: ingress

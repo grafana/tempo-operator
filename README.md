@@ -39,13 +39,20 @@ EOF
 ```yaml
 kubectl apply -f - <<EOF
 apiVersion: tempo.grafana.com/v1alpha1
-kind: Microservices
+kind: TempoStack
 metadata:
   name: simplest
 spec:
   storage:
-    secret: minio-test
+    secret:
+      name: minio-test
+      type: s3
   storageSize: 1Gi
+  resources:
+    total:
+      limits:
+        memory: 2Gi
+        cpu: 2000m
   template:
     queryFrontend:
       jaegerQuery:

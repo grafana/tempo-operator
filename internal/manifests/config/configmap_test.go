@@ -1,6 +1,8 @@
 package config
 
 import (
+	"crypto/sha256"
+	"fmt"
 	"testing"
 	"time"
 
@@ -11,14 +13,14 @@ import (
 )
 
 func TestConfigmap(t *testing.T) {
-	cm, err := BuildConfigMap(v1alpha1.Microservices{
+	cm, checksum, err := BuildConfigMap(v1alpha1.TempoStack{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "test",
 		},
-		Spec: v1alpha1.MicroservicesSpec{
+		Spec: v1alpha1.TempoStackSpec{
 			Retention: v1alpha1.RetentionSpec{
 				Global: v1alpha1.RetentionConfig{
-					Traces: 48 * time.Hour,
+					Traces: metav1.Duration{Duration: 48 * time.Hour},
 				},
 			},
 		},
@@ -31,5 +33,5 @@ func TestConfigmap(t *testing.T) {
 	require.NotNil(t, cm.Data)
 	require.NotNil(t, cm.Data["tempo.yaml"])
 	require.NotNil(t, cm.Data["overrides.yaml"])
-
+	require.Equal(t, fmt.Sprintf("%x", sha256.Sum256([]byte(cm.Data["tempo.yaml"]))), checksum)
 }

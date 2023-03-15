@@ -1,3 +1,24 @@
+# Current Operator version
+VERSION_DATE ?= $(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
+VERSION_PKG ?= "github.com/os-observability/tempo-operator/internal/version"
+OPERATOR_VERSION ?= 0.0.1
+COMMIT_SHA = "$(shell git rev-parse HEAD)"
+LD_FLAGS ?= "-X ${VERSION_PKG}.buildDate=${VERSION_DATE} -X ${VERSION_PKG}.version=${OPERATOR_VERSION} -X ${VERSION_PKG}.commitSha=${COMMIT_SHA}"
+ARCH ?= $(shell go env GOARCH)
+
+# Image URL to use all building/pushing image targets
+IMG_PREFIX ?= ghcr.io/${USER}/tempo-operator
+IMG_REPO ?= tempo-operator
+IMG ?= ${IMG_PREFIX}/${IMG_REPO}:v${OPERATOR_VERSION}
+BUNDLE_IMG ?= ${IMG_PREFIX}/${IMG_REPO}-bundle:v${OPERATOR_VERSION}
+
+
+# Website generation variables
+WEBSITE_DIR ?= website
+WEBSITE_BASE_URL ?= https://tempo-operator.netlify.app
+HUGO_VERSION = v0.80.0
+
+
 # When the VERBOSE variable is set to 1, all the commands are shown
 ifeq ("$(VERBOSE)","true")
 echo_prefix=">>>>"
@@ -6,13 +27,6 @@ VECHO = @
 endif
 
 ECHO ?= @echo $(echo_prefix)
-
-# VERSION defines the project version for the bundle.
-# Update this value when you upgrade the version of your project.
-# To re-generate a bundle for another specific version without changing the standard setup, you can:
-# - use the VERSION as arg of the bundle target (e.g make bundle VERSION=0.0.2)
-# - use environment variables to overwrite this value (e.g export VERSION=0.0.2)
-VERSION ?= 0.0.1
 
 # CHANNELS define the bundle channels used in the bundle.
 # Add a new line here if you would like to change its default config. (E.g CHANNELS = "candidate,fast,stable")
@@ -33,19 +47,8 @@ BUNDLE_DEFAULT_CHANNEL := --default-channel=$(DEFAULT_CHANNEL)
 endif
 BUNDLE_METADATA_OPTS ?= $(BUNDLE_CHANNELS) $(BUNDLE_DEFAULT_CHANNEL)
 
-# IMAGE_TAG_BASE defines the docker.io namespace and part of the image name for remote images.
-# This variable is used to construct full image tags for bundle and catalog images.
-#
-# For example, running 'make bundle-build bundle-push catalog-build catalog-push' will build and push both
-# grafana.com/tempo-operator-bundle:$VERSION and grafana.com/tempo-operator-catalog:$VERSION.
-IMAGE_TAG_BASE ?= grafana.com/tempo-operator
-
-# BUNDLE_IMG defines the image:tag used for the bundle.
-# You can use it as an arg. (E.g make bundle-build BUNDLE_IMG=<some-registry>/<project-name-bundle>:<tag>)
-BUNDLE_IMG ?= $(IMAGE_TAG_BASE)-bundle:v$(VERSION)
-
 # BUNDLE_GEN_FLAGS are the flags passed to the operator-sdk generate bundle command
-BUNDLE_GEN_FLAGS ?= -q --overwrite --version $(VERSION) $(BUNDLE_METADATA_OPTS)
+BUNDLE_GEN_FLAGS ?= -q --overwrite --version $(OPERATOR_VERSION) $(BUNDLE_METADATA_OPTS)
 
 # USE_IMAGE_DIGESTS defines if images are resolved via tags or digests
 # You can enable this value if you would like to use SHA Based Digests
@@ -55,8 +58,6 @@ ifeq ($(USE_IMAGE_DIGESTS), true)
 	BUNDLE_GEN_FLAGS += --use-image-digests
 endif
 
-# Image URL to use all building/pushing image targets
-IMG ?= controller:latest
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by setup-envtest binary.
 ENVTEST_K8S_VERSION = 1.24.2
 
@@ -119,17 +120,17 @@ test: manifests generate fmt vet setup-envtest ## Run tests.
 
 .PHONY: build
 build: generate fmt vet ## Build manager binary.
-	go build -o bin/manager main.go
+	CGO_ENABLED=0 go build -o bin/manager -ldflags ${LD_FLAGS} main.go
 
 .PHONY: run
 run: manifests generate fmt vet ## Run a controller from your host.
 	# Disabled webhooks only affects local runs, not the build or in-cluster deployments.
 	@echo -e "\033[33mWebhooks are disabled! Use the normal deployment method to enable full operator functionality.\033[0m"
-	ENABLE_WEBHOOKS=false go run ./main.go
+	ENABLE_WEBHOOKS=false go run ./main.go start
 
 .PHONY: docker-build
-docker-build: test ## Build docker image with the manager.
-	docker build -t ${IMG} .
+docker-build: ## Build docker image with the manager.
+	docker buildx build --load --platform linux/${ARCH} -t ${IMG} .
 
 .PHONY: docker-push
 docker-push: ## Push docker image with the manager.
@@ -169,19 +170,20 @@ $(LOCALBIN):
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v4.5.5
 CONTROLLER_TOOLS_VERSION ?= v0.9.2
-CRDOC_VERSION ?= v0.5.2
-OPERATOR_SDK_VERSION ?= 1.23.0
+GEN_CRD_VERSION ?= v0.0.5
 ENVTEST_VERSION ?= latest
+OPERATOR_SDK_VERSION ?= 1.27.0
 CERTMANAGER_VERSION ?= 1.9.1
 
 ## Tool Binaries
 KUSTOMIZE ?= $(LOCALBIN)/kustomize-$(KUSTOMIZE_VERSION)
 CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen-$(CONTROLLER_TOOLS_VERSION)
 ENVTEST ?= $(LOCALBIN)/setup-envtest-$(ENVTEST_VERSION)
-CRDOC = $(LOCALBIN)/crdoc-$(CRDOC_VERSION)
+GEN_CRD = $(LOCALBIN)/gen-crd-api-reference-docs-$(GEN_CRD_VERSION)
 OPERATOR_SDK ?= $(LOCALBIN)/operator-sdk-$(OPERATOR_SDK_VERSION)
 KIND ?= $(LOCALBIN)/kind
 KUTTL ?= $(LOCALBIN)/kubectl-kuttl
+HUGO ?= $(LOCALBIN)/hugo-$(HUGO_VERSION)
 
 # Options for KIND version to use
 export KUBE_VERSION ?= 1.25
@@ -201,6 +203,7 @@ bundle: operator-sdk manifests kustomize ## Generate bundle manifests and metada
 	cd config/manager && $(KUSTOMIZE) edit set image controller=$(IMG)
 	$(KUSTOMIZE) build config/manifests | $(OPERATOR_SDK) generate bundle $(BUNDLE_GEN_FLAGS)
 	$(OPERATOR_SDK) bundle validate ./bundle
+	./hack/ignore-createdAt-bundle.sh
 
 .PHONY: bundle-build
 bundle-build: ## Build the bundle image.
@@ -232,7 +235,7 @@ endif
 BUNDLE_IMGS ?= $(BUNDLE_IMG)
 
 # The image tag given to the resulting catalog image (e.g. make catalog-build CATALOG_IMG=example.com/operator-catalog:v0.2.0).
-CATALOG_IMG ?= $(IMAGE_TAG_BASE)-catalog:v$(VERSION)
+CATALOG_IMG ?= ${IMG_PREFIX}/${IMG_REPO}-catalog:v$(OPERATOR_VERSION)
 
 # Set CATALOG_BASE_IMG to an existing catalog image tag to add $BUNDLE_IMGS to that image.
 ifneq ($(origin CATALOG_BASE_IMG), undefined)
@@ -260,18 +263,10 @@ ci: test ensure-generate-is-noop
 lint:
 	golangci-lint run
 
-.PHONY: api-docs
-api-docs: crdoc kustomize
-	@{ \
-	set -e ;\
-	TMP_DIR=$$(mktemp -d) ; \
-	$(KUSTOMIZE) build config/crd -o $$TMP_DIR/crd-output.yaml ;\
-	$(CRDOC) --resources $$TMP_DIR/crd-output.yaml --output docs/api.md ;\
-	}
 
-.PHONY: crdoc
-crdoc: ## Download crdoc locally if necessary.
-	test -s $(LOCALBIN)/crdoc-$(CRDOC_VERSION) || $(call go-get-tool,$(CRDOC), fybrik.io/crdoc,$(CRDOC_VERSION))
+.PHONY: gen-crd-api-reference-docs
+gen-crd-api-reference-docs: ## Download gen-crd-api-reference-docs locally if necessary.
+	test -s $(GEN_CRD) || $(call go-get-tool,$(GEN_CRD),github.com/ViaQ/gen-crd-api-reference-docs,$(GEN_CRD_VERSION))
 
 
 .PHONY: kustomize
@@ -292,6 +287,10 @@ stop-kind:
 	$(ECHO)"Stopping the kind cluster"
 	$(VECHO)kind delete cluster
 
+.PHONY: install-openshift-routes
+install-openshift-routes:
+	./hack/install/install-openshift-routes.sh
+
 .PHONY: deploy-minio
 deploy-minio:
 	$(ECHO) Installing minio
@@ -303,11 +302,16 @@ e2e:
 	$(KUTTL) test
 
 .PHONY: prepare-e2e
-prepare-e2e: kuttl start-kind cert-manager set-test-image-vars docker-build load-image-operator deploy
+prepare-e2e: kuttl start-kind cert-manager install-openshift-routes deploy-minio set-test-image-vars set-test-operator-config build docker-build load-image-operator deploy
 
 .PHONY: set-test-image-vars
 set-test-image-vars:
 	$(eval IMG=local/tempo-operator:e2e)
+
+.PHONY: set-test-operator-config
+set-test-operator-config:
+	# we always install the OpenShift Route controller for e2e tests (in the prepare-e2e step)
+	sed -i 's/openshiftRoute: false/openshiftRoute: true/' config/manager/controller_manager_config.yaml
 
 # Set the controller image parameters
 .PHONY: set-image-controller
@@ -353,7 +357,8 @@ ensure-generate-is-noop: generate bundle
 	@git diff -s --exit-code apis/config/v1alpha1/zz_generated.*.go || (echo "Build failed: a model has been changed but the generated resources aren't up to date. Run 'make generate' and update your PR." && exit 1)
 	@git diff -s --exit-code bundle config || (echo "Build failed: the bundle, config files has been changed but the generated bundle, config files aren't up to date. Run 'make bundle' and update your PR." && git diff && exit 1)
 	@git diff -s --exit-code bundle.Dockerfile || (echo "Build failed: the bundle.Dockerfile file has been changed. The file should be the same as generated one. Run 'make bundle' and update your PR." && git diff && exit 1)
-	@git diff -s --exit-code docs/api.md || (echo "Build failed: the api.md file has been changed but the generated api.md file isn't up to date. Run 'make api-docs' and update your PR." && git diff && exit 1)
+	@git diff -s --exit-code docs/operator/api.md || (echo "Build failed: the api.md file has been changed but the generated api.md file isn't up to date. Run 'make api-docs' and update your PR." && git diff && exit 1)
+	@git diff -s --exit-code docs/operator/feature-gates.md || (echo "Build failed: the feature-gates.md file has been changed but the generated feature-gates.md file isn't up to date. Run 'make api-docs' and update your PR." && git diff && exit 1)
 
 .PHONY: cert-manager
 cert-manager: cmctl
@@ -377,6 +382,48 @@ cmctl:
 	mv $$TMP_DIR/cmctl $(CMCTL) ;\
 	rm -rf $$TMP_DIR ;\
 	}
+
+.PHONY: api-docs
+api-docs: docs/operator/api.md docs/operator/feature-gates.md
+
+##@ Website
+TYPES_TARGET := $(shell find apis/tempo -type f -iname "*_types.go")
+docs/operator/api.md: $(TYPES_TARGET) gen-crd-api-reference-docs
+	$(GEN_CRD) -api-dir "github.com/os-observability/tempo-operator/apis/tempo/" -config "$(PWD)/config/docs/config.json" -template-dir "$(PWD)/config/docs/templates" -out-file "$(PWD)/$@"
+	sed -i 's/+docs:/  docs:/' $@
+	sed -i 's/+parent:/    parent:/' $@
+	sed -i 's/##/\n##/' $@
+	sed -i 's/+newline/\n/' $@
+
+
+FEATURE_GATES_TARGET := $(shell find apis/config -type f -iname "*_types.go")
+docs/operator/feature-gates.md: $(FEATURE_GATES_TARGET) gen-crd-api-reference-docs
+	$(GEN_CRD) -api-dir "github.com/os-observability/tempo-operator/apis/config/v1alpha1/" -config "$(PWD)/config/docs/config.json" -template-dir "$(PWD)/config/docs/templates" -out-file "$(PWD)/$@"
+	sed -i 's/title: "API"/title: "Feature Gates"/' $@
+	sed -i 's/+docs:/  docs:/' $@
+	sed -i 's/+parent:/    parent:/' $@
+	sed -i 's/##/\n##/' $@
+	sed -i 's/+newline/\n/' $@
+
+.PHONY: web-pre
+web-pre: docs/operator/api.md docs/operator/feature-gates.md
+	@echo ">> preprocessing docs for website"
+	@git submodule update --init --recursive
+	cp CONTRIBUTING.md docs/prologue/contributing.md
+	sed -i 's/(LICENSE)/(https:\/\/raw.githubusercontent.com\/os-observability\/tempo-operator\/main\/LICENSE)/' docs/prologue/contributing.md
+	sed -i 's/(README.md)/(https:\/\/github.com\/os-observability\/tempo-operator#readme)/' docs/prologue/contributing.md
+	cd $(WEBSITE_DIR)/themes/doks/ && npm install && rm -rf content
+
+.PHONY: web
+web: web-pre hugo ## Run production build of the tempo-operator.dev website
+	cd $(WEBSITE_DIR) && $(HUGO) -b $(WEBSITE_BASE_URL)
+
+.PHONY: web-serve
+web-serve: web-pre ## Run local preview version of the tempo-operator.dev website
+	@cd $(WEBSITE_DIR) && $(HUGO) serve
+
+hugo:
+	test -s $(HUGO) || $(call go-get-tool,$(HUGO),--tags extended github.com/gohugoio/hugo,$(HUGO_VERSION))
 
 .PHONY: scorecard-tests
 scorecard-tests: operator-sdk

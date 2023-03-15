@@ -14,7 +14,24 @@ type options struct {
 	S3                     s3
 	GlobalRateLimits       rateLimitsOptions
 	TenantRateLimitsPath   string
+	TLS                    tlsOptions
 	MemberList             []string
+	Search                 searchOptions
+	ReplicationFactor      int
+	Multitenancy           bool
+	Gates                  featureGates
+}
+
+type tempoQueryOptions struct {
+	Gates        featureGates
+	TLS          tlsOptions
+	HTTPPort     int
+	TenantHeader string
+}
+
+type featureGates struct {
+	HTTPEncryption bool
+	GRPCEncryption bool
 }
 
 type tenantOptions struct {
@@ -28,4 +45,60 @@ type rateLimitsOptions struct {
 	MaxTracesPerUser        *int
 	MaxBytesPerTagValues    *int
 	MaxSearchBytesPerTrace  *int
+}
+
+type searchOptions struct {
+	MaxDuration               string
+	QueryTimeout              string
+	ExternalHedgeRequestsAt   string
+	ExternalHedgeRequestsUpTo int
+	ConcurrentJobs            int
+	MaxConcurrentQueries      int
+	DefaultResultLimit        int
+	MaxResultLimit            int
+	Enabled                   bool
+}
+
+type tlsOptions struct {
+	Enabled     bool
+	Paths       tlsFilePaths
+	ServerNames tlsServerNames
+	Profile     tlsProfileOptions
+}
+
+// TLSProfileSpec is the desired behavior of a TLSProfileType.
+type tlsProfileOptions struct {
+	// Ciphers is used to specify the cipher algorithms that are negotiated
+	// during the TLS handshake.
+	Ciphers string
+	// MinTLSVersion is used to specify the minimal version of the TLS protocol
+	// that is negotiated during the TLS handshake.
+	MinTLSVersion string
+}
+
+type tlsFilePaths struct {
+	CA   string
+	GRPC tlsCertPath
+	HTTP tlsCertPath
+}
+
+type tlsCertPath struct {
+	Certificate string
+	Key         string
+}
+
+type tlsServerNames struct {
+	GRPC grpcServerNames
+	HTTP httpServerNames
+}
+
+type grpcServerNames struct {
+	Compactor     string
+	Ingester      string
+	QueryFrontend string
+}
+
+type httpServerNames struct {
+	Querier       string
+	QueryFrontend string
 }

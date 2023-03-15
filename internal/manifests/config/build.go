@@ -10,6 +10,7 @@ import (
 
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
+	"github.com/os-observability/tempo-operator/internal/manifests/naming"
 )
 
 var (
@@ -20,6 +21,10 @@ var (
 	//go:embed tempo-overrides.yaml
 	tempoTenantsOverridesYAMLTmplFile embed.FS
 	tempoTenantsOverridesYAMLTmpl     = template.Must(template.ParseFS(tempoTenantsOverridesYAMLTmplFile, "tempo-overrides.yaml"))
+
+	//go:embed tempo-query.yaml
+	tempoQueryYAMLTmplFile embed.FS
+	tempoQueryYAMLTmpl     = template.Must(template.ParseFS(tempoQueryYAMLTmplFile, "tempo-query.yaml"))
 )
 
 func s3FromParams(params Params) s3 {
@@ -54,15 +59,23 @@ func fromRateLimitSpecToRateLimitOptionsMap(ratemaps map[string]v1alpha1.RateLim
 	return result
 }
 
-func buildConfiguration(tempo v1alpha1.Microservices, params Params) ([]byte, error) {
+func buildConfiguration(tempo v1alpha1.TempoStack, params Params) ([]byte, error) {
 	opts := options{
 		S3:              s3FromParams(params),
-		GlobalRetention: tempo.Spec.Retention.Global.Traces.String(),
+		GlobalRetention: tempo.Spec.Retention.Global.Traces.Duration.String(),
 		MemberList: []string{
-			manifestutils.Name("gossip-ring", tempo.Name),
+			naming.Name("gossip-ring", tempo.Name),
 		},
-		QueryFrontendDiscovery: fmt.Sprintf("%s:9095", manifestutils.Name("query-frontend-discovery", tempo.Name)),
+		QueryFrontendDiscovery: fmt.Sprintf("%s:%d", naming.Name("query-frontend-discovery", tempo.Name), manifestutils.PortGRPCServer),
 		GlobalRateLimits:       fromRateLimitSpecToRateLimitOptions(tempo.Spec.LimitSpec.Global),
+		Search:                 fromSearchSpecToOptions(tempo.Spec.SearchSpec),
+		ReplicationFactor:      tempo.Spec.ReplicationFactor,
+		Multitenancy:           tempo.Spec.Tenants != nil,
+		Gates: featureGates{
+			GRPCEncryption: params.GRPCEncryption,
+			HTTPEncryption: params.HTTPEncryption,
+		},
+		TLS: buildTLSConfig(tempo, params),
 	}
 
 	if isTenantOverridesConfigRequired(tempo.Spec.LimitSpec) {
@@ -76,9 +89,51 @@ func isTenantOverridesConfigRequired(limitSpec v1alpha1.LimitSpec) bool {
 	return len(limitSpec.PerTenant) > 0
 }
 
-func buildTenantOverrides(tempo v1alpha1.Microservices) ([]byte, error) {
+func buildTenantOverrides(tempo v1alpha1.TempoStack) ([]byte, error) {
 	return renderTenantOverridesTemplate(tenantOptions{
 		RateLimits: fromRateLimitSpecToRateLimitOptionsMap(tempo.Spec.LimitSpec.PerTenant),
+	})
+}
+
+func buildTLSConfig(tempo v1alpha1.TempoStack, params Params) tlsOptions {
+	return tlsOptions{
+		Paths: tlsFilePaths{
+			CA: fmt.Sprintf("%s/service-ca.crt", manifestutils.CABundleDir),
+			GRPC: tlsCertPath{
+				Key:         fmt.Sprintf("%s/tls.key", manifestutils.TempoServerGRPCTLSDir()),
+				Certificate: fmt.Sprintf("%s/tls.crt", manifestutils.TempoServerGRPCTLSDir()),
+			},
+			HTTP: tlsCertPath{
+				Key:         fmt.Sprintf("%s/tls.key", manifestutils.TempoServerHTTPTLSDir()),
+				Certificate: fmt.Sprintf("%s/tls.crt", manifestutils.TempoServerHTTPTLSDir()),
+			},
+		},
+		ServerNames: tlsServerNames{
+			GRPC: grpcServerNames{
+				QueryFrontend: fqdn(naming.Name("query-frontend-grpc", tempo.Name), tempo.Namespace),
+				Ingester:      fqdn(naming.Name("ingester-grpc", tempo.Name), tempo.Namespace),
+			},
+			HTTP: httpServerNames{
+				QueryFrontend: fqdn(naming.Name("query-frontend-http", tempo.Name), tempo.Namespace),
+			},
+		},
+		Profile: tlsProfileOptions{
+			MinTLSVersion: params.TLSProfile.MinTLSVersion,
+			Ciphers:       params.TLSProfile.TLSCipherSuites(),
+		},
+	}
+
+}
+
+func buildTempoQueryConfig(tempo v1alpha1.TempoStack, params Params) ([]byte, error) {
+	return renderTempoQueryTemplate(tempoQueryOptions{
+		TLS:      buildTLSConfig(tempo, params),
+		HTTPPort: manifestutils.PortHTTPServer,
+		Gates: featureGates{
+			GRPCEncryption: params.GRPCEncryption,
+			HTTPEncryption: params.HTTPEncryption,
+		},
+		TenantHeader: manifestutils.TenantHeader,
 	})
 }
 
@@ -101,6 +156,42 @@ func renderTenantOverridesTemplate(opts tenantOptions) ([]byte, error) {
 	// Build tempo tenant overrides config yaml
 	w := bytes.NewBuffer(nil)
 	err := tempoTenantsOverridesYAMLTmpl.Execute(w, opts)
+	if err != nil {
+		return nil, err
+	}
+	cfg, err := io.ReadAll(w)
+	if err != nil {
+		return nil, err
+	}
+
+	return cfg, nil
+}
+
+func fromSearchSpecToOptions(spec v1alpha1.SearchSpec) searchOptions {
+
+	options := searchOptions{
+		// Those are recommended defaults taken from: https://grafana.com/docs/tempo/latest/operations/backend_search/
+		// some of them could depend on the volumen and retention of the data, need to figure out how to set it.
+		ExternalHedgeRequestsUpTo: 2,
+		ConcurrentJobs:            2000,
+		MaxConcurrentQueries:      20,
+		ExternalHedgeRequestsAt:   "8s",
+		MaxResultLimit:            spec.MaxResultLimit,
+		// If not specified, will be zero,  means disable limit by default
+		MaxDuration: spec.MaxDuration.Duration.String(),
+	}
+
+	if spec.DefaultResultLimit != nil {
+		options.DefaultResultLimit = *spec.DefaultResultLimit
+	}
+
+	return options
+}
+
+func renderTempoQueryTemplate(opts tempoQueryOptions) ([]byte, error) {
+	// Build tempo query config yaml
+	w := bytes.NewBuffer(nil)
+	err := tempoQueryYAMLTmpl.Execute(w, opts)
 	if err != nil {
 		return nil, err
 	}

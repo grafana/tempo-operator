@@ -1,0 +1,24 @@
+# permissions for end users to edit tempostacks.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tempostack-editor-role
+rules:
+- apiGroups:
+  - tempo.grafana.com
+  resources:
+  - tempostacks
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - tempo.grafana.com
+  resources:
+  - tempostacks/status
+  verbs:
+  - get

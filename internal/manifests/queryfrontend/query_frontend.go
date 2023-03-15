@@ -1,9 +1,12 @@
 package queryfrontend
 
 import (
-	v1 "k8s.io/api/apps/v1"
+	"fmt"
 
+	routev1 "github.com/openshift/api/route/v1"
+	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8slabels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -12,50 +15,86 @@ import (
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
 	"github.com/os-observability/tempo-operator/internal/manifests/memberlist"
+	"github.com/os-observability/tempo-operator/internal/manifests/naming"
 )
 
 const (
-	configVolumeName           = "tempo-conf"
-	componentName              = "query-frontend"
-	grpcPortName               = "grpc"
-	grpclbPortName             = "grpclb"
-	httpPortName               = "http"
-	jaegerMetricsPortName      = "jaeger-metrics"
-	jaegerUIPortName           = "jaeger-ui"
-	tempoQueryJaegerUiPortName = "tempo-query-jaeger-ui"
-	tempoQueryMetricsPortName  = "tempo-query-metrics"
-	portHTTPServer             = 3100
-	portGRPCServer             = 9095
-	portGRPCLBServer           = 9096
-	portJaegerUI               = 16686
-	portQueryMetrics           = 16687
+	grpclbPortName        = "grpclb"
+	jaegerMetricsPortName = "jaeger-metrics"
+	jaegerUIPortName      = "jaeger-ui"
+	portGRPCLBServer      = 9096
+	portJaegerUI          = 16686
+	portJaegerMetrics     = 16687
 )
 
 // BuildQueryFrontend creates the query-frontend objects.
-func BuildQueryFrontend(tempo v1alpha1.Microservices) ([]client.Object, error) {
-	d, err := deployment(tempo)
+func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
+	var manifests []client.Object
+
+	d, err := deployment(params)
 	if err != nil {
 		return nil, err
 	}
-	svcs := services(tempo)
+	gates := params.Gates
+	tempo := params.Tempo
 
-	var manifests []client.Object
+	if gates.HTTPEncryption || gates.GRPCEncryption {
+		caBundleName := naming.SigningCABundleName(tempo.Name)
+		if err := manifestutils.ConfigureServiceCA(&d.Spec.Template.Spec, caBundleName, 0, 1); err != nil {
+			return nil, err
+		}
+	}
+
+	if gates.HTTPEncryption {
+		if err := configureQuerierFrontEndHTTPServicePKI(d, tempo); err != nil {
+			return nil, err
+		}
+	}
+
+	if gates.GRPCEncryption {
+		if err := configureQuerierFrontEndGRPCServicePKI(d, tempo); err != nil {
+			return nil, err
+		}
+	}
+
 	manifests = append(manifests, d)
+
+	svcs := services(tempo)
 	for _, s := range svcs {
 		manifests = append(manifests, s)
 	}
+
+	//exhaustive:ignore
+	switch tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type {
+	case v1alpha1.IngressTypeIngress:
+		manifests = append(manifests, ingress(tempo))
+	case v1alpha1.IngressTypeRoute:
+		manifests = append(manifests, route(tempo))
+	}
+
 	return manifests, nil
 }
 
-func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
-	labels := manifestutils.ComponentLabels(componentName, tempo.Name)
+func configureQuerierFrontEndHTTPServicePKI(deployment *v1.Deployment, tempo v1alpha1.TempoStack) error {
+	return manifestutils.ConfigureHTTPServicePKI(&deployment.Spec.Template.Spec, naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name), 0, 1)
+}
+
+func configureQuerierFrontEndGRPCServicePKI(deployment *v1.Deployment, tempo v1alpha1.TempoStack) error {
+	return manifestutils.ConfigureGRPCServicePKI(&deployment.Spec.Template.Spec, naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name), 0, 1)
+}
+
+func deployment(params manifestutils.Params) (*v1.Deployment, error) {
+	tempo := params.Tempo
+	labels := manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, tempo.Name)
+	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
+	cfg := tempo.Spec.Template.QueryFrontend
 
 	d := &v1.Deployment{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: v1.SchemeGroupVersion.String(),
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      manifestutils.Name(componentName, tempo.Name),
+			Name:      naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name),
 			Namespace: tempo.Namespace,
 			Labels:    labels,
 		},
@@ -65,36 +104,18 @@ func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: k8slabels.Merge(labels, memberlist.GossipSelector),
+					Labels:      k8slabels.Merge(labels, memberlist.GossipSelector),
+					Annotations: annotations,
 				},
 				Spec: corev1.PodSpec{
-					Affinity: &corev1.Affinity{
-						PodAntiAffinity: &corev1.PodAntiAffinity{
-							PreferredDuringSchedulingIgnoredDuringExecution: []corev1.WeightedPodAffinityTerm{
-								{
-									Weight: 100,
-									PodAffinityTerm: corev1.PodAffinityTerm{
-										LabelSelector: &metav1.LabelSelector{
-											MatchLabels: labels,
-										},
-										TopologyKey: "failure-domain.beta.kubernetes.io/zone",
-									},
-								},
-							},
-							RequiredDuringSchedulingIgnoredDuringExecution: []corev1.PodAffinityTerm{
-								{
-									LabelSelector: &metav1.LabelSelector{
-										MatchLabels: labels,
-									},
-									TopologyKey: "kubernetes.io/hostname",
-								},
-							},
-						},
-					},
+					ServiceAccountName: tempo.Spec.ServiceAccount,
+					NodeSelector:       cfg.NodeSelector,
+					Tolerations:        cfg.Tolerations,
+					Affinity:           manifestutils.DefaultAffinity(labels),
 					Containers: []corev1.Container{
 						{
 							Name:  "query-frontend",
-							Image: "docker.io/grafana/tempo:1.5.0",
+							Image: tempo.Spec.Images.Tempo,
 							Args: []string{
 								"-target=query-frontend",
 								"-config.file=/conf/tempo.yaml",
@@ -102,42 +123,45 @@ func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
 							},
 							Ports: []corev1.ContainerPort{
 								{
-									Name:          httpPortName,
-									ContainerPort: portHTTPServer,
+									Name:          manifestutils.HttpPortName,
+									ContainerPort: manifestutils.PortHTTPServer,
 									Protocol:      corev1.ProtocolTCP,
 								},
 								{
-									Name:          grpcPortName,
-									ContainerPort: portGRPCServer,
+									Name:          manifestutils.GrpcPortName,
+									ContainerPort: manifestutils.PortGRPCServer,
 									Protocol:      corev1.ProtocolTCP,
 								},
 							},
+							ReadinessProbe: manifestutils.TempoReadinessProbe(),
 							VolumeMounts: []corev1.VolumeMount{
 								{
-									Name:      configVolumeName,
+									Name:      manifestutils.ConfigVolumeName,
 									MountPath: "/conf",
 									ReadOnly:  true,
 								},
 								{
-									Name:      "data-querier-frontend",
-									MountPath: "/var/tempo",
+									Name:      manifestutils.TmpStorageVolumeName,
+									MountPath: manifestutils.TmpStoragePath,
 								},
 							},
+							Resources:       manifestutils.Resources(tempo, manifestutils.QueryFrontendComponentName),
+							SecurityContext: manifestutils.TempoContainerSecurityContext(),
 						},
 					},
 					Volumes: []corev1.Volume{
 						{
-							Name: configVolumeName,
+							Name: manifestutils.ConfigVolumeName,
 							VolumeSource: corev1.VolumeSource{
 								ConfigMap: &corev1.ConfigMapVolumeSource{
 									LocalObjectReference: corev1.LocalObjectReference{
-										Name: manifestutils.Name("", tempo.Name),
+										Name: naming.Name("", tempo.Name),
 									},
 								},
 							},
 						},
 						{
-							Name: "data-querier-frontend",
+							Name: manifestutils.TmpStorageVolumeName,
 							VolumeSource: corev1.VolumeSource{
 								EmptyDir: &corev1.EmptyDirVolumeSource{},
 							},
@@ -148,10 +172,10 @@ func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
 		},
 	}
 
-	if tempo.Spec.Components.QueryFrontend != nil && tempo.Spec.Components.QueryFrontend.JaegerQuery.Enabled {
+	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled {
 		jaegerQueryContainer := corev1.Container{
 			Name:  "tempo-query",
-			Image: "docker.io/grafana/tempo-query:1.5.0",
+			Image: tempo.Spec.Images.TempoQuery,
 			Args: []string{
 				"--query.base-path=/",
 				"--grpc-storage-plugin.configuration-file=/conf/tempo-query.yaml",
@@ -165,27 +189,36 @@ func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
 				},
 				{
 					Name:          jaegerMetricsPortName,
-					ContainerPort: portQueryMetrics,
+					ContainerPort: portJaegerMetrics,
 					Protocol:      corev1.ProtocolTCP,
 				},
 			},
 			VolumeMounts: []corev1.VolumeMount{
 				{
-					Name:      configVolumeName,
+					Name:      manifestutils.ConfigVolumeName,
 					MountPath: "/conf",
 					ReadOnly:  true,
 				},
 				{
-					Name:      "data-query",
-					MountPath: "/var/tempo",
+					Name:      manifestutils.TmpStorageVolumeName + "-query",
+					MountPath: manifestutils.TmpStoragePath,
 				},
 			},
+			Resources: manifestutils.Resources(tempo, manifestutils.QueryFrontendComponentName),
 		}
 		jaegerQueryVolume := corev1.Volume{
-			Name: "data-query",
+			Name: manifestutils.TmpStorageVolumeName + "-query",
 			VolumeSource: corev1.VolumeSource{
 				EmptyDir: &corev1.EmptyDirVolumeSource{},
 			},
+		}
+
+		// TODO it should be possible to enable multitenancy just for tempo, without the gateway
+		if tempo.Spec.Tenants != nil {
+			jaegerQueryContainer.Args = append(jaegerQueryContainer.Args, []string{
+				"--multi-tenancy.enabled=true",
+				fmt.Sprintf("--multi-tenancy.header=%s", manifestutils.TenantHeader),
+			}...)
 		}
 
 		d.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, jaegerQueryContainer)
@@ -199,27 +232,27 @@ func deployment(tempo v1alpha1.Microservices) (*v1.Deployment, error) {
 	return d, nil
 }
 
-func services(tempo v1alpha1.Microservices) []*corev1.Service {
-	labels := manifestutils.ComponentLabels(componentName, tempo.Name)
+func services(tempo v1alpha1.TempoStack) []*corev1.Service {
+	labels := manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, tempo.Name)
 
 	frontEndService := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      manifestutils.Name(componentName, tempo.Name),
+			Name:      naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name),
 			Namespace: tempo.Namespace,
 			Labels:    labels,
 		},
 		Spec: corev1.ServiceSpec{
 			Ports: []corev1.ServicePort{
 				{
-					Name:       httpPortName,
-					Port:       portHTTPServer,
-					TargetPort: intstr.FromInt(portHTTPServer),
+					Name:       manifestutils.HttpPortName,
+					Port:       manifestutils.PortHTTPServer,
+					TargetPort: intstr.FromString(manifestutils.HttpPortName),
 				},
 				{
-					Name:       grpcPortName,
+					Name:       manifestutils.GrpcPortName,
 					Protocol:   corev1.ProtocolTCP,
-					Port:       portGRPCServer,
-					TargetPort: intstr.FromInt(portGRPCServer),
+					Port:       manifestutils.PortGRPCServer,
+					TargetPort: intstr.FromString(manifestutils.GrpcPortName),
 				},
 			},
 			Selector: labels,
@@ -228,45 +261,52 @@ func services(tempo v1alpha1.Microservices) []*corev1.Service {
 
 	frontEndDiscoveryService := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      manifestutils.Name(componentName+"-discovery", tempo.Name),
+			Name:      naming.Name(manifestutils.QueryFrontendComponentName+"-discovery", tempo.Name),
 			Namespace: tempo.Namespace,
 			Labels:    labels,
 		},
 		Spec: corev1.ServiceSpec{
+			ClusterIP: "None",
+			// We set PublishNotReadyAddresses to true so that the service always returns the entire list
+			// of A records for matching pods, irrespective if they are in Ready state or not.
+			// This is especially useful during startup of query-frontend and querier, where query-frontend
+			// only gets Ready if at least one querier connects to it (and without this setting, querier could
+			// never connect to query-frontend-discovery-svc because it would not return A records of not-ready pods).
+			PublishNotReadyAddresses: true,
 			Ports: []corev1.ServicePort{
 				{
-					Name:       httpPortName,
-					Port:       portHTTPServer,
-					TargetPort: intstr.FromInt(portHTTPServer),
+					Name:       manifestutils.HttpPortName,
+					Port:       manifestutils.PortHTTPServer,
+					TargetPort: intstr.FromString(manifestutils.HttpPortName),
 				},
 				{
-					Name:       grpcPortName,
+					Name:       manifestutils.GrpcPortName,
 					Protocol:   corev1.ProtocolTCP,
-					Port:       portGRPCServer,
-					TargetPort: intstr.FromInt(portGRPCServer),
+					Port:       manifestutils.PortGRPCServer,
+					TargetPort: intstr.FromString(manifestutils.GrpcPortName),
 				},
 				{
 					Name:       grpclbPortName,
 					Protocol:   corev1.ProtocolTCP,
 					Port:       portGRPCLBServer,
-					TargetPort: intstr.FromString("grpc"),
+					TargetPort: intstr.FromString(grpclbPortName),
 				},
 			},
 			Selector: labels,
 		},
 	}
 
-	if tempo.Spec.Components.QueryFrontend != nil && tempo.Spec.Components.QueryFrontend.JaegerQuery.Enabled {
+	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled {
 		jaegerPorts := []corev1.ServicePort{
 			{
-				Name:       tempoQueryJaegerUiPortName,
+				Name:       jaegerUIPortName,
 				Port:       portJaegerUI,
-				TargetPort: intstr.FromInt(portJaegerUI),
+				TargetPort: intstr.FromString(jaegerUIPortName),
 			},
 			{
-				Name:       tempoQueryMetricsPortName,
-				Port:       portQueryMetrics,
-				TargetPort: intstr.FromString("jaeger-metrics"),
+				Name:       jaegerMetricsPortName,
+				Port:       portJaegerMetrics,
+				TargetPort: intstr.FromString(jaegerMetricsPortName),
 			},
 		}
 
@@ -275,4 +315,93 @@ func services(tempo v1alpha1.Microservices) []*corev1.Service {
 	}
 
 	return []*corev1.Service{frontEndService, frontEndDiscoveryService}
+}
+
+func ingress(tempo v1alpha1.TempoStack) *networkingv1.Ingress {
+	queryFrontendName := naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name)
+	labels := manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, tempo.Name)
+
+	ingress := &networkingv1.Ingress{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        queryFrontendName,
+			Namespace:   tempo.Namespace,
+			Labels:      labels,
+			Annotations: tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Annotations,
+		},
+		Spec: networkingv1.IngressSpec{
+			IngressClassName: tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.IngressClassName,
+		},
+	}
+
+	backend := networkingv1.IngressBackend{
+		Service: &networkingv1.IngressServiceBackend{
+			Name: queryFrontendName,
+			Port: networkingv1.ServiceBackendPort{
+				Name: jaegerUIPortName,
+			},
+		},
+	}
+
+	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Host == "" {
+		ingress.Spec.DefaultBackend = &backend
+	} else {
+		pathType := networkingv1.PathTypePrefix
+		ingress.Spec.Rules = []networkingv1.IngressRule{
+			{
+				Host: tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Host,
+				IngressRuleValue: networkingv1.IngressRuleValue{
+					HTTP: &networkingv1.HTTPIngressRuleValue{
+						Paths: []networkingv1.HTTPIngressPath{
+							{
+								Path:     "/",
+								PathType: &pathType,
+								Backend:  backend,
+							},
+						},
+					},
+				},
+			},
+		}
+	}
+
+	return ingress
+}
+
+func route(tempo v1alpha1.TempoStack) *routev1.Route {
+	queryFrontendName := naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name)
+	labels := manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, tempo.Name)
+
+	var tlsCfg *routev1.TLSConfig
+	switch tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Route.Termination {
+	case v1alpha1.TLSRouteTerminationTypeInsecure:
+		// NOTE: insecure, no tls cfg.
+	case v1alpha1.TLSRouteTerminationTypeEdge:
+		tlsCfg = &routev1.TLSConfig{Termination: routev1.TLSTerminationEdge}
+	case v1alpha1.TLSRouteTerminationTypePassthrough:
+		tlsCfg = &routev1.TLSConfig{Termination: routev1.TLSTerminationPassthrough}
+	case v1alpha1.TLSRouteTerminationTypeReencrypt:
+		tlsCfg = &routev1.TLSConfig{Termination: routev1.TLSTerminationReencrypt}
+	default: // NOTE: if unsupported, end here.
+		return nil
+	}
+
+	return &routev1.Route{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        queryFrontendName,
+			Namespace:   tempo.Namespace,
+			Labels:      labels,
+			Annotations: tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Annotations,
+		},
+		Spec: routev1.RouteSpec{
+			Host: tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Host,
+			To: routev1.RouteTargetReference{
+				Kind: "Service",
+				Name: queryFrontendName,
+			},
+			Port: &routev1.RoutePort{
+				TargetPort: intstr.FromString(jaegerUIPortName),
+			},
+			TLS: tlsCfg,
+		},
+	}
 }

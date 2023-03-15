@@ -24,7 +24,16 @@ jobs:
         uses: actions/checkout@v3
 
       - name: "basic checks"
-        run: make ci
+        run: make ci USER=os-observability
+
+      - name: "upload coverage report"
+        uses: codecov/codecov-action@v3
+        with:
+          files: cover.out
+          flags: unittests
+          name: codecov-tempo-operator
+          fail_ci_if_error: true
+          verbose: true
 
   security:
     name: Security

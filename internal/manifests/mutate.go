@@ -22,7 +22,8 @@ import (
 // - Service
 // - Deployment
 // - StatefulSet
-// - ServiceMonitor.
+// - ServiceMonitor
+// - Secret.
 func MutateFuncFor(existing, desired client.Object) controllerutil.MutateFn {
 	return func() error {
 		existingAnnotations := existing.GetAnnotations()
@@ -107,6 +108,11 @@ func MutateFuncFor(existing, desired client.Object) controllerutil.MutateFn {
 			wantPr := desired.(*monitoringv1.PrometheusRule)
 			mutatePrometheusRule(pr, wantPr)
 
+		case *corev1.Secret:
+			pr := existing.(*corev1.Secret)
+			wantPr := desired.(*corev1.Secret)
+			mutateSecret(pr, wantPr)
+
 		default:
 			t := reflect.TypeOf(existing).String()
 			return kverrors.New("missing mutate implementation for resource type", "type", t)
@@ -121,6 +127,12 @@ func mergeWithOverride(dst, src interface{}) error {
 		return kverrors.Wrap(err, "unable to mergeWithOverride", "dst", dst, "src", src)
 	}
 	return nil
+}
+
+func mutateSecret(existing, desired *corev1.Secret) {
+	existing.Labels = desired.Labels
+	existing.Annotations = desired.Annotations
+	existing.Data = desired.Data
 }
 
 func mutateConfigMap(existing, desired *corev1.ConfigMap) {
