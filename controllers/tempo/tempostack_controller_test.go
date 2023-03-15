@@ -10,6 +10,8 @@ import (
 	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	networkingv1 "k8s.io/api/networking/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -421,4 +423,78 @@ func TestTLSEnable(t *testing.T) {
 		}
 		assert.Contains(t, names, fmt.Sprintf("tempo-%s-ca-bundle", nsn.Name))
 	}
+}
+
+func TestPruneIngress(t *testing.T) {
+	// Create object storage secret and Tempo CR
+	nsn := types.NamespacedName{Name: "prune-ingress-test", Namespace: "default"}
+	storageSecret := createSecret(t, nsn)
+	tempo := &v1alpha1.TempoStack{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      nsn.Name,
+			Namespace: nsn.Namespace,
+		},
+		Spec: v1alpha1.TempoStackSpec{
+			Images: configv1alpha1.ImagesSpec{
+				Tempo:      "docker.io/grafana/tempo:1.5.0",
+				TempoQuery: "docker.io/grafana/tempo-query:1.5.0",
+			},
+			Storage: v1alpha1.ObjectStorageSpec{
+				Secret: v1alpha1.ObjectStorageSecretSpec{
+					Name: storageSecret.Name,
+					Type: "s3",
+				},
+			},
+			Template: v1alpha1.TempoTemplateSpec{
+				QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+					JaegerQuery: v1alpha1.JaegerQuerySpec{
+						Enabled: true,
+						Ingress: v1alpha1.JaegerQueryIngressSpec{
+							Type: v1alpha1.IngressTypeIngress,
+						},
+					},
+				},
+			},
+		},
+	}
+	err := k8sClient.Create(context.Background(), tempo)
+	require.NoError(t, err)
+
+	// Reconcile
+	reconciler := TempoStackReconciler{
+		Client: k8sClient,
+		Scheme: testScheme,
+		FeatureGates: configv1alpha1.FeatureGates{
+			TLSProfile: string(configv1alpha1.TLSProfileIntermediateType),
+		},
+	}
+	req := ctrl.Request{
+		NamespacedName: nsn,
+	}
+	reconcileResult, err := reconciler.Reconcile(context.Background(), req)
+	require.NoError(t, err)
+	assert.Equal(t, false, reconcileResult.Requeue)
+
+	// Verify Ingress is created
+	ingressNsn := types.NamespacedName{Name: "tempo-prune-ingress-test-query-frontend", Namespace: "default"}
+	ingress := networkingv1.Ingress{}
+	err = k8sClient.Get(context.Background(), ingressNsn, &ingress)
+	require.NoError(t, err)
+
+	// Disable Ingress in CR
+	err = k8sClient.Get(context.Background(), nsn, tempo) // operator modified CR, fetch latest version
+	require.NoError(t, err)
+	tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type = v1alpha1.IngressTypeNone
+	err = k8sClient.Update(context.Background(), tempo)
+	require.NoError(t, err)
+
+	// Reconcile
+	reconcileResult, err = reconciler.Reconcile(context.Background(), req)
+	require.NoError(t, err)
+	assert.Equal(t, false, reconcileResult.Requeue)
+
+	// Verify Ingress got deleted
+	err = k8sClient.Get(context.Background(), ingressNsn, &ingress)
+	require.Error(t, err)
+	require.Equal(t, metav1.StatusReasonNotFound, err.(*errors.StatusError).ErrStatus.Reason)
 }
