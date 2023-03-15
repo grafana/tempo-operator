@@ -64,12 +64,14 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 		manifests = append(manifests, s)
 	}
 
-	//exhaustive:ignore
-	switch tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type {
-	case v1alpha1.IngressTypeIngress:
-		manifests = append(manifests, ingress(tempo))
-	case v1alpha1.IngressTypeRoute:
-		manifests = append(manifests, route(tempo))
+	if !tempo.Spec.Template.Gateway.Enabled {
+		//exhaustive:ignore
+		switch tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type {
+		case v1alpha1.IngressTypeIngress:
+			manifests = append(manifests, ingress(tempo))
+		case v1alpha1.IngressTypeRoute:
+			manifests = append(manifests, route(tempo))
+		}
 	}
 
 	return manifests, nil
