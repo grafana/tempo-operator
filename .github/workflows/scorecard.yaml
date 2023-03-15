@@ -30,7 +30,7 @@ jobs:
       - name: Check out code into the Go module directory
         uses: actions/checkout@v3
 
-      - name: "install kuttl and kind"
+      - name: "install kuttl"
         run: ./hack/install/install-kuttl.sh
 
       - name: "start kind"
