@@ -440,9 +440,12 @@ func TestPruneIngress(t *testing.T) {
 				TempoQuery: "docker.io/grafana/tempo-query:1.5.0",
 			},
 			Storage: v1alpha1.ObjectStorageSpec{
-				Secret: storageSecret.Name,
+				Secret: v1alpha1.ObjectStorageSecretSpec{
+					Name: storageSecret.Name,
+					Type: "s3",
+				},
 			},
-			Components: v1alpha1.TempoComponentsSpec{
+			Template: v1alpha1.TempoTemplateSpec{
 				QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
 					JaegerQuery: v1alpha1.JaegerQuerySpec{
 						Enabled: true,
@@ -481,7 +484,7 @@ func TestPruneIngress(t *testing.T) {
 	// Disable Ingress in CR
 	err = k8sClient.Get(context.Background(), nsn, tempo) // operator modified CR, fetch latest version
 	require.NoError(t, err)
-	tempo.Spec.Components.QueryFrontend.JaegerQuery.Ingress.Type = v1alpha1.IngressTypeNone
+	tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type = v1alpha1.IngressTypeNone
 	err = k8sClient.Update(context.Background(), tempo)
 	require.NoError(t, err)
 
