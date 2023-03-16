@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	"net/url"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
@@ -171,43 +170,6 @@ func (v *validator) validateServiceAccount(ctx context.Context, tempo TempoStack
 	return allErrs
 }
 
-// ValidateStorageSecret validates the object storage secret required for tempo.
-func ValidateStorageSecret(tempo TempoStack, storageSecret corev1.Secret) field.ErrorList {
-	path := field.NewPath("spec").Child("storage").Child("secret")
-
-	if storageSecret.Data == nil {
-		return field.ErrorList{field.Invalid(path, tempo.Spec.Storage.Secret, "storage secret is empty")}
-	}
-
-	var allErrs field.ErrorList
-	for _, key := range []string{
-		"endpoint",
-		"bucket",
-		"access_key_id",
-		"access_key_secret",
-	} {
-		if storageSecret.Data[key] == nil || len(storageSecret.Data[key]) == 0 {
-			allErrs = append(allErrs, field.Invalid(
-				path,
-				tempo.Spec.Storage.Secret,
-				fmt.Sprintf("storage secret must contain \"%s\" field", key),
-			))
-		} else if key == "endpoint" {
-			u, err := url.ParseRequestURI(string(storageSecret.Data["endpoint"]))
-
-			// ParseRequestURI also accepts absolute paths, therefore we need to check if the URL scheme is set
-			if err != nil || u.Scheme == "" {
-				allErrs = append(allErrs, field.Invalid(
-					path,
-					tempo.Spec.Storage.Secret,
-					"\"endpoint\" field of storage secret must be a valid URL",
-				))
-			}
-		}
-	}
-	return allErrs
-}
-
 func (v *validator) validateStorage(ctx context.Context, tempo TempoStack) field.ErrorList {
 	storageSecret := &corev1.Secret{}
 	err := v.client.Get(ctx, types.NamespacedName{Namespace: tempo.Namespace, Name: tempo.Spec.Storage.Secret.Name}, storageSecret)
@@ -261,11 +223,18 @@ func (v *validator) validateQueryFrontend(tempo TempoStack) field.ErrorList {
 }
 
 func (v *validator) validateGateway(tempo TempoStack) field.ErrorList {
+	path := field.NewPath("spec").Child("template").Child("gateway").Child("enabled")
 	if tempo.Spec.Template.Gateway.Enabled && !tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled {
-		path := field.NewPath("spec").Child("template").Child("gateway").Child("enabled")
 		return field.ErrorList{
 			field.Invalid(path, tempo.Spec.Template.Gateway.Enabled,
 				"to use the gateway, please enable jaegerQuery",
+			)}
+	}
+
+	if tempo.Spec.Template.Gateway.Enabled && tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type != "" {
+		return field.ErrorList{
+			field.Invalid(path, tempo.Spec.Template.Gateway.Enabled,
+				"cannot enable gateway and jaeger query ingress at the same time",
 			)}
 	}
 	return nil

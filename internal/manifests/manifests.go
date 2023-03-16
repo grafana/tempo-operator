@@ -18,7 +18,14 @@ import (
 
 // StorageParams holds storage configuration.
 type StorageParams struct {
-	S3 S3
+	S3           *S3
+	AzureStorage *AzureStorage
+}
+
+// AzureStorage holds Azure Storage configuration.
+type AzureStorage struct {
+	Container string
+	Env       string
 }
 
 // S3 holds S3 configuration.
@@ -32,6 +39,9 @@ func BuildAll(params manifestutils.Params) ([]client.Object, error) {
 	configMaps, configChecksum, err := config.BuildConfigMap(
 		params.Tempo,
 		config.Params{
+			AzureStorage: config.AzureStorage{
+				Container: params.StorageParams.AzureStorage.Container,
+			},
 			S3: config.S3{
 				Endpoint: params.StorageParams.S3.Endpoint,
 				Bucket:   params.StorageParams.S3.Bucket,

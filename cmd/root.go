@@ -2,19 +2,16 @@ package cmd
 
 import (
 	"context"
-	"flag"
 	"fmt"
 
 	configv1 "github.com/openshift/api/config/v1"
 	openshiftoperatorv1 "github.com/openshift/api/operator/v1"
 	routev1 "github.com/openshift/api/route/v1"
 	"github.com/spf13/cobra"
-	"go.uber.org/zap/zapcore"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
 	tempov1alpha1 "github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
@@ -42,16 +39,6 @@ func init() {
 	utilruntime.Must(openshiftoperatorv1.Install(scheme))
 	utilruntime.Must(configv1.Install(scheme))
 	//+kubebuilder:scaffold:scheme
-}
-
-func setupLogging() {
-	opts := zap.Options{
-		Development: true,
-		TimeEncoder: zapcore.ISO8601TimeEncoder,
-	}
-	opts.BindFlags(flag.CommandLine)
-	flag.Parse()
-	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 }
 
 func readConfig(cmd *cobra.Command, configFile string) error {
@@ -88,7 +75,6 @@ func NewRootCommand() *cobra.Command {
 		Use:          "tempo-operator",
 		SilenceUsage: true,
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			setupLogging()
 			return readConfig(cmd, configFile)
 		},
 	}

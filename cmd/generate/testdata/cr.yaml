@@ -1,0 +1,14 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoStack
+metadata:
+  name: simplest
+spec:
+  images:
+    tempo: docker.io/grafana/tempo:x.y.z
+    tempoQuery: docker.io/grafana/tempo-query:x.y.z
+    tempoGateway: quay.io/observatorium/api
+  storage:
+    secret:
+      name: minio-test
+      type: s3
+  storageSize: 1Gi

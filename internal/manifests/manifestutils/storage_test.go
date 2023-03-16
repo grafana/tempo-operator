@@ -20,6 +20,29 @@ func findEnvVar(name string, envVars *[]corev1.EnvVar) error {
 	return fmt.Errorf("%s environment variable not found in list", name)
 }
 
+func TestGetAzureStorage(t *testing.T) {
+	tempo := v1alpha1.TempoStack{
+		Spec: v1alpha1.TempoStackSpec{
+			Storage: v1alpha1.ObjectStorageSpec{
+				Secret: v1alpha1.ObjectStorageSecretSpec{
+					Name: "test",
+					Type: v1alpha1.ObjectStorageSecretAzure,
+				},
+			},
+		},
+	}
+
+	envVars, args := getAzureStorage(&tempo)
+
+	assert.Len(t, envVars, 2)
+	assert.NoError(t, findEnvVar("AZURE_ACCOUNT_NAME", &envVars))
+	assert.NoError(t, findEnvVar("AZURE_ACCOUNT_KEY", &envVars))
+
+	assert.Len(t, args, 2)
+	assert.Contains(t, args, "--storage.trace.azure.storage_account_name=$(AZURE_ACCOUNT_NAME)")
+	assert.Contains(t, args, "--storage.trace.azure.storage_account_key=$(AZURE_ACCOUNT_KEY)")
+}
+
 func TestGetS3Storage(t *testing.T) {
 	tempo := v1alpha1.TempoStack{
 		Spec: v1alpha1.TempoStackSpec{
@@ -49,6 +72,26 @@ func TestConfigureStorage(t *testing.T) {
 		tempo v1alpha1.TempoStack
 		pod   corev1.PodSpec
 	}{
+		{
+			name: "Azure Storage configuration",
+			tempo: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Storage: v1alpha1.ObjectStorageSpec{
+						Secret: v1alpha1.ObjectStorageSecretSpec{
+							Name: "test",
+							Type: v1alpha1.ObjectStorageSecretAzure,
+						},
+					},
+				},
+			},
+			pod: corev1.PodSpec{
+				Containers: []corev1.Container{
+					{
+						Name: "ingester",
+					},
+				},
+			},
+		},
 		{
 			name: "S3 Storage configuration",
 			tempo: v1alpha1.TempoStack{

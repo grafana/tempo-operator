@@ -273,10 +273,21 @@ func (r *TempoStackReconciler) getStorageConfig(ctx context.Context, tempo v1alp
 		return nil, fmt.Errorf("invalid storage secret: %s", strings.Join(msgs, ", "))
 	}
 
-	return &manifestutils.StorageParams{S3: &manifestutils.S3{
-		Endpoint: string(storageSecret.Data["endpoint"]),
-		Bucket:   string(storageSecret.Data["bucket"]),
-	}}, nil
+	params := manifestutils.StorageParams{
+		AzureStorage: &manifestutils.AzureStorage{},
+		S3:           &manifestutils.S3{},
+	}
+
+	switch tempo.Spec.Storage.Secret.Type {
+	case v1alpha1.ObjectStorageSecretAzure:
+		params.AzureStorage = getAzureParams(storageSecret)
+	case v1alpha1.ObjectStorageSecretS3:
+		params.S3 = getS3Params(storageSecret)
+	default:
+		return &params, fmt.Errorf("storage secret type is not recognized")
+	}
+
+	return &params, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
