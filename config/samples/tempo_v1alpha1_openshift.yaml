@@ -1,5 +1,10 @@
 # This is an example CR to deploy TempoStack on OpenShift
 # It configures multitenancy with two tenants.
+# The operator feature flags openshift.openshiftRoute and openshift.servingCertsService should be enabled.
+#
+# Use https://tempo-simplest-gateway-observability.{OpenShift base domain}/api/traces/v1/dev/search
+# to access the UI and log in with kubeadmin user.
+#
 # The reporting clients - OpenTelemetry collectors should use
 # dev-collector and prod-collector service accounts to successfully authenticate.
 # See ./tempo_v1alpha1_openshift.yaml for OpenTelemetry collector deployment.
@@ -10,7 +15,9 @@ metadata:
   namespace: observability
 spec:
   storage:
-    secret: minio-test
+    secret:
+      name: minio-test
+      type: s3
   storageSize: 1Gi
   resources:
     total:
