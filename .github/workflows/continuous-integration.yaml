@@ -32,7 +32,7 @@ jobs:
           files: cover.out
           flags: unittests
           name: codecov-tempo-operator
-          fail_ci_if_error: true
+          fail_ci_if_error: false
           verbose: true
 
   security:
