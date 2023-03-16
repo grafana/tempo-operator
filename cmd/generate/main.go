@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"path/filepath"
 
@@ -14,6 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	k8syaml "k8s.io/apimachinery/pkg/util/yaml"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	clog "sigs.k8s.io/controller-runtime/pkg/log"
 
 	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
@@ -26,21 +26,12 @@ import (
 // the decoder will look to figure out whether this is a JSON stream.
 const yamlOrJsonDecoderBufferSize = 8192
 
-func loadSpec(path string) (v1alpha1.TempoStack, error) {
-	pathCleaned := filepath.Clean(path)
-	file, err := os.Open(pathCleaned)
-	if err != nil {
-		return v1alpha1.TempoStack{}, err
-	}
-	defer func() {
-		if err := file.Close(); err != nil {
-			log.Fatalf("Error closing file %s: %v", pathCleaned, err)
-		}
-	}()
+var log = clog.Log.WithName("generate")
 
+func loadSpec(r io.Reader) (v1alpha1.TempoStack, error) {
 	spec := v1alpha1.TempoStack{}
-	decoder := k8syaml.NewYAMLOrJSONDecoder(file, yamlOrJsonDecoderBufferSize)
-	err = decoder.Decode(&spec)
+	decoder := k8syaml.NewYAMLOrJSONDecoder(r, yamlOrJsonDecoderBufferSize)
+	err := decoder.Decode(&spec)
 	if err != nil {
 		return v1alpha1.TempoStack{}, err
 	}
@@ -92,6 +83,7 @@ func toYAMLManifest(scheme *runtime.Scheme, objects []client.Object, out io.Writ
 		if err != nil {
 			return err
 		}
+		delete(jsonObj["metadata"].(map[interface{}]interface{}), "creationTimestamp")
 		delete(jsonObj, "status")
 
 		// Finally, marshal into yaml
@@ -113,7 +105,26 @@ func generate(c *cobra.Command, crPath string, outPath string, params manifestut
 	rootCmdConfig := c.Context().Value(cmd.RootConfigKey{}).(cmd.RootConfig)
 	ctrlConfig, options := rootCmdConfig.CtrlConfig, rootCmdConfig.Options
 
-	spec, err := loadSpec(crPath)
+	var specReader io.Reader
+	if crPath == "/dev/stdin" {
+		log.Info("reading from stdin")
+		specReader = c.InOrStdin()
+	} else {
+		pathCleaned := filepath.Clean(crPath)
+		file, err := os.Open(pathCleaned)
+		if err != nil {
+			return fmt.Errorf("error reading cr: %w", err)
+		}
+
+		specReader = file
+		defer func() {
+			if err := file.Close(); err != nil {
+				log.Error(err, "error closing file", "path", pathCleaned)
+			}
+		}()
+	}
+
+	spec, err := loadSpec(specReader)
 	if err != nil {
 		return fmt.Errorf("error loading spec: %w", err)
 	}
@@ -124,18 +135,24 @@ func generate(c *cobra.Command, crPath string, outPath string, params manifestut
 		return fmt.Errorf("error building manifests: %w", err)
 	}
 
-	outPathCleaned := filepath.Clean(outPath)
-	outFile, err := os.OpenFile(outPathCleaned, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o600)
-	if err != nil {
-		return fmt.Errorf("error opening output file: %w", err)
-	}
-	defer func() {
-		if err := outFile.Close(); err != nil {
-			log.Fatalf("Error closing file %s: %v", outPathCleaned, err)
+	var output io.Writer
+	if outPath == "/dev/stdout" {
+		output = c.OutOrStdout()
+	} else {
+		outPathCleaned := filepath.Clean(outPath)
+		outFile, err := os.OpenFile(outPathCleaned, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o600)
+		if err != nil {
+			return fmt.Errorf("error opening output file: %w", err)
 		}
-	}()
+		output = outFile
+		defer func() {
+			if err := outFile.Close(); err != nil {
+				log.Error(err, "error closing file", "path", outPathCleaned)
+			}
+		}()
+	}
 
-	err = toYAMLManifest(options.Scheme, objects, outFile)
+	err = toYAMLManifest(options.Scheme, objects, output)
 	if err != nil {
 		return fmt.Errorf("error generating yaml: %w", err)
 	}
@@ -161,7 +178,6 @@ func NewGenerateCommand() *cobra.Command {
 		},
 	}
 	cmd.Flags().StringVar(&crPath, "cr", "/dev/stdin", "Input CR")
-	_ = cmd.MarkFlagRequired("cr")
 	cmd.Flags().StringVar(&outPath, "output", "/dev/stdout", "File to store the manifests")
 	cmd.Flags().StringVar(&params.StorageParams.S3.Endpoint, "storage.endpoint", "http://minio.minio.svc:9000", "S3 storage endpoint (taken from storage secret)")
 	cmd.Flags().StringVar(&params.StorageParams.S3.Bucket, "storage.bucket", "tempo", "S3 storage bucket (taken from storage secret)")

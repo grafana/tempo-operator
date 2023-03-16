@@ -2,6 +2,7 @@ package generate
 
 import (
 	"bytes"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -13,6 +14,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
+	"github.com/os-observability/tempo-operator/cmd"
 	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
 )
 
@@ -59,7 +61,76 @@ data:
       setting: a
 kind: ConfigMap
 metadata:
-  creationTimestamp: null
   name: test-config-map
 `, buf.String())
+}
+
+func TestGenerateCmdReadFromStdin(t *testing.T) {
+	c := cmd.NewRootCommand()
+	c.AddCommand(NewGenerateCommand())
+
+	cr := `
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoStack
+metadata:
+  name: simplest
+spec:
+  images:
+    tempo: docker.io/grafana/tempo:x.y.z
+    tempoQuery: docker.io/grafana/tempo-query:x.y.z
+    tempoGateway: quay.io/observatorium/api
+  storage:
+    secret:
+      name: minio-test
+      type: s3
+  storageSize: 1Gi
+`
+	c.SetIn(strings.NewReader(cr))
+
+	out := &strings.Builder{}
+	c.SetOut(out)
+	c.SetErr(out)
+
+	c.SetArgs([]string{"generate"})
+	_, err := c.ExecuteC()
+	require.NoError(t, err)
+
+	require.Contains(t, out.String(), `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/component: distributor
+    app.kubernetes.io/created-by: tempo-controller
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/name: tempo
+  name: tempo-simplest-distributor
+`)
+}
+
+func TestGenerateCmdReadFromFile(t *testing.T) {
+	c := cmd.NewRootCommand()
+	c.AddCommand(NewGenerateCommand())
+
+	out := &strings.Builder{}
+	c.SetOut(out)
+	c.SetErr(out)
+
+	c.SetArgs([]string{"generate", "--cr", "testdata/cr.yaml"})
+	_, err := c.ExecuteC()
+	require.NoError(t, err)
+
+	require.Contains(t, out.String(), `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/component: distributor
+    app.kubernetes.io/created-by: tempo-controller
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/name: tempo
+  name: tempo-simplest-distributor
+`)
 }
