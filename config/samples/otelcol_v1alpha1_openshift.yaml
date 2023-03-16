@@ -1,0 +1,47 @@
+apiVersion: opentelemetry.io/v1alpha1
+kind: OpenTelemetryCollector
+metadata:
+  name: dev
+spec:
+  image: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.73.0
+  config: |
+    extensions:
+      bearertokenauth:
+        filename: "/var/run/secrets/kubernetes.io/serviceaccount/token"
+
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+          http:
+      jaeger:
+        protocols:
+          thrift_binary:
+          thrift_compact:
+          thrift_http:
+          grpc:
+
+    processors:
+
+    exporters:
+      otlp:
+        endpoint: tempo-simplest-gateway.observability.svc.cluster.local:8090
+        tls:
+          insecure: false
+          ca_file: "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt"
+        auth:
+          authenticator: bearertokenauth
+        headers:
+          X-Scope-OrgID: "dev"
+
+    service:
+      telemetry:
+        logs:
+          level: "DEBUG"
+          development: true
+          encoding: "json"
+      extensions: [bearertokenauth]
+      pipelines:
+        traces:
+          receivers: [otlp, jaeger]
+          exporters: [otlp]

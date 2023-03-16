@@ -1,0 +1,54 @@
+# This is an example CR to deploy TempoStack on OpenShift
+# It configures multitenancy with two tenants.
+# The reporting clients - OpenTelemetry collectors should use
+# dev-collector and prod-collector service accounts to successfully authenticate.
+# See ./tempo_v1alpha1_openshift.yaml for OpenTelemetry collector deployment.
+apiVersion: tempo.grafana.com/v1alpha1
+kind:  TempoStack
+metadata:
+  name: simplest
+  namespace: observability
+spec:
+  storage:
+    secret: minio-test
+  storageSize: 1Gi
+  resources:
+    total:
+      limits:
+        memory: 2Gi
+        cpu: 2000m
+  tenants:
+    mode: openshift
+    authentication:
+      - tenantName: dev
+        tenantId: "1610b0c3-c509-4592-a256-a1871353dbfa"
+      - tenantName: prod
+        tenantId: "1610b0c3-c509-4592-a256-a1871353dbfb"
+    authorization:
+      roleBindings:
+        - name: read-write
+          roles:
+            - read-write-traces
+          subjects:
+            - kind: user
+              name: system:serviceaccount:observability:dev-collector
+            - kind: user
+              name: system:serviceaccount:observability:prod-collector
+            - kind: user
+              name: kubeadmin
+      roles:
+        - name: read-write-traces
+          permissions:
+            - read
+            - write
+          resources:
+            - traces
+          tenants:
+            - dev
+            - production
+  template:
+    gateway:
+      enabled: true
+    queryFrontend:
+      jaegerQuery:
+        enabled: true
