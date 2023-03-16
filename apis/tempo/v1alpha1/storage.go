@@ -21,6 +21,8 @@ func ValidateStorageSecret(tempo TempoStack, storageSecret corev1.Secret) field.
 	switch tempo.Spec.Storage.Secret.Type {
 	case ObjectStorageSecretAzure:
 		allErrs = append(allErrs, validateAzureSecret(tempo, path, storageSecret)...)
+	case ObjectStorageSecretGCS:
+		allErrs = append(allErrs, validateGCSSecret(tempo, path, storageSecret)...)
 	case ObjectStorageSecretS3:
 		allErrs = append(allErrs, validateS3Secret(tempo, path, storageSecret)...)
 	case "":
@@ -60,6 +62,17 @@ func validateAzureSecret(tempo TempoStack, path *field.Path, storageSecret corev
 		"container",
 		"account_name",
 		"account_key",
+	}
+
+	allErrs = append(allErrs, ensureNotEmpty(tempo, path, storageSecret, secretFields)...)
+	return allErrs
+}
+
+func validateGCSSecret(tempo TempoStack, path *field.Path, storageSecret corev1.Secret) field.ErrorList {
+	var allErrs field.ErrorList
+	secretFields := []string{
+		"bucketname",
+		"key.json",
 	}
 
 	allErrs = append(allErrs, ensureNotEmpty(tempo, path, storageSecret, secretFields)...)

@@ -133,6 +133,8 @@ storage:
     cache: none
     azure:
       container_name: {{ .AzureStorage.Container }}
+    gcs:
+      bucket_name: {{ .GCS.Bucket }}
     s3:
       endpoint: {{ .S3.Endpoint }}
       bucket: {{ .S3.Bucket }}

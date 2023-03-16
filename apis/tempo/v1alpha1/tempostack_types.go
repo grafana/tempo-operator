@@ -419,12 +419,15 @@ type SearchSpec struct {
 
 // ObjectStorageSecretType defines the type of storage which can be used with the Tempo cluster.
 //
-// +kubebuilder:validation:Enum=azure;s3
+// +kubebuilder:validation:Enum=azure;gcs;s3
 type ObjectStorageSecretType string
 
 const (
-	// ObjectStorageSecretAzure when using Azure for Tempo storage.
+	// ObjectStorageSecretAzure when using Azure Storage for Tempo storage.
 	ObjectStorageSecretAzure ObjectStorageSecretType = "azure"
+
+	// ObjectStorageSecretGCS when using Google Cloud Storage for Tempo storage.
+	ObjectStorageSecretGCS ObjectStorageSecretType = "gcs"
 
 	// ObjectStorageSecretS3 when using S3 for Tempo storage.
 	ObjectStorageSecretS3 ObjectStorageSecretType = "s3"
@@ -436,7 +439,7 @@ type ObjectStorageSecretSpec struct {
 	//
 	// +required
 	// +kubebuilder:validation:Required
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors={"urn:alm:descriptor:com.tectonic.ui:select:azure","urn:alm:descriptor:com.tectonic.ui:select:s3"},displayName="Object Storage Secret Type"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors={"urn:alm:descriptor:com.tectonic.ui:select:azure","urn:alm:descriptor:com.tectonic.ui:select:gcs","urn:alm:descriptor:com.tectonic.ui:select:s3"},displayName="Object Storage Secret Type"
 	Type ObjectStorageSecretType `json:"type"`
 
 	// Name of a secret in the namespace configured for object storage secrets.

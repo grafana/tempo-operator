@@ -28,8 +28,9 @@ func TestBuild(t *testing.T) {
 	}
 	params := manifestutils.Params{
 		StorageParams: manifestutils.StorageParams{
-			S3:           &manifestutils.S3{},
 			AzureStorage: &manifestutils.AzureStorage{},
+			GCS:          &manifestutils.GCS{},
+			S3:           &manifestutils.S3{},
 		},
 	}
 
