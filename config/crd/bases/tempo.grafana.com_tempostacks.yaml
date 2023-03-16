@@ -247,6 +247,7 @@ spec:
                         description: Type of object storage that should be used
                         enum:
                         - azure
+                        - gcs
                         - s3
                         type: string
                     required:
