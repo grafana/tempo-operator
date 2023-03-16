@@ -100,9 +100,8 @@ func serviceAccount(tempo v1alpha1.TempoStack) *corev1.ServiceAccount {
 func clusterRole(tempo v1alpha1.TempoStack) *rbacv1.ClusterRole {
 	return &rbacv1.ClusterRole{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      naming.Name(manifestutils.GatewayComponentName, tempo.Name),
-			Namespace: tempo.Namespace,
-			Labels:    manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name),
+			Name:   naming.Name(manifestutils.GatewayComponentName, tempo.Name),
+			Labels: manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name),
 		},
 		Rules: []rbacv1.PolicyRule{
 			{
@@ -117,9 +116,8 @@ func clusterRole(tempo v1alpha1.TempoStack) *rbacv1.ClusterRole {
 func clusterRoleBinding(tempo v1alpha1.TempoStack) *rbacv1.ClusterRoleBinding {
 	return &rbacv1.ClusterRoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      naming.Name(manifestutils.GatewayComponentName, tempo.Name),
-			Namespace: tempo.Namespace,
-			Labels:    manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name),
+			Name:   naming.Name(manifestutils.GatewayComponentName, tempo.Name),
+			Labels: manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name),
 		},
 		Subjects: []rbacv1.Subject{
 			{
