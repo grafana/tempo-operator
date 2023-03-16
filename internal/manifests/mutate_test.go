@@ -955,10 +955,9 @@ func TestGetMutateFunc_MutateServiceMonitorSpec(t *testing.T) {
 			err := f()
 			require.NoError(t, err)
 
-			// Ensure not mutated
-			require.NotEqual(t, tst.got.Spec.JobLabel, tst.want.Spec.JobLabel)
-			require.NotEqual(t, tst.got.Spec.Endpoints, tst.want.Spec.Endpoints)
-			require.NotEqual(t, tst.got.Spec.NamespaceSelector, tst.want.Spec.NamespaceSelector)
+			require.Equal(t, tst.got.Annotations, tst.want.Annotations)
+			require.Equal(t, tst.got.Labels, tst.want.Labels)
+			require.Equal(t, tst.got.Spec, tst.want.Spec)
 		})
 	}
 }

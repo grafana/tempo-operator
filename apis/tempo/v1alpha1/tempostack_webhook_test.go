@@ -638,6 +638,9 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 							Enabled: true,
 						},
 					},
+					Tenants: &TenantsSpec{
+						Mode: Static,
+					},
 				},
 			},
 			expected: nil,
@@ -730,11 +733,36 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 							Enabled: true,
 						},
 					},
+					Tenants: &TenantsSpec{
+						Mode: Static,
+					},
 				},
 			},
 			expected: field.ErrorList{
 				field.Invalid(path, true,
 					"cannot enable gateway and jaeger query ingress at the same time",
+				),
+			},
+		},
+		{
+			name: "invalid configuration, gateway enabled but no tenant configured",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					Template: TempoTemplateSpec{
+						QueryFrontend: TempoQueryFrontendSpec{
+							JaegerQuery: JaegerQuerySpec{
+								Enabled: true,
+							},
+						},
+						Gateway: TempoGatewaySpec{
+							Enabled: true,
+						},
+					},
+				},
+			},
+			expected: field.ErrorList{
+				field.Invalid(path, true,
+					"to enable the gateway, please configure tenants",
 				),
 			},
 		},

@@ -1,13 +1,14 @@
 package manifestutils
 
 import (
-	"fmt"
 	"path"
 
 	"github.com/ViaQ/logerr/v2/kverrors"
 	"github.com/imdario/mergo"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+
+	"github.com/os-observability/tempo-operator/internal/manifests/naming"
 )
 
 // TempoServerGRPCTLSDir returns the mount path of the GRPC service certificates.
@@ -71,8 +72,8 @@ func ConfigureServiceCA(podSpec *corev1.PodSpec, caBundleName string, containers
 }
 
 // ConfigureGRPCServicePKI modify the PodSpec adding cert the volumes and volumeMounts to the specified containers.
-func ConfigureGRPCServicePKI(podSpec *corev1.PodSpec, componentName string, containers ...int) error {
-	serviceName := fmt.Sprintf("%s-grpc", componentName)
+func ConfigureGRPCServicePKI(tempoStackName string, component string, podSpec *corev1.PodSpec, containers ...int) error {
+	serviceName := naming.ServiceName(tempoStackName, component, GrpcPortName)
 	secretVolumeSpec := corev1.PodSpec{
 		Volumes: []corev1.Volume{
 			{
@@ -118,8 +119,8 @@ func ConfigureGRPCServicePKI(podSpec *corev1.PodSpec, componentName string, cont
 }
 
 // ConfigureHTTPServicePKI modify the PodSpec adding cert the volumes and volumeMounts to the specified containers.
-func ConfigureHTTPServicePKI(podSpec *corev1.PodSpec, componentName string, containers ...int) error {
-	serviceName := fmt.Sprintf("%s-http", componentName)
+func ConfigureHTTPServicePKI(tempoStackName string, component string, podSpec *corev1.PodSpec, containers ...int) error {
+	serviceName := naming.ServiceName(tempoStackName, component, HttpPortName)
 	secretVolumeSpec := corev1.PodSpec{
 		Volumes: []corev1.Volume{
 			{

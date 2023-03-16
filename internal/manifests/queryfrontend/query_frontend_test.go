@@ -76,7 +76,7 @@ func getExpectedFrontendDiscoveryService(withJaeger bool) *corev1.Service {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      naming.Name(manifestutils.QueryFrontendComponentName+"-discovery", "test"),
 			Namespace: "project1",
-			Labels:    labels,
+			Labels:    manifestutils.ComponentLabels("query-frontend-discovery", "test"),
 		},
 		Spec: corev1.ServiceSpec{
 			ClusterIP:                "None",
@@ -137,7 +137,7 @@ func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 					Affinity:           manifestutils.DefaultAffinity(labels),
 					Containers: []corev1.Container{
 						{
-							Name:  "query-frontend",
+							Name:  "tempo",
 							Image: "docker.io/grafana/tempo:1.5.0",
 							Args: []string{
 								"-target=query-frontend",

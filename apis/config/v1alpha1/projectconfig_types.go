@@ -128,6 +128,10 @@ type FeatureGates struct {
 	// TLSProfile allows to chose a TLS security profile. Enforced
 	// when using HTTPEncryption or GRPCEncryption.
 	TLSProfile string `json:"tlsProfile,omitempty"`
+
+	// ServiceMonitors enables the creation of ServiceMonitor instances for all components of the Tempo Stack.
+	// Note: This feature requires prometheus-operator to be installed in the cluster.
+	ServiceMonitors bool `json:"serviceMonitors,omitempty"`
 }
 
 //+kubebuilder:object:root=true

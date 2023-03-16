@@ -125,11 +125,11 @@ func buildTLSConfig(tempo v1alpha1.TempoStack, params Params) tlsOptions {
 		},
 		ServerNames: tlsServerNames{
 			GRPC: grpcServerNames{
-				QueryFrontend: fqdn(naming.Name("query-frontend-grpc", tempo.Name), tempo.Namespace),
-				Ingester:      fqdn(naming.Name("ingester-grpc", tempo.Name), tempo.Namespace),
+				QueryFrontend: naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.QueryFrontendComponentName, manifestutils.GrpcPortName),
+				Ingester:      naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.IngesterComponentName, manifestutils.GrpcPortName),
 			},
 			HTTP: httpServerNames{
-				QueryFrontend: fqdn(naming.Name("query-frontend-http", tempo.Name), tempo.Namespace),
+				QueryFrontend: naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.QueryFrontendComponentName, manifestutils.HttpPortName),
 			},
 		},
 		Profile: tlsProfileOptions{
