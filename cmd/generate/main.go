@@ -166,7 +166,8 @@ func NewGenerateCommand() *cobra.Command {
 	var outPath string
 	params := manifestutils.Params{
 		StorageParams: manifestutils.StorageParams{
-			S3: &manifestutils.S3{},
+			S3:           &manifestutils.S3{},
+			AzureStorage: &manifestutils.AzureStorage{},
 		},
 	}
 
@@ -179,8 +180,8 @@ func NewGenerateCommand() *cobra.Command {
 	}
 	cmd.Flags().StringVar(&crPath, "cr", "/dev/stdin", "Input CR")
 	cmd.Flags().StringVar(&outPath, "output", "/dev/stdout", "File to store the manifests")
-	cmd.Flags().StringVar(&params.StorageParams.S3.Endpoint, "storage.endpoint", "http://minio.minio.svc:9000", "S3 storage endpoint (taken from storage secret)")
-	cmd.Flags().StringVar(&params.StorageParams.S3.Bucket, "storage.bucket", "tempo", "S3 storage bucket (taken from storage secret)")
-
+	cmd.Flags().StringVar(&params.StorageParams.S3.Endpoint, "storage.s3.endpoint", "http://minio.minio.svc:9000", "S3 storage endpoint (taken from storage secret)")
+	cmd.Flags().StringVar(&params.StorageParams.S3.Bucket, "storage.s3.bucket", "tempo", "S3 storage bucket (taken from storage secret)")
+	cmd.Flags().StringVar(&params.StorageParams.AzureStorage.Container, "storage.azure.container", "azure", "Azure container(taken from storage secret)")
 	return cmd
 }

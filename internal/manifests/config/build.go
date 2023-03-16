@@ -27,6 +27,12 @@ var (
 	tempoQueryYAMLTmpl     = template.Must(template.ParseFS(tempoQueryYAMLTmplFile, "tempo-query.yaml"))
 )
 
+func azureStorageFromParams(params Params) azureStorage {
+	return azureStorage{
+		Container: params.AzureStorage.Container,
+	}
+}
+
 func s3FromParams(params Params) s3 {
 	s3Endpoint := params.S3.Endpoint
 	s3Insecure := !strings.HasPrefix(s3Endpoint, "https://")
@@ -61,6 +67,8 @@ func fromRateLimitSpecToRateLimitOptionsMap(ratemaps map[string]v1alpha1.RateLim
 
 func buildConfiguration(tempo v1alpha1.TempoStack, params Params) ([]byte, error) {
 	opts := options{
+		StorageType:     string(tempo.Spec.Storage.Secret.Type),
+		AzureStorage:    azureStorageFromParams(params),
 		S3:              s3FromParams(params),
 		GlobalRetention: tempo.Spec.Retention.Global.Traces.Duration.String(),
 		MemberList: []string{

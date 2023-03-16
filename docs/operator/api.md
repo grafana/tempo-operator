@@ -1449,7 +1449,12 @@ string
 
 </thead>
 
-<tbody><tr><td><p>&#34;s3&#34;</p></td>
+<tbody><tr><td><p>&#34;azure&#34;</p></td>
+
+<td><p>ObjectStorageSecretAzure when using Azure for Tempo storage.</p>
+</td>
+
+</tr><tr><td><p>&#34;s3&#34;</p></td>
 
 <td><p>ObjectStorageSecretS3 when using S3 for Tempo storage.</p>
 </td>
@@ -3104,7 +3109,7 @@ ObjectStorageSpec
 
 <td>
 
-<p>Storage defines S3 compatible object storage configuration.
+<p>Storage defines the spec for the object storage endpoint to store traces.
 User is required to create secret and supply it.</p>
 
 </td>

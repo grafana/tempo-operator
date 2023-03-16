@@ -1,5 +1,10 @@
 package config
 
+// AzureStorage holds Azure Storage configuration options.
+type azureStorage struct {
+	Container string
+}
+
 // S3 holds S3 object storage configuration options.
 type s3 struct {
 	Endpoint string
@@ -9,8 +14,10 @@ type s3 struct {
 
 // options holds the configuration template options.
 type options struct {
+	StorageType            string
 	GlobalRetention        string
 	QueryFrontendDiscovery string
+	AzureStorage           azureStorage
 	S3                     s3
 	GlobalRateLimits       rateLimitsOptions
 	TenantRateLimitsPath   string

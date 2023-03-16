@@ -17,49 +17,49 @@ func intToPointer(i int) *int {
 
 func TestBuildConfiguration(t *testing.T) {
 	expCfg := `
---- 
-compactor: 
-  compaction: 
+---
+compactor:
+  compaction:
     block_retention: 48h0m0s
-  ring: 
-    kvstore: 
+  ring:
+    kvstore:
       store: memberlist
-distributor: 
-  receivers: 
-    jaeger: 
-      protocols: 
-        thrift_http: 
+distributor:
+  receivers:
+    jaeger:
+      protocols:
+        thrift_http:
           endpoint: "0.0.0.0:14268"
-    otlp: 
-      protocols: 
-        grpc: 
+    otlp:
+      protocols:
+        grpc:
           endpoint: "0.0.0.0:4317"
-        http: 
+        http:
           endpoint: "0.0.0.0:4318"
-  ring: 
-    kvstore: 
+  ring:
+    kvstore:
       store: memberlist
-ingester: 
-  lifecycler: 
-    ring: 
-      kvstore: 
+ingester:
+  lifecycler:
+    ring:
+      kvstore:
         store: memberlist
       replication_factor: 1
     tokens_file_path: /var/tempo/tokens.json
   max_block_duration: 10m
-memberlist: 
+memberlist:
   abort_if_cluster_join_fails: false
-  join_members: 
+  join_members:
     - tempo-test-gossip-ring
 multitenancy_enabled: false
-querier: 
+querier:
   max_concurrent_queries: 20
   search:
     external_hedge_requests_at: 8s
     external_hedge_requests_up_to: 2
-  frontend_worker: 
+  frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
-server: 
+server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
   http_listen_port: 3200
@@ -67,20 +67,22 @@ server:
   http_server_write_timeout: 3m
   log_format: logfmt
   log_level: debug
-storage: 
-  trace: 
+storage:
+  trace:
     backend: s3
     blocklist_poll: 5m
     cache: none
-    local: 
+    local:
       path: /var/tempo/traces
-    s3: 
+    azure:
+      container_name: "container-test"
+    s3:
       bucket: tempo
       endpoint: "minio:9000"
       insecure: true
-    wal: 
+    wal:
       path: /var/tempo/wal
-usage_report: 
+usage_report:
   reporting_enabled: false
 query_frontend:
   search:
@@ -92,6 +94,11 @@ query_frontend:
 			Name: "test",
 		},
 		Spec: v1alpha1.TempoStackSpec{
+			Storage: v1alpha1.ObjectStorageSpec{
+				Secret: v1alpha1.ObjectStorageSecretSpec{
+					Type: v1alpha1.ObjectStorageSecretS3,
+				},
+			},
 			ReplicationFactor: 1,
 			Retention: v1alpha1.RetentionSpec{
 				Global: v1alpha1.RetentionConfig{
@@ -99,10 +106,14 @@ query_frontend:
 				},
 			},
 		},
-	}, Params{S3: S3{
-		Endpoint: "http://minio:9000",
-		Bucket:   "tempo",
-	}})
+	}, Params{
+		AzureStorage: AzureStorage{
+			Container: "container-test",
+		},
+		S3: S3{
+			Endpoint: "http://minio:9000",
+			Bucket:   "tempo",
+		}})
 	require.NoError(t, err)
 	require.YAMLEq(t, expCfg, string(cfg))
 }
@@ -118,49 +129,49 @@ func TestBuildConfiguration_RateLimits(t *testing.T) {
 			name: "defaults",
 			spec: v1alpha1.LimitSpec{},
 			expect: `
---- 
-compactor: 
-  compaction: 
+---
+compactor:
+  compaction:
     block_retention: 48h0m0s
-  ring: 
-    kvstore: 
+  ring:
+    kvstore:
       store: memberlist
-distributor: 
-  receivers: 
-    jaeger: 
-      protocols: 
-        thrift_http: 
+distributor:
+  receivers:
+    jaeger:
+      protocols:
+        thrift_http:
           endpoint: "0.0.0.0:14268"
-    otlp: 
-      protocols: 
-        grpc: 
+    otlp:
+      protocols:
+        grpc:
           endpoint: "0.0.0.0:4317"
-        http: 
+        http:
           endpoint: "0.0.0.0:4318"
-  ring: 
-    kvstore: 
+  ring:
+    kvstore:
       store: memberlist
-ingester: 
-  lifecycler: 
-    ring: 
-      kvstore: 
+ingester:
+  lifecycler:
+    ring:
+      kvstore:
         store: memberlist
       replication_factor: 1
     tokens_file_path: /var/tempo/tokens.json
   max_block_duration: 10m
-memberlist: 
+memberlist:
   abort_if_cluster_join_fails: false
-  join_members: 
+  join_members:
     - tempo-test-gossip-ring
 multitenancy_enabled: false
-querier: 
+querier:
   max_concurrent_queries: 20
   search:
     external_hedge_requests_at: 8s
     external_hedge_requests_up_to: 2
-  frontend_worker: 
+  frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
-server: 
+server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
   http_listen_port: 3200
@@ -168,20 +179,22 @@ server:
   http_server_write_timeout: 3m
   log_format: logfmt
   log_level: debug
-storage: 
-  trace: 
+storage:
+  trace:
     backend: s3
     blocklist_poll: 5m
     cache: none
-    local: 
+    local:
       path: /var/tempo/traces
-    s3: 
+    azure:
+      container_name: "container-test"
+    s3:
       bucket: tempo
       endpoint: "minio:9000"
       insecure: true
-    wal: 
+    wal:
       path: /var/tempo/wal
-usage_report: 
+usage_report:
   reporting_enabled: false
 query_frontend:
   search:
@@ -199,51 +212,51 @@ query_frontend:
 				},
 			},
 			expect: `
---- 
-compactor: 
-  compaction: 
+---
+compactor:
+  compaction:
     block_retention: 48h0m0s
-  ring: 
-    kvstore: 
+  ring:
+    kvstore:
       store: memberlist
-distributor: 
-  receivers: 
-    jaeger: 
-      protocols: 
-        thrift_http: 
+distributor:
+  receivers:
+    jaeger:
+      protocols:
+        thrift_http:
           endpoint: "0.0.0.0:14268"
-    otlp: 
-      protocols: 
-        grpc: 
+    otlp:
+      protocols:
+        grpc:
           endpoint: "0.0.0.0:4317"
-        http: 
+        http:
           endpoint: "0.0.0.0:4318"
-  ring: 
-    kvstore: 
+  ring:
+    kvstore:
       store: memberlist
-ingester: 
-  lifecycler: 
-    ring: 
-      kvstore: 
+ingester:
+  lifecycler:
+    ring:
+      kvstore:
         store: memberlist
       replication_factor: 1
     tokens_file_path: /var/tempo/tokens.json
   max_block_duration: 10m
-memberlist: 
+memberlist:
   abort_if_cluster_join_fails: false
-  join_members: 
+  join_members:
     - tempo-test-gossip-ring
 multitenancy_enabled: false
 overrides:
   ingestion_rate_limit_bytes: 100
-querier: 
+querier:
   max_concurrent_queries: 20
   search:
     external_hedge_requests_at: 8s
     external_hedge_requests_up_to: 2
-  frontend_worker: 
+  frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
-server: 
+server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
   http_listen_port: 3200
@@ -251,20 +264,22 @@ server:
   http_server_write_timeout: 3m
   log_format: logfmt
   log_level: debug
-storage: 
-  trace: 
+storage:
+  trace:
     backend: s3
     blocklist_poll: 5m
     cache: none
-    local: 
+    local:
       path: /var/tempo/traces
-    s3: 
+    azure:
+      container_name: "container-test"
+    s3:
       bucket: tempo
       endpoint: "minio:9000"
       insecure: true
-    wal: 
+    wal:
       path: /var/tempo/wal
-usage_report: 
+usage_report:
   reporting_enabled: false
 query_frontend:
   search:
@@ -281,51 +296,51 @@ query_frontend:
 					}},
 			},
 			expect: `
---- 
-compactor: 
-  compaction: 
+---
+compactor:
+  compaction:
     block_retention: 48h0m0s
-  ring: 
-    kvstore: 
+  ring:
+    kvstore:
       store: memberlist
-distributor: 
-  receivers: 
-    jaeger: 
-      protocols: 
-        thrift_http: 
+distributor:
+  receivers:
+    jaeger:
+      protocols:
+        thrift_http:
           endpoint: "0.0.0.0:14268"
-    otlp: 
-      protocols: 
-        grpc: 
+    otlp:
+      protocols:
+        grpc:
           endpoint: "0.0.0.0:4317"
-        http: 
+        http:
           endpoint: "0.0.0.0:4318"
-  ring: 
-    kvstore: 
+  ring:
+    kvstore:
       store: memberlist
-ingester: 
-  lifecycler: 
-    ring: 
-      kvstore: 
+ingester:
+  lifecycler:
+    ring:
+      kvstore:
         store: memberlist
       replication_factor: 1
     tokens_file_path: /var/tempo/tokens.json
   max_block_duration: 10m
-memberlist: 
+memberlist:
   abort_if_cluster_join_fails: false
-  join_members: 
+  join_members:
     - tempo-test-gossip-ring
 multitenancy_enabled: false
 overrides:
   ingestion_burst_size_bytes: 100
-querier: 
+querier:
   max_concurrent_queries: 20
   search:
     external_hedge_requests_at: 8s
     external_hedge_requests_up_to: 2
-  frontend_worker: 
+  frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
-server: 
+server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
   http_listen_port: 3200
@@ -333,20 +348,22 @@ server:
   http_server_write_timeout: 3m
   log_format: logfmt
   log_level: debug
-storage: 
-  trace: 
+storage:
+  trace:
     backend: s3
     blocklist_poll: 5m
     cache: none
-    local: 
+    local:
       path: /var/tempo/traces
-    s3: 
+    azure:
+      container_name: "container-test"
+    s3:
       bucket: tempo
       endpoint: "minio:9000"
       insecure: true
-    wal: 
+    wal:
       path: /var/tempo/wal
-usage_report: 
+usage_report:
   reporting_enabled: false
 query_frontend:
   search:
@@ -364,51 +381,51 @@ query_frontend:
 				},
 			},
 			expect: `
---- 
-compactor: 
-  compaction: 
+---
+compactor:
+  compaction:
     block_retention: 48h0m0s
-  ring: 
-    kvstore: 
+  ring:
+    kvstore:
       store: memberlist
-distributor: 
-  receivers: 
-    jaeger: 
-      protocols: 
-        thrift_http: 
+distributor:
+  receivers:
+    jaeger:
+      protocols:
+        thrift_http:
           endpoint: "0.0.0.0:14268"
-    otlp: 
-      protocols: 
-        grpc: 
+    otlp:
+      protocols:
+        grpc:
           endpoint: "0.0.0.0:4317"
-        http: 
+        http:
           endpoint: "0.0.0.0:4318"
-  ring: 
-    kvstore: 
+  ring:
+    kvstore:
       store: memberlist
-ingester: 
-  lifecycler: 
-    ring: 
-      kvstore: 
+ingester:
+  lifecycler:
+    ring:
+      kvstore:
         store: memberlist
       replication_factor: 1
     tokens_file_path: /var/tempo/tokens.json
   max_block_duration: 10m
-memberlist: 
+memberlist:
   abort_if_cluster_join_fails: false
-  join_members: 
+  join_members:
     - tempo-test-gossip-ring
 multitenancy_enabled: false
 overrides:
   max_bytes_per_trace: 100
-querier: 
+querier:
   max_concurrent_queries: 20
   search:
     external_hedge_requests_at: 8s
     external_hedge_requests_up_to: 2
-  frontend_worker: 
+  frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
-server: 
+server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
   http_listen_port: 3200
@@ -416,20 +433,22 @@ server:
   http_server_write_timeout: 3m
   log_format: logfmt
   log_level: debug
-storage: 
-  trace: 
+storage:
+  trace:
     backend: s3
     blocklist_poll: 5m
     cache: none
-    local: 
+    local:
       path: /var/tempo/traces
-    s3: 
+    azure:
+      container_name: "container-test"
+    s3:
       bucket: tempo
       endpoint: "minio:9000"
       insecure: true
-    wal: 
+    wal:
       path: /var/tempo/wal
-usage_report: 
+usage_report:
   reporting_enabled: false
 query_frontend:
   search:
@@ -447,51 +466,51 @@ query_frontend:
 				},
 			},
 			expect: `
---- 
-compactor: 
-  compaction: 
+---
+compactor:
+  compaction:
     block_retention: 48h0m0s
-  ring: 
-    kvstore: 
+  ring:
+    kvstore:
       store: memberlist
-distributor: 
-  receivers: 
-    jaeger: 
-      protocols: 
-        thrift_http: 
+distributor:
+  receivers:
+    jaeger:
+      protocols:
+        thrift_http:
           endpoint: "0.0.0.0:14268"
-    otlp: 
-      protocols: 
-        grpc: 
+    otlp:
+      protocols:
+        grpc:
           endpoint: "0.0.0.0:4317"
-        http: 
+        http:
           endpoint: "0.0.0.0:4318"
-  ring: 
-    kvstore: 
+  ring:
+    kvstore:
       store: memberlist
-ingester: 
-  lifecycler: 
-    ring: 
-      kvstore: 
+ingester:
+  lifecycler:
+    ring:
+      kvstore:
         store: memberlist
       replication_factor: 1
     tokens_file_path: /var/tempo/tokens.json
   max_block_duration: 10m
-memberlist: 
+memberlist:
   abort_if_cluster_join_fails: false
-  join_members: 
+  join_members:
     - tempo-test-gossip-ring
 multitenancy_enabled: false
 overrides:
   max_traces_per_user: 100
-querier: 
+querier:
   max_concurrent_queries: 20
   search:
     external_hedge_requests_at: 8s
     external_hedge_requests_up_to: 2
-  frontend_worker: 
+  frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
-server: 
+server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
   http_listen_port: 3200
@@ -499,20 +518,22 @@ server:
   http_server_write_timeout: 3m
   log_format: logfmt
   log_level: debug
-storage: 
-  trace: 
+storage:
+  trace:
     backend: s3
     blocklist_poll: 5m
     cache: none
-    local: 
+    local:
       path: /var/tempo/traces
-    s3: 
+    azure:
+      container_name: "container-test"
+    s3:
       bucket: tempo
       endpoint: "minio:9000"
       insecure: true
-    wal: 
+    wal:
       path: /var/tempo/wal
-usage_report: 
+usage_report:
   reporting_enabled: false
 query_frontend:
   search:
@@ -530,51 +551,51 @@ query_frontend:
 				},
 			},
 			expect: `
---- 
-compactor: 
-  compaction: 
+---
+compactor:
+  compaction:
     block_retention: 48h0m0s
-  ring: 
-    kvstore: 
+  ring:
+    kvstore:
       store: memberlist
-distributor: 
-  receivers: 
-    jaeger: 
-      protocols: 
-        thrift_http: 
+distributor:
+  receivers:
+    jaeger:
+      protocols:
+        thrift_http:
           endpoint: "0.0.0.0:14268"
-    otlp: 
-      protocols: 
-        grpc: 
+    otlp:
+      protocols:
+        grpc:
           endpoint: "0.0.0.0:4317"
-        http: 
+        http:
           endpoint: "0.0.0.0:4318"
-  ring: 
-    kvstore: 
+  ring:
+    kvstore:
       store: memberlist
-ingester: 
-  lifecycler: 
-    ring: 
-      kvstore: 
+ingester:
+  lifecycler:
+    ring:
+      kvstore:
         store: memberlist
       replication_factor: 1
     tokens_file_path: /var/tempo/tokens.json
   max_block_duration: 10m
-memberlist: 
+memberlist:
   abort_if_cluster_join_fails: false
-  join_members: 
+  join_members:
     - tempo-test-gossip-ring
 multitenancy_enabled: false
 overrides:
   max_bytes_per_tag_values_query: 100
-querier: 
+querier:
   max_concurrent_queries: 20
   search:
     external_hedge_requests_at: 8s
     external_hedge_requests_up_to: 2
-  frontend_worker: 
+  frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
-server: 
+server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
   http_listen_port: 3200
@@ -582,20 +603,22 @@ server:
   http_server_write_timeout: 3m
   log_format: logfmt
   log_level: debug
-storage: 
-  trace: 
+storage:
+  trace:
     backend: s3
     blocklist_poll: 5m
     cache: none
-    local: 
+    local:
       path: /var/tempo/traces
-    s3: 
+    azure:
+      container_name: "container-test"
+    s3:
       bucket: tempo
       endpoint: "minio:9000"
       insecure: true
-    wal: 
+    wal:
       path: /var/tempo/wal
-usage_report: 
+usage_report:
   reporting_enabled: false
 query_frontend:
   search:
@@ -613,51 +636,51 @@ query_frontend:
 				},
 			},
 			expect: `
---- 
-compactor: 
-  compaction: 
+---
+compactor:
+  compaction:
     block_retention: 48h0m0s
-  ring: 
-    kvstore: 
+  ring:
+    kvstore:
       store: memberlist
-distributor: 
-  receivers: 
-    jaeger: 
-      protocols: 
-        thrift_http: 
+distributor:
+  receivers:
+    jaeger:
+      protocols:
+        thrift_http:
           endpoint: "0.0.0.0:14268"
-    otlp: 
-      protocols: 
-        grpc: 
+    otlp:
+      protocols:
+        grpc:
           endpoint: "0.0.0.0:4317"
-        http: 
+        http:
           endpoint: "0.0.0.0:4318"
-  ring: 
-    kvstore: 
+  ring:
+    kvstore:
       store: memberlist
-ingester: 
-  lifecycler: 
-    ring: 
-      kvstore: 
+ingester:
+  lifecycler:
+    ring:
+      kvstore:
         store: memberlist
       replication_factor: 1
     tokens_file_path: /var/tempo/tokens.json
   max_block_duration: 10m
-memberlist: 
+memberlist:
   abort_if_cluster_join_fails: false
-  join_members: 
+  join_members:
     - tempo-test-gossip-ring
 multitenancy_enabled: false
 overrides:
   max_search_bytes_per_trace: 1000
-querier: 
+querier:
   max_concurrent_queries: 20
   search:
     external_hedge_requests_at: 8s
     external_hedge_requests_up_to: 2
-  frontend_worker: 
+  frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
-server: 
+server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
   http_listen_port: 3200
@@ -665,20 +688,22 @@ server:
   http_server_write_timeout: 3m
   log_format: logfmt
   log_level: debug
-storage: 
-  trace: 
+storage:
+  trace:
     backend: s3
     blocklist_poll: 5m
     cache: none
-    local: 
+    local:
       path: /var/tempo/traces
-    s3: 
+    azure:
+      container_name: "container-test"
+    s3:
       bucket: tempo
       endpoint: "minio:9000"
       insecure: true
-    wal: 
+    wal:
       path: /var/tempo/wal
-usage_report: 
+usage_report:
   reporting_enabled: false
 query_frontend:
   search:
@@ -703,39 +728,39 @@ query_frontend:
 				},
 			},
 			expect: `
---- 
-compactor: 
-  compaction: 
+---
+compactor:
+  compaction:
     block_retention: 48h0m0s
-  ring: 
-    kvstore: 
+  ring:
+    kvstore:
       store: memberlist
-distributor: 
-  receivers: 
-    jaeger: 
-      protocols: 
-        thrift_http: 
+distributor:
+  receivers:
+    jaeger:
+      protocols:
+        thrift_http:
           endpoint: "0.0.0.0:14268"
-    otlp: 
-      protocols: 
-        grpc: 
+    otlp:
+      protocols:
+        grpc:
           endpoint: "0.0.0.0:4317"
-        http: 
+        http:
           endpoint: "0.0.0.0:4318"
-  ring: 
-    kvstore: 
+  ring:
+    kvstore:
       store: memberlist
-ingester: 
-  lifecycler: 
-    ring: 
-      kvstore: 
+ingester:
+  lifecycler:
+    ring:
+      kvstore:
         store: memberlist
       replication_factor: 1
     tokens_file_path: /var/tempo/tokens.json
   max_block_duration: 10m
-memberlist: 
+memberlist:
   abort_if_cluster_join_fails: false
-  join_members: 
+  join_members:
     - tempo-test-gossip-ring
 multitenancy_enabled: false
 overrides:
@@ -745,14 +770,14 @@ overrides:
   max_bytes_per_trace: 400
   max_bytes_per_tag_values_query: 500
   max_search_bytes_per_trace: 1000
-querier: 
+querier:
   max_concurrent_queries: 20
   search:
     external_hedge_requests_at: 8s
     external_hedge_requests_up_to: 2
-  frontend_worker: 
+  frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
-server: 
+server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
   http_listen_port: 3200
@@ -760,20 +785,22 @@ server:
   http_server_write_timeout: 3m
   log_format: logfmt
   log_level: debug
-storage: 
-  trace: 
+storage:
+  trace:
     backend: s3
     blocklist_poll: 5m
     cache: none
-    local: 
+    azure:
+      container_name: "container-test"
+    local:
       path: /var/tempo/traces
-    s3: 
+    s3:
       bucket: tempo
       endpoint: "minio:9000"
       insecure: true
-    wal: 
+    wal:
       path: /var/tempo/wal
-usage_report: 
+usage_report:
   reporting_enabled: false
 query_frontend:
   search:
@@ -801,51 +828,51 @@ query_frontend:
 			},
 
 			expect: `
---- 
-compactor: 
-  compaction: 
+---
+compactor:
+  compaction:
     block_retention: 48h0m0s
-  ring: 
-    kvstore: 
+  ring:
+    kvstore:
       store: memberlist
-distributor: 
-  receivers: 
-    jaeger: 
-      protocols: 
-        thrift_http: 
+distributor:
+  receivers:
+    jaeger:
+      protocols:
+        thrift_http:
           endpoint: "0.0.0.0:14268"
-    otlp: 
-      protocols: 
-        grpc: 
+    otlp:
+      protocols:
+        grpc:
           endpoint: "0.0.0.0:4317"
-        http: 
+        http:
           endpoint: "0.0.0.0:4318"
-  ring: 
-    kvstore: 
+  ring:
+    kvstore:
       store: memberlist
-ingester: 
-  lifecycler: 
-    ring: 
-      kvstore: 
+ingester:
+  lifecycler:
+    ring:
+      kvstore:
         store: memberlist
       replication_factor: 1
     tokens_file_path: /var/tempo/tokens.json
   max_block_duration: 10m
-memberlist: 
+memberlist:
   abort_if_cluster_join_fails: false
-  join_members: 
+  join_members:
     - tempo-test-gossip-ring
 multitenancy_enabled: false
 overrides:
   per_tenant_override_config: /conf/overrides.yaml
-querier: 
+querier:
   max_concurrent_queries: 20
   search:
     external_hedge_requests_at: 8s
     external_hedge_requests_up_to: 2
-  frontend_worker: 
+  frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
-server: 
+server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
   http_listen_port: 3200
@@ -853,20 +880,22 @@ server:
   http_server_write_timeout: 3m
   log_format: logfmt
   log_level: debug
-storage: 
-  trace: 
+storage:
+  trace:
     backend: s3
     blocklist_poll: 5m
     cache: none
-    local: 
+    local:
       path: /var/tempo/traces
-    s3: 
+    azure:
+      container_name: "container-test"
+    s3:
       bucket: tempo
       endpoint: "minio:9000"
       insecure: true
-    wal: 
+    wal:
       path: /var/tempo/wal
-usage_report: 
+usage_report:
   reporting_enabled: false
 query_frontend:
   search:
@@ -883,6 +912,11 @@ query_frontend:
 					Name: "test",
 				},
 				Spec: v1alpha1.TempoStackSpec{
+					Storage: v1alpha1.ObjectStorageSpec{
+						Secret: v1alpha1.ObjectStorageSecretSpec{
+							Type: v1alpha1.ObjectStorageSecretS3,
+						},
+					},
 					ReplicationFactor: 1,
 					Retention: v1alpha1.RetentionSpec{
 						Global: v1alpha1.RetentionConfig{
@@ -891,10 +925,14 @@ query_frontend:
 					},
 					LimitSpec: tc.spec,
 				},
-			}, Params{S3: S3{
-				Endpoint: "http://minio:9000",
-				Bucket:   "tempo",
-			}})
+			}, Params{
+				AzureStorage: AzureStorage{
+					Container: "container-test",
+				},
+				S3: S3{
+					Endpoint: "http://minio:9000",
+					Bucket:   "tempo",
+				}})
 			require.NoError(t, err)
 			require.YAMLEq(t, tc.expect, string(cfg))
 		})
@@ -942,49 +980,49 @@ func TestBuildConfiguration_SearchConfig(t *testing.T) {
 				DefaultResultLimit: &defaultResultLimit,
 			},
 			expect: `
---- 
-compactor: 
-  compaction: 
+---
+compactor:
+  compaction:
     block_retention: 0s
-  ring: 
-    kvstore: 
+  ring:
+    kvstore:
       store: memberlist
-distributor: 
-  receivers: 
-    jaeger: 
-      protocols: 
-        thrift_http: 
+distributor:
+  receivers:
+    jaeger:
+      protocols:
+        thrift_http:
           endpoint: "0.0.0.0:14268"
-    otlp: 
-      protocols: 
-        grpc: 
+    otlp:
+      protocols:
+        grpc:
           endpoint: "0.0.0.0:4317"
-        http: 
+        http:
           endpoint: "0.0.0.0:4318"
-  ring: 
-    kvstore: 
+  ring:
+    kvstore:
       store: memberlist
-ingester: 
-  lifecycler: 
-    ring: 
-      kvstore: 
+ingester:
+  lifecycler:
+    ring:
+      kvstore:
         store: memberlist
       replication_factor: 1
     tokens_file_path: /var/tempo/tokens.json
   max_block_duration: 10m
-memberlist: 
+memberlist:
   abort_if_cluster_join_fails: false
-  join_members: 
+  join_members:
     - tempo-test-gossip-ring
 multitenancy_enabled: false
-querier: 
+querier:
   max_concurrent_queries: 20
   search:
     external_hedge_requests_at: 8s
     external_hedge_requests_up_to: 2
-  frontend_worker: 
+  frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
-server: 
+server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
   http_listen_port: 3200
@@ -992,20 +1030,22 @@ server:
   http_server_write_timeout: 3m
   log_format: logfmt
   log_level: debug
-storage: 
-  trace: 
+storage:
+  trace:
     backend: s3
     blocklist_poll: 5m
     cache: none
-    local: 
+    local:
       path: /var/tempo/traces
-    s3: 
+    azure:
+      container_name: "container-test"
+    s3:
       bucket: tempo
       endpoint: "minio:9000"
       insecure: true
-    wal: 
+    wal:
       path: /var/tempo/wal
-usage_report: 
+usage_report:
   reporting_enabled: false
 query_frontend:
   search:
@@ -1023,13 +1063,22 @@ query_frontend:
 					Name: "test",
 				},
 				Spec: v1alpha1.TempoStackSpec{
+					Storage: v1alpha1.ObjectStorageSpec{
+						Secret: v1alpha1.ObjectStorageSecretSpec{
+							Type: v1alpha1.ObjectStorageSecretS3,
+						},
+					},
 					ReplicationFactor: 1,
 					SearchSpec:        tc.spec,
 				},
-			}, Params{S3: S3{
-				Endpoint: "http://minio:9000",
-				Bucket:   "tempo",
-			}})
+			}, Params{
+				AzureStorage: AzureStorage{
+					Container: "container-test",
+				},
+				S3: S3{
+					Endpoint: "http://minio:9000",
+					Bucket:   "tempo",
+				}})
 			require.NoError(t, err)
 			require.YAMLEq(t, tc.expect, string(cfg))
 		})
@@ -1040,49 +1089,49 @@ func TestBuildConfiguration_ReplicationFactor(t *testing.T) {
 
 	replcationFactor := 10
 	expect := `
---- 
-compactor: 
-  compaction: 
+---
+compactor:
+  compaction:
     block_retention: 0s
-  ring: 
-    kvstore: 
+  ring:
+    kvstore:
       store: memberlist
-distributor: 
-  receivers: 
-    jaeger: 
-      protocols: 
-        thrift_http: 
+distributor:
+  receivers:
+    jaeger:
+      protocols:
+        thrift_http:
           endpoint: "0.0.0.0:14268"
-    otlp: 
-      protocols: 
-        grpc: 
+    otlp:
+      protocols:
+        grpc:
           endpoint: "0.0.0.0:4317"
-        http: 
+        http:
           endpoint: "0.0.0.0:4318"
-  ring: 
-    kvstore: 
+  ring:
+    kvstore:
       store: memberlist
-ingester: 
-  lifecycler: 
-    ring: 
-      kvstore: 
+ingester:
+  lifecycler:
+    ring:
+      kvstore:
         store: memberlist
       replication_factor: 10
     tokens_file_path: /var/tempo/tokens.json
   max_block_duration: 10m
-memberlist: 
+memberlist:
   abort_if_cluster_join_fails: false
-  join_members: 
+  join_members:
     - tempo-test-gossip-ring
 multitenancy_enabled: false
-querier: 
+querier:
   max_concurrent_queries: 20
   search:
     external_hedge_requests_at: 8s
     external_hedge_requests_up_to: 2
-  frontend_worker: 
+  frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
-server: 
+server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
   http_listen_port: 3200
@@ -1090,20 +1139,22 @@ server:
   http_server_write_timeout: 3m
   log_format: logfmt
   log_level: debug
-storage: 
-  trace: 
+storage:
+  trace:
     backend: s3
     blocklist_poll: 5m
     cache: none
-    local: 
+    local:
       path: /var/tempo/traces
-    s3: 
+    azure:
+      container_name: "container-test"
+    s3:
       bucket: tempo
       endpoint: "minio:9000"
       insecure: true
-    wal: 
+    wal:
       path: /var/tempo/wal
-usage_report: 
+usage_report:
   reporting_enabled: false
 query_frontend:
   search:
@@ -1116,23 +1167,32 @@ query_frontend:
 			Name: "test",
 		},
 		Spec: v1alpha1.TempoStackSpec{
+			Storage: v1alpha1.ObjectStorageSpec{
+				Secret: v1alpha1.ObjectStorageSecretSpec{
+					Type: v1alpha1.ObjectStorageSecretS3,
+				},
+			},
 			ReplicationFactor: replcationFactor,
 		},
-	}, Params{S3: S3{
-		Endpoint: "http://minio:9000",
-		Bucket:   "tempo",
-	}})
+	}, Params{
+		AzureStorage: AzureStorage{
+			Container: "container-test",
+		},
+		S3: S3{
+			Endpoint: "http://minio:9000",
+			Bucket:   "tempo",
+		}})
 	require.NoError(t, err)
 	require.YAMLEq(t, expect, string(cfg))
 }
 
 func TestBuildConfiguration_Multitenancy(t *testing.T) {
 	expCfg := `
---- 
-compactor: 
+---
+compactor:
   compaction:
     block_retention: 48h0m0s
-  ring: 
+  ring:
     kvstore:
       store: memberlist
 distributor:
@@ -1143,34 +1203,34 @@ distributor:
           endpoint: "0.0.0.0:14268"
     otlp:
       protocols:
-        grpc: 
+        grpc:
           endpoint: "0.0.0.0:4317"
-        http: 
+        http:
           endpoint: "0.0.0.0:4318"
-  ring: 
-    kvstore: 
+  ring:
+    kvstore:
       store: memberlist
-ingester: 
-  lifecycler: 
-    ring: 
-      kvstore: 
+ingester:
+  lifecycler:
+    ring:
+      kvstore:
         store: memberlist
       replication_factor: 1
     tokens_file_path: /var/tempo/tokens.json
   max_block_duration: 10m
-memberlist: 
+memberlist:
   abort_if_cluster_join_fails: false
-  join_members: 
+  join_members:
     - tempo-test-gossip-ring
 multitenancy_enabled: true
-querier: 
+querier:
   max_concurrent_queries: 20
   search:
     external_hedge_requests_at: 8s
     external_hedge_requests_up_to: 2
-  frontend_worker: 
+  frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
-server: 
+server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
   http_listen_port: 3200
@@ -1178,20 +1238,22 @@ server:
   http_server_write_timeout: 3m
   log_format: logfmt
   log_level: debug
-storage: 
-  trace: 
+storage:
+  trace:
     backend: s3
     blocklist_poll: 5m
     cache: none
-    local: 
+    local:
       path: /var/tempo/traces
-    s3: 
+    azure:
+      container_name: "container-test"
+    s3:
       bucket: tempo
       endpoint: "minio:9000"
       insecure: true
-    wal: 
+    wal:
       path: /var/tempo/wal
-usage_report: 
+usage_report:
   reporting_enabled: false
 query_frontend:
   search:
@@ -1203,6 +1265,11 @@ query_frontend:
 			Name: "test",
 		},
 		Spec: v1alpha1.TempoStackSpec{
+			Storage: v1alpha1.ObjectStorageSpec{
+				Secret: v1alpha1.ObjectStorageSecretSpec{
+					Type: v1alpha1.ObjectStorageSecretS3,
+				},
+			},
 			ReplicationFactor: 1,
 			Retention: v1alpha1.RetentionSpec{
 				Global: v1alpha1.RetentionConfig{
@@ -1212,6 +1279,9 @@ query_frontend:
 			Tenants: &v1alpha1.TenantsSpec{},
 		},
 	}, Params{
+		AzureStorage: AzureStorage{
+			Container: "container-test",
+		},
 		S3: S3{
 			Endpoint: "http://minio:9000",
 			Bucket:   "tempo",
@@ -1223,47 +1293,47 @@ query_frontend:
 
 func TestBuildConfigurationTLS(t *testing.T) {
 	expCfg := `
---- 
-compactor: 
-  compaction: 
+---
+compactor:
+  compaction:
     block_retention: 48h0m0s
-  ring: 
-    kvstore: 
+  ring:
+    kvstore:
       store: memberlist
-distributor: 
-  receivers: 
-    jaeger: 
-      protocols: 
-        thrift_http: 
+distributor:
+  receivers:
+    jaeger:
+      protocols:
+        thrift_http:
           endpoint: "0.0.0.0:14268"
-    otlp: 
-      protocols: 
-        grpc: 
+    otlp:
+      protocols:
+        grpc:
           endpoint: "0.0.0.0:4317"
-        http: 
+        http:
           endpoint: "0.0.0.0:4318"
-  ring: 
-    kvstore: 
+  ring:
+    kvstore:
       store: memberlist
-ingester: 
-  lifecycler: 
-    ring: 
-      kvstore: 
+ingester:
+  lifecycler:
+    ring:
+      kvstore:
         store: memberlist
       replication_factor: 1
     tokens_file_path: /var/tempo/tokens.json
   max_block_duration: 10m
-memberlist: 
+memberlist:
   abort_if_cluster_join_fails: false
-  join_members: 
+  join_members:
     - tempo-test-gossip-ring
 multitenancy_enabled: false
-querier: 
+querier:
   max_concurrent_queries: 20
   search:
     external_hedge_requests_at: 8s
     external_hedge_requests_up_to: 2
-  frontend_worker: 
+  frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
     grpc_client_config:
       tls_enabled: true
@@ -1281,7 +1351,7 @@ internal_server:
     key_file: /var/run/tls/http/server/tls.key
     tls_cipher_suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
     tls_min_version: VersionTLS12
-server: 
+server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
   http_listen_port: 3200
@@ -1303,20 +1373,22 @@ server:
     key_file: /var/run/tls/http/server/tls.key
     tls_cipher_suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
     tls_min_version: VersionTLS12
-storage: 
-  trace: 
+storage:
+  trace:
     backend: s3
     blocklist_poll: 5m
     cache: none
-    local: 
+    local:
       path: /var/tempo/traces
-    s3: 
+    azure:
+      container_name: test-container
+    s3:
       bucket: tempo
       endpoint: "minio:9000"
       insecure: true
-    wal: 
+    wal:
       path: /var/tempo/wal
-usage_report: 
+usage_report:
   reporting_enabled: false
 query_frontend:
   search:
@@ -1339,6 +1411,11 @@ ingester_client:
 			Namespace: "nstest",
 		},
 		Spec: v1alpha1.TempoStackSpec{
+			Storage: v1alpha1.ObjectStorageSpec{
+				Secret: v1alpha1.ObjectStorageSecretSpec{
+					Type: v1alpha1.ObjectStorageSecretS3,
+				},
+			},
 			ReplicationFactor: 1,
 			Retention: v1alpha1.RetentionSpec{
 				Global: v1alpha1.RetentionConfig{
@@ -1347,9 +1424,13 @@ ingester_client:
 			},
 		},
 	}, Params{
+		AzureStorage: AzureStorage{
+			Container: "test-container",
+		},
 		S3: S3{
 			Endpoint: "http://minio:9000",
 			Bucket:   "tempo",
+			Insecure: true,
 		},
 		HTTPEncryption: true,
 		GRPCEncryption: true,
