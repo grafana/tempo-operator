@@ -1349,8 +1349,8 @@ internal_server:
   http_tls_config:
     cert_file: /var/run/tls/http/server/tls.crt
     key_file: /var/run/tls/http/server/tls.key
-    tls_cipher_suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
-    tls_min_version: VersionTLS12
+  tls_cipher_suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+  tls_min_version: VersionTLS12
 server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
@@ -1359,20 +1359,18 @@ server:
   http_server_write_timeout: 3m
   log_format: logfmt
   log_level: debug
+  tls_cipher_suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+  tls_min_version: VersionTLS12
   grpc_tls_config:
     cert_file: /var/run/tls/grpc/server/tls.crt
     client_auth_type: RequireAndVerifyClientCert
     client_ca_file: /var/run/ca/service-ca.crt
     key_file: /var/run/tls/grpc/server/tls.key
-    tls_cipher_suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
-    tls_min_version: VersionTLS12
   http_tls_config:
     cert_file: /var/run/tls/http/server/tls.crt
     client_auth_type: RequireAndVerifyClientCert
     client_ca_file: /var/run/ca/service-ca.crt
     key_file: /var/run/tls/http/server/tls.key
-    tls_cipher_suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
-    tls_min_version: VersionTLS12
 storage:
   trace:
     backend: s3
