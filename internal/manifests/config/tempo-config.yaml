@@ -94,11 +94,11 @@ querier:
 internal_server:
   enable: true
   http_listen_address: ""
+  tls_cipher_suites: {{ .TLS.Profile.Ciphers }}
+  tls_min_version: {{ .TLS.Profile.MinTLSVersion }}
   http_tls_config:
     cert_file: {{ .TLS.Paths.HTTP.Certificate }}
     key_file: {{ .TLS.Paths.HTTP.Key }}
-    tls_cipher_suites: {{ .TLS.Profile.Ciphers }}
-    tls_min_version: {{ .TLS.Profile.MinTLSVersion }}
 {{- end }}
 server:
   grpc_server_max_recv_msg_size: 4194304
@@ -108,14 +108,16 @@ server:
   http_server_write_timeout: 3m
   log_format: logfmt
   log_level: debug
+{{- if or .Gates.GRPCEncryption .Gates.HTTPEncryption }}
+  tls_cipher_suites: {{ .TLS.Profile.Ciphers }}
+  tls_min_version: {{ .TLS.Profile.MinTLSVersion }}
+{{- end }}
 {{- if .Gates.GRPCEncryption }}
   grpc_tls_config:
     cert_file:  {{ .TLS.Paths.GRPC.Certificate }}
     key_file: {{ .TLS.Paths.GRPC.Key }}
     client_ca_file: {{ .TLS.Paths.CA }}
     client_auth_type: RequireAndVerifyClientCert
-    tls_cipher_suites: {{ .TLS.Profile.Ciphers }}
-    tls_min_version: {{ .TLS.Profile.MinTLSVersion }}
 {{- end }}
 {{- if .Gates.HTTPEncryption }}
   http_tls_config:
@@ -123,8 +125,6 @@ server:
     key_file: {{ .TLS.Paths.HTTP.Key }}
     client_ca_file: {{ .TLS.Paths.CA }}
     client_auth_type: RequireAndVerifyClientCert
-    tls_cipher_suites: {{ .TLS.Profile.Ciphers }}
-    tls_min_version: {{ .TLS.Profile.MinTLSVersion }}
 {{- end }}
 storage:
   trace:
