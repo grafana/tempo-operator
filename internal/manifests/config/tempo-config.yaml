@@ -59,6 +59,9 @@ overrides:
 {{- if .GlobalRateLimits.MaxBytesPerTagValues }}
   max_bytes_per_tag_values_query: {{ .GlobalRateLimits.MaxBytesPerTagValues }}
 {{- end }}
+{{- if .GlobalRateLimits.MaxSearchBytesPerTrace }}
+  max_search_bytes_per_trace: {{ .GlobalRateLimits.MaxSearchBytesPerTrace }}
+{{- end }}
 {{- if .TenantRateLimitsPath }}
   per_tenant_override_config: {{ .TenantRateLimitsPath }}
 {{- end }}

@@ -23,8 +23,8 @@ data:
     # after the manager stops then its usage might be unsafe.
     # leaderElectionReleaseOnCancel: true
     images:
-      tempo: docker.io/grafana/tempo:main-944e5ae
-      tempoQuery: docker.io/grafana/tempo-query:main-944e5ae
+      tempo: docker.io/grafana/tempo:main-e6394c3
+      tempoQuery: docker.io/grafana/tempo-query:main-e6394c3
       tempoGateway: quay.io/observatorium/api:main-2023-02-09-v0.1.2-329-g1ff4f11
     featureGates:
       openshift:
