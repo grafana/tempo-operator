@@ -38,11 +38,13 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 		params.Tempo.Spec.Tenants == nil {
 		return []client.Object{}, nil
 	}
+
 	rbacCfg, tenantsCfg, err := buildConfigFiles(options{
-		Namespace:  params.Tempo.Namespace,
-		Name:       params.Tempo.Name,
-		BaseDomain: params.Gates.OpenShift.BaseDomain,
-		Tenants:    params.Tempo.Spec.Tenants,
+		Namespace:     params.Tempo.Namespace,
+		Name:          params.Tempo.Name,
+		BaseDomain:    params.Gates.OpenShift.BaseDomain,
+		Tenants:       params.Tempo.Spec.Tenants,
+		TenantSecrets: params.GatewayTenantSecret,
 	})
 	if err != nil {
 		return nil, err
@@ -174,7 +176,7 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 								fmt.Sprintf("--traces.read.endpoint=http://%s:16686", naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name)),
 								fmt.Sprintf("--grpc.listen=0.0.0.0:%d", portGRPC),
 								fmt.Sprintf("--rbac.config=%s", path.Join(tempoGatewayMountDir, "cm", tempoGatewayRbacFileName)),
-								fmt.Sprintf("--tenants.config=%s", path.Join(tempoGatewayMountDir, "secert", tempoGatewayTenantFileName)),
+								fmt.Sprintf("--tenants.config=%s", path.Join(tempoGatewayMountDir, "secret", tempoGatewayTenantFileName)),
 								"--log.level=info",
 							},
 							Ports: []corev1.ContainerPort{
@@ -228,7 +230,7 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 								{
 									Name:      "tenant",
 									ReadOnly:  true,
-									MountPath: path.Join(tempoGatewayMountDir, "secert", tempoGatewayTenantFileName),
+									MountPath: path.Join(tempoGatewayMountDir, "secret", tempoGatewayTenantFileName),
 									SubPath:   tempoGatewayTenantFileName,
 								},
 							},
