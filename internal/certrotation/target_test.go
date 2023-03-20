@@ -79,7 +79,7 @@ func TestCertificatesExpired(t *testing.T) {
 
 	require.Error(t, err)
 	require.ErrorAs(t, err, &expired)
-	require.Len(t, err.(*CertExpiredError).Reasons, 10)
+	require.Len(t, err.(*CertExpiredError).Reasons, 13)
 }
 
 func TestBuildTargetCertKeyPairSecrets_Create(t *testing.T) {
@@ -111,7 +111,7 @@ func TestBuildTargetCertKeyPairSecrets_Create(t *testing.T) {
 
 	objs, err := buildTargetCertKeyPairSecrets(opts)
 	require.NoError(t, err)
-	require.Len(t, objs, 10)
+	require.Len(t, objs, 13)
 }
 
 func TestBuildTargetCertKeyPairSecrets_Rotate(t *testing.T) {
@@ -159,7 +159,7 @@ func TestBuildTargetCertKeyPairSecrets_Rotate(t *testing.T) {
 
 	objs, err := buildTargetCertKeyPairSecrets(opts)
 	require.NoError(t, err)
-	require.Len(t, objs, 10)
+	require.Len(t, objs, 13)
 
 	// Check serving certificate rotation
 	s := objs[7].(*corev1.Secret)

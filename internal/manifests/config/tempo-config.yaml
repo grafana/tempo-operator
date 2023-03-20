@@ -19,7 +19,7 @@ distributor:
             ca_file: {{ .TLS.Paths.CA }}
             cert_file: {{ .TLS.Paths.GRPC.Certificate }}
             key_file: {{ .TLS.Paths.GRPC.Key }}
-            min_version: {{ .TLS.Profile.MinTLSVersion }}
+            min_version: {{ .TLS.Profile.MinTLSVersionShort }}
 {{- end }}
         http:
           endpoint: 0.0.0.0:4318
@@ -28,7 +28,7 @@ distributor:
             ca_file: {{ .TLS.Paths.CA }}
             cert_file: {{ .TLS.Paths.HTTP.Certificate }}
             key_file: {{ .TLS.Paths.HTTP.Key }}
-            min_version: {{ .TLS.Profile.MinTLSVersion }}
+            min_version: {{ .TLS.Profile.MinTLSVersionShort }}
 {{- end }}
   ring:
     kvstore:
