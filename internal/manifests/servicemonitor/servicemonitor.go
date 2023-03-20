@@ -16,8 +16,8 @@ import (
 // BuildServiceMonitors creates ServiceMonitor objects.
 func BuildServiceMonitors(params manifestutils.Params) []client.Object {
 	// Create one ServiceMonitor instance per monitored service.
-	// A single ServiceMonitor which matches all Tempo services (Selector: manifestutils.CommonLabels())
-	// would also select e.g. the query-frontend-discovery service, which should not be monitored.
+	// Each tempo component has its own TLS certificate, therefore we need separate
+	// ServiceMonitor instances for each component.
 	monitors := []client.Object{
 		buildTempoComponentServiceMonitor(params, manifestutils.CompactorComponentName),
 		buildTempoComponentServiceMonitor(params, manifestutils.DistributorComponentName),
