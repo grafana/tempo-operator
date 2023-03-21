@@ -430,6 +430,5 @@ func tenantsConfig(tempo v1alpha1.TempoStack, tenantsCfg string) (*corev1.Secret
 	h.Write([]byte(tenantsCfg))
 	checksum := hex.EncodeToString(h.Sum(nil))
 
-
 	return secret, checksum
 }

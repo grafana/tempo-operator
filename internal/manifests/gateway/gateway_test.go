@@ -14,7 +14,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-func TestRbacConfig (t *testing.T){
+func TestRbacConfig(t *testing.T) {
 	tempo := v1alpha1.TempoStack{
 		Spec: v1alpha1.TempoStackSpec{
 			Tenants: &v1alpha1.TenantsSpec{
@@ -22,12 +22,12 @@ func TestRbacConfig (t *testing.T){
 				Authorization: &v1alpha1.AuthorizationSpec{
 					RoleBindings: []v1alpha1.RoleBindingsSpec{
 						{
-							Name: "test",
+							Name:  "test",
 							Roles: []string{"read-write"},
 							Subjects: []v1alpha1.Subject{
 								{
-								Name: "admin@example.com",
-								Kind: v1alpha1.User,
+									Name: "admin@example.com",
+									Kind: v1alpha1.User,
 								},
 							},
 						},
@@ -48,11 +48,11 @@ func TestRbacConfig (t *testing.T){
 		},
 	}
 	params := manifestutils.Params{
-		StorageParams: manifestutils.StorageParams{},
-		ConfigChecksum: "",
-		Tempo: tempo,
-		Gates: configv1alpha1.FeatureGates{},
-		TLSProfile: tlsprofile.TLSProfileOptions{},
+		StorageParams:       manifestutils.StorageParams{},
+		ConfigChecksum:      "",
+		Tempo:               tempo,
+		Gates:               configv1alpha1.FeatureGates{},
+		TLSProfile:          tlsprofile.TLSProfileOptions{},
 		GatewayTenantSecret: []*manifestutils.GatewayTenantSecret{},
 	}
 
@@ -70,7 +70,6 @@ func TestRbacConfig (t *testing.T){
 	assert.NotEmpty(t, secret.Data["rbac.yaml"])
 }
 
-
 func TestTenantsConfig(t *testing.T) {
 	tempo := v1alpha1.TempoStack{
 		Spec: v1alpha1.TempoStackSpec{
@@ -79,12 +78,12 @@ func TestTenantsConfig(t *testing.T) {
 				Authorization: &v1alpha1.AuthorizationSpec{
 					RoleBindings: []v1alpha1.RoleBindingsSpec{
 						{
-							Name: "test",
+							Name:  "test",
 							Roles: []string{"read-write"},
 							Subjects: []v1alpha1.Subject{
 								{
-								Name: "admin@example.com",
-								Kind: v1alpha1.User,
+									Name: "admin@example.com",
+									Kind: v1alpha1.User,
 								},
 							},
 						},
@@ -105,11 +104,11 @@ func TestTenantsConfig(t *testing.T) {
 		},
 	}
 	params := manifestutils.Params{
-		StorageParams: manifestutils.StorageParams{},
-		ConfigChecksum: "",
-		Tempo: tempo,
-		Gates: configv1alpha1.FeatureGates{},
-		TLSProfile: tlsprofile.TLSProfileOptions{},
+		StorageParams:       manifestutils.StorageParams{},
+		ConfigChecksum:      "",
+		Tempo:               tempo,
+		Gates:               configv1alpha1.FeatureGates{},
+		TLSProfile:          tlsprofile.TLSProfileOptions{},
 		GatewayTenantSecret: []*manifestutils.GatewayTenantSecret{},
 	}
 
