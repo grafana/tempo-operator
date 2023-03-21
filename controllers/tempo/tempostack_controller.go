@@ -154,6 +154,14 @@ func (r *TempoStackReconciler) reconcileManifests(ctx context.Context, log logr.
 		}
 	}
 
+	if err = v1alpha1.ValidateTenantConfigs(tempo); err != nil {
+		return &status.DegradedError{
+			Message: fmt.Sprintf("Invalid tenants configuration: %s", err),
+			Reason:  v1alpha1.ReasonInvalidTenantsConfiguration,
+			Requeue: false,
+		}
+	}
+
 	if tempo.Spec.Tenants != nil && tempo.Spec.Tenants.Mode == v1alpha1.OpenShift && r.FeatureGates.OpenShift.BaseDomain == "" {
 		domain, err := gateway.GetOpenShiftBaseDomain(ctx, r.Client)
 		if err != nil {
@@ -188,11 +196,20 @@ func (r *TempoStackReconciler) reconcileManifests(ctx context.Context, log logr.
 		return err
 	}
 
+	tenantSecrets := []*manifestutils.GatewayTenantSecret{}
+	if tempo.Spec.Tenants != nil && tempo.Spec.Tenants.Mode == v1alpha1.Static {
+		tenantSecrets, err = gateway.GetTenantSecrets(ctx, r.Client, &tempo)
+		if err != nil {
+			return err
+		}
+	}
+
 	managedObjects, err := manifests.BuildAll(manifestutils.Params{
-		Tempo:         tempo,
-		StorageParams: *storageConfig,
-		Gates:         r.FeatureGates,
-		TLSProfile:    tlsProfile,
+		Tempo:               tempo,
+		StorageParams:       *storageConfig,
+		Gates:               r.FeatureGates,
+		TLSProfile:          tlsProfile,
+		GatewayTenantSecret: tenantSecrets,
 	})
 	// TODO (pavolloffay) check error type and change return appropriately
 	if err != nil {

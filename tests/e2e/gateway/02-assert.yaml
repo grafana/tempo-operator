@@ -1,0 +1,142 @@
+---
+apiVersion: v1
+data:
+  tenants.yaml: dGVuYW50czoKLSBuYW1lOiB0ZXN0LW9pZGMKICBpZDogdGVzdC1vaWRjCiAgb2lkYzoKICAgIGNsaWVudElEOiB0ZXN0CiAgICBjbGllbnRTZWNyZXQ6IFpYaGhiWEJzWlMxaGNIQXRjMlZqY21WMAogICAgaXNzdWVyVVJMOiBodHRwOi8vZGV4LnN2YzozMDU1Ni9kZXgKICAgIAogICAgcmVkaXJlY3RVUkw6IGh0dHA6Ly90ZW1wby1mb28tZ2F0ZXdheS5zdmM6ODA4MC9vaWRjL3Rlc3Qtb2lkYy9jYWxsYmFjawogICAgdXNlcm5hbWVDbGFpbTogZW1haWw=
+kind: Secret
+metadata:
+  labels:
+    app.kubernetes.io/component: gateway
+    app.kubernetes.io/created-by: tempo-controller
+    app.kubernetes.io/instance: foo
+    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/name: tempo
+  name: tempo-foo-gateway
+  ownerReferences:
+  - apiVersion: tempo.grafana.com/v1alpha1
+    blockOwnerDeletion: true
+    controller: true
+    kind: TempoStack
+    name: foo
+type: Opaque
+---
+apiVersion: v1
+data:
+  rbac.yaml: |-
+    roleBindings:
+    - name: test
+      roles:
+      - read-write
+
+      subjects:
+      - kind: user
+        name: admin@example.com
+
+    roles:
+    - name: read-write
+      permissions:
+      - read
+      - write
+
+      resources:
+      - logs
+      - metrics
+      - traces
+
+      tenants:
+      - test-oidc
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/component: gateway
+    app.kubernetes.io/created-by: tempo-controller
+    app.kubernetes.io/instance: foo
+    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/name: tempo
+  name: tempo-foo-gateway
+  ownerReferences:
+  - apiVersion: tempo.grafana.com/v1alpha1
+    blockOwnerDeletion: true
+    controller: true
+    kind: TempoStack
+    name: foo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/component: gateway
+    app.kubernetes.io/created-by: tempo-controller
+    app.kubernetes.io/instance: foo
+    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/name: tempo
+  name: tempo-foo-gateway
+  ownerReferences:
+  - apiVersion: tempo.grafana.com/v1alpha1
+    blockOwnerDeletion: true
+    controller: true
+    kind: TempoStack
+    name: foo
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: gateway
+      app.kubernetes.io/created-by: tempo-controller
+      app.kubernetes.io/instance: foo
+      app.kubernetes.io/managed-by: tempo-controller
+      app.kubernetes.io/name: tempo
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: gateway
+        app.kubernetes.io/created-by: tempo-controller
+        app.kubernetes.io/instance: foo
+        app.kubernetes.io/managed-by: tempo-controller
+        app.kubernetes.io/name: tempo
+    spec:
+      containers:
+      - args:
+        - --traces.tenant-header=x-scope-orgid
+        - --web.listen=0.0.0.0:8080
+        - --web.internal.listen=0.0.0.0:8081
+        - --traces.write.endpoint=tempo-foo-distributor:4317
+        - --traces.read.endpoint=http://tempo-foo-query-frontend:16686
+        - --grpc.listen=0.0.0.0:8090
+        - --rbac.config=/etc/tempo-gateway/cm/rbac.yaml
+        - --tenants.config=/etc/tempo-gateway/secret/tenants.yaml
+        - --log.level=info
+        image: quay.io/observatorium/api:main-2023-02-09-v0.1.2-329-g1ff4f11
+        imagePullPolicy: IfNotPresent
+        name: tempo-gateway
+        ports:
+        - containerPort: 8090
+          name: grpc-public
+          protocol: TCP
+        - containerPort: 8081
+          name: internal
+          protocol: TCP
+        - containerPort: 8080
+          name: public
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /etc/tempo-gateway/cm
+          name: rbac
+          readOnly: true
+        - mountPath: /etc/tempo-gateway/secret/tenants.yaml
+          name: tenant
+          readOnly: true
+          subPath: tenants.yaml
+      volumes:
+      - configMap:
+          defaultMode: 420
+          items:
+          - key: rbac.yaml
+            path: rbac.yaml
+          name: tempo-foo-gateway
+        name: rbac
+      - name: tenant
+        secret:
+          defaultMode: 420
+          items:
+          - key: tenants.yaml
+            path: tenants.yaml
+          secretName: tempo-foo-gateway
