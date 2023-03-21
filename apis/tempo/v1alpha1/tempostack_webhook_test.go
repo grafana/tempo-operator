@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -723,6 +724,80 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 			validator := &validator{ctrlConfig: v1alpha1.ProjectConfig{}}
 			errs := validator.validateGateway(test.input)
 			assert.Equal(t, test.expected, errs)
+		})
+	}
+}
+
+func TestValidateTenantConfigs(t *testing.T) {
+	tt := []struct {
+		name    string
+		input   TempoStack
+		wantErr string
+	}{
+		{
+			name: "missing tenants",
+			input: TempoStack{
+				Spec: TempoStackSpec{},
+			},
+		},
+		{
+			name: "another mode",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					Tenants: &TenantsSpec{},
+				},
+			},
+		},
+		{
+			name: "static missing authentication",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					Tenants: &TenantsSpec{
+						Mode: Static,
+					},
+				},
+			},
+			wantErr: "mandatory configuration - missing tenants' authentication configuration",
+		},
+		{
+			name: "static missing roles",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					Tenants: &TenantsSpec{
+						Mode:           Static,
+						Authorization:  &AuthorizationSpec{},
+						Authentication: []AuthenticationSpec{},
+					},
+				},
+			},
+			wantErr: "mandatory configuration - missing roles configuration",
+		},
+		{
+			name: "static missing role bindings",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					Tenants: &TenantsSpec{
+						Mode: Static,
+						Authorization: &AuthorizationSpec{
+							Roles: []RoleSpec{},
+						},
+						Authentication: []AuthenticationSpec{},
+					},
+				},
+			},
+			wantErr: "mandatory configuration - missing role bindings configuration",
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			err := ValidateTenantConfigs(tc.input)
+			require.Equal(t, tc.wantErr, func() (res string) {
+				if err != nil {
+					res = fmt.Sprintf("%s", err)
+				}
+				return
+			}())
 		})
 	}
 }
