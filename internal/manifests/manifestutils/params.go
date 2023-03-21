@@ -8,11 +8,12 @@ import (
 
 // Params holds parameters used to create Tempo objects.
 type Params struct {
-	StorageParams  StorageParams
-	ConfigChecksum string
-	Tempo          v1alpha1.TempoStack
-	Gates          configv1alpha1.FeatureGates
-	TLSProfile     tlsprofile.TLSProfileOptions
+	StorageParams       StorageParams
+	ConfigChecksum      string
+	Tempo               v1alpha1.TempoStack
+	Gates               configv1alpha1.FeatureGates
+	TLSProfile          tlsprofile.TLSProfileOptions
+	GatewayTenantSecret []*GatewayTenantSecret
 }
 
 // StorageParams holds storage configuration.
@@ -32,4 +33,12 @@ type AzureStorage struct {
 type S3 struct {
 	Endpoint string
 	Bucket   string
+}
+
+// GatewayTenantSecret holds clientID, clientSecret and issuerCAPath for tenant's authentication.
+type GatewayTenantSecret struct {
+	TenantName   string
+	ClientID     string
+	ClientSecret string
+	IssuerCAPath string
 }
