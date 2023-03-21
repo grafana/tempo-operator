@@ -1,0 +1,35 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: dex
+  name: dex
+spec:
+  selector:
+    matchLabels:
+      app: dex
+  template:
+    metadata:
+      labels:
+        app: dex
+    spec:
+      containers:
+      - args:
+        - dex
+        - serve
+        - /data/dex/dex.yaml
+        image: dexidp/dex:v2.30.0
+        ports:
+        - containerPort: 5556
+          name: public
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /data/dex/
+          name: dex-config
+          readOnly: true
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: dex-config
+        name: dex-config

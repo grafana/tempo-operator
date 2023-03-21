@@ -1,6 +1,8 @@
 package gateway
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"path"
 
@@ -38,22 +40,28 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 		params.Tempo.Spec.Tenants == nil {
 		return []client.Object{}, nil
 	}
+
 	rbacCfg, tenantsCfg, err := buildConfigFiles(options{
-		Namespace:  params.Tempo.Namespace,
-		Name:       params.Tempo.Name,
-		BaseDomain: params.Gates.OpenShift.BaseDomain,
-		Tenants:    params.Tempo.Spec.Tenants,
+		Namespace:     params.Tempo.Namespace,
+		Name:          params.Tempo.Name,
+		BaseDomain:    params.Gates.OpenShift.BaseDomain,
+		Tenants:       params.Tempo.Spec.Tenants,
+		TenantSecrets: params.GatewayTenantSecret,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	dep := deployment(params)
+	rbacConfigMap, rbacCfgHash := rbacConfig(params.Tempo, rbacCfg)
+	tenantsSecret, tenantsCfgHash := tenantsConfig(params.Tempo, tenantsCfg)
+
 	objs := []client.Object{
-		configMap(params.Tempo, rbacCfg),
-		secret(params.Tempo, tenantsCfg),
+		rbacConfigMap,
+		tenantsSecret,
 		service(params.Tempo, params.Gates.OpenShift.ServingCertsService),
 	}
+
+	dep := deployment(params, rbacCfgHash, tenantsCfgHash)
 
 	if params.Tempo.Spec.Tenants.Mode == v1alpha1.OpenShift {
 		dep = patchServiceAccount(params.Tempo, dep)
@@ -134,10 +142,13 @@ func clusterRoleBinding(tempo v1alpha1.TempoStack) *rbacv1.ClusterRoleBinding {
 	}
 }
 
-func deployment(params manifestutils.Params) *v1.Deployment {
+func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash string) *v1.Deployment {
 	tempo := params.Tempo
 	labels := manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name)
 	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
+	annotations["tempo.grafana.com/rbacConfig.hash"] = rbacCfgHash
+	annotations["tempo.grafana.com/tenantsConfig.hash"] = tenantsCfgHash
+
 	cfg := tempo.Spec.Template.Gateway
 
 	return &v1.Deployment{
@@ -174,7 +185,7 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 								fmt.Sprintf("--traces.read.endpoint=http://%s:16686", naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name)),
 								fmt.Sprintf("--grpc.listen=0.0.0.0:%d", portGRPC),
 								fmt.Sprintf("--rbac.config=%s", path.Join(tempoGatewayMountDir, "cm", tempoGatewayRbacFileName)),
-								fmt.Sprintf("--tenants.config=%s", path.Join(tempoGatewayMountDir, "secert", tempoGatewayTenantFileName)),
+								fmt.Sprintf("--tenants.config=%s", path.Join(tempoGatewayMountDir, "secret", tempoGatewayTenantFileName)),
 								"--log.level=info",
 							},
 							Ports: []corev1.ContainerPort{
@@ -228,7 +239,7 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 								{
 									Name:      "tenant",
 									ReadOnly:  true,
-									MountPath: path.Join(tempoGatewayMountDir, "secert", tempoGatewayTenantFileName),
+									MountPath: path.Join(tempoGatewayMountDir, "secret", tempoGatewayTenantFileName),
 									SubPath:   tempoGatewayTenantFileName,
 								},
 							},
@@ -381,9 +392,10 @@ func route(tempo v1alpha1.TempoStack) *routev1.Route {
 	}
 }
 
-func configMap(tempo v1alpha1.TempoStack, rbacCfg string) *corev1.ConfigMap {
+func rbacConfig(tempo v1alpha1.TempoStack, rbacCfg string) (*corev1.ConfigMap, string) {
 	labels := manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name)
-	return &corev1.ConfigMap{
+
+	config := corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      naming.Name(manifestutils.GatewayComponentName, tempo.Name),
 			Labels:    labels,
@@ -393,9 +405,15 @@ func configMap(tempo v1alpha1.TempoStack, rbacCfg string) *corev1.ConfigMap {
 			tempoGatewayRbacFileName: rbacCfg,
 		},
 	}
+
+	h := sha256.New()
+	h.Write([]byte(rbacCfg))
+	checksum := hex.EncodeToString(h.Sum(nil))
+
+	return &config, checksum
 }
 
-func secret(tempo v1alpha1.TempoStack, tenantsCfg string) *corev1.Secret {
+func tenantsConfig(tempo v1alpha1.TempoStack, tenantsCfg string) (*corev1.Secret, string) {
 	labels := manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name)
 	secret := &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
@@ -407,5 +425,10 @@ func secret(tempo v1alpha1.TempoStack, tenantsCfg string) *corev1.Secret {
 			tempoGatewayTenantFileName: []byte(tenantsCfg),
 		},
 	}
-	return secret
+
+	h := sha256.New()
+	h.Write([]byte(tenantsCfg))
+	checksum := hex.EncodeToString(h.Sum(nil))
+
+	return secret, checksum
 }
