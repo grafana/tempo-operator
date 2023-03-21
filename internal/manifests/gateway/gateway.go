@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"path"
 
@@ -407,7 +408,7 @@ func rbacConfig(tempo v1alpha1.TempoStack, rbacCfg string) (*corev1.ConfigMap, s
 
 	h := sha256.New()
 	h.Write([]byte(rbacCfg))
-	checksum := fmt.Sprintf("%x", h)
+	checksum := hex.EncodeToString(h.Sum(nil))
 
 	return &config, checksum
 }
@@ -427,7 +428,8 @@ func tenantsConfig(tempo v1alpha1.TempoStack, tenantsCfg string) (*corev1.Secret
 
 	h := sha256.New()
 	h.Write([]byte(tenantsCfg))
-	checksum := fmt.Sprintf("%x", h)
+	checksum := hex.EncodeToString(h.Sum(nil))
+
 
 	return secret, checksum
 }
