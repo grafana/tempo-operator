@@ -14,8 +14,12 @@ func Name(component string, tempoStackName string) string {
 }
 
 // ServiceName returns the name of a service of a component.
+// This is the name of the TLS secret of a service and
+// is part of the ServerName of TLS secured components.
+//
 // Example: tempo-simplest-compactor-http
-// Note: This is not the name of the Kubernetes service object.
+// Note: This is not the name of the Kubernetes service object. Please use
+// naming.Name(component, tempoStackName) to get the name of the Kubernetes object.
 func ServiceName(tempoStackName string, component string, service string) string {
 	return fmt.Sprintf("%s-%s", Name(component, tempoStackName), service)
 }
