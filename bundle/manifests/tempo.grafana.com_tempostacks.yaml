@@ -48,6 +48,10 @@ spec:
               images:
                 description: Images defines the image for each container.
                 properties:
+                  opa:
+                    description: GatewayOpa defines the OPA sidecar container for
+                      TempoGateway.
+                    type: string
                   tempo:
                     description: Tempo defines the tempo container image.
                     type: string

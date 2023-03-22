@@ -27,6 +27,7 @@ var (
 	tenGBQuantity                 = resource.MustParse("10Gi")
 	errNoDefaultTempoImage        = errors.New("please specify a tempo image in the CR or in the operator configuration")
 	errNoDefaultTempoGatewayImage = errors.New("please specify a tempo-gateway image in the CR or in the operator configuration")
+	errNoDefaultGatewayOPAImage   = errors.New("please specify a opa image in the CR or in the operator configuration")
 	errNoDefaultTempoQueryImage   = errors.New("please specify a tempo-query image in the CR or in the operator configuration")
 )
 
@@ -81,6 +82,12 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 			return errNoDefaultTempoGatewayImage
 		}
 		r.Spec.Images.TempoGateway = d.ctrlConfig.DefaultImages.TempoGateway
+	}
+	if r.Spec.Images.GatewayOpa == "" {
+		if d.ctrlConfig.DefaultImages.GatewayOpa == "" {
+			return errNoDefaultGatewayOPAImage
+		}
+		r.Spec.Images.GatewayOpa = d.ctrlConfig.DefaultImages.GatewayOpa
 	}
 
 	if r.Spec.ServiceAccount == "" {

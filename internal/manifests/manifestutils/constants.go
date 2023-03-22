@@ -10,6 +10,9 @@ const (
 	// ConfigVolumeName declares the name of the volume containing the tempo configuration.
 	ConfigVolumeName = "tempo-conf"
 
+	// GatewayTenantFileName the name of the tenant config file in the secret.
+	GatewayTenantFileName = "tenants.yaml"
+
 	// TmpStorageVolumeName declares the name of the volume containing temporary storage for tempo.
 	TmpStorageVolumeName = "tempo-tmp-storage"
 

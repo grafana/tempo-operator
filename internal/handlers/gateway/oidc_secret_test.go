@@ -22,7 +22,7 @@ func TestGetTenantSecrets(t *testing.T) {
 		name        string
 		clientID    *string
 		tempo       *v1alpha1.TempoStack
-		expected    []*manifestutils.GatewayTenantSecret
+		expected    []*manifestutils.GatewayTenantOIDCSecret
 		expectedErr error
 	}{
 		{
@@ -94,7 +94,7 @@ func TestGetTenantSecrets(t *testing.T) {
 				},
 			},
 			expectedErr: nil,
-			expected: []*manifestutils.GatewayTenantSecret{
+			expected: []*manifestutils.GatewayTenantOIDCSecret{
 				{
 					TenantName:   "ups",
 					ClientID:     "7b3834c6-9d3b-4db9-ac6b-ccefda2a1db3",
@@ -113,7 +113,7 @@ func TestGetTenantSecrets(t *testing.T) {
 				nsn := types.NamespacedName{Name: "exist", Namespace: tc.tempo.Namespace}
 				_ = createTenantSecret(t, nsn, *tc.clientID)
 			}
-			got, err := GetTenantSecrets(context.Background(), k8sClient, tc.tempo)
+			got, err := GetOIDCTenantSecrets(context.Background(), k8sClient, tc.tempo)
 			assert.Equal(t, tc.expectedErr, err)
 			assert.Equal(t, tc.expected, got)
 		})

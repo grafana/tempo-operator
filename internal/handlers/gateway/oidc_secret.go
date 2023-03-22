@@ -13,16 +13,16 @@ import (
 	"github.com/os-observability/tempo-operator/internal/status"
 )
 
-// GetTenantSecrets returns the list to gateway tenant secrets for a tenant mode.
+// GetOIDCTenantSecrets returns the list to gateway tenant secrets for a tenant mode.
 // For the static mode, the secrets are fetched from externally provided secrets.
 // All secrets live in the same namespace as the tempostack request.
-func GetTenantSecrets(
+func GetOIDCTenantSecrets(
 	ctx context.Context,
 	k8sClient client.Client,
 	tempo *v1alpha1.TempoStack,
-) ([]*manifestutils.GatewayTenantSecret, error) {
+) ([]*manifestutils.GatewayTenantOIDCSecret, error) {
 	var (
-		tenantSecrets []*manifestutils.GatewayTenantSecret
+		tenantSecrets []*manifestutils.GatewayTenantOIDCSecret
 		gatewaySecret corev1.Secret
 	)
 
@@ -39,7 +39,7 @@ func GetTenantSecrets(
 			return nil, fmt.Errorf("failed to lookup tempostack gateway tenant secret, name: %s, error: %w", key, err)
 		}
 
-		var ts *manifestutils.GatewayTenantSecret
+		var ts *manifestutils.GatewayTenantOIDCSecret
 		ts, err := extractSecret(&gatewaySecret, tenant.TenantName)
 		if err != nil {
 			return nil, &status.DegradedError{
@@ -55,7 +55,7 @@ func GetTenantSecrets(
 }
 
 // extractSecret reads a k8s secret into a manifest tenant secret struct if valid.
-func extractSecret(s *corev1.Secret, tenantName string) (*manifestutils.GatewayTenantSecret, error) {
+func extractSecret(s *corev1.Secret, tenantName string) (*manifestutils.GatewayTenantOIDCSecret, error) {
 	// Extract and validate mandatory fields
 	clientID := s.Data["clientID"]
 	if len(clientID) == 0 {
@@ -64,7 +64,7 @@ func extractSecret(s *corev1.Secret, tenantName string) (*manifestutils.GatewayT
 	clientSecret := s.Data["clientSecret"]
 	issuerCAPath := s.Data["issuerCAPath"]
 
-	return &manifestutils.GatewayTenantSecret{
+	return &manifestutils.GatewayTenantOIDCSecret{
 		TenantName:   tenantName,
 		ClientID:     string(clientID),
 		ClientSecret: string(clientSecret),

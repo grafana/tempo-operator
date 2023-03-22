@@ -19,10 +19,9 @@ func TestRBACsConfig(t *testing.T) {
 		{
 			name: "read write role",
 			opts: options{
-				Namespace:     "default",
-				Name:          "foo",
-				TenantSecrets: nil,
-				Tenants: &v1alpha1.TenantsSpec{
+				Namespace: "default",
+				Name:      "foo",
+				Tenants: &tenants{
 					Mode: v1alpha1.Static,
 					Authorization: &v1alpha1.AuthorizationSpec{
 						Roles: []v1alpha1.RoleSpec{
@@ -69,6 +68,39 @@ roles:
   tenants:
   - dev`,
 		},
+		{
+			name: "openshift mode",
+			opts: options{
+				Namespace: "default",
+				Name:      "foo",
+				Tenants: &tenants{
+					Mode: v1alpha1.OpenShift,
+					Authorization: &v1alpha1.AuthorizationSpec{
+						Roles: []v1alpha1.RoleSpec{
+							{
+								Name:        "traces-read-write",
+								Resources:   []string{"traces"},
+								Tenants:     []string{"dev"},
+								Permissions: []v1alpha1.PermissionType{v1alpha1.Read, v1alpha1.Write},
+							},
+						},
+						RoleBindings: []v1alpha1.RoleBindingsSpec{
+							{
+								Name:  "read-write",
+								Roles: []string{"traces-read-write"},
+								Subjects: []v1alpha1.Subject{
+									{
+										Name: "user",
+										Kind: "system:serviceaccount:default:dev-collector",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: ``,
+		},
 	}
 
 	for _, tt := range tests {
@@ -90,12 +122,11 @@ func TestTenantsTemplate(t *testing.T) {
 		{
 			name: "oidc nil",
 			opts: options{
-				Namespace:     "default",
-				Name:          "foo",
-				TenantSecrets: nil,
-				Tenants: &v1alpha1.TenantsSpec{
+				Namespace: "default",
+				Name:      "foo",
+				Tenants: &tenants{
 					Mode: v1alpha1.Static,
-					Authentication: []v1alpha1.AuthenticationSpec{
+					Authentication: []authentication{
 						{
 							TenantName: "dev",
 							TenantID:   "abcd1",
@@ -110,12 +141,11 @@ func TestTenantsTemplate(t *testing.T) {
 		{
 			name: "with oidc",
 			opts: options{
-				Namespace:     "default",
-				Name:          "foo",
-				TenantSecrets: nil,
-				Tenants: &v1alpha1.TenantsSpec{
+				Namespace: "default",
+				Name:      "foo",
+				Tenants: &tenants{
 					Mode: v1alpha1.Static,
-					Authentication: []v1alpha1.AuthenticationSpec{
+					Authentication: []authentication{
 						{
 							TenantName: "dev",
 							TenantID:   "abcd1",
@@ -136,16 +166,21 @@ func TestTenantsTemplate(t *testing.T) {
 		{
 			name: "openshift",
 			opts: options{
-				Namespace:     "default",
-				Name:          "foo",
-				BaseDomain:    "apps-crc.testing",
-				TenantSecrets: nil,
-				Tenants: &v1alpha1.TenantsSpec{
+				Namespace:  "default",
+				Name:       "foo",
+				BaseDomain: "apps-crc.testing",
+				Tenants: &tenants{
 					Mode: v1alpha1.OpenShift,
-					Authentication: []v1alpha1.AuthenticationSpec{
+					Authentication: []authentication{
 						{
-							TenantName: "dev",
-							TenantID:   "abcd1",
+							TenantName:            "dev",
+							TenantID:              "abcd1",
+							OpenShiftCookieSecret: "random",
+						},
+						{
+							TenantName:            "prod",
+							TenantID:              "abcd2",
+							OpenShiftCookieSecret: "random2",
 						},
 					},
 				},
@@ -155,7 +190,20 @@ func TestTenantsTemplate(t *testing.T) {
   id: abcd1
   openshift:
     serviceAccount: tempo-foo-gateway
-    redirectURL: https://tempo-foo-gateway-default.apps-crc.testing/openshift/dev/callback`,
+    redirectURL: https://tempo-foo-gateway-default.apps-crc.testing/openshift/dev/callback
+    cookieSecret: random
+  opa:
+    url: http://localhost:8082/v1/data/tempostack/allow
+    withAccessToken: true
+- name: prod
+  id: abcd2
+  openshift:
+    serviceAccount: tempo-foo-gateway
+    redirectURL: https://tempo-foo-gateway-default.apps-crc.testing/openshift/prod/callback
+    cookieSecret: random2
+  opa:
+    url: http://localhost:8082/v1/data/tempostack/allow
+    withAccessToken: true`,
 		},
 	}
 
