@@ -47,8 +47,8 @@ func newOptions(tempo v1alpha1.TempoStack, baseDomain string, oidcSecrets []*man
 	for _, tenantAuth := range tempo.Spec.Tenants.Authentication {
 		cookieSecret := ""
 		tenantData := getTenantData(tenantAuth.TenantName, tenantsData)
-		if tenantData != nil && tenantData.CookieSecret != "" {
-			cookieSecret = tenantData.CookieSecret
+		if tenantData != nil && tenantData.OpenShiftCookieSecret != "" {
+			cookieSecret = tenantData.OpenShiftCookieSecret
 		} else {
 			cookieSecret = newCookieSecret()
 		}
@@ -121,6 +121,7 @@ type authentication struct {
 	TenantName string
 	TenantID   string
 
+	// OpenShiftCookieSecret is used for encrypting the auth token when put into the browser session.
 	OpenShiftCookieSecret string
 	OIDC                  *v1alpha1.OIDCSpec
 	OIDCSecret            oidcSecret

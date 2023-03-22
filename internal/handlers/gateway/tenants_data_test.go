@@ -51,7 +51,7 @@ func TestGetGatewayTenantsData(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, 2, len(tenantsData))
 	assert.Equal(t, &manifestutils.GatewayTenantsData{
-		TenantName:   "dev",
-		CookieSecret: "f6UiBYSteEXdD3SrJRfBj3XzefPrRJmi",
+		TenantName:            "dev",
+		OpenShiftCookieSecret: "f6UiBYSteEXdD3SrJRfBj3XzefPrRJmi",
 	}, tenantsData[0])
 }

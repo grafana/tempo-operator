@@ -53,6 +53,7 @@ type GatewayTenantOIDCSecret struct {
 
 // GatewayTenantsData holds cookie secret for opa-openshift sidecar.
 type GatewayTenantsData struct {
-	TenantName   string
-	CookieSecret string
+	TenantName string
+	// OpenShiftCookieSecret is used for encrypting the auth token when put into the browser session.
+	OpenShiftCookieSecret string
 }

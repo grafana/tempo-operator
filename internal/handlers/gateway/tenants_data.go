@@ -36,8 +36,8 @@ func GetGatewayTenantsData(
 	for _, t := range tenantConfig.Tenants {
 		if t.OpenShift != nil && t.OpenShift.CookieSecret != "" {
 			tenantData = append(tenantData, &manifestutils.GatewayTenantsData{
-				TenantName:   t.Name,
-				CookieSecret: t.OpenShift.CookieSecret,
+				TenantName:            t.Name,
+				OpenShiftCookieSecret: t.OpenShift.CookieSecret,
 			})
 		}
 	}
