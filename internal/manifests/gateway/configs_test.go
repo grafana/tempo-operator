@@ -6,8 +6,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
 )
 
 func TestRBACsConfig(t *testing.T) {
@@ -262,4 +264,66 @@ func TestTenantsTemplate(t *testing.T) {
 			assert.Equal(t, tt.expected, buffer.String())
 		})
 	}
+}
+
+func TestNewOptions(t *testing.T) {
+	tempo := v1alpha1.TempoStack{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "simplest",
+			Namespace: "observability",
+		},
+		Spec: v1alpha1.TempoStackSpec{
+			Tenants: &v1alpha1.TenantsSpec{
+				Mode: v1alpha1.OpenShift,
+				Authentication: []v1alpha1.AuthenticationSpec{
+					{
+						TenantName: "dev",
+						TenantID:   "abcd1",
+						OIDC: &v1alpha1.OIDCSpec{
+							RedirectURL: "redirect",
+							GroupClaim:  "email",
+						},
+					},
+				},
+			},
+		},
+	}
+	opts := newOptions(
+		tempo,
+		"aws",
+		[]*manifestutils.GatewayTenantOIDCSecret{
+			{
+				TenantName: "dev",
+				ClientID:   "clientid",
+			},
+		},
+		[]*manifestutils.GatewayTenantsData{
+			{
+				TenantName:            "dev",
+				OpenShiftCookieSecret: "cookiesecret",
+			},
+		},
+	)
+	assert.Equal(t, options{
+		Name:       "simplest",
+		Namespace:  "observability",
+		BaseDomain: "aws",
+		Tenants: &tenants{
+			Mode: "openshift",
+			Authentication: []authentication{
+				{
+					TenantName:            "dev",
+					TenantID:              "abcd1",
+					OpenShiftCookieSecret: "cookiesecret",
+					OIDC: &v1alpha1.OIDCSpec{
+						RedirectURL: "redirect",
+						GroupClaim:  "email",
+					},
+					OIDCSecret: oidcSecret{
+						ClientID: "clientid",
+					},
+				},
+			},
+		},
+	}, opts)
 }
