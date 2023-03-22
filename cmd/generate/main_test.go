@@ -21,9 +21,10 @@ import (
 func TestBuild(t *testing.T) {
 	ctrlConfig := configv1alpha1.ProjectConfig{
 		DefaultImages: configv1alpha1.ImagesSpec{
-			Tempo:        "tempo-image",
-			TempoQuery:   "tempo-query-image",
-			TempoGateway: "tempo-gateway-image",
+			Tempo:           "tempo-image",
+			TempoQuery:      "tempo-query-image",
+			TempoGateway:    "tempo-gateway-image",
+			TempoGatewayOpa: "tempo-gateway-opa-image",
 		},
 	}
 	params := manifestutils.Params{
@@ -81,6 +82,7 @@ spec:
     tempo: docker.io/grafana/tempo:x.y.z
     tempoQuery: docker.io/grafana/tempo-query:x.y.z
     tempoGateway: quay.io/observatorium/api
+    tempoGatewayOpa: quay.io/observatorium/opa-openshift
   storage:
     secret:
       name: minio-test

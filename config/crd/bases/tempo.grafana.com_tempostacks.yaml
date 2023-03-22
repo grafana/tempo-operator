@@ -49,16 +49,16 @@ spec:
               images:
                 description: Images defines the image for each container.
                 properties:
-                  opa:
-                    description: GatewayOpa defines the OPA sidecar container for
-                      TempoGateway.
-                    type: string
                   tempo:
                     description: Tempo defines the tempo container image.
                     type: string
                   tempoGateway:
                     description: TempoGateway defines the tempo-gateway container
                       image.
+                    type: string
+                  tempoGatewayOpa:
+                    description: TempoGatewayOpa defines the OPA sidecar container
+                      for TempoGateway.
                     type: string
                   tempoQuery:
                     description: TempoQuery defines the tempo-query container image.

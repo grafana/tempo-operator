@@ -108,17 +108,6 @@ func route(tempo v1alpha1.TempoStack) *routev1.Route {
 	}
 }
 
-func patchOCPOPAContainer(tempo v1alpha1.TempoStack, dep *v1.Deployment) (*v1.Deployment, error) {
-	pod := corev1.PodSpec{
-		Containers: []corev1.Container{opaContainer(tempo)},
-	}
-	err := mergo.Merge(&dep.Spec.Template.Spec, pod, mergo.WithAppendSlice)
-	if err != nil {
-		return nil, err
-	}
-	return dep, err
-}
-
 func patchOCPServingCerts(tempo v1alpha1.TempoStack, dep *v1.Deployment) (*v1.Deployment, error) {
 	container := corev1.Container{
 		VolumeMounts: []corev1.VolumeMount{
@@ -162,6 +151,17 @@ func patchOCPServiceAccount(tempo v1alpha1.TempoStack, dep *v1.Deployment) *v1.D
 	return dep
 }
 
+func patchOCPOPAContainer(tempo v1alpha1.TempoStack, dep *v1.Deployment) (*v1.Deployment, error) {
+	pod := corev1.PodSpec{
+		Containers: []corev1.Container{opaContainer(tempo)},
+	}
+	err := mergo.Merge(&dep.Spec.Template.Spec, pod, mergo.WithAppendSlice)
+	if err != nil {
+		return nil, err
+	}
+	return dep, err
+}
+
 func opaContainer(tempo v1alpha1.TempoStack) corev1.Container {
 	var args = []string{
 		"--log.level=warn",
@@ -177,7 +177,7 @@ func opaContainer(tempo v1alpha1.TempoStack) corev1.Container {
 
 	return corev1.Container{
 		Name:  "opa",
-		Image: tempo.Spec.Images.GatewayOpa,
+		Image: tempo.Spec.Images.TempoGatewayOpa,
 		Args:  args,
 		Ports: []corev1.ContainerPort{
 			{

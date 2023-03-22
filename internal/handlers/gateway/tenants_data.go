@@ -18,7 +18,7 @@ import (
 func GetGatewayTenantsData(
 	ctx context.Context,
 	k8sClient client.Client,
-	tempo *v1alpha1.TempoStack,
+	tempo v1alpha1.TempoStack,
 ) ([]*manifestutils.GatewayTenantsData, error) {
 	secret := &corev1.Secret{}
 	key := client.ObjectKey{Name: naming.Name(manifestutils.GatewayComponentName, tempo.Name), Namespace: tempo.Namespace}

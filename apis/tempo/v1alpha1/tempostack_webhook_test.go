@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -21,9 +20,10 @@ func TestDefault(t *testing.T) {
 	defaulter := &Defaulter{
 		ctrlConfig: v1alpha1.ProjectConfig{
 			DefaultImages: v1alpha1.ImagesSpec{
-				Tempo:        "docker.io/grafana/tempo:x.y.z",
-				TempoQuery:   "docker.io/grafana/tempo-query:x.y.z",
-				TempoGateway: "docker.io/observatorium/gateway:1.2.3",
+				Tempo:           "docker.io/grafana/tempo:x.y.z",
+				TempoQuery:      "docker.io/grafana/tempo-query:x.y.z",
+				TempoGateway:    "docker.io/observatorium/gateway:1.2.3",
+				TempoGatewayOpa: "docker.io/observatorium/opa-openshift:1.2.3",
 			},
 		},
 	}
@@ -44,9 +44,10 @@ func TestDefault(t *testing.T) {
 				Spec: TempoStackSpec{
 					ReplicationFactor: 2,
 					Images: v1alpha1.ImagesSpec{
-						Tempo:        "docker.io/grafana/tempo:1.2.3",
-						TempoQuery:   "docker.io/grafana/tempo-query:1.2.3",
-						TempoGateway: "docker.io/observatorium/gateway:1.2.3",
+						Tempo:           "docker.io/grafana/tempo:1.2.3",
+						TempoQuery:      "docker.io/grafana/tempo-query:1.2.3",
+						TempoGateway:    "docker.io/observatorium/gateway:1.2.3",
+						TempoGatewayOpa: "docker.io/observatorium/opa-openshift:1.2.4",
 					},
 					ServiceAccount: "tempo-test",
 					Retention: RetentionSpec{
@@ -71,9 +72,10 @@ func TestDefault(t *testing.T) {
 				Spec: TempoStackSpec{
 					ReplicationFactor: 2,
 					Images: v1alpha1.ImagesSpec{
-						Tempo:        "docker.io/grafana/tempo:1.2.3",
-						TempoQuery:   "docker.io/grafana/tempo-query:1.2.3",
-						TempoGateway: "docker.io/observatorium/gateway:1.2.3",
+						Tempo:           "docker.io/grafana/tempo:1.2.3",
+						TempoQuery:      "docker.io/grafana/tempo-query:1.2.3",
+						TempoGateway:    "docker.io/observatorium/gateway:1.2.3",
+						TempoGatewayOpa: "docker.io/observatorium/opa-openshift:1.2.4",
 					},
 					ServiceAccount: "tempo-test",
 					Retention: RetentionSpec{
@@ -118,9 +120,10 @@ func TestDefault(t *testing.T) {
 				Spec: TempoStackSpec{
 					ReplicationFactor: 1,
 					Images: v1alpha1.ImagesSpec{
-						Tempo:        "docker.io/grafana/tempo:x.y.z",
-						TempoQuery:   "docker.io/grafana/tempo-query:x.y.z",
-						TempoGateway: "docker.io/observatorium/gateway:1.2.3",
+						Tempo:           "docker.io/grafana/tempo:x.y.z",
+						TempoQuery:      "docker.io/grafana/tempo-query:x.y.z",
+						TempoGateway:    "docker.io/observatorium/gateway:1.2.3",
+						TempoGatewayOpa: "docker.io/observatorium/opa-openshift:1.2.3",
 					},
 					ServiceAccount: "tempo-test",
 					Retention: RetentionSpec{
@@ -177,9 +180,10 @@ func TestDefault(t *testing.T) {
 				Spec: TempoStackSpec{
 					ReplicationFactor: 1,
 					Images: v1alpha1.ImagesSpec{
-						Tempo:        "docker.io/grafana/tempo:x.y.z",
-						TempoQuery:   "docker.io/grafana/tempo-query:x.y.z",
-						TempoGateway: "docker.io/observatorium/gateway:1.2.3",
+						Tempo:           "docker.io/grafana/tempo:x.y.z",
+						TempoQuery:      "docker.io/grafana/tempo-query:x.y.z",
+						TempoGateway:    "docker.io/observatorium/gateway:1.2.3",
+						TempoGatewayOpa: "docker.io/observatorium/opa-openshift:1.2.3",
 					},
 					ServiceAccount: "tempo-test",
 					Retention: RetentionSpec{
@@ -732,7 +736,7 @@ func TestValidateTenantConfigs(t *testing.T) {
 	tt := []struct {
 		name    string
 		input   TempoStack
-		wantErr string
+		wantErr error
 	}{
 		{
 			name: "missing tenants",
@@ -757,7 +761,7 @@ func TestValidateTenantConfigs(t *testing.T) {
 					},
 				},
 			},
-			wantErr: "mandatory configuration - missing tenants' authentication configuration",
+			wantErr: fmt.Errorf("spec.tenants.authentication is required in static mode"),
 		},
 		{
 			name: "static missing roles",
@@ -770,7 +774,7 @@ func TestValidateTenantConfigs(t *testing.T) {
 					},
 				},
 			},
-			wantErr: "mandatory configuration - missing roles configuration",
+			wantErr: fmt.Errorf("spec.tenants.authorization.roles is required in static mode"),
 		},
 		{
 			name: "static missing role bindings",
@@ -785,19 +789,44 @@ func TestValidateTenantConfigs(t *testing.T) {
 					},
 				},
 			},
-			wantErr: "mandatory configuration - missing role bindings configuration",
+			wantErr: fmt.Errorf("spec.tenants.authorization.roleBindings is required in static mode"),
+		},
+		{
+			name: "openshift: RBAC should not be defined",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					Tenants: &TenantsSpec{
+						Mode: OpenShift,
+						Authorization: &AuthorizationSpec{
+							Roles: []RoleSpec{},
+						},
+					},
+				},
+			},
+			wantErr: fmt.Errorf("spec.tenants.authorization should not be defined in openshift mode"),
+		},
+		{
+			name: "openshift: OIDC should not be defined",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					Tenants: &TenantsSpec{
+						Mode: OpenShift,
+						Authentication: []AuthenticationSpec{
+							{
+								OIDC: &OIDCSpec{},
+							},
+						},
+					},
+				},
+			},
+			wantErr: fmt.Errorf("spec.tenants.authentication.oidc should not be defined in openshift mode"),
 		},
 	}
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			err := ValidateTenantConfigs(tc.input)
-			require.Equal(t, tc.wantErr, func() (res string) {
-				if err != nil {
-					res = fmt.Sprintf("%s", err)
-				}
-				return
-			}())
+			assert.Equal(t, tc.wantErr, err)
 		})
 	}
 }

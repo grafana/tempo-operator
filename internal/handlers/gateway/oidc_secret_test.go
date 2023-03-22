@@ -21,13 +21,13 @@ func TestGetTenantSecrets(t *testing.T) {
 	tt := []struct {
 		name        string
 		clientID    *string
-		tempo       *v1alpha1.TempoStack
+		tempo       v1alpha1.TempoStack
 		expected    []*manifestutils.GatewayTenantOIDCSecret
 		expectedErr error
 	}{
 		{
 			name: "missing secret",
-			tempo: &v1alpha1.TempoStack{
+			tempo: v1alpha1.TempoStack{
 				Spec: v1alpha1.TempoStackSpec{
 					Tenants: &v1alpha1.TenantsSpec{
 						Authentication: []v1alpha1.AuthenticationSpec{
@@ -52,7 +52,7 @@ func TestGetTenantSecrets(t *testing.T) {
 		{
 			name:     "invalid secret content",
 			clientID: func(s string) *string { return &s }(""),
-			tempo: &v1alpha1.TempoStack{
+			tempo: v1alpha1.TempoStack{
 				Spec: v1alpha1.TempoStackSpec{
 					Tenants: &v1alpha1.TenantsSpec{
 						Authentication: []v1alpha1.AuthenticationSpec{
@@ -77,7 +77,7 @@ func TestGetTenantSecrets(t *testing.T) {
 		{
 			name:     "works as expected",
 			clientID: func(s string) *string { return &s }("7b3834c6-9d3b-4db9-ac6b-ccefda2a1db3"),
-			tempo: &v1alpha1.TempoStack{
+			tempo: v1alpha1.TempoStack{
 				Spec: v1alpha1.TempoStackSpec{
 					Tenants: &v1alpha1.TenantsSpec{
 						Authentication: []v1alpha1.AuthenticationSpec{
@@ -111,7 +111,11 @@ func TestGetTenantSecrets(t *testing.T) {
 
 			if tc.clientID != nil {
 				nsn := types.NamespacedName{Name: "exist", Namespace: tc.tempo.Namespace}
-				_ = createTenantSecret(t, nsn, *tc.clientID)
+				data := map[string]string{
+					"clientID":     *tc.clientID,
+					"clientSecret": "super-secret",
+				}
+				_ = createSecret(t, nsn, data)
 			}
 			got, err := GetOIDCTenantSecrets(context.Background(), k8sClient, tc.tempo)
 			assert.Equal(t, tc.expectedErr, err)
@@ -120,16 +124,13 @@ func TestGetTenantSecrets(t *testing.T) {
 	}
 }
 
-func createTenantSecret(t *testing.T, nsn types.NamespacedName, clientID string) *corev1.Secret {
+func createSecret(t *testing.T, nsn types.NamespacedName, stringData map[string]string) *corev1.Secret {
 	tenantSecret := &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      nsn.Name,
 			Namespace: nsn.Namespace,
 		},
-		StringData: map[string]string{
-			"clientID":     clientID,
-			"clientSecret": "super-secret",
-		},
+		StringData: stringData,
 	}
 	err := k8sClient.Create(context.Background(), tenantSecret)
 	require.NoError(t, err)

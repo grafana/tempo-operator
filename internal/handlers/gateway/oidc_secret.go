@@ -19,7 +19,7 @@ import (
 func GetOIDCTenantSecrets(
 	ctx context.Context,
 	k8sClient client.Client,
-	tempo *v1alpha1.TempoStack,
+	tempo v1alpha1.TempoStack,
 ) ([]*manifestutils.GatewayTenantOIDCSecret, error) {
 	var (
 		tenantSecrets []*manifestutils.GatewayTenantOIDCSecret

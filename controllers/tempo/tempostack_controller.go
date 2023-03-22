@@ -198,7 +198,7 @@ func (r *TempoStackReconciler) reconcileManifests(ctx context.Context, log logr.
 
 	var tenantSecrets []*manifestutils.GatewayTenantOIDCSecret
 	if tempo.Spec.Tenants != nil && tempo.Spec.Tenants.Mode == v1alpha1.Static {
-		tenantSecrets, err = gateway.GetOIDCTenantSecrets(ctx, r.Client, &tempo)
+		tenantSecrets, err = gateway.GetOIDCTenantSecrets(ctx, r.Client, tempo)
 		if err != nil {
 			return err
 		}
@@ -206,7 +206,7 @@ func (r *TempoStackReconciler) reconcileManifests(ctx context.Context, log logr.
 
 	var gatewayTenantsData []*manifestutils.GatewayTenantsData
 	if tempo.Spec.Tenants != nil && tempo.Spec.Tenants.Mode == v1alpha1.OpenShift {
-		gatewayTenantsData, err = gateway.GetGatewayTenantsData(ctx, r.Client, &tempo)
+		gatewayTenantsData, err = gateway.GetGatewayTenantsData(ctx, r.Client, tempo)
 		if err != nil {
 			// just log the error the secret is not created if the loop for an instance runs for the first time.
 			log.Info("Failed to get gateway secret and/or tenants.yaml", "error", err)

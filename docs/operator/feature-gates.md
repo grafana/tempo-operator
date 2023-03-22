@@ -464,7 +464,7 @@ string
 
 <td>
 
-<code>opa</code><br/>
+<code>tempoGatewayOpa</code><br/>
 
 <em>
 
@@ -478,7 +478,7 @@ string
 
 <em>(Optional)</em>
 
-<p>GatewayOpa defines the OPA sidecar container for TempoGateway.</p>
+<p>TempoGatewayOpa defines the OPA sidecar container for TempoGateway.</p>
 
 </td>
 </tr>

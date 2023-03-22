@@ -25,10 +25,10 @@ type ImagesSpec struct {
 	// +optional
 	TempoGateway string `json:"tempoGateway,omitempty"`
 
-	// GatewayOpa defines the OPA sidecar container for TempoGateway.
+	// TempoGatewayOpa defines the OPA sidecar container for TempoGateway.
 	//
 	// +optional
-	GatewayOpa string `json:"opa,omitempty"`
+	TempoGatewayOpa string `json:"tempoGatewayOpa,omitempty"`
 }
 
 // BuiltInCertManagement is the configuration for the built-in facility to generate and rotate
