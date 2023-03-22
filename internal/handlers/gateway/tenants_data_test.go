@@ -2,14 +2,15 @@ package gateway
 
 import (
 	"context"
-	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
-	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
-	"github.com/stretchr/testify/require"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
+
+	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
 )
 
 func TestGetGatewayTenantsData(t *testing.T) {
@@ -17,7 +18,7 @@ func TestGetGatewayTenantsData(t *testing.T) {
 	assert.Equal(t, "test-tenants-secret", namespace.Name)
 
 	nsn := types.NamespacedName{Name: "tempo-simplest-gateway", Namespace: namespace.Name}
-	_ = createSecret(t, nsn, map[string]string{
+	secret := createSecret(t, nsn, map[string]string{
 		"tenants.yaml": `tenants:
 - name: dev
   id: 1610b0c3-c509-4592-a256-a1871353dbfa
@@ -38,6 +39,7 @@ func TestGetGatewayTenantsData(t *testing.T) {
     url: http://localhost:8082/v1/data/tempostack/allow
     withAccessToken: true`,
 	})
+	assert.Equal(t, "tempo-simplest-gateway", secret.Name)
 
 	tempo := v1alpha1.TempoStack{
 		ObjectMeta: metav1.ObjectMeta{
