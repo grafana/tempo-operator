@@ -212,6 +212,7 @@ spec:
         path: storage.secret.type
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:select:azure
+        - urn:alm:descriptor:com.tectonic.ui:select:gcs
         - urn:alm:descriptor:com.tectonic.ui:select:s3
       - description: TLS configuration for reaching the object storage endpoint.
         displayName: TLS Config

@@ -76,6 +76,8 @@ storage:
       path: /var/tempo/traces
     azure:
       container_name: "container-test"
+    gcs:
+      bucket_name: test-bucket
     s3:
       bucket: tempo
       endpoint: "minio:9000"
@@ -109,6 +111,9 @@ query_frontend:
 	}, Params{
 		AzureStorage: AzureStorage{
 			Container: "container-test",
+		},
+		GCS: GCS{
+			Bucket: "test-bucket",
 		},
 		S3: S3{
 			Endpoint: "http://minio:9000",
@@ -188,6 +193,8 @@ storage:
       path: /var/tempo/traces
     azure:
       container_name: "container-test"
+    gcs:
+      bucket_name: test-bucket
     s3:
       bucket: tempo
       endpoint: "minio:9000"
@@ -273,6 +280,8 @@ storage:
       path: /var/tempo/traces
     azure:
       container_name: "container-test"
+    gcs:
+      bucket_name: test-bucket
     s3:
       bucket: tempo
       endpoint: "minio:9000"
@@ -357,6 +366,8 @@ storage:
       path: /var/tempo/traces
     azure:
       container_name: "container-test"
+    gcs:
+      bucket_name: test-bucket
     s3:
       bucket: tempo
       endpoint: "minio:9000"
@@ -442,6 +453,8 @@ storage:
       path: /var/tempo/traces
     azure:
       container_name: "container-test"
+    gcs:
+      bucket_name: test-bucket
     s3:
       bucket: tempo
       endpoint: "minio:9000"
@@ -527,6 +540,8 @@ storage:
       path: /var/tempo/traces
     azure:
       container_name: "container-test"
+    gcs:
+      bucket_name: test-bucket
     s3:
       bucket: tempo
       endpoint: "minio:9000"
@@ -612,6 +627,8 @@ storage:
       path: /var/tempo/traces
     azure:
       container_name: "container-test"
+    gcs:
+      bucket_name: test-bucket
     s3:
       bucket: tempo
       endpoint: "minio:9000"
@@ -697,6 +714,8 @@ storage:
       path: /var/tempo/traces
     azure:
       container_name: "container-test"
+    gcs:
+      bucket_name: test-bucket
     s3:
       bucket: tempo
       endpoint: "minio:9000"
@@ -792,6 +811,8 @@ storage:
     cache: none
     azure:
       container_name: "container-test"
+    gcs:
+      bucket_name: test-bucket
     local:
       path: /var/tempo/traces
     s3:
@@ -889,6 +910,8 @@ storage:
       path: /var/tempo/traces
     azure:
       container_name: "container-test"
+    gcs:
+      bucket_name: test-bucket
     s3:
       bucket: tempo
       endpoint: "minio:9000"
@@ -928,6 +951,9 @@ query_frontend:
 			}, Params{
 				AzureStorage: AzureStorage{
 					Container: "container-test",
+				},
+				GCS: GCS{
+					Bucket: "test-bucket",
 				},
 				S3: S3{
 					Endpoint: "http://minio:9000",
@@ -1039,6 +1065,8 @@ storage:
       path: /var/tempo/traces
     azure:
       container_name: "container-test"
+    gcs:
+      bucket_name: test-bucket
     s3:
       bucket: tempo
       endpoint: "minio:9000"
@@ -1074,6 +1102,9 @@ query_frontend:
 			}, Params{
 				AzureStorage: AzureStorage{
 					Container: "container-test",
+				},
+				GCS: GCS{
+					Bucket: "test-bucket",
 				},
 				S3: S3{
 					Endpoint: "http://minio:9000",
@@ -1148,6 +1179,8 @@ storage:
       path: /var/tempo/traces
     azure:
       container_name: "container-test"
+    gcs:
+      bucket_name: test-bucket
     s3:
       bucket: tempo
       endpoint: "minio:9000"
@@ -1177,6 +1210,9 @@ query_frontend:
 	}, Params{
 		AzureStorage: AzureStorage{
 			Container: "container-test",
+		},
+		GCS: GCS{
+			Bucket: "test-bucket",
 		},
 		S3: S3{
 			Endpoint: "http://minio:9000",
@@ -1247,6 +1283,8 @@ storage:
       path: /var/tempo/traces
     azure:
       container_name: "container-test"
+    gcs:
+      bucket_name: test-bucket
     s3:
       bucket: tempo
       endpoint: "minio:9000"
@@ -1281,6 +1319,9 @@ query_frontend:
 	}, Params{
 		AzureStorage: AzureStorage{
 			Container: "container-test",
+		},
+		GCS: GCS{
+			Bucket: "test-bucket",
 		},
 		S3: S3{
 			Endpoint: "http://minio:9000",
@@ -1380,6 +1421,8 @@ storage:
       path: /var/tempo/traces
     azure:
       container_name: test-container
+    gcs:
+      bucket_name: test-bucket
     s3:
       bucket: tempo
       endpoint: "minio:9000"
@@ -1424,6 +1467,9 @@ ingester_client:
 	}, Params{
 		AzureStorage: AzureStorage{
 			Container: "test-container",
+		},
+		GCS: GCS{
+			Bucket: "test-bucket",
 		},
 		S3: S3{
 			Endpoint: "http://minio:9000",

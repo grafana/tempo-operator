@@ -292,12 +292,15 @@ func (r *TempoStackReconciler) getStorageConfig(ctx context.Context, tempo v1alp
 
 	params := manifestutils.StorageParams{
 		AzureStorage: &manifestutils.AzureStorage{},
+		GCS:          &manifestutils.GCS{},
 		S3:           &manifestutils.S3{},
 	}
 
 	switch tempo.Spec.Storage.Secret.Type {
 	case v1alpha1.ObjectStorageSecretAzure:
 		params.AzureStorage = getAzureParams(storageSecret)
+	case v1alpha1.ObjectStorageSecretGCS:
+		params.GCS = getGCSParams(storageSecret)
 	case v1alpha1.ObjectStorageSecretS3:
 		params.S3 = getS3Params(storageSecret)
 	default:

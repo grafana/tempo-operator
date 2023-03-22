@@ -18,14 +18,20 @@ import (
 
 // StorageParams holds storage configuration.
 type StorageParams struct {
-	S3           *S3
 	AzureStorage *AzureStorage
+	GCS          *GCS
+	S3           *S3
 }
 
 // AzureStorage holds Azure Storage configuration.
 type AzureStorage struct {
 	Container string
 	Env       string
+}
+
+// GCS holds Google Cloud Storage configuration.
+type GCS struct {
+	Bucket string
 }
 
 // S3 holds S3 configuration.
@@ -41,6 +47,9 @@ func BuildAll(params manifestutils.Params) ([]client.Object, error) {
 		config.Params{
 			AzureStorage: config.AzureStorage{
 				Container: params.StorageParams.AzureStorage.Container,
+			},
+			GCS: config.GCS{
+				Bucket: params.StorageParams.GCS.Bucket,
 			},
 			S3: config.S3{
 				Endpoint: params.StorageParams.S3.Endpoint,

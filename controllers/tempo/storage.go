@@ -12,6 +12,12 @@ func getAzureParams(storageSecret *corev1.Secret) *manifestutils.AzureStorage {
 	}
 }
 
+func getGCSParams(storageSecret *corev1.Secret) *manifestutils.GCS {
+	return &manifestutils.GCS{
+		Bucket: string(storageSecret.Data["bucketname"]),
+	}
+}
+
 func getS3Params(storageSecret *corev1.Secret) *manifestutils.S3 {
 	return &manifestutils.S3{
 		Endpoint: string(storageSecret.Data["endpoint"]),

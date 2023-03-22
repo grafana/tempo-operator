@@ -17,8 +17,9 @@ const tenantOverridesMountPath = "/conf/overrides.yaml"
 
 // Params holds configuration parameters.
 type Params struct {
-	S3             S3
 	AzureStorage   AzureStorage
+	GCS            GCS
+	S3             S3
 	HTTPEncryption bool
 	GRPCEncryption bool
 	TLSProfile     tlsprofile.TLSProfileOptions
@@ -27,6 +28,11 @@ type Params struct {
 // AzureStorage holds AzureStorage object storage configuration options.
 type AzureStorage struct {
 	Container string
+}
+
+// GCS holds Google Cloud Storage object storage configuration options.
+type GCS struct {
+	Bucket string
 }
 
 // S3 holds S3 object storage configuration options.
