@@ -15,7 +15,7 @@ tenants:
 {{- end -}}
 {{- if $spec.OIDC }}
   oidc:
-    {{ if $spec.OIDCSecret.ClientID }}
+    {{ if $spec.OIDCSecret.ClientID -}}
     clientID: {{ $spec.OIDCSecret.ClientID }}
     {{- end -}}
     {{ if $spec.OIDCSecret.ClientSecret }}
@@ -24,14 +24,16 @@ tenants:
     {{ if $spec.OIDCSecret.IssuerCAPath }}
     issuerCAPath: {{ $spec.OIDCSecret.IssuerCAPath }}
     {{- end -}}
+    {{ if $spec.OIDC.IssuerURL }}
     issuerURL: {{ $spec.OIDC.IssuerURL }}
+    {{- end -}}
     {{ if $spec.OIDC.RedirectURL }}
     redirectURL: {{ $spec.OIDC.RedirectURL }}
     {{- end -}}
     {{ if $spec.OIDC.UsernameClaim }}
     usernameClaim: {{ $spec.OIDC.UsernameClaim }}
     {{- end -}}
-    {{- if $spec.OIDC.GroupClaim }}
+    {{ if $spec.OIDC.GroupClaim }}
     groupClaim: {{ $spec.OIDC.GroupClaim }}
     {{- end }}
 {{- end -}}

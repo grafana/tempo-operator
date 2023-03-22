@@ -150,7 +150,15 @@ func TestTenantsTemplate(t *testing.T) {
 							TenantName: "dev",
 							TenantID:   "abcd1",
 							OIDC: &v1alpha1.OIDCSpec{
-								IssuerURL: "https://something.com",
+								IssuerURL:     "https://something.com",
+								RedirectURL:   "https://something.com/redirect",
+								GroupClaim:    "groupClaim",
+								UsernameClaim: "claim",
+							},
+							OIDCSecret: oidcSecret{
+								ClientID:     "clientid",
+								ClientSecret: "secret",
+								IssuerCAPath: "capath",
 							},
 						},
 					},
@@ -160,8 +168,47 @@ func TestTenantsTemplate(t *testing.T) {
 - name: dev
   id: abcd1
   oidc:
+    clientID: clientid
+    clientSecret: secret
+    issuerCAPath: capath
     issuerURL: https://something.com
-    `,
+    redirectURL: https://something.com/redirect
+    usernameClaim: claim
+    groupClaim: groupClaim`,
+		},
+		{
+			name: "with oidc from e2e Kubernetes test",
+			opts: options{
+				Namespace: "default",
+				Name:      "foo",
+				Tenants: &tenants{
+					Mode: v1alpha1.Static,
+					Authentication: []authentication{
+						{
+							TenantName: "test-oidc",
+							TenantID:   "test-oidc",
+							OIDC: &v1alpha1.OIDCSpec{
+								IssuerURL:     "http://dex.svc:30556/dex",
+								RedirectURL:   "http://tempo-foo-gateway.svc:8080/oidc/test-oidc/callback",
+								UsernameClaim: "email",
+							},
+							OIDCSecret: oidcSecret{
+								ClientID:     "test",
+								ClientSecret: "ZXhhbXBsZS1hcHAtc2VjcmV0",
+							},
+						},
+					},
+				},
+			},
+			expected: `tenants:
+- name: test-oidc
+  id: test-oidc
+  oidc:
+    clientID: test
+    clientSecret: ZXhhbXBsZS1hcHAtc2VjcmV0
+    issuerURL: http://dex.svc:30556/dex
+    redirectURL: http://tempo-foo-gateway.svc:8080/oidc/test-oidc/callback
+    usernameClaim: email`,
 		},
 		{
 			name: "openshift",
