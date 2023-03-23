@@ -1,12 +1,17 @@
 package gateway
 
 import (
+	"reflect"
 	"testing"
 
+	routev1 "github.com/openshift/api/route/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
@@ -166,4 +171,82 @@ func TestPatchOCPServingCerts(t *testing.T) {
 	got, err := patchOCPServingCerts(tempo, dep)
 	require.NoError(t, err)
 	assert.Equal(t, expected, got)
+}
+
+func TestBuildGateway_openshift(t *testing.T) {
+	tempo := v1alpha1.TempoStack{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "simplest",
+			Namespace: "observability",
+		},
+		Spec: v1alpha1.TempoStackSpec{
+			Template: v1alpha1.TempoTemplateSpec{
+				Gateway: v1alpha1.TempoGatewaySpec{
+					Enabled: true,
+				},
+			},
+			Tenants: &v1alpha1.TenantsSpec{
+				Mode: v1alpha1.OpenShift,
+				Authentication: []v1alpha1.AuthenticationSpec{
+					{
+						TenantName: "dev",
+						TenantID:   "abcd1",
+					},
+				},
+			},
+		},
+	}
+	objects, err := BuildGateway(manifestutils.Params{
+		Tempo: tempo,
+		Gates: configv1alpha1.FeatureGates{
+			OpenShift: configv1alpha1.OpenShiftFeatureGates{
+				ServingCertsService: true,
+				GatewayRoute:        true,
+				BaseDomain:          "domain",
+			},
+		},
+	})
+	require.NoError(t, err)
+	assert.Equal(t, 8, len(objects))
+	obj := getObjectByTypeAndName(objects, "tempo-simplest-gateway", reflect.TypeOf(&appsv1.Deployment{}))
+	require.NotNil(t, obj)
+	dep, ok := obj.(*appsv1.Deployment)
+	require.True(t, ok)
+	assert.Equal(t, 2, len(dep.Spec.Template.Spec.Containers))
+	assert.Equal(t, "opa", dep.Spec.Template.Spec.Containers[1].Name)
+	assert.Equal(t, "tempo-simplest-gateway", dep.Spec.Template.Spec.ServiceAccountName)
+
+	obj = getObjectByTypeAndName(objects, "tempo-simplest-gateway", reflect.TypeOf(&corev1.ServiceAccount{}))
+	require.NotNil(t, obj)
+
+	obj = getObjectByTypeAndName(objects, "tempo-simplest-gateway", reflect.TypeOf(&rbacv1.ClusterRole{}))
+	require.NotNil(t, obj)
+	clusterRole, ok := obj.(*rbacv1.ClusterRole)
+	require.True(t, ok)
+	assert.Equal(t, 2, len(clusterRole.Rules))
+
+	obj = getObjectByTypeAndName(objects, "tempo-simplest-gateway", reflect.TypeOf(&rbacv1.ClusterRoleBinding{}))
+	require.NotNil(t, obj)
+	clusterRoleBinding, ok := obj.(*rbacv1.ClusterRoleBinding)
+	require.True(t, ok)
+	require.Equal(t, 1, len(clusterRoleBinding.Subjects))
+	require.Equal(t, "ServiceAccount", clusterRoleBinding.Subjects[0].Kind)
+	require.Equal(t, "tempo-simplest-gateway", clusterRoleBinding.Subjects[0].Name)
+
+	obj = getObjectByTypeAndName(objects, "tempo-simplest-gateway", reflect.TypeOf(&routev1.Route{}))
+	require.NotNil(t, obj)
+	route, ok := obj.(*routev1.Route)
+	require.True(t, ok)
+	require.Equal(t, "Service", route.Spec.To.Kind)
+	require.Equal(t, "tempo-simplest-gateway", route.Spec.To.Name)
+}
+
+func getObjectByTypeAndName(objects []client.Object, name string, t reflect.Type) client.Object { // nolint: unparam
+	for _, o := range objects {
+		objType := reflect.TypeOf(o)
+		if o.GetName() == name && objType == t {
+			return o
+		}
+	}
+	return nil
 }
