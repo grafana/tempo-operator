@@ -55,6 +55,10 @@ spec:
                     description: TempoGateway defines the tempo-gateway container
                       image.
                     type: string
+                  tempoGatewayOpa:
+                    description: TempoGatewayOpa defines the OPA sidecar container
+                      for TempoGateway.
+                    type: string
                   tempoQuery:
                     description: TempoQuery defines the tempo-query container image.
                     type: string

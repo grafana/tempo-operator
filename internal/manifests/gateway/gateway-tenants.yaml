@@ -7,31 +7,33 @@ tenants:
 {{- if eq $opt.Tenants.Mode "openshift" }}
   openshift:
     serviceAccount: tempo-{{ $opt.Name }}-gateway
-    redirectURL: https://tempo-{{ $opt.Name}}-gateway-{{ $opt.Namespace }}.{{ $opt.BaseDomain }}/openshift/dev/callback
+    redirectURL: https://tempo-{{ $opt.Name}}-gateway-{{ $opt.Namespace }}.{{ $opt.BaseDomain }}/openshift/{{ $spec.TenantName }}/callback
+    cookieSecret: {{ $spec.OpenShiftCookieSecret }}
+  opa:
+    url: http://localhost:8082/v1/data/tempostack/allow
+    withAccessToken: true
 {{- end -}}
 {{- if $spec.OIDC }}
   oidc:
-    {{- range $secret := $opt.TenantSecrets }}
-    {{- if eq $secret.TenantName $spec.TenantName -}}
-    {{ if $secret.ClientID }}
-    clientID: {{ $secret.ClientID }}
+    {{ if $spec.OIDCSecret.ClientID -}}
+    clientID: {{ $spec.OIDCSecret.ClientID }}
     {{- end -}}
-    {{ if $secret.ClientSecret }}
-    clientSecret: {{ $secret.ClientSecret }}
+    {{ if $spec.OIDCSecret.ClientSecret }}
+    clientSecret: {{ $spec.OIDCSecret.ClientSecret }}
     {{- end -}}
-    {{ if $secret.IssuerCAPath }}
-    issuerCAPath: {{ $secret.IssuerCAPath }}
+    {{ if $spec.OIDCSecret.IssuerCAPath }}
+    issuerCAPath: {{ $spec.OIDCSecret.IssuerCAPath }}
     {{- end -}}
-    {{- end -}}
-    {{- end }}
+    {{ if $spec.OIDC.IssuerURL }}
     issuerURL: {{ $spec.OIDC.IssuerURL }}
+    {{- end -}}
     {{ if $spec.OIDC.RedirectURL }}
     redirectURL: {{ $spec.OIDC.RedirectURL }}
     {{- end -}}
     {{ if $spec.OIDC.UsernameClaim }}
     usernameClaim: {{ $spec.OIDC.UsernameClaim }}
     {{- end -}}
-    {{- if $spec.OIDC.GroupClaim }}
+    {{ if $spec.OIDC.GroupClaim }}
     groupClaim: {{ $spec.OIDC.GroupClaim }}
     {{- end }}
 {{- end -}}

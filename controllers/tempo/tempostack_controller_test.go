@@ -702,8 +702,7 @@ func TestReconcileManifestsValidateModes(t *testing.T) {
 			validate: func(t *testing.T, err error) {
 				require.Error(t, err)
 				assert.Equal(t,
-					"cluster degraded: Invalid tenants configuration: mandatory configuration - missing"+
-						" tenants' authentication configuration",
+					"cluster degraded: Invalid tenants configuration: spec.tenants.authentication is required in static mode",
 					err.Error(),
 				)
 			},

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"embed"
 	"fmt"
+	"math/rand"
 	"text/template"
 
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
@@ -41,11 +42,107 @@ func buildConfigFiles(opts options) (rbacCfg string, tenantsCfg string, err erro
 	return rbacCfg, tenantsCfg, nil
 }
 
+func newOptions(tempo v1alpha1.TempoStack, baseDomain string, oidcSecrets []*manifestutils.GatewayTenantOIDCSecret, tenantsData []*manifestutils.GatewayTenantsData) options {
+	var auths []authentication
+	for _, tenantAuth := range tempo.Spec.Tenants.Authentication {
+		cookieSecret := ""
+		tenantData := getTenantData(tenantAuth.TenantName, tenantsData)
+		if tenantData != nil && tenantData.OpenShiftCookieSecret != "" {
+			cookieSecret = tenantData.OpenShiftCookieSecret
+		} else {
+			cookieSecret = newCookieSecret()
+		}
+
+		auth := authentication{
+			TenantName:            tenantAuth.TenantName,
+			TenantID:              tenantAuth.TenantID,
+			OpenShiftCookieSecret: cookieSecret,
+			OIDC:                  tenantAuth.OIDC,
+		}
+
+		oidcTenantSecret := getOIDCSecret(tenantAuth.TenantName, oidcSecrets)
+		if oidcTenantSecret != nil {
+			auth.OIDCSecret = oidcSecret{
+				ClientID:     oidcTenantSecret.ClientID,
+				ClientSecret: oidcTenantSecret.ClientSecret,
+				IssuerCAPath: oidcTenantSecret.IssuerCAPath,
+			}
+		}
+
+		auths = append(auths, auth)
+	}
+
+	return options{
+		Namespace:  tempo.Namespace,
+		Name:       tempo.Name,
+		BaseDomain: baseDomain,
+		Tenants: &tenants{
+			Mode:           tempo.Spec.Tenants.Mode,
+			Authentication: auths,
+			Authorization:  tempo.Spec.Tenants.Authorization,
+		},
+	}
+}
+
+func getTenantData(tenantName string, tenantsData []*manifestutils.GatewayTenantsData) *manifestutils.GatewayTenantsData {
+	for _, d := range tenantsData {
+		if d.TenantName == tenantName {
+			return d
+		}
+	}
+	return nil
+}
+
+func getOIDCSecret(tenantName string, OIDCSecrets []*manifestutils.GatewayTenantOIDCSecret) *manifestutils.GatewayTenantOIDCSecret {
+	for _, s := range OIDCSecrets {
+		if s.TenantName == tenantName {
+			return s
+		}
+	}
+	return nil
+}
+
 // options is used to render the rbac.yaml and tenants.yaml file template.
 type options struct {
-	Namespace     string
-	Name          string
-	BaseDomain    string
-	Tenants       *v1alpha1.TenantsSpec
-	TenantSecrets []*manifestutils.GatewayTenantSecret
+	Name       string
+	Namespace  string
+	BaseDomain string
+	Tenants    *tenants
+}
+
+type tenants struct {
+	Mode v1alpha1.ModeType
+
+	Authentication []authentication
+	Authorization  *v1alpha1.AuthorizationSpec
+}
+
+type authentication struct {
+	TenantName string
+	TenantID   string
+
+	// OpenShiftCookieSecret is used for encrypting the auth token when put into the browser session.
+	OpenShiftCookieSecret string
+	OIDC                  *v1alpha1.OIDCSpec
+	OIDCSecret            oidcSecret
+}
+
+// secret for clientID, clientSecret and issuerCAPath for tenant's authentication.
+type oidcSecret struct {
+	ClientID     string
+	ClientSecret string
+	IssuerCAPath string
+}
+
+var (
+	cookieSecretLength       = 32
+	cookieSecretAllowedRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+)
+
+func newCookieSecret() string {
+	b := make([]rune, cookieSecretLength)
+	for i := range b {
+		b[i] = cookieSecretAllowedRunes[rand.Intn(len(cookieSecretAllowedRunes))] // nolint:gosec
+	}
+	return string(b)
 }

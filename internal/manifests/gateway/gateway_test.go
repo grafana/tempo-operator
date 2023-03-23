@@ -54,16 +54,11 @@ func TestRbacConfig(t *testing.T) {
 		Tempo:               tempo,
 		Gates:               configv1alpha1.FeatureGates{},
 		TLSProfile:          tlsprofile.TLSProfileOptions{},
-		GatewayTenantSecret: []*manifestutils.GatewayTenantSecret{},
+		GatewayTenantSecret: []*manifestutils.GatewayTenantOIDCSecret{},
 	}
 
-	tenantsCfg, _, err := buildConfigFiles(options{
-		Namespace:     params.Tempo.Namespace,
-		Name:          params.Tempo.Name,
-		BaseDomain:    params.Gates.OpenShift.BaseDomain,
-		Tenants:       params.Tempo.Spec.Tenants,
-		TenantSecrets: params.GatewayTenantSecret,
-	})
+	cfgOpts := newOptions(params.Tempo, params.Gates.OpenShift.BaseDomain, params.GatewayTenantSecret, params.GatewayTenantsData)
+	tenantsCfg, _, err := buildConfigFiles(cfgOpts)
 	assert.NoError(t, err)
 
 	secret, hash := rbacConfig(tempo, tenantsCfg)
@@ -110,16 +105,11 @@ func TestTenantsConfig(t *testing.T) {
 		Tempo:               tempo,
 		Gates:               configv1alpha1.FeatureGates{},
 		TLSProfile:          tlsprofile.TLSProfileOptions{},
-		GatewayTenantSecret: []*manifestutils.GatewayTenantSecret{},
+		GatewayTenantSecret: []*manifestutils.GatewayTenantOIDCSecret{},
 	}
 
-	_, tenantsCfg, err := buildConfigFiles(options{
-		Namespace:     params.Tempo.Namespace,
-		Name:          params.Tempo.Name,
-		BaseDomain:    params.Gates.OpenShift.BaseDomain,
-		Tenants:       params.Tempo.Spec.Tenants,
-		TenantSecrets: params.GatewayTenantSecret,
-	})
+	cfgOpts := newOptions(params.Tempo, params.Gates.OpenShift.BaseDomain, params.GatewayTenantSecret, params.GatewayTenantsData)
+	_, tenantsCfg, err := buildConfigFiles(cfgOpts)
 	assert.NoError(t, err)
 
 	secret, hash := tenantsConfig(tempo, tenantsCfg)

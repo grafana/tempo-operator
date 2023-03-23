@@ -13,7 +13,8 @@ type Params struct {
 	Tempo               v1alpha1.TempoStack
 	Gates               configv1alpha1.FeatureGates
 	TLSProfile          tlsprofile.TLSProfileOptions
-	GatewayTenantSecret []*GatewayTenantSecret
+	GatewayTenantSecret []*GatewayTenantOIDCSecret
+	GatewayTenantsData  []*GatewayTenantsData
 }
 
 // StorageParams holds storage configuration.
@@ -42,10 +43,17 @@ type S3 struct {
 	Bucket   string
 }
 
-// GatewayTenantSecret holds clientID, clientSecret and issuerCAPath for tenant's authentication.
-type GatewayTenantSecret struct {
+// GatewayTenantOIDCSecret holds clientID, clientSecret and issuerCAPath for tenant's authentication.
+type GatewayTenantOIDCSecret struct {
 	TenantName   string
 	ClientID     string
 	ClientSecret string
 	IssuerCAPath string
+}
+
+// GatewayTenantsData holds cookie secret for opa-openshift sidecar.
+type GatewayTenantsData struct {
+	TenantName string
+	// OpenShiftCookieSecret is used for encrypting the auth token when put into the browser session.
+	OpenShiftCookieSecret string
 }
