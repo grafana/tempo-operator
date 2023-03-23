@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"path"
 
-	v1 "k8s.io/api/apps/v1"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -80,7 +80,7 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 	return objs, nil
 }
 
-func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash string) *v1.Deployment {
+func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash string) *appsv1.Deployment {
 	tempo := params.Tempo
 	labels := manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name)
 	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
@@ -89,16 +89,16 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 
 	cfg := tempo.Spec.Template.Gateway
 
-	return &v1.Deployment{
+	return &appsv1.Deployment{
 		TypeMeta: metav1.TypeMeta{
-			APIVersion: v1.SchemeGroupVersion.String(),
+			APIVersion: appsv1.SchemeGroupVersion.String(),
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      naming.Name(manifestutils.GatewayComponentName, tempo.Name),
 			Namespace: tempo.Namespace,
 			Labels:    labels,
 		},
-		Spec: v1.DeploymentSpec{
+		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{
 				MatchLabels: labels,
 			},
