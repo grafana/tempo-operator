@@ -188,7 +188,7 @@ func TestBuildGateway_openshift(t *testing.T) {
 	require.Equal(t, "Service", route.Spec.To.Kind)
 	require.Equal(t, "tempo-simplest-gateway", route.Spec.To.Name)
 
-	obj = getObjectByTypeAndName(objects, "tempo-simplest-gateway", reflect.TypeOf(&corev1.ConfigMap{}))
+	obj = getObjectByTypeAndName(objects, "tempo-simplest-gateway-cabundle", reflect.TypeOf(&corev1.ConfigMap{}))
 	require.NotNil(t, obj)
 	caConfigMap, ok := obj.(*corev1.ConfigMap)
 	require.True(t, ok)
