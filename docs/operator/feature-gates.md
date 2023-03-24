@@ -460,6 +460,29 @@ string
 </td>
 </tr>
 
+<tr>
+
+<td>
+
+<code>tempoGatewayOpa</code><br/>
+
+<em>
+
+string
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>TempoGatewayOpa defines the OPA sidecar container for TempoGateway.</p>
+
+</td>
+</tr>
+
 </tbody>
 </table>
 

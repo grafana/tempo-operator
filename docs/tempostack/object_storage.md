@@ -13,7 +13,8 @@ weight: 100
 toc: true
 ---
 
-Tempo Operator supports [AWS S3](https://aws.amazon.com/), [Azure](https://azure.microsoft.com), [Minio](https://min.io/) and [OpenShift Data Foundation](https://www.redhat.com/en/technologies/cloud-computing/openshift-data-foundation) for TempoStack object storage.
+Tempo Operator supports [AWS S3](https://aws.amazon.com/), [Azure](https://azure.microsoft.com), [GCS](https://cloud.google.com/), [Minio](https://min.io/) and [OpenShift Data Foundation](https://www.redhat.com/en/technologies/cloud-computing/openshift-data-foundation) for TempoStack object storage.
+
 
 ## AWS S3
 
@@ -45,6 +46,40 @@ Tempo Operator supports [AWS S3](https://aws.amazon.com/), [Azure](https://azure
       secret:
         name: tempostack-dev-s3
         type: s3
+  ```
+
+## Google Cloud Storage
+
+### Requirements
+
+* Create a [project](https://cloud.google.com/resource-manager/docs/creating-managing-projects) on Google Cloud Platform.
+* Create a [bucket](https://cloud.google.com/storage/docs/creating-buckets) under same project.
+* Create a [service account](https://cloud.google.com/docs/authentication/getting-started#creating_a_service_account) under same project for GCP authentication.
+
+### Installation
+
+* Deploy the Tempo Operator to your cluster.
+
+* Copy the service account credentials received from GCP into a file name `key.json`.
+
+* Create an Object Storage secret with keys `bucketname` and `key.json` as follows:
+
+    ```console
+    kubectl create secret generic tempostack-dev-gcs \
+      --from-literal=bucketname="<BUCKET_NAME>" \
+      --from-file=key.json="<PATH/TO/KEY.JSON>"
+    ```
+
+    where `tempostack-dev-gcs` is the secret name, `<BUCKET_NAME>` is the name of bucket created in requirements step and `<PATH/TO/KEY.JSON>` is the file path where the `key.json` was copied to.
+
+* Create an instance of TempoStack by referencing the secret name and type as `gcs`:
+
+  ```yaml
+  spec:
+    storage:
+      secret:
+        name: tempostack-dev-gcs
+        type: gcs
   ```
 
 ## Minio

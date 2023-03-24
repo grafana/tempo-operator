@@ -17,6 +17,9 @@ func TestBuildAll(t *testing.T) {
 			AzureStorage: &manifestutils.AzureStorage{
 				Container: "image",
 			},
+			GCS: &manifestutils.GCS{
+				Bucket: "test",
+			},
 			S3: &manifestutils.S3{
 				Endpoint: "https://localhost",
 				Bucket:   "test",

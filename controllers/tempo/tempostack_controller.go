@@ -196,11 +196,20 @@ func (r *TempoStackReconciler) reconcileManifests(ctx context.Context, log logr.
 		return err
 	}
 
-	tenantSecrets := []*manifestutils.GatewayTenantSecret{}
+	var tenantSecrets []*manifestutils.GatewayTenantOIDCSecret
 	if tempo.Spec.Tenants != nil && tempo.Spec.Tenants.Mode == v1alpha1.Static {
-		tenantSecrets, err = gateway.GetTenantSecrets(ctx, r.Client, &tempo)
+		tenantSecrets, err = gateway.GetOIDCTenantSecrets(ctx, r.Client, tempo)
 		if err != nil {
 			return err
+		}
+	}
+
+	var gatewayTenantsData []*manifestutils.GatewayTenantsData
+	if tempo.Spec.Tenants != nil && tempo.Spec.Tenants.Mode == v1alpha1.OpenShift {
+		gatewayTenantsData, err = gateway.GetGatewayTenantsData(ctx, r.Client, tempo)
+		if err != nil {
+			// just log the error the secret is not created if the loop for an instance runs for the first time.
+			log.Info("Failed to get gateway secret and/or tenants.yaml", "error", err)
 		}
 	}
 
@@ -210,6 +219,7 @@ func (r *TempoStackReconciler) reconcileManifests(ctx context.Context, log logr.
 		Gates:               r.FeatureGates,
 		TLSProfile:          tlsProfile,
 		GatewayTenantSecret: tenantSecrets,
+		GatewayTenantsData:  gatewayTenantsData,
 	})
 	// TODO (pavolloffay) check error type and change return appropriately
 	if err != nil {
@@ -292,12 +302,15 @@ func (r *TempoStackReconciler) getStorageConfig(ctx context.Context, tempo v1alp
 
 	params := manifestutils.StorageParams{
 		AzureStorage: &manifestutils.AzureStorage{},
+		GCS:          &manifestutils.GCS{},
 		S3:           &manifestutils.S3{},
 	}
 
 	switch tempo.Spec.Storage.Secret.Type {
 	case v1alpha1.ObjectStorageSecretAzure:
 		params.AzureStorage = getAzureParams(storageSecret)
+	case v1alpha1.ObjectStorageSecretGCS:
+		params.GCS = getGCSParams(storageSecret)
 	case v1alpha1.ObjectStorageSecretS3:
 		params.S3 = getS3Params(storageSecret)
 	default:

@@ -33,6 +33,12 @@ func azureStorageFromParams(params Params) azureStorage {
 	}
 }
 
+func gcsFromParams(params Params) gcs {
+	return gcs{
+		Bucket: params.GCS.Bucket,
+	}
+}
+
 func s3FromParams(params Params) s3 {
 	s3Endpoint := params.S3.Endpoint
 	s3Insecure := !strings.HasPrefix(s3Endpoint, "https://")
@@ -69,6 +75,7 @@ func buildConfiguration(tempo v1alpha1.TempoStack, params Params) ([]byte, error
 	opts := options{
 		StorageType:     string(tempo.Spec.Storage.Secret.Type),
 		AzureStorage:    azureStorageFromParams(params),
+		GCS:             gcsFromParams(params),
 		S3:              s3FromParams(params),
 		GlobalRetention: tempo.Spec.Retention.Global.Traces.Duration.String(),
 		MemberList: []string{

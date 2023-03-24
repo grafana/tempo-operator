@@ -27,6 +27,7 @@ var (
 	tenGBQuantity                 = resource.MustParse("10Gi")
 	errNoDefaultTempoImage        = errors.New("please specify a tempo image in the CR or in the operator configuration")
 	errNoDefaultTempoGatewayImage = errors.New("please specify a tempo-gateway image in the CR or in the operator configuration")
+	errNoDefaultGatewayOPAImage   = errors.New("please specify a opa image in the CR or in the operator configuration")
 	errNoDefaultTempoQueryImage   = errors.New("please specify a tempo-query image in the CR or in the operator configuration")
 )
 
@@ -81,6 +82,12 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 			return errNoDefaultTempoGatewayImage
 		}
 		r.Spec.Images.TempoGateway = d.ctrlConfig.DefaultImages.TempoGateway
+	}
+	if r.Spec.Images.TempoGatewayOpa == "" {
+		if d.ctrlConfig.DefaultImages.TempoGatewayOpa == "" {
+			return errNoDefaultGatewayOPAImage
+		}
+		r.Spec.Images.TempoGatewayOpa = d.ctrlConfig.DefaultImages.TempoGatewayOpa
 	}
 
 	if r.Spec.ServiceAccount == "" {
@@ -279,21 +286,28 @@ func ValidateTenantConfigs(tempo TempoStack) error {
 		return nil
 	}
 
-	if tempo.Spec.Tenants.Mode == Static {
-		if tempo.Spec.Tenants.Authentication == nil {
-			return fmt.Errorf("mandatory configuration - missing tenants' authentication configuration")
+	tenants := tempo.Spec.Tenants
+	if tenants.Mode == Static {
+		if tenants.Authentication == nil {
+			return fmt.Errorf("spec.tenants.authentication is required in static mode")
 		}
 
-		if tempo.Spec.Tenants.Authorization.Roles == nil {
-			return fmt.Errorf("mandatory configuration - missing roles configuration")
+		if tenants.Authorization.Roles == nil {
+			return fmt.Errorf("spec.tenants.authorization.roles is required in static mode")
 		}
 
-		if tempo.Spec.Tenants.Authorization.RoleBindings == nil {
-			return fmt.Errorf("mandatory configuration - missing role bindings configuration")
+		if tenants.Authorization.RoleBindings == nil {
+			return fmt.Errorf("spec.tenants.authorization.roleBindings is required in static mode")
+		}
+	} else if tenants.Mode == OpenShift {
+		if tenants.Authorization != nil {
+			return fmt.Errorf("spec.tenants.authorization should not be defined in openshift mode")
+		}
+		for _, auth := range tenants.Authentication {
+			if auth.OIDC != nil {
+				return fmt.Errorf("spec.tenants.authentication.oidc should not be defined in openshift mode")
+			}
 		}
 	}
-
-	// TODO: validate openshift mode too.
-	// See: https://github.com/os-observability/tempo-operator/issues/315
 	return nil
 }

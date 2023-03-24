@@ -5,6 +5,11 @@ type azureStorage struct {
 	Container string
 }
 
+// GCS holds Google Cloud Storage configuration options.
+type gcs struct {
+	Bucket string
+}
+
 // S3 holds S3 object storage configuration options.
 type s3 struct {
 	Endpoint string
@@ -18,6 +23,7 @@ type options struct {
 	GlobalRetention        string
 	QueryFrontendDiscovery string
 	AzureStorage           azureStorage
+	GCS                    gcs
 	S3                     s3
 	GlobalRateLimits       rateLimitsOptions
 	TenantRateLimitsPath   string

@@ -13,13 +13,15 @@ type Params struct {
 	Tempo               v1alpha1.TempoStack
 	Gates               configv1alpha1.FeatureGates
 	TLSProfile          tlsprofile.TLSProfileOptions
-	GatewayTenantSecret []*GatewayTenantSecret
+	GatewayTenantSecret []*GatewayTenantOIDCSecret
+	GatewayTenantsData  []*GatewayTenantsData
 }
 
 // StorageParams holds storage configuration.
 type StorageParams struct {
-	S3           *S3
 	AzureStorage *AzureStorage
+	GCS          *GCS
+	S3           *S3
 }
 
 // AzureStorage for Azure Storage.
@@ -29,16 +31,29 @@ type AzureStorage struct {
 	AccountKey  string
 }
 
+// GCS for Google Cloud Storage.
+type GCS struct {
+	Bucket  string
+	KeyJson string
+}
+
 // S3 holds S3 configuration.
 type S3 struct {
 	Endpoint string
 	Bucket   string
 }
 
-// GatewayTenantSecret holds clientID, clientSecret and issuerCAPath for tenant's authentication.
-type GatewayTenantSecret struct {
+// GatewayTenantOIDCSecret holds clientID, clientSecret and issuerCAPath for tenant's authentication.
+type GatewayTenantOIDCSecret struct {
 	TenantName   string
 	ClientID     string
 	ClientSecret string
 	IssuerCAPath string
+}
+
+// GatewayTenantsData holds cookie secret for opa-openshift sidecar.
+type GatewayTenantsData struct {
+	TenantName string
+	// OpenShiftCookieSecret is used for encrypting the auth token when put into the browser session.
+	OpenShiftCookieSecret string
 }

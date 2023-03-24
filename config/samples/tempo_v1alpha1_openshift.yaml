@@ -1,13 +1,14 @@
 # This is an example CR to deploy TempoStack on OpenShift
 # It configures multitenancy with two tenants.
-# The operator feature flags openshift.openshiftRoute and openshift.servingCertsService should be enabled.
+# The operator feature flags openshift.gatewayRoute and openshift.servingCertsService should be enabled.
 #
 # Use https://tempo-simplest-gateway-observability.{OpenShift base domain}/api/traces/v1/dev/search
-# to access the UI and log in with kubeadmin user.
+# to access the UI and to log in.
 #
 # The reporting clients - OpenTelemetry collectors should use
 # dev-collector and prod-collector service accounts to successfully authenticate.
 # See ./tempo_v1alpha1_openshift.yaml for OpenTelemetry collector deployment.
+---
 apiVersion: tempo.grafana.com/v1alpha1
 kind:  TempoStack
 metadata:
@@ -31,31 +32,36 @@ spec:
         tenantId: "1610b0c3-c509-4592-a256-a1871353dbfa"
       - tenantName: prod
         tenantId: "1610b0c3-c509-4592-a256-a1871353dbfb"
-    authorization:
-      roleBindings:
-        - name: read-write
-          roles:
-            - read-write-traces
-          subjects:
-            - kind: user
-              name: system:serviceaccount:observability:dev-collector
-            - kind: user
-              name: system:serviceaccount:observability:prod-collector
-            - kind: user
-              name: kubeadmin
-      roles:
-        - name: read-write-traces
-          permissions:
-            - read
-            - write
-          resources:
-            - traces
-          tenants:
-            - dev
-            - production
   template:
     gateway:
       enabled: true
     queryFrontend:
       jaegerQuery:
         enabled: true
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tempostack-traces-reader
+rules:
+  - apiGroups:
+      - 'tempo.grafana.com'
+    resources:
+      - dev
+    resourceNames:
+      - traces
+    verbs:
+      - 'get'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: tempostack-traces-reader
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: tempostack-traces-reader
+subjects:
+  - kind: Group
+    apiGroup: rbac.authorization.k8s.io
+    name: system:authenticated

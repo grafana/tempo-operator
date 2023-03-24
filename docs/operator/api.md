@@ -1461,7 +1461,12 @@ string
 
 <tbody><tr><td><p>&#34;azure&#34;</p></td>
 
-<td><p>ObjectStorageSecretAzure when using Azure for Tempo storage.</p>
+<td><p>ObjectStorageSecretAzure when using Azure Storage for Tempo storage.</p>
+</td>
+
+</tr><tr><td><p>&#34;gcs&#34;</p></td>
+
+<td><p>ObjectStorageSecretGCS when using Google Cloud Storage for Tempo storage.</p>
 </td>
 
 </tr><tr><td><p>&#34;s3&#34;</p></td>
