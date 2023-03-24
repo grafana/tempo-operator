@@ -63,7 +63,6 @@ Tempo Operator supports [AWS S3](https://aws.amazon.com/), [Azure](https://azure
     ```console
     kubectl create secret generic tempostack-dev-azure \
       --from-literal=container="<AZURE_CONTAINER_NAME>" \
-      --from-literal=environment="<AZURE_ENVIRONMENTs>" \
       --from-literal=account_name="<AZURE_ACCOUNT_NAME>" \
       --from-literal=account_key="<AZURE_ACCOUNT_KEY>"
     ```
