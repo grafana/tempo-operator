@@ -424,3 +424,27 @@ web-serve: web-pre ## Run local preview version of the tempo-operator.dev websit
 
 hugo:
 	test -s $(HUGO) || $(call go-get-tool,$(HUGO),--tags extended github.com/gohugoio/hugo,$(HUGO_VERSION))
+
+#### release
+
+CHGLOG_VERSION=v0.15.4
+CHGLOG ?= $(LOCALBIN)/git-chglog-$(CHGLOG_VERSION)
+
+.PHONY: git-chglog
+git-chglog:
+	test -s $(CHGLOG) || $(call go-get-tool,$(CHGLOG),github.com/git-chglog/git-chglog/cmd/git-chglog,$(CHGLOG_VERSION))
+
+.PHONY: changelog
+changelog: git-chglog
+	${CHGLOG} --next-tag v${OPERATOR_VERSION}
+
+.PHONY: release-artifacts
+release-artifacts: set-image-controller
+	mkdir -p dist
+	$(KUSTOMIZE) build config/default -o dist/tempo-operator.yaml
+# Will add the openshift bundle once https://github.com/os-observability/tempo-operator/pull/338 is merged
+
+.PHONY: tag-release
+tag-release:
+	git tag v${OPERATOR_VERSION}
+	git git@github.com:os-observability/tempo-operator.git v${OPERATOR_VERSION}
