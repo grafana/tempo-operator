@@ -189,6 +189,12 @@ HUGO ?= $(LOCALBIN)/hugo-$(HUGO_VERSION)
 export KUBE_VERSION ?= 1.25
 KIND_CONFIG ?= kind-$(KUBE_VERSION).yaml
 
+# Choose wich version to generate
+BUNDLE_VARIANT ?= community
+BUNDLE_DIR = ./bundle/$(BUNDLE_VARIANT)
+MANIFESTS_DIR = config/manifests/$(BUNDLE_VARIANT)
+BUNDLE_BUILD_GEN_FLAGS ?= $(BUNDLE_GEN_FLAGS) --output-dir . --kustomize-dir ../../$(MANIFESTS_DIR)
+
 .PHONY: controller-gen
 controller-gen: ## Download controller-gen locally if necessary.
 	test -s $(LOCALBIN)/controller-gen-$(CONTROLLER_TOOLS_VERSION) || $(call go-get-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen,$(CONTROLLER_TOOLS_VERSION))
@@ -199,10 +205,10 @@ setup-envtest: ## Download envtest-setup locally if necessary.
 
 .PHONY: bundle
 bundle: operator-sdk manifests kustomize ## Generate bundle manifests and metadata, then validate generated files.
-	$(OPERATOR_SDK) generate kustomize manifests -q
+	$(OPERATOR_SDK) generate kustomize manifests -q --input-dir $(MANIFESTS_DIR) --output-dir $(MANIFESTS_DIR)
 	cd config/manager && $(KUSTOMIZE) edit set image controller=$(IMG)
-	$(KUSTOMIZE) build config/manifests | $(OPERATOR_SDK) generate bundle $(BUNDLE_GEN_FLAGS)
-	$(OPERATOR_SDK) bundle validate ./bundle
+	cd $(BUNDLE_DIR) && cp ../../PROJECT . && $(KUSTOMIZE) build ../../$(MANIFESTS_DIR) | $(OPERATOR_SDK) generate bundle $(BUNDLE_BUILD_GEN_FLAGS) && rm PROJECT
+	$(OPERATOR_SDK) bundle validate $(BUNDLE_DIR)
 	./hack/ignore-createdAt-bundle.sh
 
 .PHONY: bundle-build
