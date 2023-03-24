@@ -301,6 +301,11 @@ deploy-minio:
 e2e:
 	$(KUTTL) test
 
+# end-to-tests
+.PHONY: e2e-openshift
+e2e-openshift:
+	$(KUTTL) test --config kuttl-test-openshift.yaml
+
 .PHONY: prepare-e2e
 prepare-e2e: kuttl start-kind cert-manager install-openshift-routes deploy-minio set-test-image-vars set-test-operator-config build docker-build load-image-operator deploy
 
