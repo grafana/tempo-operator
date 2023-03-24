@@ -1,0 +1,10 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestSuite
+testDirs:
+  - ./tests/e2e-openshift/
+timeout: 150
+commands:
+  - script: |
+      kubectl apply -f ./tests/e2e-openshift/operator-config.yaml
+      kubectl rollout restart deployment/tempo-operator-controller-manager -n tempo-operator-system
+      kubectl rollout status deployment/tempo-operator-controller-manager -n tempo-operator-system --timeout=30s
