@@ -48,6 +48,38 @@ Tempo Operator supports [AWS S3](https://aws.amazon.com/), [Azure](https://azure
         type: s3
   ```
 
+## Azure
+
+### Requirements
+
+* Create a [bucket](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-blobs-introduction) on Azure.
+
+### Installation
+
+* Deploy the Tempo Operator to your cluster.
+
+* Create an Object Storage secret with keys as follows:
+
+    ```console
+    kubectl create secret generic tempostack-dev-azure \
+      --from-literal=container="<AZURE_CONTAINER_NAME>" \
+      --from-literal=environment="<AZURE_ENVIRONMENTs>" \
+      --from-literal=account_name="<AZURE_ACCOUNT_NAME>" \
+      --from-literal=account_key="<AZURE_ACCOUNT_KEY>"
+    ```
+
+    where `tempostack-dev-azure` is the secret name.
+
+* Create an instance of TempoStack by referencing the secret name and type as `azure`:
+
+  ```yaml
+  spec:
+    storage:
+      secret:
+        name: tempostack-dev-azure
+        type: azure
+  ```
+
 ## Google Cloud Storage
 
 ### Requirements
