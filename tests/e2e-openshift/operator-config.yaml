@@ -1,5 +1,6 @@
-# Once https://github.com/os-observability/tempo-operator/pull/338 is merged
+# TODO Once https://github.com/os-observability/tempo-operator/pull/338 is merged
 # reuse the config from the bundle/openshift/manifests
+# https://github.com/os-observability/tempo-operator/issues/341
 kind: ConfigMap
 apiVersion: v1
 metadata:
