@@ -147,6 +147,23 @@ spec:
                     description: PerTenant is used to define rate limits per tenant.
                     type: object
                 type: object
+              observability:
+                description: ObservabilitySpec defines how telemetry data gets handled.
+                properties:
+                  tracing:
+                    description: Tracing defines a config for operands.
+                    properties:
+                      jaeger_agent_endpoint:
+                        default: localhost:6831
+                        description: JaegerAgentEndpoint defines the jaeger endpoint
+                          data gets send to.
+                        type: string
+                      sampling_fraction:
+                        description: SamplingFraction defines the sampling ratio.
+                          Valid values are 0 to 1.
+                        type: string
+                    type: object
+                type: object
               replicationFactor:
                 description: 'NOTE: currently this field is not considered. ReplicationFactor
                   is used to define how many component replicas should exist.'

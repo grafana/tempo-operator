@@ -1624,6 +1624,67 @@ It needs to be in the same namespace as the Tempo custom resource.</p>
 </table>
 
 
+## ObservabilitySpec { #tempo-grafana-com-v1alpha1-ObservabilitySpec }
+
+<p>
+
+(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-TempoStackSpec">TempoStackSpec</a>)
+
+</p>
+
+<div>
+
+<p>ObservabilitySpec defines how telemetry data gets handled.</p>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Field</th>
+
+<th>Description</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td>
+
+<code>tracing</code><br/>
+
+<em>
+
+<a href="#tempo-grafana-com-v1alpha1-TracingConfigSpec">
+
+TracingConfigSpec
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>Tracing defines a config for operands.</p>
+
+</td>
+</tr>
+
+</tbody>
+</table>
+
+
 ## PermissionType { #tempo-grafana-com-v1alpha1-PermissionType }
 
 (<code>string</code> alias)
@@ -3287,6 +3348,33 @@ TenantsSpec
 </td>
 </tr>
 
+<tr>
+
+<td>
+
+<code>observability</code><br/>
+
+<em>
+
+<a href="#tempo-grafana-com-v1alpha1-ObservabilitySpec">
+
+ObservabilitySpec
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>ObservabilitySpec defines how telemetry data gets handled.</p>
+
+</td>
+</tr>
+
 </tbody>
 </table>
 
@@ -3787,6 +3875,86 @@ AuthorizationSpec
 <em>(Optional)</em>
 
 <p>Authorization defines the tempo-gateway component authorization configuration spec per tenant.</p>
+
+</td>
+</tr>
+
+</tbody>
+</table>
+
+
+## TracingConfigSpec { #tempo-grafana-com-v1alpha1-TracingConfigSpec }
+
+<p>
+
+(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-ObservabilitySpec">ObservabilitySpec</a>)
+
+</p>
+
+<div>
+
+<p>TracingConfigSpec defines a tracing config including endpoints and sampling.</p>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Field</th>
+
+<th>Description</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td>
+
+<code>sampling_fraction</code><br/>
+
+<em>
+
+string
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>SamplingFraction defines the sampling ratio. Valid values are 0 to 1.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>jaeger_agent_endpoint</code><br/>
+
+<em>
+
+string
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>JaegerAgentEndpoint defines the jaeger endpoint data gets send to.</p>
 
 </td>
 </tr>
