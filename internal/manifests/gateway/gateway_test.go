@@ -16,7 +16,6 @@ import (
 	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
-	"github.com/os-observability/tempo-operator/internal/manifests/naming"
 	"github.com/os-observability/tempo-operator/internal/tlsprofile"
 )
 
@@ -122,57 +121,6 @@ func TestTenantsConfig(t *testing.T) {
 	assert.NotEmpty(t, secret.Data["tenants.yaml"])
 }
 
-func TestPatchOCPServingCerts(t *testing.T) {
-	tempo := v1alpha1.TempoStack{}
-	dep := &appsv1.Deployment{
-		Spec: appsv1.DeploymentSpec{
-			Template: corev1.PodTemplateSpec{
-				Spec: corev1.PodSpec{
-					Volumes: []corev1.Volume{
-						{
-							Name: "data",
-						},
-					},
-					Containers: []corev1.Container{
-						{
-							Args: []string{"--help"},
-							VolumeMounts: []corev1.VolumeMount{
-								{
-									Name: "data",
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-	}
-	expected := dep.DeepCopy()
-	expected.Spec.Template.Spec.Volumes = append(expected.Spec.Template.Spec.Volumes, corev1.Volume{
-		Name: "serving-certs",
-		VolumeSource: corev1.VolumeSource{
-			Secret: &corev1.SecretVolumeSource{
-				SecretName: naming.Name("gateway-tls", tempo.Name),
-			},
-		},
-	})
-	expected.Spec.Template.Spec.Containers[0].Args = append(expected.Spec.Template.Spec.Containers[0].Args,
-		[]string{
-			"--tls.server.cert-file=/etc/tempo-gateway/serving-certs/tls.crt",
-			"--tls.server.key-file=/etc/tempo-gateway/serving-certs/tls.key",
-		}...)
-	expected.Spec.Template.Spec.Containers[0].VolumeMounts = append(expected.Spec.Template.Spec.Containers[0].VolumeMounts,
-		corev1.VolumeMount{
-			Name:      "serving-certs",
-			ReadOnly:  true,
-			MountPath: "/etc/tempo-gateway/serving-certs",
-		})
-
-	got, err := patchOCPServingCerts(tempo, dep)
-	require.NoError(t, err)
-	assert.Equal(t, expected, got)
-}
-
 func TestBuildGateway_openshift(t *testing.T) {
 	tempo := v1alpha1.TempoStack{
 		ObjectMeta: metav1.ObjectMeta{
@@ -207,7 +155,7 @@ func TestBuildGateway_openshift(t *testing.T) {
 		},
 	})
 	require.NoError(t, err)
-	assert.Equal(t, 8, len(objects))
+	assert.Equal(t, 9, len(objects))
 	obj := getObjectByTypeAndName(objects, "tempo-simplest-gateway", reflect.TypeOf(&appsv1.Deployment{}))
 	require.NotNil(t, obj)
 	dep, ok := obj.(*appsv1.Deployment)
@@ -239,6 +187,14 @@ func TestBuildGateway_openshift(t *testing.T) {
 	require.True(t, ok)
 	require.Equal(t, "Service", route.Spec.To.Kind)
 	require.Equal(t, "tempo-simplest-gateway", route.Spec.To.Name)
+
+	obj = getObjectByTypeAndName(objects, "tempo-simplest-gateway-cabundle", reflect.TypeOf(&corev1.ConfigMap{}))
+	require.NotNil(t, obj)
+	caConfigMap, ok := obj.(*corev1.ConfigMap)
+	require.True(t, ok)
+	require.Equal(t, map[string]string{
+		"service.beta.openshift.io/inject-cabundle": "true",
+	}, caConfigMap.Annotations)
 }
 
 func getObjectByTypeAndName(objects []client.Object, name string, t reflect.Type) client.Object { // nolint: unparam

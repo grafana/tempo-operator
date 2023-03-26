@@ -63,6 +63,7 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 			clusterRole(params.Tempo),
 			clusterRoleBinding(params.Tempo),
 			serviceAccount(params.Tempo),
+			configMapCABundle(params.Tempo),
 		}...)
 
 		if params.Gates.OpenShift.ServingCertsService {
@@ -143,31 +144,30 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 									Protocol:      corev1.ProtocolTCP,
 								},
 							},
-							// TODO enable once probles are not secured by TLS https://github.com/os-observability/tempo-operator/issues/241
-							//LivenessProbe: &corev1.Probe{
-							//	ProbeHandler: corev1.ProbeHandler{
-							//		HTTPGet: &corev1.HTTPGetAction{
-							//			Path:   "/live",
-							//			Port:   intstr.FromInt(portInternal),
-							//			Scheme: corev1.URISchemeHTTP,
-							//		},
-							//	},
-							//	TimeoutSeconds:   2,
-							//	PeriodSeconds:    30,
-							//	FailureThreshold: 10,
-							//},
-							//ReadinessProbe: &corev1.Probe{
-							//	ProbeHandler: corev1.ProbeHandler{
-							//		HTTPGet: &corev1.HTTPGetAction{
-							//			Path:   "/ready",
-							//			Port:   intstr.FromInt(portInternal),
-							//			Scheme: corev1.URISchemeHTTP,
-							//		},
-							//	},
-							//	TimeoutSeconds:   1,
-							//	PeriodSeconds:    5,
-							//	FailureThreshold: 12,
-							//},
+							LivenessProbe: &corev1.Probe{
+								ProbeHandler: corev1.ProbeHandler{
+									HTTPGet: &corev1.HTTPGetAction{
+										Path:   "/live",
+										Port:   intstr.FromInt(portInternal),
+										Scheme: corev1.URISchemeHTTP,
+									},
+								},
+								TimeoutSeconds:   2,
+								PeriodSeconds:    30,
+								FailureThreshold: 10,
+							},
+							ReadinessProbe: &corev1.Probe{
+								ProbeHandler: corev1.ProbeHandler{
+									HTTPGet: &corev1.HTTPGetAction{
+										Path:   "/ready",
+										Port:   intstr.FromInt(portInternal),
+										Scheme: corev1.URISchemeHTTP,
+									},
+								},
+								TimeoutSeconds:   1,
+								PeriodSeconds:    5,
+								FailureThreshold: 12,
+							},
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      "rbac",
