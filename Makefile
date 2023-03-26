@@ -444,11 +444,11 @@ chlog-validate: chloggen
 
 .PHONY: chlog-preview
 chlog-preview: chloggen
-	$(CHLOGGEN) update --dry
+	$(CHLOGGEN) update --dry --version $(OPERATOR_VERSION)
 
 .PHONY: chlog-update
 chlog-update: chloggen
-	$(CHLOGGEN) update --version $(VERSION)
+	$(CHLOGGEN) update --version $(OPERATOR_VERSION)
 
 .PHONY: release-artifacts
 release-artifacts: set-image-controller

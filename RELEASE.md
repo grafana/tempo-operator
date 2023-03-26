@@ -3,9 +3,8 @@
 Steps to release a new version of the Tempo Operator:
 
 1. Change the images tags to corresponding versions on `config/manager/controller_manager_config.yaml` the operator is usually aligned with the tempo versions. 
-
 3. Run `make bundle USER=os-observability VERSION=x.y.z`, where `x.y.z` is the version that will be released.
-5. Add the changes to the changelog, see Generating the changelog secction. Manually remove irrelevant changes like dependencies updates, refactorizations, etc..
+5. Add the changes to the changelog, see Generating the changelog secction.
 7. Once the changes above are merged and available in `main`, tag it with the desired version, prefixed with `v`: `vx.y.z`
 8. The GitHub Workflow will take it from here, creating a GitHub release with the generated artifacts (manifests) and publishing the images
 9. After the release, generate a new OLM bundle (`make bundle`) and create two PRs against the `Community Operators repositories`:
@@ -15,10 +14,11 @@ Steps to release a new version of the Tempo Operator:
 
 ## Generating the changelog
 
-For now we are using a manual process to update the changelog, execute the following command:
+We use the chloggen to generate the changelog, simply run the following to generate the Changelog:
 
 ```bash
-make changelog
+make chlog-update
 ```
 
-This will give you the latest commits in a changelog format in STDOUT, copy it to CHANGELOG.md, remove irrelevant commits.
+This will delete all entries (other than the template) in the `.chloggen` directory and create a populated Changelog.md entry.
+
