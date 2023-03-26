@@ -426,17 +426,29 @@ hugo:
 	test -s $(HUGO) || $(call go-get-tool,$(HUGO),--tags extended github.com/gohugoio/hugo,$(HUGO_VERSION))
 
 #### release
+CHLOGGEN_VERSION=v0.3.0
+CHLOGGEN ?= $(LOCALBIN)/chloggen-$(CHLOGGEN_VERSION)
+FILENAME?=$(shell git branch --show-current)
 
-CHGLOG_VERSION=v0.15.4
-CHGLOG ?= $(LOCALBIN)/git-chglog-$(CHGLOG_VERSION)
+.PHONY: chloggen
+chloggen:
+	test -s $(CHLOGGEN) || $(call go-get-tool,$(CHLOGGEN),go.opentelemetry.io/build-tools/chloggen,$(CHLOGGEN_VERSION))
 
-.PHONY: git-chglog
-git-chglog:
-	test -s $(CHGLOG) || $(call go-get-tool,$(CHGLOG),github.com/git-chglog/git-chglog/cmd/git-chglog,$(CHGLOG_VERSION))
+.PHONY: chlog-new
+chlog-new: chlog-install
+	$(CHLOGGEN) new --filename $(FILENAME)
 
-.PHONY: changelog
-changelog: git-chglog
-	${CHGLOG} --next-tag v${OPERATOR_VERSION}
+.PHONY: chlog-validate
+chlog-validate: chloggen
+	$(CHLOGGEN) validate
+
+.PHONY: chlog-preview
+chlog-preview: chloggen
+	$(CHLOGGEN) update --dry
+
+.PHONY: chlog-update
+chlog-update: chloggen
+	$(CHLOGGEN) update --version $(VERSION)
 
 .PHONY: release-artifacts
 release-artifacts: set-image-controller
