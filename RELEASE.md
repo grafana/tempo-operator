@@ -3,7 +3,7 @@
 Steps to release a new version of the Tempo Operator:
 
 1. Change the images tags to corresponding versions on `config/manager/controller_manager_config.yaml` the operator is usually aligned with the tempo versions. 
-3. Run `make bundle USER=os-observability VERSION=x.y.z`, where `x.y.z` is the version that will be released.
+3. Run `make bundle USER=os-observability OPERATOR_VERSION=x.y.z`, where `x.y.z` is the version that will be released.
 5. Add the changes to the changelog, see Generating the changelog secction.
 7. Once the changes above are merged and available in `main`, tag it with the desired version, prefixed with `v`: `vx.y.z`
 8. The GitHub Workflow will take it from here, creating a GitHub release with the generated artifacts (manifests) and publishing the images
