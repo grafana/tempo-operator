@@ -4,7 +4,7 @@ Steps to release a new version of the Tempo Operator:
 
 1. Change the images tags to corresponding versions on `config/manager/controller_manager_config.yaml` the operator is usually aligned with the tempo versions. 
 1. Run `make bundle USER=os-observability OPERATOR_VERSION=x.y.z`, where `x.y.z` is the version that will be released
-1. Run OpenShift tests locally against an OpenShift cluster `make e2e-openshift`. A locally installed [CRC](https://github.com/crc-org/crc) cluster can be used for testing.
+1. Build, deploy and, run OpenShift tests locally against an OpenShift cluster `make e2e-openshift`. A locally installed [CRC](https://github.com/crc-org/crc) cluster can be used for testing.
 1. Add the changes to the changelog, see Generating the changelog section.
 1. Send a PR with the changes
 1. Once the changes above are merged and available in the `main` branch, tag it with the desired version, prefixed with `v`: `vx.y.z` (e.g. `git tag v0.1.0 && git push origin v0.1.0`)
