@@ -1,3 +1,8 @@
+# The namespace is auto-deleted by kuttl after the test run.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kuttl-ocp-gateway
 ---
 apiVersion: v1
 kind: Secret
