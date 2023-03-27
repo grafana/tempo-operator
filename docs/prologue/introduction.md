@@ -25,3 +25,4 @@ The Tempo operator includes, but is not limited to, the following features:
 
 ### Quick Start
 
+One page summary of how to start with the Tempo Operator. [Quick Start →]({{< ref "quickstart" >}})
