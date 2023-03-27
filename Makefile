@@ -456,6 +456,7 @@ chlog-update: chloggen
 	$(CHLOGGEN) update --version $(OPERATOR_VERSION)
 
 .PHONY: release-artifacts
+release-artifacts: OPERATOR_VERSION = "$(shell git describe --tags | sed 's/^v//')"
 release-artifacts: set-image-controller
 	mkdir -p dist
 	$(KUSTOMIZE) build config/default -o dist/tempo-operator.yaml
