@@ -149,6 +149,20 @@ spec:
         path: limits.perTenant.query.maxSearchBytesPerTrace
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:number
+      - description: ObservabilitySpec defines how telemetry data gets handled.
+        displayName: Observability
+        path: observability
+      - description: Tracing defines a config for operands.
+        displayName: Tracing Config
+        path: observability.tracing
+      - description: JaegerAgentEndpoint defines the jaeger endpoint data gets send
+          to.
+        displayName: Jaeger-Agent-Endpoint
+        path: observability.tracing.jaeger_agent_endpoint
+      - description: SamplingFraction defines the sampling ratio. Valid values are
+          0 to 1.
+        displayName: Sampling Fraction
+        path: observability.tracing.sampling_fraction
       - description: 'NOTE: currently this field is not considered. ReplicationFactor
           is used to define how many component replicas should exist.'
         displayName: Replication Factor

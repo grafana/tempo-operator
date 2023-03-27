@@ -17,6 +17,11 @@ import (
 // BuildDistributor creates distributor objects.
 func BuildDistributor(params manifestutils.Params) ([]client.Object, error) {
 	dep := deployment(params)
+	var err error
+	dep.Spec.Template, err = manifestutils.PatchTracingJaegerEnv(params.Tempo, dep.Spec.Template)
+	if err != nil {
+		return nil, err
+	}
 	gates := params.Gates
 	tempo := params.Tempo
 	if gates.HTTPEncryption || gates.GRPCEncryption {

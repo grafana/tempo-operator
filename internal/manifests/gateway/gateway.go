@@ -4,8 +4,10 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"net"
 	"path"
 
+	"github.com/imdario/mergo"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -75,6 +77,11 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 		if params.Gates.OpenShift.GatewayRoute {
 			objs = append(objs, route(params.Tempo))
 		}
+	}
+
+	dep.Spec.Template, err = patchTracing(params.Tempo, dep.Spec.Template)
+	if err != nil {
+		return nil, err
 	}
 
 	objs = append(objs, dep)
@@ -222,6 +229,35 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 			},
 		},
 	}
+}
+
+func patchTracing(tempo v1alpha1.TempoStack, pod corev1.PodTemplateSpec) (corev1.PodTemplateSpec, error) {
+	if tempo.Spec.Observability.Tracing.SamplingFraction == "" {
+		return pod, nil
+	}
+
+	host, port, err := net.SplitHostPort(tempo.Spec.Observability.Tracing.JaegerAgentEndpoint)
+	if err != nil {
+		return corev1.PodTemplateSpec{}, err
+	}
+
+	container := corev1.Container{
+		Args: []string{
+			fmt.Sprintf("--internal.tracing.endpoint=%s:%s", host, port),
+			"--internal.tracing.endpoint-type=agent",
+			fmt.Sprintf("--internal.tracing.sampling-fraction=%s", tempo.Spec.Observability.Tracing.SamplingFraction),
+		},
+	}
+
+	for i := range pod.Spec.Containers {
+		if err := mergo.Merge(&pod.Spec.Containers[i], container, mergo.WithAppendSlice); err != nil {
+			return corev1.PodTemplateSpec{}, err
+		}
+	}
+
+	return pod, mergo.Merge(&pod.Annotations, map[string]string{
+		"sidecar.opentelemetry.io/inject": "true",
+	})
 }
 
 func service(tempo v1alpha1.TempoStack, ocpServingCerts bool) *corev1.Service {
