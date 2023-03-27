@@ -13,7 +13,7 @@ weight: 100
 toc: true
 ---
 
-All tempo components as well as the tempo gateway ([observatorium-api](https://github.com/observatorium/api)) support the export of traces in `jaeger_compact` format.
+All tempo components as well as the tempo gateway ([observatorium-api](https://github.com/observatorium/api)) support the export of traces in `thrift_compact` format.
 
 
 ## Configure tracing of Operands
