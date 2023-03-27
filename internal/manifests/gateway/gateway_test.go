@@ -1,6 +1,7 @@
 package gateway
 
 import (
+	"net"
 	"reflect"
 	"testing"
 
@@ -16,7 +17,6 @@ import (
 	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
-	"github.com/os-observability/tempo-operator/internal/manifests/naming"
 	"github.com/os-observability/tempo-operator/internal/tlsprofile"
 )
 
@@ -122,57 +122,6 @@ func TestTenantsConfig(t *testing.T) {
 	assert.NotEmpty(t, secret.Data["tenants.yaml"])
 }
 
-func TestPatchOCPServingCerts(t *testing.T) {
-	tempo := v1alpha1.TempoStack{}
-	dep := &appsv1.Deployment{
-		Spec: appsv1.DeploymentSpec{
-			Template: corev1.PodTemplateSpec{
-				Spec: corev1.PodSpec{
-					Volumes: []corev1.Volume{
-						{
-							Name: "data",
-						},
-					},
-					Containers: []corev1.Container{
-						{
-							Args: []string{"--help"},
-							VolumeMounts: []corev1.VolumeMount{
-								{
-									Name: "data",
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-	}
-	expected := dep.DeepCopy()
-	expected.Spec.Template.Spec.Volumes = append(expected.Spec.Template.Spec.Volumes, corev1.Volume{
-		Name: "serving-certs",
-		VolumeSource: corev1.VolumeSource{
-			Secret: &corev1.SecretVolumeSource{
-				SecretName: naming.Name("gateway-tls", tempo.Name),
-			},
-		},
-	})
-	expected.Spec.Template.Spec.Containers[0].Args = append(expected.Spec.Template.Spec.Containers[0].Args,
-		[]string{
-			"--tls.server.cert-file=/etc/tempo-gateway/serving-certs/tls.crt",
-			"--tls.server.key-file=/etc/tempo-gateway/serving-certs/tls.key",
-		}...)
-	expected.Spec.Template.Spec.Containers[0].VolumeMounts = append(expected.Spec.Template.Spec.Containers[0].VolumeMounts,
-		corev1.VolumeMount{
-			Name:      "serving-certs",
-			ReadOnly:  true,
-			MountPath: "/etc/tempo-gateway/serving-certs",
-		})
-
-	got, err := patchOCPServingCerts(tempo, dep)
-	require.NoError(t, err)
-	assert.Equal(t, expected, got)
-}
-
 func TestBuildGateway_openshift(t *testing.T) {
 	tempo := v1alpha1.TempoStack{
 		ObjectMeta: metav1.ObjectMeta{
@@ -207,7 +156,7 @@ func TestBuildGateway_openshift(t *testing.T) {
 		},
 	})
 	require.NoError(t, err)
-	assert.Equal(t, 8, len(objects))
+	assert.Equal(t, 9, len(objects))
 	obj := getObjectByTypeAndName(objects, "tempo-simplest-gateway", reflect.TypeOf(&appsv1.Deployment{}))
 	require.NotNil(t, obj)
 	dep, ok := obj.(*appsv1.Deployment)
@@ -239,6 +188,14 @@ func TestBuildGateway_openshift(t *testing.T) {
 	require.True(t, ok)
 	require.Equal(t, "Service", route.Spec.To.Kind)
 	require.Equal(t, "tempo-simplest-gateway", route.Spec.To.Name)
+
+	obj = getObjectByTypeAndName(objects, "tempo-simplest-gateway-cabundle", reflect.TypeOf(&corev1.ConfigMap{}))
+	require.NotNil(t, obj)
+	caConfigMap, ok := obj.(*corev1.ConfigMap)
+	require.True(t, ok)
+	require.Equal(t, map[string]string{
+		"service.beta.openshift.io/inject-cabundle": "true",
+	}, caConfigMap.Annotations)
 }
 
 func getObjectByTypeAndName(objects []client.Object, name string, t reflect.Type) client.Object { // nolint: unparam
@@ -249,4 +206,133 @@ func getObjectByTypeAndName(objects []client.Object, name string, t reflect.Type
 		}
 	}
 	return nil
+}
+
+func TestPatchTracing(t *testing.T) {
+	tt := []struct {
+		name       string
+		inputTempo v1alpha1.TempoStack
+		inputPod   corev1.PodTemplateSpec
+		expectPod  corev1.PodTemplateSpec
+		expectErr  error
+	}{
+		{
+			name: "valid settings",
+			inputTempo: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Observability: v1alpha1.ObservabilitySpec{
+						Tracing: v1alpha1.TracingConfigSpec{
+							SamplingFraction:    "1.0",
+							JaegerAgentEndpoint: "agent:1234",
+						},
+					},
+				},
+			},
+			inputPod: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"existing.com": "true",
+					},
+				},
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: "first",
+							Args: []string{
+								"--abc",
+							},
+						},
+					},
+				},
+			},
+			expectPod: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"existing.com":                    "true",
+						"sidecar.opentelemetry.io/inject": "true",
+					},
+				},
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: "first",
+							Args: []string{
+								"--abc",
+								"--internal.tracing.endpoint=agent:1234",
+								"--internal.tracing.endpoint-type=agent",
+								"--internal.tracing.sampling-fraction=1.0",
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "no sampling param",
+			inputTempo: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Observability: v1alpha1.ObservabilitySpec{
+						Tracing: v1alpha1.TracingConfigSpec{
+							SamplingFraction: "",
+						},
+					},
+				},
+			},
+			inputPod: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"existing.com": "true",
+					},
+				},
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: "first",
+						},
+					},
+				},
+			},
+			expectPod: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"existing.com": "true",
+					},
+				},
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: "first",
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "invalid agent address",
+			inputTempo: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Observability: v1alpha1.ObservabilitySpec{
+						Tracing: v1alpha1.TracingConfigSpec{
+							SamplingFraction:    "0.5",
+							JaegerAgentEndpoint: "---invalid----",
+						},
+					},
+				},
+			},
+			inputPod:  corev1.PodTemplateSpec{},
+			expectPod: corev1.PodTemplateSpec{},
+			expectErr: &net.AddrError{
+				Addr: "---invalid----",
+				Err:  "missing port in address",
+			},
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			pod, err := patchTracing(tc.inputTempo, tc.inputPod)
+			require.Equal(t, tc.expectErr, err)
+			assert.Equal(t, tc.expectPod, pod)
+		})
+	}
 }

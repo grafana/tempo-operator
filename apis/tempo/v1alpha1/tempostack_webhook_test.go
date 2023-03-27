@@ -8,12 +8,16 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/utils/pointer"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/os-observability/tempo-operator/apis/config/v1alpha1"
+	"github.com/os-observability/tempo-operator/internal/manifests/naming"
 )
 
 func TestDefault(t *testing.T) {
@@ -829,4 +833,135 @@ func TestValidateTenantConfigs(t *testing.T) {
 			assert.Equal(t, tc.wantErr, err)
 		})
 	}
+}
+
+func TestValidatorObservabilityTracingConfig(t *testing.T) {
+	tracingBase := field.NewPath("spec").Child("template").Child("observability").Child("tracing")
+	tt := []struct {
+		name     string
+		input    TempoStack
+		expected field.ErrorList
+	}{
+		{
+			name: "not set",
+			input: TempoStack{
+				Spec: TempoStackSpec{},
+			},
+		},
+		{
+			name: "sampling fraction not a float",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					Observability: ObservabilitySpec{
+						Tracing: TracingConfigSpec{
+							SamplingFraction: "a",
+						},
+					},
+				},
+			},
+			expected: field.ErrorList{
+				field.Invalid(
+					tracingBase.Child("sampling_fraction"),
+					"a",
+					"strconv.ParseFloat: parsing \"a\": invalid syntax",
+				),
+			},
+		},
+		{
+			name: "invalid jaeger agent address",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					Observability: ObservabilitySpec{
+						Tracing: TracingConfigSpec{
+							SamplingFraction:    "0.5",
+							JaegerAgentEndpoint: "--invalid--",
+						},
+					},
+				},
+			},
+			expected: field.ErrorList{
+				field.Invalid(
+					tracingBase.Child("jaeger_agent_endpoint"),
+					"--invalid--",
+					"address --invalid--: missing port in address",
+				),
+			},
+		},
+		{
+			name: "valid configuration",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					Observability: ObservabilitySpec{
+						Tracing: TracingConfigSpec{
+							SamplingFraction:    "0.5",
+							JaegerAgentEndpoint: "agent:1234",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.expected, new(validator).validateObservability(tc.input))
+		})
+	}
+}
+
+func TestValidatorValidate(t *testing.T) {
+
+	gvType := metav1.TypeMeta{
+		APIVersion: "testv1",
+		Kind:       "something",
+	}
+	tt := []struct {
+		name     string
+		input    runtime.Object
+		expected error
+	}{
+		{
+			name:     "not a tempo object",
+			input:    new(corev1.Pod),
+			expected: apierrors.NewBadRequest("expected a TempoStack object but got *v1.Pod"),
+		},
+		{
+			name: "pass all validators",
+			input: &TempoStack{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-obj",
+					Namespace: "abc",
+				},
+				TypeMeta: gvType,
+				Spec: TempoStackSpec{
+					ServiceAccount: naming.DefaultServiceAccountName("test-obj"),
+					Storage: ObjectStorageSpec{
+						Secret: ObjectStorageSecretSpec{
+							Name: "not-found",
+						},
+					},
+					Template: TempoTemplateSpec{
+						Ingester: TempoComponentSpec{
+							Replicas: func(i int32) *int32 { return &i }(1),
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			v := &validator{ctrlConfig: v1alpha1.ProjectConfig{}, client: &k8sFake{}}
+			assert.Equal(t, tc.expected, v.validate(context.Background(), tc.input))
+		})
+	}
+}
+
+type k8sFake struct {
+	client.Client
+}
+
+func (*k8sFake) Get(ctx context.Context, key client.ObjectKey, obj client.Object, opts ...client.GetOption) error {
+	return fmt.Errorf("mock: fails always")
 }

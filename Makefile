@@ -301,6 +301,11 @@ deploy-minio:
 e2e:
 	$(KUTTL) test
 
+# end-to-tests
+.PHONY: e2e-openshift
+e2e-openshift:
+	$(KUTTL) test --config kuttl-test-openshift.yaml
+
 .PHONY: prepare-e2e
 prepare-e2e: kuttl start-kind cert-manager install-openshift-routes deploy-minio set-test-image-vars set-test-operator-config build docker-build load-image-operator deploy
 
@@ -424,3 +429,35 @@ web-serve: web-pre ## Run local preview version of the tempo-operator.dev websit
 
 hugo:
 	test -s $(HUGO) || $(call go-get-tool,$(HUGO),--tags extended github.com/gohugoio/hugo,$(HUGO_VERSION))
+
+#### release
+CHLOGGEN_VERSION=v0.3.0
+CHLOGGEN ?= $(LOCALBIN)/chloggen-$(CHLOGGEN_VERSION)
+FILENAME?=$(shell git branch --show-current)
+
+.PHONY: chloggen
+chloggen:
+	test -s $(CHLOGGEN) || $(call go-get-tool,$(CHLOGGEN),go.opentelemetry.io/build-tools/chloggen,$(CHLOGGEN_VERSION))
+
+.PHONY: chlog-new
+chlog-new: chlog-install
+	$(CHLOGGEN) new --filename $(FILENAME)
+
+.PHONY: chlog-validate
+chlog-validate: chloggen
+	$(CHLOGGEN) validate
+
+.PHONY: chlog-preview
+chlog-preview: chloggen
+	$(CHLOGGEN) update --dry --version $(OPERATOR_VERSION)
+
+.PHONY: chlog-update
+chlog-update: chloggen
+	$(CHLOGGEN) update --version $(OPERATOR_VERSION)
+
+.PHONY: release-artifacts
+release-artifacts: OPERATOR_VERSION = "$(shell git describe --tags | sed 's/^v//')"
+release-artifacts: set-image-controller
+	mkdir -p dist
+	$(KUSTOMIZE) build config/default -o dist/tempo-operator.yaml
+# Will add the openshift bundle once https://github.com/os-observability/tempo-operator/pull/338 is merged

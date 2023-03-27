@@ -108,21 +108,56 @@ func route(tempo v1alpha1.TempoStack) *routev1.Route {
 	}
 }
 
+func configMapCABundle(tempo v1alpha1.TempoStack) *corev1.ConfigMap {
+	return &corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        naming.Name("gateway-cabundle", tempo.Name),
+			Labels:      manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name),
+			Annotations: map[string]string{"service.beta.openshift.io/inject-cabundle": "true"},
+		},
+	}
+}
+
 func patchOCPServingCerts(tempo v1alpha1.TempoStack, dep *v1.Deployment) (*v1.Deployment, error) {
 	container := corev1.Container{
+		ReadinessProbe: &corev1.Probe{
+			ProbeHandler: corev1.ProbeHandler{
+				HTTPGet: &corev1.HTTPGetAction{
+					Scheme: corev1.URISchemeHTTPS,
+				},
+			},
+		},
+		LivenessProbe: &corev1.Probe{
+			ProbeHandler: corev1.ProbeHandler{
+				HTTPGet: &corev1.HTTPGetAction{
+					Scheme: corev1.URISchemeHTTPS,
+				},
+			},
+		},
 		VolumeMounts: []corev1.VolumeMount{
 			{
 				Name:      "serving-certs",
 				ReadOnly:  true,
 				MountPath: path.Join(tempoGatewayMountDir, "serving-certs"),
 			},
+			{
+				Name:      "cabundle",
+				ReadOnly:  true,
+				MountPath: path.Join(tempoGatewayMountDir, "cabundle"),
+			},
 		},
 		Args: []string{
 			fmt.Sprintf("--tls.server.cert-file=%s", path.Join(tempoGatewayMountDir, "serving-certs", "tls.crt")),
 			fmt.Sprintf("--tls.server.key-file=%s", path.Join(tempoGatewayMountDir, "serving-certs", "tls.key")),
+			fmt.Sprintf("--tls.internal.server.cert-file=%s", path.Join(tempoGatewayMountDir, "serving-certs", "tls.crt")),
+			fmt.Sprintf("--tls.internal.server.key-file=%s", path.Join(tempoGatewayMountDir, "serving-certs", "tls.key")),
+			fmt.Sprintf("--tls.healthchecks.server-ca-file=%s", path.Join(tempoGatewayMountDir, "cabundle", "service-ca.crt")),
+			fmt.Sprintf("--tls.healthchecks.server-name=tempo-%s-gateway.%s.svc.cluster.local", tempo.Name, tempo.Namespace),
+			"--web.healthchecks.url=https://localhost:8080",
 		},
 	}
-	err := mergo.Merge(&dep.Spec.Template.Spec.Containers[0], container, mergo.WithAppendSlice)
+	// WithOverrides overrides the HTTP in probes
+	err := mergo.Merge(&dep.Spec.Template.Spec.Containers[0], container, mergo.WithAppendSlice, mergo.WithOverride)
 	if err != nil {
 		return nil, err
 	}
@@ -134,6 +169,16 @@ func patchOCPServingCerts(tempo v1alpha1.TempoStack, dep *v1.Deployment) (*v1.De
 				VolumeSource: corev1.VolumeSource{
 					Secret: &corev1.SecretVolumeSource{
 						SecretName: naming.Name("gateway-tls", tempo.Name),
+					},
+				},
+			},
+			{
+				Name: "cabundle",
+				VolumeSource: corev1.VolumeSource{
+					ConfigMap: &corev1.ConfigMapVolumeSource{
+						LocalObjectReference: corev1.LocalObjectReference{
+							Name: naming.Name("gateway-cabundle", tempo.Name),
+						},
 					},
 				},
 			},
