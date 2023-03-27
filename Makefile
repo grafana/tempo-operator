@@ -203,13 +203,19 @@ controller-gen: ## Download controller-gen locally if necessary.
 setup-envtest: ## Download envtest-setup locally if necessary.
 	test -s $(LOCALBIN)/setup-envtest-$(ENVTEST_VERSION) || $(call go-get-tool,$(ENVTEST),sigs.k8s.io/controller-runtime/tools/setup-envtest,$(ENVTEST_VERSION))
 
-.PHONY: bundle
-bundle: operator-sdk manifests kustomize ## Generate bundle manifests and metadata, then validate generated files.
+.PHONY: generate-bundle
+generate-bundle: operator-sdk manifests kustomize ## Generate bundle manifests and metadata, then validate generated files.
 	$(OPERATOR_SDK) generate kustomize manifests -q --input-dir $(MANIFESTS_DIR) --output-dir $(MANIFESTS_DIR)
 	cd config/manager && $(KUSTOMIZE) edit set image controller=$(IMG)
 	cd $(BUNDLE_DIR) && cp ../../PROJECT . && $(KUSTOMIZE) build ../../$(MANIFESTS_DIR) | $(OPERATOR_SDK) generate bundle $(BUNDLE_BUILD_GEN_FLAGS) && rm PROJECT
 	$(OPERATOR_SDK) bundle validate $(BUNDLE_DIR)
 	./hack/ignore-createdAt-bundle.sh
+
+.PHONY: bundle
+bundle: BUNDLE_VARIANT=community
+bundle: generate-bundle
+bundle: BUNDLE_VARIANT=openshift
+bundle: generate-bundle
 
 .PHONY: bundle-build
 bundle-build: ## Build the bundle image.
