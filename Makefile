@@ -460,8 +460,3 @@ release-artifacts: set-image-controller
 	mkdir -p dist
 	$(KUSTOMIZE) build config/default -o dist/tempo-operator.yaml
 # Will add the openshift bundle once https://github.com/os-observability/tempo-operator/pull/338 is merged
-
-.PHONY: tag-release
-tag-release:
-	git tag v${OPERATOR_VERSION}
-	git git@github.com:os-observability/tempo-operator.git v${OPERATOR_VERSION}
