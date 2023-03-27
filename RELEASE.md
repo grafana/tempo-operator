@@ -17,7 +17,7 @@ Steps to release a new version of the Tempo Operator:
 We use the chloggen to generate the changelog, simply run the following to generate the Changelog:
 
 ```bash
-make chlog-update
+OPERATOR_VERSION=x.y.z make chlog-update
 ```
 
 This will delete all entries (other than the template) in the `.chloggen` directory and create a populated Changelog.md entry.
