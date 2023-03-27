@@ -39,6 +39,25 @@ metadata:
       name: simplest
 ---
 apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/component: gateway
+    app.kubernetes.io/created-by: tempo-controller
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/name: tempo
+  annotations:
+    service.beta.openshift.io/inject-cabundle: "true"
+  name: tempo-simplest-gateway-cabundle
+  ownerReferences:
+    - apiVersion: tempo.grafana.com/v1alpha1
+      blockOwnerDeletion: true
+      controller: true
+      kind: TempoStack
+      name: simplest
+---
+apiVersion: v1
 automountServiceAccountToken: true
 kind: ServiceAccount
 metadata:
@@ -135,7 +154,8 @@ spec:
         app.kubernetes.io/name: tempo
     spec:
       containers:
-        - args:
+        - name: tempo-gateway
+          args:
           - --traces.tenant-header=x-scope-orgid
           - --web.listen=0.0.0.0:8080
           - --web.internal.listen=0.0.0.0:8081
@@ -147,9 +167,12 @@ spec:
           - --log.level=info
           - --tls.server.cert-file=/etc/tempo-gateway/serving-certs/tls.crt
           - --tls.server.key-file=/etc/tempo-gateway/serving-certs/tls.key
-          image: quay.io/observatorium/api:main-2023-02-09-v0.1.2-329-g1ff4f11
+          - --tls.internal.server.cert-file=/etc/tempo-gateway/serving-certs/tls.crt
+          - --tls.internal.server.key-file=/etc/tempo-gateway/serving-certs/tls.key
+          - --tls.healthchecks.server-ca-file=/etc/tempo-gateway/cabundle/service-ca.crt
+          - --tls.healthchecks.server-name=tempo-simplest-gateway.kuttl-ocp-gateway.svc.cluster.local
+          - --web.healthchecks.url=https://localhost:8080
           imagePullPolicy: IfNotPresent
-          name: tempo-gateway
           ports:
             - containerPort: 8090
               name: grpc-public
@@ -170,6 +193,9 @@ spec:
               subPath: tenants.yaml
             - mountPath: /etc/tempo-gateway/serving-certs
               name: serving-certs
+              readOnly: true
+            - mountPath: /etc/tempo-gateway/cabundle
+              name: cabundle
               readOnly: true
         - name: opa
           args:
@@ -201,6 +227,9 @@ spec:
           secret:
             defaultMode: 420
             secretName: tempo-simplest-gateway-tls
+        - name: cabundle
+          configMap:
+            name: tempo-simplest-gateway-cabundle
 status:
   readyReplicas: 1
 ---
