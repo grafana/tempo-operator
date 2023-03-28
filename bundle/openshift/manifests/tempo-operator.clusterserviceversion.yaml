@@ -14,7 +14,7 @@ metadata:
         }
       ]
     capabilities: Basic Install
-    createdAt: "2023-03-16T16:42:23Z"
+    createdAt: "2023-03-28T01:34:41Z"
     operators.operatorframework.io/builder: operator-sdk-v1.27.0
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
   name: tempo-operator.v0.0.1
