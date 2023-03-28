@@ -6,6 +6,6 @@ timeout: 150
 namespace: kuttl-ocp-gateway
 commands:
   - script: |
-      kubectl apply -f ./tests/e2e-openshift/operator-config.yaml
+      kubectl apply -f ./bundle/openshift/manifests/tempo-operator-manager-config_v1_configmap.yaml -n tempo-operator-system
       kubectl rollout restart deployment/tempo-operator-controller-manager -n tempo-operator-system
       kubectl rollout status deployment/tempo-operator-controller-manager -n tempo-operator-system --timeout=30s
