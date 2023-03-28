@@ -3,6 +3,7 @@ kind: TestSuite
 testDirs:
   - ./tests/e2e-openshift/
 timeout: 150
+namespace: kuttl-ocp-gateway
 commands:
   - script: |
       kubectl apply -f ./tests/e2e-openshift/operator-config.yaml
