@@ -14,7 +14,7 @@ metadata:
         }
       ]
     capabilities: Basic Install
-    createdAt: "2023-03-24T06:09:10Z"
+    createdAt: "2023-03-28T01:34:41Z"
     operators.operatorframework.io/builder: operator-sdk-v1.27.0
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
   name: tempo-operator.v0.0.1
@@ -149,6 +149,20 @@ spec:
         path: limits.perTenant.query.maxSearchBytesPerTrace
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:number
+      - description: ObservabilitySpec defines how telemetry data gets handled.
+        displayName: Observability
+        path: observability
+      - description: Tracing defines a config for operands.
+        displayName: Tracing Config
+        path: observability.tracing
+      - description: JaegerAgentEndpoint defines the jaeger endpoint data gets send
+          to.
+        displayName: Jaeger-Agent-Endpoint
+        path: observability.tracing.jaeger_agent_endpoint
+      - description: SamplingFraction defines the sampling ratio. Valid values are
+          0 to 1.
+        displayName: Sampling Fraction
+        path: observability.tracing.sampling_fraction
       - description: 'NOTE: currently this field is not considered. ReplicationFactor
           is used to define how many component replicas should exist.'
         displayName: Replication Factor
@@ -599,7 +613,7 @@ spec:
                 - --config=controller_manager_config.yaml
                 command:
                 - /manager
-                image: ghcr.io/rvargasp/tempo-operator/tempo-operator:v0.0.1
+                image: ghcr.io/os-observability/tempo-operator/tempo-operator:v0.0.1
                 livenessProbe:
                   httpGet:
                     path: /healthz
