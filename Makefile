@@ -471,5 +471,5 @@ chlog-update: chloggen
 release-artifacts: OPERATOR_VERSION = "$(shell git describe --tags | sed 's/^v//')"
 release-artifacts: set-image-controller
 	mkdir -p dist
-	$(KUSTOMIZE) build config/default -o dist/tempo-operator.yaml
-# Will add the openshift bundle once https://github.com/os-observability/tempo-operator/pull/338 is merged
+	$(KUSTOMIZE) build config/overlays/community -o dist/tempo-operator.yaml
+	$(KUSTOMIZE) build config/overlays/openshift -o dist/tempo-operator-openshift.yaml
