@@ -3,10 +3,6 @@ kind: TempoStack
 metadata:
   name: sample
 spec:
-  storage:
-    secret:
-      name: minio-test
-      type: s3
   storageSize: 1Gi
   resources:
     total:

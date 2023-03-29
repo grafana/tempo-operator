@@ -15,17 +15,16 @@ stages:
     storage:
       spec:
         mountPath: {}
-# The test is failing because our bundle structure does not follow upstream (it's split into community and openshift)
-#  - entrypoint:
-#    - scorecard-test
-#    - olm-bundle-validation
-#    image: quay.io/operator-framework/scorecard-test:v1.27.0
-#    labels:
-#      suite: olm
-#      test: olm-bundle-validation-test
-#    storage:
-#      spec:
-#        mountPath: {}
+  - entrypoint:
+    - scorecard-test
+    - olm-bundle-validation
+    image: quay.io/operator-framework/scorecard-test:v1.27.0
+    labels:
+      suite: olm
+      test: olm-bundle-validation-test
+    storage:
+      spec:
+        mountPath: {}
   - entrypoint:
     - scorecard-test
     - olm-crds-have-validation
