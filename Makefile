@@ -321,6 +321,10 @@ e2e-openshift:
 .PHONY: prepare-e2e
 prepare-e2e: kuttl start-kind cert-manager install-openshift-routes deploy-minio set-test-image-vars set-test-operator-config build docker-build load-image-operator deploy
 
+.PHONY: scorecard-tests
+scorecard-tests: operator-sdk
+	$(OPERATOR_SDK) scorecard -w=5m bundle/community || (echo "scorecard test failed" && exit 1)
+
 .PHONY: set-test-image-vars
 set-test-image-vars:
 	$(eval IMG=local/tempo-operator:e2e)
