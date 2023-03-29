@@ -323,7 +323,7 @@ prepare-e2e: kuttl start-kind cert-manager install-openshift-routes deploy-minio
 
 .PHONY: scorecard-tests
 scorecard-tests: operator-sdk
-	$(OPERATOR_SDK) scorecard -w=5m bundle --config ./bundle/community/tests/scorecard/config.yaml || (echo "scorecard test failed" && exit 1)
+	$(OPERATOR_SDK) scorecard -w=5m bundle/community || (echo "scorecard test failed" && exit 1)
 
 .PHONY: set-test-image-vars
 set-test-image-vars:
