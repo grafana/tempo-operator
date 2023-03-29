@@ -211,16 +211,10 @@ generate-bundle: operator-sdk manifests kustomize ## Generate bundle manifests a
 	$(OPERATOR_SDK) bundle validate $(BUNDLE_DIR)
 	./hack/ignore-createdAt-bundle.sh
 
-.PHONY: bundle-openshift
-bundle-openshift:
-	BUNDLE_VARIANT=openshift $(MAKE) generate-bundle
-
-.PHONY: bundle-community
-bundle-community:
-	BUNDLE_VARIANT=community $(MAKE) generate-bundle
-
 .PHONY: bundle
-bundle: bundle-openshift bundle-community
+bundle: 
+	BUNDLE_VARIANT=openshift $(MAKE) generate-bundle
+	BUNDLE_VARIANT=community $(MAKE) generate-bundle
 
 .PHONY: bundle-build
 bundle-build: ## Build the bundle image.
