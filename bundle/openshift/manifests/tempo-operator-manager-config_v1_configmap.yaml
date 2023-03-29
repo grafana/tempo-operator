@@ -1,11 +1,4 @@
-# TODO Once https://github.com/os-observability/tempo-operator/pull/338 is merged
-# reuse the config from the bundle/openshift/manifests
-# https://github.com/os-observability/tempo-operator/issues/341
-kind: ConfigMap
 apiVersion: v1
-metadata:
-  name: tempo-operator-manager-config
-  namespace: tempo-operator-system
 data:
   controller_manager_config.yaml: |
     apiVersion: config.tempo.grafana.com/v1alpha1
@@ -36,14 +29,14 @@ data:
       tempoGatewayOpa: quay.io/observatorium/opa-openshift:main-2023-03-13-fd7b736
     featureGates:
       openshift:
-        openshiftRoute: false
+        openshiftRoute: true
         gatewayRoute: true
         servingCertsService: true
-      httpEncryption: false
-      grpcEncryption: false
+      httpEncryption: true
+      grpcEncryption: true
       tlsProfile: Modern
       builtInCertManagement:
-        enabled: false
+        enabled: true
         # CA certificate validity: 5 years
         caValidity: 43830h
         # CA certificate refresh at 80% of validity
@@ -52,3 +45,6 @@ data:
         certValidity: 2160h
         # Target certificate refresh at 80% of validity
         certRefresh: 1728h
+kind: ConfigMap
+metadata:
+  name: tempo-operator-manager-config

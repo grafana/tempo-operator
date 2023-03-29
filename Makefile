@@ -153,12 +153,12 @@ uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified 
 .PHONY: deploy
 deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
-	$(KUSTOMIZE) build config/default | kubectl apply -f -
+	$(KUSTOMIZE) build config/overlays/community | kubectl apply -f -
 	kubectl rollout --namespace tempo-operator-system status deployment/tempo-operator-controller-manager
 
 .PHONY: undeploy
 undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
-	$(KUSTOMIZE) build config/default | kubectl delete --ignore-not-found=$(ignore-not-found) -f -
+	$(KUSTOMIZE) build config/overlays/community | kubectl delete --ignore-not-found=$(ignore-not-found) -f -
 
 ##@ Build Dependencies
 
@@ -189,6 +189,12 @@ HUGO ?= $(LOCALBIN)/hugo-$(HUGO_VERSION)
 export KUBE_VERSION ?= 1.25
 KIND_CONFIG ?= kind-$(KUBE_VERSION).yaml
 
+# Choose wich version to generate
+BUNDLE_VARIANT ?= community
+BUNDLE_DIR = ./bundle/$(BUNDLE_VARIANT)
+MANIFESTS_DIR = config/manifests/$(BUNDLE_VARIANT)
+BUNDLE_BUILD_GEN_FLAGS ?= $(BUNDLE_GEN_FLAGS) --output-dir . --kustomize-dir ../../$(MANIFESTS_DIR)
+
 .PHONY: controller-gen
 controller-gen: ## Download controller-gen locally if necessary.
 	test -s $(LOCALBIN)/controller-gen-$(CONTROLLER_TOOLS_VERSION) || $(call go-get-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen,$(CONTROLLER_TOOLS_VERSION))
@@ -197,13 +203,19 @@ controller-gen: ## Download controller-gen locally if necessary.
 setup-envtest: ## Download envtest-setup locally if necessary.
 	test -s $(LOCALBIN)/setup-envtest-$(ENVTEST_VERSION) || $(call go-get-tool,$(ENVTEST),sigs.k8s.io/controller-runtime/tools/setup-envtest,$(ENVTEST_VERSION))
 
-.PHONY: bundle
-bundle: operator-sdk manifests kustomize ## Generate bundle manifests and metadata, then validate generated files.
-	$(OPERATOR_SDK) generate kustomize manifests -q
+.PHONY: generate-bundle
+generate-bundle: operator-sdk manifests kustomize ## Generate bundle manifests and metadata, then validate generated files.
+	$(OPERATOR_SDK) generate kustomize manifests -q --input-dir $(MANIFESTS_DIR) --output-dir $(MANIFESTS_DIR)
 	cd config/manager && $(KUSTOMIZE) edit set image controller=$(IMG)
-	$(KUSTOMIZE) build config/manifests | $(OPERATOR_SDK) generate bundle $(BUNDLE_GEN_FLAGS)
-	$(OPERATOR_SDK) bundle validate ./bundle
+	cd $(BUNDLE_DIR) && cp ../../PROJECT . && $(KUSTOMIZE) build ../../$(MANIFESTS_DIR) | $(OPERATOR_SDK) generate bundle $(BUNDLE_BUILD_GEN_FLAGS) && rm PROJECT
+	$(OPERATOR_SDK) bundle validate $(BUNDLE_DIR)
 	./hack/ignore-createdAt-bundle.sh
+
+.PHONY: bundle
+bundle: BUNDLE_VARIANT=community
+bundle: generate-bundle
+bundle: BUNDLE_VARIANT=openshift
+bundle: generate-bundle
 
 .PHONY: bundle-build
 bundle-build: ## Build the bundle image.
@@ -309,6 +321,10 @@ e2e-openshift:
 .PHONY: prepare-e2e
 prepare-e2e: kuttl start-kind cert-manager install-openshift-routes deploy-minio set-test-image-vars set-test-operator-config build docker-build load-image-operator deploy
 
+.PHONY: scorecard-tests
+scorecard-tests: operator-sdk
+	$(OPERATOR_SDK) scorecard -w=5m bundle/community || (echo "scorecard test failed" && exit 1)
+
 .PHONY: set-test-image-vars
 set-test-image-vars:
 	$(eval IMG=local/tempo-operator:e2e)
@@ -316,7 +332,7 @@ set-test-image-vars:
 .PHONY: set-test-operator-config
 set-test-operator-config:
 	# we always install the OpenShift Route controller for e2e tests (in the prepare-e2e step)
-	sed -i 's/openshiftRoute: false/openshiftRoute: true/' config/manager/controller_manager_config.yaml
+	sed -i 's/openshiftRoute: false/openshiftRoute: true/' config/overlays/community/config/controller_manager_config.yaml
 
 # Set the controller image parameters
 .PHONY: set-image-controller
@@ -440,7 +456,7 @@ chloggen:
 	test -s $(CHLOGGEN) || $(call go-get-tool,$(CHLOGGEN),go.opentelemetry.io/build-tools/chloggen,$(CHLOGGEN_VERSION))
 
 .PHONY: chlog-new
-chlog-new: chlog-install
+chlog-new: chloggen
 	$(CHLOGGEN) new --filename $(FILENAME)
 
 .PHONY: chlog-validate
@@ -459,5 +475,5 @@ chlog-update: chloggen
 release-artifacts: OPERATOR_VERSION = "$(shell git describe --tags | sed 's/^v//')"
 release-artifacts: set-image-controller
 	mkdir -p dist
-	$(KUSTOMIZE) build config/default -o dist/tempo-operator.yaml
-# Will add the openshift bundle once https://github.com/os-observability/tempo-operator/pull/338 is merged
+	$(KUSTOMIZE) build config/overlays/community -o dist/tempo-operator.yaml
+	$(KUSTOMIZE) build config/overlays/openshift -o dist/tempo-operator-openshift.yaml
