@@ -452,7 +452,7 @@ chloggen:
 	test -s $(CHLOGGEN) || $(call go-get-tool,$(CHLOGGEN),go.opentelemetry.io/build-tools/chloggen,$(CHLOGGEN_VERSION))
 
 .PHONY: chlog-new
-chlog-new: chlog-install
+chlog-new: chloggen
 	$(CHLOGGEN) new --filename $(FILENAME)
 
 .PHONY: chlog-validate
