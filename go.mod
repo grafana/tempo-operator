@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/ViaQ/logerr/v2 v2.1.0
-	github.com/go-logr/logr v1.2.3
+	github.com/go-logr/logr v1.2.4
 	github.com/imdario/mergo v0.3.15
 	github.com/novln/docker-parser v1.0.0
 	github.com/onsi/ginkgo v1.16.5
