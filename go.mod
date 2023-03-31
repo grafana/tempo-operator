@@ -1,6 +1,6 @@
 module github.com/os-observability/tempo-operator
 
-go 1.18
+go 1.20
 
 require (
 	github.com/ViaQ/logerr/v2 v2.1.0
