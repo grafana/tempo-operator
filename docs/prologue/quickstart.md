@@ -74,3 +74,41 @@ spec:
         enabled: true
 EOF
 ```
+
+After create the `TempoStack` CR you should see a some pods on the namespace, wait until the stack to stabilized.
+
+The stack deployed above is configured to receive jaeger Thrift HTTP and OTLP, also because the jaeger query is enable you can use the jaeger UI to inspect the data.
+
+In order to do a quick test we will deploy a Job that will generate some traces.
+
+```yaml
+kubectl apply -f - <<EOF
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: tracegen
+spec:
+  template:
+    spec:
+      containers:
+        - name: tracegen
+          image: ghcr.io/open-telemetry/opentelemetry-collector-contrib/tracegen:latest
+          command:
+            - "./tracegen"
+          args:
+            - -otlp-endpoint=tempo-simplest-distributor:4317
+            - -otlp-insecure
+            - -duration=30s
+            - -workers=1
+      restartPolicy: Never
+  backoffLimit: 4
+EOF
+```
+
+Then to see the traces we can forward the jaeger query port
+
+```
+kubectl port-forward svc/tempo-simplest-query-frontend 16686:16686
+```
+
+And visit http://localhost:16686.
