@@ -105,9 +105,8 @@ kind: Deployment
 metadata:
   labels:
     app.kubernetes.io/component: distributor
-    app.kubernetes.io/created-by: tempo-controller
     app.kubernetes.io/instance: simplest
-    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-simplest-distributor
 `)
@@ -131,9 +130,8 @@ kind: Deployment
 metadata:
   labels:
     app.kubernetes.io/component: distributor
-    app.kubernetes.io/created-by: tempo-controller
     app.kubernetes.io/instance: simplest
-    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-simplest-distributor
 `)

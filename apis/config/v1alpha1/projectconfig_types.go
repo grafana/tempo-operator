@@ -142,6 +142,9 @@ type ProjectConfig struct {
 	DefaultImages ImagesSpec `json:"images"`
 
 	Gates FeatureGates `json:"featureGates,omitempty"`
+
+	// Distribution defines the operator distribution name.
+	Distribution string `json:"distribution"`
 }
 
 func init() {
