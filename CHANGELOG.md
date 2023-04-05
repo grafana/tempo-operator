@@ -7,6 +7,6 @@ Changes by Version
 
 ### 🚀 New components 🚀
 
-- `operator`: Initial release of tempo operator ()
-  - Supports tempo 2.0.1
+- `operator`: Initial release of tempo operator
+  - Supports [Tempo - v2.0.1](https://github.com/grafana/tempo/releases/tag/v2.0.1)
   
