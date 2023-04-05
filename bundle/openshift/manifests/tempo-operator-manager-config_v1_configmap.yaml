@@ -30,7 +30,6 @@ data:
     featureGates:
       openshift:
         openshiftRoute: true
-        gatewayRoute: true
         servingCertsService: true
       httpEncryption: true
       grpcEncryption: true

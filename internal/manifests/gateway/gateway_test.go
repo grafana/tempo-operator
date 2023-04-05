@@ -150,7 +150,7 @@ func TestBuildGateway_openshift(t *testing.T) {
 		Gates: configv1alpha1.FeatureGates{
 			OpenShift: configv1alpha1.OpenShiftFeatureGates{
 				ServingCertsService: true,
-				GatewayRoute:        true,
+				OpenShiftRoute:      true,
 				BaseDomain:          "domain",
 			},
 		},

@@ -74,7 +74,7 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 				return nil, err
 			}
 		}
-		if params.Gates.OpenShift.GatewayRoute {
+		if params.Gates.OpenShift.OpenShiftRoute {
 			objs = append(objs, route(params.Tempo))
 		}
 	}
