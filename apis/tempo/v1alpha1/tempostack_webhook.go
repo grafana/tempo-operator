@@ -60,12 +60,20 @@ type Defaulter struct {
 }
 
 // Default applies default values to a Kubernetes object.
-func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
+func (d *Defaulter) Default(_ context.Context, obj runtime.Object) error {
 	r, ok := obj.(*TempoStack)
 	if !ok {
 		return apierrors.NewBadRequest(fmt.Sprintf("expected a TempoStack object but got %T", obj))
 	}
 	tempostackslog.V(1).Info("default", "name", r.Name)
+
+	if r.Labels == nil {
+		r.Labels = map[string]string{}
+	}
+	if r.Labels["app.kubernetes.io/managed-by"] == "" {
+		r.Labels["app.kubernetes.io/managed-by"] = "tempo-operator"
+	}
+	r.Labels["tempo.grafana.com/distribution"] = d.ctrlConfig.Distribution
 
 	if r.Spec.Images.Tempo == "" {
 		if d.ctrlConfig.DefaultImages.Tempo == "" {

@@ -4,18 +4,16 @@ metadata:
   name: tempo-generated-tempo-distributor
   labels:
     app.kubernetes.io/component: distributor
-    app.kubernetes.io/created-by: tempo-controller
     app.kubernetes.io/instance: generated-tempo
-    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
 spec:
   replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/component: distributor
-      app.kubernetes.io/created-by: tempo-controller
       app.kubernetes.io/instance: generated-tempo
-      app.kubernetes.io/managed-by: tempo-controller
+      app.kubernetes.io/managed-by: tempo-operator
       app.kubernetes.io/name: tempo
 status:
   readyReplicas: 1
@@ -25,9 +23,8 @@ kind: Service
 metadata:
   labels:
     app.kubernetes.io/component: distributor
-    app.kubernetes.io/created-by: tempo-controller
     app.kubernetes.io/instance: generated-tempo
-    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-generated-tempo-distributor
 spec:
@@ -42,7 +39,6 @@ spec:
       targetPort: http
   selector:
     app.kubernetes.io/component: distributor
-    app.kubernetes.io/created-by: tempo-controller
     app.kubernetes.io/instance: generated-tempo
-    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
