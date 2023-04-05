@@ -545,29 +545,6 @@ More details: <a href="https://docs.openshift.com/container-platform/latest/secu
 
 <td>
 
-<code>gatewayRoute</code><br/>
-
-<em>
-
-bool
-
-</em>
-
-</td>
-
-<td>
-
-<p>GatewayRoute enables creating an OpenShift Route for the TempoStack
-gateway to expose the service to public internet access.
-More details: <a href="https://docs.openshift.com/container-platform/latest/networking/understanding-networking.html">https://docs.openshift.com/container-platform/latest/networking/understanding-networking.html</a></p>
-
-</td>
-</tr>
-
-<tr>
-
-<td>
-
 <code>openshiftRoute</code><br/>
 
 <em>
