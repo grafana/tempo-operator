@@ -1,7 +1,7 @@
 # Current Operator version
 VERSION_DATE ?= $(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
 VERSION_PKG ?= "github.com/os-observability/tempo-operator/internal/version"
-OPERATOR_VERSION ?= 0.0.1
+OPERATOR_VERSION ?= 0.1.0
 COMMIT_SHA = "$(shell git rev-parse HEAD)"
 LD_FLAGS ?= "-X ${VERSION_PKG}.buildDate=${VERSION_DATE} -X ${VERSION_PKG}.version=${OPERATOR_VERSION} -X ${VERSION_PKG}.commitSha=${COMMIT_SHA}"
 ARCH ?= $(shell go env GOARCH)
