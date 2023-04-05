@@ -229,31 +229,6 @@ const (
 	ReasonInvalidTenantsConfiguration ConditionReason = "InvalidTenantsConfiguration"
 )
 
-//+kubebuilder:object:root=true
-//+kubebuilder:subresource:status
-//+kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
-//+kubebuilder:printcolumn:name="Tempo version",type="string",JSONPath=".status.tempoVersion",description="Tempo Version"
-
-// TempoStack is the Schema for the tempostacks API.
-//
-// +operator-sdk:csv:customresourcedefinitions:displayName="TempoStack",resources={{ConfigMap,v1},{ServiceAccount,v1},{Service,v1},{Secret,v1},{StatefulSet,v1},{Deployment,v1},{Ingress,v1},{Route,v1}}
-// +kubebuilder:resource:shortName=tempo;tempos
-type TempoStack struct {
-	Status            TempoStackStatus `json:"status,omitempty"`
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              TempoStackSpec `json:"spec,omitempty"`
-}
-
-//+kubebuilder:object:root=true
-
-// TempoStackList contains a list of TempoStack.
-type TempoStackList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []TempoStack `json:"items"`
-}
-
 // Resources defines resources configuration.
 type Resources struct {
 	// The total amount of resources for Tempo instance.
@@ -627,6 +602,31 @@ type RetentionConfig struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors="urn:alm:descriptor:com.tectonic.ui:text",displayName="Trace Retention Period"
 	Traces metav1.Duration `json:"traces"`
+}
+
+//+kubebuilder:object:root=true
+//+kubebuilder:subresource:status
+//+kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
+//+kubebuilder:printcolumn:name="Tempo version",type="string",JSONPath=".status.tempoVersion",description="Tempo Version"
+
+// TempoStack is the Schema for the tempostacks API.
+//
+// +operator-sdk:csv:customresourcedefinitions:displayName="TempoStack",resources={{ConfigMap,v1},{ServiceAccount,v1},{Service,v1},{Secret,v1},{StatefulSet,v1},{Deployment,v1},{Ingress,v1},{Route,v1}}
+// +kubebuilder:resource:shortName=tempo;tempos
+type TempoStack struct {
+	Status            TempoStackStatus `json:"status,omitempty"`
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+	Spec              TempoStackSpec `json:"spec,omitempty"`
+}
+
+//+kubebuilder:object:root=true
+
+// TempoStackList contains a list of TempoStack.
+type TempoStackList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []TempoStack `json:"items"`
 }
 
 func init() {
