@@ -29,6 +29,7 @@ func TestDefault(t *testing.T) {
 				TempoGateway:    "docker.io/observatorium/gateway:1.2.3",
 				TempoGatewayOpa: "docker.io/observatorium/opa-openshift:1.2.3",
 			},
+			Distribution: "upstream",
 		},
 	}
 	defaultMaxSearch := 0
@@ -72,6 +73,10 @@ func TestDefault(t *testing.T) {
 			expected: &TempoStack{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "test",
+					Labels: map[string]string{
+						"app.kubernetes.io/managed-by":   "tempo-operator",
+						"tempo.grafana.com/distribution": "upstream",
+					},
 				},
 				Spec: TempoStackSpec{
 					ReplicationFactor: 2,
@@ -120,6 +125,10 @@ func TestDefault(t *testing.T) {
 			expected: &TempoStack{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "test",
+					Labels: map[string]string{
+						"app.kubernetes.io/managed-by":   "tempo-operator",
+						"tempo.grafana.com/distribution": "upstream",
+					},
 				},
 				Spec: TempoStackSpec{
 					ReplicationFactor: 1,
@@ -180,6 +189,10 @@ func TestDefault(t *testing.T) {
 			expected: &TempoStack{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "test",
+					Labels: map[string]string{
+						"app.kubernetes.io/managed-by":   "tempo-operator",
+						"tempo.grafana.com/distribution": "upstream",
+					},
 				},
 				Spec: TempoStackSpec{
 					ReplicationFactor: 1,

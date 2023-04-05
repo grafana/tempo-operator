@@ -906,6 +906,27 @@ FeatureGates
 </td>
 </tr>
 
+<tr>
+
+<td>
+
+<code>distribution</code><br/>
+
+<em>
+
+string
+
+</em>
+
+</td>
+
+<td>
+
+<p>Distribution defines the operator distribution name.</p>
+
+</td>
+</tr>
+
 </tbody>
 </table>
 
