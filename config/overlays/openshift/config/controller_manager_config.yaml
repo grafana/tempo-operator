@@ -29,11 +29,11 @@ featureGates:
   openshift:
     openshiftRoute: true
     servingCertsService: true
-  httpEncryption: true
-  grpcEncryption: true
+  httpEncryption: false
+  grpcEncryption: false
   tlsProfile: Modern
   builtInCertManagement:
-    enabled: true
+    enabled: false
     # CA certificate validity: 5 years
     caValidity: 43830h
     # CA certificate refresh at 80% of validity
