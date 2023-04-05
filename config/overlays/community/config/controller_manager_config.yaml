@@ -1,5 +1,6 @@
 apiVersion: config.tempo.grafana.com/v1alpha1
 kind: ProjectConfig
+name: community
 health:
   healthProbeBindAddress: :8081
 metrics:
