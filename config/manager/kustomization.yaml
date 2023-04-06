@@ -9,4 +9,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: ghcr.io/os-observability/tempo-operator/tempo-operator
-  newTag: v0.0.1
+  newTag: v0.1.0
