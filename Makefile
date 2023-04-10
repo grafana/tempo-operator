@@ -1,7 +1,7 @@
 # Current Operator version
 VERSION_DATE ?= $(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
 VERSION_PKG ?= "github.com/os-observability/tempo-operator/internal/version"
-OPERATOR_VERSION ?= 0.0.1
+OPERATOR_VERSION ?= 0.1.0
 COMMIT_SHA = "$(shell git rev-parse HEAD)"
 LD_FLAGS ?= "-X ${VERSION_PKG}.buildDate=${VERSION_DATE} -X ${VERSION_PKG}.version=${OPERATOR_VERSION} -X ${VERSION_PKG}.commitSha=${COMMIT_SHA}"
 ARCH ?= $(shell go env GOARCH)
@@ -212,14 +212,13 @@ generate-bundle: operator-sdk manifests kustomize ## Generate bundle manifests a
 	./hack/ignore-createdAt-bundle.sh
 
 .PHONY: bundle
-bundle: BUNDLE_VARIANT=community
-bundle: generate-bundle
-bundle: BUNDLE_VARIANT=openshift
-bundle: generate-bundle
+bundle: 
+	BUNDLE_VARIANT=openshift $(MAKE) generate-bundle
+	BUNDLE_VARIANT=community $(MAKE) generate-bundle
 
 .PHONY: bundle-build
 bundle-build: ## Build the bundle image.
-	docker build -f bundle.Dockerfile -t $(BUNDLE_IMG) .
+	docker build -f $(BUNDLE_DIR)/bundle.Dockerfile -t $(BUNDLE_IMG) $(BUNDLE_DIR)
 
 .PHONY: bundle-push
 bundle-push: ## Push the bundle image.

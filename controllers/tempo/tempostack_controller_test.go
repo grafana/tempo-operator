@@ -109,7 +109,7 @@ func TestReconcile(t *testing.T) {
 		client.InNamespace(nsn.Namespace),
 		client.MatchingLabels(map[string]string{
 			"app.kubernetes.io/instance":   nsn.Name,
-			"app.kubernetes.io/managed-by": "tempo-controller",
+			"app.kubernetes.io/managed-by": "tempo-operator",
 		}),
 	}
 	{
@@ -399,7 +399,7 @@ func TestTLSEnable(t *testing.T) {
 		client.InNamespace(nsn.Namespace),
 		client.MatchingLabels(map[string]string{
 			"app.kubernetes.io/instance":   nsn.Name,
-			"app.kubernetes.io/managed-by": "tempo-controller",
+			"app.kubernetes.io/managed-by": "tempo-operator",
 		}),
 	}
 	{

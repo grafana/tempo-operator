@@ -6,9 +6,8 @@ kind: Secret
 metadata:
   labels:
     app.kubernetes.io/component: gateway
-    app.kubernetes.io/created-by: tempo-controller
     app.kubernetes.io/instance: foo
-    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-foo-gateway
   ownerReferences:
@@ -48,9 +47,8 @@ kind: ConfigMap
 metadata:
   labels:
     app.kubernetes.io/component: gateway
-    app.kubernetes.io/created-by: tempo-controller
     app.kubernetes.io/instance: foo
-    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-foo-gateway
   ownerReferences:
@@ -65,9 +63,8 @@ kind: Deployment
 metadata:
   labels:
     app.kubernetes.io/component: gateway
-    app.kubernetes.io/created-by: tempo-controller
     app.kubernetes.io/instance: foo
-    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-foo-gateway
   ownerReferences:
@@ -80,17 +77,15 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/component: gateway
-      app.kubernetes.io/created-by: tempo-controller
       app.kubernetes.io/instance: foo
-      app.kubernetes.io/managed-by: tempo-controller
+      app.kubernetes.io/managed-by: tempo-operator
       app.kubernetes.io/name: tempo
   template:
     metadata:
       labels:
         app.kubernetes.io/component: gateway
-        app.kubernetes.io/created-by: tempo-controller
         app.kubernetes.io/instance: foo
-        app.kubernetes.io/managed-by: tempo-controller
+        app.kubernetes.io/managed-by: tempo-operator
         app.kubernetes.io/name: tempo
     spec:
       containers:

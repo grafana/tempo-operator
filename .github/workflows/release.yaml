@@ -20,4 +20,9 @@ jobs:
     - name: "create the release in GitHub"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: ./.ci/create-release-github.sh
+      run: |
+        OPERATOR_VERSION=$(git describe --tags)
+        gh release create \
+            -t "Release ${OPERATOR_VERSION}" \
+            "${OPERATOR_VERSION}" \
+            'dist/tempo-operator.yaml#Installation manifest for Kubernetes' \

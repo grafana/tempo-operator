@@ -6,9 +6,8 @@ kind: Secret
 metadata:
   labels:
     app.kubernetes.io/component: gateway
-    app.kubernetes.io/created-by: tempo-controller
     app.kubernetes.io/instance: simplest
-    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-simplest-gateway
   ownerReferences:
@@ -26,9 +25,8 @@ kind: ConfigMap
 metadata:
   labels:
     app.kubernetes.io/component: gateway
-    app.kubernetes.io/created-by: tempo-controller
     app.kubernetes.io/instance: simplest
-    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-simplest-gateway
   ownerReferences:
@@ -43,9 +41,8 @@ kind: ConfigMap
 metadata:
   labels:
     app.kubernetes.io/component: gateway
-    app.kubernetes.io/created-by: tempo-controller
     app.kubernetes.io/instance: simplest
-    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   annotations:
     service.beta.openshift.io/inject-cabundle: "true"
@@ -66,9 +63,8 @@ metadata:
     serviceaccounts.openshift.io/oauth-redirectreference.prod: '{"kind":"OAuthRedirectReference","apiVersion":"v1","reference":{"kind":"Route","name":"tempo-simplest-gateway"}}'
   labels:
     app.kubernetes.io/component: gateway
-    app.kubernetes.io/created-by: tempo-controller
     app.kubernetes.io/instance: simplest
-    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-simplest-gateway
   ownerReferences:
@@ -83,9 +79,8 @@ kind: ClusterRole
 metadata:
   labels:
     app.kubernetes.io/component: gateway
-    app.kubernetes.io/created-by: tempo-controller
     app.kubernetes.io/instance: simplest
-    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-simplest-gateway
 rules:
@@ -107,9 +102,8 @@ kind: ClusterRoleBinding
 metadata:
   labels:
     app.kubernetes.io/component: gateway
-    app.kubernetes.io/created-by: tempo-controller
     app.kubernetes.io/instance: simplest
-    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-simplest-gateway
 roleRef:
@@ -125,9 +119,8 @@ kind: Deployment
 metadata:
   labels:
     app.kubernetes.io/component: gateway
-    app.kubernetes.io/created-by: tempo-controller
     app.kubernetes.io/instance: simplest
-    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-simplest-gateway
   ownerReferences:
@@ -140,17 +133,15 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/component: gateway
-      app.kubernetes.io/created-by: tempo-controller
       app.kubernetes.io/instance: simplest
-      app.kubernetes.io/managed-by: tempo-controller
+      app.kubernetes.io/managed-by: tempo-operator
       app.kubernetes.io/name: tempo
   template:
     metadata:
       labels:
         app.kubernetes.io/component: gateway
-        app.kubernetes.io/created-by: tempo-controller
         app.kubernetes.io/instance: simplest
-        app.kubernetes.io/managed-by: tempo-controller
+        app.kubernetes.io/managed-by: tempo-operator
         app.kubernetes.io/name: tempo
     spec:
       containers:
@@ -238,9 +229,8 @@ kind: Route
 metadata:
   labels:
     app.kubernetes.io/component: gateway
-    app.kubernetes.io/created-by: tempo-controller
     app.kubernetes.io/instance: simplest
-    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-simplest-gateway
   ownerReferences:
@@ -267,9 +257,8 @@ metadata:
     service.beta.openshift.io/serving-cert-secret-name: tempo-simplest-gateway-tls
   labels:
     app.kubernetes.io/component: gateway
-    app.kubernetes.io/created-by: tempo-controller
     app.kubernetes.io/instance: simplest
-    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-simplest-gateway
   ownerReferences:
@@ -294,8 +283,7 @@ spec:
       targetPort: 8080
   selector:
     app.kubernetes.io/component: gateway
-    app.kubernetes.io/created-by: tempo-controller
     app.kubernetes.io/instance: simplest
-    app.kubernetes.io/managed-by: tempo-controller
+    app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   type: ClusterIP

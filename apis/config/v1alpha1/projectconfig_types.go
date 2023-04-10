@@ -60,11 +60,6 @@ type OpenShiftFeatureGates struct {
 	// More details: https://docs.openshift.com/container-platform/latest/security/certificate_types_descriptions/service-ca-certificates.html
 	ServingCertsService bool `json:"servingCertsService,omitempty"`
 
-	// GatewayRoute enables creating an OpenShift Route for the TempoStack
-	// gateway to expose the service to public internet access.
-	// More details: https://docs.openshift.com/container-platform/latest/networking/understanding-networking.html
-	GatewayRoute bool `json:"gatewayRoute,omitempty"`
-
 	// OpenShiftRoute enables creating OpenShift Route objects.
 	// More details: https://docs.openshift.com/container-platform/latest/networking/understanding-networking.html
 	OpenShiftRoute bool `json:"openshiftRoute,omitempty"`
@@ -147,6 +142,9 @@ type ProjectConfig struct {
 	DefaultImages ImagesSpec `json:"images"`
 
 	Gates FeatureGates `json:"featureGates,omitempty"`
+
+	// Distribution defines the operator distribution name.
+	Distribution string `json:"distribution"`
 }
 
 func init() {
