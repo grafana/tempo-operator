@@ -4,6 +4,8 @@ metadata:
   annotations:
     alm-examples: '[]'
     capabilities: Basic Install
+    categories: Logging & Tracing
+    containerImage: ghcr.io/os-observability/tempo-operator/tempo-operator
   name: tempo-operator.v0.0.0
   namespace: placeholder
 spec:
