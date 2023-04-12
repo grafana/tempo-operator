@@ -51,13 +51,15 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 	}
 
 	if gates.HTTPEncryption {
-		if err := configureQuerierFrontEndHTTPServicePKI(d, tempo); err != nil {
+		err := manifestutils.ConfigureHTTPServicePKI(tempo.Name, manifestutils.QueryFrontendComponentName, &d.Spec.Template.Spec, 0, 1)
+		if err != nil {
 			return nil, err
 		}
 	}
 
 	if gates.GRPCEncryption {
-		if err := configureQuerierFrontEndGRPCServicePKI(d, tempo); err != nil {
+		err := manifestutils.ConfigureGRPCServicePKI(tempo.Name, manifestutils.QueryFrontendComponentName, &d.Spec.Template.Spec, 0, 1)
+		if err != nil {
 			return nil, err
 		}
 	}
@@ -80,14 +82,6 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 	}
 
 	return manifests, nil
-}
-
-func configureQuerierFrontEndHTTPServicePKI(deployment *v1.Deployment, tempo v1alpha1.TempoStack) error {
-	return manifestutils.ConfigureHTTPServicePKI(&deployment.Spec.Template.Spec, naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name), 0, 1)
-}
-
-func configureQuerierFrontEndGRPCServicePKI(deployment *v1.Deployment, tempo v1alpha1.TempoStack) error {
-	return manifestutils.ConfigureGRPCServicePKI(&deployment.Spec.Template.Spec, naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name), 0, 1)
 }
 
 func deployment(params manifestutils.Params) (*v1.Deployment, error) {
@@ -121,7 +115,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 					Affinity:           manifestutils.DefaultAffinity(labels),
 					Containers: []corev1.Container{
 						{
-							Name:  "query-frontend",
+							Name:  "tempo",
 							Image: tempo.Spec.Images.Tempo,
 							Args: []string{
 								"-target=query-frontend",
@@ -241,7 +235,6 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 
 func services(tempo v1alpha1.TempoStack) []*corev1.Service {
 	labels := manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, tempo.Name)
-
 	frontEndService := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name),
@@ -266,11 +259,12 @@ func services(tempo v1alpha1.TempoStack) []*corev1.Service {
 		},
 	}
 
+	queryFrontendDiscoveryName := manifestutils.QueryFrontendComponentName + "-discovery"
 	frontEndDiscoveryService := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      naming.Name(manifestutils.QueryFrontendComponentName+"-discovery", tempo.Name),
+			Name:      naming.Name(queryFrontendDiscoveryName, tempo.Name),
 			Namespace: tempo.Namespace,
-			Labels:    labels,
+			Labels:    manifestutils.ComponentLabels(queryFrontendDiscoveryName, tempo.Name),
 		},
 		Spec: corev1.ServiceSpec{
 			ClusterIP: "None",

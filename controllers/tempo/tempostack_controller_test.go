@@ -12,7 +12,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -514,7 +514,7 @@ func TestPruneIngress(t *testing.T) {
 	// Verify Ingress got deleted
 	err = k8sClient.Get(context.Background(), ingressNsn, &ingress)
 	require.Error(t, err)
-	require.Equal(t, metav1.StatusReasonNotFound, err.(*errors.StatusError).ErrStatus.Reason)
+	require.True(t, apierrors.IsNotFound(err))
 }
 
 func TestK8SGatewaySecret(t *testing.T) {

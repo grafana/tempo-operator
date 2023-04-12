@@ -357,6 +357,28 @@ when using HTTPEncryption or GRPCEncryption.</p>
 </td>
 </tr>
 
+<tr>
+
+<td>
+
+<code>serviceMonitors</code><br/>
+
+<em>
+
+bool
+
+</em>
+
+</td>
+
+<td>
+
+<p>ServiceMonitors enables the creation of ServiceMonitor instances for all components of the Tempo Stack.
+Note: This feature requires prometheus-operator to be installed in the cluster.</p>
+
+</td>
+</tr>
+
 </tbody>
 </table>
 

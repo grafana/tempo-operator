@@ -32,28 +32,20 @@ func BuildDistributor(params manifestutils.Params) ([]client.Object, error) {
 	}
 
 	if gates.GRPCEncryption {
-		if err := configureDistributorGRPCServicePKI(dep, tempo); err != nil {
+		err := manifestutils.ConfigureGRPCServicePKI(tempo.Name, manifestutils.DistributorComponentName, &dep.Spec.Template.Spec)
+		if err != nil {
 			return nil, err
 		}
 	}
 
 	if gates.HTTPEncryption {
-		if err := configureDistributorHTTPServicePKI(dep, tempo); err != nil {
+		err := manifestutils.ConfigureHTTPServicePKI(tempo.Name, manifestutils.DistributorComponentName, &dep.Spec.Template.Spec)
+		if err != nil {
 			return nil, err
 		}
 	}
 
 	return []client.Object{dep, service(tempo)}, nil
-}
-
-func configureDistributorGRPCServicePKI(sts *v1.Deployment, tempo v1alpha1.TempoStack) error {
-	serviceName := naming.Name(manifestutils.DistributorComponentName, tempo.Name)
-	return manifestutils.ConfigureGRPCServicePKI(&sts.Spec.Template.Spec, serviceName)
-}
-
-func configureDistributorHTTPServicePKI(sts *v1.Deployment, tempo v1alpha1.TempoStack) error {
-	serviceName := naming.Name(manifestutils.DistributorComponentName, tempo.Name)
-	return manifestutils.ConfigureHTTPServicePKI(&sts.Spec.Template.Spec, serviceName)
 }
 
 func deployment(params manifestutils.Params) *v1.Deployment {

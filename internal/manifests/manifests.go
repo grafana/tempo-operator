@@ -14,6 +14,7 @@ import (
 	"github.com/os-observability/tempo-operator/internal/manifests/querier"
 	"github.com/os-observability/tempo-operator/internal/manifests/queryfrontend"
 	"github.com/os-observability/tempo-operator/internal/manifests/serviceaccount"
+	"github.com/os-observability/tempo-operator/internal/manifests/servicemonitor"
 )
 
 // StorageParams holds storage configuration.
@@ -105,5 +106,10 @@ func BuildAll(params manifestutils.Params) ([]client.Object, error) {
 	manifests = append(manifests, querierObjs...)
 	manifests = append(manifests, compactorObjs...)
 	manifests = append(manifests, gw...)
+
+	if params.Gates.ServiceMonitors {
+		manifests = append(manifests, servicemonitor.BuildServiceMonitors(params)...)
+	}
+
 	return manifests, nil
 }

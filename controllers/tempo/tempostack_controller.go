@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-logr/logr"
 	routev1 "github.com/openshift/api/route/v1"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
@@ -55,6 +56,7 @@ type TempoStackReconciler struct {
 // +kubebuilder:rbac:groups=route.openshift.io,resources=routes;routes/custom-host,verbs=get;list;watch;create;update;delete
 // +kubebuilder:rbac:groups=operator.openshift.io,resources=ingresscontrollers,verbs=get;list;watch
 // +kubebuilder:rbac:groups=config.openshift.io,resources=dnses,verbs=get;list;watch
+// +kubebuilder:rbac:groups=monitoring.coreos.com,resources=servicemonitors,verbs=get;list;watch;create;update;patch;delete
 
 //+kubebuilder:rbac:groups=tempo.grafana.com,resources=tempostacks,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=tempo.grafana.com,resources=tempostacks/status,verbs=get;update;patch
@@ -351,6 +353,10 @@ func (r *TempoStackReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			builder.WithPredicates(predicate.ResourceVersionChangedPredicate{}),
 		)
 
+	if r.FeatureGates.ServiceMonitors {
+		builder = builder.Owns(&monitoringv1.ServiceMonitor{})
+	}
+
 	if r.FeatureGates.OpenShift.OpenShiftRoute {
 		builder = builder.Owns(&routev1.Route{})
 	}
@@ -407,6 +413,17 @@ func (r *TempoStackReconciler) findObjectsOwnedByTempoOperator(ctx context.Conte
 	}
 	for i := range ingressList.Items {
 		ownedObjects[ingressList.Items[i].GetUID()] = &ingressList.Items[i]
+	}
+
+	if r.FeatureGates.ServiceMonitors {
+		servicemonitorList := &monitoringv1.ServiceMonitorList{}
+		err := r.List(ctx, servicemonitorList, listOps)
+		if err != nil {
+			return nil, fmt.Errorf("error listing service monitors: %w", err)
+		}
+		for i := range servicemonitorList.Items {
+			ownedObjects[servicemonitorList.Items[i].GetUID()] = servicemonitorList.Items[i]
+		}
 	}
 
 	if r.FeatureGates.OpenShift.OpenShiftRoute {

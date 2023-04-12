@@ -241,18 +241,27 @@ func (v *validator) validateQueryFrontend(tempo TempoStack) field.ErrorList {
 
 func (v *validator) validateGateway(tempo TempoStack) field.ErrorList {
 	path := field.NewPath("spec").Child("template").Child("gateway").Child("enabled")
-	if tempo.Spec.Template.Gateway.Enabled && !tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled {
-		return field.ErrorList{
-			field.Invalid(path, tempo.Spec.Template.Gateway.Enabled,
-				"to use the gateway, please enable jaegerQuery",
-			)}
-	}
+	if tempo.Spec.Template.Gateway.Enabled {
+		if !tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled {
+			return field.ErrorList{
+				field.Invalid(path, tempo.Spec.Template.Gateway.Enabled,
+					"to use the gateway, please enable jaegerQuery",
+				)}
+		}
 
-	if tempo.Spec.Template.Gateway.Enabled && tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type != "" {
-		return field.ErrorList{
-			field.Invalid(path, tempo.Spec.Template.Gateway.Enabled,
-				"cannot enable gateway and jaeger query ingress at the same time",
-			)}
+		if tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type != IngressTypeNone {
+			return field.ErrorList{
+				field.Invalid(path, tempo.Spec.Template.Gateway.Enabled,
+					"cannot enable gateway and jaeger query ingress at the same time",
+				)}
+		}
+
+		if tempo.Spec.Tenants == nil {
+			return field.ErrorList{
+				field.Invalid(path, tempo.Spec.Template.Gateway.Enabled,
+					"to enable the gateway, please configure tenants",
+				)}
+		}
 	}
 	return nil
 }
