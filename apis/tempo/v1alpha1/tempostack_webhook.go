@@ -268,7 +268,7 @@ func (v *validator) validateGateway(tempo TempoStack) field.ErrorList {
 
 func (v *validator) validateObservability(tempo TempoStack) field.ErrorList {
 	observabilityBase := field.NewPath("spec").Child("observability")
-	metricsBase := observabilityBase.Child("tracing")
+	metricsBase := observabilityBase.Child("metrics")
 
 	if tempo.Spec.Observability.Metrics.Enabled && !v.ctrlConfig.Gates.ServiceMonitor {
 		return field.ErrorList{
