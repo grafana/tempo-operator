@@ -141,6 +141,13 @@ spec:
       - description: ObservabilitySpec defines how telemetry data gets handled.
         displayName: Observability
         path: observability
+      - description: Metrics defines the metrics configuration for operands.
+        displayName: Metrics Config
+        path: observability.metrics
+      - description: Enabled specifies if a ServiceMonitor should be created for each
+          Tempo component.
+        displayName: Enabled
+        path: observability.metrics.enabled
       - description: Tracing defines a config for operands.
         displayName: Tracing Config
         path: observability.tracing

@@ -29,6 +29,7 @@ featureGates:
   openshift:
     openshiftRoute: true
     servingCertsService: true
+  serviceMonitor: true
   httpEncryption: false
   grpcEncryption: false
   tlsProfile: Modern
