@@ -878,7 +878,7 @@ func TestValidateTenantConfigs(t *testing.T) {
 
 func TestValidatorObservabilityTracingConfig(t *testing.T) {
 	observabilityBase := field.NewPath("spec").Child("observability")
-	metricsBase := observabilityBase.Child("tracing")
+	metricsBase := observabilityBase.Child("metrics")
 	tracingBase := observabilityBase.Child("tracing")
 
 	tt := []struct {
