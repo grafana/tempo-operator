@@ -40,8 +40,7 @@ func buildTempoComponentServiceMonitor(params manifestutils.Params, component st
 
 	if params.Gates.HTTPEncryption {
 		scheme = "https"
-		serviceName := naming.ServiceName(tempo.Name, component, manifestutils.HttpPortName)
-		serverName := naming.ServiceFqdn(tempo.Namespace, tempo.Name, component, manifestutils.HttpPortName)
+		serverName := naming.ServiceFqdn(tempo.Namespace, tempo.Name, component)
 
 		tlsConfig = &monitoringv1.TLSConfig{
 			SafeTLSConfig: monitoringv1.SafeTLSConfig{
@@ -56,14 +55,14 @@ func buildTempoComponentServiceMonitor(params manifestutils.Params, component st
 				Cert: monitoringv1.SecretOrConfigMap{
 					Secret: &corev1.SecretKeySelector{
 						LocalObjectReference: corev1.LocalObjectReference{
-							Name: serviceName,
+							Name: naming.Name(tempo.Name, component),
 						},
 						Key: corev1.TLSCertKey,
 					},
 				},
 				KeySecret: &corev1.SecretKeySelector{
 					LocalObjectReference: corev1.LocalObjectReference{
-						Name: serviceName,
+						Name: naming.Name(tempo.Name, component),
 					},
 					Key: corev1.TLSPrivateKeyKey,
 				},

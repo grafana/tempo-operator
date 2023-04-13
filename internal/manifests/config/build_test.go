@@ -1378,18 +1378,18 @@ querier:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
     grpc_client_config:
       tls_enabled: true
-      tls_cert_path: /var/run/tls/grpc/server/tls.crt
-      tls_key_path: /var/run/tls/grpc/server/tls.key
+      tls_cert_path: /var/run/tls/server/tls.crt
+      tls_key_path: /var/run/tls/server/tls.key
       tls_ca_path: /var/run/ca/service-ca.crt
-      tls_server_name: tempo-test-query-frontend-grpc.nstest.svc.cluster.local
+      tls_server_name: tempo-test-query-frontend.nstest.svc.cluster.local
       tls_cipher_suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
       tls_min_version: VersionTLS12
 internal_server:
   enable: true
   http_listen_address: ""
   http_tls_config:
-    cert_file: /var/run/tls/http/server/tls.crt
-    key_file: /var/run/tls/http/server/tls.key
+    cert_file: /var/run/tls/server/tls.crt
+    key_file: /var/run/tls/server/tls.key
   tls_cipher_suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
   tls_min_version: VersionTLS12
 server:
@@ -1403,15 +1403,15 @@ server:
   tls_cipher_suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
   tls_min_version: VersionTLS12
   grpc_tls_config:
-    cert_file: /var/run/tls/grpc/server/tls.crt
+    cert_file: /var/run/tls/server/tls.crt
     client_auth_type: RequireAndVerifyClientCert
     client_ca_file: /var/run/ca/service-ca.crt
-    key_file: /var/run/tls/grpc/server/tls.key
+    key_file: /var/run/tls/server/tls.key
   http_tls_config:
-    cert_file: /var/run/tls/http/server/tls.crt
+    cert_file: /var/run/tls/server/tls.crt
     client_auth_type: RequireAndVerifyClientCert
     client_ca_file: /var/run/ca/service-ca.crt
-    key_file: /var/run/tls/http/server/tls.key
+    key_file: /var/run/tls/server/tls.key
 storage:
   trace:
     backend: s3
@@ -1438,10 +1438,10 @@ query_frontend:
 ingester_client:
   grpc_client_config:
     tls_enabled: true
-    tls_cert_path: /var/run/tls/grpc/server/tls.crt
-    tls_key_path: /var/run/tls/grpc/server/tls.key
+    tls_cert_path: /var/run/tls/server/tls.crt
+    tls_key_path: /var/run/tls/server/tls.key
     tls_ca_path: /var/run/ca/service-ca.crt
-    tls_server_name: tempo-test-ingester-grpc.nstest.svc.cluster.local
+    tls_server_name: tempo-test-ingester.nstest.svc.cluster.local
     tls_insecure_skip_verify: false
     tls_cipher_suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
     tls_min_version: VersionTLS12

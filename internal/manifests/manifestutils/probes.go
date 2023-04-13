@@ -6,12 +6,22 @@ import (
 )
 
 // TempoReadinessProbe returns a readiness Probe spec for tempo components.
-func TempoReadinessProbe() *corev1.Probe {
+func TempoReadinessProbe(tlsEnable bool) *corev1.Probe {
+
+	scheme := corev1.URISchemeHTTP
+	port := intstr.FromString(HttpPortName)
+
+	if tlsEnable {
+		scheme = corev1.URISchemeHTTPS
+		port = intstr.FromInt(PortInternalHTTPServer)
+	}
+
 	return &corev1.Probe{
 		ProbeHandler: corev1.ProbeHandler{
 			HTTPGet: &corev1.HTTPGetAction{
-				Path: TempoReadinessPath,
-				Port: intstr.FromString(HttpPortName),
+				Scheme: scheme,
+				Path:   TempoReadinessPath,
+				Port:   port,
 			},
 		},
 		InitialDelaySeconds: 15,

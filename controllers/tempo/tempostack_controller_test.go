@@ -413,16 +413,11 @@ func TestTLSEnable(t *testing.T) {
 		}
 
 		expectedNames := []string{
-			"compactor-grpc",
-			"compactor-http",
-			"distributor-grpc",
-			"distributor-http",
-			"ingester-grpc",
-			"ingester-http",
-			"querier-grpc",
-			"querier-http",
-			"query-frontend-grpc",
-			"query-frontend-http",
+			"compactor-tls",
+			"distributor-tls",
+			"ingester-tls",
+			"querier-tls",
+			"query-frontend-tls",
 			"signing-ca",
 		}
 		for _, expected := range expectedNames {

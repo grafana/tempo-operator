@@ -2,9 +2,9 @@ backend: 127.0.0.1:{{ .HTTPPort }}
 tenant_header_key: {{ .TenantHeader }}
 {{- if .Gates.HTTPEncryption }}
 tls_enabled: true
-tls_cert_path: {{ .TLS.Paths.HTTP.Certificate }}
-tls_key_path: {{ .TLS.Paths.HTTP.Key }}
+tls_cert_path: {{ .TLS.Paths.Certificate }}
+tls_key_path: {{ .TLS.Paths.Key }}
 tls_ca_path: {{ .TLS.Paths.CA }}
 tls_insecure_skip_verify: false
-tls_server_name: {{ .TLS.ServerNames.HTTP.QueryFrontend }}
+tls_server_name: {{ .TLS.ServerNames.QueryFrontend }}
 {{- end }}

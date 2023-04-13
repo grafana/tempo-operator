@@ -156,7 +156,7 @@ func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 									Protocol:      corev1.ProtocolTCP,
 								},
 							},
-							ReadinessProbe: manifestutils.TempoReadinessProbe(),
+							ReadinessProbe: manifestutils.TempoReadinessProbe(false),
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      manifestutils.ConfigVolumeName,

@@ -98,18 +98,18 @@ func TestBuildServiceMonitorsTLS(t *testing.T) {
 						Cert: monitoringv1.SecretOrConfigMap{
 							Secret: &corev1.SecretKeySelector{
 								LocalObjectReference: corev1.LocalObjectReference{
-									Name: "tempo-test-compactor-http",
+									Name: "tempo-compactor-test",
 								},
 								Key: corev1.TLSCertKey,
 							},
 						},
 						KeySecret: &corev1.SecretKeySelector{
 							LocalObjectReference: corev1.LocalObjectReference{
-								Name: "tempo-test-compactor-http",
+								Name: "tempo-compactor-test",
 							},
 							Key: corev1.TLSPrivateKeyKey,
 						},
-						ServerName: "tempo-test-compactor-http.project1.svc.cluster.local",
+						ServerName: "tempo-test-compactor.project1.svc.cluster.local",
 					},
 				},
 				RelabelConfigs: []*monitoringv1.RelabelConfig{
