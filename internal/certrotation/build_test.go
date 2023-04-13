@@ -34,7 +34,7 @@ func TestBuildAll(t *testing.T) {
 
 	objs, err := BuildAll(opts)
 	require.NoError(t, err)
-	require.Len(t, objs, 12)
+	require.Len(t, objs, 7)
 
 	for _, obj := range objs {
 		objectName := obj.GetName()
@@ -74,14 +74,14 @@ func TestApplyDefaultSettings_EmptySecrets(t *testing.T) {
 
 	cs := ComponentCertSecretNames(opts.StackName)
 
-	for _, name := range cs {
+	for service, name := range cs {
 		cert, ok := opts.Certificates[name]
 		require.True(t, ok)
 		require.NotEmpty(t, cert.Rotation)
 
 		hostnames := []string{
-			fmt.Sprintf("%s.%s.svc", name, opts.StackNamespace),
-			fmt.Sprintf("%s.%s.svc.cluster.local", name, opts.StackNamespace),
+			fmt.Sprintf("%s.%s.svc.cluster.local", service, opts.StackNamespace),
+			fmt.Sprintf("%s.%s.svc", service, opts.StackNamespace),
 		}
 
 		require.ElementsMatch(t, hostnames, cert.Rotation.Hostnames)
@@ -134,14 +134,14 @@ func TestApplyDefaultSettings_ExistingSecrets(t *testing.T) {
 	err := ApplyDefaultSettings(&opts, cfg)
 	require.NoError(t, err)
 
-	for _, name := range cs {
+	for service, name := range cs {
 		cert, ok := opts.Certificates[name]
 		require.True(t, ok)
 		require.NotEmpty(t, cert.Rotation)
 
 		hostnames := []string{
-			fmt.Sprintf("%s.%s.svc", name, opts.StackNamespace),
-			fmt.Sprintf("%s.%s.svc.cluster.local", name, opts.StackNamespace),
+			fmt.Sprintf("%s.%s.svc.cluster.local", service, opts.StackNamespace),
+			fmt.Sprintf("%s.%s.svc", service, opts.StackNamespace),
 		}
 
 		require.ElementsMatch(t, hostnames, cert.Rotation.Hostnames)

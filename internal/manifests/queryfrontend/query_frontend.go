@@ -48,17 +48,8 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 		if err := manifestutils.ConfigureServiceCA(&d.Spec.Template.Spec, caBundleName, 0, 1); err != nil {
 			return nil, err
 		}
-	}
 
-	if gates.HTTPEncryption {
-		err := manifestutils.ConfigureHTTPServicePKI(tempo.Name, manifestutils.QueryFrontendComponentName, &d.Spec.Template.Spec, 0, 1)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	if gates.GRPCEncryption {
-		err := manifestutils.ConfigureGRPCServicePKI(tempo.Name, manifestutils.QueryFrontendComponentName, &d.Spec.Template.Spec, 0, 1)
+		err := manifestutils.ConfigureServicePKI(tempo.Name, manifestutils.QueryFrontendComponentName, &d.Spec.Template.Spec, 0, 1)
 		if err != nil {
 			return nil, err
 		}
@@ -134,7 +125,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 									Protocol:      corev1.ProtocolTCP,
 								},
 							},
-							ReadinessProbe: manifestutils.TempoReadinessProbe(),
+							ReadinessProbe: manifestutils.TempoReadinessProbe(params.Gates.HTTPEncryption || params.Gates.GRPCEncryption),
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      manifestutils.ConfigVolumeName,

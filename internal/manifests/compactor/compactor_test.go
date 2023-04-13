@@ -136,8 +136,9 @@ func TestBuildCompactor(t *testing.T) {
 							ReadinessProbe: &corev1.Probe{
 								ProbeHandler: corev1.ProbeHandler{
 									HTTPGet: &corev1.HTTPGetAction{
-										Path: manifestutils.TempoReadinessPath,
-										Port: intstr.FromString(manifestutils.HttpPortName),
+										Scheme: corev1.URISchemeHTTP,
+										Path:   manifestutils.TempoReadinessPath,
+										Port:   intstr.FromString(manifestutils.HttpPortName),
 									},
 								},
 								InitialDelaySeconds: 15,

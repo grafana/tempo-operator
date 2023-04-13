@@ -34,17 +34,8 @@ func BuildIngester(params manifestutils.Params) ([]client.Object, error) {
 		if err := manifestutils.ConfigureServiceCA(&ss.Spec.Template.Spec, caBundleName); err != nil {
 			return nil, err
 		}
-	}
 
-	if gates.HTTPEncryption {
-		err := manifestutils.ConfigureHTTPServicePKI(tempo.Name, manifestutils.IngesterComponentName, &ss.Spec.Template.Spec)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	if gates.GRPCEncryption {
-		err := manifestutils.ConfigureGRPCServicePKI(tempo.Name, manifestutils.IngesterComponentName, &ss.Spec.Template.Spec)
+		err := manifestutils.ConfigureServicePKI(tempo.Name, manifestutils.IngesterComponentName, &ss.Spec.Template.Spec)
 		if err != nil {
 			return nil, err
 		}
@@ -114,7 +105,7 @@ func statefulSet(params manifestutils.Params) (*v1.StatefulSet, error) {
 									Protocol:      corev1.ProtocolTCP,
 								},
 							},
-							ReadinessProbe:  manifestutils.TempoReadinessProbe(),
+							ReadinessProbe:  manifestutils.TempoReadinessProbe(params.Gates.HTTPEncryption || params.Gates.GRPCEncryption),
 							Resources:       manifestutils.Resources(tempo, manifestutils.IngesterComponentName),
 							SecurityContext: manifestutils.TempoContainerSecurityContext(),
 						},
