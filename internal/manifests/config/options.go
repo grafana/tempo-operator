@@ -32,6 +32,7 @@ type options struct {
 	Search                 searchOptions
 	ReplicationFactor      int
 	Multitenancy           bool
+	Gateway                bool
 	Gates                  featureGates
 }
 
@@ -87,6 +88,8 @@ type tlsProfileOptions struct {
 	// MinTLSVersion is used to specify the minimal version of the TLS protocol
 	// that is negotiated during the TLS handshake.
 	MinTLSVersion string
+	// Same as MinTLSVersion but instead of VersionTLS12 will be 1.2
+	MinTLSVersionShort string
 }
 
 type tlsFilePaths struct {

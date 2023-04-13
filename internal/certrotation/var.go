@@ -41,5 +41,6 @@ func ComponentCertSecretNames(stackName string) map[string]string {
 		naming.Name(manifestutils.QuerierComponentName, stackName):       naming.TLSSecretName(manifestutils.QuerierComponentName, stackName),
 		naming.Name(manifestutils.QueryFrontendComponentName, stackName): naming.TLSSecretName(manifestutils.QueryFrontendComponentName, stackName),
 		naming.Name(manifestutils.CompactorComponentName, stackName):     naming.TLSSecretName(manifestutils.CompactorComponentName, stackName),
+		naming.Name(manifestutils.GatewayComponentName, stackName):       naming.TLSSecretName(manifestutils.GatewayComponentName, stackName),
 	}
 }
