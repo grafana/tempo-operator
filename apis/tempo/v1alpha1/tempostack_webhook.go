@@ -270,10 +270,10 @@ func (v *validator) validateObservability(tempo TempoStack) field.ErrorList {
 	observabilityBase := field.NewPath("spec").Child("observability")
 	metricsBase := observabilityBase.Child("metrics")
 
-	if tempo.Spec.Observability.Metrics.Enabled && !v.ctrlConfig.Gates.ServiceMonitor {
+	if tempo.Spec.Observability.Metrics.CreateServiceMonitors && !v.ctrlConfig.Gates.ServiceMonitor {
 		return field.ErrorList{
-			field.Invalid(metricsBase.Child("enabled"), tempo.Spec.Observability.Metrics.Enabled,
-				"the serviceMonitor feature gate must be enabled to enable tempo metrics",
+			field.Invalid(metricsBase.Child("createServiceMonitors"), tempo.Spec.Observability.Metrics.CreateServiceMonitors,
+				"the serviceMonitor feature gate must be enabled to create ServiceMonitors for Tempo components",
 			)}
 	}
 

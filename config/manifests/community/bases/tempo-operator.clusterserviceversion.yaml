@@ -144,10 +144,10 @@ spec:
       - description: Metrics defines the metrics configuration for operands.
         displayName: Metrics Config
         path: observability.metrics
-      - description: Enabled specifies if a ServiceMonitor should be created for each
-          Tempo component.
-        displayName: Enabled
-        path: observability.metrics.enabled
+      - description: CreateServiceMonitors specifies if ServiceMonitors should be
+          created for Tempo components.
+        displayName: Create ServiceMonitors for Tempo components
+        path: observability.metrics.createServiceMonitors
       - description: Tracing defines a config for operands.
         displayName: Tracing Config
         path: observability.tracing

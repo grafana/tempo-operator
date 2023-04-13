@@ -1184,7 +1184,7 @@ RateLimitSpec
 
 <td>
 
-<code>enabled</code><br/>
+<code>createServiceMonitors</code><br/>
 
 <em>
 
@@ -1198,7 +1198,7 @@ bool
 
 <em>(Optional)</em>
 
-<p>Enabled specifies if a ServiceMonitor should be created for each Tempo component.</p>
+<p>CreateServiceMonitors specifies if ServiceMonitors should be created for Tempo components.</p>
 
 </td>
 </tr>

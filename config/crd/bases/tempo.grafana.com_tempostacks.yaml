@@ -153,9 +153,9 @@ spec:
                   metrics:
                     description: Metrics defines the metrics configuration for operands.
                     properties:
-                      enabled:
-                        description: Enabled specifies if a ServiceMonitor should
-                          be created for each Tempo component.
+                      createServiceMonitors:
+                        description: CreateServiceMonitors specifies if ServiceMonitors
+                          should be created for Tempo components.
                         type: boolean
                     type: object
                   tracing:

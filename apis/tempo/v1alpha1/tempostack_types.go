@@ -113,12 +113,12 @@ type ObservabilitySpec struct {
 
 // MetricsConfigSpec defines a metrics config.
 type MetricsConfigSpec struct {
-	// Enabled specifies if a ServiceMonitor should be created for each Tempo component.
+	// CreateServiceMonitors specifies if ServiceMonitors should be created for Tempo components.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enabled"
-	Enabled bool `json:"enabled,omitempty"`
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Create ServiceMonitors for Tempo components"
+	CreateServiceMonitors bool `json:"createServiceMonitors,omitempty"`
 }
 
 // TracingConfigSpec defines a tracing config including endpoints and sampling.

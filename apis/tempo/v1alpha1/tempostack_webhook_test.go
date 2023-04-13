@@ -894,12 +894,12 @@ func TestValidatorObservabilityTracingConfig(t *testing.T) {
 			},
 		},
 		{
-			name: "metrics enabled and serviceMonitor feature gate set",
+			name: "createServiceMonitors enabled and serviceMonitor feature gate set",
 			input: TempoStack{
 				Spec: TempoStackSpec{
 					Observability: ObservabilitySpec{
 						Metrics: MetricsConfigSpec{
-							Enabled: true,
+							CreateServiceMonitors: true,
 						},
 					},
 				},
@@ -912,21 +912,21 @@ func TestValidatorObservabilityTracingConfig(t *testing.T) {
 			expected: nil,
 		},
 		{
-			name: "metrics enabled but serviceMonitor feature gate not set",
+			name: "createServiceMonitors enabled but serviceMonitor feature gate not set",
 			input: TempoStack{
 				Spec: TempoStackSpec{
 					Observability: ObservabilitySpec{
 						Metrics: MetricsConfigSpec{
-							Enabled: true,
+							CreateServiceMonitors: true,
 						},
 					},
 				},
 			},
 			expected: field.ErrorList{
 				field.Invalid(
-					metricsBase.Child("enabled"),
+					metricsBase.Child("createServiceMonitors"),
 					true,
-					"the serviceMonitor feature gate must be enabled to enable tempo metrics",
+					"the serviceMonitor feature gate must be enabled to create ServiceMonitors for Tempo components",
 				),
 			},
 		},
