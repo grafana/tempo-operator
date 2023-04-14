@@ -418,6 +418,7 @@ func TestTLSParameters(t *testing.T) {
 			},
 		},
 	})
+	require.NoError(t, err)
 	assert.Equal(t, 4, len(objects))
 	obj = getObjectByTypeAndName(objects, "tempo-simplest-gateway", reflect.TypeOf(&appsv1.Deployment{}))
 	require.NotNil(t, obj)
