@@ -1150,6 +1150,63 @@ RateLimitSpec
 </table>
 
 
+## MetricsConfigSpec { #tempo-grafana-com-v1alpha1-MetricsConfigSpec }
+
+<p>
+
+(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-ObservabilitySpec">ObservabilitySpec</a>)
+
+</p>
+
+<div>
+
+<p>MetricsConfigSpec defines a metrics config.</p>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Field</th>
+
+<th>Description</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td>
+
+<code>createServiceMonitors</code><br/>
+
+<em>
+
+bool
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>CreateServiceMonitors specifies if ServiceMonitors should be created for Tempo components.</p>
+
+</td>
+</tr>
+
+</tbody>
+</table>
+
+
 ## ModeType { #tempo-grafana-com-v1alpha1-ModeType }
 
 (<code>string</code> alias)
@@ -1653,6 +1710,33 @@ It needs to be in the same namespace as the Tempo custom resource.</p>
 </thead>
 
 <tbody>
+
+<tr>
+
+<td>
+
+<code>metrics</code><br/>
+
+<em>
+
+<a href="#tempo-grafana-com-v1alpha1-MetricsConfigSpec">
+
+MetricsConfigSpec
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>Metrics defines the metrics configuration for operands.</p>
+
+</td>
+</tr>
 
 <tr>
 

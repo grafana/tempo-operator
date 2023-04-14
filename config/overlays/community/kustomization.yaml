@@ -1,4 +1,27 @@
-bases:
-- config
+resources:
 - ../../default
 
+# Adds namespace to all resources.
+namespace: tempo-operator-system
+
+# Value of this field is prepended to the
+# names of all resources, e.g. a deployment named
+# "wordpress" becomes "alices-wordpress".
+# Note that it should also match with the prefix (text before '-') of the namespace
+# field above.
+namePrefix: tempo-operator-
+
+labels:
+- pairs:
+    app.kubernetes.io/name: tempo-operator
+    app.kubernetes.io/part-of: tempo-operator
+    app.kubernetes.io/managed-by: operator-lifecycle-manager
+  includeSelectors: true
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+configMapGenerator:
+- files:
+  - controller_manager_config.yaml
+  name: manager-config

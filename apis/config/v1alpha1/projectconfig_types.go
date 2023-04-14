@@ -129,9 +129,9 @@ type FeatureGates struct {
 	// when using HTTPEncryption or GRPCEncryption.
 	TLSProfile string `json:"tlsProfile,omitempty"`
 
-	// ServiceMonitors enables the creation of ServiceMonitor instances for all components of the Tempo Stack.
-	// Note: This feature requires prometheus-operator to be installed in the cluster.
-	ServiceMonitors bool `json:"serviceMonitors,omitempty"`
+	// ServiceMonitor defines whether the ServiceMonitor CRD exists in the cluster.
+	// This CRD is part of prometheus-operator.
+	ServiceMonitor bool `json:"serviceMonitor,omitempty"`
 }
 
 //+kubebuilder:object:root=true

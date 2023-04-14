@@ -361,7 +361,7 @@ when using HTTPEncryption or GRPCEncryption.</p>
 
 <td>
 
-<code>serviceMonitors</code><br/>
+<code>serviceMonitor</code><br/>
 
 <em>
 
@@ -373,8 +373,8 @@ bool
 
 <td>
 
-<p>ServiceMonitors enables the creation of ServiceMonitor instances for all components of the Tempo Stack.
-Note: This feature requires prometheus-operator to be installed in the cluster.</p>
+<p>ServiceMonitor defines whether the ServiceMonitor CRD exists in the cluster.
+This CRD is part of prometheus-operator.</p>
 
 </td>
 </tr>

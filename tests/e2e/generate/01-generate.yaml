@@ -1,6 +1,6 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
-  - command: ../../../bin/manager generate --config ../../../config/overlays/community/config/controller_manager_config.yaml --cr cr.yaml --output generated.yaml
+  - command: ../../../bin/manager generate --config ../../../config/overlays/community/controller_manager_config.yaml --cr cr.yaml --output generated.yaml
   - command: kubectl apply -f generated.yaml
     namespaced: true

@@ -267,7 +267,17 @@ func (v *validator) validateGateway(tempo TempoStack) field.ErrorList {
 }
 
 func (v *validator) validateObservability(tempo TempoStack) field.ErrorList {
-	tracingBase := field.NewPath("spec").Child("template").Child("observability").Child("tracing")
+	observabilityBase := field.NewPath("spec").Child("observability")
+	metricsBase := observabilityBase.Child("metrics")
+
+	if tempo.Spec.Observability.Metrics.CreateServiceMonitors && !v.ctrlConfig.Gates.ServiceMonitor {
+		return field.ErrorList{
+			field.Invalid(metricsBase.Child("createServiceMonitors"), tempo.Spec.Observability.Metrics.CreateServiceMonitors,
+				"the serviceMonitor feature gate must be enabled to create ServiceMonitors for Tempo components",
+			)}
+	}
+
+	tracingBase := observabilityBase.Child("tracing")
 	if tempo.Spec.Observability.Tracing.SamplingFraction == "" {
 		return nil
 	}
