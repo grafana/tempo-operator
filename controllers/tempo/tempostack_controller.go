@@ -353,7 +353,7 @@ func (r *TempoStackReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			builder.WithPredicates(predicate.ResourceVersionChangedPredicate{}),
 		)
 
-	if r.FeatureGates.ServiceMonitors {
+	if r.FeatureGates.ServiceMonitor {
 		builder = builder.Owns(&monitoringv1.ServiceMonitor{})
 	}
 
@@ -415,7 +415,7 @@ func (r *TempoStackReconciler) findObjectsOwnedByTempoOperator(ctx context.Conte
 		ownedObjects[ingressList.Items[i].GetUID()] = &ingressList.Items[i]
 	}
 
-	if r.FeatureGates.ServiceMonitors {
+	if r.FeatureGates.ServiceMonitor {
 		servicemonitorList := &monitoringv1.ServiceMonitorList{}
 		err := r.List(ctx, servicemonitorList, listOps)
 		if err != nil {

@@ -149,6 +149,14 @@ spec:
               observability:
                 description: ObservabilitySpec defines how telemetry data gets handled.
                 properties:
+                  metrics:
+                    description: Metrics defines the metrics configuration for operands.
+                    properties:
+                      createServiceMonitors:
+                        description: CreateServiceMonitors specifies if ServiceMonitors
+                          should be created for Tempo components.
+                        type: boolean
+                    type: object
                   tracing:
                     description: Tracing defines a config for operands.
                     properties:

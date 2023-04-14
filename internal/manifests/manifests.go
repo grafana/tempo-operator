@@ -107,7 +107,7 @@ func BuildAll(params manifestutils.Params) ([]client.Object, error) {
 	manifests = append(manifests, compactorObjs...)
 	manifests = append(manifests, gw...)
 
-	if params.Gates.ServiceMonitors {
+	if params.Tempo.Spec.Observability.Metrics.CreateServiceMonitors {
 		manifests = append(manifests, servicemonitor.BuildServiceMonitors(params)...)
 	}
 

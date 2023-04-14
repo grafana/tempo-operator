@@ -33,6 +33,7 @@ data:
         openshiftRoute: false
         gatewayRoute: false
         servingCertsService: false
+      serviceMonitor: false
       httpEncryption: false
       grpcEncryption: false
       tlsProfile: Modern

@@ -96,12 +96,29 @@ type TempoStackSpec struct {
 
 // ObservabilitySpec defines how telemetry data gets handled.
 type ObservabilitySpec struct {
+	// Metrics defines the metrics configuration for operands.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Metrics Config"
+	Metrics MetricsConfigSpec `json:"metrics,omitempty"`
+
 	// Tracing defines a config for operands.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tracing Config"
 	Tracing TracingConfigSpec `json:"tracing,omitempty"`
+}
+
+// MetricsConfigSpec defines a metrics config.
+type MetricsConfigSpec struct {
+	// CreateServiceMonitors specifies if ServiceMonitors should be created for Tempo components.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Create ServiceMonitors for Tempo components"
+	CreateServiceMonitors bool `json:"createServiceMonitors,omitempty"`
 }
 
 // TracingConfigSpec defines a tracing config including endpoints and sampling.
