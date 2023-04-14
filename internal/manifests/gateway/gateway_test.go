@@ -1,6 +1,7 @@
 package gateway
 
 import (
+	"fmt"
 	"net"
 	"reflect"
 	"testing"
@@ -17,6 +18,7 @@ import (
 	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
+	"github.com/os-observability/tempo-operator/internal/manifests/naming"
 	"github.com/os-observability/tempo-operator/internal/tlsprofile"
 )
 
@@ -335,4 +337,100 @@ func TestPatchTracing(t *testing.T) {
 			assert.Equal(t, tc.expectPod, pod)
 		})
 	}
+}
+
+func TestTLSParameters(t *testing.T) {
+	tempo := v1alpha1.TempoStack{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "simplest",
+			Namespace: "observability",
+		},
+		Spec: v1alpha1.TempoStackSpec{
+			Tenants: &v1alpha1.TenantsSpec{
+				Mode: "static",
+				Authorization: &v1alpha1.AuthorizationSpec{
+					RoleBindings: []v1alpha1.RoleBindingsSpec{
+						{
+							Name:  "test",
+							Roles: []string{"read-write"},
+							Subjects: []v1alpha1.Subject{
+								{
+									Name: "admin@example.com",
+									Kind: v1alpha1.User,
+								},
+							},
+						},
+					},
+					Roles: []v1alpha1.RoleSpec{{
+						Name: "read-write",
+						Resources: []string{
+							"logs", "metrics", "traces",
+						},
+						Tenants: []string{
+							"test-oidc",
+						},
+						Permissions: []v1alpha1.PermissionType{v1alpha1.Write, v1alpha1.Read},
+					},
+					},
+				},
+			},
+			Template: v1alpha1.TempoTemplateSpec{
+				Gateway: v1alpha1.TempoGatewaySpec{
+					Enabled: true,
+				},
+			},
+		},
+	}
+
+	objects, err := BuildGateway(manifestutils.Params{
+		Tempo: tempo,
+		Gates: configv1alpha1.FeatureGates{
+			HTTPEncryption: true,
+			OpenShift: configv1alpha1.OpenShiftFeatureGates{
+				BaseDomain: "domain",
+			},
+		},
+	})
+
+	require.NoError(t, err)
+	assert.Equal(t, 4, len(objects))
+	obj := getObjectByTypeAndName(objects, "tempo-simplest-gateway", reflect.TypeOf(&appsv1.Deployment{}))
+	require.NotNil(t, obj)
+
+	dep, ok := obj.(*appsv1.Deployment)
+	require.True(t, ok)
+
+	args := dep.Spec.Template.Spec.Containers[0].Args
+	assert.Contains(t, args, fmt.Sprintf("--traces.tls.key-file=%s/tls.key", manifestutils.TempoServerTLSDir()))
+	assert.Contains(t, args, fmt.Sprintf("--traces.tls.cert-file=%s/tls.crt", manifestutils.TempoServerTLSDir()))
+	assert.Contains(t, args, fmt.Sprintf("--traces.tls.ca-file=%s/service-ca.crt", manifestutils.CABundleDir))
+	assert.Contains(t, args, fmt.Sprintf("--traces.tls.ca-file=%s/service-ca.crt", manifestutils.CABundleDir))
+
+	assert.Contains(t, args, fmt.Sprintf("--traces.read.endpoint=https://%s:16686",
+		naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.QueryFrontendComponentName)))
+
+	objects, err = BuildGateway(manifestutils.Params{
+		Tempo: tempo,
+		Gates: configv1alpha1.FeatureGates{
+			HTTPEncryption: false,
+			OpenShift: configv1alpha1.OpenShiftFeatureGates{
+				BaseDomain: "domain",
+			},
+		},
+	})
+	assert.Equal(t, 4, len(objects))
+	obj = getObjectByTypeAndName(objects, "tempo-simplest-gateway", reflect.TypeOf(&appsv1.Deployment{}))
+	require.NotNil(t, obj)
+
+	dep, ok = obj.(*appsv1.Deployment)
+	require.True(t, ok)
+
+	args = dep.Spec.Template.Spec.Containers[0].Args
+	assert.NotContains(t, args, fmt.Sprintf("--traces.tls.key-file=%s/tls.key", manifestutils.TempoServerTLSDir()))
+	assert.NotContains(t, args, fmt.Sprintf("--traces.tls.cert-file=%s/tls.crt", manifestutils.TempoServerTLSDir()))
+	assert.NotContains(t, args, fmt.Sprintf("--traces.tls.ca-file=%s/service-ca.crt", manifestutils.CABundleDir))
+	assert.NotContains(t, args, fmt.Sprintf("--traces.tls.ca-file=%s/service-ca.crt", manifestutils.CABundleDir))
+
+	assert.Contains(t, args, fmt.Sprintf("--traces.read.endpoint=http://%s:16686",
+		naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.QueryFrontendComponentName)))
 }
