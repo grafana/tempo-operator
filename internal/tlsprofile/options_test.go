@@ -40,6 +40,10 @@ func TestShortVersion(t *testing.T) {
 			version:  openshiftconfigv1.VersionTLS13,
 			expected: "1.3",
 		},
+		{
+			version:  "invalid",
+			expected: "",
+		},
 	} {
 		t.Run(string(scenario.version), func(t *testing.T) {
 			ops := TLSProfileOptions{
