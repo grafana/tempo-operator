@@ -48,4 +48,8 @@ data:
         certRefresh: 1728h
 kind: ConfigMap
 metadata:
+  labels:
+    app.kubernetes.io/managed-by: operator-lifecycle-manager
+    app.kubernetes.io/name: tempo-operator
+    app.kubernetes.io/part-of: tempo-operator
   name: tempo-operator-manager-config

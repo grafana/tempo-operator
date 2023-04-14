@@ -4,6 +4,10 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.9.2
   creationTimestamp: null
+  labels:
+    app.kubernetes.io/managed-by: operator-lifecycle-manager
+    app.kubernetes.io/name: tempo-operator
+    app.kubernetes.io/part-of: tempo-operator
   name: tempostacks.tempo.grafana.com
 spec:
   group: tempo.grafana.com
