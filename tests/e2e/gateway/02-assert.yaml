@@ -89,16 +89,6 @@ spec:
         app.kubernetes.io/name: tempo
     spec:
       containers:
-      - args:
-        - --traces.tenant-header=x-scope-orgid
-        - --web.listen=0.0.0.0:8080
-        - --web.internal.listen=0.0.0.0:8081
-        - --traces.write.endpoint=tempo-foo-distributor:4317
-        - --traces.read.endpoint=http://tempo-foo-query-frontend:16686
-        - --grpc.listen=0.0.0.0:8090
-        - --rbac.config=/etc/tempo-gateway/cm/rbac.yaml
-        - --tenants.config=/etc/tempo-gateway/secret/tenants.yaml
-        - --log.level=info
         image: quay.io/observatorium/api:main-2023-02-09-v0.1.2-329-g1ff4f11
         imagePullPolicy: IfNotPresent
         name: tempo-gateway
