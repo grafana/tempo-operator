@@ -321,7 +321,7 @@ func (v *validator) validateTenantConfigs(tempo TempoStack) field.ErrorList {
 
 func (v *validator) validateStackName(tempo TempoStack) field.ErrorList {
 	// We need to check this because the name is used as a label value for app.kubernetes.io/instance
-	// Only validate the length, because the DNS rules are validated by kubernetes
+	// Only validate the length, because the DNS rules are enforced by the functions in the `naming` package.
 	if len(tempo.Name) > maxLabelLength {
 		return field.ErrorList{
 			field.Invalid(
