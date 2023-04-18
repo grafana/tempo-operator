@@ -8,14 +8,14 @@ import (
 // Example: tempo-simplest-compactor.
 func Name(component string, tempoStackName string) string {
 	if component == "" {
-		return fmt.Sprintf("tempo-%s", tempoStackName)
+		return DNSName(fmt.Sprintf("tempo-%s", tempoStackName))
 	}
-	return fmt.Sprintf("tempo-%s-%s", tempoStackName, component)
+	return DNSName(fmt.Sprintf("tempo-%s-%s", tempoStackName, component))
 }
 
 // TLSSecretName returns the secret name that stores the TLS cert/key for given component.
 func TLSSecretName(component string, tempoStackName string) string {
-	return fmt.Sprintf("%s-tls", Name(component, tempoStackName))
+	return DNSName(fmt.Sprintf("%s-tls", Name(component, tempoStackName)))
 }
 
 // ServiceFqdn returns the fully qualified domain name of a service.

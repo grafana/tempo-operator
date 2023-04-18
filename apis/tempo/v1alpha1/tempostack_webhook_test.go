@@ -1041,6 +1041,52 @@ func TestValidatorValidate(t *testing.T) {
 	}
 }
 
+func TestValidateName(t *testing.T) {
+
+	longName := "tgqwkjwqkehkqjwhekjwqhekjhwkjehwkqjehkjqwhekjqwhekjqhwkjehkqwj" +
+		"554678789021123234554678789021123234554678789021123234554678" +
+		"tgqwkjwqkehkqjwhekjwqhekjhwkjehwkqjehkjqwhekjqwhekjqhwkjehkqwj"
+
+	tt := []struct {
+		name     string
+		input    TempoStack
+		expected error
+	}{
+		{
+			name: "all good",
+			input: TempoStack{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-obj",
+					Namespace: "abc",
+				},
+			},
+		},
+		{
+			name: "too long",
+			input: TempoStack{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      longName,
+					Namespace: "abc",
+				},
+			},
+			expected: apierrors.NewInvalid((&TempoStack{}).GroupVersionKind().GroupKind(),
+				longName, field.ErrorList{
+					field.Invalid(
+						field.NewPath("metadata").Child("name"),
+						longName,
+						fmt.Sprintf("must be no more than %d characters", maxLabelLength),
+					)}),
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			v := &validator{ctrlConfig: v1alpha1.ProjectConfig{}, client: &k8sFake{}}
+			v.validateStackName(tc.input)
+		})
+	}
+}
+
 type k8sFake struct {
 	client.Client
 }

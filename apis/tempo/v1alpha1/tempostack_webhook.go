@@ -14,6 +14,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -35,6 +36,8 @@ var (
 
 // log is for logging in this package.
 var tempostackslog = logf.Log.WithName("tempostacks-resource")
+
+const maxLabelLength = 63
 
 // SetupWebhookWithManager initializes the webhook.
 func (r *TempoStack) SetupWebhookWithManager(mgr ctrl.Manager, ctrlConfig v1alpha1.ProjectConfig) error {
@@ -316,6 +319,20 @@ func (v *validator) validateTenantConfigs(tempo TempoStack) field.ErrorList {
 	return nil
 }
 
+func (v *validator) validateStackName(tempo TempoStack) field.ErrorList {
+	// We need to check this because the name is used as a label value for app.kubernetes.io/instance
+	// Only validate the length, because the DNS rules are enforced by the functions in the `naming` package.
+	if len(tempo.Name) > maxLabelLength {
+		return field.ErrorList{
+			field.Invalid(
+				field.NewPath("metadata").Child("name"),
+				tempo.Name,
+				fmt.Sprintf("must be no more than %d characters", maxLabelLength),
+			)}
+	}
+	return nil
+}
+
 func (v *validator) validate(ctx context.Context, obj runtime.Object) error {
 	tempo, ok := obj.(*TempoStack)
 	if !ok {
@@ -324,6 +341,7 @@ func (v *validator) validate(ctx context.Context, obj runtime.Object) error {
 	tempostackslog.V(1).Info("validate", "name", tempo.Name)
 
 	var allErrs field.ErrorList
+	allErrs = append(allErrs, v.validateStackName(*tempo)...)
 	allErrs = append(allErrs, v.validateServiceAccount(ctx, *tempo)...)
 	allErrs = append(allErrs, v.validateStorage(ctx, *tempo)...)
 	allErrs = append(allErrs, v.validateReplicationFactor(*tempo)...)
