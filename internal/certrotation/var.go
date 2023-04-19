@@ -2,6 +2,9 @@ package certrotation
 
 import (
 	"fmt"
+
+	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
+	"github.com/os-observability/tempo-operator/internal/manifests/naming"
 )
 
 const (
@@ -30,18 +33,13 @@ func CABundleName(stackName string) string {
 	return fmt.Sprintf("tempo-%s-ca-bundle", stackName)
 }
 
-// ComponentCertSecretNames returns a list of all tempo component certificate secret names.
-func ComponentCertSecretNames(stackName string) []string {
-	return []string{
-		fmt.Sprintf("tempo-%s-distributor-http", stackName),
-		fmt.Sprintf("tempo-%s-distributor-grpc", stackName),
-		fmt.Sprintf("tempo-%s-ingester-http", stackName),
-		fmt.Sprintf("tempo-%s-ingester-grpc", stackName),
-		fmt.Sprintf("tempo-%s-querier-http", stackName),
-		fmt.Sprintf("tempo-%s-querier-grpc", stackName),
-		fmt.Sprintf("tempo-%s-query-frontend-http", stackName),
-		fmt.Sprintf("tempo-%s-query-frontend-grpc", stackName),
-		fmt.Sprintf("tempo-%s-compactor-http", stackName),
-		fmt.Sprintf("tempo-%s-compactor-grpc", stackName),
+// ComponentCertSecretNames returns a map, with the key as the service name, and the value the secret name.
+func ComponentCertSecretNames(stackName string) map[string]string {
+	return map[string]string{
+		naming.Name(manifestutils.DistributorComponentName, stackName):   naming.TLSSecretName(manifestutils.DistributorComponentName, stackName),
+		naming.Name(manifestutils.IngesterComponentName, stackName):      naming.TLSSecretName(manifestutils.IngesterComponentName, stackName),
+		naming.Name(manifestutils.QuerierComponentName, stackName):       naming.TLSSecretName(manifestutils.QuerierComponentName, stackName),
+		naming.Name(manifestutils.QueryFrontendComponentName, stackName): naming.TLSSecretName(manifestutils.QueryFrontendComponentName, stackName),
+		naming.Name(manifestutils.CompactorComponentName, stackName):     naming.TLSSecretName(manifestutils.CompactorComponentName, stackName),
 	}
 }

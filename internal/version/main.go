@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"runtime"
 
+	promversion "github.com/prometheus/common/version"
+	"sigs.k8s.io/controller-runtime/pkg/metrics"
+
 	"github.com/os-observability/tempo-operator/apis/config/v1alpha1"
 )
 
@@ -22,6 +25,13 @@ type Version struct {
 	DefaultGatewayImage    string `json:"tempo-gateway-image"`
 	Go                     string `json:"go-version"`
 	GitHash                string `json:"commit-hash"`
+}
+
+func init() {
+	promversion.Version = version
+	promversion.BuildDate = buildDate
+	promversion.Revision = commitSha
+	metrics.Registry.MustRegister(promversion.NewCollector("tempooperator"))
 }
 
 // Get returns the Version object with the relevant information.

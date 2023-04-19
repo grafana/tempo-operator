@@ -170,8 +170,9 @@ func mutateRoleBinding(existing, desired *rbacv1.RoleBinding) {
 }
 
 func mutateServiceMonitor(existing, desired *monitoringv1.ServiceMonitor) {
-	// ServiceMonitor selector is immutable so we set this value only if
-	// a new object is going to be created
+	existing.Annotations = desired.Annotations
+	existing.Labels = desired.Labels
+	existing.Spec = desired.Spec
 }
 
 func mutateIngress(existing, desired *networkingv1.Ingress) {

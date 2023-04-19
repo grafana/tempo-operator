@@ -29,6 +29,10 @@ func TestName(t *testing.T) {
 	}
 }
 
+func TestServiceFqdn(t *testing.T) {
+	assert.Equal(t, "tempo-simplest-querier.default.svc.cluster.local", ServiceFqdn("default", "simplest", "querier"))
+}
+
 func TestDefaultServiceAccountName(t *testing.T) {
 	serviceAccountName := DefaultServiceAccountName("test")
 	assert.Equal(t, "tempo-test", serviceAccountName)

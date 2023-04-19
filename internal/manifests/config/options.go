@@ -75,7 +75,7 @@ type searchOptions struct {
 type tlsOptions struct {
 	Enabled     bool
 	Paths       tlsFilePaths
-	ServerNames tlsServerNames
+	ServerNames serverNames
 	Profile     tlsProfileOptions
 }
 
@@ -90,28 +90,14 @@ type tlsProfileOptions struct {
 }
 
 type tlsFilePaths struct {
-	CA   string
-	GRPC tlsCertPath
-	HTTP tlsCertPath
-}
-
-type tlsCertPath struct {
+	CA          string
 	Certificate string
 	Key         string
 }
 
-type tlsServerNames struct {
-	GRPC grpcServerNames
-	HTTP httpServerNames
-}
-
-type grpcServerNames struct {
+type serverNames struct {
 	Compactor     string
 	Ingester      string
 	QueryFrontend string
-}
-
-type httpServerNames struct {
 	Querier       string
-	QueryFrontend string
 }

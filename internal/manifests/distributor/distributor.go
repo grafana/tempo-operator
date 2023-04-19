@@ -29,31 +29,13 @@ func BuildDistributor(params manifestutils.Params) ([]client.Object, error) {
 		if err := manifestutils.ConfigureServiceCA(&dep.Spec.Template.Spec, caBundleName); err != nil {
 			return nil, err
 		}
-	}
-
-	if gates.GRPCEncryption {
-		if err := configureDistributorGRPCServicePKI(dep, tempo); err != nil {
-			return nil, err
-		}
-	}
-
-	if gates.HTTPEncryption {
-		if err := configureDistributorHTTPServicePKI(dep, tempo); err != nil {
+		err := manifestutils.ConfigureServicePKI(tempo.Name, manifestutils.DistributorComponentName, &dep.Spec.Template.Spec)
+		if err != nil {
 			return nil, err
 		}
 	}
 
 	return []client.Object{dep, service(tempo)}, nil
-}
-
-func configureDistributorGRPCServicePKI(sts *v1.Deployment, tempo v1alpha1.TempoStack) error {
-	serviceName := naming.Name(manifestutils.DistributorComponentName, tempo.Name)
-	return manifestutils.ConfigureGRPCServicePKI(&sts.Spec.Template.Spec, serviceName)
-}
-
-func configureDistributorHTTPServicePKI(sts *v1.Deployment, tempo v1alpha1.TempoStack) error {
-	serviceName := naming.Name(manifestutils.DistributorComponentName, tempo.Name)
-	return manifestutils.ConfigureHTTPServicePKI(&sts.Spec.Template.Spec, serviceName)
 }
 
 func deployment(params manifestutils.Params) *v1.Deployment {
@@ -109,7 +91,7 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 									Protocol:      corev1.ProtocolTCP,
 								},
 							},
-							ReadinessProbe: manifestutils.TempoReadinessProbe(),
+							ReadinessProbe: manifestutils.TempoReadinessProbe(params.Gates.HTTPEncryption || params.Gates.GRPCEncryption),
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      manifestutils.ConfigVolumeName,

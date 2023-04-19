@@ -26,9 +26,13 @@ const (
 	// tempoGatewayMountDir is the path that is mounted from the configmap.
 	tempoGatewayMountDir = "/etc/tempo-gateway"
 
-	portGRPC     = 8090
-	portInternal = 8081
-	portPublic   = 8080
+	portGRPC = 8090
+
+	// InternalPortName is the name of the gateway's internal port.
+	InternalPortName = "internal"
+	portInternal     = 8081
+
+	portPublic = 8080
 )
 
 // BuildGateway creates gateway objects.
@@ -282,7 +286,7 @@ func service(tempo v1alpha1.TempoStack, ocpServingCerts bool) *corev1.Service {
 					TargetPort: intstr.FromInt(portGRPC),
 				},
 				{
-					Name:       "internal",
+					Name:       InternalPortName,
 					Port:       portInternal,
 					Protocol:   corev1.ProtocolTCP,
 					TargetPort: intstr.FromInt(portInternal),

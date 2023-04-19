@@ -34,16 +34,9 @@ func BuildIngester(params manifestutils.Params) ([]client.Object, error) {
 		if err := manifestutils.ConfigureServiceCA(&ss.Spec.Template.Spec, caBundleName); err != nil {
 			return nil, err
 		}
-	}
 
-	if gates.HTTPEncryption {
-		if err := configureIngesterHTTPServicePKI(ss, tempo); err != nil {
-			return nil, err
-		}
-	}
-
-	if gates.GRPCEncryption {
-		if err := configureIngesterGRPCServicePKI(ss, tempo); err != nil {
+		err := manifestutils.ConfigureServicePKI(tempo.Name, manifestutils.IngesterComponentName, &ss.Spec.Template.Spec)
+		if err != nil {
 			return nil, err
 		}
 	}
@@ -112,7 +105,7 @@ func statefulSet(params manifestutils.Params) (*v1.StatefulSet, error) {
 									Protocol:      corev1.ProtocolTCP,
 								},
 							},
-							ReadinessProbe:  manifestutils.TempoReadinessProbe(),
+							ReadinessProbe:  manifestutils.TempoReadinessProbe(params.Gates.HTTPEncryption || params.Gates.GRPCEncryption),
 							Resources:       manifestutils.Resources(tempo, manifestutils.IngesterComponentName),
 							SecurityContext: manifestutils.TempoContainerSecurityContext(),
 						},
@@ -162,16 +155,6 @@ func statefulSet(params manifestutils.Params) (*v1.StatefulSet, error) {
 	}
 
 	return ss, nil
-}
-
-func configureIngesterHTTPServicePKI(statefulSet *v1.StatefulSet, tempo v1alpha1.TempoStack) error {
-	serviceName := naming.Name(manifestutils.IngesterComponentName, tempo.Name)
-	return manifestutils.ConfigureHTTPServicePKI(&statefulSet.Spec.Template.Spec, serviceName)
-}
-
-func configureIngesterGRPCServicePKI(sts *v1.StatefulSet, tempo v1alpha1.TempoStack) error {
-	serviceName := naming.Name(manifestutils.IngesterComponentName, tempo.Name)
-	return manifestutils.ConfigureGRPCServicePKI(&sts.Spec.Template.Spec, serviceName)
 }
 
 func service(tempo v1alpha1.TempoStack) *corev1.Service {

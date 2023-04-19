@@ -79,7 +79,7 @@ func TestCertificatesExpired(t *testing.T) {
 
 	require.Error(t, err)
 	require.ErrorAs(t, err, &expired)
-	require.Len(t, err.(*CertExpiredError).Reasons, 10)
+	require.Len(t, err.(*CertExpiredError).Reasons, 5)
 }
 
 func TestBuildTargetCertKeyPairSecrets_Create(t *testing.T) {
@@ -111,7 +111,7 @@ func TestBuildTargetCertKeyPairSecrets_Create(t *testing.T) {
 
 	objs, err := buildTargetCertKeyPairSecrets(opts)
 	require.NoError(t, err)
-	require.Len(t, objs, 10)
+	require.Len(t, objs, 5)
 }
 
 func TestBuildTargetCertKeyPairSecrets_Rotate(t *testing.T) {
@@ -139,10 +139,10 @@ func TestBuildTargetCertKeyPairSecrets_Rotate(t *testing.T) {
 		},
 		RawCACerts: rawCA.Config.Certs,
 		Certificates: map[string]SelfSignedCertKey{
-			"tempo-dev-ingester-grpc": {
+			"tempo-dev-ingester-tls": {
 				Secret: &corev1.Secret{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      "tempo-dev-ingester-grpc",
+						Name:      "tempo-dev-ingester-tls",
 						Namespace: "ns",
 						Annotations: map[string]string{
 							CertificateIssuer:              "dev_ns@signing-ca@10000",
@@ -159,11 +159,11 @@ func TestBuildTargetCertKeyPairSecrets_Rotate(t *testing.T) {
 
 	objs, err := buildTargetCertKeyPairSecrets(opts)
 	require.NoError(t, err)
-	require.Len(t, objs, 10)
+	require.Len(t, objs, 5)
 
 	// Check serving certificate rotation
-	s := objs[7].(*corev1.Secret)
-	ss := opts.Certificates["tempo-dev-ingester-grpc"]
+	s := objs[2].(*corev1.Secret)
+	ss := opts.Certificates["tempo-dev-ingester-tls"]
 
 	require.NotEqual(t, s.Annotations[CertificateIssuer], ss.Secret.Annotations[CertificateIssuer])
 	require.NotEqual(t, s.Annotations[CertificateNotAfterAnnotation], ss.Secret.Annotations[CertificateNotAfterAnnotation])

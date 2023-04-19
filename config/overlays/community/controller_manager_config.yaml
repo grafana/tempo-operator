@@ -27,8 +27,10 @@ images:
   tempoGatewayOpa: quay.io/observatorium/opa-openshift:main-2023-03-13-fd7b736
 featureGates:
   openshift:
-    openshiftRoute: true
-    servingCertsService: true
+    openshiftRoute: false
+    gatewayRoute: false
+    servingCertsService: false
+  serviceMonitor: false
   httpEncryption: false
   grpcEncryption: false
   tlsProfile: Modern

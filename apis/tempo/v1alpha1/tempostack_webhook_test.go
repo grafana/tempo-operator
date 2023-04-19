@@ -638,6 +638,9 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 							Enabled: true,
 						},
 					},
+					Tenants: &TenantsSpec{
+						Mode: Static,
+					},
 				},
 			},
 			expected: nil,
@@ -730,11 +733,36 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 							Enabled: true,
 						},
 					},
+					Tenants: &TenantsSpec{
+						Mode: Static,
+					},
 				},
 			},
 			expected: field.ErrorList{
 				field.Invalid(path, true,
 					"cannot enable gateway and jaeger query ingress at the same time",
+				),
+			},
+		},
+		{
+			name: "invalid configuration, gateway enabled but no tenant configured",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					Template: TempoTemplateSpec{
+						QueryFrontend: TempoQueryFrontendSpec{
+							JaegerQuery: JaegerQuerySpec{
+								Enabled: true,
+							},
+						},
+						Gateway: TempoGatewaySpec{
+							Enabled: true,
+						},
+					},
+				},
+			},
+			expected: field.ErrorList{
+				field.Invalid(path, true,
+					"to enable the gateway, please configure tenants",
 				),
 			},
 		},
@@ -849,16 +877,57 @@ func TestValidateTenantConfigs(t *testing.T) {
 }
 
 func TestValidatorObservabilityTracingConfig(t *testing.T) {
-	tracingBase := field.NewPath("spec").Child("template").Child("observability").Child("tracing")
+	observabilityBase := field.NewPath("spec").Child("observability")
+	metricsBase := observabilityBase.Child("metrics")
+	tracingBase := observabilityBase.Child("tracing")
+
 	tt := []struct {
-		name     string
-		input    TempoStack
-		expected field.ErrorList
+		name       string
+		input      TempoStack
+		ctrlConfig v1alpha1.ProjectConfig
+		expected   field.ErrorList
 	}{
 		{
 			name: "not set",
 			input: TempoStack{
 				Spec: TempoStackSpec{},
+			},
+		},
+		{
+			name: "createServiceMonitors enabled and serviceMonitor feature gate set",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					Observability: ObservabilitySpec{
+						Metrics: MetricsConfigSpec{
+							CreateServiceMonitors: true,
+						},
+					},
+				},
+			},
+			ctrlConfig: v1alpha1.ProjectConfig{
+				Gates: v1alpha1.FeatureGates{
+					ServiceMonitor: true,
+				},
+			},
+			expected: nil,
+		},
+		{
+			name: "createServiceMonitors enabled but serviceMonitor feature gate not set",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					Observability: ObservabilitySpec{
+						Metrics: MetricsConfigSpec{
+							CreateServiceMonitors: true,
+						},
+					},
+				},
+			},
+			expected: field.ErrorList{
+				field.Invalid(
+					metricsBase.Child("createServiceMonitors"),
+					true,
+					"the serviceMonitor feature gate must be enabled to create ServiceMonitors for Tempo components",
+				),
 			},
 		},
 		{
@@ -917,7 +986,8 @@ func TestValidatorObservabilityTracingConfig(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			assert.Equal(t, tc.expected, new(validator).validateObservability(tc.input))
+			v := &validator{ctrlConfig: tc.ctrlConfig}
+			assert.Equal(t, tc.expected, v.validateObservability(tc.input))
 		})
 	}
 }
@@ -967,6 +1037,52 @@ func TestValidatorValidate(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			v := &validator{ctrlConfig: v1alpha1.ProjectConfig{}, client: &k8sFake{}}
 			assert.Equal(t, tc.expected, v.validate(context.Background(), tc.input))
+		})
+	}
+}
+
+func TestValidateName(t *testing.T) {
+
+	longName := "tgqwkjwqkehkqjwhekjwqhekjhwkjehwkqjehkjqwhekjqwhekjqhwkjehkqwj" +
+		"554678789021123234554678789021123234554678789021123234554678" +
+		"tgqwkjwqkehkqjwhekjwqhekjhwkjehwkqjehkjqwhekjqwhekjqhwkjehkqwj"
+
+	tt := []struct {
+		name     string
+		input    TempoStack
+		expected error
+	}{
+		{
+			name: "all good",
+			input: TempoStack{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-obj",
+					Namespace: "abc",
+				},
+			},
+		},
+		{
+			name: "too long",
+			input: TempoStack{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      longName,
+					Namespace: "abc",
+				},
+			},
+			expected: apierrors.NewInvalid((&TempoStack{}).GroupVersionKind().GroupKind(),
+				longName, field.ErrorList{
+					field.Invalid(
+						field.NewPath("metadata").Child("name"),
+						longName,
+						fmt.Sprintf("must be no more than %d characters", maxLabelLength),
+					)}),
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			v := &validator{ctrlConfig: v1alpha1.ProjectConfig{}, client: &k8sFake{}}
+			v.validateStackName(tc.input)
 		})
 	}
 }

@@ -331,7 +331,7 @@ set-test-image-vars:
 .PHONY: set-test-operator-config
 set-test-operator-config:
 	# we always install the OpenShift Route controller for e2e tests (in the prepare-e2e step)
-	sed -i 's/openshiftRoute: false/openshiftRoute: true/' config/overlays/community/config/controller_manager_config.yaml
+	sed -i 's/openshiftRoute: false/openshiftRoute: true/' config/overlays/community/controller_manager_config.yaml
 
 # Set the controller image parameters
 .PHONY: set-image-controller

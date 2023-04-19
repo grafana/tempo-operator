@@ -357,6 +357,28 @@ when using HTTPEncryption or GRPCEncryption.</p>
 </td>
 </tr>
 
+<tr>
+
+<td>
+
+<code>serviceMonitor</code><br/>
+
+<em>
+
+bool
+
+</em>
+
+</td>
+
+<td>
+
+<p>ServiceMonitor defines whether the ServiceMonitor CRD exists in the cluster.
+This CRD is part of prometheus-operator.</p>
+
+</td>
+</tr>
+
 </tbody>
 </table>
 

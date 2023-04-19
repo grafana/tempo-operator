@@ -113,24 +113,13 @@ func buildTenantOverrides(tempo v1alpha1.TempoStack) ([]byte, error) {
 func buildTLSConfig(tempo v1alpha1.TempoStack, params Params) tlsOptions {
 	return tlsOptions{
 		Paths: tlsFilePaths{
-			CA: fmt.Sprintf("%s/service-ca.crt", manifestutils.CABundleDir),
-			GRPC: tlsCertPath{
-				Key:         fmt.Sprintf("%s/tls.key", manifestutils.TempoServerGRPCTLSDir()),
-				Certificate: fmt.Sprintf("%s/tls.crt", manifestutils.TempoServerGRPCTLSDir()),
-			},
-			HTTP: tlsCertPath{
-				Key:         fmt.Sprintf("%s/tls.key", manifestutils.TempoServerHTTPTLSDir()),
-				Certificate: fmt.Sprintf("%s/tls.crt", manifestutils.TempoServerHTTPTLSDir()),
-			},
+			CA:          fmt.Sprintf("%s/service-ca.crt", manifestutils.CABundleDir),
+			Key:         fmt.Sprintf("%s/tls.key", manifestutils.TempoServerTLSDir()),
+			Certificate: fmt.Sprintf("%s/tls.crt", manifestutils.TempoServerTLSDir()),
 		},
-		ServerNames: tlsServerNames{
-			GRPC: grpcServerNames{
-				QueryFrontend: fqdn(naming.Name("query-frontend-grpc", tempo.Name), tempo.Namespace),
-				Ingester:      fqdn(naming.Name("ingester-grpc", tempo.Name), tempo.Namespace),
-			},
-			HTTP: httpServerNames{
-				QueryFrontend: fqdn(naming.Name("query-frontend-http", tempo.Name), tempo.Namespace),
-			},
+		ServerNames: serverNames{
+			QueryFrontend: naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.QueryFrontendComponentName),
+			Ingester:      naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.IngesterComponentName),
 		},
 		Profile: tlsProfileOptions{
 			MinTLSVersion: params.TLSProfile.MinTLSVersion,

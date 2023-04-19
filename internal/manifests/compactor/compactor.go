@@ -31,31 +31,13 @@ func BuildCompactor(params manifestutils.Params) ([]client.Object, error) {
 		if err := manifestutils.ConfigureServiceCA(&d.Spec.Template.Spec, caBundleName); err != nil {
 			return nil, err
 		}
-	}
 
-	if gates.GRPCEncryption {
-		if err := configureCompactorGRPCServicePKI(d, tempo); err != nil {
-			return nil, err
-		}
-	}
-
-	if gates.HTTPEncryption {
-		if err := configureCompactorHTTPServicePKI(d, tempo); err != nil {
+		if err := manifestutils.ConfigureServicePKI(tempo.Name, manifestutils.CompactorComponentName, &d.Spec.Template.Spec); err != nil {
 			return nil, err
 		}
 	}
 
 	return []client.Object{d, service(tempo)}, nil
-}
-
-func configureCompactorGRPCServicePKI(sts *v1.Deployment, tempo v1alpha1.TempoStack) error {
-	serviceName := naming.Name(manifestutils.CompactorComponentName, tempo.Name)
-	return manifestutils.ConfigureGRPCServicePKI(&sts.Spec.Template.Spec, serviceName)
-}
-
-func configureCompactorHTTPServicePKI(sts *v1.Deployment, tempo v1alpha1.TempoStack) error {
-	serviceName := naming.Name(manifestutils.CompactorComponentName, tempo.Name)
-	return manifestutils.ConfigureHTTPServicePKI(&sts.Spec.Template.Spec, serviceName)
 }
 
 func deployment(params manifestutils.Params) (*v1.Deployment, error) {
@@ -103,7 +85,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 									Protocol:      corev1.ProtocolTCP,
 								},
 							},
-							ReadinessProbe: manifestutils.TempoReadinessProbe(),
+							ReadinessProbe: manifestutils.TempoReadinessProbe(params.Gates.HTTPEncryption || params.Gates.GRPCEncryption),
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      manifestutils.ConfigVolumeName,

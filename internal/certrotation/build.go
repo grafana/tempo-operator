@@ -55,13 +55,13 @@ func ApplyDefaultSettings(opts *Options, cfg configv1alpha1.BuiltInCertManagemen
 	if opts.Certificates == nil {
 		opts.Certificates = make(map[string]SelfSignedCertKey)
 	}
-	for _, name := range ComponentCertSecretNames(opts.StackName) {
+	for service, name := range ComponentCertSecretNames(opts.StackName) {
 		r := certificateRotation{
 			Clock:    clock,
 			UserInfo: defaultUserInfo,
 			Hostnames: []string{
-				fmt.Sprintf("%s.%s.svc", name, opts.StackNamespace),
-				fmt.Sprintf("%s.%s.svc.cluster.local", name, opts.StackNamespace),
+				fmt.Sprintf("%s.%s.svc.cluster.local", service, opts.StackNamespace),
+				fmt.Sprintf("%s.%s.svc", service, opts.StackNamespace),
 			},
 		}
 

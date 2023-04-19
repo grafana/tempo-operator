@@ -73,10 +73,10 @@ querier:
 {{- if .Gates.GRPCEncryption }}
     grpc_client_config:
       tls_enabled: true
-      tls_cert_path:  {{ .TLS.Paths.GRPC.Certificate }}
-      tls_key_path: {{ .TLS.Paths.GRPC.Key }}
+      tls_cert_path:  {{ .TLS.Paths.Certificate }}
+      tls_key_path: {{ .TLS.Paths.Key }}
       tls_ca_path: {{ .TLS.Paths.CA }}
-      tls_server_name: {{ .TLS.ServerNames.GRPC.QueryFrontend }}
+      tls_server_name: {{ .TLS.ServerNames.QueryFrontend }}
       tls_cipher_suites: {{ .TLS.Profile.Ciphers }}
       tls_min_version: {{ .TLS.Profile.MinTLSVersion }}
 {{- end }}
@@ -97,8 +97,8 @@ internal_server:
   tls_cipher_suites: {{ .TLS.Profile.Ciphers }}
   tls_min_version: {{ .TLS.Profile.MinTLSVersion }}
   http_tls_config:
-    cert_file: {{ .TLS.Paths.HTTP.Certificate }}
-    key_file: {{ .TLS.Paths.HTTP.Key }}
+    cert_file: {{ .TLS.Paths.Certificate }}
+    key_file: {{ .TLS.Paths.Key }}
 {{- end }}
 server:
   grpc_server_max_recv_msg_size: 4194304
@@ -114,15 +114,15 @@ server:
 {{- end }}
 {{- if .Gates.GRPCEncryption }}
   grpc_tls_config:
-    cert_file:  {{ .TLS.Paths.GRPC.Certificate }}
-    key_file: {{ .TLS.Paths.GRPC.Key }}
+    cert_file:  {{ .TLS.Paths.Certificate }}
+    key_file: {{ .TLS.Paths.Key }}
     client_ca_file: {{ .TLS.Paths.CA }}
     client_auth_type: RequireAndVerifyClientCert
 {{- end }}
 {{- if .Gates.HTTPEncryption }}
   http_tls_config:
-    cert_file:  {{ .TLS.Paths.HTTP.Certificate }}
-    key_file: {{ .TLS.Paths.HTTP.Key }}
+    cert_file:  {{ .TLS.Paths.Certificate }}
+    key_file: {{ .TLS.Paths.Key }}
     client_ca_file: {{ .TLS.Paths.CA }}
     client_auth_type: RequireAndVerifyClientCert
 {{- end }}
@@ -163,10 +163,10 @@ query_frontend:
 ingester_client:
   grpc_client_config:
     tls_enabled: true
-    tls_cert_path:  {{ .TLS.Paths.GRPC.Certificate }}
-    tls_key_path: {{ .TLS.Paths.GRPC.Key }}
+    tls_cert_path:  {{ .TLS.Paths.Certificate }}
+    tls_key_path: {{ .TLS.Paths.Key }}
     tls_ca_path: {{ .TLS.Paths.CA }}
-    tls_server_name: {{ .TLS.ServerNames.GRPC.Ingester }}
+    tls_server_name: {{ .TLS.ServerNames.Ingester }}
     tls_insecure_skip_verify: false
     tls_cipher_suites: {{ .TLS.Profile.Ciphers }}
     tls_min_version: {{ .TLS.Profile.MinTLSVersion }}
