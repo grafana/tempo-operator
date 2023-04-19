@@ -186,7 +186,7 @@ KUTTL ?= $(LOCALBIN)/kubectl-kuttl
 HUGO ?= $(LOCALBIN)/hugo-$(HUGO_VERSION)
 
 # Options for KIND version to use
-export KUBE_VERSION ?= 1.25
+export KUBE_VERSION ?= 1.27
 KIND_CONFIG ?= kind-$(KUBE_VERSION).yaml
 
 # Choose wich version to generate
