@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	openshiftconfigv1 "github.com/openshift/api/config/v1"
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/os-observability/tempo-operator/internal/tlsprofile"
 )
@@ -114,6 +115,9 @@ query_frontend:
 		},
 		GCS: GCS{
 			Bucket: "test-bucket",
+		},
+		TLSProfile: tlsprofile.TLSProfileOptions{
+			MinTLSVersion: string(openshiftconfigv1.VersionTLS13),
 		},
 		S3: S3{
 			Endpoint: "http://minio:9000",
@@ -949,6 +953,9 @@ query_frontend:
 					LimitSpec: tc.spec,
 				},
 			}, Params{
+				TLSProfile: tlsprofile.TLSProfileOptions{
+					MinTLSVersion: string(openshiftconfigv1.VersionTLS13),
+				},
 				AzureStorage: AzureStorage{
 					Container: "container-test",
 				},
@@ -1100,6 +1107,9 @@ query_frontend:
 					SearchSpec:        tc.spec,
 				},
 			}, Params{
+				TLSProfile: tlsprofile.TLSProfileOptions{
+					MinTLSVersion: string(openshiftconfigv1.VersionTLS13),
+				},
 				AzureStorage: AzureStorage{
 					Container: "container-test",
 				},
@@ -1208,6 +1218,9 @@ query_frontend:
 			ReplicationFactor: replcationFactor,
 		},
 	}, Params{
+		TLSProfile: tlsprofile.TLSProfileOptions{
+			MinTLSVersion: string(openshiftconfigv1.VersionTLS13),
+		},
 		AzureStorage: AzureStorage{
 			Container: "container-test",
 		},
@@ -1326,6 +1339,9 @@ query_frontend:
 		S3: S3{
 			Endpoint: "http://minio:9000",
 			Bucket:   "tempo",
+		},
+		TLSProfile: tlsprofile.TLSProfileOptions{
+			MinTLSVersion: string(openshiftconfigv1.VersionTLS13),
 		},
 	})
 	require.NoError(t, err)
