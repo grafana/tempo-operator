@@ -72,9 +72,14 @@ func fromRateLimitSpecToRateLimitOptionsMap(ratemaps map[string]v1alpha1.RateLim
 }
 
 func buildConfiguration(tempo v1alpha1.TempoStack, params Params) ([]byte, error) {
-	tlsopts, err := buildTLSConfig(tempo, params)
-	if err != nil {
-		return []byte{}, err
+	tlsopts := tlsOptions{}
+	var err error
+
+	if params.GRPCEncryption || params.HTTPEncryption {
+		tlsopts, err = buildTLSConfig(tempo, params)
+		if err != nil {
+			return []byte{}, err
+		}
 	}
 
 	opts := options{
