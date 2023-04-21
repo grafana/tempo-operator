@@ -4,10 +4,10 @@ import (
 	"testing"
 	"time"
 
+	openshiftconfigv1 "github.com/openshift/api/config/v1"
 	"github.com/stretchr/testify/require"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	openshiftconfigv1 "github.com/openshift/api/config/v1"
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/os-observability/tempo-operator/internal/tlsprofile"
 )
