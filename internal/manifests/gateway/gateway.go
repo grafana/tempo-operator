@@ -69,14 +69,6 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 		}
 	}
 
-	if params.Gates.HTTPEncryption {
-		dep.Spec.Template.Spec.Containers[0].Args = append(dep.Spec.Template.Spec.Containers[0].Args,
-			fmt.Sprintf("--traces.tls.key-file=%s/tls.key", manifestutils.TempoServerTLSDir()),
-			fmt.Sprintf("--traces.tls.cert-file=%s/tls.crt", manifestutils.TempoServerTLSDir()),
-			fmt.Sprintf("--traces.tls.ca-file=%s/service-ca.crt", manifestutils.CABundleDir),
-		)
-	}
-
 	if params.Tempo.Spec.Tenants.Mode == v1alpha1.OpenShift {
 		dep = patchOCPServiceAccount(params.Tempo, dep)
 		dep, err = patchOCPOPAContainer(params.Tempo, dep)
@@ -127,7 +119,7 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 
 	cfg := tempo.Spec.Template.Gateway
 
-	return &appsv1.Deployment{
+	dep := &appsv1.Deployment{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: appsv1.SchemeGroupVersion.String(),
 		},
@@ -260,6 +252,16 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 			},
 		},
 	}
+
+	if params.Gates.HTTPEncryption {
+		dep.Spec.Template.Spec.Containers[0].Args = append(dep.Spec.Template.Spec.Containers[0].Args,
+			fmt.Sprintf("--traces.tls.key-file=%s/tls.key", manifestutils.TempoServerTLSDir()),
+			fmt.Sprintf("--traces.tls.cert-file=%s/tls.crt", manifestutils.TempoServerTLSDir()),
+			fmt.Sprintf("--traces.tls.ca-file=%s/service-ca.crt", manifestutils.CABundleDir),
+		)
+	}
+
+	return dep
 }
 
 func patchTracing(tempo v1alpha1.TempoStack, pod corev1.PodTemplateSpec) (corev1.PodTemplateSpec, error) {
