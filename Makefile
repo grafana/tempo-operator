@@ -153,12 +153,12 @@ uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified 
 .PHONY: deploy
 deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
-	$(KUSTOMIZE) build config/overlays/community | kubectl apply -f -
+	$(KUSTOMIZE) build config/overlays/$(BUNDLE_VARIANT) | kubectl apply -f -
 	kubectl rollout --namespace tempo-operator-system status deployment/tempo-operator-controller-manager
 
 .PHONY: undeploy
 undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
-	$(KUSTOMIZE) build config/overlays/community | kubectl delete --ignore-not-found=$(ignore-not-found) -f -
+	$(KUSTOMIZE) build config/overlays/$(BUNDLE_VARIANT) | kubectl delete --ignore-not-found=$(ignore-not-found) -f -
 
 ##@ Build Dependencies
 
@@ -322,7 +322,7 @@ prepare-e2e: kuttl start-kind cert-manager install-openshift-routes deploy-minio
 
 .PHONY: scorecard-tests
 scorecard-tests: operator-sdk
-	$(OPERATOR_SDK) scorecard -w=5m bundle/community || (echo "scorecard test failed" && exit 1)
+	$(OPERATOR_SDK) scorecard -w=5m bundle/$(BUNDLE_VARIANT) || (echo "scorecard test failed" && exit 1)
 
 .PHONY: set-test-image-vars
 set-test-image-vars:
