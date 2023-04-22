@@ -38,7 +38,7 @@ This Document contains the types introduced by the Tempo Operator to be consumed
 <div>
 
 <p>BuiltInCertManagement is the configuration for the built-in facility to generate and rotate
-TLS client and serving certificates for all Tempo services and internal clients. All necesary
+TLS client and serving certificates for all Tempo services and internal clients. All necessary
 secrets and configmaps for protecting the internal components will be created if this option is enabled.</p>
 
 </div>
@@ -271,7 +271,7 @@ to require mTLS.
 In addition each service requires a configmap named as the MicroService CR with the
 suffix <code>-ca-bundle</code>, e.g. <code>tempo-dev-ca-bundle</code> and the following data:
 - <code>service-ca.crt</code>: The CA signing the service certificate in <code>tls.crt</code>.
-All necesary secrets and configmaps for protecting the internal components will be created if this
+All necessary secrets and configmaps for protecting the internal components will be created if this
 option is enabled.</p>
 
 </td>
