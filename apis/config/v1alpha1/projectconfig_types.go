@@ -32,8 +32,8 @@ type ImagesSpec struct {
 }
 
 // BuiltInCertManagement is the configuration for the built-in facility to generate and rotate
-// TLS client and serving certificates for all Tempo services and internal clients except
-// for the tempo-gateway.
+// TLS client and serving certificates for all Tempo services and internal clients. All necessary
+// secrets and configmaps for protecting the internal components will be created if this option is enabled.
 type BuiltInCertManagement struct {
 	// CACertValidity defines the total duration of the CA certificate validity.
 	CACertValidity metav1.Duration `json:"caValidity,omitempty"`
@@ -96,14 +96,18 @@ type FeatureGates struct {
 
 	// BuiltInCertManagement enables the built-in facility for generating and rotating
 	// TLS client and serving certificates for the communication between ingesters and distributors and also between
-	// query and queryfrontend, In detail all internal Tempo HTTP and GRPC communication is lifted
+	// query and query-frontend, In detail all internal Tempo HTTP and GRPC communication is lifted
 	// to require mTLS.
 	// In addition each service requires a configmap named as the MicroService CR with the
 	// suffix `-ca-bundle`, e.g. `tempo-dev-ca-bundle` and the following data:
 	// - `service-ca.crt`: The CA signing the service certificate in `tls.crt`.
+	// All necessary secrets and configmaps for protecting the internal components will be created if this
+	// option is enabled.
 	BuiltInCertManagement BuiltInCertManagement `json:"builtInCertManagement,omitempty"`
-	// HTTPEncryption enables TLS encryption for all HTTP TempoStack services.
-	// Each HTTP service requires a secret named as the service with the following data:
+	// HTTPEncryption enables TLS encryption for all HTTP TempoStack components.
+	// Each HTTP component requires a secret, the name should be the name of the component with the
+	// suffix `-tls` and prefix by the TempoStack name e.g `tempo-dev-distributor-tls`.
+	// It should contains the following data:
 	// - `tls.crt`: The TLS server side certificate.
 	// - `tls.key`: The TLS key for server-side encryption.
 	// In addition each service requires a configmap named as the TempoStack CR with the
@@ -111,10 +115,21 @@ type FeatureGates struct {
 	// - `service-ca.crt`: The CA signing the service certificate in `tls.crt`.
 	// This will protect all internal communication between the distributors and ingestors and also
 	// between ingestor and queriers, and between the queriers and the query-frontend component
-	// The only component remains unprotected is the tempo-query (jaeger query UI).
+	//
+	// If BuiltInCertManagement is enabled, you don't need to create this secrets manually.
+	//
+	// Some considerations when enable mTLS:
+	// - If JaegerUI is enabled, it won´t be protected by mTLS as it will be considered a public face
+	// component.
+	// - If JaegerUI is not enabled, HTTP Tempo API won´t be protected, this will be considered
+	// public faced component.
+	// - If Gateway is enabled, all comunications between the gateway and the tempo components will be protected
+	// by mTLS, and the Gateway itself won´t be, as it will be the only public face component.
 	HTTPEncryption bool `json:"httpEncryption,omitempty"`
 	// GRPCEncryption enables TLS encryption for all GRPC TempoStack services.
-	// Each GRPC service requires a secret named as the service with the following data:
+	// Each GRPC component requires a secret, the name should be the name of the component with the
+	// suffix `-tls` and prefix by the TempoStack name e.g `tempo-dev-distributor-tls`.
+	// It should contains the following data:
 	// - `tls.crt`: The TLS server side certificate.
 	// - `tls.key`: The TLS key for server-side encryption.
 	// In addition each service requires a configmap named as the TempoStack CR with the
@@ -122,7 +137,15 @@ type FeatureGates struct {
 	// - `service-ca.crt`: The CA signing the service certificate in `tls.crt`.
 	// This will protect all internal communication between the distributors and ingestors and also
 	// between ingestor and queriers, and between the queriers and the query-frontend component.
-	// The only component remains unprotected is the tempo-query (jaeger query UI).
+	//
+	//
+	// If BuiltInCertManagement is enabled, you don't need to create this secrets manually.
+	//
+	// Some considerations when enable mTLS:
+	// - If JaegerUI is enabled, it won´t be protected by mTLS as it will be considered a public face
+	// component.
+	// - If Gateway is enabled, all comunications between the gateway and the tempo components will be protected
+	// by mTLS, and the Gateway itself won´t be, as it will be the only public face component.
 	GRPCEncryption bool `json:"grpcEncryption,omitempty"`
 
 	// TLSProfile allows to chose a TLS security profile. Enforced

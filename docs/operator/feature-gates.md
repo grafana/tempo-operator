@@ -38,8 +38,8 @@ This Document contains the types introduced by the Tempo Operator to be consumed
 <div>
 
 <p>BuiltInCertManagement is the configuration for the built-in facility to generate and rotate
-TLS client and serving certificates for all Tempo services and internal clients except
-for the tempo-gateway.</p>
+TLS client and serving certificates for all Tempo services and internal clients. All necesary
+secrets and configmaps for protecting the internal components will be created if this option is enabled.</p>
 
 </div>
 
@@ -266,11 +266,13 @@ BuiltInCertManagement
 
 <p>BuiltInCertManagement enables the built-in facility for generating and rotating
 TLS client and serving certificates for the communication between ingesters and distributors and also between
-query and queryfrontend, In detail all internal Tempo HTTP and GRPC communication is lifted
+query and query-frontend, In detail all internal Tempo HTTP and GRPC communication is lifted
 to require mTLS.
 In addition each service requires a configmap named as the MicroService CR with the
 suffix <code>-ca-bundle</code>, e.g. <code>tempo-dev-ca-bundle</code> and the following data:
-- <code>service-ca.crt</code>: The CA signing the service certificate in <code>tls.crt</code>.</p>
+- <code>service-ca.crt</code>: The CA signing the service certificate in <code>tls.crt</code>.
+All necesary secrets and configmaps for protecting the internal components will be created if this
+option is enabled.</p>
 
 </td>
 </tr>
@@ -291,16 +293,27 @@ bool
 
 <td>
 
-<p>HTTPEncryption enables TLS encryption for all HTTP TempoStack services.
-Each HTTP service requires a secret named as the service with the following data:
+<p>HTTPEncryption enables TLS encryption for all HTTP TempoStack components.
+Each HTTP component requires a secret, the name should be the name of the component with the
+suffix <code>-tls</code> and prefix by the TempoStack name e.g <code>tempo-dev-distributor-tls</code>.
+It should contains the following data:
 - <code>tls.crt</code>: The TLS server side certificate.
 - <code>tls.key</code>: The TLS key for server-side encryption.
 In addition each service requires a configmap named as the TempoStack CR with the
 suffix <code>-ca-bundle</code>, e.g. <code>tempo-dev-ca-bundle</code> and the following data:
 - <code>service-ca.crt</code>: The CA signing the service certificate in <code>tls.crt</code>.
 This will protect all internal communication between the distributors and ingestors and also
-between ingestor and queriers, and between the queriers and the query-frontend component
-The only component remains unprotected is the tempo-query (jaeger query UI).</p>
+between ingestor and queriers, and between the queriers and the query-frontend component</p>
+
+<p>If BuiltInCertManagement is enabled, you don&rsquo;t need to create this secrets manually.</p>
+
+<p>Some considerations when enable mTLS:
+- If JaegerUI is enabled, it won´t be protected by mTLS as it will be considered a public face
+component.
+- If JaegerUI is not enabled, HTTP Tempo API won´t be protected, this will be considered
+public faced component.
+- If Gateway is enabled, all comunications between the gateway and the tempo components will be protected
+by mTLS, and the Gateway itself won´t be, as it will be the only public face component.</p>
 
 </td>
 </tr>
@@ -322,15 +335,24 @@ bool
 <td>
 
 <p>GRPCEncryption enables TLS encryption for all GRPC TempoStack services.
-Each GRPC service requires a secret named as the service with the following data:
+Each GRPC component requires a secret, the name should be the name of the component with the
+suffix <code>-tls</code> and prefix by the TempoStack name e.g <code>tempo-dev-distributor-tls</code>.
+It should contains the following data:
 - <code>tls.crt</code>: The TLS server side certificate.
 - <code>tls.key</code>: The TLS key for server-side encryption.
 In addition each service requires a configmap named as the TempoStack CR with the
 suffix <code>-ca-bundle</code>, e.g. <code>tempo-dev-ca-bundle</code> and the following data:
 - <code>service-ca.crt</code>: The CA signing the service certificate in <code>tls.crt</code>.
 This will protect all internal communication between the distributors and ingestors and also
-between ingestor and queriers, and between the queriers and the query-frontend component.
-The only component remains unprotected is the tempo-query (jaeger query UI).</p>
+between ingestor and queriers, and between the queriers and the query-frontend component.</p>
+
+<p>If BuiltInCertManagement is enabled, you don&rsquo;t need to create this secrets manually.</p>
+
+<p>Some considerations when enable mTLS:
+- If JaegerUI is enabled, it won´t be protected by mTLS as it will be considered a public face
+component.
+- If Gateway is enabled, all comunications between the gateway and the tempo components will be protected
+by mTLS, and the Gateway itself won´t be, as it will be the only public face component.</p>
 
 </td>
 </tr>
