@@ -139,10 +139,10 @@ func TestBuildTargetCertKeyPairSecrets_Rotate(t *testing.T) {
 		},
 		RawCACerts: rawCA.Config.Certs,
 		Certificates: map[string]SelfSignedCertKey{
-			"tempo-dev-ingester-tls": {
+			"tempo-dev-ingester-mtls": {
 				Secret: &corev1.Secret{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      "tempo-dev-ingester-tls",
+						Name:      "tempo-dev-ingester-mtls",
 						Namespace: "ns",
 						Annotations: map[string]string{
 							CertificateIssuer:              "dev_ns@signing-ca@10000",
@@ -163,7 +163,7 @@ func TestBuildTargetCertKeyPairSecrets_Rotate(t *testing.T) {
 
 	// Check serving certificate rotation
 	s := objs[2].(*corev1.Secret)
-	ss := opts.Certificates["tempo-dev-ingester-tls"]
+	ss := opts.Certificates["tempo-dev-ingester-mtls"]
 
 	require.NotEqual(t, s.Annotations[CertificateIssuer], ss.Secret.Annotations[CertificateIssuer])
 	require.NotEqual(t, s.Annotations[CertificateNotAfterAnnotation], ss.Secret.Annotations[CertificateNotAfterAnnotation])

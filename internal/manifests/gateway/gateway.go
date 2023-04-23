@@ -63,7 +63,7 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 		if err := manifestutils.ConfigureServiceCA(&dep.Spec.Template.Spec, caBundleName); err != nil {
 			return nil, err
 		}
-		err := manifestutils.ConfigureServicePKI(params.Tempo.Name, manifestutils.DistributorComponentName, &dep.Spec.Template.Spec)
+		err := manifestutils.ConfigureServicePKI(params.Tempo.Name, manifestutils.GatewayComponentName, &dep.Spec.Template.Spec)
 		if err != nil {
 			return nil, err
 		}
