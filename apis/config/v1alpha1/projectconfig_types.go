@@ -119,7 +119,7 @@ type FeatureGates struct {
 	// If BuiltInCertManagement is enabled, you don't need to create this secrets manually.
 	//
 	// Some considerations when enable mTLS:
-	// - If JaegerUI is enabled, it won´t be protected by mTLS as it will be considered a public face
+	// - If JaegerUI is enabled, it won't be protected by mTLS as it will be considered a public facing
 	// component.
 	// - If JaegerUI is not enabled, HTTP Tempo API won´t be protected, this will be considered
 	// public faced component.
