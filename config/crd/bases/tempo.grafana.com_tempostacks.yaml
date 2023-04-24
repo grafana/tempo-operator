@@ -775,6 +775,8 @@ spec:
                           type: string
                         tenantName:
                           description: TenantName defines the name of the tenant.
+                            The value of this field should be sent in X-Scope-OrgID
+                            header to identify the tenant.
                           type: string
                       required:
                       - tenantId
