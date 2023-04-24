@@ -128,7 +128,7 @@ type FeatureGates struct {
 	HTTPEncryption bool `json:"httpEncryption,omitempty"`
 	// GRPCEncryption enables TLS encryption for all GRPC TempoStack services.
 	// Each GRPC component requires a secret, the name should be the name of the component with the
-	// suffix `-tls` and prefix by the TempoStack name e.g `tempo-dev-distributor-tls`.
+	// suffix `-mtls` and prefix by the TempoStack name e.g `tempo-dev-distributor-mtls`.
 	// It should contains the following data:
 	// - `tls.crt`: The TLS server side certificate.
 	// - `tls.key`: The TLS key for server-side encryption.
