@@ -396,7 +396,8 @@ spec:
       - description: TenantID defines the id of the tenant.
         displayName: Tenant ID
         path: tenants.authentication[0].tenantId
-      - description: TenantName defines the name of the tenant.
+      - description: TenantName defines the name of the tenant. The value of this
+          field should be sent in X-Scope-OrgID header to identify the tenant.
         displayName: Tenant Name
         path: tenants.authentication[0].tenantName
       - description: Authorization defines the tempo-gateway component authorization
