@@ -72,6 +72,16 @@ func fromRateLimitSpecToRateLimitOptionsMap(ratemaps map[string]v1alpha1.RateLim
 }
 
 func buildConfiguration(tempo v1alpha1.TempoStack, params Params) ([]byte, error) {
+	tlsopts := tlsOptions{}
+	var err error
+
+	if params.GRPCEncryption || params.HTTPEncryption {
+		tlsopts, err = buildTLSConfig(tempo, params)
+		if err != nil {
+			return []byte{}, err
+		}
+	}
+
 	opts := options{
 		StorageType:     string(tempo.Spec.Storage.Secret.Type),
 		AzureStorage:    azureStorageFromParams(params),
@@ -86,11 +96,12 @@ func buildConfiguration(tempo v1alpha1.TempoStack, params Params) ([]byte, error
 		Search:                 fromSearchSpecToOptions(tempo.Spec.SearchSpec),
 		ReplicationFactor:      tempo.Spec.ReplicationFactor,
 		Multitenancy:           tempo.Spec.Tenants != nil,
+		Gateway:                tempo.Spec.Template.Gateway.Enabled,
 		Gates: featureGates{
 			GRPCEncryption: params.GRPCEncryption,
 			HTTPEncryption: params.HTTPEncryption,
 		},
-		TLS: buildTLSConfig(tempo, params),
+		TLS: tlsopts,
 	}
 
 	if isTenantOverridesConfigRequired(tempo.Spec.LimitSpec) {
@@ -110,7 +121,12 @@ func buildTenantOverrides(tempo v1alpha1.TempoStack) ([]byte, error) {
 	})
 }
 
-func buildTLSConfig(tempo v1alpha1.TempoStack, params Params) tlsOptions {
+func buildTLSConfig(tempo v1alpha1.TempoStack, params Params) (tlsOptions, error) {
+
+	minTLSShort, err := params.TLSProfile.MinVersionShort()
+	if err != nil {
+		return tlsOptions{}, err
+	}
 	return tlsOptions{
 		Paths: tlsFilePaths{
 			CA:          fmt.Sprintf("%s/service-ca.crt", manifestutils.CABundleDir),
@@ -122,16 +138,22 @@ func buildTLSConfig(tempo v1alpha1.TempoStack, params Params) tlsOptions {
 			Ingester:      naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.IngesterComponentName),
 		},
 		Profile: tlsProfileOptions{
-			MinTLSVersion: params.TLSProfile.MinTLSVersion,
-			Ciphers:       params.TLSProfile.TLSCipherSuites(),
+			MinTLSVersion:      params.TLSProfile.MinTLSVersion,
+			Ciphers:            params.TLSProfile.TLSCipherSuites(),
+			MinTLSVersionShort: minTLSShort,
 		},
-	}
+	}, nil
 
 }
 
 func buildTempoQueryConfig(tempo v1alpha1.TempoStack, params Params) ([]byte, error) {
+	tlsopts, err := buildTLSConfig(tempo, params)
+	if err != nil {
+		return []byte{}, err
+	}
+
 	return renderTempoQueryTemplate(tempoQueryOptions{
-		TLS:      buildTLSConfig(tempo, params),
+		TLS:      tlsopts,
 		HTTPPort: manifestutils.PortHTTPServer,
 		Gates: featureGates{
 			GRPCEncryption: params.GRPCEncryption,

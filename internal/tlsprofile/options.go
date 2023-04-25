@@ -1,6 +1,14 @@
 package tlsprofile
 
-import "strings"
+import (
+	"errors"
+	"strings"
+
+	openshiftconfigv1 "github.com/openshift/api/config/v1"
+)
+
+// ErrInvalidTLSVersion is returned when the TLS version is invalid.
+var ErrInvalidTLSVersion = errors.New("invalid TLS version")
 
 // TLSProfileOptions is the desired behavior of a TLSProfileType.
 type TLSProfileOptions struct {
@@ -16,4 +24,20 @@ type TLSProfileOptions struct {
 // to a string of elements joined with a comma.
 func (o TLSProfileOptions) TLSCipherSuites() string {
 	return strings.Join(o.Ciphers, ",")
+}
+
+// MinVersionShort returns the min TLS version but only the number instead of VersionTLS10 it will return 1.0.
+func (o TLSProfileOptions) MinVersionShort() (string, error) {
+	switch o.MinTLSVersion {
+	case string(openshiftconfigv1.VersionTLS10):
+		return "1.0", nil
+	case string(openshiftconfigv1.VersionTLS11):
+		return "1.1", nil
+	case string(openshiftconfigv1.VersionTLS12):
+		return "1.2", nil
+	case string(openshiftconfigv1.VersionTLS13):
+		return "1.3", nil
+	default:
+		return "", errors.New("invalid TLS version")
+	}
 }

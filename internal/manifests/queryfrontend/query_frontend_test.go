@@ -1,6 +1,7 @@
 package queryfrontend
 
 import (
+	"fmt"
 	"testing"
 
 	routev1 "github.com/openshift/api/route/v1"
@@ -466,4 +467,46 @@ func TestQueryFrontendJaegerRoute(t *testing.T) {
 			},
 		},
 	}, objects[3].(*routev1.Route))
+}
+
+func TestQueryFrontendJaegerTLS(t *testing.T) {
+	objects, err := BuildQueryFrontend(manifestutils.Params{
+		Gates: configv1alpha1.FeatureGates{
+			HTTPEncryption: true,
+			GRPCEncryption: true,
+		},
+		Tempo: v1alpha1.TempoStack{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test",
+				Namespace: "project1",
+			},
+			Spec: v1alpha1.TempoStackSpec{
+				Template: v1alpha1.TempoTemplateSpec{
+					Gateway: v1alpha1.TempoGatewaySpec{
+						Enabled: true,
+					},
+					QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+						JaegerQuery: v1alpha1.JaegerQuerySpec{
+							Enabled: true,
+						},
+					},
+				},
+			},
+		}})
+
+	require.NoError(t, err)
+	require.Equal(t, 3, len(objects))
+	deployment := objects[0].(*v1.Deployment)
+	require.Len(t, deployment.Spec.Template.Spec.Containers, 2)
+	jaegerContainer := deployment.Spec.Template.Spec.Containers[1]
+	args := jaegerContainer.Args
+	assert.Contains(t, args, "--query.http.tls.enabled=true")
+	assert.Contains(t, args, fmt.Sprintf("--query.http.tls.key=%s/tls.key", manifestutils.TempoServerTLSDir()))
+	assert.Contains(t, args, fmt.Sprintf("--query.http.tls.cert=%s/tls.crt", manifestutils.TempoServerTLSDir()))
+	assert.Contains(t, args, fmt.Sprintf("--query.http.tls.client-ca=%s/service-ca.crt", manifestutils.CABundleDir))
+
+	assert.Contains(t, args, "--query.grpc.tls.enabled=true")
+	assert.Contains(t, args, fmt.Sprintf("--query.grpc.tls.key=%s/tls.key", manifestutils.TempoServerTLSDir()))
+	assert.Contains(t, args, fmt.Sprintf("--query.grpc.tls.cert=%s/tls.crt", manifestutils.TempoServerTLSDir()))
+	assert.Contains(t, args, fmt.Sprintf("--query.grpc.tls.client-ca=%s/service-ca.crt", manifestutils.CABundleDir))
 }
