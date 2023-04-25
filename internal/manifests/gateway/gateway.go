@@ -58,6 +58,17 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 
 	dep := deployment(params, rbacCfgHash, tenantsCfgHash)
 
+	if params.Gates.HTTPEncryption || params.Gates.GRPCEncryption {
+		caBundleName := naming.SigningCABundleName(params.Tempo.Name)
+		if err := manifestutils.ConfigureServiceCA(&dep.Spec.Template.Spec, caBundleName); err != nil {
+			return nil, err
+		}
+		err := manifestutils.ConfigureServicePKI(params.Tempo.Name, manifestutils.GatewayComponentName, &dep.Spec.Template.Spec)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	if params.Tempo.Spec.Tenants.Mode == v1alpha1.OpenShift {
 		dep = patchOCPServiceAccount(params.Tempo, dep)
 		dep, err = patchOCPOPAContainer(params.Tempo, dep)
@@ -92,6 +103,13 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 	return objs, nil
 }
 
+func httpScheme(tls bool) string {
+	if tls {
+		return "https"
+	}
+	return "http"
+}
+
 func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash string) *appsv1.Deployment {
 	tempo := params.Tempo
 	labels := manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name)
@@ -101,7 +119,7 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 
 	cfg := tempo.Spec.Template.Gateway
 
-	return &appsv1.Deployment{
+	dep := &appsv1.Deployment{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: appsv1.SchemeGroupVersion.String(),
 		},
@@ -131,8 +149,9 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 								fmt.Sprintf("--traces.tenant-header=%s", manifestutils.TenantHeader),
 								fmt.Sprintf("--web.listen=0.0.0.0:%d", portPublic),
 								fmt.Sprintf("--web.internal.listen=0.0.0.0:%d", portInternal),
-								fmt.Sprintf("--traces.write.endpoint=%s:4317", naming.Name(manifestutils.DistributorComponentName, tempo.Name)),
-								fmt.Sprintf("--traces.read.endpoint=http://%s:16686", naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name)),
+								fmt.Sprintf("--traces.write.endpoint=%s:4317", naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.DistributorComponentName)),
+								fmt.Sprintf("--traces.read.endpoint=%s://%s:16686", httpScheme(params.Gates.HTTPEncryption),
+									naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.QueryFrontendComponentName)),
 								fmt.Sprintf("--grpc.listen=0.0.0.0:%d", portGRPC),
 								fmt.Sprintf("--rbac.config=%s", path.Join(tempoGatewayMountDir, "cm", tempoGatewayRbacFileName)),
 								fmt.Sprintf("--tenants.config=%s", path.Join(tempoGatewayMountDir, "secret", manifestutils.GatewayTenantFileName)),
@@ -233,6 +252,16 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 			},
 		},
 	}
+
+	if params.Gates.HTTPEncryption {
+		dep.Spec.Template.Spec.Containers[0].Args = append(dep.Spec.Template.Spec.Containers[0].Args,
+			fmt.Sprintf("--traces.tls.key-file=%s/tls.key", manifestutils.TempoServerTLSDir()),
+			fmt.Sprintf("--traces.tls.cert-file=%s/tls.crt", manifestutils.TempoServerTLSDir()),
+			fmt.Sprintf("--traces.tls.ca-file=%s/service-ca.crt", manifestutils.CABundleDir),
+		)
+	}
+
+	return dep
 }
 
 func patchTracing(tempo v1alpha1.TempoStack, pod corev1.PodTemplateSpec) (corev1.PodTemplateSpec, error) {

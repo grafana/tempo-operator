@@ -73,7 +73,8 @@ string
 
 <td>
 
-<p>TenantName defines the name of the tenant.</p>
+<p>TenantName defines the name of the tenant.
+The value of this field should be sent in X-Scope-OrgID header to identify the tenant.</p>
 
 </td>
 </tr>

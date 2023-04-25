@@ -6,10 +6,12 @@ import (
 	"testing"
 	"time"
 
+	openshiftconfigv1 "github.com/openshift/api/config/v1"
 	"github.com/stretchr/testify/require"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/os-observability/tempo-operator/internal/tlsprofile"
 )
 
 func TestConfigmap(t *testing.T) {
@@ -24,10 +26,14 @@ func TestConfigmap(t *testing.T) {
 				},
 			},
 		},
-	}, Params{S3: S3{
-		Endpoint: "http://minio:9000",
-		Bucket:   "tempo",
-	}})
+	}, Params{
+		TLSProfile: tlsprofile.TLSProfileOptions{
+			MinTLSVersion: string(openshiftconfigv1.VersionTLS13),
+		},
+		S3: S3{
+			Endpoint: "http://minio:9000",
+			Bucket:   "tempo",
+		}})
 
 	require.NoError(t, err)
 	require.NotNil(t, cm.Data)

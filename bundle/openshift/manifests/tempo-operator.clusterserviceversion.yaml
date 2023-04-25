@@ -33,7 +33,7 @@ metadata:
     capabilities: Basic Install
     categories: Logging & Tracing
     containerImage: ghcr.io/os-observability/tempo-operator/tempo-operator
-    createdAt: "2023-04-14T09:53:31Z"
+    createdAt: "2023-04-24T16:17:39Z"
     operators.operatorframework.io/builder: operator-sdk-v1.27.0
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
   name: tempo-operator.v0.1.0
@@ -426,7 +426,8 @@ spec:
       - description: TenantID defines the id of the tenant.
         displayName: Tenant ID
         path: tenants.authentication[0].tenantId
-      - description: TenantName defines the name of the tenant.
+      - description: TenantName defines the name of the tenant. The value of this
+          field should be sent in X-Scope-OrgID header to identify the tenant.
         displayName: Tenant Name
         path: tenants.authentication[0].tenantName
       - description: Authorization defines the tempo-gateway component authorization
