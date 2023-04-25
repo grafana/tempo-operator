@@ -1525,18 +1525,8 @@ distributor:
       protocols:
         grpc:
           endpoint: "0.0.0.0:4317"
-          tls:
-            ca_file: /var/run/ca/service-ca.crt
-            cert_file: /var/run/tls/server/tls.crt
-            key_file: /var/run/tls/server/tls.key
-            min_version: 1.2
         http:
           endpoint: "0.0.0.0:4318"
-          tls:
-            ca_file: /var/run/ca/service-ca.crt
-            cert_file: /var/run/tls/server/tls.crt
-            key_file: /var/run/tls/server/tls.key
-            min_version: 1.2
   ring:
     kvstore:
       store: memberlist
