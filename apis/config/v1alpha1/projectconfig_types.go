@@ -106,7 +106,7 @@ type FeatureGates struct {
 	BuiltInCertManagement BuiltInCertManagement `json:"builtInCertManagement,omitempty"`
 	// HTTPEncryption enables TLS encryption for all HTTP TempoStack components.
 	// Each HTTP component requires a secret, the name should be the name of the component with the
-	// suffix `-tls` and prefix by the TempoStack name e.g `tempo-dev-distributor-tls`.
+	// suffix `-mtls` and prefix by the TempoStack name e.g `tempo-dev-distributor-mtls`.
 	// It should contains the following data:
 	// - `tls.crt`: The TLS server side certificate.
 	// - `tls.key`: The TLS key for server-side encryption.

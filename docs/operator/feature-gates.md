@@ -295,7 +295,7 @@ bool
 
 <p>HTTPEncryption enables TLS encryption for all HTTP TempoStack components.
 Each HTTP component requires a secret, the name should be the name of the component with the
-suffix <code>-tls</code> and prefix by the TempoStack name e.g <code>tempo-dev-distributor-tls</code>.
+suffix <code>-mtls</code> and prefix by the TempoStack name e.g <code>tempo-dev-distributor-mtls</code>.
 It should contains the following data:
 - <code>tls.crt</code>: The TLS server side certificate.
 - <code>tls.key</code>: The TLS key for server-side encryption.
@@ -308,7 +308,7 @@ between ingestor and queriers, and between the queriers and the query-frontend c
 <p>If BuiltInCertManagement is enabled, you don&rsquo;t need to create this secrets manually.</p>
 
 <p>Some considerations when enable mTLS:
-- If JaegerUI is enabled, it won´t be protected by mTLS as it will be considered a public face
+- If JaegerUI is enabled, it won&rsquo;t be protected by mTLS as it will be considered a public facing
 component.
 - If JaegerUI is not enabled, HTTP Tempo API won´t be protected, this will be considered
 public faced component.
@@ -336,7 +336,7 @@ bool
 
 <p>GRPCEncryption enables TLS encryption for all GRPC TempoStack services.
 Each GRPC component requires a secret, the name should be the name of the component with the
-suffix <code>-tls</code> and prefix by the TempoStack name e.g <code>tempo-dev-distributor-tls</code>.
+suffix <code>-mtls</code> and prefix by the TempoStack name e.g <code>tempo-dev-distributor-mtls</code>.
 It should contains the following data:
 - <code>tls.crt</code>: The TLS server side certificate.
 - <code>tls.key</code>: The TLS key for server-side encryption.
