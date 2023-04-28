@@ -4,4 +4,3 @@ commands:
   # workaround for asserting parts of the configmap
   # can be removed once https://github.com/kudobuilder/kuttl/issues/262 is implemented
   - command: "/bin/sh -c 'kubectl get --namespace $NAMESPACE configmap tempo-simplest -o yaml | grep \"endpoint: minio.minio.svc.cluster.local\"'"
-    namespaced: true
