@@ -15,7 +15,7 @@ spec:
         args:
         - |
           curl -s -S http://tempo-simplest-query-frontend:16686/api/services | tee /tmp/out.log
-          if ! grep -q tracegen /tmp/out.log; then
+          if ! grep -q telemetrygen /tmp/out.log; then
             echo && echo "No traces found"
             exit 1
           fi
