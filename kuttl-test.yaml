@@ -1,3 +1,8 @@
+#
+# Prerequisites:
+# - tempo-operator must be installed (community version + cert-manager or via OLM)
+# - minio must be installed in the minio namespace (see /minio.yaml)
+#
 apiVersion: kuttl.dev/v1beta1
 kind: TestSuite
 testDirs:

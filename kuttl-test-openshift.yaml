@@ -1,11 +1,14 @@
+#
+# Prerequisites:
+# - tempo-operator must be installed (community version + cert-manager or via OLM)
+# - opentelemetry-operator must be installed
+# - minio must be installed in the minio namespace (see /minio.yaml)
+# - kuttl-e2e-openshift namespace must exist
+#
 apiVersion: kuttl.dev/v1beta1
 kind: TestSuite
 testDirs:
   - ./tests/e2e-openshift/
 timeout: 150
-namespace: kuttl-ocp-gateway
-commands:
-  - script: |
-      kubectl apply -f ./bundle/openshift/manifests/tempo-operator-manager-config_v1_configmap.yaml -n tempo-operator-system
-      kubectl rollout restart deployment/tempo-operator-controller-manager -n tempo-operator-system
-      kubectl rollout status deployment/tempo-operator-controller-manager -n tempo-operator-system --timeout=30s
+namespace: kuttl-e2e-openshift  # some resources depend on a known namespace (ClusterRoleBinding, URLs)
+parallel: 1  # run tests in serial, because all tests run in a single namespace

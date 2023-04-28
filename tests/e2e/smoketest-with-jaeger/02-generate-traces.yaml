@@ -7,7 +7,7 @@ spec:
     spec:
       containers:
         - name: tracegen
-          image: ghcr.io/open-telemetry/opentelemetry-collector-contrib/tracegen:latest
+          image: ghcr.io/open-telemetry/opentelemetry-collector-contrib/tracegen:v0.70.0
           command:
             - "./tracegen"
           args:

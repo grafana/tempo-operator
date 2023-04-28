@@ -255,7 +255,7 @@ func (v *validator) validateGateway(tempo TempoStack) field.ErrorList {
 		if tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type != IngressTypeNone {
 			return field.ErrorList{
 				field.Invalid(path, tempo.Spec.Template.Gateway.Enabled,
-					"cannot enable gateway and jaeger query ingress at the same time",
+					"cannot enable gateway and jaeger query ingress at the same time, please use the Jaeger UI from the gateway",
 				)}
 		}
 
