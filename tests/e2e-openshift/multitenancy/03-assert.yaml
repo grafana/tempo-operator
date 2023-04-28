@@ -2,6 +2,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: verify-traces
+  namespace: kuttl-multitenancy
 status:
   conditions:
     - status: "True"

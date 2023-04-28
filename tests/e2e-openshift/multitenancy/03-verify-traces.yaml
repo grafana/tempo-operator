@@ -2,6 +2,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: verify-traces
+  namespace: kuttl-multitenancy
 spec:
   template:
     spec:
@@ -19,7 +20,7 @@ spec:
             -s -S \
             --header "Authorization: Bearer $token" \
             --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
-            https://tempo-simplest-gateway.kuttl-e2e-openshift.svc:8080/api/traces/v1/dev/api/services \
+            https://tempo-simplest-gateway.kuttl-multitenancy.svc:8080/api/traces/v1/dev/api/services \
             | tee /tmp/out.log
 
           if ! grep -q telemetrygen /tmp/out.log; then

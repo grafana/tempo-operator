@@ -324,11 +324,7 @@ prepare-e2e-openshift: deploy-minio
 
 .PHONY: e2e-openshift
 e2e-openshift:
-	-kubectl delete namespace kuttl-e2e-openshift
-	kubectl create namespace kuttl-e2e-openshift
 	$(KUTTL) test --config kuttl-test-openshift.yaml
-	kubectl delete namespace kuttl-e2e-openshift
-
 
 .PHONY: scorecard-tests
 scorecard-tests: operator-sdk
