@@ -10,7 +10,7 @@ require (
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.27.6
 	github.com/openshift/library-go v0.0.0-20220622115547-84d884f4c9f6
-	github.com/prometheus/client_golang v1.15.0
+	github.com/prometheus/client_golang v1.15.1
 	github.com/prometheus/common v0.42.0
 	github.com/spf13/cobra v1.7.0
 	gopkg.in/yaml.v2 v2.4.0
