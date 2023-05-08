@@ -1,13 +1,16 @@
+# based on config/samples/tempo_v1alpha1_openshift.yaml
+
 # The namespace is auto-deleted by kuttl after the test run.
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: kuttl-ocp-gateway
+  name: kuttl-multitenancy
 ---
 apiVersion: v1
 kind: Secret
 metadata:
   name: minio-test
+  namespace: kuttl-multitenancy
 stringData:
   endpoint: http://minio.minio.svc:9000
   bucket: tempo
@@ -19,6 +22,7 @@ apiVersion: tempo.grafana.com/v1alpha1
 kind:  TempoStack
 metadata:
   name: simplest
+  namespace: kuttl-multitenancy
 spec:
   storage:
     secret:
@@ -44,3 +48,29 @@ spec:
       jaegerQuery:
         enabled: true
 ---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tempostack-traces-reader
+rules:
+  - apiGroups:
+      - 'tempo.grafana.com'
+    resources:
+      - dev
+    resourceNames:
+      - traces
+    verbs:
+      - 'get'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: tempostack-traces-reader
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: tempostack-traces-reader
+subjects:
+  - kind: Group
+    apiGroup: rbac.authorization.k8s.io
+    name: system:authenticated

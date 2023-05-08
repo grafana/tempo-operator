@@ -1,0 +1,78 @@
+# based on config/samples/otelcol_v1alpha1_openshift.yaml
+---
+apiVersion: opentelemetry.io/v1alpha1
+kind: OpenTelemetryCollector
+metadata:
+  name: dev
+  namespace: kuttl-multitenancy
+spec:
+  config: |
+    extensions:
+      bearertokenauth:
+        filename: "/var/run/secrets/kubernetes.io/serviceaccount/token"
+
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+          http:
+      jaeger:
+        protocols:
+          thrift_binary:
+          thrift_compact:
+          thrift_http:
+          grpc:
+
+    processors:
+
+    exporters:
+      otlp:
+        endpoint: tempo-simplest-gateway.kuttl-multitenancy.svc.cluster.local:8090
+        tls:
+          insecure: false
+          ca_file: "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt"
+        auth:
+          authenticator: bearertokenauth
+        headers:
+          X-Scope-OrgID: "dev"
+
+    service:
+      telemetry:
+        logs:
+          level: "DEBUG"
+          development: true
+          encoding: "json"
+      extensions: [bearertokenauth]
+      pipelines:
+        traces:
+          receivers: [otlp, jaeger]
+          exporters: [otlp]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tempostack-traces-write
+rules:
+  - apiGroups:
+      - 'tempo.grafana.com'
+    # this needs to match tenant name in the CR/tenants.yaml and the tenant has be sent in X-Scope-OrgID
+    # The API gateway sends the tenantname as resource (res) to OPA sidecar
+    resources:
+      - dev
+    resourceNames:
+      - traces
+    verbs:
+      - 'create'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: tempostack-traces
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: tempostack-traces-write
+subjects:
+  - kind: ServiceAccount
+    name: dev-collector
+    namespace: kuttl-multitenancy

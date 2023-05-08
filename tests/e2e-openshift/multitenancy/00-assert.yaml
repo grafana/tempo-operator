@@ -10,6 +10,7 @@ metadata:
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-simplest-gateway
+  namespace: kuttl-multitenancy
   ownerReferences:
     - apiVersion: tempo.grafana.com/v1alpha1
       blockOwnerDeletion: true
@@ -29,6 +30,7 @@ metadata:
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-simplest-gateway
+  namespace: kuttl-multitenancy
   ownerReferences:
     - apiVersion: tempo.grafana.com/v1alpha1
       blockOwnerDeletion: true
@@ -47,6 +49,7 @@ metadata:
   annotations:
     service.beta.openshift.io/inject-cabundle: "true"
   name: tempo-simplest-gateway-cabundle
+  namespace: kuttl-multitenancy
   ownerReferences:
     - apiVersion: tempo.grafana.com/v1alpha1
       blockOwnerDeletion: true
@@ -67,6 +70,7 @@ metadata:
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-simplest-gateway
+  namespace: kuttl-multitenancy
   ownerReferences:
     - apiVersion: tempo.grafana.com/v1alpha1
       blockOwnerDeletion: true
@@ -123,6 +127,7 @@ metadata:
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-simplest-gateway
+  namespace: kuttl-multitenancy
   ownerReferences:
     - apiVersion: tempo.grafana.com/v1alpha1
       blockOwnerDeletion: true
@@ -150,8 +155,8 @@ spec:
           - --traces.tenant-header=x-scope-orgid
           - --web.listen=0.0.0.0:8080
           - --web.internal.listen=0.0.0.0:8081
-          - --traces.write.endpoint=tempo-simplest-distributor:4317
-          - --traces.read.endpoint=http://tempo-simplest-query-frontend:16686
+          - --traces.write.endpoint=tempo-simplest-distributor.kuttl-multitenancy.svc.cluster.local:4317
+          - --traces.read.endpoint=http://tempo-simplest-query-frontend.kuttl-multitenancy.svc.cluster.local:16686
           - --grpc.listen=0.0.0.0:8090
           - --rbac.config=/etc/tempo-gateway/cm/rbac.yaml
           - --tenants.config=/etc/tempo-gateway/secret/tenants.yaml
@@ -161,7 +166,7 @@ spec:
           - --tls.internal.server.cert-file=/etc/tempo-gateway/serving-certs/tls.crt
           - --tls.internal.server.key-file=/etc/tempo-gateway/serving-certs/tls.key
           - --tls.healthchecks.server-ca-file=/etc/tempo-gateway/cabundle/service-ca.crt
-          - --tls.healthchecks.server-name=tempo-simplest-gateway.kuttl-ocp-gateway.svc.cluster.local
+          - --tls.healthchecks.server-name=tempo-simplest-gateway.kuttl-multitenancy.svc.cluster.local
           - --web.healthchecks.url=https://localhost:8080
           imagePullPolicy: IfNotPresent
           ports:
@@ -233,6 +238,7 @@ metadata:
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-simplest-gateway
+  namespace: kuttl-multitenancy
   ownerReferences:
     - apiVersion: tempo.grafana.com/v1alpha1
       blockOwnerDeletion: true
@@ -261,6 +267,7 @@ metadata:
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-simplest-gateway
+  namespace: kuttl-multitenancy
   ownerReferences:
     - apiVersion: tempo.grafana.com/v1alpha1
       blockOwnerDeletion: true
@@ -287,3 +294,43 @@ spec:
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-simplest-compactor
+  namespace: kuttl-multitenancy
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-simplest-distributor
+  namespace: kuttl-multitenancy
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-simplest-querier
+  namespace: kuttl-multitenancy
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-simplest-query-frontend
+  namespace: kuttl-multitenancy
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: tempo-simplest-ingester
+  namespace: kuttl-multitenancy
+status:
+  readyReplicas: 1

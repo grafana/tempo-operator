@@ -1,0 +1,8 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dev-collector
+  namespace: kuttl-multitenancy
+status:
+  readyReplicas: 1

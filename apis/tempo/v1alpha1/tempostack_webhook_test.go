@@ -740,7 +740,7 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 			},
 			expected: field.ErrorList{
 				field.Invalid(path, true,
-					"cannot enable gateway and jaeger query ingress at the same time",
+					"cannot enable gateway and jaeger query ingress at the same time, please use the Jaeger UI from the gateway",
 				),
 			},
 		},

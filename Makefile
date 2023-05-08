@@ -307,18 +307,24 @@ deploy-minio:
 	$(ECHO) Installing minio
 	$(VECHO) kubectl apply -f minio.yaml
 
-# end-to-tests
+# generic end-to-tests
+.PHONY: prepare-e2e
+prepare-e2e: kuttl start-kind cert-manager install-openshift-routes deploy-minio set-test-image-vars set-test-operator-config build docker-build load-image-operator deploy
+
 .PHONY: e2e
 e2e:
 	$(KUTTL) test
 
-# end-to-tests
+# OpenShift end-to-tests
+.PHONY: prepare-e2e-openshift
+prepare-e2e-openshift: deploy-minio
+	kubectl apply -f ./bundle/openshift/manifests/tempo-operator-manager-config_v1_configmap.yaml -n tempo-operator-system
+	kubectl rollout restart deployment/tempo-operator-controller-manager -n tempo-operator-system
+	kubectl rollout status deployment/tempo-operator-controller-manager -n tempo-operator-system --timeout=30s
+
 .PHONY: e2e-openshift
 e2e-openshift:
 	$(KUTTL) test --config kuttl-test-openshift.yaml
-
-.PHONY: prepare-e2e
-prepare-e2e: kuttl start-kind cert-manager install-openshift-routes deploy-minio set-test-image-vars set-test-operator-config build docker-build load-image-operator deploy
 
 .PHONY: scorecard-tests
 scorecard-tests: operator-sdk
