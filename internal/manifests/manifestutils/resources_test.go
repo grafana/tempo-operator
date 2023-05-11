@@ -13,7 +13,18 @@ import (
 func TestResourceSum(t *testing.T) {
 	cpu := float32(0)
 	mem := float32(0.0)
-	for _, r := range resourcesMap {
+	for _, r := range resourcesMapNoGateway {
+		mem += r.memory
+		cpu += r.cpu
+	}
+	assert.Equal(t, float32(1.0), cpu)
+	assert.Equal(t, float32(1.0), mem)
+}
+
+func TestResourceWithGatewaySum(t *testing.T) {
+	cpu := float32(0)
+	mem := float32(0.0)
+	for _, r := range resourcesMapWithGateway {
 		mem += r.memory
 		cpu += r.cpu
 	}
@@ -56,6 +67,36 @@ func TestResources(t *testing.T) {
 				Requests: corev1.ResourceList{
 					corev1.ResourceCPU:    *resource.NewMilliQuantity(81, resource.BinarySI),
 					corev1.ResourceMemory: *resource.NewQuantity(77309416, resource.BinarySI),
+				},
+			},
+		},
+		{
+			name: "cpu, memory resources set and gateway enable",
+			tempo: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						Gateway: v1alpha1.TempoGatewaySpec{
+							Enabled: true,
+						},
+					},
+					Resources: v1alpha1.Resources{
+						Total: &corev1.ResourceRequirements{
+							Limits: map[corev1.ResourceName]resource.Quantity{
+								corev1.ResourceMemory: resource.MustParse("2Gi"),
+								corev1.ResourceCPU:    resource.MustParse("1000m"),
+							},
+						},
+					},
+				},
+			},
+			resources: corev1.ResourceRequirements{
+				Limits: corev1.ResourceList{
+					corev1.ResourceCPU:    *resource.NewMilliQuantity(260, resource.BinarySI),
+					corev1.ResourceMemory: *resource.NewQuantity(236223200, resource.BinarySI),
+				},
+				Requests: corev1.ResourceList{
+					corev1.ResourceCPU:    *resource.NewMilliQuantity(78, resource.BinarySI),
+					corev1.ResourceMemory: *resource.NewQuantity(70866960, resource.BinarySI),
 				},
 			},
 		},

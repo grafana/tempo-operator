@@ -211,8 +211,7 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 									SubPath:   manifestutils.GatewayTenantFileName,
 								},
 							},
-							// TODO(frzifus): add gateway to resource pool.
-							// Resources:       manifestutils.Resources(tempo, tempoComponentName),
+							Resources:       manifestutils.Resources(tempo, manifestutils.GatewayComponentName),
 							SecurityContext: manifestutils.TempoContainerSecurityContext(),
 						},
 					},
