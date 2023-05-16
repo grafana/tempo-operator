@@ -43,6 +43,9 @@ func newPrometheusRule(stackName string) (*monitoringv1.PrometheusRule, error) {
 
 		ObjectMeta: metav1.ObjectMeta{
 			Name: naming.PrometheusRuleName(stackName),
+			Labels: map[string]string{
+				"openshift.io/prometheus-rule-evaluation-scope": "leaf-prometheus",
+			},
 		},
 		Spec: *spec,
 	}, nil

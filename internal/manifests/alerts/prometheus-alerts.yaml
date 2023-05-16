@@ -119,7 +119,7 @@ groups:
     annotations:
       message: "There are too many outstanding compaction blocks in {{ $labels.cluster }}/{{ $labels.namespace }} for tenant {{ $labels.tenant }}, increase compactor's CPU or add more compactors."
       runbook_url: "[[ .RunbookURL ]]#TempoCompactorsTooManyOutstandingBlocks"
-    expr": |
+    expr: |
       sum by (cluster, namespace, tenant) (tempodb_compaction_outstanding_blocks{container="compactor", namespace=~".*"}) / ignoring(tenant) group_left count(tempo_build_info{container="compactor", namespace=~".*"}) by (cluster, namespace) > 100
     for: "6h"
     labels:
