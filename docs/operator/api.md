@@ -1204,6 +1204,29 @@ bool
 </td>
 </tr>
 
+<tr>
+
+<td>
+
+<code>enableAlerts</code><br/>
+
+<em>
+
+bool
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>EnableAlerts specifies if Alerts should be created for Tempo components.</p>
+
+</td>
+</tr>
+
 </tbody>
 </table>
 
