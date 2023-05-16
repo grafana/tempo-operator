@@ -280,6 +280,13 @@ func (v *validator) validateObservability(tempo TempoStack) field.ErrorList {
 			)}
 	}
 
+	if tempo.Spec.Observability.Metrics.EnableAlerts && !v.ctrlConfig.Gates.EnableAlerts {
+		return field.ErrorList{
+			field.Invalid(metricsBase.Child("enableAlerts"), tempo.Spec.Observability.Metrics.EnableAlerts,
+				"the enableAlerts feature gate must be enabled to create PrometheusRules for Tempo components",
+			)}
+	}
+
 	tracingBase := observabilityBase.Child("tracing")
 	if tempo.Spec.Observability.Tracing.SamplingFraction == "" {
 		return nil
@@ -304,6 +311,7 @@ func (v *validator) validateObservability(tempo TempoStack) field.ErrorList {
 				)}
 		}
 	}
+
 	return nil
 }
 

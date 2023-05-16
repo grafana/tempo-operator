@@ -24,7 +24,7 @@ var (
 )
 
 // Build creates Prometheus alerts for the Tempo stack.
-func Build(opts Options) (*monitoringv1.PrometheusRuleSpec, error) {
+func build(opts Options) (*monitoringv1.PrometheusRuleSpec, error) {
 	alerts, err := ruleSpec("prometheus-alerts.yaml", alertsYAMLTmpl, opts)
 	if err != nil {
 		return nil, kverrors.Wrap(err, "failed to create prometheus alerts")

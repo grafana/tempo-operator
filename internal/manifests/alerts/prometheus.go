@@ -10,7 +10,7 @@ import (
 
 const (
 	// RunbookDefaultURL is the default url for the documentation of the Prometheus alerts.
-	RunbookDefaultURL = "https://github.com/grafana/loki/blob/main/operator/docs/lokistack/sop.md"
+	RunbookDefaultURL = "https://github.com/grafana/tempo/tree/main/operations/tempo-mixin/runbook.md"
 )
 
 // BuildPrometheusRule returns a list of k8s objects for Loki PrometheusRule.
@@ -30,7 +30,7 @@ func newPrometheusRule(stackName string) (*monitoringv1.PrometheusRule, error) {
 		RunbookURL: RunbookDefaultURL,
 	}
 
-	spec, err := Build(alertOpts)
+	spec, err := build(alertOpts)
 	if err != nil {
 		return nil, err
 	}

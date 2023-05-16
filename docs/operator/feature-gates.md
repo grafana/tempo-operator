@@ -401,6 +401,28 @@ This CRD is part of prometheus-operator.</p>
 </td>
 </tr>
 
+<tr>
+
+<td>
+
+<code>enableAlerts</code><br/>
+
+<em>
+
+bool
+
+</em>
+
+</td>
+
+<td>
+
+<p>EnableAlerts defines if  PrometheusRules will be created for alerting.
+This CRD is part of prometheus-operator.</p>
+
+</td>
+</tr>
+
 </tbody>
 </table>
 

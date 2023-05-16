@@ -33,7 +33,7 @@ metadata:
     capabilities: Basic Install
     categories: Logging & Tracing
     containerImage: ghcr.io/os-observability/tempo-operator/tempo-operator
-    createdAt: "2023-04-24T16:17:39Z"
+    createdAt: "2023-05-18T15:04:00Z"
     operators.operatorframework.io/builder: operator-sdk-v1.27.0
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
   name: tempo-operator.v0.1.0
@@ -178,6 +178,10 @@ spec:
           created for Tempo components.
         displayName: Create ServiceMonitors for Tempo components
         path: observability.metrics.createServiceMonitors
+      - description: EnableAlerts specifies if Alerts should be created for Tempo
+          components.
+        displayName: Create ServiceMonitors for Tempo components
+        path: observability.metrics.enableAlerts
       - description: Tracing defines a config for operands.
         displayName: Tracing Config
         path: observability.tracing

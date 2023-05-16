@@ -931,6 +931,43 @@ func TestValidatorObservabilityTracingConfig(t *testing.T) {
 			},
 		},
 		{
+			name: "enableAlerts enabled but enableAlerts feature gate not set",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					Observability: ObservabilitySpec{
+						Metrics: MetricsConfigSpec{
+							EnableAlerts: true,
+						},
+					},
+				},
+			},
+			expected: field.ErrorList{
+				field.Invalid(
+					metricsBase.Child("enableAlerts"),
+					true,
+					"the enableAlerts feature gate must be enabled to create PrometheusRules for Tempo components",
+				),
+			},
+		},
+		{
+			name: "enableAlerts enabled but enableAlerts feature gate set",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					Observability: ObservabilitySpec{
+						Metrics: MetricsConfigSpec{
+							EnableAlerts: true,
+						},
+					},
+				},
+			},
+			ctrlConfig: v1alpha1.ProjectConfig{
+				Gates: v1alpha1.FeatureGates{
+					EnableAlerts: true,
+				},
+			},
+			expected: nil,
+		},
+		{
 			name: "sampling fraction not a float",
 			input: TempoStack{
 				Spec: TempoStackSpec{

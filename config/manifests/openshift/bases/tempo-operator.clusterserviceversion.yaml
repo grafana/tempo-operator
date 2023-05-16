@@ -148,6 +148,10 @@ spec:
           created for Tempo components.
         displayName: Create ServiceMonitors for Tempo components
         path: observability.metrics.createServiceMonitors
+      - description: EnableAlerts specifies if Alerts should be created for Tempo
+          components.
+        displayName: Create ServiceMonitors for Tempo components
+        path: observability.metrics.enableAlerts
       - description: Tracing defines a config for operands.
         displayName: Tracing Config
         path: observability.tracing

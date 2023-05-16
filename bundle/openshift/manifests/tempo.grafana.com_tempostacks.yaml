@@ -160,6 +160,10 @@ spec:
                         description: CreateServiceMonitors specifies if ServiceMonitors
                           should be created for Tempo components.
                         type: boolean
+                      enableAlerts:
+                        description: EnableAlerts specifies if Alerts should be created
+                          for Tempo components.
+                        type: boolean
                     type: object
                   tracing:
                     description: Tracing defines a config for operands.
