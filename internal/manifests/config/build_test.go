@@ -67,7 +67,6 @@ server:
   http_server_read_timeout: 3m
   http_server_write_timeout: 3m
   log_format: logfmt
-  log_level: debug
 storage:
   trace:
     backend: s3
@@ -187,7 +186,6 @@ server:
   http_server_read_timeout: 3m
   http_server_write_timeout: 3m
   log_format: logfmt
-  log_level: debug
 storage:
   trace:
     backend: s3
@@ -274,7 +272,6 @@ server:
   http_server_read_timeout: 3m
   http_server_write_timeout: 3m
   log_format: logfmt
-  log_level: debug
 storage:
   trace:
     backend: s3
@@ -360,7 +357,6 @@ server:
   http_server_read_timeout: 3m
   http_server_write_timeout: 3m
   log_format: logfmt
-  log_level: debug
 storage:
   trace:
     backend: s3
@@ -447,7 +443,6 @@ server:
   http_server_read_timeout: 3m
   http_server_write_timeout: 3m
   log_format: logfmt
-  log_level: debug
 storage:
   trace:
     backend: s3
@@ -534,7 +529,6 @@ server:
   http_server_read_timeout: 3m
   http_server_write_timeout: 3m
   log_format: logfmt
-  log_level: debug
 storage:
   trace:
     backend: s3
@@ -621,7 +615,6 @@ server:
   http_server_read_timeout: 3m
   http_server_write_timeout: 3m
   log_format: logfmt
-  log_level: debug
 storage:
   trace:
     backend: s3
@@ -708,7 +701,6 @@ server:
   http_server_read_timeout: 3m
   http_server_write_timeout: 3m
   log_format: logfmt
-  log_level: debug
 storage:
   trace:
     backend: s3
@@ -807,7 +799,6 @@ server:
   http_server_read_timeout: 3m
   http_server_write_timeout: 3m
   log_format: logfmt
-  log_level: debug
 storage:
   trace:
     backend: s3
@@ -904,7 +895,6 @@ server:
   http_server_read_timeout: 3m
   http_server_write_timeout: 3m
   log_format: logfmt
-  log_level: debug
 storage:
   trace:
     backend: s3
@@ -1062,7 +1052,6 @@ server:
   http_server_read_timeout: 3m
   http_server_write_timeout: 3m
   log_format: logfmt
-  log_level: debug
 storage:
   trace:
     backend: s3
@@ -1179,7 +1168,6 @@ server:
   http_server_read_timeout: 3m
   http_server_write_timeout: 3m
   log_format: logfmt
-  log_level: debug
 storage:
   trace:
     backend: s3
@@ -1286,7 +1274,6 @@ server:
   http_server_read_timeout: 3m
   http_server_write_timeout: 3m
   log_format: logfmt
-  log_level: debug
 storage:
   trace:
     backend: s3
@@ -1415,7 +1402,6 @@ server:
   http_server_read_timeout: 3m
   http_server_write_timeout: 3m
   log_format: logfmt
-  log_level: debug
   tls_cipher_suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
   tls_min_version: VersionTLS12
   grpc_tls_config:
@@ -1573,7 +1559,6 @@ server:
   http_server_read_timeout: 3m
   http_server_write_timeout: 3m
   log_format: logfmt
-  log_level: debug
   tls_cipher_suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
   tls_min_version: VersionTLS12
   grpc_tls_config:
