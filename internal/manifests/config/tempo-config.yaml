@@ -107,7 +107,6 @@ server:
   http_server_read_timeout: 3m
   http_server_write_timeout: 3m
   log_format: logfmt
-  log_level: debug
 {{- if or .Gates.GRPCEncryption .Gates.HTTPEncryption }}
   tls_cipher_suites: {{ .TLS.Profile.Ciphers }}
   tls_min_version: {{ .TLS.Profile.MinTLSVersion }}
