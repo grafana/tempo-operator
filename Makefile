@@ -482,3 +482,14 @@ release-artifacts: set-image-controller
 	mkdir -p dist
 	$(KUSTOMIZE) build config/overlays/community -o dist/tempo-operator.yaml
 	$(KUSTOMIZE) build config/overlays/openshift -o dist/tempo-operator-openshift.yaml
+
+olm/install: operator-sdk
+	-$(OPERATOR_SDK) olm install
+
+olm/create-catalog:
+	CATALOG_IMG=$(CATALOG_IMG) envsubst < hack/olm/catalog.yaml | kubectl apply -f -
+
+olm/create-subscription:
+	kubectl apply -f hack/olm/subscription.yaml
+
+olm/install-operator: olm/install generate bundle docker-build docker-push bundle-build bundle-push catalog-build catalog-push olm/create-catalog olm/create-subscription
