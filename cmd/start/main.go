@@ -70,6 +70,8 @@ func start(c *cobra.Command, args []string) {
 	v := version.Get(rootCmdConfig.CtrlConfig)
 	setupLog.Info("Starting Tempo Operator",
 		"tempo-operator", v.OperatorVersion,
+		"tempo", v.TempoVersion,
+		"tempo-query", v.TempoQueryVersion,
 		"default-tempo-image", v.DefaultTempoImage,
 		"default-tempo-query-image", v.DefaultTempoQueryImage,
 		"default-tempo-gateway-image", v.DefaultGatewayImage,
