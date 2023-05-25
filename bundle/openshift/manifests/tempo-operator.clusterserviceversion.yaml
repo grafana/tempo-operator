@@ -33,7 +33,7 @@ metadata:
     capabilities: Basic Install
     categories: Logging & Tracing
     containerImage: ghcr.io/os-observability/tempo-operator/tempo-operator
-    createdAt: "2023-05-18T15:04:00Z"
+    createdAt: "2023-05-26T03:23:26Z"
     operators.operatorframework.io/builder: operator-sdk-v1.27.0
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
   name: tempo-operator.v0.1.0
@@ -174,14 +174,14 @@ spec:
       - description: Metrics defines the metrics configuration for operands.
         displayName: Metrics Config
         path: observability.metrics
+      - description: CreatePrometheusRules specifies if Prometheus rules for alerts
+          should be created for Tempo components.
+        displayName: Create PrometheusRules for Tempo components
+        path: observability.metrics.createPrometheusRules
       - description: CreateServiceMonitors specifies if ServiceMonitors should be
           created for Tempo components.
         displayName: Create ServiceMonitors for Tempo components
         path: observability.metrics.createServiceMonitors
-      - description: EnableAlerts specifies if Alerts should be created for Tempo
-          components.
-        displayName: Create ServiceMonitors for Tempo components
-        path: observability.metrics.enableAlerts
       - description: Tracing defines a config for operands.
         displayName: Tracing Config
         path: observability.tracing
@@ -695,7 +695,7 @@ spec:
                 - --config=controller_manager_config.yaml
                 command:
                 - /manager
-                image: ghcr.io/os-observability/tempo-operator/tempo-operator:v0.1.0
+                image: ghcr.io/rvargasp/tempo-operator/tempo-operator:v0.1.0
                 livenessProbe:
                   httpGet:
                     path: /healthz

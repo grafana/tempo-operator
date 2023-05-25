@@ -395,29 +395,7 @@ bool
 
 <td>
 
-<p>ServiceMonitor defines whether the ServiceMonitor CRD exists in the cluster.
-This CRD is part of prometheus-operator.</p>
-
-</td>
-</tr>
-
-<tr>
-
-<td>
-
-<code>enableAlerts</code><br/>
-
-<em>
-
-bool
-
-</em>
-
-</td>
-
-<td>
-
-<p>EnableAlerts defines if  PrometheusRules will be created for alerting.
+<p>PrometheusOperator defines whether the Prometheus Operator CRD exists in the cluster.
 This CRD is part of prometheus-operator.</p>
 
 </td>

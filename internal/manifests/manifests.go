@@ -112,7 +112,7 @@ func BuildAll(params manifestutils.Params) ([]client.Object, error) {
 		manifests = append(manifests, servicemonitor.BuildServiceMonitors(params)...)
 	}
 
-	if params.Tempo.Spec.Observability.Metrics.EnableAlerts {
+	if params.Tempo.Spec.Observability.Metrics.CreatePrometheusRules {
 		prometheusRuleObjs, err := alerts.BuildPrometheusRule(params.Tempo.Name)
 		if err != nil {
 			return nil, err

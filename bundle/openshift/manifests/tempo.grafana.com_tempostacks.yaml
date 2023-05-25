@@ -156,13 +156,13 @@ spec:
                   metrics:
                     description: Metrics defines the metrics configuration for operands.
                     properties:
+                      createPrometheusRules:
+                        description: CreatePrometheusRules specifies if Prometheus
+                          rules for alerts should be created for Tempo components.
+                        type: boolean
                       createServiceMonitors:
                         description: CreateServiceMonitors specifies if ServiceMonitors
                           should be created for Tempo components.
-                        type: boolean
-                      enableAlerts:
-                        description: EnableAlerts specifies if Alerts should be created
-                          for Tempo components.
                         type: boolean
                     type: object
                   tracing:

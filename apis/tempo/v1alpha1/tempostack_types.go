@@ -120,12 +120,12 @@ type MetricsConfigSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Create ServiceMonitors for Tempo components"
 	CreateServiceMonitors bool `json:"createServiceMonitors,omitempty"`
 
-	// EnableAlerts specifies if Alerts should be created for Tempo components.
+	// CreatePrometheusRules specifies if Prometheus rules for alerts should be created for Tempo components.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Create ServiceMonitors for Tempo components"
-	EnableAlerts bool `json:"enableAlerts,omitempty"`
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Create PrometheusRules for Tempo components"
+	CreatePrometheusRules bool `json:"createPrometheusRules,omitempty"`
 }
 
 // TracingConfigSpec defines a tracing config including endpoints and sampling.

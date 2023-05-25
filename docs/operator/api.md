@@ -1208,7 +1208,7 @@ bool
 
 <td>
 
-<code>enableAlerts</code><br/>
+<code>createPrometheusRules</code><br/>
 
 <em>
 
@@ -1222,7 +1222,7 @@ bool
 
 <em>(Optional)</em>
 
-<p>EnableAlerts specifies if Alerts should be created for Tempo components.</p>
+<p>CreatePrometheusRules specifies if Prometheus rules for alerts should be created for Tempo components.</p>
 
 </td>
 </tr>

@@ -273,17 +273,17 @@ func (v *validator) validateObservability(tempo TempoStack) field.ErrorList {
 	observabilityBase := field.NewPath("spec").Child("observability")
 	metricsBase := observabilityBase.Child("metrics")
 
-	if tempo.Spec.Observability.Metrics.CreateServiceMonitors && !v.ctrlConfig.Gates.ServiceMonitor {
+	if tempo.Spec.Observability.Metrics.CreateServiceMonitors && !v.ctrlConfig.Gates.PrometheusOperator {
 		return field.ErrorList{
 			field.Invalid(metricsBase.Child("createServiceMonitors"), tempo.Spec.Observability.Metrics.CreateServiceMonitors,
-				"the serviceMonitor feature gate must be enabled to create ServiceMonitors for Tempo components",
+				"the prometheusOperator feature gate must be enabled to create ServiceMonitors for Tempo components",
 			)}
 	}
 
-	if tempo.Spec.Observability.Metrics.EnableAlerts && !v.ctrlConfig.Gates.EnableAlerts {
+	if tempo.Spec.Observability.Metrics.CreatePrometheusRules && !v.ctrlConfig.Gates.PrometheusOperator {
 		return field.ErrorList{
-			field.Invalid(metricsBase.Child("enableAlerts"), tempo.Spec.Observability.Metrics.EnableAlerts,
-				"the enableAlerts feature gate must be enabled to create PrometheusRules for Tempo components",
+			field.Invalid(metricsBase.Child("createPrometheusRules"), tempo.Spec.Observability.Metrics.CreatePrometheusRules,
+				"the prometheusOperator feature gate must be enabled to create PrometheusRules for Tempo components",
 			)}
 	}
 
