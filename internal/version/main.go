@@ -12,9 +12,9 @@ var (
 	buildDate string
 	revision  string
 
-	operatorVersion   string
-	tempoVersion      string
-	tempoQueryVersion string
+	operatorVersion   = "0.0.0"
+	tempoVersion      = "0.0.0"
+	tempoQueryVersion = "0.0.0"
 )
 
 // Version holds this Operator's version as well as the version of some of the components it uses.

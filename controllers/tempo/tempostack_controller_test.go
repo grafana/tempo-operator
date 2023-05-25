@@ -135,7 +135,7 @@ func TestReconcile(t *testing.T) {
 	updatedTempo := v1alpha1.TempoStack{}
 	err = k8sClient.Get(context.Background(), nsn, &updatedTempo)
 	require.NoError(t, err)
-	assert.Equal(t, "1.5.0", updatedTempo.Status.TempoVersion)
+	assert.Equal(t, "0.0.0", updatedTempo.Status.TempoVersion)
 
 	// test status condition
 	assert.Equal(t, []metav1.Condition{{
