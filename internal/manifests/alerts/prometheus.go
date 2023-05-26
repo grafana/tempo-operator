@@ -13,7 +13,7 @@ const (
 	RunbookDefaultURL = "https://github.com/grafana/tempo/tree/main/operations/tempo-mixin/runbook.md"
 )
 
-// BuildPrometheusRule returns a list of k8s objects for Loki PrometheusRule.
+// BuildPrometheusRule returns a list of k8s objects for Tempo PrometheusRule.
 func BuildPrometheusRule(stackName string) ([]client.Object, error) {
 	prometheusRule, err := newPrometheusRule(stackName)
 	if err != nil {
