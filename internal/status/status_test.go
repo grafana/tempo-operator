@@ -55,6 +55,7 @@ func TestRefreshNoError(t *testing.T) {
 	}
 
 	s := v1alpha1.TempoStackStatus{
+		OperatorVersion:   "0.1.0",
 		TempoVersion:      "2.0",
 		TempoQueryVersion: "main-1b50ad3",
 		Conditions:        ReadyCondition(c, stack),

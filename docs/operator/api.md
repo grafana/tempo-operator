@@ -3593,6 +3593,29 @@ ObservabilitySpec
 
 <td>
 
+<code>operatorVersion</code><br/>
+
+<em>
+
+string
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>Version of the Tempo Operator.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
 <code>tempoVersion</code><br/>
 
 <em>

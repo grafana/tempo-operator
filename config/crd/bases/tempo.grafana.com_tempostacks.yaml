@@ -1009,6 +1009,9 @@ spec:
                   - type
                   type: object
                 type: array
+              operatorVersion:
+                description: Version of the Tempo Operator.
+                type: string
               tempoQueryVersion:
                 description: Version of the Tempo Query component used.
                 type: string

@@ -220,12 +220,18 @@ type ComponentStatus struct {
 
 // TempoStackStatus defines the observed state of TempoStack.
 type TempoStackStatus struct {
+	// Version of the Tempo Operator.
+	// +optional
+	OperatorVersion string `json:"operatorVersion,omitempty"`
+
 	// Version of the managed Tempo instance.
 	// +optional
 	TempoVersion string `json:"tempoVersion,omitempty"`
+
 	// Version of the Tempo Query component used.
 	// +optional
 	TempoQueryVersion string `json:"tempoQueryVersion,omitempty"`
+
 	// Components provides summary of all Tempo pod status grouped
 	// per component.
 	//
