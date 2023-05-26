@@ -424,6 +424,15 @@ func (r *TempoStackReconciler) findObjectsOwnedByTempoOperator(ctx context.Conte
 		for i := range servicemonitorList.Items {
 			ownedObjects[servicemonitorList.Items[i].GetUID()] = servicemonitorList.Items[i]
 		}
+
+		prometheusRulesList := &monitoringv1.PrometheusRuleList{}
+		err = r.List(ctx, prometheusRulesList, listOps)
+		if err != nil {
+			return nil, fmt.Errorf("error listing prometheus rules: %w", err)
+		}
+		for i := range prometheusRulesList.Items {
+			ownedObjects[prometheusRulesList.Items[i].GetUID()] = prometheusRulesList.Items[i]
+		}
 	}
 
 	if r.FeatureGates.OpenShift.OpenShiftRoute {
