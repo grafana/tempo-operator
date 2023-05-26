@@ -1204,6 +1204,29 @@ bool
 </td>
 </tr>
 
+<tr>
+
+<td>
+
+<code>createPrometheusRules</code><br/>
+
+<em>
+
+bool
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>CreatePrometheusRules specifies if Prometheus rules for alerts should be created for Tempo components.</p>
+
+</td>
+</tr>
+
 </tbody>
 </table>
 

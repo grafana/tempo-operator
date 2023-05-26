@@ -3,6 +3,7 @@ package manifests
 import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/os-observability/tempo-operator/internal/manifests/alerts"
 	"github.com/os-observability/tempo-operator/internal/manifests/compactor"
 	"github.com/os-observability/tempo-operator/internal/manifests/config"
 	"github.com/os-observability/tempo-operator/internal/manifests/distributor"
@@ -109,6 +110,14 @@ func BuildAll(params manifestutils.Params) ([]client.Object, error) {
 
 	if params.Tempo.Spec.Observability.Metrics.CreateServiceMonitors {
 		manifests = append(manifests, servicemonitor.BuildServiceMonitors(params)...)
+	}
+
+	if params.Tempo.Spec.Observability.Metrics.CreatePrometheusRules {
+		prometheusRuleObjs, err := alerts.BuildPrometheusRule(params.Tempo.Name)
+		if err != nil {
+			return nil, err
+		}
+		manifests = append(manifests, prometheusRuleObjs...)
 	}
 
 	return manifests, nil

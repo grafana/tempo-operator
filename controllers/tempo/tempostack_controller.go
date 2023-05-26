@@ -353,7 +353,7 @@ func (r *TempoStackReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			builder.WithPredicates(predicate.ResourceVersionChangedPredicate{}),
 		)
 
-	if r.FeatureGates.ServiceMonitor {
+	if r.FeatureGates.PrometheusOperator {
 		builder = builder.Owns(&monitoringv1.ServiceMonitor{})
 	}
 
@@ -415,7 +415,7 @@ func (r *TempoStackReconciler) findObjectsOwnedByTempoOperator(ctx context.Conte
 		ownedObjects[ingressList.Items[i].GetUID()] = &ingressList.Items[i]
 	}
 
-	if r.FeatureGates.ServiceMonitor {
+	if r.FeatureGates.PrometheusOperator {
 		servicemonitorList := &monitoringv1.ServiceMonitorList{}
 		err := r.List(ctx, servicemonitorList, listOps)
 		if err != nil {
@@ -423,6 +423,15 @@ func (r *TempoStackReconciler) findObjectsOwnedByTempoOperator(ctx context.Conte
 		}
 		for i := range servicemonitorList.Items {
 			ownedObjects[servicemonitorList.Items[i].GetUID()] = servicemonitorList.Items[i]
+		}
+
+		prometheusRulesList := &monitoringv1.PrometheusRuleList{}
+		err = r.List(ctx, prometheusRulesList, listOps)
+		if err != nil {
+			return nil, fmt.Errorf("error listing prometheus rules: %w", err)
+		}
+		for i := range prometheusRulesList.Items {
+			ownedObjects[prometheusRulesList.Items[i].GetUID()] = prometheusRulesList.Items[i]
 		}
 	}
 

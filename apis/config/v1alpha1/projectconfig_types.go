@@ -152,9 +152,9 @@ type FeatureGates struct {
 	// when using HTTPEncryption or GRPCEncryption.
 	TLSProfile string `json:"tlsProfile,omitempty"`
 
-	// ServiceMonitor defines whether the ServiceMonitor CRD exists in the cluster.
+	// PrometheusOperator defines whether the Prometheus Operator CRD exists in the cluster.
 	// This CRD is part of prometheus-operator.
-	ServiceMonitor bool `json:"serviceMonitor,omitempty"`
+	PrometheusOperator bool `json:"serviceMonitor,omitempty"`
 }
 
 //+kubebuilder:object:root=true

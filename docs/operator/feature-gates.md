@@ -395,7 +395,7 @@ bool
 
 <td>
 
-<p>ServiceMonitor defines whether the ServiceMonitor CRD exists in the cluster.
+<p>PrometheusOperator defines whether the Prometheus Operator CRD exists in the cluster.
 This CRD is part of prometheus-operator.</p>
 
 </td>

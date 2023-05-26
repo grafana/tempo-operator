@@ -906,7 +906,7 @@ func TestValidatorObservabilityTracingConfig(t *testing.T) {
 			},
 			ctrlConfig: v1alpha1.ProjectConfig{
 				Gates: v1alpha1.FeatureGates{
-					ServiceMonitor: true,
+					PrometheusOperator: true,
 				},
 			},
 			expected: nil,
@@ -926,9 +926,46 @@ func TestValidatorObservabilityTracingConfig(t *testing.T) {
 				field.Invalid(
 					metricsBase.Child("createServiceMonitors"),
 					true,
-					"the serviceMonitor feature gate must be enabled to create ServiceMonitors for Tempo components",
+					"the prometheusOperator feature gate must be enabled to create ServiceMonitors for Tempo components",
 				),
 			},
+		},
+		{
+			name: "enableAlerts enabled but enableAlerts feature gate not set",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					Observability: ObservabilitySpec{
+						Metrics: MetricsConfigSpec{
+							CreatePrometheusRules: true,
+						},
+					},
+				},
+			},
+			expected: field.ErrorList{
+				field.Invalid(
+					metricsBase.Child("createPrometheusRules"),
+					true,
+					"the prometheusOperator feature gate must be enabled to create PrometheusRules for Tempo components",
+				),
+			},
+		},
+		{
+			name: "enableAlerts enabled but enableAlerts feature gate set",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					Observability: ObservabilitySpec{
+						Metrics: MetricsConfigSpec{
+							CreatePrometheusRules: true,
+						},
+					},
+				},
+			},
+			ctrlConfig: v1alpha1.ProjectConfig{
+				Gates: v1alpha1.FeatureGates{
+					PrometheusOperator: true,
+				},
+			},
+			expected: nil,
 		},
 		{
 			name: "sampling fraction not a float",

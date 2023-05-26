@@ -32,3 +32,8 @@ func DefaultServiceAccountName(name string) string {
 func SigningCABundleName(name string) string {
 	return fmt.Sprintf("tempo-%s-ca-bundle", name)
 }
+
+// PrometheusRuleName is the name of the tempo-prometheus-rule.
+func PrometheusRuleName(stackName string) string {
+	return fmt.Sprintf("%s-prometheus-rule", stackName)
+}
