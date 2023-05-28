@@ -33,7 +33,7 @@ metadata:
     capabilities: Basic Install
     categories: Logging & Tracing
     containerImage: ghcr.io/os-observability/tempo-operator/tempo-operator
-    createdAt: "2023-05-26T03:37:02Z"
+    createdAt: "2023-05-28T17:31:16Z"
     operators.operatorframework.io/builder: operator-sdk-v1.27.0
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
   name: tempo-operator.v0.1.0

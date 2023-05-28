@@ -154,7 +154,7 @@ type FeatureGates struct {
 
 	// PrometheusOperator defines whether the Prometheus Operator CRD exists in the cluster.
 	// This CRD is part of prometheus-operator.
-	PrometheusOperator bool `json:"serviceMonitor,omitempty"`
+	PrometheusOperator bool `json:"prometheusOperator,omitempty"`
 }
 
 //+kubebuilder:object:root=true
