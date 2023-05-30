@@ -383,7 +383,7 @@ when using HTTPEncryption or GRPCEncryption.</p>
 
 <td>
 
-<code>serviceMonitor</code><br/>
+<code>prometheusOperator</code><br/>
 
 <em>
 
