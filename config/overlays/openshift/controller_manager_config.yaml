@@ -29,7 +29,7 @@ featureGates:
   openshift:
     openshiftRoute: true
     servingCertsService: true
-  serviceMonitor: true
+  prometheusOperator: true
   httpEncryption: false
   grpcEncryption: false
   tlsProfile: Modern
