@@ -540,6 +540,7 @@ spec:
         - apiGroups:
           - monitoring.coreos.com
           resources:
+          - prometheusrules
           - servicemonitors
           verbs:
           - create
@@ -795,16 +796,18 @@ spec:
   - database
   links:
   - name: Tempo Operator
-    url: https://tempo-operator.domain
+    url: https://github.com/grafana/tempo-operator
   maintainers:
   - email: ruben.vp8510@gmail.com
     name: Ruben Vargas
   - email: p.loffay@gmail.com
     name: Pavol Loffay
-  - email: kearls@redhat.com
-    name: Kevin Earls
   - email: bongartz@klimlive.de
     name: Benedikt Bongartz
+  - email: andreas@gerstmayr.me
+    name: Andreas Gerstmayr
+  - email: iblancas@redhat.com
+    name: Israel Blancas Alvarez
   maturity: alpha
   provider:
     name: Red Hat

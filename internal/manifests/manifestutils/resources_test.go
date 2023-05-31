@@ -17,8 +17,8 @@ func TestResourceSum(t *testing.T) {
 		mem += r.memory
 		cpu += r.cpu
 	}
-	assert.Equal(t, float32(1.0), cpu)
-	assert.Equal(t, float32(1.0), mem)
+	assert.InDelta(t, float32(1.0), cpu, 0.01)
+	assert.InDelta(t, float32(1.0), mem, 0.01)
 }
 
 func TestResourceWithGatewaySum(t *testing.T) {
@@ -28,8 +28,8 @@ func TestResourceWithGatewaySum(t *testing.T) {
 		mem += r.memory
 		cpu += r.cpu
 	}
-	assert.Equal(t, float32(1.0), cpu)
-	assert.Equal(t, float32(1.0), mem)
+	assert.InDelta(t, float32(1.0), cpu, 0.01)
+	assert.InDelta(t, float32(1.0), mem, 0.01)
 }
 
 func TestResources(t *testing.T) {
