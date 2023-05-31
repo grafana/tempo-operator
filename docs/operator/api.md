@@ -1151,6 +1151,52 @@ RateLimitSpec
 </table>
 
 
+## ManagementStateType { #tempo-grafana-com-v1alpha1-ManagementStateType }
+
+(<code>string</code> alias)
+
+<p>
+
+(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-TempoStackSpec">TempoStackSpec</a>)
+
+</p>
+
+<div>
+
+<p>ManagementStateType defines the type for CR management states.</p>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Value</th>
+
+<th>Description</th>
+
+</tr>
+
+</thead>
+
+<tbody><tr><td><p>&#34;Managed&#34;</p></td>
+
+<td><p>ManagementStateManaged when the TempoStack custom resource should be
+reconciled by the operator.</p>
+</td>
+
+</tr><tr><td><p>&#34;Unmanaged&#34;</p></td>
+
+<td><p>ManagementStateUnmanaged when the TempoStack custom resource should not be
+reconciled by the operator.</p>
+</td>
+
+</tr></tbody>
+</table>
+
+
 ## MetricsConfigSpec { #tempo-grafana-com-v1alpha1-MetricsConfigSpec }
 
 <p>
@@ -3145,6 +3191,32 @@ TempoStackSpec
 </thead>
 
 <tbody>
+
+<tr>
+
+<td>
+
+<code>managementState</code><br/>
+
+<em>
+
+<a href="#tempo-grafana-com-v1alpha1-ManagementStateType">
+
+ManagementStateType
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<p>ManagementState defines if the CR should be managed by the operator or not.
+Default is managed.</p>
+
+</td>
+</tr>
 
 <tr>
 
