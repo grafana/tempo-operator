@@ -138,6 +138,13 @@ spec:
         path: limits.perTenant.query.maxSearchBytesPerTrace
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:number
+      - description: ManagementState defines if the CR should be managed by the operator
+          or not. Default is managed.
+        displayName: Management State
+        path: managementState
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:select:Managed
+        - urn:alm:descriptor:com.tectonic.ui:select:Unmanaged
       - description: ObservabilitySpec defines how telemetry data gets handled.
         displayName: Observability
         path: observability

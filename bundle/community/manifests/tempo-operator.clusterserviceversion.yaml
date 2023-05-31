@@ -33,7 +33,7 @@ metadata:
     capabilities: Basic Install
     categories: Logging & Tracing
     containerImage: ghcr.io/os-observability/tempo-operator/tempo-operator
-    createdAt: "2023-05-30T09:14:34Z"
+    createdAt: "2023-05-31T13:47:35Z"
     operators.operatorframework.io/builder: operator-sdk-v1.27.0
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
   name: tempo-operator.v0.1.0
@@ -168,6 +168,13 @@ spec:
         path: limits.perTenant.query.maxSearchBytesPerTrace
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:number
+      - description: ManagementState defines if the CR should be managed by the operator
+          or not. Default is managed.
+        displayName: Management State
+        path: managementState
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:select:Managed
+        - urn:alm:descriptor:com.tectonic.ui:select:Unmanaged
       - description: ObservabilitySpec defines how telemetry data gets handled.
         displayName: Observability
         path: observability
