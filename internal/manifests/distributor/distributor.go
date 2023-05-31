@@ -90,6 +90,31 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 									ContainerPort: manifestutils.PortMemberlist,
 									Protocol:      corev1.ProtocolTCP,
 								},
+								{
+									Name:          manifestutils.PortJaegerThriftHTTPName,
+									ContainerPort: manifestutils.PortJaegerThriftHTTP,
+									Protocol:      corev1.ProtocolTCP,
+								},
+								{
+									Name:          manifestutils.PortJaegerThriftCompactName,
+									ContainerPort: manifestutils.PortJaegerThriftCompact,
+									Protocol:      corev1.ProtocolUDP,
+								},
+								{
+									Name:          manifestutils.PortJaegerThriftBinaryName,
+									ContainerPort: manifestutils.PortJaegerThriftBinary,
+									Protocol:      corev1.ProtocolUDP,
+								},
+								{
+									Name:          manifestutils.PortJaegerGrpcName,
+									ContainerPort: manifestutils.PortJaegerGrpc,
+									Protocol:      corev1.ProtocolTCP,
+								},
+								{
+									Name:          manifestutils.HttpMemberlistPortName,
+									ContainerPort: manifestutils.PortMemberlist,
+									Protocol:      corev1.ProtocolTCP,
+								},
 							},
 							ReadinessProbe: manifestutils.TempoReadinessProbe(params.Gates.HTTPEncryption || params.Gates.GRPCEncryption),
 							VolumeMounts: []corev1.VolumeMount{

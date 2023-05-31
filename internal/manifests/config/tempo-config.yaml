@@ -6,16 +6,26 @@ compactor:
       store: memberlist
 distributor:
   receivers:
+{{- if not .Gateway }}
     jaeger:
       protocols:
         thrift_http:
           endpoint: 0.0.0.0:14268
+        thrift_binary:
+          endpoint: 0.0.0.0:6832
+        thrift_compact:
+          endpoint: 0.0.0.0:6831
+        grpc:
+          endpoint: 0.0.0.0:14250
+{{- end }}
     otlp:
       protocols:
         grpc:
           endpoint: 0.0.0.0:4317
+{{- if not .Gateway }}
         http:
           endpoint: 0.0.0.0:4318
+{{- end }}
   ring:
     kvstore:
       store: memberlist
