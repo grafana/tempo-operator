@@ -57,7 +57,7 @@ type TempoStackReconciler struct {
 // +kubebuilder:rbac:groups=route.openshift.io,resources=routes;routes/custom-host,verbs=get;list;watch;create;update;delete
 // +kubebuilder:rbac:groups=operator.openshift.io,resources=ingresscontrollers,verbs=get;list;watch
 // +kubebuilder:rbac:groups=config.openshift.io,resources=dnses,verbs=get;list;watch
-// +kubebuilder:rbac:groups=monitoring.coreos.com,resources=servicemonitors,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=monitoring.coreos.com,resources=servicemonitors;prometheusrules,verbs=get;list;watch;create;update;patch;delete
 
 //+kubebuilder:rbac:groups=tempo.grafana.com,resources=tempostacks,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=tempo.grafana.com,resources=tempostacks/status,verbs=get;update;patch
@@ -367,6 +367,7 @@ func (r *TempoStackReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	if r.FeatureGates.PrometheusOperator {
 		builder = builder.Owns(&monitoringv1.ServiceMonitor{})
+		builder = builder.Owns(&monitoringv1.PrometheusRule{})
 	}
 
 	if r.FeatureGates.OpenShift.OpenShiftRoute {

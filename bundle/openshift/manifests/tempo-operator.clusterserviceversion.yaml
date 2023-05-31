@@ -33,7 +33,7 @@ metadata:
     capabilities: Basic Install
     categories: Logging & Tracing
     containerImage: ghcr.io/os-observability/tempo-operator/tempo-operator
-    createdAt: "2023-05-28T17:31:14Z"
+    createdAt: "2023-05-30T09:14:32Z"
     operators.operatorframework.io/builder: operator-sdk-v1.27.0
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
   name: tempo-operator.v0.1.0
@@ -540,6 +540,7 @@ spec:
         - apiGroups:
           - monitoring.coreos.com
           resources:
+          - prometheusrules
           - servicemonitors
           verbs:
           - create
@@ -713,7 +714,10 @@ spec:
                     port: 8081
                   initialDelaySeconds: 5
                   periodSeconds: 10
-                resources: {}
+                resources:
+                  requests:
+                    cpu: 100m
+                    memory: 64Mi
                 securityContext:
                   allowPrivilegeEscalation: false
                   capabilities:
@@ -792,16 +796,18 @@ spec:
   - database
   links:
   - name: Tempo Operator
-    url: https://tempo-operator.domain
+    url: https://github.com/grafana/tempo-operator
   maintainers:
   - email: ruben.vp8510@gmail.com
     name: Ruben Vargas
   - email: p.loffay@gmail.com
     name: Pavol Loffay
-  - email: kearls@redhat.com
-    name: Kevin Earls
   - email: bongartz@klimlive.de
     name: Benedikt Bongartz
+  - email: andreas@gerstmayr.me
+    name: Andreas Gerstmayr
+  - email: iblancas@redhat.com
+    name: Israel Blancas Alvarez
   maturity: alpha
   provider:
     name: Red Hat
