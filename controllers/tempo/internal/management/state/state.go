@@ -3,8 +3,9 @@ package state
 import (
 	"context"
 
-	tempov1alpha1 "github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	tempov1alpha1 "github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 
 	"github.com/ViaQ/logerr/v2/kverrors"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
