@@ -115,6 +115,26 @@ func TestBuildDistributor(t *testing.T) {
 									ContainerPort: manifestutils.PortMemberlist,
 									Protocol:      corev1.ProtocolTCP,
 								},
+								{
+									Name:          manifestutils.PortJaegerThriftHTTPName,
+									ContainerPort: manifestutils.PortJaegerThriftHTTP,
+									Protocol:      corev1.ProtocolTCP,
+								},
+								{
+									Name:          manifestutils.PortJaegerThriftCompactName,
+									ContainerPort: manifestutils.PortJaegerThriftCompact,
+									Protocol:      corev1.ProtocolUDP,
+								},
+								{
+									Name:          manifestutils.PortJaegerThriftBinaryName,
+									ContainerPort: manifestutils.PortJaegerThriftBinary,
+									Protocol:      corev1.ProtocolUDP,
+								},
+								{
+									Name:          manifestutils.PortJaegerGrpcName,
+									ContainerPort: manifestutils.PortJaegerGrpc,
+									Protocol:      corev1.ProtocolTCP,
+								},
 							},
 							ReadinessProbe: &corev1.Probe{
 								ProbeHandler: corev1.ProbeHandler{

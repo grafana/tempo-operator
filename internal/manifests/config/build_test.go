@@ -30,7 +30,13 @@ distributor:
     jaeger:
       protocols:
         thrift_http:
-          endpoint: "0.0.0.0:14268"
+          endpoint: 0.0.0.0:14268
+        thrift_binary:
+          endpoint: 0.0.0.0:6832
+        thrift_compact:
+          endpoint: 0.0.0.0:6831
+        grpc:
+          endpoint: 0.0.0.0:14250
     otlp:
       protocols:
         grpc:
@@ -149,7 +155,13 @@ distributor:
     jaeger:
       protocols:
         thrift_http:
-          endpoint: "0.0.0.0:14268"
+          endpoint: 0.0.0.0:14268
+        thrift_binary:
+          endpoint: 0.0.0.0:6832
+        thrift_compact:
+          endpoint: 0.0.0.0:6831
+        grpc:
+          endpoint: 0.0.0.0:14250
     otlp:
       protocols:
         grpc:
@@ -233,7 +245,13 @@ distributor:
     jaeger:
       protocols:
         thrift_http:
-          endpoint: "0.0.0.0:14268"
+          endpoint: 0.0.0.0:14268
+        thrift_binary:
+          endpoint: 0.0.0.0:6832
+        thrift_compact:
+          endpoint: 0.0.0.0:6831
+        grpc:
+          endpoint: 0.0.0.0:14250
     otlp:
       protocols:
         grpc:
@@ -318,7 +336,13 @@ distributor:
     jaeger:
       protocols:
         thrift_http:
-          endpoint: "0.0.0.0:14268"
+          endpoint: 0.0.0.0:14268
+        thrift_binary:
+          endpoint: 0.0.0.0:6832
+        thrift_compact:
+          endpoint: 0.0.0.0:6831
+        grpc:
+          endpoint: 0.0.0.0:14250
     otlp:
       protocols:
         grpc:
@@ -404,7 +428,13 @@ distributor:
     jaeger:
       protocols:
         thrift_http:
-          endpoint: "0.0.0.0:14268"
+          endpoint: 0.0.0.0:14268
+        thrift_binary:
+          endpoint: 0.0.0.0:6832
+        thrift_compact:
+          endpoint: 0.0.0.0:6831
+        grpc:
+          endpoint: 0.0.0.0:14250
     otlp:
       protocols:
         grpc:
@@ -490,7 +520,13 @@ distributor:
     jaeger:
       protocols:
         thrift_http:
-          endpoint: "0.0.0.0:14268"
+          endpoint: 0.0.0.0:14268
+        thrift_binary:
+          endpoint: 0.0.0.0:6832
+        thrift_compact:
+          endpoint: 0.0.0.0:6831
+        grpc:
+          endpoint: 0.0.0.0:14250
     otlp:
       protocols:
         grpc:
@@ -576,7 +612,13 @@ distributor:
     jaeger:
       protocols:
         thrift_http:
-          endpoint: "0.0.0.0:14268"
+          endpoint: 0.0.0.0:14268
+        thrift_binary:
+          endpoint: 0.0.0.0:6832
+        thrift_compact:
+          endpoint: 0.0.0.0:6831
+        grpc:
+          endpoint: 0.0.0.0:14250
     otlp:
       protocols:
         grpc:
@@ -662,7 +704,13 @@ distributor:
     jaeger:
       protocols:
         thrift_http:
-          endpoint: "0.0.0.0:14268"
+          endpoint: 0.0.0.0:14268
+        thrift_binary:
+          endpoint: 0.0.0.0:6832
+        thrift_compact:
+          endpoint: 0.0.0.0:6831
+        grpc:
+          endpoint: 0.0.0.0:14250
     otlp:
       protocols:
         grpc:
@@ -755,7 +803,13 @@ distributor:
     jaeger:
       protocols:
         thrift_http:
-          endpoint: "0.0.0.0:14268"
+          endpoint: 0.0.0.0:14268
+        thrift_binary:
+          endpoint: 0.0.0.0:6832
+        thrift_compact:
+          endpoint: 0.0.0.0:6831
+        grpc:
+          endpoint: 0.0.0.0:14250
     otlp:
       protocols:
         grpc:
@@ -856,7 +910,13 @@ distributor:
     jaeger:
       protocols:
         thrift_http:
-          endpoint: "0.0.0.0:14268"
+          endpoint: 0.0.0.0:14268
+        thrift_binary:
+          endpoint: 0.0.0.0:6832
+        thrift_compact:
+          endpoint: 0.0.0.0:6831
+        grpc:
+          endpoint: 0.0.0.0:14250
     otlp:
       protocols:
         grpc:
@@ -1015,7 +1075,13 @@ distributor:
     jaeger:
       protocols:
         thrift_http:
-          endpoint: "0.0.0.0:14268"
+          endpoint: 0.0.0.0:14268
+        thrift_binary:
+          endpoint: 0.0.0.0:6832
+        thrift_compact:
+          endpoint: 0.0.0.0:6831
+        grpc:
+          endpoint: 0.0.0.0:14250
     otlp:
       protocols:
         grpc:
@@ -1131,7 +1197,13 @@ distributor:
     jaeger:
       protocols:
         thrift_http:
-          endpoint: "0.0.0.0:14268"
+          endpoint: 0.0.0.0:14268
+        thrift_binary:
+          endpoint: 0.0.0.0:6832
+        thrift_compact:
+          endpoint: 0.0.0.0:6831
+        grpc:
+          endpoint: 0.0.0.0:14250
     otlp:
       protocols:
         grpc:
@@ -1237,7 +1309,13 @@ distributor:
     jaeger:
       protocols:
         thrift_http:
-          endpoint: "0.0.0.0:14268"
+          endpoint: 0.0.0.0:14268
+        thrift_binary:
+          endpoint: 0.0.0.0:6832
+        thrift_compact:
+          endpoint: 0.0.0.0:6831
+        grpc:
+          endpoint: 0.0.0.0:14250
     otlp:
       protocols:
         grpc:
@@ -1349,7 +1427,13 @@ distributor:
     jaeger:
       protocols:
         thrift_http:
-          endpoint: "0.0.0.0:14268"
+          endpoint: 0.0.0.0:14268
+        thrift_binary:
+          endpoint: 0.0.0.0:6832
+        thrift_compact:
+          endpoint: 0.0.0.0:6831
+        grpc:
+          endpoint: 0.0.0.0:14250
     otlp:
       protocols:
         grpc:
@@ -1503,16 +1587,11 @@ compactor:
       store: memberlist
 distributor:
   receivers:
-    jaeger:
-      protocols:
-        thrift_http:
-          endpoint: "0.0.0.0:14268"
     otlp:
       protocols:
         grpc:
           endpoint: "0.0.0.0:4317"
-        http:
-          endpoint: "0.0.0.0:4318"
+
   ring:
     kvstore:
       store: memberlist

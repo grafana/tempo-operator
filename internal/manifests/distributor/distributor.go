@@ -110,11 +110,6 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 									ContainerPort: manifestutils.PortJaegerGrpc,
 									Protocol:      corev1.ProtocolTCP,
 								},
-								{
-									Name:          manifestutils.HttpMemberlistPortName,
-									ContainerPort: manifestutils.PortMemberlist,
-									Protocol:      corev1.ProtocolTCP,
-								},
 							},
 							ReadinessProbe: manifestutils.TempoReadinessProbe(params.Gates.HTTPEncryption || params.Gates.GRPCEncryption),
 							VolumeMounts: []corev1.VolumeMount{
