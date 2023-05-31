@@ -30,6 +30,7 @@ import (
 
 	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
+	tempoStackState "github.com/os-observability/tempo-operator/controllers/tempo/internal/management/state"
 	"github.com/os-observability/tempo-operator/internal/certrotation/handlers"
 	"github.com/os-observability/tempo-operator/internal/handlers/gateway"
 	"github.com/os-observability/tempo-operator/internal/manifests"
@@ -74,6 +75,17 @@ type TempoStackReconciler struct {
 func (r *TempoStackReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := log.FromContext(ctx)
 	log = log.WithValues("tempo", req.NamespacedName)
+
+	managed, err := tempoStackState.IsManaged(ctx, req, r.Client)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+	if !managed {
+		log.Info("Skipping reconciliation for unmanaged TempoStack resource", "name", req.String())
+		// Stop requeueing for unmanaged TempoStack custom resources
+		return ctrl.Result{}, nil
+	}
+
 	tempo := v1alpha1.TempoStack{}
 	if err := r.Get(ctx, req.NamespacedName, &tempo); err != nil {
 		if !apierrors.IsNotFound(err) {
@@ -94,7 +106,7 @@ func (r *TempoStackReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		}
 	}
 
-	err := r.reconcileManifests(ctx, log, req, tempo)
+	err = r.reconcileManifests(ctx, log, req, tempo)
 	return r.handleStatus(ctx, tempo, err)
 }
 

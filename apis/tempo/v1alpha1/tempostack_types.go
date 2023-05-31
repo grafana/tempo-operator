@@ -8,8 +8,32 @@ import (
 	"github.com/os-observability/tempo-operator/apis/config/v1alpha1"
 )
 
+// ManagementStateType defines the type for CR management states.
+//
+// +kubebuilder:validation:Enum=Managed;Unmanaged
+type ManagementStateType string
+
+const (
+	// ManagementStateManaged when the TempoStack custom resource should be
+	// reconciled by the operator.
+	ManagementStateManaged ManagementStateType = "Managed"
+
+	// ManagementStateUnmanaged when the TempoStack custom resource should not be
+	// reconciled by the operator.
+	ManagementStateUnmanaged ManagementStateType = "Unmanaged"
+)
+
 // TempoStackSpec defines the desired state of TempoStack.
 type TempoStackSpec struct {
+	// ManagementState defines if the CR should be managed by the operator or not.
+	// Default is managed.
+	//
+	// +required
+	// +kubebuilder:validation:Required
+	// +kubebuilder:default:=Managed
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors={"urn:alm:descriptor:com.tectonic.ui:select:Managed","urn:alm:descriptor:com.tectonic.ui:select:Unmanaged"},displayName="Management State"
+	ManagementState ManagementStateType `json:"managementState,omitempty"`
+
 	// LimitSpec is used to limit ingestion and querying rates.
 	//
 	// +optional
