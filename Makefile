@@ -158,7 +158,7 @@ uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified 
 deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	$(KUSTOMIZE) build config/overlays/$(BUNDLE_VARIANT) | kubectl apply -f -
-	kubectl rollout --namespace $(OPERATOR_NAMESPACE) status deployment/tempo-operator-controller-manager
+	kubectl rollout --namespace $(OPERATOR_NAMESPACE) status deployment/tempo-operator-controller
 
 .PHONY: undeploy
 undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
@@ -331,8 +331,8 @@ e2e:
 .PHONY: prepare-e2e-openshift
 prepare-e2e-openshift: deploy-minio
 	kubectl apply -f ./bundle/openshift/manifests/tempo-operator-manager-config_v1_configmap.yaml -n $(OPERATOR_NAMESPACE)
-	kubectl rollout restart deployment/tempo-operator-controller-manager -n $(OPERATOR_NAMESPACE)
-	kubectl rollout status deployment/tempo-operator-controller-manager -n $(OPERATOR_NAMESPACE) --timeout=30s
+	kubectl rollout restart deployment/tempo-operator-controller -n $(OPERATOR_NAMESPACE)
+	kubectl rollout status deployment/tempo-operator-controller -n $(OPERATOR_NAMESPACE) --timeout=30s
 
 .PHONY: e2e-openshift
 e2e-openshift:
