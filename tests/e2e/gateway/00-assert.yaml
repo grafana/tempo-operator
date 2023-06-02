@@ -33,3 +33,5 @@ spec:
           defaultMode: 420
           name: dex-config
         name: dex-config
+status:
+  readyReplicas: 1
