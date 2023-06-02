@@ -19,179 +19,124 @@ import (
 )
 
 func TestBuildDistributor(t *testing.T) {
-	objects, err := BuildDistributor(manifestutils.Params{Tempo: v1alpha1.TempoStack{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "test",
-			Namespace: "project1",
-		},
-		Spec: v1alpha1.TempoStackSpec{
-			Images: configv1alpha1.ImagesSpec{
-				Tempo: "docker.io/grafana/tempo:1.5.0",
-			},
-			ServiceAccount: "tempo-test-serviceaccount",
-			Template: v1alpha1.TempoTemplateSpec{
-				Distributor: v1alpha1.TempoComponentSpec{
-					Replicas:     pointer.Int32(1),
-					NodeSelector: map[string]string{"a": "b"},
-					Tolerations: []corev1.Toleration{
-						{
-							Key: "c",
-						},
-					},
-				},
-			},
-			Resources: v1alpha1.Resources{
-				Total: &corev1.ResourceRequirements{
-					Limits: corev1.ResourceList{
-						corev1.ResourceCPU:    resource.MustParse("1000m"),
-						corev1.ResourceMemory: resource.MustParse("2Gi"),
-					},
-				},
-			},
-		},
-	}})
-	require.NoError(t, err)
 
-	labels := manifestutils.ComponentLabels("distributor", "test")
-	annotations := manifestutils.CommonAnnotations("")
-	assert.Equal(t, 2, len(objects))
-	assert.Equal(t, &v1.Deployment{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: v1.SchemeGroupVersion.String(),
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "tempo-test-distributor",
-			Namespace: "project1",
-			Labels:    labels,
-		},
-		Spec: v1.DeploymentSpec{
-			Replicas: pointer.Int32(1),
-			Selector: &metav1.LabelSelector{
-				MatchLabels: labels,
-			},
-			Template: corev1.PodTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{
-					Labels:      k8slabels.Merge(labels, map[string]string{"tempo-gossip-member": "true"}),
-					Annotations: annotations,
+	tests := []struct {
+		name                   string
+		enableGateway          bool
+		expectedContainerPorts []corev1.ContainerPort
+		expectedServicePorts   []corev1.ServicePort
+		expectedResources      corev1.ResourceRequirements
+	}{
+		{
+			name:          "Gateway disabled",
+			enableGateway: false,
+			expectedContainerPorts: []corev1.ContainerPort{
+				{
+					Name:          manifestutils.OtlpGrpcPortName,
+					ContainerPort: manifestutils.PortOtlpGrpcServer,
+					Protocol:      corev1.ProtocolTCP,
 				},
-				Spec: corev1.PodSpec{
-					ServiceAccountName: "tempo-test-serviceaccount",
-					NodeSelector:       map[string]string{"a": "b"},
-					Tolerations: []corev1.Toleration{
-						{
-							Key: "c",
-						},
-					},
-					Affinity: manifestutils.DefaultAffinity(labels),
-					Containers: []corev1.Container{
-						{
-							Name:  "tempo",
-							Image: "docker.io/grafana/tempo:1.5.0",
-							Args:  []string{"-target=distributor", "-config.file=/conf/tempo.yaml"},
-							VolumeMounts: []corev1.VolumeMount{
-								{
-									Name:      manifestutils.ConfigVolumeName,
-									MountPath: "/conf",
-									ReadOnly:  true,
-								},
-								{
-									Name:      manifestutils.TmpStorageVolumeName,
-									MountPath: manifestutils.TmpStoragePath,
-								},
-							},
-							Ports: []corev1.ContainerPort{
-								{
-									Name:          manifestutils.OtlpGrpcPortName,
-									ContainerPort: manifestutils.PortOtlpGrpcServer,
-									Protocol:      corev1.ProtocolTCP,
-								},
-								{
-									Name:          manifestutils.HttpPortName,
-									ContainerPort: manifestutils.PortHTTPServer,
-									Protocol:      corev1.ProtocolTCP,
-								},
-								{
-									Name:          manifestutils.HttpMemberlistPortName,
-									ContainerPort: manifestutils.PortMemberlist,
-									Protocol:      corev1.ProtocolTCP,
-								},
-								{
-									Name:          manifestutils.PortJaegerThriftHTTPName,
-									ContainerPort: manifestutils.PortJaegerThriftHTTP,
-									Protocol:      corev1.ProtocolTCP,
-								},
-								{
-									Name:          manifestutils.PortJaegerThriftCompactName,
-									ContainerPort: manifestutils.PortJaegerThriftCompact,
-									Protocol:      corev1.ProtocolUDP,
-								},
-								{
-									Name:          manifestutils.PortJaegerThriftBinaryName,
-									ContainerPort: manifestutils.PortJaegerThriftBinary,
-									Protocol:      corev1.ProtocolUDP,
-								},
-								{
-									Name:          manifestutils.PortJaegerGrpcName,
-									ContainerPort: manifestutils.PortJaegerGrpc,
-									Protocol:      corev1.ProtocolTCP,
-								},
-							},
-							ReadinessProbe: &corev1.Probe{
-								ProbeHandler: corev1.ProbeHandler{
-									HTTPGet: &corev1.HTTPGetAction{
-										Scheme: corev1.URISchemeHTTP,
-										Path:   manifestutils.TempoReadinessPath,
-										Port:   intstr.FromString(manifestutils.HttpPortName),
-									},
-								},
-								InitialDelaySeconds: 15,
-								TimeoutSeconds:      1,
-							},
-							Resources: corev1.ResourceRequirements{
-								Limits: corev1.ResourceList{
-									corev1.ResourceCPU:    *resource.NewMilliQuantity(270, resource.BinarySI),
-									corev1.ResourceMemory: *resource.NewQuantity(257698032, resource.BinarySI),
-								},
-								Requests: corev1.ResourceList{
-									corev1.ResourceCPU:    *resource.NewMilliQuantity(81, resource.BinarySI),
-									corev1.ResourceMemory: *resource.NewQuantity(77309416, resource.BinarySI),
-								},
-							},
-							SecurityContext: manifestutils.TempoContainerSecurityContext(),
-						},
-					},
-					Volumes: []corev1.Volume{
-						{
-							Name: manifestutils.ConfigVolumeName,
-							VolumeSource: corev1.VolumeSource{
-								ConfigMap: &corev1.ConfigMapVolumeSource{
-									LocalObjectReference: corev1.LocalObjectReference{
-										Name: "tempo-test",
-									},
-								},
-							},
-						},
-						{
-							Name: manifestutils.TmpStorageVolumeName,
-							VolumeSource: corev1.VolumeSource{
-								EmptyDir: &corev1.EmptyDirVolumeSource{},
-							},
-						},
-					},
+				{
+					Name:          manifestutils.HttpPortName,
+					ContainerPort: manifestutils.PortHTTPServer,
+					Protocol:      corev1.ProtocolTCP,
+				},
+				{
+					Name:          manifestutils.HttpMemberlistPortName,
+					ContainerPort: manifestutils.PortMemberlist,
+					Protocol:      corev1.ProtocolTCP,
+				},
+				{
+					Name:          manifestutils.PortJaegerThriftHTTPName,
+					ContainerPort: manifestutils.PortJaegerThriftHTTP,
+					Protocol:      corev1.ProtocolTCP,
+				},
+				{
+					Name:          manifestutils.PortJaegerThriftCompactName,
+					ContainerPort: manifestutils.PortJaegerThriftCompact,
+					Protocol:      corev1.ProtocolUDP,
+				},
+				{
+					Name:          manifestutils.PortJaegerThriftBinaryName,
+					ContainerPort: manifestutils.PortJaegerThriftBinary,
+					Protocol:      corev1.ProtocolUDP,
+				},
+				{
+					Name:          manifestutils.PortJaegerGrpcName,
+					ContainerPort: manifestutils.PortJaegerGrpc,
+					Protocol:      corev1.ProtocolTCP,
+				},
+			},
+			expectedServicePorts: []corev1.ServicePort{
+				{
+					Name:       manifestutils.OtlpGrpcPortName,
+					Protocol:   corev1.ProtocolTCP,
+					Port:       manifestutils.PortOtlpGrpcServer,
+					TargetPort: intstr.FromString(manifestutils.OtlpGrpcPortName),
+				},
+				{
+					Name:       manifestutils.HttpPortName,
+					Protocol:   corev1.ProtocolTCP,
+					Port:       manifestutils.PortHTTPServer,
+					TargetPort: intstr.FromString(manifestutils.HttpPortName),
+				},
+				{
+					Name:       manifestutils.PortJaegerThriftHTTPName,
+					Port:       manifestutils.PortJaegerThriftHTTP,
+					TargetPort: intstr.FromString(manifestutils.PortJaegerThriftHTTPName),
+					Protocol:   corev1.ProtocolTCP,
+				},
+				{
+					Name:       manifestutils.PortJaegerThriftCompactName,
+					Port:       manifestutils.PortJaegerThriftCompact,
+					TargetPort: intstr.FromString(manifestutils.PortJaegerThriftCompactName),
+					Protocol:   corev1.ProtocolUDP,
+				},
+				{
+					Name:       manifestutils.PortJaegerThriftBinaryName,
+					Port:       manifestutils.PortJaegerThriftBinary,
+					TargetPort: intstr.FromString(manifestutils.PortJaegerThriftBinaryName),
+					Protocol:   corev1.ProtocolUDP,
+				},
+				{
+					Name:       manifestutils.PortJaegerGrpcName,
+					Port:       manifestutils.PortJaegerGrpc,
+					TargetPort: intstr.FromString(manifestutils.PortJaegerGrpcName),
+					Protocol:   corev1.ProtocolTCP,
+				},
+			},
+			expectedResources: corev1.ResourceRequirements{
+				Limits: corev1.ResourceList{
+					corev1.ResourceCPU:    *resource.NewMilliQuantity(270, resource.BinarySI),
+					corev1.ResourceMemory: *resource.NewQuantity(257698032, resource.BinarySI),
+				},
+				Requests: corev1.ResourceList{
+					corev1.ResourceCPU:    *resource.NewMilliQuantity(81, resource.BinarySI),
+					corev1.ResourceMemory: *resource.NewQuantity(77309416, resource.BinarySI),
 				},
 			},
 		},
-	}, objects[0])
-
-	assert.NoError(t, err)
-	assert.Equal(t, &corev1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "tempo-test-distributor",
-			Namespace: "project1",
-			Labels:    labels,
-		},
-		Spec: corev1.ServiceSpec{
-			Ports: []corev1.ServicePort{
+		{
+			name:          "Gateway enable",
+			enableGateway: true,
+			expectedContainerPorts: []corev1.ContainerPort{
+				{
+					Name:          manifestutils.OtlpGrpcPortName,
+					ContainerPort: manifestutils.PortOtlpGrpcServer,
+					Protocol:      corev1.ProtocolTCP,
+				},
+				{
+					Name:          manifestutils.HttpPortName,
+					ContainerPort: manifestutils.PortHTTPServer,
+					Protocol:      corev1.ProtocolTCP,
+				},
+				{
+					Name:          manifestutils.HttpMemberlistPortName,
+					ContainerPort: manifestutils.PortMemberlist,
+					Protocol:      corev1.ProtocolTCP,
+				},
+			},
+			expectedServicePorts: []corev1.ServicePort{
 				{
 					Name:       manifestutils.OtlpGrpcPortName,
 					Protocol:   corev1.ProtocolTCP,
@@ -205,7 +150,155 @@ func TestBuildDistributor(t *testing.T) {
 					TargetPort: intstr.FromString(manifestutils.HttpPortName),
 				},
 			},
-			Selector: labels,
+			expectedResources: corev1.ResourceRequirements{
+				Limits: corev1.ResourceList{
+					corev1.ResourceCPU:    *resource.NewMilliQuantity(260, resource.BinarySI),
+					corev1.ResourceMemory: *resource.NewQuantity(236223200, resource.BinarySI),
+				},
+				Requests: corev1.ResourceList{
+					corev1.ResourceCPU:    *resource.NewMilliQuantity(78, resource.BinarySI),
+					corev1.ResourceMemory: *resource.NewQuantity(70866960, resource.BinarySI),
+				},
+			},
 		},
-	}, objects[1])
+	}
+
+	for _, ts := range tests {
+		t.Run(ts.name, func(t *testing.T) {
+			objects, err := BuildDistributor(manifestutils.Params{Tempo: v1alpha1.TempoStack{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test",
+					Namespace: "project1",
+				},
+				Spec: v1alpha1.TempoStackSpec{
+					Images: configv1alpha1.ImagesSpec{
+						Tempo: "docker.io/grafana/tempo:1.5.0",
+					},
+					ServiceAccount: "tempo-test-serviceaccount",
+					Template: v1alpha1.TempoTemplateSpec{
+						Distributor: v1alpha1.TempoComponentSpec{
+							Replicas:     pointer.Int32(1),
+							NodeSelector: map[string]string{"a": "b"},
+							Tolerations: []corev1.Toleration{
+								{
+									Key: "c",
+								},
+							},
+						},
+						Gateway: v1alpha1.TempoGatewaySpec{
+							Enabled: ts.enableGateway,
+						},
+					},
+					Resources: v1alpha1.Resources{
+						Total: &corev1.ResourceRequirements{
+							Limits: corev1.ResourceList{
+								corev1.ResourceCPU:    resource.MustParse("1000m"),
+								corev1.ResourceMemory: resource.MustParse("2Gi"),
+							},
+						},
+					},
+				},
+			}})
+			require.NoError(t, err)
+
+			labels := manifestutils.ComponentLabels("distributor", "test")
+			annotations := manifestutils.CommonAnnotations("")
+			assert.Equal(t, 2, len(objects))
+			assert.Equal(t, &v1.Deployment{
+				TypeMeta: metav1.TypeMeta{
+					APIVersion: v1.SchemeGroupVersion.String(),
+				},
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "tempo-test-distributor",
+					Namespace: "project1",
+					Labels:    labels,
+				},
+				Spec: v1.DeploymentSpec{
+					Replicas: pointer.Int32(1),
+					Selector: &metav1.LabelSelector{
+						MatchLabels: labels,
+					},
+					Template: corev1.PodTemplateSpec{
+						ObjectMeta: metav1.ObjectMeta{
+							Labels:      k8slabels.Merge(labels, map[string]string{"tempo-gossip-member": "true"}),
+							Annotations: annotations,
+						},
+						Spec: corev1.PodSpec{
+							ServiceAccountName: "tempo-test-serviceaccount",
+							NodeSelector:       map[string]string{"a": "b"},
+							Tolerations: []corev1.Toleration{
+								{
+									Key: "c",
+								},
+							},
+							Affinity: manifestutils.DefaultAffinity(labels),
+							Containers: []corev1.Container{
+								{
+									Name:  "tempo",
+									Image: "docker.io/grafana/tempo:1.5.0",
+									Args:  []string{"-target=distributor", "-config.file=/conf/tempo.yaml"},
+									VolumeMounts: []corev1.VolumeMount{
+										{
+											Name:      manifestutils.ConfigVolumeName,
+											MountPath: "/conf",
+											ReadOnly:  true,
+										},
+										{
+											Name:      manifestutils.TmpStorageVolumeName,
+											MountPath: manifestutils.TmpStoragePath,
+										},
+									},
+									Ports: ts.expectedContainerPorts,
+									ReadinessProbe: &corev1.Probe{
+										ProbeHandler: corev1.ProbeHandler{
+											HTTPGet: &corev1.HTTPGetAction{
+												Scheme: corev1.URISchemeHTTP,
+												Path:   manifestutils.TempoReadinessPath,
+												Port:   intstr.FromString(manifestutils.HttpPortName),
+											},
+										},
+										InitialDelaySeconds: 15,
+										TimeoutSeconds:      1,
+									},
+									Resources:       ts.expectedResources,
+									SecurityContext: manifestutils.TempoContainerSecurityContext(),
+								},
+							},
+							Volumes: []corev1.Volume{
+								{
+									Name: manifestutils.ConfigVolumeName,
+									VolumeSource: corev1.VolumeSource{
+										ConfigMap: &corev1.ConfigMapVolumeSource{
+											LocalObjectReference: corev1.LocalObjectReference{
+												Name: "tempo-test",
+											},
+										},
+									},
+								},
+								{
+									Name: manifestutils.TmpStorageVolumeName,
+									VolumeSource: corev1.VolumeSource{
+										EmptyDir: &corev1.EmptyDirVolumeSource{},
+									},
+								},
+							},
+						},
+					},
+				},
+			}, objects[0])
+
+			assert.NoError(t, err)
+			assert.Equal(t, &corev1.Service{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "tempo-test-distributor",
+					Namespace: "project1",
+					Labels:    labels,
+				},
+				Spec: corev1.ServiceSpec{
+					Ports:    ts.expectedServicePorts,
+					Selector: labels,
+				},
+			}, objects[1])
+		})
+	}
 }

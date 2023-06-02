@@ -44,6 +44,49 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
 	cfg := tempo.Spec.Template.Distributor
 
+	containerPorts := []corev1.ContainerPort{
+		{
+			Name:          manifestutils.OtlpGrpcPortName,
+			ContainerPort: manifestutils.PortOtlpGrpcServer,
+			Protocol:      corev1.ProtocolTCP,
+		},
+		{
+			Name:          manifestutils.HttpPortName,
+			ContainerPort: manifestutils.PortHTTPServer,
+			Protocol:      corev1.ProtocolTCP,
+		},
+		{
+			Name:          manifestutils.HttpMemberlistPortName,
+			ContainerPort: manifestutils.PortMemberlist,
+			Protocol:      corev1.ProtocolTCP,
+		},
+	}
+
+	if !tempo.Spec.Template.Gateway.Enabled {
+		containerPorts = append(containerPorts, []corev1.ContainerPort{
+			{
+				Name:          manifestutils.PortJaegerThriftHTTPName,
+				ContainerPort: manifestutils.PortJaegerThriftHTTP,
+				Protocol:      corev1.ProtocolTCP,
+			},
+			{
+				Name:          manifestutils.PortJaegerThriftCompactName,
+				ContainerPort: manifestutils.PortJaegerThriftCompact,
+				Protocol:      corev1.ProtocolUDP,
+			},
+			{
+				Name:          manifestutils.PortJaegerThriftBinaryName,
+				ContainerPort: manifestutils.PortJaegerThriftBinary,
+				Protocol:      corev1.ProtocolUDP,
+			},
+			{
+				Name:          manifestutils.PortJaegerGrpcName,
+				ContainerPort: manifestutils.PortJaegerGrpc,
+				Protocol:      corev1.ProtocolTCP,
+			},
+		}...)
+	}
+
 	return &v1.Deployment{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: v1.SchemeGroupVersion.String(),
@@ -71,46 +114,10 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 					Affinity:           manifestutils.DefaultAffinity(labels),
 					Containers: []corev1.Container{
 						{
-							Name:  "tempo",
-							Image: tempo.Spec.Images.Tempo,
-							Args:  []string{"-target=distributor", "-config.file=/conf/tempo.yaml"},
-							Ports: []corev1.ContainerPort{
-								{
-									Name:          manifestutils.OtlpGrpcPortName,
-									ContainerPort: manifestutils.PortOtlpGrpcServer,
-									Protocol:      corev1.ProtocolTCP,
-								},
-								{
-									Name:          manifestutils.HttpPortName,
-									ContainerPort: manifestutils.PortHTTPServer,
-									Protocol:      corev1.ProtocolTCP,
-								},
-								{
-									Name:          manifestutils.HttpMemberlistPortName,
-									ContainerPort: manifestutils.PortMemberlist,
-									Protocol:      corev1.ProtocolTCP,
-								},
-								{
-									Name:          manifestutils.PortJaegerThriftHTTPName,
-									ContainerPort: manifestutils.PortJaegerThriftHTTP,
-									Protocol:      corev1.ProtocolTCP,
-								},
-								{
-									Name:          manifestutils.PortJaegerThriftCompactName,
-									ContainerPort: manifestutils.PortJaegerThriftCompact,
-									Protocol:      corev1.ProtocolUDP,
-								},
-								{
-									Name:          manifestutils.PortJaegerThriftBinaryName,
-									ContainerPort: manifestutils.PortJaegerThriftBinary,
-									Protocol:      corev1.ProtocolUDP,
-								},
-								{
-									Name:          manifestutils.PortJaegerGrpcName,
-									ContainerPort: manifestutils.PortJaegerGrpc,
-									Protocol:      corev1.ProtocolTCP,
-								},
-							},
+							Name:           "tempo",
+							Image:          tempo.Spec.Images.Tempo,
+							Args:           []string{"-target=distributor", "-config.file=/conf/tempo.yaml"},
+							Ports:          containerPorts,
 							ReadinessProbe: manifestutils.TempoReadinessProbe(params.Gates.HTTPEncryption || params.Gates.GRPCEncryption),
 							VolumeMounts: []corev1.VolumeMount{
 								{
@@ -153,6 +160,51 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 
 func service(tempo v1alpha1.TempoStack) *corev1.Service {
 	labels := manifestutils.ComponentLabels(manifestutils.DistributorComponentName, tempo.Name)
+
+	servicePorts := []corev1.ServicePort{
+		{
+			Name:       manifestutils.OtlpGrpcPortName,
+			Protocol:   corev1.ProtocolTCP,
+			Port:       manifestutils.PortOtlpGrpcServer,
+			TargetPort: intstr.FromString(manifestutils.OtlpGrpcPortName),
+		},
+		{
+			Name:       manifestutils.HttpPortName,
+			Protocol:   corev1.ProtocolTCP,
+			Port:       manifestutils.PortHTTPServer,
+			TargetPort: intstr.FromString(manifestutils.HttpPortName),
+		},
+	}
+
+	if !tempo.Spec.Template.Gateway.Enabled {
+		servicePorts = append(servicePorts, []corev1.ServicePort{
+			{
+				Name:       manifestutils.PortJaegerThriftHTTPName,
+				Port:       manifestutils.PortJaegerThriftHTTP,
+				TargetPort: intstr.FromString(manifestutils.PortJaegerThriftHTTPName),
+				Protocol:   corev1.ProtocolTCP,
+			},
+			{
+				Name:       manifestutils.PortJaegerThriftCompactName,
+				Port:       manifestutils.PortJaegerThriftCompact,
+				TargetPort: intstr.FromString(manifestutils.PortJaegerThriftCompactName),
+				Protocol:   corev1.ProtocolUDP,
+			},
+			{
+				Name:       manifestutils.PortJaegerThriftBinaryName,
+				Port:       manifestutils.PortJaegerThriftBinary,
+				TargetPort: intstr.FromString(manifestutils.PortJaegerThriftBinaryName),
+				Protocol:   corev1.ProtocolUDP,
+			},
+			{
+				Name:       manifestutils.PortJaegerGrpcName,
+				Port:       manifestutils.PortJaegerGrpc,
+				TargetPort: intstr.FromString(manifestutils.PortJaegerGrpcName),
+				Protocol:   corev1.ProtocolTCP,
+			},
+		}...)
+	}
+
 	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      naming.Name(manifestutils.DistributorComponentName, tempo.Name),
@@ -160,20 +212,7 @@ func service(tempo v1alpha1.TempoStack) *corev1.Service {
 			Labels:    labels,
 		},
 		Spec: corev1.ServiceSpec{
-			Ports: []corev1.ServicePort{
-				{
-					Name:       manifestutils.OtlpGrpcPortName,
-					Protocol:   corev1.ProtocolTCP,
-					Port:       manifestutils.PortOtlpGrpcServer,
-					TargetPort: intstr.FromString(manifestutils.OtlpGrpcPortName),
-				},
-				{
-					Name:       manifestutils.HttpPortName,
-					Protocol:   corev1.ProtocolTCP,
-					Port:       manifestutils.PortHTTPServer,
-					TargetPort: intstr.FromString(manifestutils.HttpPortName),
-				},
-			},
+			Ports:    servicePorts,
 			Selector: labels,
 		},
 	}
