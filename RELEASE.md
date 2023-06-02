@@ -28,6 +28,7 @@ OPERATOR_VERSION=x.y.z make chlog-update
 ```
 
 This will delete all entries (other than the template) in the `.chloggen` directory and create a populated Changelog.md entry.
+After updating the `CHANGELOG.md`, run `hack/list-components.sh` and append the output to the new changelog entry.
 
 ## Test OLM Upgrade
 Install latest released version:
