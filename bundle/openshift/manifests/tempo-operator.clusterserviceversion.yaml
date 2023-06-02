@@ -640,7 +640,7 @@ spec:
           app.kubernetes.io/name: tempo-operator
           app.kubernetes.io/part-of: tempo-operator
           control-plane: controller-manager
-        name: tempo-operator-controller-manager
+        name: tempo-operator-controller
         spec:
           replicas: 1
           selector:
@@ -816,7 +816,7 @@ spec:
   - admissionReviewVersions:
     - v1
     containerPort: 443
-    deploymentName: tempo-operator-controller-manager
+    deploymentName: tempo-operator-controller
     failurePolicy: Fail
     generateName: mtempostack.tempo.grafana.com
     rules:
@@ -836,7 +836,7 @@ spec:
   - admissionReviewVersions:
     - v1
     containerPort: 443
-    deploymentName: tempo-operator-controller-manager
+    deploymentName: tempo-operator-controller
     failurePolicy: Fail
     generateName: vtempostack.tempo.grafana.com
     rules:
