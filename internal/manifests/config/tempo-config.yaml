@@ -17,6 +17,7 @@ distributor:
           endpoint: 0.0.0.0:6831
         grpc:
           endpoint: 0.0.0.0:14250
+    zipkin:
 {{- end }}
     otlp:
       protocols:

@@ -84,6 +84,11 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 				ContainerPort: manifestutils.PortJaegerGrpc,
 				Protocol:      corev1.ProtocolTCP,
 			},
+			{
+				Name:          manifestutils.PortZipkinName,
+				ContainerPort: manifestutils.PortZipkin,
+				Protocol:      corev1.ProtocolTCP,
+			},
 		}...)
 	}
 
@@ -200,6 +205,12 @@ func service(tempo v1alpha1.TempoStack) *corev1.Service {
 				Name:       manifestutils.PortJaegerGrpcName,
 				Port:       manifestutils.PortJaegerGrpc,
 				TargetPort: intstr.FromString(manifestutils.PortJaegerGrpcName),
+				Protocol:   corev1.ProtocolTCP,
+			},
+			{
+				Name:       manifestutils.PortZipkinName,
+				Port:       manifestutils.PortZipkin,
+				TargetPort: intstr.FromString(manifestutils.PortZipkinName),
 				Protocol:   corev1.ProtocolTCP,
 			},
 		}...)

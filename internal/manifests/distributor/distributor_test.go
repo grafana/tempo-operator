@@ -66,6 +66,11 @@ func TestBuildDistributor(t *testing.T) {
 					ContainerPort: manifestutils.PortJaegerGrpc,
 					Protocol:      corev1.ProtocolTCP,
 				},
+				{
+					Name:          manifestutils.PortZipkinName,
+					ContainerPort: manifestutils.PortZipkin,
+					Protocol:      corev1.ProtocolTCP,
+				},
 			},
 			expectedServicePorts: []corev1.ServicePort{
 				{
@@ -102,6 +107,12 @@ func TestBuildDistributor(t *testing.T) {
 					Name:       manifestutils.PortJaegerGrpcName,
 					Port:       manifestutils.PortJaegerGrpc,
 					TargetPort: intstr.FromString(manifestutils.PortJaegerGrpcName),
+					Protocol:   corev1.ProtocolTCP,
+				},
+				{
+					Name:       manifestutils.PortZipkinName,
+					Port:       manifestutils.PortZipkin,
+					TargetPort: intstr.FromString(manifestutils.PortZipkinName),
 					Protocol:   corev1.ProtocolTCP,
 				},
 			},
