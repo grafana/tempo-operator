@@ -37,6 +37,7 @@ distributor:
           endpoint: 0.0.0.0:6831
         grpc:
           endpoint: 0.0.0.0:14250
+    zipkin:
     otlp:
       protocols:
         grpc:
@@ -162,6 +163,7 @@ distributor:
           endpoint: 0.0.0.0:6831
         grpc:
           endpoint: 0.0.0.0:14250
+    zipkin:
     otlp:
       protocols:
         grpc:
@@ -252,6 +254,7 @@ distributor:
           endpoint: 0.0.0.0:6831
         grpc:
           endpoint: 0.0.0.0:14250
+    zipkin:
     otlp:
       protocols:
         grpc:
@@ -343,6 +346,7 @@ distributor:
           endpoint: 0.0.0.0:6831
         grpc:
           endpoint: 0.0.0.0:14250
+    zipkin:
     otlp:
       protocols:
         grpc:
@@ -435,6 +439,7 @@ distributor:
           endpoint: 0.0.0.0:6831
         grpc:
           endpoint: 0.0.0.0:14250
+    zipkin:
     otlp:
       protocols:
         grpc:
@@ -527,6 +532,7 @@ distributor:
           endpoint: 0.0.0.0:6831
         grpc:
           endpoint: 0.0.0.0:14250
+    zipkin:
     otlp:
       protocols:
         grpc:
@@ -619,6 +625,7 @@ distributor:
           endpoint: 0.0.0.0:6831
         grpc:
           endpoint: 0.0.0.0:14250
+    zipkin:
     otlp:
       protocols:
         grpc:
@@ -711,6 +718,7 @@ distributor:
           endpoint: 0.0.0.0:6831
         grpc:
           endpoint: 0.0.0.0:14250
+    zipkin:
     otlp:
       protocols:
         grpc:
@@ -810,6 +818,7 @@ distributor:
           endpoint: 0.0.0.0:6831
         grpc:
           endpoint: 0.0.0.0:14250
+    zipkin:
     otlp:
       protocols:
         grpc:
@@ -917,6 +926,7 @@ distributor:
           endpoint: 0.0.0.0:6831
         grpc:
           endpoint: 0.0.0.0:14250
+    zipkin:
     otlp:
       protocols:
         grpc:
@@ -1082,6 +1092,7 @@ distributor:
           endpoint: 0.0.0.0:6831
         grpc:
           endpoint: 0.0.0.0:14250
+    zipkin:
     otlp:
       protocols:
         grpc:
@@ -1204,6 +1215,7 @@ distributor:
           endpoint: 0.0.0.0:6831
         grpc:
           endpoint: 0.0.0.0:14250
+    zipkin:
     otlp:
       protocols:
         grpc:
@@ -1316,6 +1328,7 @@ distributor:
           endpoint: 0.0.0.0:6831
         grpc:
           endpoint: 0.0.0.0:14250
+    zipkin:
     otlp:
       protocols:
         grpc:
@@ -1434,6 +1447,7 @@ distributor:
           endpoint: 0.0.0.0:6831
         grpc:
           endpoint: 0.0.0.0:14250
+    zipkin:
     otlp:
       protocols:
         grpc:
