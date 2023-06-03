@@ -37,6 +37,26 @@ spec:
       port: 3200
       protocol: TCP
       targetPort: http
+    - name: thrift-http
+      port: 14268
+      protocol: TCP
+      targetPort: thrift-http
+    - name: thrift-compact
+      port: 6831
+      protocol: UDP
+      targetPort: thrift-compact
+    - name: thrift-binary
+      port: 6832
+      protocol: UDP
+      targetPort: thrift-binary
+    - name: jaeger-grpc
+      port: 14250
+      protocol: TCP
+      targetPort: jaeger-grpc
+    - name: http-zipkin
+      port: 9411
+      protocol: TCP
+      targetPort: http-zipkin
   selector:
     app.kubernetes.io/component: distributor
     app.kubernetes.io/instance: generated-tempo
