@@ -483,9 +483,11 @@ chlog-validate: chloggen
 .PHONY: chlog-preview
 chlog-preview: chloggen
 	$(CHLOGGEN) update --dry --version $(OPERATOR_VERSION)
+	@./hack/list-components.sh
 
 .PHONY: chlog-update
 chlog-update: chloggen
+	awk -i inplace '{print} /next version/{system("echo && ./hack/list-components.sh")}' CHANGELOG.md
 	$(CHLOGGEN) update --version $(OPERATOR_VERSION)
 
 .PHONY: release-artifacts

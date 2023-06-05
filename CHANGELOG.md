@@ -28,10 +28,7 @@ Changes by Version
 - `operator`: Introducing alerts for operands (#307)
 
 ### Components
-- tempo: docker.io/grafana/tempo:2.0.1
-- tempoQuery: docker.io/grafana/tempo-query:main-1b50ad3
-- tempoGateway: quay.io/observatorium/api:main-2023-02-09-v0.1.2-329-g1ff4f11
-- tempoGatewayOpa: quay.io/observatorium/opa-openshift:main-2023-03-13-fd7b736
+- Tempo: [v2.0.1](https://github.com/grafana/tempo/releases/tag/v2.0.1)
 
 ## 0.1.0
 
