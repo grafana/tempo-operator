@@ -28,6 +28,10 @@ endif
 
 ECHO ?= @echo $(echo_prefix)
 
+
+# Default namespace of the operator
+OPERATOR_NAMESPACE ?= tempo-operator-system
+
 # CHANNELS define the bundle channels used in the bundle.
 # Add a new line here if you would like to change its default config. (E.g CHANNELS = "candidate,fast,stable")
 # To re-generate a bundle for other specific channels without changing the standard setup, you can:
@@ -154,11 +158,19 @@ uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified 
 deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	$(KUSTOMIZE) build config/overlays/$(BUNDLE_VARIANT) | kubectl apply -f -
-	kubectl rollout --namespace tempo-operator-system status deployment/tempo-operator-controller-manager
+	kubectl rollout --namespace $(OPERATOR_NAMESPACE) status deployment/tempo-operator-controller
 
 .PHONY: undeploy
 undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
 	$(KUSTOMIZE) build config/overlays/$(BUNDLE_VARIANT) | kubectl delete --ignore-not-found=$(ignore-not-found) -f -
+
+.PHONY: olm-deploy
+olm-deploy: operator-sdk ## Deploy operator via OLM
+	$(OPERATOR_SDK) run bundle -n $(OPERATOR_NAMESPACE) $(BUNDLE_IMG)
+
+.PHONY: olm-upgrade
+olm-upgrade: operator-sdk ## Upgrade operator via OLM
+	$(OPERATOR_SDK) run bundle-upgrade -n $(OPERATOR_NAMESPACE) $(BUNDLE_IMG)
 
 ##@ Build Dependencies
 
@@ -318,9 +330,9 @@ e2e:
 # OpenShift end-to-tests
 .PHONY: prepare-e2e-openshift
 prepare-e2e-openshift: deploy-minio
-	kubectl apply -f ./bundle/openshift/manifests/tempo-operator-manager-config_v1_configmap.yaml -n tempo-operator-system
-	kubectl rollout restart deployment/tempo-operator-controller-manager -n tempo-operator-system
-	kubectl rollout status deployment/tempo-operator-controller-manager -n tempo-operator-system --timeout=30s
+	kubectl apply -f ./bundle/openshift/manifests/tempo-operator-manager-config_v1_configmap.yaml -n $(OPERATOR_NAMESPACE)
+	kubectl rollout restart deployment/tempo-operator-controller -n $(OPERATOR_NAMESPACE)
+	kubectl rollout status deployment/tempo-operator-controller -n $(OPERATOR_NAMESPACE) --timeout=30s
 
 .PHONY: e2e-openshift
 e2e-openshift:

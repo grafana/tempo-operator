@@ -125,3 +125,5 @@ spec:
           - key: tenants.yaml
             path: tenants.yaml
           secretName: tempo-foo-gateway
+status:
+  readyReplicas: 1
