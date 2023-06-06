@@ -28,7 +28,6 @@ images:
 featureGates:
   openshift:
     openshiftRoute: false
-    gatewayRoute: false
     servingCertsService: false
   prometheusOperator: false
   httpEncryption: false
