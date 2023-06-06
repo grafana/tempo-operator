@@ -4,13 +4,13 @@ import (
 	"context"
 	"strings"
 
-	dockerparser "github.com/novln/docker-parser"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/metrics"
 
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/os-observability/tempo-operator/internal/version"
 )
 
 var (
@@ -23,22 +23,17 @@ var (
 
 // Refresh updates the status field with the tempo container image versions and updates the tempostack_status_condition metric.
 func Refresh(ctx context.Context, k StatusClient, tempo v1alpha1.TempoStack, status *v1alpha1.TempoStackStatus) (bool, error) {
-
 	changed := tempo.DeepCopy()
 	changed.Status = *status
 
-	tempoImage, err := dockerparser.Parse(tempo.Spec.Images.Tempo)
-	if err != nil {
-		return false, err
+	// The .status.version field is empty for new CRs and cannot be set in the Defaulter webhook.
+	// The upgrade procedure only runs once at operator startup, therefore we need to set
+	// the initial status field versions here.
+	if status.TempoVersion == "" {
+		changed.Status.TempoVersion = version.Get().TempoVersion
 	}
-	changed.Status.TempoVersion = tempoImage.Tag()
-
-	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled {
-		tempoQueryImage, err := dockerparser.Parse(tempo.Spec.Images.TempoQuery)
-		if err != nil {
-			return false, err
-		}
-		changed.Status.TempoQueryVersion = tempoQueryImage.Tag()
+	if status.TempoQueryVersion == "" {
+		changed.Status.TempoQueryVersion = version.Get().TempoQueryVersion
 	}
 
 	for _, cond := range status.Conditions {
@@ -50,7 +45,7 @@ func Refresh(ctx context.Context, k StatusClient, tempo v1alpha1.TempoStack, sta
 		tempoStackStatusCondition.WithLabelValues(tempo.Namespace, tempo.Name, cond.Type, status).Set(isActive)
 	}
 
-	err = k.PatchStatus(ctx, changed, &tempo)
+	err := k.PatchStatus(ctx, changed, &tempo)
 	if err != nil {
 		return true, err
 	}

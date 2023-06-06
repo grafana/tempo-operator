@@ -1,9 +1,15 @@
 # Current Operator version
 VERSION_DATE ?= $(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
-VERSION_PKG ?= "github.com/os-observability/tempo-operator/internal/version"
-OPERATOR_VERSION ?= 0.2.0
+VERSION_PKG ?= github.com/os-observability/tempo-operator/internal/version
+OPERATOR_VERSION ?= $(or $(shell git describe --tags --abbrev=0 2> /dev/null | sed 's/^v//'), 0.0.0)
+TEMPO_VERSION ?= $(shell cat config/overlays/community/controller_manager_config.yaml | grep -oP "docker.io/grafana/tempo:\K.*")
+TEMPO_QUERY_VERSION ?= $(shell cat config/overlays/community/controller_manager_config.yaml | grep -oP "docker.io/grafana/tempo-query:\K.*")
 COMMIT_SHA = "$(shell git rev-parse HEAD)"
-LD_FLAGS ?= "-X ${VERSION_PKG}.buildDate=${VERSION_DATE} -X ${VERSION_PKG}.version=${OPERATOR_VERSION} -X ${VERSION_PKG}.commitSha=${COMMIT_SHA}"
+LD_FLAGS ?= "-X ${VERSION_PKG}.buildDate=${VERSION_DATE} \
+			 -X ${VERSION_PKG}.revision=${COMMIT_SHA} \
+			 -X ${VERSION_PKG}.operatorVersion=${OPERATOR_VERSION} \
+			 -X ${VERSION_PKG}.tempoVersion=${TEMPO_VERSION} \
+			 -X ${VERSION_PKG}.tempoQueryVersion=${TEMPO_QUERY_VERSION}"
 ARCH ?= $(shell go env GOARCH)
 
 # Image URL to use all building/pushing image targets
@@ -491,7 +497,6 @@ chlog-update: chloggen
 	$(CHLOGGEN) update --version $(OPERATOR_VERSION)
 
 .PHONY: release-artifacts
-release-artifacts: OPERATOR_VERSION = "$(shell git describe --tags | sed 's/^v//')"
 release-artifacts: set-image-controller
 	mkdir -p dist
 	$(KUSTOMIZE) build config/overlays/community -o dist/tempo-operator.yaml
