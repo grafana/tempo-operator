@@ -150,6 +150,14 @@ spec:
                     description: PerTenant is used to define rate limits per tenant.
                     type: object
                 type: object
+              managementState:
+                default: Managed
+                description: ManagementState defines if the CR should be managed by
+                  the operator or not. Default is managed.
+                enum:
+                - Managed
+                - Unmanaged
+                type: string
               observability:
                 description: ObservabilitySpec defines how telemetry data gets handled.
                 properties:

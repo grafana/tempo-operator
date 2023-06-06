@@ -1,0 +1,10 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-simplest-distributor
+spec:
+  template:
+    spec:
+      serviceAccount: tempo-simplest
+status:
+  readyReplicas: 1

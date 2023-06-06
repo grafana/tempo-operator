@@ -30,6 +30,7 @@ import (
 
 	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
+	tempov1alpha1 "github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/os-observability/tempo-operator/internal/certrotation/handlers"
 	"github.com/os-observability/tempo-operator/internal/handlers/gateway"
 	"github.com/os-observability/tempo-operator/internal/manifests"
@@ -74,6 +75,7 @@ type TempoStackReconciler struct {
 func (r *TempoStackReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := log.FromContext(ctx)
 	log = log.WithValues("tempo", req.NamespacedName)
+
 	tempo := v1alpha1.TempoStack{}
 	if err := r.Get(ctx, req.NamespacedName, &tempo); err != nil {
 		if !apierrors.IsNotFound(err) {
@@ -84,6 +86,12 @@ func (r *TempoStackReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		// we'll ignore not-found errors, since they can't be fixed by an immediate
 		// requeue (we'll need to wait for a new notification), and we can get them
 		// on deleted requests.
+		return ctrl.Result{}, nil
+	}
+
+	if tempo.Spec.ManagementState != tempov1alpha1.ManagementStateManaged {
+		log.Info("Skipping reconciliation for unmanaged TempoStack resource", "name", req.String())
+		// Stop requeueing for unmanaged TempoStack custom resources
 		return ctrl.Result{}, nil
 	}
 
