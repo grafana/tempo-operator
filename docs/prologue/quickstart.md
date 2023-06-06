@@ -23,13 +23,13 @@ The easiest way to start with the Tempo Operator is to use Kubernetes [kind](sig
 To install the operator in an existing cluster, make sure you have [`cert-manager` installed](https://cert-manager.io/docs/installation/) and run:
 
 ```shell
-kubectl apply -f https://github.com/os-observability/tempo-operator/releases/latest/download/tempo-operator.yaml
+kubectl apply -f https://github.com/grafana/tempo-operator/releases/latest/download/tempo-operator.yaml
 ```
 
 Once you have the operator deployed you need to install a storage backend. For this quick start guide  we will install [`minio`](https://min.io/) as follows:
 
 ```shell
-kubectl apply -f https://raw.githubusercontent.com/os-observability/tempo-operator/main/minio.yaml
+kubectl apply -f https://raw.githubusercontent.com/grafana/tempo-operator/main/minio.yaml
 ```
 
 After minio was deployed, create a secret for minio in the namespace you are using:
