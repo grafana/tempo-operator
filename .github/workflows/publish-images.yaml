@@ -81,4 +81,4 @@ jobs:
         if: ${{ startsWith(github.ref, 'refs/tags/v') }}
         run: make bundle bundle-build bundle-push catalog-build catalog-push
         env:
-          USER: ${{ github.repository_owner }}
+          IMG_PREFIX: ghcr.io/${{ github.repository }}

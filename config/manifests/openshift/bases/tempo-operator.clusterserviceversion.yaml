@@ -5,7 +5,7 @@ metadata:
     alm-examples: '[]'
     capabilities: Basic Install
     categories: Logging & Tracing
-    containerImage: ghcr.io/os-observability/tempo-operator/tempo-operator
+    containerImage: ghcr.io/grafana/tempo-operator/tempo-operator
     repository: https://github.com/grafana/tempo-operator
     support: Tempo Operator SIG
   name: tempo-operator.v0.0.0
