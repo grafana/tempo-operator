@@ -454,8 +454,8 @@ web-pre: docs/operator/api.md docs/operator/feature-gates.md
 	@echo ">> preprocessing docs for website"
 	@git submodule update --init --recursive
 	cp CONTRIBUTING.md docs/prologue/contributing.md
-	sed -i 's/(LICENSE)/(https:\/\/raw.githubusercontent.com\/os-observability\/tempo-operator\/main\/LICENSE)/' docs/prologue/contributing.md
-	sed -i 's/(README.md)/(https:\/\/github.com\/os-observability\/tempo-operator#readme)/' docs/prologue/contributing.md
+	sed -i 's/(LICENSE)/(https:\/\/raw.githubusercontent.com\/grafana\/tempo-operator\/main\/LICENSE)/' docs/prologue/contributing.md
+	sed -i 's/(README.md)/(https:\/\/github.com\/grafana\/tempo-operator#readme)/' docs/prologue/contributing.md
 	cd $(WEBSITE_DIR)/themes/doks/ && npm install && rm -rf content
 
 .PHONY: web
@@ -489,9 +489,11 @@ chlog-validate: chloggen
 .PHONY: chlog-preview
 chlog-preview: chloggen
 	$(CHLOGGEN) update --dry --version $(OPERATOR_VERSION)
+	@./hack/list-components.sh
 
 .PHONY: chlog-update
 chlog-update: chloggen
+	awk -i inplace '{print} /next version/{system("echo && ./hack/list-components.sh")}' CHANGELOG.md
 	$(CHLOGGEN) update --version $(OPERATOR_VERSION)
 
 .PHONY: release-artifacts
