@@ -1,6 +1,6 @@
 # This is an example CR to deploy TempoStack on OpenShift
 # It configures multitenancy with two tenants.
-# The operator feature flags openshift.gatewayRoute and openshift.servingCertsService should be enabled.
+# The operator feature flags openshift.openshiftRoute and openshift.servingCertsService should be enabled.
 #
 # Use https://tempo-simplest-gateway-observability.{OpenShift base domain}/api/traces/v1/dev/search
 # to access the UI and to log in.
