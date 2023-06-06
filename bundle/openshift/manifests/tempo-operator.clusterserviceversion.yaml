@@ -32,13 +32,8 @@ metadata:
       ]
     capabilities: Basic Install
     categories: Logging & Tracing
-<<<<<<< HEAD
-    containerImage: ghcr.io/os-observability/tempo-operator/tempo-operator
-    createdAt: "2023-05-31T13:47:33Z"
-=======
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator
-    createdAt: "2023-06-05T16:46:40Z"
->>>>>>> 40686fb0d0732394e5505c17e8e8d6bfb99d2a15
+    createdAt: "2023-06-06T14:36:28Z"
     operators.operatorframework.io/builder: operator-sdk-v1.27.0
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     repository: https://github.com/grafana/tempo-operator
