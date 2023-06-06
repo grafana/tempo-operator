@@ -2,16 +2,16 @@
 
 This is a Kubernetes operator for [Grafana Tempo](https://github.com/grafana/tempo).
 
-**The project is in active development and subject to large changes.**
 
-## Docs
+## Documentation
 
-* [Tempo CRD design](https://docs.google.com/document/d/1avSSf__R226l2b3hbcpXlYH7w6iKtXZsd9VTcpxDqng/edit#)
+* [Operator documentation](https://tempo-operator.netlify.app)
+* [Tempo CRD design](https://docs.google.com/document/d/1avSSf__R226l2b3hbcpXlYH7w6iKtXZsd9VTcpxDqng/edit)
 
 
-## Deploy 
+## Deploy
 
-1. Deploy object storage `kubectl apply -f minio.yaml`
+1. Install cert-manager and minio: `make cert-manager deploy-minio`
 
 2. Build and deploy operator:
 
@@ -60,6 +60,7 @@ spec:
 EOF
 ```
 
-## Community 
 
-* [Grafana Slack #tempo-operator channel](https://grafana.slack.com/archives/C0414EUU39A)
+## Community
+
+* [Grafana Slack #tempo-operator](https://grafana.slack.com/archives/C0414EUU39A)

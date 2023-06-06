@@ -25,7 +25,7 @@ By contributing to this project you agree to the Contributor License Agreement.
 # Email and Chat
 
 The project currently uses the [Grafana Slack](https://grafana.slack.com):
-- [#tempo-operator-dev](https://grafana.slack.com/archives/C0414EUU39A)
+- [#tempo-operator](https://grafana.slack.com/archives/C0414EUU39A)
 
 ## Getting Started
 
