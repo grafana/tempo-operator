@@ -5,7 +5,7 @@ change_type: enhancement
 component: operator
 
 # A brief description of the change. Surround your text with quotes ("") if it needs to start with a backtick (`).
-note: Add .spec.managedState to TempoStack. It allows disabling reconciliation of the TempoStack` CR. Validation and defaulting continues enabled even when the TempoStack instance is using the unmanaged state.
+note: Add .spec.managedState to TempoStack. It allows disabling reconciliation of the TempoStack CR. The validation and defaulting webhooks remain enabled in unmanaged state.
 
 # One or more tracking issues related to the change
 issues: [411]
