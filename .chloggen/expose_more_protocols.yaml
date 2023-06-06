@@ -15,5 +15,5 @@ issues: [436]
 # Use pipe (|) for multiline entries.
 subtext: |
   The following protocols are now exposed: 
-    - Jaeger: thrift-http thrift-binary, thrift-compact, Grpc
-    - Zipkin
+    - Jaeger: thrift-http port 14268, thrift-binary port 6832, thrift-compact port 6831, Grpc port 14250
+    - Zipkin port 9411
