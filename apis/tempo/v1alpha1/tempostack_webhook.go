@@ -115,11 +115,6 @@ func (d *Defaulter) Default(_ context.Context, obj runtime.Object) error {
 		r.Spec.StorageSize = tenGBQuantity
 	}
 
-	if r.Spec.LimitSpec.Global.Query.MaxSearchBytesPerTrace == nil {
-		defaultMaxSearchBytesPerTrace := 0
-		r.Spec.LimitSpec.Global.Query.MaxSearchBytesPerTrace = &defaultMaxSearchBytesPerTrace
-	}
-
 	if r.Spec.SearchSpec.DefaultResultLimit == nil {
 		defaultDefaultResultLimit := 20
 		r.Spec.SearchSpec.DefaultResultLimit = &defaultDefaultResultLimit

@@ -16,7 +16,7 @@ overrides:
 {{- if $value.MaxBytesPerTagValues }}
     max_bytes_per_tag_values_query: {{ $value.MaxBytesPerTagValues }}
 {{- end }}
-{{- if $value.MaxSearchBytesPerTrace }}
-    max_search_bytes_per_trace: {{ $value.MaxSearchBytesPerTrace }}
+{{- if ne $value.MaxSearchDuration "0s" }}
+    max_search_duration: {{ $value.MaxSearchDuration }}
 {{- end }}
 {{- end }}

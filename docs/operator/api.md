@@ -1957,11 +1957,15 @@ int
 
 <td>
 
-<code>maxSearchBytesPerTrace</code><br/>
+<code>maxSearchDuration</code><br/>
 
 <em>
 
-int
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
+
+Kubernetes meta/v1.Duration
+
+</a>
 
 </em>
 
@@ -1971,9 +1975,8 @@ int
 
 <em>(Optional)</em>
 
-<p>MaxSearchBytesPerTrace defines the maximum size of search data for a single
-trace in bytes.
-default: <code>0</code> to disable.</p>
+<p>MaxSearchDuration defines the maximum search duration.
+If this value is not set, then spec.search.maxDuration is used.</p>
 
 </td>
 </tr>

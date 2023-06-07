@@ -59,7 +59,7 @@ func fromRateLimitSpecToRateLimitOptions(spec v1alpha1.RateLimitSpec) rateLimits
 		MaxBytesPerTrace:        spec.Ingestion.MaxBytesPerTrace,
 		MaxTracesPerUser:        spec.Ingestion.MaxTracesPerUser,
 		MaxBytesPerTagValues:    spec.Query.MaxBytesPerTagValues,
-		MaxSearchBytesPerTrace:  spec.Query.MaxSearchBytesPerTrace,
+		MaxSearchDuration:       spec.Query.MaxSearchDuration.Duration.String(),
 	}
 }
 

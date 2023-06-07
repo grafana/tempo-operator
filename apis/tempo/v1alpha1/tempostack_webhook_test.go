@@ -32,7 +32,6 @@ func TestDefault(t *testing.T) {
 			Distribution: "upstream",
 		},
 	}
-	defaultMaxSearch := 0
 	defaultDefaultResultLimit := 20
 
 	tests := []struct {
@@ -64,7 +63,7 @@ func TestDefault(t *testing.T) {
 					LimitSpec: LimitSpec{
 						Global: RateLimitSpec{
 							Query: QueryLimit{
-								MaxSearchBytesPerTrace: &defaultMaxSearch,
+								MaxSearchDuration: metav1.Duration{Duration: 1 * time.Hour},
 							},
 						},
 					},
@@ -96,7 +95,7 @@ func TestDefault(t *testing.T) {
 					LimitSpec: LimitSpec{
 						Global: RateLimitSpec{
 							Query: QueryLimit{
-								MaxSearchBytesPerTrace: &defaultMaxSearch,
+								MaxSearchDuration: metav1.Duration{Duration: 1 * time.Hour},
 							},
 						},
 					},
@@ -148,7 +147,7 @@ func TestDefault(t *testing.T) {
 					LimitSpec: LimitSpec{
 						Global: RateLimitSpec{
 							Query: QueryLimit{
-								MaxSearchBytesPerTrace: &defaultMaxSearch,
+								MaxSearchDuration: metav1.Duration{Duration: 0},
 							},
 						},
 					},
@@ -209,13 +208,6 @@ func TestDefault(t *testing.T) {
 						},
 					},
 					StorageSize: resource.MustParse("10Gi"),
-					LimitSpec: LimitSpec{
-						Global: RateLimitSpec{
-							Query: QueryLimit{
-								MaxSearchBytesPerTrace: &defaultMaxSearch,
-							},
-						},
-					},
 					SearchSpec: SearchSpec{
 						MaxDuration:        metav1.Duration{Duration: 0},
 						DefaultResultLimit: &defaultDefaultResultLimit,
