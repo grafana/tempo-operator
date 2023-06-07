@@ -316,10 +316,6 @@ stop-kind:
 	$(ECHO)"Stopping the kind cluster"
 	$(VECHO)kind delete cluster
 
-.PHONY: install-openshift-routes
-install-openshift-routes:
-	./hack/install/install-openshift-routes.sh
-
 .PHONY: deploy-minio
 deploy-minio:
 	$(ECHO) Installing minio
@@ -327,7 +323,7 @@ deploy-minio:
 
 # generic end-to-tests
 .PHONY: prepare-e2e
-prepare-e2e: kuttl start-kind cert-manager install-openshift-routes deploy-minio set-test-image-vars set-test-operator-config build docker-build load-image-operator deploy
+prepare-e2e: kuttl start-kind cert-manager deploy-minio set-test-image-vars build docker-build load-image-operator deploy
 
 .PHONY: e2e
 e2e:
@@ -351,11 +347,6 @@ scorecard-tests: operator-sdk
 .PHONY: set-test-image-vars
 set-test-image-vars:
 	$(eval IMG=local/tempo-operator:e2e)
-
-.PHONY: set-test-operator-config
-set-test-operator-config:
-	# we always install the OpenShift Route controller for e2e tests (in the prepare-e2e step)
-	sed -i 's/openshiftRoute: false/openshiftRoute: true/' config/overlays/community/controller_manager_config.yaml
 
 # Set the controller image parameters
 .PHONY: set-image-controller
