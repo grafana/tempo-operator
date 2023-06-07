@@ -110,7 +110,7 @@ func (r *TempoStackReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 // status conditions to Degraded. if not it will throw an error as usual.
 func (r *TempoStackReconciler) handleStatus(ctx context.Context, tempo v1alpha1.TempoStack, err error) (ctrl.Result, error) {
 	// First refresh components
-	newStatus, rerr := status.GetComponetsStatus(ctx, r, tempo)
+	newStatus, rerr := status.GetComponentsStatus(ctx, r, tempo)
 	requeue := false
 
 	if rerr != nil {

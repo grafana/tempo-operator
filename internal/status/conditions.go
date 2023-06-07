@@ -10,11 +10,11 @@ import (
 
 const (
 	messageReady   = "All components are operational"
-	messageFailed  = "Some Microservice components failed"
-	messagePending = "Some Microservice components pending on dependencies"
+	messageFailed  = "Some TempoStack components failed"
+	messagePending = "Some TempoStack components are pending on dependencies"
 )
 
-// DegradedError contains information about why the managed Microservice has an invalid configuration.
+// DegradedError contains information about why the managed TempoStack has an invalid configuration.
 type DegradedError struct {
 	Message string
 	Reason  v1alpha1.ConditionReason
@@ -25,7 +25,7 @@ func (e *DegradedError) Error() string {
 	return fmt.Sprintf("cluster degraded: %s", e.Message)
 }
 
-// ReadyCondition updates or appends the condition Ready to the Microservice status conditions.
+// ReadyCondition updates or appends the condition Ready to the TempoStack status conditions.
 // In addition it resets all other Status conditions to false.
 func ReadyCondition(k StatusClient, tempo v1alpha1.TempoStack) []metav1.Condition {
 	ready := metav1.Condition{
@@ -37,7 +37,7 @@ func ReadyCondition(k StatusClient, tempo v1alpha1.TempoStack) []metav1.Conditio
 	return updateCondition(tempo, ready)
 }
 
-// FailedCondition updates or appends the condition Failed to the Microservice status conditions.
+// FailedCondition updates or appends the condition Failed to the TempoStack status conditions.
 // In addition it resets all other Status conditions to false.
 func FailedCondition(k StatusClient, tempo v1alpha1.TempoStack) []metav1.Condition {
 	failed := metav1.Condition{
@@ -49,7 +49,7 @@ func FailedCondition(k StatusClient, tempo v1alpha1.TempoStack) []metav1.Conditi
 	return updateCondition(tempo, failed)
 }
 
-// PendingCondition updates or appends the condition Pending to the Microservice status conditions.
+// PendingCondition updates or appends the condition Pending to the TempoStack status conditions.
 // In addition it resets all other Status conditions to false.
 func PendingCondition(k StatusClient, tempo v1alpha1.TempoStack) []metav1.Condition {
 	pending := metav1.Condition{
@@ -61,7 +61,7 @@ func PendingCondition(k StatusClient, tempo v1alpha1.TempoStack) []metav1.Condit
 	return updateCondition(tempo, pending)
 }
 
-// DegradedCondition appends the condition Degraded to the Microservice status conditions.
+// DegradedCondition appends the condition Degraded to the TempoStack status conditions.
 func DegradedCondition(tempo v1alpha1.TempoStack, msg string, reason v1alpha1.ConditionReason) []metav1.Condition {
 	degraded := metav1.Condition{
 		Type:    string(v1alpha1.ConditionDegraded),
