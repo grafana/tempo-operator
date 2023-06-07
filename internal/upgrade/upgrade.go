@@ -125,10 +125,10 @@ func (u Upgrade) TempoStack(ctx context.Context, tempo v1alpha1.TempoStack) (v1a
 
 	// update all tempo images to the new default images on every upgrade
 	updateTempoStackImages(u, &tempo)
+
 	// at the end of the upgrade process, the CR is up to date with the current running versions
-	tempo.Status.OperatorVersion = u.Version.OperatorVersion
-	tempo.Status.TempoVersion = u.Version.TempoVersion
-	tempo.Status.TempoQueryVersion = u.Version.TempoQueryVersion
+	// update all versions with the current running versions
+	updateTempoStackVersions(u, &tempo)
 
 	return tempo, nil
 }
@@ -139,4 +139,11 @@ func updateTempoStackImages(u Upgrade, tempo *v1alpha1.TempoStack) {
 	tempo.Spec.Images.TempoQuery = u.CtrlConfig.DefaultImages.TempoQuery
 	tempo.Spec.Images.TempoGateway = u.CtrlConfig.DefaultImages.TempoGateway
 	tempo.Spec.Images.TempoGatewayOpa = u.CtrlConfig.DefaultImages.TempoGatewayOpa
+}
+
+// updateTempoStackVersions updates all versions in the CR with the current running versions.
+func updateTempoStackVersions(u Upgrade, tempo *v1alpha1.TempoStack) {
+	tempo.Status.OperatorVersion = u.Version.OperatorVersion
+	tempo.Status.TempoVersion = u.Version.TempoVersion
+	tempo.Status.TempoQueryVersion = u.Version.TempoQueryVersion
 }

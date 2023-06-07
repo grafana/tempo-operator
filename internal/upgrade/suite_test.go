@@ -22,9 +22,6 @@ var testScheme *runtime.Scheme = scheme.Scheme
 func TestMain(m *testing.M) {
 	testEnv = &envtest.Environment{
 		CRDDirectoryPaths: []string{filepath.Join("..", "..", "config", "crd", "bases")},
-		//WebhookInstallOptions: envtest.WebhookInstallOptions{
-		//	Paths: []string{filepath.Join("..", "config", "webhook")},
-		//},
 	}
 	cfg, err := testEnv.Start()
 	if err != nil {
