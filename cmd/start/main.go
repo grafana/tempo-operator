@@ -50,7 +50,9 @@ func start(c *cobra.Command, args []string) {
 		os.Exit(1)
 
 	}
-	if os.Getenv("ENABLE_WEBHOOKS") != "false" {
+
+	enableWebhooks := os.Getenv("ENABLE_WEBHOOKS") != "false"
+	if enableWebhooks {
 		if err = (&tempov1alpha1.TempoStack{}).SetupWebhookWithManager(mgr, ctrlConfig); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "TempoStack")
 			os.Exit(1)
@@ -58,11 +60,15 @@ func start(c *cobra.Command, args []string) {
 	}
 	//+kubebuilder:scaffold:builder
 
-	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
+	healthCheck := healthz.Ping
+	if enableWebhooks {
+		healthCheck = mgr.GetWebhookServer().StartedChecker()
+	}
+	if err := mgr.AddHealthzCheck("healthz", healthCheck); err != nil {
 		setupLog.Error(err, "unable to set up health check")
 		os.Exit(1)
 	}
-	if err := mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
+	if err := mgr.AddReadyzCheck("readyz", healthCheck); err != nil {
 		setupLog.Error(err, "unable to set up ready check")
 		os.Exit(1)
 	}
