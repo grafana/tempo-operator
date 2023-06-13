@@ -44,3 +44,19 @@ Upgrade to new version:
 ```
 IMG_PREFIX=docker.io/your_username OPERATOR_VERSION=x.y.z OPERATOR_NAMESPACE=openshift-operators make olm-upgrade
 ```
+
+## Test Upgrade using Manifests
+Install latest released version:
+```
+kubectl apply -f https://github.com/os-observability/tempo-operator/releases/latest/download/tempo-operator.yaml
+```
+
+Build and push operator to a container registry:
+```
+IMG_PREFIX=docker.io/your_username OPERATOR_VERSION=x.y.z make docker-build docker-push release-artifacts
+```
+
+Upgrade to new version:
+```
+kubectl apply -f dist/tempo-operator.yaml
+```
