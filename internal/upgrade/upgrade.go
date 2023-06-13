@@ -92,6 +92,13 @@ func (u Upgrade) TempoStack(ctx context.Context, tempo v1alpha1.TempoStack) (v1a
 		return tempo, nil
 	}
 
+	// This field was empty in operator version 0.1.0 and 0.2.0.
+	// Unfortunately this case can't be handled in the 0.3.0 upgrade procedure, because
+	// the upgrade procedure requires a valid operator version.
+	if tempo.Status.OperatorVersion == "" {
+		tempo.Status.OperatorVersion = "0.1.0"
+	}
+
 	instanceVersion, err := semver.NewVersion(tempo.Status.OperatorVersion)
 	if err != nil {
 		log.Error(err, "failed to parse TempoStack operator version", "version", tempo.Status.OperatorVersion)
