@@ -13,7 +13,7 @@ concurrency:
 jobs:
   scorecard-tests:
     name: Scorecard test
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         kube-version:
@@ -41,5 +41,12 @@ jobs:
       - name: "wait until cluster is ready"
         run:  kubectl wait --timeout=5m --for=condition=available deployment/coredns -n kube-system
 
-      - name: "run scorecard test"
+      - name: "run community scorecard tests"
         run: make scorecard-tests
+        env:
+          BUNDLE_VARIANT: community
+
+      - name: "run OpenShift scorecard tests"
+        run: make scorecard-tests
+        env:
+          BUNDLE_VARIANT: openshift
