@@ -485,8 +485,9 @@ func TestValidateReplicationFactor(t *testing.T) {
 	}
 }
 
-func TestValidateIngressAndRoute(t *testing.T) {
-	path := field.NewPath("spec").Child("template").Child("queryFrontend").Child("jaegerQuery").Child("ingress").Child("type")
+func TestValidateQueryFrontend(t *testing.T) {
+	ingressTypePath := field.NewPath("spec").Child("template").Child("queryFrontend").Child("jaegerQuery").Child("ingress").Child("type")
+	prometheusEndpointPath := field.NewPath("spec").Child("template").Child("queryFrontend").Child("jaegerQuery").Child("monitorTab").Child("prometheusEndpoint")
 
 	tests := []struct {
 		name       string
@@ -558,7 +559,7 @@ func TestValidateIngressAndRoute(t *testing.T) {
 			},
 			expected: field.ErrorList{
 				field.Invalid(
-					path,
+					ingressTypePath,
 					IngressTypeIngress,
 					"Ingress cannot be enabled if jaegerQuery is disabled",
 				),
@@ -590,9 +591,37 @@ func TestValidateIngressAndRoute(t *testing.T) {
 			},
 			expected: field.ErrorList{
 				field.Invalid(
-					path,
+					ingressTypePath,
 					IngressTypeRoute,
 					"Please enable the featureGates.openshift.openshiftRoute feature gate to use Routes",
+				),
+			},
+		},
+		{
+			name: "monitor tab enabled, missing prometheus endpoint",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					ReplicationFactor: 3,
+					Template: TempoTemplateSpec{
+						QueryFrontend: TempoQueryFrontendSpec{
+							JaegerQuery: JaegerQuerySpec{
+								Enabled: true,
+								MonitorTab: JaegerQueryMonitor{
+									Enabled: true,
+								},
+							},
+						},
+					},
+				},
+			},
+			ctrlConfig: v1alpha1.ProjectConfig{
+				Gates: v1alpha1.FeatureGates{},
+			},
+			expected: field.ErrorList{
+				field.Invalid(
+					prometheusEndpointPath,
+					"",
+					"Prometheus endpoint must be set when monitoring is enabled",
 				),
 			},
 		},

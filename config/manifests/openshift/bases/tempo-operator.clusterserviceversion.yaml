@@ -399,6 +399,17 @@ spec:
           ingress, route and none are supported.
         displayName: Type
         path: template.queryFrontend.jaegerQuery.ingress.type
+      - description: MonitorTab defines monitor tab configuration.
+        displayName: Jaeger Query UI Monitor Tab Settings
+        path: template.queryFrontend.jaegerQuery.monitorTab
+      - description: Enabled enables monitoring tab in Jaeger console. PrometheusEndpoint
+          needs to be set to enable the feature.
+        displayName: Enabled
+        path: template.queryFrontend.jaegerQuery.monitorTab.enabled
+      - description: PrometheusEndpoint configures endpoint to the Prometheus that
+          contains span RED metrics. For instance on OpenShift this is set to https://thanos-querier.openshift-monitoring.svc.cluster.local:9091
+        displayName: Prometheus endpoint
+        path: template.queryFrontend.jaegerQuery.monitorTab.prometheusEndpoint
       - description: NodeSelector is the simplest recommended form of node selection
           constraint.
         displayName: Node Selector

@@ -900,6 +900,91 @@ RouteSpec
 </tr></tbody>
 </table>
 
+## JaegerQueryMonitor { #tempo-grafana-com-v1alpha1-JaegerQueryMonitor }
+
+<p>
+
+(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-JaegerQuerySpec">JaegerQuerySpec</a>)
+
+</p>
+
+<div>
+
+<p>JaegerQueryMonitor defines configuration for the service monitoring tab in the Jaeger console.
+The monitoring tab uses Prometheus to query span RED metrics.
+This feature requires running OpenTelemetry collector with spanmetricsconnector -
+<a href="https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/connector/spanmetricsconnector">https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/connector/spanmetricsconnector</a>
+which derives span RED metrics from spans and exports the metrics to Prometheus.</p>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Field</th>
+
+<th>Description</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td>
+
+<code>enabled</code><br/>
+
+<em>
+
+bool
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>Enabled enables monitoring tab in Jaeger console.
+PrometheusEndpoint needs to be set to enable the feature.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>prometheusEndpoint</code><br/>
+
+<em>
+
+string
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>PrometheusEndpoint configures endpoint to the Prometheus that contains span RED metrics.
+For instance on OpenShift this is set to <a href="https://thanos-querier.openshift-monitoring.svc.cluster.local:9091">https://thanos-querier.openshift-monitoring.svc.cluster.local:9091</a></p>
+
+</td>
+</tr>
+
+</tbody>
+</table>
+
 ## JaegerQuerySpec { #tempo-grafana-com-v1alpha1-JaegerQuerySpec }
 
 <p>
@@ -976,6 +1061,33 @@ IngressSpec
 <em>(Optional)</em>
 
 <p>Ingress defines Jaeger Query Ingress options.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>monitorTab</code><br/>
+
+<em>
+
+<a href="#tempo-grafana-com-v1alpha1-JaegerQueryMonitor">
+
+JaegerQueryMonitor
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>MonitorTab defines monitor tab configuration.</p>
 
 </td>
 </tr>
