@@ -255,6 +255,9 @@ const (
 	ConditionPending ConditionStatus = "Pending"
 )
 
+// AllStatusConditions lists all possible status conditions.
+var AllStatusConditions = []ConditionStatus{ConditionReady, ConditionDegraded, ConditionFailed, ConditionPending}
+
 // ConditionReason defines possible reasons for each condition.
 type ConditionReason string
 

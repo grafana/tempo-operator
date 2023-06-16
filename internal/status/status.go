@@ -2,7 +2,6 @@ package status
 
 import (
 	"context"
-	"strings"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
@@ -18,7 +17,7 @@ var (
 		Namespace: "tempostack",
 		Name:      "status_condition",
 		Help:      "The status condition of a TempoStack instance.",
-	}, []string{"stack_namespace", "stack_name", "condition", "status"})
+	}, []string{"stack_namespace", "stack_name", "condition"})
 )
 
 // Refresh updates the status field with the tempo container image versions and updates the tempostack_status_condition metric.
@@ -36,13 +35,21 @@ func Refresh(ctx context.Context, k StatusClient, tempo v1alpha1.TempoStack, sta
 		changed.Status.TempoQueryVersion = version.Get().TempoQueryVersion
 	}
 
+	// Update all status condition metrics.
+	// In some cases not all status conditions are present in the status.Conditions list, for example:
+	// A TempoStack CR gets created with an invalid storage secret (creating a Degraded status condition).
+	// Later this CR is deleted, a storage secret is created and a new TempoStack instance is created.
+	// Then this TempoStack instance doesn't have the degraded condition in the status.Conditions list.
+	activeConditions := map[string]float64{}
 	for _, cond := range status.Conditions {
-		var isActive float64
 		if cond.Status == metav1.ConditionTrue {
-			isActive = 1
+			activeConditions[cond.Type] = 1
 		}
-		status := strings.ToLower(string(cond.Status))
-		tempoStackStatusCondition.WithLabelValues(tempo.Namespace, tempo.Name, cond.Type, status).Set(isActive)
+	}
+	for _, cond := range v1alpha1.AllStatusConditions {
+		condStr := string(cond)
+		isActive := activeConditions[condStr] // isActive will be 0 if the condition is not found in the map
+		tempoStackStatusCondition.WithLabelValues(tempo.Namespace, tempo.Name, condStr).Set(isActive)
 	}
 
 	err := k.PatchStatus(ctx, changed, &tempo)
