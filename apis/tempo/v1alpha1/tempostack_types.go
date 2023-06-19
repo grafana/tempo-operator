@@ -660,7 +660,7 @@ type RetentionConfig struct {
 //+kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 //+kubebuilder:printcolumn:name="Tempo version",type="string",JSONPath=".status.tempoVersion",description="Tempo Version"
 
-// TempoStack is the Schema for the tempostacks API.
+// TempoStack is the spec for Tempo deployments.
 //
 // +operator-sdk:csv:customresourcedefinitions:displayName="TempoStack",resources={{ConfigMap,v1},{ServiceAccount,v1},{Service,v1},{Secret,v1},{StatefulSet,v1},{Deployment,v1},{Ingress,v1},{Route,v1}}
 // +kubebuilder:resource:shortName=tempo;tempos
