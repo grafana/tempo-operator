@@ -19,6 +19,7 @@ import (
 	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 
 	"github.com/grafana/tempo-operator/apis/config/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
@@ -156,17 +157,17 @@ type validator struct {
 	ctrlConfig v1alpha1.ProjectConfig
 }
 
-func (v *validator) ValidateCreate(ctx context.Context, obj runtime.Object) error {
+func (v *validator) ValidateCreate(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
 	return v.validate(ctx, obj)
 }
 
-func (v *validator) ValidateUpdate(ctx context.Context, oldObj, newObj runtime.Object) error {
+func (v *validator) ValidateUpdate(ctx context.Context, oldObj, newObj runtime.Object) (admission.Warnings, error) {
 	return v.validate(ctx, newObj)
 }
 
-func (v *validator) ValidateDelete(ctx context.Context, obj runtime.Object) error {
+func (v *validator) ValidateDelete(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
 	// NOTE(agerstmayr): change verbs in +kubebuilder:webhook to "verbs=create;update;delete" if you want to enable deletion validation.
-	return nil
+	return nil, nil
 }
 
 func (v *validator) validateServiceAccount(ctx context.Context, tempo TempoStack) field.ErrorList {
@@ -339,10 +340,10 @@ func (v *validator) validateStackName(tempo TempoStack) field.ErrorList {
 	return nil
 }
 
-func (v *validator) validate(ctx context.Context, obj runtime.Object) error {
+func (v *validator) validate(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
 	tempo, ok := obj.(*TempoStack)
 	if !ok {
-		return apierrors.NewBadRequest(fmt.Sprintf("expected a TempoStack object but got %T", obj))
+		return nil, apierrors.NewBadRequest(fmt.Sprintf("expected a TempoStack object but got %T", obj))
 	}
 
 	log := ctrl.LoggerFrom(ctx).WithName("tempostack-webhook")
@@ -359,9 +360,9 @@ func (v *validator) validate(ctx context.Context, obj runtime.Object) error {
 	allErrs = append(allErrs, v.validateObservability(*tempo)...)
 
 	if len(allErrs) == 0 {
-		return nil
+		return nil, nil
 	}
-	return apierrors.NewInvalid(tempo.GroupVersionKind().GroupKind(), tempo.Name, allErrs)
+	return nil, apierrors.NewInvalid(tempo.GroupVersionKind().GroupKind(), tempo.Name, allErrs)
 }
 
 // ValidateTenantConfigs validates the tenants mode specification.

@@ -1085,7 +1085,8 @@ func TestValidatorValidate(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			v := &validator{ctrlConfig: v1alpha1.ProjectConfig{}, client: &k8sFake{}}
-			assert.Equal(t, tc.expected, v.validate(context.Background(), tc.input))
+			_, err := v.validate(context.Background(), tc.input)
+			assert.Equal(t, tc.expected, err)
 		})
 	}
 }
