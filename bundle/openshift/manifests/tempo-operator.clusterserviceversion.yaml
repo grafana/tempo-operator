@@ -33,13 +33,13 @@ metadata:
     capabilities: Basic Install
     categories: Logging & Tracing
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator
-    createdAt: "2023-06-19T15:32:06Z"
+    createdAt: "2023-06-20T10:31:01Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operators.operatorframework.io/builder: operator-sdk-v1.27.0
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     repository: https://github.com/grafana/tempo-operator
-    support: Grafana Tempo SIG Operator
+    support: Grafana Tempo Operator SIG
   name: tempo-operator.v0.2.0
   namespace: placeholder
 spec:
@@ -511,6 +511,7 @@ spec:
 
     ### Operator features
     * **Resource Limits**: Overall resource requests and limits can be specified in the TempoStack CR, and the operator will assign fractions of it to each component
+    * **Authentication and Authorization**: Access to Tempo can be secured with RBAC
     * **Multitenancy**: Traces of multiple tenants can be stored in the same Tempo cluster
     * **Jaeger UI**: The operator can deploy a Jaeger UI container and expose it via Ingress
     * **Metrics**: The operator exposes metrics about itself and can create ServiceMonitors for the Prometheus operator, to scrape metrics of each Tempo component
@@ -839,7 +840,7 @@ spec:
     name: Israel Blancas Alvarez
   maturity: alpha
   provider:
-    name: Grafana Tempo SIG Operator
+    name: Grafana Tempo Operator SIG
   version: 0.2.0
   webhookdefinitions:
   - admissionReviewVersions:
