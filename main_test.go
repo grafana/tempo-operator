@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"sigs.k8s.io/controller-runtime/pkg/log"
+	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 func TestSetupLogging(t *testing.T) {
@@ -17,7 +17,7 @@ func TestSetupLogging(t *testing.T) {
 	os.Stderr = w
 
 	setupLogging()
-	log := log.FromContext(context.Background())
+	log := ctrl.LoggerFrom(context.Background())
 	log = log.WithValues("tempo", "simplest")
 	log.V(1).Info("a test debug message")
 	log.Info("a test info message")

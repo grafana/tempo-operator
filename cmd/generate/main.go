@@ -12,8 +12,8 @@ import (
 	"gopkg.in/yaml.v2"
 	"k8s.io/apimachinery/pkg/runtime"
 	k8syaml "k8s.io/apimachinery/pkg/util/yaml"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	clog "sigs.k8s.io/controller-runtime/pkg/log"
 
 	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
 	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
@@ -26,7 +26,7 @@ import (
 // the decoder will look to figure out whether this is a JSON stream.
 const yamlOrJsonDecoderBufferSize = 8192
 
-var log = clog.Log.WithName("generate")
+var log = ctrl.Log.WithName("generate")
 
 func loadSpec(r io.Reader) (v1alpha1.TempoStack, error) {
 	spec := v1alpha1.TempoStack{}
