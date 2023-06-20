@@ -41,7 +41,7 @@ func start(c *cobra.Command, args []string) {
 			Recorder:   mgr.GetEventRecorderFor("tempo-upgrade"),
 			CtrlConfig: ctrlConfig,
 			Version:    version,
-			Log:        ctrl.Log.WithName("UpgradeTask"),
+			Log:        ctrl.Log.WithName("upgrade"),
 		}
 		return upgrade.TempoStacks(ctx)
 	}))
