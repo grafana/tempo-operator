@@ -18,7 +18,7 @@ import (
 
 var logger = log.Log.WithName("unit-tests")
 
-func createTempoCR(t *testing.T, nsn types.NamespacedName, version string) *v1alpha1.TempoStack {
+func createTempoCR(t *testing.T, nsn types.NamespacedName, version string, managementState v1alpha1.ManagementStateType) *v1alpha1.TempoStack {
 	tempo := &v1alpha1.TempoStack{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      nsn.Name,
@@ -28,6 +28,7 @@ func createTempoCR(t *testing.T, nsn types.NamespacedName, version string) *v1al
 			},
 		},
 		Spec: v1alpha1.TempoStackSpec{
+			ManagementState: managementState,
 			Images: configv1alpha1.ImagesSpec{
 				Tempo:           "docker.io/grafana/tempo:0.0.0",
 				TempoQuery:      "docker.io/grafana/tempo-query:0.0.0",
@@ -54,7 +55,7 @@ func createTempoCR(t *testing.T, nsn types.NamespacedName, version string) *v1al
 
 func TestUpgradeToLatest(t *testing.T) {
 	nsn := types.NamespacedName{Name: "upgrade-to-latest-test", Namespace: "default"}
-	createTempoCR(t, nsn, "0.0.1")
+	createTempoCR(t, nsn, "0.0.1", v1alpha1.ManagementStateManaged)
 
 	currentV := version.Get()
 	currentV.OperatorVersion = "0.1.0"
@@ -91,29 +92,33 @@ func TestUpgradeToLatest(t *testing.T) {
 }
 
 func TestSkipUpgrade(t *testing.T) {
+	currentOperatorVersion := "5.0.0"
 	tests := []struct {
 		name            string
-		startVersion    string
-		upgradedVersion string
+		version         string
+		managementState v1alpha1.ManagementStateType
 	}{
 		// Skip upgrade if the in-cluster version of the CR is more recent than the operator version
 		// For example, in case an old operator version got deployed by mistake
-		{"newer-than-ours", "10.0.0", "10.0.0"},
+		{"newer-than-ours", "10.0.0", v1alpha1.ManagementStateManaged},
 
 		// Do not perform upgrade and do not update any images
-		{"up-to-date", "5.0.0", "5.0.0"},
+		{"up-to-date", "5.0.0", v1alpha1.ManagementStateManaged},
 
 		// Ignore unparseable versions
-		{"unparseable", "abc", "abc"},
+		{"unparseable", "abc", v1alpha1.ManagementStateManaged},
+
+		// Ignore unmanaged instances
+		{"unmanaged", "1.0.0", v1alpha1.ManagementStateUnmanaged},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			nsn := types.NamespacedName{Name: "upgrade-test-" + test.name, Namespace: "default"}
-			originalTempo := createTempoCR(t, nsn, test.startVersion)
+			originalTempo := createTempoCR(t, nsn, test.version, test.managementState)
 
 			currentV := version.Get()
-			currentV.OperatorVersion = "5.0.0"
+			currentV.OperatorVersion = currentOperatorVersion
 
 			upgrade := &Upgrade{
 				Client:   k8sClient,
@@ -135,7 +140,7 @@ func TestSkipUpgrade(t *testing.T) {
 			upgradedTempo := v1alpha1.TempoStack{}
 			err = k8sClient.Get(context.Background(), nsn, &upgradedTempo)
 			assert.NoError(t, err)
-			assert.Equal(t, test.upgradedVersion, upgradedTempo.Status.OperatorVersion)
+			assert.Equal(t, test.version, upgradedTempo.Status.OperatorVersion)
 
 			// assert images were not updated
 			assert.Equal(t, originalTempo.Spec.Images.Tempo, upgradedTempo.Spec.Images.Tempo)

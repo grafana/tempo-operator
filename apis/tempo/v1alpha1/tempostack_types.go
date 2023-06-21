@@ -660,7 +660,8 @@ type RetentionConfig struct {
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 //+kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
-//+kubebuilder:printcolumn:name="Tempo version",type="string",JSONPath=".status.tempoVersion",description="Tempo Version"
+//+kubebuilder:printcolumn:name="Tempo Version",type="string",JSONPath=".status.tempoVersion",description="Tempo Version"
+//+kubebuilder:printcolumn:name="Management",type="string",JSONPath=".spec.managementState",description="Management State"
 
 // TempoStack is the spec for Tempo deployments.
 //

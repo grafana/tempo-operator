@@ -31,11 +31,7 @@ type Upgrade struct {
 func (u Upgrade) TempoStacks(ctx context.Context) error {
 	u.Log.Info("looking for instances to upgrade")
 
-	listOps := []client.ListOption{
-		client.MatchingLabels(map[string]string{
-			"app.kubernetes.io/managed-by": "tempo-operator",
-		}),
-	}
+	listOps := []client.ListOption{}
 	tempostackList := &v1alpha1.TempoStackList{}
 	if err := u.Client.List(ctx, tempostackList, listOps...); err != nil {
 		return fmt.Errorf("failed to list TempoStacks: %w", err)
@@ -86,6 +82,11 @@ func (u Upgrade) TempoStacks(ctx context.Context) error {
 // Note: It does not save/apply the changes to the CR.
 func (u Upgrade) TempoStack(ctx context.Context, tempo v1alpha1.TempoStack) (v1alpha1.TempoStack, error) {
 	log := u.Log.WithValues("namespace", tempo.Namespace, "tempo", tempo.Name)
+
+	if tempo.Spec.ManagementState == v1alpha1.ManagementStateUnmanaged {
+		log.Info("skipping unmanaged instance")
+		return tempo, nil
+	}
 
 	if tempo.Status.OperatorVersion == u.Version.OperatorVersion {
 		log.Info("instance is already up-to-date", "version", tempo.Status.OperatorVersion)

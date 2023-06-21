@@ -71,9 +71,7 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 	if r.Labels == nil {
 		r.Labels = map[string]string{}
 	}
-	if r.Spec.ManagementState == ManagementStateUnmanaged {
-		delete(r.Labels, "app.kubernetes.io/managed-by")
-	} else {
+	if r.Labels["app.kubernetes.io/managed-by"] == "" {
 		r.Labels["app.kubernetes.io/managed-by"] = "tempo-operator"
 	}
 	r.Labels["tempo.grafana.com/distribution"] = d.ctrlConfig.Distribution
