@@ -83,7 +83,7 @@ IMG_PREFIX=docker.io/your_username OPERATOR_VERSION=x.y.z OPERATOR_NAMESPACE=ope
 ### Using Manifests
 Install latest released version:
 ```
-kubectl apply -f https://github.com/os-observability/tempo-operator/releases/latest/download/tempo-operator.yaml
+kubectl apply -f https://github.com/grafana/tempo-operator/releases/latest/download/tempo-operator.yaml
 ```
 
 Build and push operator to a container registry:
