@@ -71,7 +71,7 @@ func (u Upgrade) TempoStacks(ctx context.Context) error {
 	}
 
 	if len(tempostackList.Items) == 0 {
-		u.Log.Info("no instances to upgrade")
+		u.Log.Info("no instances found")
 	}
 
 	return nil
