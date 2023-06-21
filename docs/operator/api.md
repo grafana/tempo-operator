@@ -3065,7 +3065,7 @@ JaegerQuerySpec
 
 <div>
 
-<p>TempoStack is the Schema for the tempostacks API.</p>
+<p>TempoStack is the spec for Tempo deployments.</p>
 
 </div>
 
