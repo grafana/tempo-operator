@@ -59,7 +59,6 @@ func TestUpgradeToLatest(t *testing.T) {
 	currentV := version.Get()
 	currentV.OperatorVersion = "0.1.0"
 	currentV.TempoVersion = "1.2.3"
-	currentV.TempoQueryVersion = "4.5.6"
 
 	upgrade := &Upgrade{
 		Client:   k8sClient,
@@ -83,7 +82,6 @@ func TestUpgradeToLatest(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, currentV.OperatorVersion, upgradedTempo.Status.OperatorVersion)
 	assert.Equal(t, currentV.TempoVersion, upgradedTempo.Status.TempoVersion)
-	assert.Equal(t, currentV.TempoQueryVersion, upgradedTempo.Status.TempoQueryVersion)
 
 	// assert images were updated
 	assert.Equal(t, "docker.io/grafana/tempo:latest", upgradedTempo.Spec.Images.Tempo)

@@ -3639,29 +3639,6 @@ string
 
 <td>
 
-<code>tempoQueryVersion</code><br/>
-
-<em>
-
-string
-
-</em>
-
-</td>
-
-<td>
-
-<em>(Optional)</em>
-
-<p>Version of the Tempo Query component used.</p>
-
-</td>
-</tr>
-
-<tr>
-
-<td>
-
 <code>components</code><br/>
 
 <em>

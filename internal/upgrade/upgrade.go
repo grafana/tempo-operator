@@ -163,5 +163,4 @@ func updateTempoStackImages(u Upgrade, tempo *v1alpha1.TempoStack) {
 func updateTempoStackVersions(u Upgrade, tempo *v1alpha1.TempoStack) {
 	tempo.Status.OperatorVersion = u.Version.OperatorVersion
 	tempo.Status.TempoVersion = u.Version.TempoVersion
-	tempo.Status.TempoQueryVersion = u.Version.TempoQueryVersion
 }

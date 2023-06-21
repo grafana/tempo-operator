@@ -34,9 +34,6 @@ func Refresh(ctx context.Context, k StatusClient, tempo v1alpha1.TempoStack, sta
 	if status.TempoVersion == "" {
 		changed.Status.TempoVersion = version.Get().TempoVersion
 	}
-	if status.TempoQueryVersion == "" {
-		changed.Status.TempoQueryVersion = version.Get().TempoQueryVersion
-	}
 
 	// Update all status condition metrics.
 	// In some cases not all status conditions are present in the status.Conditions list, for example:
