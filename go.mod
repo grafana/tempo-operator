@@ -1,4 +1,4 @@
-module github.com/os-observability/tempo-operator
+module github.com/grafana/tempo-operator
 
 go 1.20
 

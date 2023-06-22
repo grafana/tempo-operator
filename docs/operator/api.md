@@ -1103,7 +1103,7 @@ JaegerQueryIngressSpec
 
 <a href="#tempo-grafana-com-v1alpha1-RateLimitSpec">
 
-map[string]github.com/os-observability/tempo-operator/apis/tempo/v1alpha1.RateLimitSpec
+map[string]github.com/grafana/tempo-operator/apis/tempo/v1alpha1.RateLimitSpec
 
 </a>
 
@@ -2237,7 +2237,7 @@ default: value is 48h.</p>
 
 <a href="#tempo-grafana-com-v1alpha1-RetentionConfig">
 
-map[string]github.com/os-observability/tempo-operator/apis/tempo/v1alpha1.RetentionConfig
+map[string]github.com/grafana/tempo-operator/apis/tempo/v1alpha1.RetentionConfig
 
 </a>
 

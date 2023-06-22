@@ -9,7 +9,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/os-observability/tempo-operator/internal/certrotation"
+	"github.com/grafana/tempo-operator/internal/certrotation"
 )
 
 // GetOptions return a certrotation options struct filled with all found client and serving certificate secrets if any found.

@@ -8,10 +8,10 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
-	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
-	"github.com/os-observability/tempo-operator/internal/certrotation"
-	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
+	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
+	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/internal/certrotation"
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 )
 
 func TestBuildServiceMonitors(t *testing.T) {

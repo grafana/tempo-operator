@@ -27,15 +27,15 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
-	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
-	tempov1alpha1 "github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
-	"github.com/os-observability/tempo-operator/internal/certrotation/handlers"
-	"github.com/os-observability/tempo-operator/internal/handlers/gateway"
-	"github.com/os-observability/tempo-operator/internal/manifests"
-	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
-	"github.com/os-observability/tempo-operator/internal/status"
-	"github.com/os-observability/tempo-operator/internal/tlsprofile"
+	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
+	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	tempov1alpha1 "github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/internal/certrotation/handlers"
+	"github.com/grafana/tempo-operator/internal/handlers/gateway"
+	"github.com/grafana/tempo-operator/internal/manifests"
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
+	"github.com/grafana/tempo-operator/internal/status"
+	"github.com/grafana/tempo-operator/internal/tlsprofile"
 )
 
 const (

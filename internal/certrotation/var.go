@@ -3,8 +3,8 @@ package certrotation
 import (
 	"fmt"
 
-	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
-	"github.com/os-observability/tempo-operator/internal/manifests/naming"
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
+	"github.com/grafana/tempo-operator/internal/manifests/naming"
 )
 
 const (

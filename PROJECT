@@ -6,7 +6,7 @@ plugins:
   manifests.sdk.operatorframework.io/v2: {}
   scorecard.sdk.operatorframework.io/v2: {}
 projectName: tempo-operator
-repo: github.com/os-observability/tempo-operator
+repo: github.com/grafana/tempo-operator
 resources:
 - api:
     crdVersion: v1
@@ -15,7 +15,7 @@ resources:
   domain: grafana.com
   group: tempo
   kind: TempoStack
-  path: github.com/os-observability/tempo-operator/api/v1alpha1
+  path: github.com/grafana/tempo-operator/api/v1alpha1
   version: v1alpha1
   webhooks:
     defaulting: true

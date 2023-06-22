@@ -6,7 +6,7 @@ import (
 	"github.com/imdario/mergo"
 	corev1 "k8s.io/api/core/v1"
 
-	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 )
 
 // PatchTracingJaegerEnv adds configures jaeger-sdk via environment variables if

@@ -10,11 +10,11 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
-	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
-	tempoStackState "github.com/os-observability/tempo-operator/controllers/tempo/internal/management/state"
-	"github.com/os-observability/tempo-operator/internal/certrotation"
-	"github.com/os-observability/tempo-operator/internal/certrotation/handlers"
+	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
+	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	tempoStackState "github.com/grafana/tempo-operator/controllers/tempo/internal/management/state"
+	"github.com/grafana/tempo-operator/internal/certrotation"
+	"github.com/grafana/tempo-operator/internal/certrotation/handlers"
 )
 
 // CertRotationReconciler reconciles the `tempo.grafana.com/certRotationRequiredAt` annotation on
