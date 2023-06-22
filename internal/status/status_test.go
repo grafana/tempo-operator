@@ -10,8 +10,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
-	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
+	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
+	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 )
 
 func TestRefreshPatchError(t *testing.T) {
@@ -55,9 +55,9 @@ func TestRefreshNoError(t *testing.T) {
 	}
 
 	s := v1alpha1.TempoStackStatus{
-		TempoVersion:      "2.0",
-		TempoQueryVersion: "main-1b50ad3",
-		Conditions:        ReadyCondition(c, stack),
+		OperatorVersion: "0.1.0",
+		TempoVersion:    "2.0",
+		Conditions:      ReadyCondition(c, stack),
 	}
 
 	c.PatchStatusStub = func(ctx context.Context, changed, original *v1alpha1.TempoStack) error {

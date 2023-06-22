@@ -12,7 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
+	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
 )
 
 func TestGetInvalidOrEmptyTLSProfile(t *testing.T) {

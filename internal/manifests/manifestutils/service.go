@@ -7,7 +7,7 @@ import (
 	"github.com/imdario/mergo"
 	corev1 "k8s.io/api/core/v1"
 
-	"github.com/os-observability/tempo-operator/internal/manifests/naming"
+	"github.com/grafana/tempo-operator/internal/manifests/naming"
 )
 
 // TempoServerTLSDir returns the mount path of the HTTP service certificates.

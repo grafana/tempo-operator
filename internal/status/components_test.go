@@ -13,7 +13,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 )
 
 func TestSetComponentsStatus_WhenListReturnError_ReturnError(t *testing.T) {
@@ -58,7 +58,7 @@ func TestSetComponentsStatus_WhenListReturnError_ReturnError(t *testing.T) {
 				return &pods, nil
 
 			}
-			_, err := GetComponetsStatus(context.TODO(), k, s)
+			_, err := GetComponentsStatus(context.TODO(), k, s)
 			require.Error(t, err)
 		})
 	}
@@ -115,7 +115,7 @@ func TestSetComponentsStatus_WhenSomePodPending(t *testing.T) {
 		},
 	}
 
-	components, err := GetComponetsStatus(context.TODO(), k, s)
+	components, err := GetComponentsStatus(context.TODO(), k, s)
 
 	// Don't care about timing
 	now := metav1.Now()
@@ -183,7 +183,7 @@ func TestSetComponentsStatus_WhenSomePodFailed(t *testing.T) {
 		},
 	}
 
-	components, err := GetComponetsStatus(context.TODO(), k, s)
+	components, err := GetComponentsStatus(context.TODO(), k, s)
 
 	// Don't care about timing
 	now := metav1.Now()
@@ -251,7 +251,7 @@ func TestSetComponentsStatus_WhenSomePodUnknow(t *testing.T) {
 		},
 	}
 
-	components, err := GetComponetsStatus(context.TODO(), k, s)
+	components, err := GetComponentsStatus(context.TODO(), k, s)
 
 	// Don't care about timing
 	now := metav1.Now()
@@ -318,7 +318,7 @@ func TestSetComponentsStatus_WhenAllReady(t *testing.T) {
 		},
 	}
 
-	components, err := GetComponetsStatus(context.TODO(), k, s)
+	components, err := GetComponentsStatus(context.TODO(), k, s)
 
 	// Don't care about timing
 	now := metav1.Now()

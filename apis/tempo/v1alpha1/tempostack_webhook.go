@@ -19,10 +19,9 @@ import (
 	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
-	"github.com/os-observability/tempo-operator/apis/config/v1alpha1"
-	"github.com/os-observability/tempo-operator/internal/manifests/naming"
+	"github.com/grafana/tempo-operator/apis/config/v1alpha1"
+	"github.com/grafana/tempo-operator/internal/manifests/naming"
 )
 
 var (
@@ -33,9 +32,6 @@ var (
 	errNoDefaultGatewayOPAImage   = errors.New("please specify a opa image in the CR or in the operator configuration")
 	errNoDefaultTempoQueryImage   = errors.New("please specify a tempo-query image in the CR or in the operator configuration")
 )
-
-// log is for logging in this package.
-var tempostackslog = logf.Log.WithName("tempostacks-resource")
 
 const maxLabelLength = 63
 
@@ -63,12 +59,14 @@ type Defaulter struct {
 }
 
 // Default applies default values to a Kubernetes object.
-func (d *Defaulter) Default(_ context.Context, obj runtime.Object) error {
+func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 	r, ok := obj.(*TempoStack)
 	if !ok {
 		return apierrors.NewBadRequest(fmt.Sprintf("expected a TempoStack object but got %T", obj))
 	}
-	tempostackslog.V(1).Info("default", "name", r.Name)
+
+	log := ctrl.LoggerFrom(ctx).WithName("tempostack-webhook")
+	log.V(1).Info("running defaulter webhook", "name", r.Name)
 
 	if r.Labels == nil {
 		r.Labels = map[string]string{}
@@ -341,7 +339,9 @@ func (v *validator) validate(ctx context.Context, obj runtime.Object) error {
 	if !ok {
 		return apierrors.NewBadRequest(fmt.Sprintf("expected a TempoStack object but got %T", obj))
 	}
-	tempostackslog.V(1).Info("validate", "name", tempo.Name)
+
+	log := ctrl.LoggerFrom(ctx).WithName("tempostack-webhook")
+	log.V(1).Info("running validating webhook", "name", tempo.Name)
 
 	var allErrs field.ErrorList
 	allErrs = append(allErrs, v.validateStackName(*tempo)...)

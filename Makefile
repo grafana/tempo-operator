@@ -1,6 +1,6 @@
 # Current Operator version
 VERSION_DATE ?= $(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
-VERSION_PKG ?= github.com/os-observability/tempo-operator/internal/version
+VERSION_PKG ?= github.com/grafana/tempo-operator/internal/version
 OPERATOR_VERSION ?= $(or $(shell git describe --tags --abbrev=0 2> /dev/null | sed 's/^v//'), 0.0.0)
 TEMPO_VERSION ?= $(shell cat config/overlays/community/controller_manager_config.yaml | grep -oP "docker.io/grafana/tempo:\K.*")
 TEMPO_QUERY_VERSION ?= $(shell cat config/overlays/community/controller_manager_config.yaml | grep -oP "docker.io/grafana/tempo-query:\K.*")
@@ -316,10 +316,6 @@ stop-kind:
 	$(ECHO)"Stopping the kind cluster"
 	$(VECHO)kind delete cluster
 
-.PHONY: install-openshift-routes
-install-openshift-routes:
-	./hack/install/install-openshift-routes.sh
-
 .PHONY: deploy-minio
 deploy-minio:
 	$(ECHO) Installing minio
@@ -327,7 +323,7 @@ deploy-minio:
 
 # generic end-to-tests
 .PHONY: prepare-e2e
-prepare-e2e: kuttl start-kind cert-manager install-openshift-routes deploy-minio set-test-image-vars set-test-operator-config build docker-build load-image-operator deploy
+prepare-e2e: kuttl start-kind cert-manager deploy-minio set-test-image-vars build docker-build load-image-operator deploy
 
 .PHONY: e2e
 e2e:
@@ -351,11 +347,6 @@ scorecard-tests: operator-sdk
 .PHONY: set-test-image-vars
 set-test-image-vars:
 	$(eval IMG=local/tempo-operator:e2e)
-
-.PHONY: set-test-operator-config
-set-test-operator-config:
-	# we always install the OpenShift Route controller for e2e tests (in the prepare-e2e step)
-	sed -i 's/openshiftRoute: false/openshiftRoute: true/' config/overlays/community/controller_manager_config.yaml
 
 # Set the controller image parameters
 .PHONY: set-image-controller
@@ -433,7 +424,7 @@ api-docs: docs/operator/api.md docs/operator/feature-gates.md
 ##@ Website
 TYPES_TARGET := $(shell find apis/tempo -type f -iname "*_types.go")
 docs/operator/api.md: $(TYPES_TARGET) gen-crd-api-reference-docs
-	$(GEN_CRD) -api-dir "github.com/os-observability/tempo-operator/apis/tempo/" -config "$(PWD)/config/docs/config.json" -template-dir "$(PWD)/config/docs/templates" -out-file "$(PWD)/$@"
+	$(GEN_CRD) -api-dir "github.com/grafana/tempo-operator/apis/tempo/" -config "$(PWD)/config/docs/config.json" -template-dir "$(PWD)/config/docs/templates" -out-file "$(PWD)/$@"
 	sed -i 's/+docs:/  docs:/' $@
 	sed -i 's/+parent:/    parent:/' $@
 	sed -i 's/##/\n##/' $@
@@ -442,7 +433,7 @@ docs/operator/api.md: $(TYPES_TARGET) gen-crd-api-reference-docs
 
 FEATURE_GATES_TARGET := $(shell find apis/config -type f -iname "*_types.go")
 docs/operator/feature-gates.md: $(FEATURE_GATES_TARGET) gen-crd-api-reference-docs
-	$(GEN_CRD) -api-dir "github.com/os-observability/tempo-operator/apis/config/v1alpha1/" -config "$(PWD)/config/docs/config.json" -template-dir "$(PWD)/config/docs/templates" -out-file "$(PWD)/$@"
+	$(GEN_CRD) -api-dir "github.com/grafana/tempo-operator/apis/config/v1alpha1/" -config "$(PWD)/config/docs/config.json" -template-dir "$(PWD)/config/docs/templates" -out-file "$(PWD)/$@"
 	sed -i 's/title: "API"/title: "Feature Gates"/' $@
 	sed -i 's/+docs:/  docs:/' $@
 	sed -i 's/+parent:/    parent:/' $@

@@ -25,7 +25,7 @@ By contributing to this project you agree to the Contributor License Agreement.
 # Email and Chat
 
 The project currently uses the [Grafana Slack](https://grafana.slack.com):
-- [#tempo-operator-dev](https://grafana.slack.com/archives/C0414EUU39A)
+- [#tempo-operator](https://grafana.slack.com/archives/C0414EUU39A)
 
 ## Getting Started
 
@@ -62,3 +62,36 @@ If a changelog entry is not required, add either `[chore]` to the title of the p
 4. Commit and push the file
 
 Alternately, copy `./.chloggen/TEMPLATE.yaml`, or just create your file from scratch.
+
+## Manually Testing Operator Upgrades
+### Using OLM
+Install latest released version:
+```
+IMG_PREFIX=ghcr.io/grafana/tempo-operator OPERATOR_VERSION=old_xyz OPERATOR_NAMESPACE=openshift-operators make olm-deploy
+```
+
+Build and push operator and bundle image to a container registry:
+```
+IMG_PREFIX=docker.io/your_username OPERATOR_VERSION=x.y.z BUNDLE_VARIANT=openshift make bundle docker-build docker-push bundle-build bundle-push
+```
+
+Upgrade to new version:
+```
+IMG_PREFIX=docker.io/your_username OPERATOR_VERSION=x.y.z OPERATOR_NAMESPACE=openshift-operators make olm-upgrade
+```
+
+### Using Manifests
+Install latest released version:
+```
+kubectl apply -f https://github.com/grafana/tempo-operator/releases/latest/download/tempo-operator.yaml
+```
+
+Build and push operator to a container registry:
+```
+IMG_PREFIX=docker.io/your_username OPERATOR_VERSION=x.y.z make docker-build docker-push release-artifacts
+```
+
+Upgrade to new version:
+```
+kubectl apply -f dist/tempo-operator.yaml
+```

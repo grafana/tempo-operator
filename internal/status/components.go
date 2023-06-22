@@ -6,8 +6,8 @@ import (
 	"github.com/ViaQ/logerr/v2/kverrors"
 	corev1 "k8s.io/api/core/v1"
 
-	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
-	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
+	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 )
 
 // SetComponentsStatus updates the pod status map component.
@@ -17,32 +17,32 @@ func componentsStatus(ctx context.Context, c StatusClient, s v1alpha1.TempoStack
 	components := v1alpha1.ComponentStatus{}
 	components.Compactor, err = appendPodStatus(ctx, c, manifestutils.CompactorComponentName, s)
 	if err != nil {
-		return v1alpha1.ComponentStatus{}, kverrors.Wrap(err, "failed lookup Microservice component pods status", "name", manifestutils.CompactorComponentName)
+		return v1alpha1.ComponentStatus{}, kverrors.Wrap(err, "failed lookup TempoStack component pods status", "name", manifestutils.CompactorComponentName)
 	}
 
 	components.Querier, err = appendPodStatus(ctx, c, manifestutils.QuerierComponentName, s)
 	if err != nil {
-		return v1alpha1.ComponentStatus{}, kverrors.Wrap(err, "failed lookup Microservice component pods status", "name", manifestutils.QuerierComponentName)
+		return v1alpha1.ComponentStatus{}, kverrors.Wrap(err, "failed lookup TempoStack component pods status", "name", manifestutils.QuerierComponentName)
 	}
 
 	components.Distributor, err = appendPodStatus(ctx, c, manifestutils.DistributorComponentName, s)
 	if err != nil {
-		return v1alpha1.ComponentStatus{}, kverrors.Wrap(err, "failed lookup Microservice component pods status", "name", manifestutils.DistributorComponentName)
+		return v1alpha1.ComponentStatus{}, kverrors.Wrap(err, "failed lookup TempoStack component pods status", "name", manifestutils.DistributorComponentName)
 	}
 
 	components.QueryFrontend, err = appendPodStatus(ctx, c, manifestutils.QueryFrontendComponentName, s)
 	if err != nil {
-		return v1alpha1.ComponentStatus{}, kverrors.Wrap(err, "failed lookup Microservice component pods status", "name", manifestutils.QueryFrontendComponentName)
+		return v1alpha1.ComponentStatus{}, kverrors.Wrap(err, "failed lookup TempoStack component pods status", "name", manifestutils.QueryFrontendComponentName)
 	}
 
 	components.Ingester, err = appendPodStatus(ctx, c, manifestutils.IngesterComponentName, s)
 	if err != nil {
-		return v1alpha1.ComponentStatus{}, kverrors.Wrap(err, "failed lookup Microservice component pods status", "name", manifestutils.IngesterComponentName)
+		return v1alpha1.ComponentStatus{}, kverrors.Wrap(err, "failed lookup TempoStack component pods status", "name", manifestutils.IngesterComponentName)
 	}
 
 	components.Gateway, err = appendPodStatus(ctx, c, manifestutils.GatewayComponentName, s)
 	if err != nil {
-		return v1alpha1.ComponentStatus{}, kverrors.Wrap(err, "failed lookup Microservice component pods status", "name", manifestutils.GatewayComponentName)
+		return v1alpha1.ComponentStatus{}, kverrors.Wrap(err, "failed lookup TempoStack component pods status", "name", manifestutils.GatewayComponentName)
 	}
 
 	return components, nil
@@ -53,7 +53,7 @@ func appendPodStatus(ctx context.Context, c StatusClient, componentName string, 
 	pods, err := c.GetPodsComponent(ctx, componentName, stack)
 
 	if err != nil {
-		return nil, kverrors.Wrap(err, "failed to list pods for Microservice component", "name", stack, "component", componentName)
+		return nil, kverrors.Wrap(err, "failed to list pods for TempoStack component", "name", stack, "component", componentName)
 	}
 
 	for _, pod := range pods.Items {
@@ -63,10 +63,10 @@ func appendPodStatus(ctx context.Context, c StatusClient, componentName string, 
 	return psm, nil
 }
 
-// GetComponetsStatus executes an aggregate update of the Microservice Status struct, i.e.
+// GetComponentsStatus executes an aggregate update of the TempoStack Status struct, i.e.
 // - It recreates the Status.Components pod status map per component.
 // - It sets the appropriate Status.Condition to true that matches the pod status maps.
-func GetComponetsStatus(ctx context.Context, k StatusClient, s v1alpha1.TempoStack) (v1alpha1.TempoStackStatus, error) {
+func GetComponentsStatus(ctx context.Context, k StatusClient, s v1alpha1.TempoStack) (v1alpha1.TempoStackStatus, error) {
 
 	cs, err := componentsStatus(ctx, k, s)
 	if err != nil {

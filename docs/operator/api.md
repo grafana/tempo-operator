@@ -1103,7 +1103,7 @@ JaegerQueryIngressSpec
 
 <a href="#tempo-grafana-com-v1alpha1-RateLimitSpec">
 
-map[string]github.com/os-observability/tempo-operator/apis/tempo/v1alpha1.RateLimitSpec
+map[string]github.com/grafana/tempo-operator/apis/tempo/v1alpha1.RateLimitSpec
 
 </a>
 
@@ -2240,7 +2240,7 @@ default: value is 48h.</p>
 
 <a href="#tempo-grafana-com-v1alpha1-RetentionConfig">
 
-map[string]github.com/os-observability/tempo-operator/apis/tempo/v1alpha1.RetentionConfig
+map[string]github.com/grafana/tempo-operator/apis/tempo/v1alpha1.RetentionConfig
 
 </a>
 
@@ -3068,7 +3068,7 @@ JaegerQuerySpec
 
 <div>
 
-<p>TempoStack is the Schema for the tempostacks API.</p>
+<p>TempoStack is the spec for Tempo deployments.</p>
 
 </div>
 
@@ -3596,6 +3596,29 @@ ObservabilitySpec
 
 <td>
 
+<code>operatorVersion</code><br/>
+
+<em>
+
+string
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>Version of the Tempo Operator.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
 <code>tempoVersion</code><br/>
 
 <em>
@@ -3633,7 +3656,7 @@ string
 
 <em>(Optional)</em>
 
-<p>Version of the Tempo Query component used.</p>
+<p>DEPRECATED. Version of the Tempo Query component used.</p>
 
 </td>
 </tr>
