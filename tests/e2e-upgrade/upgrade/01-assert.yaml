@@ -9,7 +9,7 @@ status:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: tempo-operator-controller-manager
+  name: tempo-operator-controller
   namespace: kuttl-operator-upgrade
 status:
   readyReplicas: 1
