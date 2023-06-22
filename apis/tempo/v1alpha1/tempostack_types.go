@@ -220,12 +220,18 @@ type ComponentStatus struct {
 
 // TempoStackStatus defines the observed state of TempoStack.
 type TempoStackStatus struct {
+	// Version of the Tempo Operator.
+	// +optional
+	OperatorVersion string `json:"operatorVersion,omitempty"`
+
 	// Version of the managed Tempo instance.
 	// +optional
 	TempoVersion string `json:"tempoVersion,omitempty"`
-	// Version of the Tempo Query component used.
+
+	// DEPRECATED. Version of the Tempo Query component used.
 	// +optional
 	TempoQueryVersion string `json:"tempoQueryVersion,omitempty"`
+
 	// Components provides summary of all Tempo pod status grouped
 	// per component.
 	//
@@ -658,7 +664,8 @@ type RetentionConfig struct {
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 //+kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
-//+kubebuilder:printcolumn:name="Tempo version",type="string",JSONPath=".status.tempoVersion",description="Tempo Version"
+//+kubebuilder:printcolumn:name="Tempo Version",type="string",JSONPath=".status.tempoVersion",description="Tempo Version"
+//+kubebuilder:printcolumn:name="Management",type="string",JSONPath=".spec.managementState",description="Management State"
 
 // TempoStack is the spec for Tempo deployments.
 //

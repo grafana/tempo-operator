@@ -28,19 +28,3 @@ OPERATOR_VERSION=x.y.z make chlog-update
 ```
 
 This will delete all entries (other than the template) in the `.chloggen` directory and create a populated Changelog.md entry.
-
-## Test OLM Upgrade
-Install latest released version:
-```
-IMG_PREFIX=ghcr.io/grafana/tempo-operator OPERATOR_VERSION=old_xyz OPERATOR_NAMESPACE=openshift-operators make olm-deploy
-```
-
-Build and push operator and bundle image to a container registry:
-```
-IMG_PREFIX=docker.io/your_username OPERATOR_VERSION=x.y.z BUNDLE_VARIANT=openshift make bundle docker-build docker-push bundle-build bundle-push
-```
-
-Upgrade to new version:
-```
-IMG_PREFIX=docker.io/your_username OPERATOR_VERSION=x.y.z OPERATOR_NAMESPACE=openshift-operators make olm-upgrade
-```
