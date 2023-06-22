@@ -1019,6 +1019,9 @@ spec:
               operatorVersion:
                 description: Version of the Tempo Operator.
                 type: string
+              tempoQueryVersion:
+                description: DEPRECATED. Version of the Tempo Query component used.
+                type: string
               tempoVersion:
                 description: Version of the managed Tempo instance.
                 type: string

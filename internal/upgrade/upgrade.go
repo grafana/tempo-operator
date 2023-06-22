@@ -164,4 +164,5 @@ func updateTempoStackImages(u Upgrade, tempo *v1alpha1.TempoStack) {
 func updateTempoStackVersions(u Upgrade, tempo *v1alpha1.TempoStack) {
 	tempo.Status.OperatorVersion = u.Version.OperatorVersion
 	tempo.Status.TempoVersion = u.Version.TempoVersion
+	tempo.Status.TempoQueryVersion = "" // this field should be removed in the next version of the CRD
 }

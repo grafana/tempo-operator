@@ -228,6 +228,10 @@ type TempoStackStatus struct {
 	// +optional
 	TempoVersion string `json:"tempoVersion,omitempty"`
 
+	// DEPRECATED. Version of the Tempo Query component used.
+	// +optional
+	TempoQueryVersion string `json:"tempoQueryVersion,omitempty"`
+
 	// Components provides summary of all Tempo pod status grouped
 	// per component.
 	//
