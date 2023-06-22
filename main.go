@@ -4,11 +4,11 @@ import (
 	"flag"
 	"os"
 
-	"github.com/os-observability/tempo-operator/cmd"
-	"github.com/os-observability/tempo-operator/cmd/generate"
-	"github.com/os-observability/tempo-operator/cmd/start"
-	"github.com/os-observability/tempo-operator/cmd/version"
-	"github.com/os-observability/tempo-operator/internal/logging"
+	"github.com/grafana/tempo-operator/cmd"
+	"github.com/grafana/tempo-operator/cmd/generate"
+	"github.com/grafana/tempo-operator/cmd/start"
+	"github.com/grafana/tempo-operator/cmd/version"
+	"github.com/grafana/tempo-operator/internal/logging"
 )
 
 func main() {

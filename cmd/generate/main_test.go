@@ -13,9 +13,9 @@ import (
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
-	"github.com/os-observability/tempo-operator/cmd"
-	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
+	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
+	"github.com/grafana/tempo-operator/cmd"
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 )
 
 func TestBuild(t *testing.T) {
