@@ -3,7 +3,7 @@ package controllers
 import (
 	corev1 "k8s.io/api/core/v1"
 
-	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 )
 
 func getAzureParams(storageSecret *corev1.Secret) *manifestutils.AzureStorage {

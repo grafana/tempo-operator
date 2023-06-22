@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
+	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
 )
 
 func TestReadConfig(t *testing.T) {

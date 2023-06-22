@@ -6,7 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/os-observability/tempo-operator/internal/version"
+	"github.com/grafana/tempo-operator/internal/version"
 )
 
 // NewVersionCommand returns a new version command.

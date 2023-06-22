@@ -9,9 +9,9 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
-	v1alpha1 "github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
-	"github.com/os-observability/tempo-operator/internal/certrotation"
+	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
+	v1alpha1 "github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/internal/certrotation"
 )
 
 // CheckCertExpiry handles the case if the TempoStack managed signing CA, client and/or serving

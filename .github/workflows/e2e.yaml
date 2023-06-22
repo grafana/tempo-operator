@@ -13,7 +13,7 @@ concurrency:
 jobs:
   e2e-tests:
     name: End-to-end tests
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
        # The e2e tests are run on the lowest and highest supported k8s version.

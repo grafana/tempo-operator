@@ -14,8 +14,8 @@ import (
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
 
-	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
-	tempov1alpha1 "github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
+	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
+	tempov1alpha1 "github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 )
 
 var (

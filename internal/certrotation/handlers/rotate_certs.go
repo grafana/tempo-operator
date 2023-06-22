@@ -13,10 +13,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	ctrlutil "sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
-	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
-	v1alpha1 "github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
-	"github.com/os-observability/tempo-operator/internal/certrotation"
-	"github.com/os-observability/tempo-operator/internal/manifests"
+	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
+	v1alpha1 "github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/internal/certrotation"
+	"github.com/grafana/tempo-operator/internal/manifests"
 )
 
 // CreateOrRotateCertificates handles the TempoStack client and serving certificate creation and rotation

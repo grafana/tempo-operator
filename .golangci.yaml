@@ -7,7 +7,7 @@ linters-settings:
   #  goheader:
   #    template-path: header.txt
   goimports:
-    local-prefixes: github.com/os-observability/tempo-operator
+    local-prefixes: github.com/grafana/tempo-operator
   misspell:
     locale: US
   govet:
