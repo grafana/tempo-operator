@@ -20,8 +20,8 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/os-observability/tempo-operator/apis/config/v1alpha1"
-	"github.com/os-observability/tempo-operator/internal/manifests/naming"
+	"github.com/grafana/tempo-operator/apis/config/v1alpha1"
+	"github.com/grafana/tempo-operator/internal/manifests/naming"
 )
 
 var (

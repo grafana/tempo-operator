@@ -10,7 +10,7 @@ import (
 	"k8s.io/client-go/util/cert"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 )
 
 // buildCABundle returns a ConfigMap including all known non-expired signing CAs across rotations.

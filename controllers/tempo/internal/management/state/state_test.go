@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
-	tempov1alpha1 "github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
-	"github.com/os-observability/tempo-operator/controllers/tempo/internal/management/state"
+	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	tempov1alpha1 "github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/controllers/tempo/internal/management/state"
 
 	"github.com/stretchr/testify/require"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

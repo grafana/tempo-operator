@@ -14,11 +14,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
-	tempov1alpha1 "github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
-	"github.com/os-observability/tempo-operator/cmd"
-	controllers "github.com/os-observability/tempo-operator/controllers/tempo"
-	"github.com/os-observability/tempo-operator/internal/upgrade"
-	"github.com/os-observability/tempo-operator/internal/version"
+	tempov1alpha1 "github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/cmd"
+	controllers "github.com/grafana/tempo-operator/controllers/tempo"
+	"github.com/grafana/tempo-operator/internal/upgrade"
+	"github.com/grafana/tempo-operator/internal/version"
 	//+kubebuilder:scaffold:imports
 )
 

@@ -13,9 +13,9 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/utils/pointer"
 
-	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
-	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
-	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
+	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
+	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 )
 
 func TestBuildDistributor(t *testing.T) {

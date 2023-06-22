@@ -3,19 +3,19 @@ package manifests
 import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/os-observability/tempo-operator/internal/manifests/alerts"
-	"github.com/os-observability/tempo-operator/internal/manifests/compactor"
-	"github.com/os-observability/tempo-operator/internal/manifests/config"
-	"github.com/os-observability/tempo-operator/internal/manifests/distributor"
-	"github.com/os-observability/tempo-operator/internal/manifests/gateway"
-	"github.com/os-observability/tempo-operator/internal/manifests/ingester"
-	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
-	"github.com/os-observability/tempo-operator/internal/manifests/memberlist"
-	"github.com/os-observability/tempo-operator/internal/manifests/naming"
-	"github.com/os-observability/tempo-operator/internal/manifests/querier"
-	"github.com/os-observability/tempo-operator/internal/manifests/queryfrontend"
-	"github.com/os-observability/tempo-operator/internal/manifests/serviceaccount"
-	"github.com/os-observability/tempo-operator/internal/manifests/servicemonitor"
+	"github.com/grafana/tempo-operator/internal/manifests/alerts"
+	"github.com/grafana/tempo-operator/internal/manifests/compactor"
+	"github.com/grafana/tempo-operator/internal/manifests/config"
+	"github.com/grafana/tempo-operator/internal/manifests/distributor"
+	"github.com/grafana/tempo-operator/internal/manifests/gateway"
+	"github.com/grafana/tempo-operator/internal/manifests/ingester"
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
+	"github.com/grafana/tempo-operator/internal/manifests/memberlist"
+	"github.com/grafana/tempo-operator/internal/manifests/naming"
+	"github.com/grafana/tempo-operator/internal/manifests/querier"
+	"github.com/grafana/tempo-operator/internal/manifests/queryfrontend"
+	"github.com/grafana/tempo-operator/internal/manifests/serviceaccount"
+	"github.com/grafana/tempo-operator/internal/manifests/servicemonitor"
 )
 
 // StorageParams holds storage configuration.

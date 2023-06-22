@@ -7,8 +7,8 @@ import (
 	"math/rand"
 	"text/template"
 
-	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
-	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
+	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 )
 
 var (
