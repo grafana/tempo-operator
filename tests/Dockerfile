@@ -20,3 +20,6 @@ RUN curl -L -o oc.tar.gz https://mirror.openshift.com/pub/openshift-v4/x86_64/cl
 
 # Set the working directory
 WORKDIR /tmp/tempo-operator
+
+# Build required binaries
+RUN make build
