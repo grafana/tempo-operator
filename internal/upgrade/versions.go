@@ -3,7 +3,7 @@ package upgrade
 import (
 	"github.com/Masterminds/semver/v3"
 
-	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 )
 
 type upgradeFunc func(u Upgrade, tempo *v1alpha1.TempoStack) (*v1alpha1.TempoStack, error)

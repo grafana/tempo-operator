@@ -1,6 +1,6 @@
 package upgrade
 
-import "github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
+import "github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 
 // This is a template for future versions.
 func upgrade0_1_0(u Upgrade, tempo *v1alpha1.TempoStack) (*v1alpha1.TempoStack, error) {
