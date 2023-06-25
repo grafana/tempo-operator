@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	networkingv1 "k8s.io/api/networking/v1"
 	"net"
 	"path"
 
@@ -89,9 +90,13 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 				return nil, err
 			}
 		}
-		if params.Gates.OpenShift.OpenShiftRoute {
-			objs = append(objs, route(params.Tempo))
-		}
+	}
+
+	switch params.Tempo.Spec.Template.Gateway.Ingress.Type {
+	case v1alpha1.IngressTypeIngress:
+		objs = append(objs, ingress(params.Tempo))
+	case v1alpha1.IngressTypeRoute:
+		objs = append(objs, route(params.Tempo))
 	}
 
 	dep.Spec.Template, err = patchTracing(params.Tempo, dep.Spec.Template)
@@ -370,4 +375,53 @@ func tenantsConfig(tempo v1alpha1.TempoStack, tenantsCfg string) (*corev1.Secret
 	checksum := hex.EncodeToString(h.Sum(nil))
 
 	return secret, checksum
+}
+
+func ingress(tempo v1alpha1.TempoStack) *networkingv1.Ingress {
+	ingressName := naming.Name(manifestutils.GatewayComponentName, tempo.Name)
+	labels := manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name)
+
+	ingress := &networkingv1.Ingress{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        ingressName,
+			Namespace:   tempo.Namespace,
+			Labels:      labels,
+			Annotations: tempo.Spec.Template.Gateway.Ingress.Annotations,
+		},
+		Spec: networkingv1.IngressSpec{
+			IngressClassName: tempo.Spec.Template.Gateway.Ingress.IngressClassName,
+		},
+	}
+
+	backend := networkingv1.IngressBackend{
+		Service: &networkingv1.IngressServiceBackend{
+			Name: ingressName,
+			Port: networkingv1.ServiceBackendPort{
+				Name: "public",
+			},
+		},
+	}
+
+	if tempo.Spec.Template.Gateway.Ingress.Host == "" {
+		ingress.Spec.DefaultBackend = &backend
+	} else {
+		pathType := networkingv1.PathTypePrefix
+		ingress.Spec.Rules = []networkingv1.IngressRule{
+			{
+				Host: tempo.Spec.Template.Gateway.Ingress.Host,
+				IngressRuleValue: networkingv1.IngressRuleValue{
+					HTTP: &networkingv1.HTTPIngressRuleValue{
+						Paths: []networkingv1.HTTPIngressPath{
+							{
+								Path:     "/",
+								PathType: &pathType,
+								Backend:  backend,
+							},
+						},
+					},
+				},
+			},
+		}
+	}
+	return ingress
 }

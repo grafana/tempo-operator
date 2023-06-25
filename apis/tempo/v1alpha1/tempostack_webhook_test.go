@@ -178,7 +178,7 @@ func TestDefault(t *testing.T) {
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: true,
-								Ingress: JaegerQueryIngressSpec{
+								Ingress: IngressSpec{
 									Type: IngressTypeRoute,
 								},
 							},
@@ -230,9 +230,9 @@ func TestDefault(t *testing.T) {
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: true,
-								Ingress: JaegerQueryIngressSpec{
+								Ingress: IngressSpec{
 									Type: "route",
-									Route: JaegerQueryRouteSpec{
+									Route: RouteSpec{
 										Termination: "edge",
 									},
 								},
@@ -511,7 +511,7 @@ func TestValidateIngressAndRoute(t *testing.T) {
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: true,
-								Ingress: JaegerQueryIngressSpec{
+								Ingress: IngressSpec{
 									Type: "ingress",
 								},
 							},
@@ -530,7 +530,7 @@ func TestValidateIngressAndRoute(t *testing.T) {
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: true,
-								Ingress: JaegerQueryIngressSpec{
+								Ingress: IngressSpec{
 									Type: "route",
 								},
 							},
@@ -556,7 +556,7 @@ func TestValidateIngressAndRoute(t *testing.T) {
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: false,
-								Ingress: JaegerQueryIngressSpec{
+								Ingress: IngressSpec{
 									Type: "ingress",
 								},
 							},
@@ -581,7 +581,7 @@ func TestValidateIngressAndRoute(t *testing.T) {
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: true,
-								Ingress: JaegerQueryIngressSpec{
+								Ingress: IngressSpec{
 									Type: "route",
 								},
 							},
@@ -654,7 +654,7 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: true,
-								Ingress: JaegerQueryIngressSpec{
+								Ingress: IngressSpec{
 									Type: "route",
 								},
 							},
@@ -676,7 +676,7 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: false,
-								Ingress: JaegerQueryIngressSpec{
+								Ingress: IngressSpec{
 									Type: "route",
 								},
 							},
@@ -698,7 +698,7 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: false,
-								Ingress: JaegerQueryIngressSpec{
+								Ingress: IngressSpec{
 									Type: "ingress",
 								},
 							},
@@ -724,7 +724,7 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: true,
-								Ingress: JaegerQueryIngressSpec{
+								Ingress: IngressSpec{
 									Type: "ingress",
 								},
 							},

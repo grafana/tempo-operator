@@ -134,6 +134,9 @@ func TestBuildGateway_openshift(t *testing.T) {
 			Template: v1alpha1.TempoTemplateSpec{
 				Gateway: v1alpha1.TempoGatewaySpec{
 					Enabled: true,
+					Ingress: v1alpha1.IngressSpec{
+						Type: v1alpha1.IngressTypeRoute,
+					},
 				},
 			},
 			Tenants: &v1alpha1.TenantsSpec{
