@@ -138,6 +138,9 @@ func TestBuildGateway_openshift(t *testing.T) {
 					Enabled: true,
 					Ingress: v1alpha1.IngressSpec{
 						Type: v1alpha1.IngressTypeRoute,
+						Route: v1alpha1.RouteSpec{
+							Termination: v1alpha1.TLSRouteTerminationTypePassthrough,
+						},
 					},
 				},
 			},
