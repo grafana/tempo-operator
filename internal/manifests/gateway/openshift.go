@@ -86,6 +86,21 @@ func clusterRoleBinding(tempo v1alpha1.TempoStack) *rbacv1.ClusterRoleBinding {
 
 func route(tempo v1alpha1.TempoStack) *routev1.Route {
 	labels := manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name)
+
+	var tlsCfg *routev1.TLSConfig
+	switch tempo.Spec.Template.Gateway.Ingress.Route.Termination {
+	case v1alpha1.TLSRouteTerminationTypeInsecure:
+		// NOTE: insecure, no tls cfg.
+	case v1alpha1.TLSRouteTerminationTypeEdge:
+		tlsCfg = &routev1.TLSConfig{Termination: routev1.TLSTerminationEdge}
+	case v1alpha1.TLSRouteTerminationTypePassthrough:
+		tlsCfg = &routev1.TLSConfig{Termination: routev1.TLSTerminationPassthrough}
+	case v1alpha1.TLSRouteTerminationTypeReencrypt:
+		tlsCfg = &routev1.TLSConfig{Termination: routev1.TLSTerminationReencrypt}
+	default: // NOTE: if unsupported, end here.
+		return nil
+	}
+
 	return &routev1.Route{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      naming.Name(manifestutils.GatewayComponentName, tempo.Name),
@@ -93,6 +108,7 @@ func route(tempo v1alpha1.TempoStack) *routev1.Route {
 			Labels:    labels,
 		},
 		Spec: routev1.RouteSpec{
+			Host: tempo.Spec.Template.Gateway.Ingress.Host,
 			To: routev1.RouteTargetReference{
 				Kind: "Service",
 				Name: naming.Name(manifestutils.GatewayComponentName, tempo.Name),
@@ -100,9 +116,7 @@ func route(tempo v1alpha1.TempoStack) *routev1.Route {
 			Port: &routev1.RoutePort{
 				TargetPort: intstr.FromString("public"),
 			},
-			TLS: &routev1.TLSConfig{
-				Termination: routev1.TLSTerminationPassthrough,
-			},
+			TLS:            tlsCfg,
 			WildcardPolicy: routev1.WildcardPolicyNone,
 		},
 	}
