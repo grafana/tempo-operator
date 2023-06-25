@@ -8,8 +8,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/metrics"
 
-	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
-	"github.com/os-observability/tempo-operator/internal/version"
+	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/internal/version"
 )
 
 var (
@@ -28,11 +28,11 @@ func Refresh(ctx context.Context, k StatusClient, tempo v1alpha1.TempoStack, sta
 	// The .status.version field is empty for new CRs and cannot be set in the Defaulter webhook.
 	// The upgrade procedure only runs once at operator startup, therefore we need to set
 	// the initial status field versions here.
+	if status.OperatorVersion == "" {
+		changed.Status.OperatorVersion = version.Get().OperatorVersion
+	}
 	if status.TempoVersion == "" {
 		changed.Status.TempoVersion = version.Get().TempoVersion
-	}
-	if status.TempoQueryVersion == "" {
-		changed.Status.TempoQueryVersion = version.Get().TempoQueryVersion
 	}
 
 	// Update all status condition metrics.

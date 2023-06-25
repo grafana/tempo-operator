@@ -3,6 +3,16 @@
 This is a Kubernetes operator for [Grafana Tempo](https://github.com/grafana/tempo).
 
 
+## Features
+
+* **Resource Limits**: Overall resource requests and limits can be specified in the TempoStack CR, and the operator will assign fractions of it to each component
+* **Authentication and Authorization**: Access to Tempo can be secured with RBAC
+* **Multitenancy**: Traces of multiple tenants can be stored in the same Tempo cluster
+* **Jaeger UI**: The operator can deploy a Jaeger UI container and expose it via Ingress
+* **Metrics**: The operator exposes metrics about itself and can create ServiceMonitors for the Prometheus operator, to scrape metrics of each Tempo component
+* **mTLS**: Communication between the Tempo components can be secured via mTLS
+
+
 ## Documentation
 
 * [Operator documentation](https://tempo-operator.netlify.app)

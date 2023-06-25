@@ -9,13 +9,12 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
-	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
-	tempoStackState "github.com/os-observability/tempo-operator/controllers/tempo/internal/management/state"
-	"github.com/os-observability/tempo-operator/internal/certrotation"
-	"github.com/os-observability/tempo-operator/internal/certrotation/handlers"
+	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
+	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	tempoStackState "github.com/grafana/tempo-operator/controllers/tempo/internal/management/state"
+	"github.com/grafana/tempo-operator/internal/certrotation"
+	"github.com/grafana/tempo-operator/internal/certrotation/handlers"
 )
 
 // CertRotationReconciler reconciles the `tempo.grafana.com/certRotationRequiredAt` annotation on
@@ -36,8 +35,10 @@ type CertRotationReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/reconcile
 func (r *CertRotationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	log := log.FromContext(ctx)
-	log = log.WithValues("tempo", req.NamespacedName)
+	log := ctrl.LoggerFrom(ctx).WithName("certrotation-reconcile").WithValues("tempo", req.NamespacedName)
+
+	log.V(1).Info("starting reconcile loop")
+	defer log.V(1).Info("finished reconcile loop")
 
 	managed, err := tempoStackState.IsManaged(ctx, req, r.Client)
 	if err != nil {

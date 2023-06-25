@@ -23,20 +23,19 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
-	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
-	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
-	tempov1alpha1 "github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
-	"github.com/os-observability/tempo-operator/internal/certrotation/handlers"
-	"github.com/os-observability/tempo-operator/internal/handlers/gateway"
-	"github.com/os-observability/tempo-operator/internal/manifests"
-	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
-	"github.com/os-observability/tempo-operator/internal/status"
-	"github.com/os-observability/tempo-operator/internal/tlsprofile"
+	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
+	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	tempov1alpha1 "github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/internal/certrotation/handlers"
+	"github.com/grafana/tempo-operator/internal/handlers/gateway"
+	"github.com/grafana/tempo-operator/internal/manifests"
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
+	"github.com/grafana/tempo-operator/internal/status"
+	"github.com/grafana/tempo-operator/internal/tlsprofile"
 )
 
 const (
@@ -73,8 +72,10 @@ type TempoStackReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.12.2/pkg/reconcile
 func (r *TempoStackReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	log := log.FromContext(ctx)
-	log = log.WithValues("tempo", req.NamespacedName)
+	log := ctrl.LoggerFrom(ctx).WithName("tempostack-reconcile").WithValues("tempo", req.NamespacedName)
+
+	log.V(1).Info("starting reconcile loop")
+	defer log.V(1).Info("finished reconcile loop")
 
 	tempo := v1alpha1.TempoStack{}
 	if err := r.Get(ctx, req.NamespacedName, &tempo); err != nil {
@@ -262,7 +263,7 @@ func (r *TempoStackReconciler) reconcileManifests(ctx context.Context, log logr.
 			continue
 		}
 
-		l.Info(fmt.Sprintf("resource has been %s", op))
+		l.V(1).Info(fmt.Sprintf("resource has been %s", op))
 
 		// This object is still managed by the operator, remove it from the list of objects to prune
 		delete(pruneObjects, obj.GetUID())

@@ -24,12 +24,16 @@ spec:
       type: date
     - description: Tempo Version
       jsonPath: .status.tempoVersion
-      name: Tempo version
+      name: Tempo Version
+      type: string
+    - description: Management State
+      jsonPath: .spec.managementState
+      name: Management
       type: string
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: TempoStack is the Schema for the tempostacks API.
+        description: TempoStack is the spec for Tempo deployments.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -1050,8 +1054,11 @@ spec:
                   - type
                   type: object
                 type: array
+              operatorVersion:
+                description: Version of the Tempo Operator.
+                type: string
               tempoQueryVersion:
-                description: Version of the Tempo Query component used.
+                description: DEPRECATED. Version of the Tempo Query component used.
                 type: string
               tempoVersion:
                 description: Version of the managed Tempo instance.
