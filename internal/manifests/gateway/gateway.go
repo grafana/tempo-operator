@@ -4,13 +4,13 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	networkingv1 "k8s.io/api/networking/v1"
 	"net"
 	"path"
 
 	"github.com/imdario/mergo"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -92,10 +92,9 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 		}
 	}
 
-	switch params.Tempo.Spec.Template.Gateway.Ingress.Type {
-	case v1alpha1.IngressTypeIngress:
+	if params.Tempo.Spec.Template.Gateway.Ingress.Type == v1alpha1.IngressTypeIngress {
 		objs = append(objs, ingress(params.Tempo))
-	case v1alpha1.IngressTypeRoute:
+	} else if params.Tempo.Spec.Template.Gateway.Ingress.Type == v1alpha1.IngressTypeRoute {
 		objs = append(objs, route(params.Tempo))
 	}
 
