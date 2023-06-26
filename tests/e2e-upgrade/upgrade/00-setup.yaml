@@ -16,7 +16,7 @@ metadata:
   namespace: kuttl-operator-upgrade
 spec:
   sourceType: grpc
-  image: ${UPGRADE_FROM_CATALOG}
+  image: quay.io/operatorhubio/catalog:latest
 ---
 apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
@@ -25,4 +25,4 @@ metadata:
   namespace: kuttl-operator-upgrade
 spec:
   sourceType: grpc
-  image: ${UPGRADE_TO_CATALOG}
+  image: localregistry:5000/tempo-operator-catalog:v100.0.0

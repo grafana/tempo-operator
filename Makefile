@@ -352,7 +352,6 @@ e2e-openshift:
 
 # upgrade tests
 e2e-upgrade:
-	for f in tests/e2e-upgrade/*/*.envsubst; do envsubst < $$f > $${f%.envsubst}; done
 	$(KUTTL) test --config kuttl-test-upgrade.yaml
 
 .PHONY: scorecard-tests
