@@ -6,7 +6,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/certrotation"
 	"github.com/grafana/tempo-operator/internal/manifests/gateway"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
@@ -19,21 +18,21 @@ func BuildServiceMonitors(params manifestutils.Params) []client.Object {
 	// Each tempo component has its own TLS certificate, therefore we need separate
 	// ServiceMonitor instances for each component.
 	monitors := []client.Object{
-		buildTempoComponentServiceMonitor(params, manifestutils.CompactorComponentName),
-		buildTempoComponentServiceMonitor(params, manifestutils.DistributorComponentName),
-		buildTempoComponentServiceMonitor(params, manifestutils.IngesterComponentName),
-		buildTempoComponentServiceMonitor(params, manifestutils.QuerierComponentName),
-		buildTempoComponentServiceMonitor(params, manifestutils.QueryFrontendComponentName),
+		buildServiceMonitor(params, manifestutils.CompactorComponentName, manifestutils.HttpPortName),
+		buildServiceMonitor(params, manifestutils.DistributorComponentName, manifestutils.HttpPortName),
+		buildServiceMonitor(params, manifestutils.IngesterComponentName, manifestutils.HttpPortName),
+		buildServiceMonitor(params, manifestutils.QuerierComponentName, manifestutils.HttpPortName),
+		buildServiceMonitor(params, manifestutils.QueryFrontendComponentName, manifestutils.HttpPortName),
 	}
 
 	if params.Tempo.Spec.Template.Gateway.Enabled {
-		monitors = append(monitors, buildGatewayServiceMonitor(params.Tempo))
+		monitors = append(monitors, buildServiceMonitor(params, manifestutils.GatewayComponentName, gateway.InternalPortName))
 	}
 
 	return monitors
 }
 
-func buildTempoComponentServiceMonitor(params manifestutils.Params, component string) *monitoringv1.ServiceMonitor {
+func buildServiceMonitor(params manifestutils.Params, component string, port string) *monitoringv1.ServiceMonitor {
 	tempo := params.Tempo
 	scheme := "http"
 	var tlsConfig *monitoringv1.TLSConfig
@@ -55,18 +54,18 @@ func buildTempoComponentServiceMonitor(params manifestutils.Params, component st
 				Cert: monitoringv1.SecretOrConfigMap{
 					Secret: &corev1.SecretKeySelector{
 						LocalObjectReference: corev1.LocalObjectReference{
-							Name: naming.Name(tempo.Name, component),
+							Name: naming.TLSSecretName(component, tempo.Name),
 						},
 						Key: corev1.TLSCertKey,
 					},
 				},
 				KeySecret: &corev1.SecretKeySelector{
 					LocalObjectReference: corev1.LocalObjectReference{
-						Name: naming.Name(tempo.Name, component),
+						Name: naming.TLSSecretName(component, tempo.Name),
 					},
 					Key: corev1.TLSPrivateKeyKey,
 				},
-				// E.g. tempo-simplest-compactor-http.tempo-operator.svc.cluster.local
+				// E.g. tempo-simplest-compactor.tempo-operator-system.svc.cluster.local
 				ServerName: serverName,
 			},
 		}
@@ -81,7 +80,7 @@ func buildTempoComponentServiceMonitor(params manifestutils.Params, component st
 		Spec: monitoringv1.ServiceMonitorSpec{
 			Endpoints: []monitoringv1.Endpoint{{
 				Scheme:    scheme,
-				Port:      manifestutils.HttpPortName,
+				Port:      port,
 				Path:      "/metrics",
 				TLSConfig: tlsConfig,
 				// Custom relabel configs to be compatible with predefined Tempo dashboards:
@@ -103,40 +102,6 @@ func buildTempoComponentServiceMonitor(params manifestutils.Params, component st
 			},
 			Selector: metav1.LabelSelector{
 				MatchLabels: manifestutils.ComponentLabels(component, tempo.Name),
-			},
-		},
-	}
-}
-
-func buildGatewayServiceMonitor(tempo v1alpha1.TempoStack) *monitoringv1.ServiceMonitor {
-	return &monitoringv1.ServiceMonitor{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: tempo.Namespace,
-			Name:      naming.Name(manifestutils.GatewayComponentName, tempo.Name),
-			Labels:    manifestutils.CommonLabels(tempo.Name),
-		},
-		Spec: monitoringv1.ServiceMonitorSpec{
-			Endpoints: []monitoringv1.Endpoint{{
-				Port: gateway.InternalPortName,
-				// Custom relabel configs to be compatible with predefined Tempo dashboards:
-				// https://grafana.com/docs/tempo/latest/operations/monitoring/#dashboards
-				RelabelConfigs: []*monitoringv1.RelabelConfig{
-					{
-						SourceLabels: []monitoringv1.LabelName{"__meta_kubernetes_service_label_app_kubernetes_io_instance"},
-						TargetLabel:  "cluster",
-					},
-					{
-						SourceLabels: []monitoringv1.LabelName{"__meta_kubernetes_namespace", "__meta_kubernetes_service_label_app_kubernetes_io_component"},
-						Separator:    "/",
-						TargetLabel:  "job",
-					},
-				},
-			}},
-			NamespaceSelector: monitoringv1.NamespaceSelector{
-				MatchNames: []string{tempo.Namespace},
-			},
-			Selector: metav1.LabelSelector{
-				MatchLabels: manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name),
 			},
 		},
 	}
