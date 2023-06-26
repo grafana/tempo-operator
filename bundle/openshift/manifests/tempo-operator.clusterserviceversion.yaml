@@ -8,7 +8,6 @@ metadata:
           "apiVersion": "tempo.grafana.com/v1alpha1",
           "kind": "TempoStack",
           "metadata": {
-          "metadata": {
             "name": "sample"
           },
           "spec": {
@@ -34,7 +33,7 @@ metadata:
     capabilities: Basic Install
     categories: Logging & Tracing
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator
-    createdAt: "2023-06-26T05:35:39Z"
+    createdAt: "2023-06-26T19:34:38Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operators.operatorframework.io/builder: operator-sdk-v1.27.0
