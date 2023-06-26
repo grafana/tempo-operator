@@ -9,7 +9,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
@@ -75,30 +74,6 @@ func TestPatchOCPServingCerts(t *testing.T) {
 									Name: "data",
 								},
 							},
-							LivenessProbe: &corev1.Probe{
-								ProbeHandler: corev1.ProbeHandler{
-									HTTPGet: &corev1.HTTPGetAction{
-										Path:   "/live",
-										Port:   intstr.FromInt(portInternal),
-										Scheme: corev1.URISchemeHTTP,
-									},
-								},
-								TimeoutSeconds:   2,
-								PeriodSeconds:    30,
-								FailureThreshold: 10,
-							},
-							ReadinessProbe: &corev1.Probe{
-								ProbeHandler: corev1.ProbeHandler{
-									HTTPGet: &corev1.HTTPGetAction{
-										Path:   "/ready",
-										Port:   intstr.FromInt(portInternal),
-										Scheme: corev1.URISchemeHTTPS,
-									},
-								},
-								TimeoutSeconds:   1,
-								PeriodSeconds:    5,
-								FailureThreshold: 12,
-							},
 						},
 					},
 				},
@@ -106,8 +81,6 @@ func TestPatchOCPServingCerts(t *testing.T) {
 		},
 	}
 	expected := dep.DeepCopy()
-	expected.Spec.Template.Spec.Containers[0].ReadinessProbe.HTTPGet.Scheme = corev1.URISchemeHTTPS
-	expected.Spec.Template.Spec.Containers[0].LivenessProbe.HTTPGet.Scheme = corev1.URISchemeHTTPS
 	expected.Spec.Template.Spec.Volumes = append(expected.Spec.Template.Spec.Volumes, corev1.Volume{
 		Name: "serving-certs",
 		VolumeSource: corev1.VolumeSource{
@@ -130,8 +103,6 @@ func TestPatchOCPServingCerts(t *testing.T) {
 		[]string{
 			"--tls.server.cert-file=/etc/tempo-gateway/serving-certs/tls.crt",
 			"--tls.server.key-file=/etc/tempo-gateway/serving-certs/tls.key",
-			"--tls.internal.server.cert-file=/etc/tempo-gateway/serving-certs/tls.crt",
-			"--tls.internal.server.key-file=/etc/tempo-gateway/serving-certs/tls.key",
 			"--tls.healthchecks.server-ca-file=/etc/tempo-gateway/cabundle/service-ca.crt",
 			fmt.Sprintf("--tls.healthchecks.server-name=tempo-%s-gateway.%s.svc.cluster.local", tempo.Name, tempo.Namespace),
 			"--web.healthchecks.url=https://localhost:8080",

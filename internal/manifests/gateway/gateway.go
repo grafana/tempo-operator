@@ -118,6 +118,19 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 	annotations["tempo.grafana.com/tenantsConfig.hash"] = tenantsCfgHash
 
 	cfg := tempo.Spec.Template.Gateway
+	internalServerScheme := corev1.URISchemeHTTP
+	tlsArgs := []string{}
+
+	if params.Gates.HTTPEncryption {
+		internalServerScheme = corev1.URISchemeHTTPS
+		tlsArgs = []string{
+			fmt.Sprintf("--tls.internal.server.key-file=%s/tls.key", manifestutils.TempoServerTLSDir()),
+			fmt.Sprintf("--tls.internal.server.cert-file=%s/tls.crt", manifestutils.TempoServerTLSDir()),
+			fmt.Sprintf("--traces.tls.key-file=%s/tls.key", manifestutils.TempoServerTLSDir()),
+			fmt.Sprintf("--traces.tls.cert-file=%s/tls.crt", manifestutils.TempoServerTLSDir()),
+			fmt.Sprintf("--traces.tls.ca-file=%s/service-ca.crt", manifestutils.CABundleDir),
+		}
+	}
 
 	dep := &appsv1.Deployment{
 		TypeMeta: metav1.TypeMeta{
@@ -145,7 +158,7 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 						{
 							Name:  "tempo-gateway",
 							Image: tempo.Spec.Images.TempoGateway,
-							Args: []string{
+							Args: append([]string{
 								fmt.Sprintf("--traces.tenant-header=%s", manifestutils.TenantHeader),
 								fmt.Sprintf("--web.listen=0.0.0.0:%d", portPublic),
 								fmt.Sprintf("--web.internal.listen=0.0.0.0:%d", portInternal),
@@ -156,7 +169,7 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 								fmt.Sprintf("--rbac.config=%s", path.Join(tempoGatewayMountDir, "cm", tempoGatewayRbacFileName)),
 								fmt.Sprintf("--tenants.config=%s", path.Join(tempoGatewayMountDir, "secret", manifestutils.GatewayTenantFileName)),
 								"--log.level=info",
-							},
+							}, tlsArgs...),
 							Ports: []corev1.ContainerPort{
 								{
 									Name:          "grpc-public",
@@ -179,7 +192,7 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 									HTTPGet: &corev1.HTTPGetAction{
 										Path:   "/live",
 										Port:   intstr.FromInt(portInternal),
-										Scheme: corev1.URISchemeHTTP,
+										Scheme: internalServerScheme,
 									},
 								},
 								TimeoutSeconds:   2,
@@ -191,7 +204,7 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 									HTTPGet: &corev1.HTTPGetAction{
 										Path:   "/ready",
 										Port:   intstr.FromInt(portInternal),
-										Scheme: corev1.URISchemeHTTP,
+										Scheme: internalServerScheme,
 									},
 								},
 								TimeoutSeconds:   1,
@@ -250,14 +263,6 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 				},
 			},
 		},
-	}
-
-	if params.Gates.HTTPEncryption {
-		dep.Spec.Template.Spec.Containers[0].Args = append(dep.Spec.Template.Spec.Containers[0].Args,
-			fmt.Sprintf("--traces.tls.key-file=%s/tls.key", manifestutils.TempoServerTLSDir()),
-			fmt.Sprintf("--traces.tls.cert-file=%s/tls.crt", manifestutils.TempoServerTLSDir()),
-			fmt.Sprintf("--traces.tls.ca-file=%s/service-ca.crt", manifestutils.CABundleDir),
-		)
 	}
 
 	return dep

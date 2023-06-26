@@ -163,8 +163,6 @@ spec:
           - --log.level=info
           - --tls.server.cert-file=/etc/tempo-gateway/serving-certs/tls.crt
           - --tls.server.key-file=/etc/tempo-gateway/serving-certs/tls.key
-          - --tls.internal.server.cert-file=/etc/tempo-gateway/serving-certs/tls.crt
-          - --tls.internal.server.key-file=/etc/tempo-gateway/serving-certs/tls.key
           - --tls.healthchecks.server-ca-file=/etc/tempo-gateway/cabundle/service-ca.crt
           - --tls.healthchecks.server-name=tempo-simplest-gateway.kuttl-multitenancy.svc.cluster.local
           - --web.healthchecks.url=https://localhost:8080

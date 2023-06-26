@@ -120,20 +120,6 @@ func configMapCABundle(tempo v1alpha1.TempoStack) *corev1.ConfigMap {
 
 func patchOCPServingCerts(tempo v1alpha1.TempoStack, dep *v1.Deployment) (*v1.Deployment, error) {
 	container := corev1.Container{
-		ReadinessProbe: &corev1.Probe{
-			ProbeHandler: corev1.ProbeHandler{
-				HTTPGet: &corev1.HTTPGetAction{
-					Scheme: corev1.URISchemeHTTPS,
-				},
-			},
-		},
-		LivenessProbe: &corev1.Probe{
-			ProbeHandler: corev1.ProbeHandler{
-				HTTPGet: &corev1.HTTPGetAction{
-					Scheme: corev1.URISchemeHTTPS,
-				},
-			},
-		},
 		VolumeMounts: []corev1.VolumeMount{
 			{
 				Name:      "serving-certs",
@@ -149,10 +135,8 @@ func patchOCPServingCerts(tempo v1alpha1.TempoStack, dep *v1.Deployment) (*v1.De
 		Args: []string{
 			fmt.Sprintf("--tls.server.cert-file=%s", path.Join(tempoGatewayMountDir, "serving-certs", "tls.crt")),
 			fmt.Sprintf("--tls.server.key-file=%s", path.Join(tempoGatewayMountDir, "serving-certs", "tls.key")),
-			fmt.Sprintf("--tls.internal.server.cert-file=%s", path.Join(tempoGatewayMountDir, "serving-certs", "tls.crt")),
-			fmt.Sprintf("--tls.internal.server.key-file=%s", path.Join(tempoGatewayMountDir, "serving-certs", "tls.key")),
 			fmt.Sprintf("--tls.healthchecks.server-ca-file=%s", path.Join(tempoGatewayMountDir, "cabundle", "service-ca.crt")),
-			fmt.Sprintf("--tls.healthchecks.server-name=tempo-%s-gateway.%s.svc.cluster.local", tempo.Name, tempo.Namespace),
+			fmt.Sprintf("--tls.healthchecks.server-name=%s", naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.GatewayComponentName)),
 			"--web.healthchecks.url=https://localhost:8080",
 		},
 	}
