@@ -121,6 +121,12 @@ spec:
         path: limits.global.query.maxBytesPerTagValues
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:number
+      - description: 'DEPRECATED. MaxSearchBytesPerTrace defines the maximum size
+          of search data for a single trace in bytes. default: `0` to disable.'
+        displayName: Max Traces per User
+        path: limits.global.query.maxSearchBytesPerTrace
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:number
       - description: MaxSearchDuration defines the maximum search duration. If this
           value is not set, then spec.search.maxDuration is used.
         displayName: Max Search Duration per User
@@ -162,6 +168,12 @@ spec:
           query.
         displayName: Max Tags per User
         path: limits.perTenant.query.maxBytesPerTagValues
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:number
+      - description: 'DEPRECATED. MaxSearchBytesPerTrace defines the maximum size
+          of search data for a single trace in bytes. default: `0` to disable.'
+        displayName: Max Traces per User
+        path: limits.perTenant.query.maxSearchBytesPerTrace
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:number
       - description: MaxSearchDuration defines the maximum search duration. If this

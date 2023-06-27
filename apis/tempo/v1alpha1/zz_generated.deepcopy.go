@@ -438,6 +438,11 @@ func (in *QueryLimit) DeepCopyInto(out *QueryLimit) {
 		*out = new(int)
 		**out = **in
 	}
+	if in.MaxSearchBytesPerTrace != nil {
+		in, out := &in.MaxSearchBytesPerTrace, &out.MaxSearchBytesPerTrace
+		*out = new(int)
+		**out = **in
+	}
 	out.MaxSearchDuration = in.MaxSearchDuration
 }
 
