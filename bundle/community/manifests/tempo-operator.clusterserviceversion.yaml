@@ -33,7 +33,7 @@ metadata:
     capabilities: Basic Install
     categories: Logging & Tracing
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator
-    createdAt: "2023-06-20T10:31:05Z"
+    createdAt: "2023-06-27T16:55:51Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operators.operatorframework.io/builder: operator-sdk-v1.27.0
@@ -127,8 +127,8 @@ spec:
         path: limits.global.query.maxSearchBytesPerTrace
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:number
-      - description: MaxSearchDuration defines the maximum search duration. If this
-          value is not set, then spec.search.maxDuration is used.
+      - description: MaxSearchDuration defines the maximum allowed time range for
+          a search. If this value is not set, then spec.search.maxDuration is used.
         displayName: Max Search Duration per User
         path: limits.global.query.maxSearchDuration
       - description: PerTenant is used to define rate limits per tenant.
@@ -176,8 +176,8 @@ spec:
         path: limits.perTenant.query.maxSearchBytesPerTrace
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:number
-      - description: MaxSearchDuration defines the maximum search duration. If this
-          value is not set, then spec.search.maxDuration is used.
+      - description: MaxSearchDuration defines the maximum allowed time range for
+          a search. If this value is not set, then spec.search.maxDuration is used.
         displayName: Max Search Duration per User
         path: limits.perTenant.query.maxSearchDuration
       - description: ManagementState defines if the CR should be managed by the operator

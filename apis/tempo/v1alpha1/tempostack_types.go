@@ -633,7 +633,7 @@ type QueryLimit struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors="urn:alm:descriptor:com.tectonic.ui:number",displayName="Max Traces per User"
 	MaxSearchBytesPerTrace *int `json:"maxSearchBytesPerTrace,omitempty"`
 
-	// MaxSearchDuration defines the maximum search duration.
+	// MaxSearchDuration defines the maximum allowed time range for a search.
 	// If this value is not set, then spec.search.maxDuration is used.
 	//
 	// +optional

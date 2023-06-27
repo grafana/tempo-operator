@@ -97,8 +97,8 @@ spec:
         path: limits.global.query.maxSearchBytesPerTrace
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:number
-      - description: MaxSearchDuration defines the maximum search duration. If this
-          value is not set, then spec.search.maxDuration is used.
+      - description: MaxSearchDuration defines the maximum allowed time range for
+          a search. If this value is not set, then spec.search.maxDuration is used.
         displayName: Max Search Duration per User
         path: limits.global.query.maxSearchDuration
       - description: PerTenant is used to define rate limits per tenant.
@@ -146,8 +146,8 @@ spec:
         path: limits.perTenant.query.maxSearchBytesPerTrace
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:number
-      - description: MaxSearchDuration defines the maximum search duration. If this
-          value is not set, then spec.search.maxDuration is used.
+      - description: MaxSearchDuration defines the maximum allowed time range for
+          a search. If this value is not set, then spec.search.maxDuration is used.
         displayName: Max Search Duration per User
         path: limits.perTenant.query.maxSearchDuration
       - description: ManagementState defines if the CR should be managed by the operator

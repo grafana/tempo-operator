@@ -110,9 +110,9 @@ spec:
                               bytes. default: `0` to disable.'
                             type: integer
                           maxSearchDuration:
-                            description: MaxSearchDuration defines the maximum search
-                              duration. If this value is not set, then spec.search.maxDuration
-                              is used.
+                            description: MaxSearchDuration defines the maximum allowed
+                              time range for a search. If this value is not set, then
+                              spec.search.maxDuration is used.
                             type: string
                         type: object
                     type: object
@@ -155,9 +155,9 @@ spec:
                                 in bytes. default: `0` to disable.'
                               type: integer
                             maxSearchDuration:
-                              description: MaxSearchDuration defines the maximum search
-                                duration. If this value is not set, then spec.search.maxDuration
-                                is used.
+                              description: MaxSearchDuration defines the maximum allowed
+                                time range for a search. If this value is not set,
+                                then spec.search.maxDuration is used.
                               type: string
                           type: object
                       type: object
