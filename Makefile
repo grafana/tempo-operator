@@ -140,7 +140,7 @@ run: manifests generate fmt vet ## Run a controller from your host.
 
 .PHONY: docker-build
 docker-build: ## Build docker image with the manager.
-	docker buildx build --load --platform linux/${ARCH} -t ${IMG} .
+	docker buildx build --load --platform linux/${ARCH} --build-arg OPERATOR_VERSION -t ${IMG} .
 
 .PHONY: docker-push
 docker-push: ## Push docker image with the manager.
@@ -251,7 +251,7 @@ ifeq (,$(shell which opm 2>/dev/null))
 	set -e ;\
 	mkdir -p $(dir $(OPM)) ;\
 	OS=$(shell go env GOOS) && ARCH=$(shell go env GOARCH) && \
-	curl -sSLo $(OPM) https://github.com/operator-framework/operator-registry/releases/download/v1.23.0/$${OS}-$${ARCH}-opm ;\
+	curl -sSLo $(OPM) https://github.com/operator-framework/operator-registry/releases/download/v1.27.1/$${OS}-$${ARCH}-opm ;\
 	chmod +x $(OPM) ;\
 	}
 else
@@ -277,6 +277,16 @@ endif
 .PHONY: catalog-build
 catalog-build: opm ## Build a catalog image.
 	$(OPM) index add --container-tool docker --mode semver --tag $(CATALOG_IMG) --bundles $(BUNDLE_IMGS) $(FROM_INDEX_OPT)
+
+.PHONY: fbc-catalog-build
+fbc-catalog-build: opm ## Build a File Based Catalog (FBC) catalog image
+	mkdir -p catalog/tempo-operator
+	$(OPM) generate dockerfile catalog
+	$(OPM) render $(CATALOG_BASE_IMG) -o yaml > catalog/tempo-operator/base.yaml
+	# $(OPM) init tempo-operator -c alpha -o yaml > catalog/tempo-operator/latest.yaml
+	$(OPM) render $(BUNDLE_IMG) -o yaml >> catalog/tempo-operator/latest.yaml
+	docker build -f catalog.Dockerfile -t $(CATALOG_IMG) .
+	rm -r catalog.Dockerfile catalog
 
 # Push the catalog image.
 .PHONY: catalog-push
@@ -340,6 +350,10 @@ prepare-e2e-openshift: deploy-minio
 e2e-openshift:
 	$(KUTTL) test --config kuttl-test-openshift.yaml
 
+# upgrade tests
+e2e-upgrade:
+	$(KUTTL) test --config kuttl-test-upgrade.yaml
+
 .PHONY: scorecard-tests
 scorecard-tests: operator-sdk
 	$(OPERATOR_SDK) scorecard -w=5m bundle/$(BUNDLE_VARIANT) || (echo "scorecard test failed" && exit 1)
@@ -362,6 +376,10 @@ operator-sdk: $(OPERATOR_SDK) ## Download operator-sdk locally if necessary.
 $(OPERATOR_SDK): $(LOCALBIN)
 	test -s $(OPERATOR_SDK) || curl -sLo $(OPERATOR_SDK) https://github.com/operator-framework/operator-sdk/releases/download/v${OPERATOR_SDK_VERSION}/operator-sdk_`go env GOOS`_`go env GOARCH`
 	@chmod +x $(OPERATOR_SDK)
+
+.PHONY: olm-install
+olm-install: operator-sdk ## Install Operator Lifecycle Manager (OLM)
+	$(OPERATOR_SDK) olm install
 
 # go-get-tool will 'go get' any package $2 and install it to $1.
 define go-get-tool
@@ -493,14 +511,3 @@ release-artifacts: set-image-controller
 	mkdir -p dist
 	$(KUSTOMIZE) build config/overlays/community -o dist/tempo-operator.yaml
 	$(KUSTOMIZE) build config/overlays/openshift -o dist/tempo-operator-openshift.yaml
-
-olm/install: operator-sdk
-	-$(OPERATOR_SDK) olm install
-
-olm/create-catalog:
-	CATALOG_IMG=$(CATALOG_IMG) envsubst < hack/olm/catalog.yaml | kubectl apply -f -
-
-olm/create-subscription:
-	kubectl apply -f hack/olm/subscription.yaml
-
-olm/install-operator: olm/install generate bundle docker-build docker-push bundle-build bundle-push catalog-build catalog-push olm/create-catalog olm/create-subscription

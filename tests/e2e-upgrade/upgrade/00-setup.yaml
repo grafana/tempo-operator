@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kuttl-operator-upgrade
+---
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: operatorgroup
+  namespace: kuttl-operator-upgrade
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: old-catalog
+  namespace: kuttl-operator-upgrade
+spec:
+  sourceType: grpc
+  image: quay.io/operatorhubio/catalog:latest
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: new-catalog
+  namespace: kuttl-operator-upgrade
+spec:
+  sourceType: grpc
+  image: localregistry:5000/tempo-operator-catalog:v100.0.0

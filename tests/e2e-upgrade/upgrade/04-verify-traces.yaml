@@ -1,0 +1,22 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: verify-traces
+spec:
+  template:
+    spec:
+      containers:
+      - name: verify-traces
+        image: registry.access.redhat.com/ubi9/ubi:9.1
+        command:
+        - /bin/bash
+        - -eux
+        - -c
+        args:
+        - |
+          curl -s -S http://tempo-simplest-query-frontend:16686/api/services | tee /tmp/out.log
+          if ! grep -q telemetrygen /tmp/out.log; then
+            echo && echo "No traces found"
+            exit 1
+          fi
+      restartPolicy: Never
