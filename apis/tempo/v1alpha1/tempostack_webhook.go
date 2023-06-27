@@ -149,6 +149,7 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 	// if tenant mode is Openshift, ingress type should be route by default.
 	if r.Spec.Tenants != nil && r.Spec.Tenants.Mode == OpenShift && r.Spec.Template.Gateway.Ingress.Type == IngressTypeRoute {
 		r.Spec.Template.Gateway.Ingress.Type = IngressTypeRoute
+		r.Spec.Template.Gateway.Ingress.Route.Termination = TLSRouteTerminationTypePassthrough
 	}
 
 	return nil
