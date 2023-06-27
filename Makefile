@@ -372,7 +372,7 @@ cd $$TMP_DIR ;\
 go mod init tmp ;\
 echo "Downloading $(2)" ;\
 go get -d $(2)@$(3) ;\
-GOBIN=$(LOCALBIN) go install $(2) ;\
+GOBIN=$(LOCALBIN) go install -mod=mod $(2) ;\
 APP=$$(echo "$(LOCALBIN)/$@") ;\
 APP_NAME=$$(echo "$$APP-$(3)") ;\
 mv "$$APP" "$$APP_NAME" ;\
