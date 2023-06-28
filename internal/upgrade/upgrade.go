@@ -10,12 +10,23 @@ import (
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/go-logr/logr"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/metrics"
 
 	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/version"
+)
+
+var (
+	metricFailedUpgrades = promauto.With(metrics.Registry).NewGauge(prometheus.GaugeOpts{
+		Namespace: "tempooperator",
+		Name:      "failed_upgrades_total",
+		Help:      "The number of failed upgrades of TempoStack instances.",
+	})
 )
 
 // Upgrade contains required objects to perform version upgrades.
@@ -37,15 +48,18 @@ func (u Upgrade) TempoStacks(ctx context.Context) error {
 		return fmt.Errorf("failed to list TempoStacks: %w", err)
 	}
 
+	failedUpgradeCount := 0
 	for i := range tempostackList.Items {
 		original := tempostackList.Items[i]
-		itemLogger := u.Log.WithValues("name", original.Name, "namespace", original.Namespace)
+		itemLogger := u.Log.WithValues("name", original.Name, "namespace", original.Namespace, "from_version", original.Status.OperatorVersion)
 
 		upgraded, err := u.TempoStack(ctx, original)
+		itemLogger = itemLogger.WithValues("to_version", upgraded.Status.OperatorVersion)
 		if err != nil {
 			msg := "automated upgrade is not possible, the CR instance must be corrected and re-created manually"
 			itemLogger.Info(msg)
 			u.Recorder.Event(&original, "Error", "Upgrade", msg)
+			failedUpgradeCount++
 			continue
 		}
 
@@ -56,6 +70,7 @@ func (u Upgrade) TempoStacks(ctx context.Context) error {
 			patch := client.MergeFrom(&original)
 			if err := u.Client.Patch(ctx, &upgraded, patch); err != nil {
 				itemLogger.Error(err, "failed to apply changes to instance")
+				failedUpgradeCount++
 				continue
 			}
 
@@ -63,12 +78,14 @@ func (u Upgrade) TempoStacks(ctx context.Context) error {
 			upgraded.Status = status
 			if err := u.Client.Status().Patch(ctx, &upgraded, patch); err != nil {
 				itemLogger.Error(err, "failed to apply changes to instance's status object")
+				failedUpgradeCount++
 				continue
 			}
 
-			itemLogger.Info("upgraded instance", "from_version", tempostackList.Items[i].Status.OperatorVersion, "to_version", upgraded.Status.OperatorVersion)
+			itemLogger.Info("upgraded instance")
 		}
 	}
+	metricFailedUpgrades.Set(float64(failedUpgradeCount))
 
 	if len(tempostackList.Items) == 0 {
 		u.Log.Info("no instances found")

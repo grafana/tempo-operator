@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	tempoStackStatusCondition = promauto.With(metrics.Registry).NewGaugeVec(prometheus.GaugeOpts{
+	metricTempoStackStatusCondition = promauto.With(metrics.Registry).NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: "tempostack",
 		Name:      "status_condition",
 		Help:      "The status condition of a TempoStack instance.",
@@ -49,7 +49,7 @@ func Refresh(ctx context.Context, k StatusClient, tempo v1alpha1.TempoStack, sta
 	for _, cond := range v1alpha1.AllStatusConditions {
 		condStr := string(cond)
 		isActive := activeConditions[condStr] // isActive will be 0 if the condition is not found in the map
-		tempoStackStatusCondition.WithLabelValues(tempo.Namespace, tempo.Name, condStr).Set(isActive)
+		metricTempoStackStatusCondition.WithLabelValues(tempo.Namespace, tempo.Name, condStr).Set(isActive)
 	}
 
 	err := k.PatchStatus(ctx, changed, &tempo)
