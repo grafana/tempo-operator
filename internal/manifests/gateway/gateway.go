@@ -37,8 +37,7 @@ const (
 
 // BuildGateway creates gateway objects.
 func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
-	if !params.Tempo.Spec.Template.Gateway.Enabled ||
-		params.Tempo.Spec.Tenants == nil {
+	if !params.Tempo.Spec.Template.Gateway.Enabled {
 		return []client.Object{}, nil
 	}
 

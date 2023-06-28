@@ -804,6 +804,11 @@ func TestValidateTenantConfigs(t *testing.T) {
 					Tenants: &TenantsSpec{
 						Mode: Static,
 					},
+					Template: TempoTemplateSpec{
+						Gateway: TempoGatewaySpec{
+							Enabled: true,
+						},
+					},
 				},
 			},
 			wantErr: fmt.Errorf("spec.tenants.authentication is required in static mode"),
@@ -829,6 +834,11 @@ func TestValidateTenantConfigs(t *testing.T) {
 						Authorization:  &AuthorizationSpec{},
 						Authentication: []AuthenticationSpec{},
 					},
+					Template: TempoTemplateSpec{
+						Gateway: TempoGatewaySpec{
+							Enabled: true,
+						},
+					},
 				},
 			},
 			wantErr: fmt.Errorf("spec.tenants.authorization.roles is required in static mode"),
@@ -843,6 +853,11 @@ func TestValidateTenantConfigs(t *testing.T) {
 							Roles: []RoleSpec{},
 						},
 						Authentication: []AuthenticationSpec{},
+					},
+					Template: TempoTemplateSpec{
+						Gateway: TempoGatewaySpec{
+							Enabled: true,
+						},
 					},
 				},
 			},
@@ -872,6 +887,11 @@ func TestValidateTenantConfigs(t *testing.T) {
 							{
 								OIDC: &OIDCSpec{},
 							},
+						},
+					},
+					Template: TempoTemplateSpec{
+						Gateway: TempoGatewaySpec{
+							Enabled: true,
 						},
 					},
 				},
