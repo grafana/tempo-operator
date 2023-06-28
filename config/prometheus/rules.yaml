@@ -1,0 +1,42 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    control-plane: controller-manager
+  name: controller-manager-prometheus-rule
+  namespace: system
+spec:
+  groups:
+  - name: tempooperator_alerts
+    rules:
+    - alert: TempoStackUnhealthy
+      annotations:
+        message: "TempoStack {{ $labels.stack_name }}/{{ $labels.stack_namespace }} is in {{ $labels.condition }} state."
+        runbook_url: "https://github.com/grafana/tempo-operator/blob/main/operations/runbook.md#TempoCompactorUnhealthy"
+      expr: |
+        tempostack_status_condition{condition=~"Degraded|Failed"} == 1
+      for: 5m
+      labels:
+        severity: critical
+
+    - alert: TempoOperatorReconcileError
+      annotations:
+        message: "Tempo Operator failed to reconcile."
+        runbook_url: "https://github.com/grafana/tempo-operator/blob/main/operations/runbook.md#TempoOperatorReconcileError"
+      expr: |
+        increase(controller_runtime_reconcile_errors_total{service="tempo-operator-controller-manager-metrics-service"}[15m]) > 0
+      for: 15m
+      labels:
+        severity: warning
+
+    - alert: TempoOperatorReconcileDurationHigh
+      annotations:
+        message: "Tempo Operator reconciliation takes longer than 10 minutes."
+        runbook_url: "https://github.com/grafana/tempo-operator/blob/main/operations/runbook.md#TempoOperatorReconcileDurationHigh"
+      expr: |
+        rate(controller_runtime_reconcile_time_seconds_sum{service="tempo-operator-controller-manager-metrics-service"}[5m])
+        / rate(controller_runtime_reconcile_time_seconds_count{service="tempo-operator-controller-manager-metrics-service"}[5m])
+        > 600
+      for: 10m
+      labels:
+        severity: warning
