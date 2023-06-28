@@ -7,6 +7,13 @@ Check the `Message` field of the status condition with `Status: True` of the aff
 kubectl -n <namespace> describe tempo <instance>
 ```
 
+## TempoOperatorFailedUpgrade
+The Tempo Operator could not upgrade one or more TempoStack instances.
+Please inspect the upgrade logs of the tempo operator pod to find the root cause:
+```
+kubectl -n <operator_namespace> logs deployment/tempo-operator-controller | grep upgrade
+```
+
 ## TempoOperatorReconcileError
 The Operator failed to reconcile its managed resources. This leads to managed resources to be out of sync with the desired state.
 The cause of this error can be various configuration errors, for example insufficient permissions.
