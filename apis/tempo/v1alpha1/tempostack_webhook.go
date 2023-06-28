@@ -376,6 +376,10 @@ func ValidateTenantConfigs(tempo TempoStack) error {
 			return fmt.Errorf("spec.tenants.authentication is required in static mode")
 		}
 
+		if tenants.Authorization == nil {
+			return fmt.Errorf("spec.tenants.authorization is required in static mode")
+		}
+
 		if tenants.Authorization.Roles == nil {
 			return fmt.Errorf("spec.tenants.authorization.roles is required in static mode")
 		}
