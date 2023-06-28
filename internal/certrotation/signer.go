@@ -10,7 +10,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 )
 
 // SigningCAExpired returns true if the signer certificate expired and the reason of expiry.

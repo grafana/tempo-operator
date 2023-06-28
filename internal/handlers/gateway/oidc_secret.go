@@ -8,9 +8,9 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
-	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
-	"github.com/os-observability/tempo-operator/internal/status"
+	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
+	"github.com/grafana/tempo-operator/internal/status"
 )
 
 // GetOIDCTenantSecrets returns the list to gateway tenant secrets for a tenant mode.

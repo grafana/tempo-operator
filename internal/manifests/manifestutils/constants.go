@@ -40,6 +40,31 @@ const (
 	// PortOtlpGrpcServer declares the port number of the OpenTelemetry Collector gRPC receiver port.
 	PortOtlpGrpcServer = 4317
 
+	// PortJaegerThriftHTTPName declares the port name of the Jaeger Thrift HTTP protocol.
+	PortJaegerThriftHTTPName = "thrift-http"
+	// PortJaegerThriftHTTP declares the port number of the Jaeger Thrift HTTP protocol.
+	PortJaegerThriftHTTP = 14268
+
+	// PortJaegerThriftCompactName declares the port name of the Jaeger Thrift compact protocol.
+	PortJaegerThriftCompactName = "thrift-compact"
+	// PortJaegerThriftCompact declares the port number of the Jaeger Thrift compact protocol.
+	PortJaegerThriftCompact = 6831
+
+	// PortJaegerThriftBinaryName declares the port name of the Jaeger Thrift binary protocol.
+	PortJaegerThriftBinaryName = "thrift-binary"
+	// PortJaegerThriftBinary declares the port number of the Jaeger Thrift binary protocol.
+	PortJaegerThriftBinary = 6832
+
+	// PortJaegerGrpcName declares the port number of the Jaeger gRPC port.
+	PortJaegerGrpcName = "jaeger-grpc"
+	// PortJaegerGrpc declares the port number of the Jaeger gRPC port.
+	PortJaegerGrpc = 14250
+
+	// PortZipkinName declares the port number of zipkin receiver port.
+	PortZipkinName = "http-zipkin"
+	// PortZipkin declares the port number of zipkin receiver port.
+	PortZipkin = 9411
+
 	// HttpMemberlistPortName declares the name of the tempo memberlist port.
 	HttpMemberlistPortName = "http-memberlist"
 	// PortMemberlist declares the port number of the tempo memberlist port.

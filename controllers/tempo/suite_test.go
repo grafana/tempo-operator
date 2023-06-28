@@ -11,7 +11,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 
-	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -22,9 +22,6 @@ var testScheme *runtime.Scheme = scheme.Scheme
 func TestMain(m *testing.M) {
 	testEnv = &envtest.Environment{
 		CRDDirectoryPaths: []string{filepath.Join("..", "..", "config", "crd", "bases")},
-		//WebhookInstallOptions: envtest.WebhookInstallOptions{
-		//	Paths: []string{filepath.Join("..", "config", "webhook")},
-		//},
 	}
 	cfg, err := testEnv.Start()
 	if err != nil {

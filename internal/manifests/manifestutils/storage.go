@@ -7,7 +7,7 @@ import (
 	"github.com/imdario/mergo"
 	corev1 "k8s.io/api/core/v1"
 
-	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 )
 
 func configureAzureStorage(tempo *v1alpha1.TempoStack, pod *corev1.PodSpec) error {

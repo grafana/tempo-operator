@@ -1,9 +1,15 @@
 # Current Operator version
 VERSION_DATE ?= $(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
-VERSION_PKG ?= "github.com/os-observability/tempo-operator/internal/version"
-OPERATOR_VERSION ?= 0.1.0
+VERSION_PKG ?= github.com/grafana/tempo-operator/internal/version
+OPERATOR_VERSION ?= $(or $(shell git describe --tags --abbrev=0 2> /dev/null | sed 's/^v//'), 0.0.0)
+TEMPO_VERSION ?= $(shell cat config/overlays/community/controller_manager_config.yaml | grep -oP "docker.io/grafana/tempo:\K.*")
+TEMPO_QUERY_VERSION ?= $(shell cat config/overlays/community/controller_manager_config.yaml | grep -oP "docker.io/grafana/tempo-query:\K.*")
 COMMIT_SHA = "$(shell git rev-parse HEAD)"
-LD_FLAGS ?= "-X ${VERSION_PKG}.buildDate=${VERSION_DATE} -X ${VERSION_PKG}.version=${OPERATOR_VERSION} -X ${VERSION_PKG}.commitSha=${COMMIT_SHA}"
+LD_FLAGS ?= "-X ${VERSION_PKG}.buildDate=${VERSION_DATE} \
+			 -X ${VERSION_PKG}.revision=${COMMIT_SHA} \
+			 -X ${VERSION_PKG}.operatorVersion=${OPERATOR_VERSION} \
+			 -X ${VERSION_PKG}.tempoVersion=${TEMPO_VERSION} \
+			 -X ${VERSION_PKG}.tempoQueryVersion=${TEMPO_QUERY_VERSION}"
 ARCH ?= $(shell go env GOARCH)
 
 # Image URL to use all building/pushing image targets
@@ -27,6 +33,10 @@ VECHO = @
 endif
 
 ECHO ?= @echo $(echo_prefix)
+
+
+# Default namespace of the operator
+OPERATOR_NAMESPACE ?= tempo-operator-system
 
 # CHANNELS define the bundle channels used in the bundle.
 # Add a new line here if you would like to change its default config. (E.g CHANNELS = "candidate,fast,stable")
@@ -101,7 +111,7 @@ manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and Cust
 	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 
 .PHONY: generate
-generate: controller-gen api-docs ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
+generate: controller-gen  ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
 
 .PHONY: fmt
@@ -130,7 +140,7 @@ run: manifests generate fmt vet ## Run a controller from your host.
 
 .PHONY: docker-build
 docker-build: ## Build docker image with the manager.
-	docker buildx build --load --platform linux/${ARCH} -t ${IMG} .
+	docker buildx build --load --platform linux/${ARCH} --build-arg OPERATOR_VERSION -t ${IMG} .
 
 .PHONY: docker-push
 docker-push: ## Push docker image with the manager.
@@ -154,11 +164,19 @@ uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified 
 deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	$(KUSTOMIZE) build config/overlays/$(BUNDLE_VARIANT) | kubectl apply -f -
-	kubectl rollout --namespace tempo-operator-system status deployment/tempo-operator-controller-manager
+	kubectl rollout --namespace $(OPERATOR_NAMESPACE) status deployment/tempo-operator-controller
 
 .PHONY: undeploy
 undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
 	$(KUSTOMIZE) build config/overlays/$(BUNDLE_VARIANT) | kubectl delete --ignore-not-found=$(ignore-not-found) -f -
+
+.PHONY: olm-deploy
+olm-deploy: operator-sdk ## Deploy operator via OLM
+	$(OPERATOR_SDK) run bundle -n $(OPERATOR_NAMESPACE) $(BUNDLE_IMG)
+
+.PHONY: olm-upgrade
+olm-upgrade: operator-sdk ## Upgrade operator via OLM
+	$(OPERATOR_SDK) run bundle-upgrade -n $(OPERATOR_NAMESPACE) $(BUNDLE_IMG)
 
 ##@ Build Dependencies
 
@@ -233,7 +251,7 @@ ifeq (,$(shell which opm 2>/dev/null))
 	set -e ;\
 	mkdir -p $(dir $(OPM)) ;\
 	OS=$(shell go env GOOS) && ARCH=$(shell go env GOARCH) && \
-	curl -sSLo $(OPM) https://github.com/operator-framework/operator-registry/releases/download/v1.23.0/$${OS}-$${ARCH}-opm ;\
+	curl -sSLo $(OPM) https://github.com/operator-framework/operator-registry/releases/download/v1.27.1/$${OS}-$${ARCH}-opm ;\
 	chmod +x $(OPM) ;\
 	}
 else
@@ -259,6 +277,16 @@ endif
 .PHONY: catalog-build
 catalog-build: opm ## Build a catalog image.
 	$(OPM) index add --container-tool docker --mode semver --tag $(CATALOG_IMG) --bundles $(BUNDLE_IMGS) $(FROM_INDEX_OPT)
+
+.PHONY: fbc-catalog-build
+fbc-catalog-build: opm ## Build a File Based Catalog (FBC) catalog image
+	mkdir -p catalog/tempo-operator
+	$(OPM) generate dockerfile catalog
+	$(OPM) render $(CATALOG_BASE_IMG) -o yaml > catalog/tempo-operator/base.yaml
+	# $(OPM) init tempo-operator -c alpha -o yaml > catalog/tempo-operator/latest.yaml
+	$(OPM) render $(BUNDLE_IMG) -o yaml >> catalog/tempo-operator/latest.yaml
+	docker build -f catalog.Dockerfile -t $(CATALOG_IMG) .
+	rm -r catalog.Dockerfile catalog
 
 # Push the catalog image.
 .PHONY: catalog-push
@@ -298,10 +326,6 @@ stop-kind:
 	$(ECHO)"Stopping the kind cluster"
 	$(VECHO)kind delete cluster
 
-.PHONY: install-openshift-routes
-install-openshift-routes:
-	./hack/install/install-openshift-routes.sh
-
 .PHONY: deploy-minio
 deploy-minio:
 	$(ECHO) Installing minio
@@ -309,7 +333,7 @@ deploy-minio:
 
 # generic end-to-tests
 .PHONY: prepare-e2e
-prepare-e2e: kuttl start-kind cert-manager install-openshift-routes deploy-minio set-test-image-vars set-test-operator-config build docker-build load-image-operator deploy
+prepare-e2e: kuttl start-kind cert-manager deploy-minio set-test-image-vars build docker-build load-image-operator deploy
 
 .PHONY: e2e
 e2e:
@@ -318,13 +342,17 @@ e2e:
 # OpenShift end-to-tests
 .PHONY: prepare-e2e-openshift
 prepare-e2e-openshift: deploy-minio
-	kubectl apply -f ./bundle/openshift/manifests/tempo-operator-manager-config_v1_configmap.yaml -n tempo-operator-system
-	kubectl rollout restart deployment/tempo-operator-controller-manager -n tempo-operator-system
-	kubectl rollout status deployment/tempo-operator-controller-manager -n tempo-operator-system --timeout=30s
+	kubectl apply -f ./bundle/openshift/manifests/tempo-operator-manager-config_v1_configmap.yaml -n $(OPERATOR_NAMESPACE)
+	kubectl rollout restart deployment/tempo-operator-controller -n $(OPERATOR_NAMESPACE)
+	kubectl rollout status deployment/tempo-operator-controller -n $(OPERATOR_NAMESPACE) --timeout=30s
 
 .PHONY: e2e-openshift
 e2e-openshift:
 	$(KUTTL) test --config kuttl-test-openshift.yaml
+
+# upgrade tests
+e2e-upgrade:
+	$(KUTTL) test --config kuttl-test-upgrade.yaml
 
 .PHONY: scorecard-tests
 scorecard-tests: operator-sdk
@@ -333,11 +361,6 @@ scorecard-tests: operator-sdk
 .PHONY: set-test-image-vars
 set-test-image-vars:
 	$(eval IMG=local/tempo-operator:e2e)
-
-.PHONY: set-test-operator-config
-set-test-operator-config:
-	# we always install the OpenShift Route controller for e2e tests (in the prepare-e2e step)
-	sed -i 's/openshiftRoute: false/openshiftRoute: true/' config/overlays/community/controller_manager_config.yaml
 
 # Set the controller image parameters
 .PHONY: set-image-controller
@@ -354,6 +377,10 @@ $(OPERATOR_SDK): $(LOCALBIN)
 	test -s $(OPERATOR_SDK) || curl -sLo $(OPERATOR_SDK) https://github.com/operator-framework/operator-sdk/releases/download/v${OPERATOR_SDK_VERSION}/operator-sdk_`go env GOOS`_`go env GOARCH`
 	@chmod +x $(OPERATOR_SDK)
 
+.PHONY: olm-install
+olm-install: operator-sdk ## Install Operator Lifecycle Manager (OLM)
+	$(OPERATOR_SDK) olm install
+
 # go-get-tool will 'go get' any package $2 and install it to $1.
 define go-get-tool
 @[ -f $(1) ] || { \
@@ -363,7 +390,7 @@ cd $$TMP_DIR ;\
 go mod init tmp ;\
 echo "Downloading $(2)" ;\
 go get -d $(2)@$(3) ;\
-GOBIN=$(LOCALBIN) go install $(2) ;\
+GOBIN=$(LOCALBIN) go install -mod=mod $(2) ;\
 APP=$$(echo "$(LOCALBIN)/$@") ;\
 APP_NAME=$$(echo "$$APP-$(3)") ;\
 mv "$$APP" "$$APP_NAME" ;\
@@ -376,13 +403,14 @@ kuttl:
 	./hack/install/install-kuttl.sh
 
 .PHONY: ensure-generate-is-noop
-ensure-generate-is-noop: generate bundle
+ensure-generate-is-noop: generate api-docs bundle
 	@# on make bundle config/manager/kustomization.yaml includes changes, which should be ignored for the below check
 	@git restore config/manager/kustomization.yaml
 	@git diff -s --exit-code apis/tempo/v1alpha1/zz_generated.*.go || (echo "Build failed: a model has been changed but the generated resources aren't up to date. Run 'make generate' and update your PR." && exit 1)
 	@git diff -s --exit-code apis/config/v1alpha1/zz_generated.*.go || (echo "Build failed: a model has been changed but the generated resources aren't up to date. Run 'make generate' and update your PR." && exit 1)
 	@git diff -s --exit-code bundle config || (echo "Build failed: the bundle, config files has been changed but the generated bundle, config files aren't up to date. Run 'make bundle' and update your PR." && git diff && exit 1)
-	@git diff -s --exit-code bundle.Dockerfile || (echo "Build failed: the bundle.Dockerfile file has been changed. The file should be the same as generated one. Run 'make bundle' and update your PR." && git diff && exit 1)
+	@git diff -s --exit-code bundle/community/bundle.Dockerfile || (echo "Build failed: the community bundle.Dockerfile file has been changed. The file should be the same as generated one. Run 'make bundle' and update your PR." && git diff && exit 1)
+	@git diff -s --exit-code bundle/openshift/bundle.Dockerfile || (echo "Build failed: the OpenShift bundle.Dockerfile file has been changed. The file should be the same as generated one. Run 'make bundle' and update your PR." && git diff && exit 1)
 	@git diff -s --exit-code docs/operator/api.md || (echo "Build failed: the api.md file has been changed but the generated api.md file isn't up to date. Run 'make api-docs' and update your PR." && git diff && exit 1)
 	@git diff -s --exit-code docs/operator/feature-gates.md || (echo "Build failed: the feature-gates.md file has been changed but the generated feature-gates.md file isn't up to date. Run 'make api-docs' and update your PR." && git diff && exit 1)
 
@@ -415,7 +443,7 @@ api-docs: docs/operator/api.md docs/operator/feature-gates.md
 ##@ Website
 TYPES_TARGET := $(shell find apis/tempo -type f -iname "*_types.go")
 docs/operator/api.md: $(TYPES_TARGET) gen-crd-api-reference-docs
-	$(GEN_CRD) -api-dir "github.com/os-observability/tempo-operator/apis/tempo/" -config "$(PWD)/config/docs/config.json" -template-dir "$(PWD)/config/docs/templates" -out-file "$(PWD)/$@"
+	$(GEN_CRD) -api-dir "github.com/grafana/tempo-operator/apis/tempo/" -config "$(PWD)/config/docs/config.json" -template-dir "$(PWD)/config/docs/templates" -out-file "$(PWD)/$@"
 	sed -i 's/+docs:/  docs:/' $@
 	sed -i 's/+parent:/    parent:/' $@
 	sed -i 's/##/\n##/' $@
@@ -424,7 +452,7 @@ docs/operator/api.md: $(TYPES_TARGET) gen-crd-api-reference-docs
 
 FEATURE_GATES_TARGET := $(shell find apis/config -type f -iname "*_types.go")
 docs/operator/feature-gates.md: $(FEATURE_GATES_TARGET) gen-crd-api-reference-docs
-	$(GEN_CRD) -api-dir "github.com/os-observability/tempo-operator/apis/config/v1alpha1/" -config "$(PWD)/config/docs/config.json" -template-dir "$(PWD)/config/docs/templates" -out-file "$(PWD)/$@"
+	$(GEN_CRD) -api-dir "github.com/grafana/tempo-operator/apis/config/v1alpha1/" -config "$(PWD)/config/docs/config.json" -template-dir "$(PWD)/config/docs/templates" -out-file "$(PWD)/$@"
 	sed -i 's/title: "API"/title: "Feature Gates"/' $@
 	sed -i 's/+docs:/  docs:/' $@
 	sed -i 's/+parent:/    parent:/' $@
@@ -436,8 +464,8 @@ web-pre: docs/operator/api.md docs/operator/feature-gates.md
 	@echo ">> preprocessing docs for website"
 	@git submodule update --init --recursive
 	cp CONTRIBUTING.md docs/prologue/contributing.md
-	sed -i 's/(LICENSE)/(https:\/\/raw.githubusercontent.com\/os-observability\/tempo-operator\/main\/LICENSE)/' docs/prologue/contributing.md
-	sed -i 's/(README.md)/(https:\/\/github.com\/os-observability\/tempo-operator#readme)/' docs/prologue/contributing.md
+	sed -i 's/(LICENSE)/(https:\/\/raw.githubusercontent.com\/grafana\/tempo-operator\/main\/LICENSE)/' docs/prologue/contributing.md
+	sed -i 's/(README.md)/(https:\/\/github.com\/grafana\/tempo-operator#readme)/' docs/prologue/contributing.md
 	cd $(WEBSITE_DIR)/themes/doks/ && npm install && rm -rf content
 
 .PHONY: web
@@ -471,25 +499,15 @@ chlog-validate: chloggen
 .PHONY: chlog-preview
 chlog-preview: chloggen
 	$(CHLOGGEN) update --dry --version $(OPERATOR_VERSION)
+	@./hack/list-components.sh
 
 .PHONY: chlog-update
 chlog-update: chloggen
+	awk -i inplace '{print} /next version/{system("echo && ./hack/list-components.sh")}' CHANGELOG.md
 	$(CHLOGGEN) update --version $(OPERATOR_VERSION)
 
 .PHONY: release-artifacts
-release-artifacts: OPERATOR_VERSION = "$(shell git describe --tags | sed 's/^v//')"
 release-artifacts: set-image-controller
 	mkdir -p dist
 	$(KUSTOMIZE) build config/overlays/community -o dist/tempo-operator.yaml
 	$(KUSTOMIZE) build config/overlays/openshift -o dist/tempo-operator-openshift.yaml
-
-olm/install: operator-sdk
-	-$(OPERATOR_SDK) olm install
-
-olm/create-catalog:
-	CATALOG_IMG=$(CATALOG_IMG) envsubst < hack/olm/catalog.yaml | kubectl apply -f -
-
-olm/create-subscription:
-	kubectl apply -f hack/olm/subscription.yaml
-
-olm/install-operator: olm/install generate bundle docker-build docker-push bundle-build bundle-push catalog-build catalog-push olm/create-catalog olm/create-subscription

@@ -8,7 +8,7 @@ metadata:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: controller-manager
+  name: controller
   namespace: system
   labels:
     control-plane: controller-manager
@@ -57,5 +57,9 @@ spec:
             port: 8081
           initialDelaySeconds: 5
           periodSeconds: 10
+        resources:
+          requests:
+            cpu: 100m
+            memory: 64Mi
       serviceAccountName: controller-manager
       terminationGracePeriodSeconds: 10

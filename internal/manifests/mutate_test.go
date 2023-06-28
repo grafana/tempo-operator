@@ -14,8 +14,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/utils/pointer"
 
-	"github.com/os-observability/tempo-operator/internal/manifests"
-	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
+	"github.com/grafana/tempo-operator/internal/manifests"
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 )
 
 func TestGetMutateFunc_MutateObjectMeta(t *testing.T) {

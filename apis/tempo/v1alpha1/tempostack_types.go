@@ -5,11 +5,35 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/os-observability/tempo-operator/apis/config/v1alpha1"
+	"github.com/grafana/tempo-operator/apis/config/v1alpha1"
+)
+
+// ManagementStateType defines the type for CR management states.
+//
+// +kubebuilder:validation:Enum=Managed;Unmanaged
+type ManagementStateType string
+
+const (
+	// ManagementStateManaged when the TempoStack custom resource should be
+	// reconciled by the operator.
+	ManagementStateManaged ManagementStateType = "Managed"
+
+	// ManagementStateUnmanaged when the TempoStack custom resource should not be
+	// reconciled by the operator.
+	ManagementStateUnmanaged ManagementStateType = "Unmanaged"
 )
 
 // TempoStackSpec defines the desired state of TempoStack.
 type TempoStackSpec struct {
+	// ManagementState defines if the CR should be managed by the operator or not.
+	// Default is managed.
+	//
+	// +required
+	// +kubebuilder:validation:Required
+	// +kubebuilder:default:=Managed
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors={"urn:alm:descriptor:com.tectonic.ui:select:Managed","urn:alm:descriptor:com.tectonic.ui:select:Unmanaged"},displayName="Management State"
+	ManagementState ManagementStateType `json:"managementState,omitempty"`
+
 	// LimitSpec is used to limit ingestion and querying rates.
 	//
 	// +optional
@@ -196,12 +220,18 @@ type ComponentStatus struct {
 
 // TempoStackStatus defines the observed state of TempoStack.
 type TempoStackStatus struct {
+	// Version of the Tempo Operator.
+	// +optional
+	OperatorVersion string `json:"operatorVersion,omitempty"`
+
 	// Version of the managed Tempo instance.
 	// +optional
 	TempoVersion string `json:"tempoVersion,omitempty"`
-	// Version of the Tempo Query component used.
+
+	// DEPRECATED. Version of the Tempo Query component used.
 	// +optional
 	TempoQueryVersion string `json:"tempoQueryVersion,omitempty"`
+
 	// Components provides summary of all Tempo pod status grouped
 	// per component.
 	//
@@ -230,6 +260,9 @@ const (
 	// ConditionPending defines that one or more components are in a degraded state.
 	ConditionPending ConditionStatus = "Pending"
 )
+
+// AllStatusConditions lists all possible status conditions.
+var AllStatusConditions = []ConditionStatus{ConditionReady, ConditionDegraded, ConditionFailed, ConditionPending}
 
 // ConditionReason defines possible reasons for each condition.
 type ConditionReason string
@@ -631,9 +664,10 @@ type RetentionConfig struct {
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 //+kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
-//+kubebuilder:printcolumn:name="Tempo version",type="string",JSONPath=".status.tempoVersion",description="Tempo Version"
+//+kubebuilder:printcolumn:name="Tempo Version",type="string",JSONPath=".status.tempoVersion",description="Tempo Version"
+//+kubebuilder:printcolumn:name="Management",type="string",JSONPath=".spec.managementState",description="Management State"
 
-// TempoStack is the Schema for the tempostacks API.
+// TempoStack is the spec for Tempo deployments.
 //
 // +operator-sdk:csv:customresourcedefinitions:displayName="TempoStack",resources={{ConfigMap,v1},{ServiceAccount,v1},{Service,v1},{Secret,v1},{StatefulSet,v1},{Deployment,v1},{Ingress,v1},{Route,v1}}
 // +kubebuilder:resource:shortName=tempo;tempos

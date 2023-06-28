@@ -23,19 +23,19 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
-	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
-	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
-	"github.com/os-observability/tempo-operator/internal/certrotation/handlers"
-	"github.com/os-observability/tempo-operator/internal/handlers/gateway"
-	"github.com/os-observability/tempo-operator/internal/manifests"
-	"github.com/os-observability/tempo-operator/internal/manifests/manifestutils"
-	"github.com/os-observability/tempo-operator/internal/status"
-	"github.com/os-observability/tempo-operator/internal/tlsprofile"
+	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
+	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	tempov1alpha1 "github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/internal/certrotation/handlers"
+	"github.com/grafana/tempo-operator/internal/handlers/gateway"
+	"github.com/grafana/tempo-operator/internal/manifests"
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
+	"github.com/grafana/tempo-operator/internal/status"
+	"github.com/grafana/tempo-operator/internal/tlsprofile"
 )
 
 const (
@@ -56,7 +56,7 @@ type TempoStackReconciler struct {
 // +kubebuilder:rbac:groups=route.openshift.io,resources=routes;routes/custom-host,verbs=get;list;watch;create;update;delete
 // +kubebuilder:rbac:groups=operator.openshift.io,resources=ingresscontrollers,verbs=get;list;watch
 // +kubebuilder:rbac:groups=config.openshift.io,resources=dnses,verbs=get;list;watch
-// +kubebuilder:rbac:groups=monitoring.coreos.com,resources=servicemonitors,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=monitoring.coreos.com,resources=servicemonitors;prometheusrules,verbs=get;list;watch;create;update;patch;delete
 
 //+kubebuilder:rbac:groups=tempo.grafana.com,resources=tempostacks,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=tempo.grafana.com,resources=tempostacks/status,verbs=get;update;patch
@@ -72,8 +72,11 @@ type TempoStackReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.12.2/pkg/reconcile
 func (r *TempoStackReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	log := log.FromContext(ctx)
-	log = log.WithValues("tempo", req.NamespacedName)
+	log := ctrl.LoggerFrom(ctx).WithName("tempostack-reconcile").WithValues("tempo", req.NamespacedName)
+
+	log.V(1).Info("starting reconcile loop")
+	defer log.V(1).Info("finished reconcile loop")
+
 	tempo := v1alpha1.TempoStack{}
 	if err := r.Get(ctx, req.NamespacedName, &tempo); err != nil {
 		if !apierrors.IsNotFound(err) {
@@ -84,6 +87,12 @@ func (r *TempoStackReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		// we'll ignore not-found errors, since they can't be fixed by an immediate
 		// requeue (we'll need to wait for a new notification), and we can get them
 		// on deleted requests.
+		return ctrl.Result{}, nil
+	}
+
+	if tempo.Spec.ManagementState != tempov1alpha1.ManagementStateManaged {
+		log.Info("Skipping reconciliation for unmanaged TempoStack resource", "name", req.String())
+		// Stop requeueing for unmanaged TempoStack custom resources
 		return ctrl.Result{}, nil
 	}
 
@@ -102,7 +111,7 @@ func (r *TempoStackReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 // status conditions to Degraded. if not it will throw an error as usual.
 func (r *TempoStackReconciler) handleStatus(ctx context.Context, tempo v1alpha1.TempoStack, err error) (ctrl.Result, error) {
 	// First refresh components
-	newStatus, rerr := status.GetComponetsStatus(ctx, r, tempo)
+	newStatus, rerr := status.GetComponentsStatus(ctx, r, tempo)
 	requeue := false
 
 	if rerr != nil {
@@ -254,7 +263,7 @@ func (r *TempoStackReconciler) reconcileManifests(ctx context.Context, log logr.
 			continue
 		}
 
-		l.Info(fmt.Sprintf("resource has been %s", op))
+		l.V(1).Info(fmt.Sprintf("resource has been %s", op))
 
 		// This object is still managed by the operator, remove it from the list of objects to prune
 		delete(pruneObjects, obj.GetUID())
@@ -355,6 +364,7 @@ func (r *TempoStackReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	if r.FeatureGates.PrometheusOperator {
 		builder = builder.Owns(&monitoringv1.ServiceMonitor{})
+		builder = builder.Owns(&monitoringv1.PrometheusRule{})
 	}
 
 	if r.FeatureGates.OpenShift.OpenShiftRoute {

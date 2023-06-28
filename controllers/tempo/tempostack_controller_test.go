@@ -18,9 +18,9 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	configv1alpha1 "github.com/os-observability/tempo-operator/apis/config/v1alpha1"
-	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
-	"github.com/os-observability/tempo-operator/internal/status"
+	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
+	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/internal/status"
 )
 
 func createSecret(t *testing.T, nsn types.NamespacedName) *corev1.Secret {
@@ -135,7 +135,7 @@ func TestReconcile(t *testing.T) {
 	updatedTempo := v1alpha1.TempoStack{}
 	err = k8sClient.Get(context.Background(), nsn, &updatedTempo)
 	require.NoError(t, err)
-	assert.Equal(t, "1.5.0", updatedTempo.Status.TempoVersion)
+	assert.Equal(t, "0.0.0", updatedTempo.Status.TempoVersion)
 
 	// test status condition
 	assert.Equal(t, []metav1.Condition{{

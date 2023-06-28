@@ -1103,7 +1103,7 @@ JaegerQueryIngressSpec
 
 <a href="#tempo-grafana-com-v1alpha1-RateLimitSpec">
 
-map[string]github.com/os-observability/tempo-operator/apis/tempo/v1alpha1.RateLimitSpec
+map[string]github.com/grafana/tempo-operator/apis/tempo/v1alpha1.RateLimitSpec
 
 </a>
 
@@ -1148,6 +1148,52 @@ RateLimitSpec
 </tr>
 
 </tbody>
+</table>
+
+
+## ManagementStateType { #tempo-grafana-com-v1alpha1-ManagementStateType }
+
+(<code>string</code> alias)
+
+<p>
+
+(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-TempoStackSpec">TempoStackSpec</a>)
+
+</p>
+
+<div>
+
+<p>ManagementStateType defines the type for CR management states.</p>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Value</th>
+
+<th>Description</th>
+
+</tr>
+
+</thead>
+
+<tbody><tr><td><p>&#34;Managed&#34;</p></td>
+
+<td><p>ManagementStateManaged when the TempoStack custom resource should be
+reconciled by the operator.</p>
+</td>
+
+</tr><tr><td><p>&#34;Unmanaged&#34;</p></td>
+
+<td><p>ManagementStateUnmanaged when the TempoStack custom resource should not be
+reconciled by the operator.</p>
+</td>
+
+</tr></tbody>
 </table>
 
 
@@ -2191,7 +2237,7 @@ default: value is 48h.</p>
 
 <a href="#tempo-grafana-com-v1alpha1-RetentionConfig">
 
-map[string]github.com/os-observability/tempo-operator/apis/tempo/v1alpha1.RetentionConfig
+map[string]github.com/grafana/tempo-operator/apis/tempo/v1alpha1.RetentionConfig
 
 </a>
 
@@ -3019,7 +3065,7 @@ JaegerQuerySpec
 
 <div>
 
-<p>TempoStack is the Schema for the tempostacks API.</p>
+<p>TempoStack is the spec for Tempo deployments.</p>
 
 </div>
 
@@ -3145,6 +3191,32 @@ TempoStackSpec
 </thead>
 
 <tbody>
+
+<tr>
+
+<td>
+
+<code>managementState</code><br/>
+
+<em>
+
+<a href="#tempo-grafana-com-v1alpha1-ManagementStateType">
+
+ManagementStateType
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<p>ManagementState defines if the CR should be managed by the operator or not.
+Default is managed.</p>
+
+</td>
+</tr>
 
 <tr>
 
@@ -3521,6 +3593,29 @@ ObservabilitySpec
 
 <td>
 
+<code>operatorVersion</code><br/>
+
+<em>
+
+string
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>Version of the Tempo Operator.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
 <code>tempoVersion</code><br/>
 
 <em>
@@ -3558,7 +3653,7 @@ string
 
 <em>(Optional)</em>
 
-<p>Version of the Tempo Query component used.</p>
+<p>DEPRECATED. Version of the Tempo Query component used.</p>
 
 </td>
 </tr>

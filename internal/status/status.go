@@ -2,15 +2,14 @@ package status
 
 import (
 	"context"
-	"strings"
 
-	dockerparser "github.com/novln/docker-parser"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/metrics"
 
-	"github.com/os-observability/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/internal/version"
 )
 
 var (
@@ -18,39 +17,42 @@ var (
 		Namespace: "tempostack",
 		Name:      "status_condition",
 		Help:      "The status condition of a TempoStack instance.",
-	}, []string{"stack_namespace", "stack_name", "condition", "status"})
+	}, []string{"stack_namespace", "stack_name", "condition"})
 )
 
 // Refresh updates the status field with the tempo container image versions and updates the tempostack_status_condition metric.
 func Refresh(ctx context.Context, k StatusClient, tempo v1alpha1.TempoStack, status *v1alpha1.TempoStackStatus) (bool, error) {
-
 	changed := tempo.DeepCopy()
 	changed.Status = *status
 
-	tempoImage, err := dockerparser.Parse(tempo.Spec.Images.Tempo)
-	if err != nil {
-		return false, err
+	// The .status.version field is empty for new CRs and cannot be set in the Defaulter webhook.
+	// The upgrade procedure only runs once at operator startup, therefore we need to set
+	// the initial status field versions here.
+	if status.OperatorVersion == "" {
+		changed.Status.OperatorVersion = version.Get().OperatorVersion
 	}
-	changed.Status.TempoVersion = tempoImage.Tag()
-
-	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled {
-		tempoQueryImage, err := dockerparser.Parse(tempo.Spec.Images.TempoQuery)
-		if err != nil {
-			return false, err
-		}
-		changed.Status.TempoQueryVersion = tempoQueryImage.Tag()
+	if status.TempoVersion == "" {
+		changed.Status.TempoVersion = version.Get().TempoVersion
 	}
 
+	// Update all status condition metrics.
+	// In some cases not all status conditions are present in the status.Conditions list, for example:
+	// A TempoStack CR gets created with an invalid storage secret (creating a Degraded status condition).
+	// Later this CR is deleted, a storage secret is created and a new TempoStack instance is created.
+	// Then this TempoStack instance doesn't have the degraded condition in the status.Conditions list.
+	activeConditions := map[string]float64{}
 	for _, cond := range status.Conditions {
-		var isActive float64
 		if cond.Status == metav1.ConditionTrue {
-			isActive = 1
+			activeConditions[cond.Type] = 1
 		}
-		status := strings.ToLower(string(cond.Status))
-		tempoStackStatusCondition.WithLabelValues(tempo.Namespace, tempo.Name, cond.Type, status).Set(isActive)
+	}
+	for _, cond := range v1alpha1.AllStatusConditions {
+		condStr := string(cond)
+		isActive := activeConditions[condStr] // isActive will be 0 if the condition is not found in the map
+		tempoStackStatusCondition.WithLabelValues(tempo.Namespace, tempo.Name, condStr).Set(isActive)
 	}
 
-	err = k.PatchStatus(ctx, changed, &tempo)
+	err := k.PatchStatus(ctx, changed, &tempo)
 	if err != nil {
 		return true, err
 	}

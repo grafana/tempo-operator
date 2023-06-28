@@ -5,10 +5,10 @@ change_type: enhancement
 component: operator
 
 # A brief description of the change. Surround your text with quotes ("") if it needs to start with a backtick (`).
-note: Introducing alerts for operands
+note: Probe webhook server in operator health checks
 
 # One or more tracking issues related to the change
-issues: [307]
+issues: [459]
 
 # (Optional) One or more lines of additional information to render under the primary note.
 # These lines will be padded with 2 spaces and then inserted directly into the document.
