@@ -873,6 +873,11 @@ func TestValidateTenantConfigs(t *testing.T) {
 							Roles: []RoleSpec{},
 						},
 					},
+					Template: TempoTemplateSpec{
+						Gateway: TempoGatewaySpec{
+							Enabled: true,
+						},
+					},
 				},
 			},
 			wantErr: fmt.Errorf("spec.tenants.authorization should not be defined in openshift mode"),
