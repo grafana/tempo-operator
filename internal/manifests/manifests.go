@@ -85,11 +85,6 @@ func BuildAll(params manifestutils.Params) ([]client.Object, error) {
 		return nil, err
 	}
 
-	gw, err := gateway.BuildGateway(params)
-	if err != nil {
-		return nil, err
-	}
-
 	distributorObjs, err := distributor.BuildDistributor(params)
 	if err != nil {
 		return nil, err
@@ -106,7 +101,14 @@ func BuildAll(params manifestutils.Params) ([]client.Object, error) {
 	manifests = append(manifests, frontendObjs...)
 	manifests = append(manifests, querierObjs...)
 	manifests = append(manifests, compactorObjs...)
-	manifests = append(manifests, gw...)
+
+	if params.Tempo.Spec.Template.Gateway.Enabled {
+		gw, err := gateway.BuildGateway(params)
+		if err != nil {
+			return nil, err
+		}
+		manifests = append(manifests, gw...)
+	}
 
 	if params.Tempo.Spec.Observability.Metrics.CreateServiceMonitors {
 		manifests = append(manifests, servicemonitor.BuildServiceMonitors(params)...)

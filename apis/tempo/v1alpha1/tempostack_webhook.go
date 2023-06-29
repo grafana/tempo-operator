@@ -372,22 +372,29 @@ func ValidateTenantConfigs(tempo TempoStack) error {
 
 	tenants := tempo.Spec.Tenants
 	if tenants.Mode == Static {
-		if tenants.Authentication == nil {
-			return fmt.Errorf("spec.tenants.authentication is required in static mode")
-		}
+		// If the static mode is combined with the gateway, we will need the following fields
+		// otherwise this will just enable tempo multitenancy without the gateway
+		if tempo.Spec.Template.Gateway.Enabled {
+			if tenants.Authentication == nil {
+				return fmt.Errorf("spec.tenants.authentication is required in static mode")
+			}
 
-		if tenants.Authorization == nil {
-			return fmt.Errorf("spec.tenants.authorization is required in static mode")
-		}
+			if tenants.Authorization == nil {
+				return fmt.Errorf("spec.tenants.authorization is required in static mode")
+			}
 
-		if tenants.Authorization.Roles == nil {
-			return fmt.Errorf("spec.tenants.authorization.roles is required in static mode")
-		}
+			if tenants.Authorization.Roles == nil {
+				return fmt.Errorf("spec.tenants.authorization.roles is required in static mode")
+			}
 
-		if tenants.Authorization.RoleBindings == nil {
-			return fmt.Errorf("spec.tenants.authorization.roleBindings is required in static mode")
+			if tenants.Authorization.RoleBindings == nil {
+				return fmt.Errorf("spec.tenants.authorization.roleBindings is required in static mode")
+			}
 		}
 	} else if tenants.Mode == OpenShift {
+		if !tempo.Spec.Template.Gateway.Enabled {
+			return fmt.Errorf("openshift mode requires gateway enabled")
+		}
 		if tenants.Authorization != nil {
 			return fmt.Errorf("spec.tenants.authorization should not be defined in openshift mode")
 		}
