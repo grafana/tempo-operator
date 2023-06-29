@@ -821,6 +821,11 @@ func TestValidateTenantConfigs(t *testing.T) {
 						Mode:           Static,
 						Authentication: []AuthenticationSpec{},
 					},
+					Template: TempoTemplateSpec{
+						Gateway: TempoGatewaySpec{
+							Enabled: true,
+						},
+					},
 				},
 			},
 			wantErr: fmt.Errorf("spec.tenants.authorization is required in static mode"),
