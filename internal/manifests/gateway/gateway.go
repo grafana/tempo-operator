@@ -38,11 +38,6 @@ const (
 
 // BuildGateway creates gateway objects.
 func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
-	if !params.Tempo.Spec.Template.Gateway.Enabled ||
-		params.Tempo.Spec.Tenants == nil {
-		return []client.Object{}, nil
-	}
-
 	rbacCfg, tenantsCfg, err := buildConfigFiles(newOptions(params.Tempo, params.Gates.OpenShift.BaseDomain, params.GatewayTenantSecret, params.GatewayTenantsData))
 	if err != nil {
 		return nil, err
