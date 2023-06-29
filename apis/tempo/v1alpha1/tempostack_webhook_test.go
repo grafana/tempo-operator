@@ -809,6 +809,18 @@ func TestValidateTenantConfigs(t *testing.T) {
 			wantErr: fmt.Errorf("spec.tenants.authentication is required in static mode"),
 		},
 		{
+			name: "static missing authorization",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					Tenants: &TenantsSpec{
+						Mode:           Static,
+						Authentication: []AuthenticationSpec{},
+					},
+				},
+			},
+			wantErr: fmt.Errorf("spec.tenants.authorization is required in static mode"),
+		},
+		{
 			name: "static missing roles",
 			input: TempoStack{
 				Spec: TempoStackSpec{

@@ -1,0 +1,7 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: tempo
+  namespace: kuttl-operator-upgrade
+spec:
+  source: new-catalog
