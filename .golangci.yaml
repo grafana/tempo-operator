@@ -39,3 +39,13 @@ issues:
     - path: _test\.go
       linters:
         - gosec
+
+    # TODO (andreasgerstmayr): remove once we remove ComponentConfiguration
+    # https://github.com/kubernetes-sigs/kubebuilder/issues/3457
+    # https://github.com/kubernetes-sigs/controller-runtime/issues/895
+    - path: cmd/root.go
+      text: "SA1019: options.AndFrom is deprecated"
+    - path: cmd/root.go
+      text: "SA1019: ctrl.ConfigFile is deprecated"
+    - path: apis/config/v1alpha1/projectconfig_types.go
+      text: 'SA1019: "sigs.k8s.io/controller-runtime/pkg/config/v1alpha1" is deprecated'

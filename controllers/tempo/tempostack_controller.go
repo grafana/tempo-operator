@@ -25,7 +25,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
@@ -357,7 +356,7 @@ func (r *TempoStackReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&appsv1.Deployment{}).
 		Owns(&networkingv1.Ingress{}).
 		Watches(
-			&source.Kind{Type: &corev1.Secret{}},
+			&corev1.Secret{},
 			handler.EnqueueRequestsFromMapFunc(r.findTempoStackForStorageSecret),
 			builder.WithPredicates(predicate.ResourceVersionChangedPredicate{}),
 		)
@@ -383,13 +382,13 @@ func isNamespaceScoped(obj client.Object) bool {
 	}
 }
 
-func (r *TempoStackReconciler) findTempoStackForStorageSecret(secret client.Object) []reconcile.Request {
+func (r *TempoStackReconciler) findTempoStackForStorageSecret(ctx context.Context, secret client.Object) []reconcile.Request {
 	tempostacks := &v1alpha1.TempoStackList{}
 	listOps := &client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(storageSecretField, secret.GetName()),
 		Namespace:     secret.GetNamespace(),
 	}
-	err := r.List(context.TODO(), tempostacks, listOps)
+	err := r.List(ctx, tempostacks, listOps)
 	if err != nil {
 		return []reconcile.Request{}
 	}
