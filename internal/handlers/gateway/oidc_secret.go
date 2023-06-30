@@ -30,10 +30,9 @@ func GetOIDCTenantSecrets(
 		key := client.ObjectKey{Name: tenant.OIDC.Secret.Name, Namespace: tempo.Namespace}
 		if err := k8sClient.Get(ctx, key, &gatewaySecret); err != nil {
 			if apierrors.IsNotFound(err) {
-				return nil, &status.DegradedError{
+				return nil, &status.ConfigurationError{
 					Message: fmt.Sprintf("Missing secrets for tenant %s", tenant.TenantName),
 					Reason:  v1alpha1.ReasonMissingGatewayTenantSecret,
-					Requeue: true,
 				}
 			}
 			return nil, fmt.Errorf("failed to lookup tempostack gateway tenant secret, name: %s, error: %w", key, err)
@@ -42,10 +41,9 @@ func GetOIDCTenantSecrets(
 		var ts *manifestutils.GatewayTenantOIDCSecret
 		ts, err := extractSecret(&gatewaySecret, tenant.TenantName)
 		if err != nil {
-			return nil, &status.DegradedError{
+			return nil, &status.ConfigurationError{
 				Message: "Invalid gateway tenant secret contents",
 				Reason:  v1alpha1.ReasonMissingGatewayTenantSecret,
-				Requeue: true,
 			}
 		}
 		tenantSecrets = append(tenantSecrets, ts)

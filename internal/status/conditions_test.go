@@ -71,8 +71,6 @@ func TestReadyCondition(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 
-			client := &statusClientStub{}
-
 			stack := v1alpha1.TempoStack{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "my-stack",
@@ -88,7 +86,7 @@ func TestReadyCondition(t *testing.T) {
 				},
 			}
 
-			conditions := ReadyCondition(client, stack)
+			conditions := ReadyCondition(stack)
 
 			// Don't care about time
 			now := metav1.Now()
@@ -162,8 +160,6 @@ func TestFailedCondition(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 
-			client := &statusClientStub{}
-
 			stack := v1alpha1.TempoStack{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "my-stack",
@@ -179,7 +175,7 @@ func TestFailedCondition(t *testing.T) {
 				},
 			}
 
-			conditions := FailedCondition(client, stack)
+			conditions := FailedCondition(stack)
 
 			// Don't care about time
 			now := metav1.Now()
@@ -253,8 +249,6 @@ func TestPendingCondition(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 
-			client := &statusClientStub{}
-
 			stack := v1alpha1.TempoStack{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "my-stack",
@@ -270,7 +264,7 @@ func TestPendingCondition(t *testing.T) {
 				},
 			}
 
-			conditions := PendingCondition(client, stack)
+			conditions := PendingCondition(stack)
 
 			// Don't care about time
 			now := metav1.Now()
@@ -283,9 +277,8 @@ func TestPendingCondition(t *testing.T) {
 	}
 }
 
-func TestDegradedCondition(t *testing.T) {
-
-	degradedMessage := "super degraded config"
+func TestConfigurationErrorCondition(t *testing.T) {
+	configErrorMessage := "some configuration error"
 	reasonString := "because I want"
 	reason := v1alpha1.ConditionReason(reasonString)
 
@@ -298,16 +291,16 @@ func TestDegradedCondition(t *testing.T) {
 			name: "When Existing PendingCondition set it to true",
 			inputConditions: []metav1.Condition{
 				{
-					Type:    string(v1alpha1.ConditionDegraded),
-					Message: degradedMessage,
+					Type:    string(v1alpha1.ConditionConfigurationError),
+					Message: configErrorMessage,
 					Reason:  reasonString,
 					Status:  metav1.ConditionFalse,
 				},
 			},
 			expectedConditions: []metav1.Condition{
 				{
-					Type:    string(v1alpha1.ConditionDegraded),
-					Message: degradedMessage,
+					Type:    string(v1alpha1.ConditionConfigurationError),
+					Message: configErrorMessage,
 					Reason:  reasonString,
 					Status:  metav1.ConditionTrue,
 				},
@@ -318,8 +311,8 @@ func TestDegradedCondition(t *testing.T) {
 			inputConditions: []metav1.Condition{},
 			expectedConditions: []metav1.Condition{
 				{
-					Type:    string(v1alpha1.ConditionDegraded),
-					Message: degradedMessage,
+					Type:    string(v1alpha1.ConditionConfigurationError),
+					Message: configErrorMessage,
 					Reason:  reasonString,
 					Status:  metav1.ConditionTrue,
 				},
@@ -329,16 +322,16 @@ func TestDegradedCondition(t *testing.T) {
 			name: "When existing PendingCondition and true do nothing",
 			expectedConditions: []metav1.Condition{
 				{
-					Type:    string(v1alpha1.ConditionDegraded),
-					Message: degradedMessage,
+					Type:    string(v1alpha1.ConditionConfigurationError),
+					Message: configErrorMessage,
 					Reason:  reasonString,
 					Status:  metav1.ConditionTrue,
 				},
 			},
 			inputConditions: []metav1.Condition{
 				{
-					Type:    string(v1alpha1.ConditionDegraded),
-					Message: degradedMessage,
+					Type:    string(v1alpha1.ConditionConfigurationError),
+					Message: configErrorMessage,
 					Reason:  reasonString,
 					Status:  metav1.ConditionTrue,
 				},
@@ -364,7 +357,11 @@ func TestDegradedCondition(t *testing.T) {
 				},
 			}
 
-			conditions := DegradedCondition(stack, degradedMessage, reason)
+			conditions := UpdateCondition(stack, metav1.Condition{
+				Type:    string(v1alpha1.ConditionConfigurationError),
+				Reason:  string(reason),
+				Message: configErrorMessage,
+			})
 
 			// Don't care about time
 			now := metav1.Now()
@@ -376,9 +373,9 @@ func TestDegradedCondition(t *testing.T) {
 	}
 }
 
-func TestDegradedError(t *testing.T) {
-	err := DegradedError{
+func TestConfigurationError(t *testing.T) {
+	err := ConfigurationError{
 		Message: "my message",
 	}
-	assert.Equal(t, "cluster degraded: my message", err.Error())
+	assert.Equal(t, "invalid configuration: my message", err.Error())
 }

@@ -247,22 +247,22 @@ type TempoStackStatus struct {
 	Conditions []metav1.Condition `json:"conditions,omitempty"`
 }
 
-// ConditionStatus defines the status of a condition (e.g. ready or degraded).
+// ConditionStatus defines the status of a condition (e.g. ready, failed, pending or configuration error).
 type ConditionStatus string
 
 const (
 	// ConditionReady defines that all components are ready.
 	ConditionReady ConditionStatus = "Ready"
-	// ConditionDegraded defines that one or more components are in a degraded state.
-	ConditionDegraded ConditionStatus = "Degraded"
 	// ConditionFailed defines that one or more components are in a failed state.
 	ConditionFailed ConditionStatus = "Failed"
-	// ConditionPending defines that one or more components are in a degraded state.
+	// ConditionPending defines that one or more components are in a pending state.
 	ConditionPending ConditionStatus = "Pending"
+	// ConditionConfigurationError defines that there is a configuration error.
+	ConditionConfigurationError ConditionStatus = "ConfigurationError"
 )
 
 // AllStatusConditions lists all possible status conditions.
-var AllStatusConditions = []ConditionStatus{ConditionReady, ConditionDegraded, ConditionFailed, ConditionPending}
+var AllStatusConditions = []ConditionStatus{ConditionReady, ConditionFailed, ConditionPending, ConditionConfigurationError}
 
 // ConditionReason defines possible reasons for each condition.
 type ConditionReason string
@@ -284,6 +284,8 @@ const (
 	ReasonMissingGatewayTenantSecret ConditionReason = "ReasonMissingGatewayTenantSecret"
 	// ReasonInvalidTenantsConfiguration when the tenant configuration provided is invalid.
 	ReasonInvalidTenantsConfiguration ConditionReason = "InvalidTenantsConfiguration"
+	// ReasonFailedReconciliation when the operator failed to reconcile.
+	ReasonFailedReconciliation ConditionReason = "FailedReconciliation"
 )
 
 // Resources defines resources configuration.

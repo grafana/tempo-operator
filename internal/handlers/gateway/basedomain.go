@@ -27,10 +27,9 @@ func GetOpenShiftBaseDomain(ctx context.Context, k8sClient client.Client) (strin
 		var clusterDNS configv1.DNS
 		if err := k8sClient.Get(ctx, key, &clusterDNS); err != nil {
 			if apierrors.IsNotFound(err) {
-				return "", &status.DegradedError{
-					Message: "Missing OpenShift ingresscontroller and cluster DNS configuration to read base domain",
+				return "", &status.ConfigurationError{
+					Message: "Missing OpenShift IngressController and cluster DNS configuration to read base domain",
 					Reason:  v1alpha1.ReasonCouldNotGetOpenShiftBaseDomain,
-					Requeue: true,
 				}
 			}
 			return "", kverrors.Wrap(err, "failed to lookup gateway base domain",

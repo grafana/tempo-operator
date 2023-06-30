@@ -88,7 +88,7 @@ func GetComponentsStatus(ctx context.Context, k StatusClient, s v1alpha1.TempoSt
 		len(cs.QueryFrontend[corev1.PodUnknown])
 
 	if failed != 0 || unknown != 0 {
-		s.Status.Conditions = FailedCondition(k, s)
+		s.Status.Conditions = FailedCondition(s)
 		return s.Status, nil
 	}
 
@@ -100,10 +100,10 @@ func GetComponentsStatus(ctx context.Context, k StatusClient, s v1alpha1.TempoSt
 		len(cs.QueryFrontend[corev1.PodPending])
 
 	if pending != 0 {
-		s.Status.Conditions = PendingCondition(k, s)
+		s.Status.Conditions = PendingCondition(s)
 		return s.Status, nil
 
 	}
-	s.Status.Conditions = ReadyCondition(k, s)
+	s.Status.Conditions = ReadyCondition(s)
 	return s.Status, nil
 }
