@@ -84,7 +84,7 @@ func clusterRoleBinding(tempo v1alpha1.TempoStack) *rbacv1.ClusterRoleBinding {
 	}
 }
 
-func route(tempo v1alpha1.TempoStack) *routev1.Route {
+func route(tempo v1alpha1.TempoStack) (*routev1.Route, error) {
 	labels := manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name)
 
 	var tlsCfg *routev1.TLSConfig
@@ -98,7 +98,7 @@ func route(tempo v1alpha1.TempoStack) *routev1.Route {
 	case v1alpha1.TLSRouteTerminationTypeReencrypt:
 		tlsCfg = &routev1.TLSConfig{Termination: routev1.TLSTerminationReencrypt}
 	default: // NOTE: if unsupported, end here.
-		return nil
+		return nil, fmt.Errorf("unsupported tls termination specified for route")
 	}
 
 	return &routev1.Route{
@@ -119,7 +119,7 @@ func route(tempo v1alpha1.TempoStack) *routev1.Route {
 			TLS:            tlsCfg,
 			WildcardPolicy: routev1.WildcardPolicyNone,
 		},
-	}
+	}, nil
 }
 
 func configMapCABundle(tempo v1alpha1.TempoStack) *corev1.ConfigMap {

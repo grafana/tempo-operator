@@ -90,7 +90,11 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 	if params.Tempo.Spec.Template.Gateway.Ingress.Type == v1alpha1.IngressTypeIngress {
 		objs = append(objs, ingress(params.Tempo))
 	} else if params.Tempo.Spec.Template.Gateway.Ingress.Type == v1alpha1.IngressTypeRoute {
-		objs = append(objs, route(params.Tempo))
+		routeObj, err := route(params.Tempo)
+		if err != nil {
+			return nil, err
+		}
+		objs = append(objs, routeObj)
 	}
 
 	dep.Spec.Template, err = patchTracing(params.Tempo, dep.Spec.Template)
