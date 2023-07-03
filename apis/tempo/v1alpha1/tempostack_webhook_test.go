@@ -178,7 +178,7 @@ func TestDefault(t *testing.T) {
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: true,
-								Ingress: JaegerQueryIngressSpec{
+								Ingress: IngressSpec{
 									Type: IngressTypeRoute,
 								},
 							},
@@ -230,9 +230,9 @@ func TestDefault(t *testing.T) {
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: true,
-								Ingress: JaegerQueryIngressSpec{
+								Ingress: IngressSpec{
 									Type: "route",
-									Route: JaegerQueryRouteSpec{
+									Route: RouteSpec{
 										Termination: "edge",
 									},
 								},
@@ -511,7 +511,7 @@ func TestValidateIngressAndRoute(t *testing.T) {
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: true,
-								Ingress: JaegerQueryIngressSpec{
+								Ingress: IngressSpec{
 									Type: "ingress",
 								},
 							},
@@ -530,7 +530,7 @@ func TestValidateIngressAndRoute(t *testing.T) {
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: true,
-								Ingress: JaegerQueryIngressSpec{
+								Ingress: IngressSpec{
 									Type: "route",
 								},
 							},
@@ -556,7 +556,7 @@ func TestValidateIngressAndRoute(t *testing.T) {
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: false,
-								Ingress: JaegerQueryIngressSpec{
+								Ingress: IngressSpec{
 									Type: "ingress",
 								},
 							},
@@ -581,7 +581,7 @@ func TestValidateIngressAndRoute(t *testing.T) {
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: true,
-								Ingress: JaegerQueryIngressSpec{
+								Ingress: IngressSpec{
 									Type: "route",
 								},
 							},
@@ -654,7 +654,7 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: true,
-								Ingress: JaegerQueryIngressSpec{
+								Ingress: IngressSpec{
 									Type: "route",
 								},
 							},
@@ -676,7 +676,7 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: false,
-								Ingress: JaegerQueryIngressSpec{
+								Ingress: IngressSpec{
 									Type: "route",
 								},
 							},
@@ -698,7 +698,7 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: false,
-								Ingress: JaegerQueryIngressSpec{
+								Ingress: IngressSpec{
 									Type: "ingress",
 								},
 							},
@@ -724,7 +724,7 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: true,
-								Ingress: JaegerQueryIngressSpec{
+								Ingress: IngressSpec{
 									Type: "ingress",
 								},
 							},
@@ -763,6 +763,96 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 			expected: field.ErrorList{
 				field.Invalid(path, true,
 					"to enable the gateway, please configure tenants",
+				),
+			},
+		},
+		{
+			name: "valid ingress configuration",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					ReplicationFactor: 3,
+					Template: TempoTemplateSpec{
+						QueryFrontend: TempoQueryFrontendSpec{
+							JaegerQuery: JaegerQuerySpec{
+								Enabled: true,
+							},
+						},
+						Gateway: TempoGatewaySpec{
+							Enabled: true,
+							Ingress: IngressSpec{
+								Type: "ingress",
+							},
+						},
+					},
+					Tenants: &TenantsSpec{
+						Mode: Static,
+					},
+				},
+			},
+			expected: nil,
+		},
+		{
+			name: "invalid route, feature gateway disabled",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					ReplicationFactor: 3,
+					Template: TempoTemplateSpec{
+						QueryFrontend: TempoQueryFrontendSpec{
+							JaegerQuery: JaegerQuerySpec{
+								Enabled: true,
+							},
+						},
+						Gateway: TempoGatewaySpec{
+							Enabled: true,
+							Ingress: IngressSpec{
+								Type: "route",
+							},
+						},
+					},
+					Tenants: &TenantsSpec{
+						Mode: Static,
+					},
+				},
+			},
+			expected: field.ErrorList{
+				field.Invalid(
+					field.NewPath("spec").Child("template").Child("gateway").Child("ingress").Child("type"),
+					IngressType("route"),
+					"please enable the featureGates.openshift.openshiftRoute feature gate to use Routes",
+				),
+			},
+		},
+		{
+			name: "invalid configuration, enable two ingesss",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					ReplicationFactor: 3,
+					Template: TempoTemplateSpec{
+						QueryFrontend: TempoQueryFrontendSpec{
+							JaegerQuery: JaegerQuerySpec{
+								Enabled: true,
+								Ingress: IngressSpec{
+									Type: "ingress",
+								},
+							},
+						},
+						Gateway: TempoGatewaySpec{
+							Enabled: true,
+							Ingress: IngressSpec{
+								Type: "ingress",
+							},
+						},
+					},
+					Tenants: &TenantsSpec{
+						Mode: Static,
+					},
+				},
+			},
+			expected: field.ErrorList{
+				field.Invalid(
+					path,
+					true,
+					"cannot enable gateway and jaeger query ingress at the same time, please use the Jaeger UI from the gateway",
 				),
 			},
 		},

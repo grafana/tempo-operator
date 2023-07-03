@@ -370,7 +370,7 @@ func TestQueryFrontendJaegerIngress(t *testing.T) {
 				QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
 					JaegerQuery: v1alpha1.JaegerQuerySpec{
 						Enabled: true,
-						Ingress: v1alpha1.JaegerQueryIngressSpec{
+						Ingress: v1alpha1.IngressSpec{
 							Type: "ingress",
 							Host: "jaeger.example.com",
 							Annotations: map[string]string{
@@ -434,9 +434,9 @@ func TestQueryFrontendJaegerRoute(t *testing.T) {
 				QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
 					JaegerQuery: v1alpha1.JaegerQuerySpec{
 						Enabled: true,
-						Ingress: v1alpha1.JaegerQueryIngressSpec{
+						Ingress: v1alpha1.IngressSpec{
 							Type: v1alpha1.IngressTypeRoute,
-							Route: v1alpha1.JaegerQueryRouteSpec{
+							Route: v1alpha1.RouteSpec{
 								Termination: v1alpha1.TLSRouteTerminationTypeEdge,
 							},
 						},

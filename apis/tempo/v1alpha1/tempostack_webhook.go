@@ -147,6 +147,12 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 		r.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Route.Termination = TLSRouteTerminationTypeEdge
 	}
 
+	// if tenant mode is Openshift, ingress type should be route by default.
+	if r.Spec.Tenants != nil && r.Spec.Tenants.Mode == OpenShift {
+		r.Spec.Template.Gateway.Ingress.Type = IngressTypeRoute
+		r.Spec.Template.Gateway.Ingress.Route.Termination = TLSRouteTerminationTypePassthrough
+	}
+
 	return nil
 }
 
@@ -263,6 +269,14 @@ func (v *validator) validateGateway(tempo TempoStack) field.ErrorList {
 				field.Invalid(path, tempo.Spec.Template.Gateway.Enabled,
 					"to enable the gateway, please configure tenants",
 				)}
+		}
+
+		if tempo.Spec.Template.Gateway.Ingress.Type == IngressTypeRoute && !v.ctrlConfig.Gates.OpenShift.OpenShiftRoute {
+			return field.ErrorList{field.Invalid(
+				field.NewPath("spec").Child("template").Child("gateway").Child("ingress").Child("type"),
+				tempo.Spec.Template.Gateway.Ingress.Type,
+				"please enable the featureGates.openshift.openshiftRoute feature gate to use Routes",
+			)}
 		}
 	}
 	return nil

@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"fmt"
+
 	"net"
 	"reflect"
 	"testing"
@@ -11,8 +12,10 @@ import (
 	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	networkingv1 "k8s.io/api/networking/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
@@ -134,6 +137,12 @@ func TestBuildGateway_openshift(t *testing.T) {
 			Template: v1alpha1.TempoTemplateSpec{
 				Gateway: v1alpha1.TempoGatewaySpec{
 					Enabled: true,
+					Ingress: v1alpha1.IngressSpec{
+						Type: v1alpha1.IngressTypeRoute,
+						Route: v1alpha1.RouteSpec{
+							Termination: v1alpha1.TLSRouteTerminationTypePassthrough,
+						},
+					},
 				},
 			},
 			Tenants: &v1alpha1.TenantsSpec{
@@ -434,4 +443,167 @@ func TestTLSParameters(t *testing.T) {
 
 	assert.Contains(t, args, fmt.Sprintf("--traces.read.endpoint=http://%s:16686",
 		naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.QueryFrontendComponentName)))
+}
+
+func TestIngress(t *testing.T) {
+	objects, err := BuildGateway(manifestutils.Params{Tempo: v1alpha1.TempoStack{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test",
+			Namespace: "project1",
+		},
+		Spec: v1alpha1.TempoStackSpec{
+			Template: v1alpha1.TempoTemplateSpec{
+				Gateway: v1alpha1.TempoGatewaySpec{
+					Enabled: true,
+					Ingress: v1alpha1.IngressSpec{
+						Type: v1alpha1.IngressTypeIngress,
+						Host: "jaeger.example.com",
+						Annotations: map[string]string{
+							"traefik.ingress.kubernetes.io/router.tls": "true",
+						},
+					},
+				},
+			},
+			Tenants: &v1alpha1.TenantsSpec{
+				Mode: "static",
+				Authorization: &v1alpha1.AuthorizationSpec{
+					RoleBindings: []v1alpha1.RoleBindingsSpec{
+						{
+							Name:  "test",
+							Roles: []string{"read-write"},
+							Subjects: []v1alpha1.Subject{
+								{
+									Name: "admin@example.com",
+									Kind: v1alpha1.User,
+								},
+							},
+						},
+					},
+					Roles: []v1alpha1.RoleSpec{{
+						Name: "read-write",
+						Resources: []string{
+							"logs", "metrics", "traces",
+						},
+						Tenants: []string{
+							"test-oidc",
+						},
+						Permissions: []v1alpha1.PermissionType{v1alpha1.Write, v1alpha1.Read},
+					},
+					},
+				},
+			},
+		},
+	}})
+
+	require.NoError(t, err)
+	require.Equal(t, 5, len(objects))
+	pathType := networkingv1.PathTypePrefix
+	assert.Equal(t, &networkingv1.Ingress{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      naming.Name(manifestutils.GatewayComponentName, "test"),
+			Namespace: "project1",
+			Labels:    manifestutils.ComponentLabels("gateway", "test"),
+			Annotations: map[string]string{
+				"traefik.ingress.kubernetes.io/router.tls": "true",
+			},
+		},
+		Spec: networkingv1.IngressSpec{
+			Rules: []networkingv1.IngressRule{
+				{
+					Host: "jaeger.example.com",
+					IngressRuleValue: networkingv1.IngressRuleValue{
+						HTTP: &networkingv1.HTTPIngressRuleValue{
+							Paths: []networkingv1.HTTPIngressPath{
+								{
+									Path:     "/",
+									PathType: &pathType,
+									Backend: networkingv1.IngressBackend{
+										Service: &networkingv1.IngressServiceBackend{
+											Name: naming.Name(manifestutils.GatewayComponentName, "test"),
+											Port: networkingv1.ServiceBackendPort{
+												Name: "public",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}, objects[3].(*networkingv1.Ingress))
+}
+
+func TestRoute(t *testing.T) {
+	objects, err := BuildGateway(manifestutils.Params{Tempo: v1alpha1.TempoStack{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test",
+			Namespace: "project1",
+		},
+		Spec: v1alpha1.TempoStackSpec{
+			Template: v1alpha1.TempoTemplateSpec{
+				Gateway: v1alpha1.TempoGatewaySpec{
+					Enabled: true,
+					Ingress: v1alpha1.IngressSpec{
+						Type: v1alpha1.IngressTypeRoute,
+						Route: v1alpha1.RouteSpec{
+							Termination: v1alpha1.TLSRouteTerminationTypeEdge,
+						},
+					},
+				},
+			},
+			Tenants: &v1alpha1.TenantsSpec{
+				Mode: "static",
+				Authorization: &v1alpha1.AuthorizationSpec{
+					RoleBindings: []v1alpha1.RoleBindingsSpec{
+						{
+							Name:  "test",
+							Roles: []string{"read-write"},
+							Subjects: []v1alpha1.Subject{
+								{
+									Name: "admin@example.com",
+									Kind: v1alpha1.User,
+								},
+							},
+						},
+					},
+					Roles: []v1alpha1.RoleSpec{{
+						Name: "read-write",
+						Resources: []string{
+							"logs", "metrics", "traces",
+						},
+						Tenants: []string{
+							"test-oidc",
+						},
+						Permissions: []v1alpha1.PermissionType{v1alpha1.Write, v1alpha1.Read},
+					},
+					},
+				},
+			},
+		},
+	}})
+
+	require.NoError(t, err)
+	require.Equal(t, 5, len(objects))
+	assert.Equal(t, &routev1.Route{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      naming.Name(manifestutils.GatewayComponentName, "test"),
+			Namespace: "project1",
+			Labels:    manifestutils.ComponentLabels("gateway", "test"),
+		},
+		Spec: routev1.RouteSpec{
+			To: routev1.RouteTargetReference{
+				Kind: "Service",
+				Name: naming.Name(manifestutils.GatewayComponentName, "test"),
+			},
+			Port: &routev1.RoutePort{
+				TargetPort: intstr.FromString("public"),
+			},
+			TLS: &routev1.TLSConfig{
+				Termination: routev1.TLSTerminationEdge,
+			},
+			WildcardPolicy: routev1.WildcardPolicyNone,
+		},
+	}, objects[3].(*routev1.Route))
 }
