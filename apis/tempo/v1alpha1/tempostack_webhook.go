@@ -275,7 +275,7 @@ func (v *validator) validateGateway(tempo TempoStack) field.ErrorList {
 			return field.ErrorList{field.Invalid(
 				field.NewPath("spec").Child("template").Child("gateway").Child("ingress").Child("type"),
 				tempo.Spec.Template.Gateway.Ingress.Type,
-				"Please enable the featureGates.openshift.openshiftRoute feature gate to use Routes",
+				"please enable the featureGates.openshift.openshiftRoute feature gate to use Routes",
 			)}
 		}
 	}
