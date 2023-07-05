@@ -114,11 +114,6 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 		r.Spec.StorageSize = tenGBQuantity
 	}
 
-	if r.Spec.LimitSpec.Global.Query.MaxSearchBytesPerTrace == nil {
-		defaultMaxSearchBytesPerTrace := 0
-		r.Spec.LimitSpec.Global.Query.MaxSearchBytesPerTrace = &defaultMaxSearchBytesPerTrace
-	}
-
 	if r.Spec.SearchSpec.DefaultResultLimit == nil {
 		defaultDefaultResultLimit := 20
 		r.Spec.SearchSpec.DefaultResultLimit = &defaultDefaultResultLimit
@@ -354,6 +349,29 @@ func (v *validator) validateStackName(tempo TempoStack) field.ErrorList {
 	return nil
 }
 
+func (v *validator) validateDeprecatedFields(tempo TempoStack) field.ErrorList {
+	if tempo.Spec.LimitSpec.Global.Query.MaxSearchBytesPerTrace != nil {
+		return field.ErrorList{
+			field.Invalid(
+				field.NewPath("spec").Child("limits").Child("global").Child("query").Child("maxSearchBytesPerTrace"),
+				tempo.Spec.LimitSpec.Global.Query.MaxSearchBytesPerTrace,
+				"this field is deprecated and must be unset",
+			)}
+	}
+	for tenant, limits := range tempo.Spec.LimitSpec.PerTenant {
+		if limits.Query.MaxSearchBytesPerTrace != nil {
+			return field.ErrorList{
+				field.Invalid(
+					field.NewPath("spec").Child("limits").Child("perTenant").Key(tenant).Child("query").Child("maxSearchBytesPerTrace"),
+					limits.Query.MaxSearchBytesPerTrace,
+					"this field is deprecated and must be unset",
+				)}
+		}
+	}
+
+	return nil
+}
+
 func (v *validator) validate(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
 	tempo, ok := obj.(*TempoStack)
 	if !ok {
@@ -372,6 +390,7 @@ func (v *validator) validate(ctx context.Context, obj runtime.Object) (admission
 	allErrs = append(allErrs, v.validateGateway(*tempo)...)
 	allErrs = append(allErrs, v.validateTenantConfigs(*tempo)...)
 	allErrs = append(allErrs, v.validateObservability(*tempo)...)
+	allErrs = append(allErrs, v.validateDeprecatedFields(*tempo)...)
 
 	if len(allErrs) == 0 {
 		return nil, nil

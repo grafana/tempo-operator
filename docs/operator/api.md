@@ -1910,9 +1910,37 @@ int
 
 <em>(Optional)</em>
 
-<p>MaxSearchBytesPerTrace defines the maximum size of search data for a single
+<p>DEPRECATED. MaxSearchBytesPerTrace defines the maximum size of search data for a single
 trace in bytes.
 default: <code>0</code> to disable.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>maxSearchDuration</code><br/>
+
+<em>
+
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
+
+Kubernetes meta/v1.Duration
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>MaxSearchDuration defines the maximum allowed time range for a search.
+If this value is not set, then spec.search.maxDuration is used.</p>
 
 </td>
 </tr>

@@ -629,14 +629,23 @@ type QueryLimit struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors="urn:alm:descriptor:com.tectonic.ui:number",displayName="Max Tags per User"
 	MaxBytesPerTagValues *int `json:"maxBytesPerTagValues,omitempty"`
-	// MaxSearchBytesPerTrace defines the maximum size of search data for a single
+
+	// DEPRECATED. MaxSearchBytesPerTrace defines the maximum size of search data for a single
 	// trace in bytes.
 	// default: `0` to disable.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors="urn:alm:descriptor:com.tectonic.ui:number",displayName="Max Traces per User"
-	MaxSearchBytesPerTrace *int `json:"maxSearchBytesPerTrace"`
+	MaxSearchBytesPerTrace *int `json:"maxSearchBytesPerTrace,omitempty"`
+
+	// MaxSearchDuration defines the maximum allowed time range for a search.
+	// If this value is not set, then spec.search.maxDuration is used.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Max Search Duration per User"
+	MaxSearchDuration metav1.Duration `json:"maxSearchDuration"`
 }
 
 // RetentionSpec defines global and per tenant retention configurations.

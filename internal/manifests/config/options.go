@@ -58,7 +58,7 @@ type rateLimitsOptions struct {
 	MaxBytesPerTrace        *int
 	MaxTracesPerUser        *int
 	MaxBytesPerTagValues    *int
-	MaxSearchBytesPerTrace  *int
+	MaxSearchDuration       string
 }
 
 type searchOptions struct {

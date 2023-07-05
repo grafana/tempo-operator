@@ -51,7 +51,7 @@ multitenancy_enabled: {{ .Multitenancy }}
   .GlobalRateLimits.MaxTracesPerUser
   .GlobalRateLimits.MaxBytesPerTrace
   .GlobalRateLimits.MaxBytesPerTagValues
-  .GlobalRateLimits.MaxSearchBytesPerTrace
+  (ne .GlobalRateLimits.MaxSearchDuration "0s")
   .TenantRateLimitsPath
 }}
 overrides:
@@ -70,8 +70,8 @@ overrides:
 {{- if .GlobalRateLimits.MaxBytesPerTagValues }}
   max_bytes_per_tag_values_query: {{ .GlobalRateLimits.MaxBytesPerTagValues }}
 {{- end }}
-{{- if .GlobalRateLimits.MaxSearchBytesPerTrace }}
-  max_search_bytes_per_trace: {{ .GlobalRateLimits.MaxSearchBytesPerTrace }}
+{{- if ne .GlobalRateLimits.MaxSearchDuration "0s" }}
+  max_search_duration: {{ .GlobalRateLimits.MaxSearchDuration }}
 {{- end }}
 {{- if .TenantRateLimitsPath }}
   per_tenant_override_config: {{ .TenantRateLimitsPath }}

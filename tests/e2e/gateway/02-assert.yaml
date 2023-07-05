@@ -89,8 +89,7 @@ spec:
         app.kubernetes.io/name: tempo
     spec:
       containers:
-      - image: quay.io/observatorium/api:main-2023-02-09-v0.1.2-329-g1ff4f11
-        imagePullPolicy: IfNotPresent
+      - imagePullPolicy: IfNotPresent
         name: tempo-gateway
         ports:
         - containerPort: 8090

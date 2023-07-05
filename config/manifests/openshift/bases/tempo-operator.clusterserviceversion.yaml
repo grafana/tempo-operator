@@ -91,12 +91,16 @@ spec:
         path: limits.global.query.maxBytesPerTagValues
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:number
-      - description: 'MaxSearchBytesPerTrace defines the maximum size of search data
-          for a single trace in bytes. default: `0` to disable.'
+      - description: 'DEPRECATED. MaxSearchBytesPerTrace defines the maximum size
+          of search data for a single trace in bytes. default: `0` to disable.'
         displayName: Max Traces per User
         path: limits.global.query.maxSearchBytesPerTrace
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:number
+      - description: MaxSearchDuration defines the maximum allowed time range for
+          a search. If this value is not set, then spec.search.maxDuration is used.
+        displayName: Max Search Duration per User
+        path: limits.global.query.maxSearchDuration
       - description: PerTenant is used to define rate limits per tenant.
         displayName: Tenant Limits
         path: limits.perTenant
@@ -136,12 +140,16 @@ spec:
         path: limits.perTenant.query.maxBytesPerTagValues
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:number
-      - description: 'MaxSearchBytesPerTrace defines the maximum size of search data
-          for a single trace in bytes. default: `0` to disable.'
+      - description: 'DEPRECATED. MaxSearchBytesPerTrace defines the maximum size
+          of search data for a single trace in bytes. default: `0` to disable.'
         displayName: Max Traces per User
         path: limits.perTenant.query.maxSearchBytesPerTrace
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:number
+      - description: MaxSearchDuration defines the maximum allowed time range for
+          a search. If this value is not set, then spec.search.maxDuration is used.
+        displayName: Max Search Duration per User
+        path: limits.perTenant.query.maxSearchDuration
       - description: ManagementState defines if the CR should be managed by the operator
           or not. Default is managed.
         displayName: Management State
