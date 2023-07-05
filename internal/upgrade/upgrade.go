@@ -21,12 +21,18 @@ import (
 	"github.com/grafana/tempo-operator/internal/version"
 )
 
+const (
+	metricUpgradesStateUpgraded = "upgraded"
+	metricUpgradesStateUpToDate = "up-to-date"
+	metricUpgradesStateFailed   = "failed"
+)
+
 var (
-	metricFailedUpgrades = promauto.With(metrics.Registry).NewGauge(prometheus.GaugeOpts{
+	metricUpgrades = promauto.With(metrics.Registry).NewCounterVec(prometheus.CounterOpts{
 		Namespace: "tempooperator",
-		Name:      "failed_upgrades_total",
-		Help:      "The number of failed upgrades of TempoStack instances.",
-	})
+		Name:      "upgrades_total",
+		Help:      "The number of up-to-date, upgraded and failed upgrades of TempoStack instances.",
+	}, []string{"state"})
 )
 
 // Upgrade contains required objects to perform version upgrades.
@@ -48,7 +54,6 @@ func (u Upgrade) TempoStacks(ctx context.Context) error {
 		return fmt.Errorf("failed to list TempoStacks: %w", err)
 	}
 
-	failedUpgradeCount := 0
 	for i := range tempostackList.Items {
 		original := tempostackList.Items[i]
 		itemLogger := u.Log.WithValues("name", original.Name, "namespace", original.Namespace, "from_version", original.Status.OperatorVersion)
@@ -59,7 +64,7 @@ func (u Upgrade) TempoStacks(ctx context.Context) error {
 			msg := "automated upgrade is not possible, the CR instance must be corrected and re-created manually"
 			itemLogger.Info(msg)
 			u.Recorder.Event(&original, "Error", "Upgrade", msg)
-			failedUpgradeCount++
+			metricUpgrades.WithLabelValues(metricUpgradesStateFailed).Inc()
 			continue
 		}
 
@@ -70,7 +75,7 @@ func (u Upgrade) TempoStacks(ctx context.Context) error {
 			patch := client.MergeFrom(&original)
 			if err := u.Client.Patch(ctx, &upgraded, patch); err != nil {
 				itemLogger.Error(err, "failed to apply changes to instance")
-				failedUpgradeCount++
+				metricUpgrades.WithLabelValues(metricUpgradesStateFailed).Inc()
 				continue
 			}
 
@@ -78,14 +83,16 @@ func (u Upgrade) TempoStacks(ctx context.Context) error {
 			upgraded.Status = status
 			if err := u.Client.Status().Patch(ctx, &upgraded, patch); err != nil {
 				itemLogger.Error(err, "failed to apply changes to instance's status object")
-				failedUpgradeCount++
+				metricUpgrades.WithLabelValues(metricUpgradesStateFailed).Inc()
 				continue
 			}
 
 			itemLogger.Info("upgraded instance")
+			metricUpgrades.WithLabelValues(metricUpgradesStateUpgraded).Inc()
+		} else {
+			metricUpgrades.WithLabelValues(metricUpgradesStateUpToDate).Inc()
 		}
 	}
-	metricFailedUpgrades.Set(float64(failedUpgradeCount))
 
 	if len(tempostackList.Items) == 0 {
 		u.Log.Info("no instances found")
