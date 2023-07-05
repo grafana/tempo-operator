@@ -177,7 +177,7 @@ func TestDefault(t *testing.T) {
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: true,
-								Ingress: JaegerQueryIngressSpec{
+								Ingress: IngressSpec{
 									Type: IngressTypeRoute,
 								},
 							},
@@ -222,9 +222,9 @@ func TestDefault(t *testing.T) {
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: true,
-								Ingress: JaegerQueryIngressSpec{
+								Ingress: IngressSpec{
 									Type: "route",
-									Route: JaegerQueryRouteSpec{
+									Route: RouteSpec{
 										Termination: "edge",
 									},
 								},
@@ -503,7 +503,7 @@ func TestValidateIngressAndRoute(t *testing.T) {
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: true,
-								Ingress: JaegerQueryIngressSpec{
+								Ingress: IngressSpec{
 									Type: "ingress",
 								},
 							},
@@ -522,7 +522,7 @@ func TestValidateIngressAndRoute(t *testing.T) {
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: true,
-								Ingress: JaegerQueryIngressSpec{
+								Ingress: IngressSpec{
 									Type: "route",
 								},
 							},
@@ -548,7 +548,7 @@ func TestValidateIngressAndRoute(t *testing.T) {
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: false,
-								Ingress: JaegerQueryIngressSpec{
+								Ingress: IngressSpec{
 									Type: "ingress",
 								},
 							},
@@ -573,7 +573,7 @@ func TestValidateIngressAndRoute(t *testing.T) {
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: true,
-								Ingress: JaegerQueryIngressSpec{
+								Ingress: IngressSpec{
 									Type: "route",
 								},
 							},
@@ -646,7 +646,7 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: true,
-								Ingress: JaegerQueryIngressSpec{
+								Ingress: IngressSpec{
 									Type: "route",
 								},
 							},
@@ -668,7 +668,7 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: false,
-								Ingress: JaegerQueryIngressSpec{
+								Ingress: IngressSpec{
 									Type: "route",
 								},
 							},
@@ -690,7 +690,7 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: false,
-								Ingress: JaegerQueryIngressSpec{
+								Ingress: IngressSpec{
 									Type: "ingress",
 								},
 							},
@@ -716,7 +716,7 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: true,
-								Ingress: JaegerQueryIngressSpec{
+								Ingress: IngressSpec{
 									Type: "ingress",
 								},
 							},
@@ -758,6 +758,96 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 				),
 			},
 		},
+		{
+			name: "valid ingress configuration",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					ReplicationFactor: 3,
+					Template: TempoTemplateSpec{
+						QueryFrontend: TempoQueryFrontendSpec{
+							JaegerQuery: JaegerQuerySpec{
+								Enabled: true,
+							},
+						},
+						Gateway: TempoGatewaySpec{
+							Enabled: true,
+							Ingress: IngressSpec{
+								Type: "ingress",
+							},
+						},
+					},
+					Tenants: &TenantsSpec{
+						Mode: Static,
+					},
+				},
+			},
+			expected: nil,
+		},
+		{
+			name: "invalid route, feature gateway disabled",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					ReplicationFactor: 3,
+					Template: TempoTemplateSpec{
+						QueryFrontend: TempoQueryFrontendSpec{
+							JaegerQuery: JaegerQuerySpec{
+								Enabled: true,
+							},
+						},
+						Gateway: TempoGatewaySpec{
+							Enabled: true,
+							Ingress: IngressSpec{
+								Type: "route",
+							},
+						},
+					},
+					Tenants: &TenantsSpec{
+						Mode: Static,
+					},
+				},
+			},
+			expected: field.ErrorList{
+				field.Invalid(
+					field.NewPath("spec").Child("template").Child("gateway").Child("ingress").Child("type"),
+					IngressType("route"),
+					"please enable the featureGates.openshift.openshiftRoute feature gate to use Routes",
+				),
+			},
+		},
+		{
+			name: "invalid configuration, enable two ingesss",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					ReplicationFactor: 3,
+					Template: TempoTemplateSpec{
+						QueryFrontend: TempoQueryFrontendSpec{
+							JaegerQuery: JaegerQuerySpec{
+								Enabled: true,
+								Ingress: IngressSpec{
+									Type: "ingress",
+								},
+							},
+						},
+						Gateway: TempoGatewaySpec{
+							Enabled: true,
+							Ingress: IngressSpec{
+								Type: "ingress",
+							},
+						},
+					},
+					Tenants: &TenantsSpec{
+						Mode: Static,
+					},
+				},
+			},
+			expected: field.ErrorList{
+				field.Invalid(
+					path,
+					true,
+					"cannot enable gateway and jaeger query ingress at the same time, please use the Jaeger UI from the gateway",
+				),
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -796,9 +886,31 @@ func TestValidateTenantConfigs(t *testing.T) {
 					Tenants: &TenantsSpec{
 						Mode: Static,
 					},
+					Template: TempoTemplateSpec{
+						Gateway: TempoGatewaySpec{
+							Enabled: true,
+						},
+					},
 				},
 			},
 			wantErr: fmt.Errorf("spec.tenants.authentication is required in static mode"),
+		},
+		{
+			name: "static missing authorization",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					Tenants: &TenantsSpec{
+						Mode:           Static,
+						Authentication: []AuthenticationSpec{},
+					},
+					Template: TempoTemplateSpec{
+						Gateway: TempoGatewaySpec{
+							Enabled: true,
+						},
+					},
+				},
+			},
+			wantErr: fmt.Errorf("spec.tenants.authorization is required in static mode"),
 		},
 		{
 			name: "static missing roles",
@@ -808,6 +920,11 @@ func TestValidateTenantConfigs(t *testing.T) {
 						Mode:           Static,
 						Authorization:  &AuthorizationSpec{},
 						Authentication: []AuthenticationSpec{},
+					},
+					Template: TempoTemplateSpec{
+						Gateway: TempoGatewaySpec{
+							Enabled: true,
+						},
 					},
 				},
 			},
@@ -824,6 +941,11 @@ func TestValidateTenantConfigs(t *testing.T) {
 						},
 						Authentication: []AuthenticationSpec{},
 					},
+					Template: TempoTemplateSpec{
+						Gateway: TempoGatewaySpec{
+							Enabled: true,
+						},
+					},
 				},
 			},
 			wantErr: fmt.Errorf("spec.tenants.authorization.roleBindings is required in static mode"),
@@ -836,6 +958,11 @@ func TestValidateTenantConfigs(t *testing.T) {
 						Mode: OpenShift,
 						Authorization: &AuthorizationSpec{
 							Roles: []RoleSpec{},
+						},
+					},
+					Template: TempoTemplateSpec{
+						Gateway: TempoGatewaySpec{
+							Enabled: true,
 						},
 					},
 				},
@@ -852,6 +979,11 @@ func TestValidateTenantConfigs(t *testing.T) {
 							{
 								OIDC: &OIDCSpec{},
 							},
+						},
+					},
+					Template: TempoTemplateSpec{
+						Gateway: TempoGatewaySpec{
+							Enabled: true,
 						},
 					},
 				},
@@ -1065,7 +1197,8 @@ func TestValidatorValidate(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			v := &validator{ctrlConfig: v1alpha1.ProjectConfig{}, client: &k8sFake{}}
-			assert.Equal(t, tc.expected, v.validate(context.Background(), tc.input))
+			_, err := v.validate(context.Background(), tc.input)
+			assert.Equal(t, tc.expected, err)
 		})
 	}
 }

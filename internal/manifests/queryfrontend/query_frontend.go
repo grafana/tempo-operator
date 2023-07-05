@@ -68,7 +68,11 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 		case v1alpha1.IngressTypeIngress:
 			manifests = append(manifests, ingress(tempo))
 		case v1alpha1.IngressTypeRoute:
-			manifests = append(manifests, route(tempo))
+			routeObj, err := route(tempo)
+			if err != nil {
+				return nil, err
+			}
+			manifests = append(manifests, routeObj)
 		}
 	}
 
@@ -377,7 +381,7 @@ func ingress(tempo v1alpha1.TempoStack) *networkingv1.Ingress {
 	return ingress
 }
 
-func route(tempo v1alpha1.TempoStack) *routev1.Route {
+func route(tempo v1alpha1.TempoStack) (*routev1.Route, error) {
 	queryFrontendName := naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name)
 	labels := manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, tempo.Name)
 
@@ -392,7 +396,7 @@ func route(tempo v1alpha1.TempoStack) *routev1.Route {
 	case v1alpha1.TLSRouteTerminationTypeReencrypt:
 		tlsCfg = &routev1.TLSConfig{Termination: routev1.TLSTerminationReencrypt}
 	default: // NOTE: if unsupported, end here.
-		return nil
+		return nil, fmt.Errorf("unsupported tls termination specified for route")
 	}
 
 	return &routev1.Route{
@@ -413,5 +417,5 @@ func route(tempo v1alpha1.TempoStack) *routev1.Route {
 			},
 			TLS: tlsCfg,
 		},
-	}
+	}, nil
 }

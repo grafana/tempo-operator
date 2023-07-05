@@ -2,10 +2,9 @@ apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
   name: tempo
-  namespace: operators
+  namespace: kuttl-operator-upgrade
 spec:
   channel: alpha
-  installPlanApproval: Automatic
   name: tempo-operator
-  source: tempo-catalog
-  sourceNamespace: operators
+  source: old-catalog
+  sourceNamespace: kuttl-operator-upgrade

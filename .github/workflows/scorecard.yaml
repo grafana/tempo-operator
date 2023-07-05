@@ -36,10 +36,7 @@ jobs:
       - name: "start kind"
         env:
           KUBE_VERSION: ${{ matrix.kube-version }}
-        run: kind create cluster --config kind-$KUBE_VERSION.yaml
-
-      - name: "wait until cluster is ready"
-        run:  kubectl wait --timeout=5m --for=condition=available deployment/coredns -n kube-system
+        run: kind create cluster --config kind-$KUBE_VERSION.yaml --wait 5m
 
       - name: "run community scorecard tests"
         run: make scorecard-tests

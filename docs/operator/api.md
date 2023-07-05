@@ -709,66 +709,17 @@ int
 </table>
 
 
-## IngressType { #tempo-grafana-com-v1alpha1-IngressType }
-
-(<code>string</code> alias)
+## IngressSpec { #tempo-grafana-com-v1alpha1-IngressSpec }
 
 <p>
 
-(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-JaegerQueryIngressSpec">JaegerQueryIngressSpec</a>)
+(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-JaegerQuerySpec">JaegerQuerySpec</a>, <a href="#tempo-grafana-com-v1alpha1-TempoGatewaySpec">TempoGatewaySpec</a>)
 
 </p>
 
 <div>
 
-<p>IngressType represents how a service should be exposed (ingress vs route).</p>
-
-</div>
-
-<table>
-
-<thead>
-
-<tr>
-
-<th>Value</th>
-
-<th>Description</th>
-
-</tr>
-
-</thead>
-
-<tbody><tr><td><p>&#34;ingress&#34;</p></td>
-
-<td><p>IngressTypeIngress specifies that an ingress entry should be created.</p>
-</td>
-
-</tr><tr><td><p>&#34;&#34;</p></td>
-
-<td><p>IngressTypeNone specifies that no ingress or route entry should be created.</p>
-</td>
-
-</tr><tr><td><p>&#34;route&#34;</p></td>
-
-<td><p>IngressTypeRoute specifies that a route entry should be created.</p>
-</td>
-
-</tr></tbody>
-</table>
-
-
-## JaegerQueryIngressSpec { #tempo-grafana-com-v1alpha1-JaegerQueryIngressSpec }
-
-<p>
-
-(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-JaegerQuerySpec">JaegerQuerySpec</a>)
-
-</p>
-
-<div>
-
-<p>JaegerQueryIngressSpec defines Jaeger Query Ingress options.</p>
+<p>IngressSpec defines Jaeger Query Ingress options.</p>
 
 </div>
 
@@ -895,9 +846,9 @@ serving this Ingress resource.</p>
 
 <em>
 
-<a href="#tempo-grafana-com-v1alpha1-JaegerQueryRouteSpec">
+<a href="#tempo-grafana-com-v1alpha1-RouteSpec">
 
-JaegerQueryRouteSpec
+RouteSpec
 
 </a>
 
@@ -918,17 +869,19 @@ JaegerQueryRouteSpec
 </table>
 
 
-## JaegerQueryRouteSpec { #tempo-grafana-com-v1alpha1-JaegerQueryRouteSpec }
+## IngressType { #tempo-grafana-com-v1alpha1-IngressType }
+
+(<code>string</code> alias)
 
 <p>
 
-(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-JaegerQueryIngressSpec">JaegerQueryIngressSpec</a>)
+(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-IngressSpec">IngressSpec</a>)
 
 </p>
 
 <div>
 
-<p>JaegerQueryRouteSpec defines OpenShift Route specific options.</p>
+<p>IngressType represents how a service should be exposed (ingress vs route).</p>
 
 </div>
 
@@ -938,7 +891,7 @@ JaegerQueryRouteSpec
 
 <tr>
 
-<th>Field</th>
+<th>Value</th>
 
 <th>Description</th>
 
@@ -946,36 +899,22 @@ JaegerQueryRouteSpec
 
 </thead>
 
-<tbody>
+<tbody><tr><td><p>&#34;ingress&#34;</p></td>
 
-<tr>
-
-<td>
-
-<code>termination</code><br/>
-
-<em>
-
-<a href="#tempo-grafana-com-v1alpha1-TLSRouteTerminationType">
-
-TLSRouteTerminationType
-
-</a>
-
-</em>
-
+<td><p>IngressTypeIngress specifies that an ingress entry should be created.</p>
 </td>
 
-<td>
+</tr><tr><td><p>&#34;&#34;</p></td>
 
-<em>(Optional)</em>
-
-<p>Termination specifies the termination type. By default &ldquo;edge&rdquo; is used.</p>
-
+<td><p>IngressTypeNone specifies that no ingress or route entry should be created.</p>
 </td>
-</tr>
 
-</tbody>
+</tr><tr><td><p>&#34;route&#34;</p></td>
+
+<td><p>IngressTypeRoute specifies that a route entry should be created.</p>
+</td>
+
+</tr></tbody>
 </table>
 
 
@@ -1040,9 +979,9 @@ bool
 
 <em>
 
-<a href="#tempo-grafana-com-v1alpha1-JaegerQueryIngressSpec">
+<a href="#tempo-grafana-com-v1alpha1-IngressSpec">
 
-JaegerQueryIngressSpec
+IngressSpec
 
 </a>
 
@@ -2522,6 +2461,67 @@ string
 </table>
 
 
+## RouteSpec { #tempo-grafana-com-v1alpha1-RouteSpec }
+
+<p>
+
+(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-IngressSpec">IngressSpec</a>)
+
+</p>
+
+<div>
+
+<p>RouteSpec defines OpenShift Route specific options.</p>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Field</th>
+
+<th>Description</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td>
+
+<code>termination</code><br/>
+
+<em>
+
+<a href="#tempo-grafana-com-v1alpha1-TLSRouteTerminationType">
+
+TLSRouteTerminationType
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>Termination specifies the termination type. By default &ldquo;edge&rdquo; is used.</p>
+
+</td>
+</tr>
+
+</tbody>
+</table>
+
+
 ## SearchSpec { #tempo-grafana-com-v1alpha1-SearchSpec }
 
 <p>
@@ -2757,7 +2757,7 @@ SubjectKind
 
 <p>
 
-(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-JaegerQueryRouteSpec">JaegerQueryRouteSpec</a>)
+(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-RouteSpec">RouteSpec</a>)
 
 </p>
 
@@ -2990,6 +2990,33 @@ bool
 </td>
 
 <td>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>ingress</code><br/>
+
+<em>
+
+<a href="#tempo-grafana-com-v1alpha1-IngressSpec">
+
+IngressSpec
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>Ingress defines gateway Ingress options.</p>
 
 </td>
 </tr>

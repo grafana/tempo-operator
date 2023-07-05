@@ -111,7 +111,7 @@ manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and Cust
 	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 
 .PHONY: generate
-generate: controller-gen api-docs ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
+generate: controller-gen  ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
 
 .PHONY: fmt
@@ -140,7 +140,7 @@ run: manifests generate fmt vet ## Run a controller from your host.
 
 .PHONY: docker-build
 docker-build: ## Build docker image with the manager.
-	docker buildx build --load --platform linux/${ARCH} -t ${IMG} .
+	docker buildx build --load --platform linux/${ARCH} --build-arg OPERATOR_VERSION -t ${IMG} .
 
 .PHONY: docker-push
 docker-push: ## Push docker image with the manager.
@@ -251,7 +251,7 @@ ifeq (,$(shell which opm 2>/dev/null))
 	set -e ;\
 	mkdir -p $(dir $(OPM)) ;\
 	OS=$(shell go env GOOS) && ARCH=$(shell go env GOARCH) && \
-	curl -sSLo $(OPM) https://github.com/operator-framework/operator-registry/releases/download/v1.23.0/$${OS}-$${ARCH}-opm ;\
+	curl -sSLo $(OPM) https://github.com/operator-framework/operator-registry/releases/download/v1.27.1/$${OS}-$${ARCH}-opm ;\
 	chmod +x $(OPM) ;\
 	}
 else
@@ -277,6 +277,16 @@ endif
 .PHONY: catalog-build
 catalog-build: opm ## Build a catalog image.
 	$(OPM) index add --container-tool docker --mode semver --tag $(CATALOG_IMG) --bundles $(BUNDLE_IMGS) $(FROM_INDEX_OPT)
+
+.PHONY: fbc-catalog-build
+fbc-catalog-build: opm ## Build a File Based Catalog (FBC) catalog image
+	mkdir -p catalog/tempo-operator
+	$(OPM) generate dockerfile catalog
+	$(OPM) render $(CATALOG_BASE_IMG) -o yaml > catalog/tempo-operator/base.yaml
+	# $(OPM) init tempo-operator -c alpha -o yaml > catalog/tempo-operator/latest.yaml
+	$(OPM) render $(BUNDLE_IMG) -o yaml >> catalog/tempo-operator/latest.yaml
+	docker build -f catalog.Dockerfile -t $(CATALOG_IMG) .
+	rm -r catalog.Dockerfile catalog
 
 # Push the catalog image.
 .PHONY: catalog-push
@@ -340,6 +350,10 @@ prepare-e2e-openshift: deploy-minio
 e2e-openshift:
 	$(KUTTL) test --config kuttl-test-openshift.yaml
 
+# upgrade tests
+e2e-upgrade:
+	$(KUTTL) test --config kuttl-test-upgrade.yaml
+
 .PHONY: scorecard-tests
 scorecard-tests: operator-sdk
 	$(OPERATOR_SDK) scorecard -w=5m bundle/$(BUNDLE_VARIANT) || (echo "scorecard test failed" && exit 1)
@@ -363,6 +377,10 @@ $(OPERATOR_SDK): $(LOCALBIN)
 	test -s $(OPERATOR_SDK) || curl -sLo $(OPERATOR_SDK) https://github.com/operator-framework/operator-sdk/releases/download/v${OPERATOR_SDK_VERSION}/operator-sdk_`go env GOOS`_`go env GOARCH`
 	@chmod +x $(OPERATOR_SDK)
 
+.PHONY: olm-install
+olm-install: operator-sdk ## Install Operator Lifecycle Manager (OLM)
+	$(OPERATOR_SDK) olm install
+
 # go-get-tool will 'go get' any package $2 and install it to $1.
 define go-get-tool
 @[ -f $(1) ] || { \
@@ -372,7 +390,7 @@ cd $$TMP_DIR ;\
 go mod init tmp ;\
 echo "Downloading $(2)" ;\
 go get -d $(2)@$(3) ;\
-GOBIN=$(LOCALBIN) go install $(2) ;\
+GOBIN=$(LOCALBIN) go install -mod=mod $(2) ;\
 APP=$$(echo "$(LOCALBIN)/$@") ;\
 APP_NAME=$$(echo "$$APP-$(3)") ;\
 mv "$$APP" "$$APP_NAME" ;\
@@ -385,13 +403,14 @@ kuttl:
 	./hack/install/install-kuttl.sh
 
 .PHONY: ensure-generate-is-noop
-ensure-generate-is-noop: generate bundle
+ensure-generate-is-noop: generate api-docs bundle
 	@# on make bundle config/manager/kustomization.yaml includes changes, which should be ignored for the below check
 	@git restore config/manager/kustomization.yaml
 	@git diff -s --exit-code apis/tempo/v1alpha1/zz_generated.*.go || (echo "Build failed: a model has been changed but the generated resources aren't up to date. Run 'make generate' and update your PR." && exit 1)
 	@git diff -s --exit-code apis/config/v1alpha1/zz_generated.*.go || (echo "Build failed: a model has been changed but the generated resources aren't up to date. Run 'make generate' and update your PR." && exit 1)
 	@git diff -s --exit-code bundle config || (echo "Build failed: the bundle, config files has been changed but the generated bundle, config files aren't up to date. Run 'make bundle' and update your PR." && git diff && exit 1)
-	@git diff -s --exit-code bundle.Dockerfile || (echo "Build failed: the bundle.Dockerfile file has been changed. The file should be the same as generated one. Run 'make bundle' and update your PR." && git diff && exit 1)
+	@git diff -s --exit-code bundle/community/bundle.Dockerfile || (echo "Build failed: the community bundle.Dockerfile file has been changed. The file should be the same as generated one. Run 'make bundle' and update your PR." && git diff && exit 1)
+	@git diff -s --exit-code bundle/openshift/bundle.Dockerfile || (echo "Build failed: the OpenShift bundle.Dockerfile file has been changed. The file should be the same as generated one. Run 'make bundle' and update your PR." && git diff && exit 1)
 	@git diff -s --exit-code docs/operator/api.md || (echo "Build failed: the api.md file has been changed but the generated api.md file isn't up to date. Run 'make api-docs' and update your PR." && git diff && exit 1)
 	@git diff -s --exit-code docs/operator/feature-gates.md || (echo "Build failed: the feature-gates.md file has been changed but the generated feature-gates.md file isn't up to date. Run 'make api-docs' and update your PR." && git diff && exit 1)
 
@@ -492,14 +511,3 @@ release-artifacts: set-image-controller
 	mkdir -p dist
 	$(KUSTOMIZE) build config/overlays/community -o dist/tempo-operator.yaml
 	$(KUSTOMIZE) build config/overlays/openshift -o dist/tempo-operator-openshift.yaml
-
-olm/install: operator-sdk
-	-$(OPERATOR_SDK) olm install
-
-olm/create-catalog:
-	CATALOG_IMG=$(CATALOG_IMG) envsubst < hack/olm/catalog.yaml | kubectl apply -f -
-
-olm/create-subscription:
-	kubectl apply -f hack/olm/subscription.yaml
-
-olm/install-operator: olm/install generate bundle docker-build docker-push bundle-build bundle-push catalog-build catalog-push olm/create-catalog olm/create-subscription

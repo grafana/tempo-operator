@@ -19,6 +19,7 @@ import (
 	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 
 	"github.com/grafana/tempo-operator/apis/config/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
@@ -141,6 +142,12 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 		r.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Route.Termination = TLSRouteTerminationTypeEdge
 	}
 
+	// if tenant mode is Openshift, ingress type should be route by default.
+	if r.Spec.Tenants != nil && r.Spec.Tenants.Mode == OpenShift {
+		r.Spec.Template.Gateway.Ingress.Type = IngressTypeRoute
+		r.Spec.Template.Gateway.Ingress.Route.Termination = TLSRouteTerminationTypePassthrough
+	}
+
 	return nil
 }
 
@@ -151,17 +158,17 @@ type validator struct {
 	ctrlConfig v1alpha1.ProjectConfig
 }
 
-func (v *validator) ValidateCreate(ctx context.Context, obj runtime.Object) error {
+func (v *validator) ValidateCreate(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
 	return v.validate(ctx, obj)
 }
 
-func (v *validator) ValidateUpdate(ctx context.Context, oldObj, newObj runtime.Object) error {
+func (v *validator) ValidateUpdate(ctx context.Context, oldObj, newObj runtime.Object) (admission.Warnings, error) {
 	return v.validate(ctx, newObj)
 }
 
-func (v *validator) ValidateDelete(ctx context.Context, obj runtime.Object) error {
+func (v *validator) ValidateDelete(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
 	// NOTE(agerstmayr): change verbs in +kubebuilder:webhook to "verbs=create;update;delete" if you want to enable deletion validation.
-	return nil
+	return nil, nil
 }
 
 func (v *validator) validateServiceAccount(ctx context.Context, tempo TempoStack) field.ErrorList {
@@ -257,6 +264,14 @@ func (v *validator) validateGateway(tempo TempoStack) field.ErrorList {
 				field.Invalid(path, tempo.Spec.Template.Gateway.Enabled,
 					"to enable the gateway, please configure tenants",
 				)}
+		}
+
+		if tempo.Spec.Template.Gateway.Ingress.Type == IngressTypeRoute && !v.ctrlConfig.Gates.OpenShift.OpenShiftRoute {
+			return field.ErrorList{field.Invalid(
+				field.NewPath("spec").Child("template").Child("gateway").Child("ingress").Child("type"),
+				tempo.Spec.Template.Gateway.Ingress.Type,
+				"please enable the featureGates.openshift.openshiftRoute feature gate to use Routes",
+			)}
 		}
 	}
 	return nil
@@ -357,10 +372,10 @@ func (v *validator) validateDeprecatedFields(tempo TempoStack) field.ErrorList {
 	return nil
 }
 
-func (v *validator) validate(ctx context.Context, obj runtime.Object) error {
+func (v *validator) validate(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
 	tempo, ok := obj.(*TempoStack)
 	if !ok {
-		return apierrors.NewBadRequest(fmt.Sprintf("expected a TempoStack object but got %T", obj))
+		return nil, apierrors.NewBadRequest(fmt.Sprintf("expected a TempoStack object but got %T", obj))
 	}
 
 	log := ctrl.LoggerFrom(ctx).WithName("tempostack-webhook")
@@ -378,9 +393,9 @@ func (v *validator) validate(ctx context.Context, obj runtime.Object) error {
 	allErrs = append(allErrs, v.validateDeprecatedFields(*tempo)...)
 
 	if len(allErrs) == 0 {
-		return nil
+		return nil, nil
 	}
-	return apierrors.NewInvalid(tempo.GroupVersionKind().GroupKind(), tempo.Name, allErrs)
+	return nil, apierrors.NewInvalid(tempo.GroupVersionKind().GroupKind(), tempo.Name, allErrs)
 }
 
 // ValidateTenantConfigs validates the tenants mode specification.
@@ -391,18 +406,29 @@ func ValidateTenantConfigs(tempo TempoStack) error {
 
 	tenants := tempo.Spec.Tenants
 	if tenants.Mode == Static {
-		if tenants.Authentication == nil {
-			return fmt.Errorf("spec.tenants.authentication is required in static mode")
-		}
+		// If the static mode is combined with the gateway, we will need the following fields
+		// otherwise this will just enable tempo multitenancy without the gateway
+		if tempo.Spec.Template.Gateway.Enabled {
+			if tenants.Authentication == nil {
+				return fmt.Errorf("spec.tenants.authentication is required in static mode")
+			}
 
-		if tenants.Authorization.Roles == nil {
-			return fmt.Errorf("spec.tenants.authorization.roles is required in static mode")
-		}
+			if tenants.Authorization == nil {
+				return fmt.Errorf("spec.tenants.authorization is required in static mode")
+			}
 
-		if tenants.Authorization.RoleBindings == nil {
-			return fmt.Errorf("spec.tenants.authorization.roleBindings is required in static mode")
+			if tenants.Authorization.Roles == nil {
+				return fmt.Errorf("spec.tenants.authorization.roles is required in static mode")
+			}
+
+			if tenants.Authorization.RoleBindings == nil {
+				return fmt.Errorf("spec.tenants.authorization.roleBindings is required in static mode")
+			}
 		}
 	} else if tenants.Mode == OpenShift {
+		if !tempo.Spec.Template.Gateway.Enabled {
+			return fmt.Errorf("openshift mode requires gateway enabled")
+		}
 		if tenants.Authorization != nil {
 			return fmt.Errorf("spec.tenants.authorization should not be defined in openshift mode")
 		}

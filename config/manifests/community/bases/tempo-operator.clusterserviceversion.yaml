@@ -310,6 +310,26 @@ spec:
       - description: Gateway defines the tempo gateway spec.
         displayName: Gateway pods
         path: template.gateway
+      - description: Ingress defines gateway Ingress options.
+        displayName: Jaeger gateway Ingress Settings
+        path: template.gateway.ingress
+      - description: Annotations defines the annotations of the Ingress object.
+        displayName: Annotations
+        path: template.gateway.ingress.annotations
+      - description: Host defines the hostname of the Ingress object.
+        displayName: Host
+        path: template.gateway.ingress.host
+      - description: Route defines OpenShift Route specific options.
+        displayName: Route Configuration
+        path: template.gateway.ingress.route
+      - description: Termination specifies the termination type. By default "edge"
+          is used.
+        displayName: TLS Termination Policy
+        path: template.gateway.ingress.route.termination
+      - description: Type defines the type of Ingress for the Jaeger Query UI. Currently
+          ingress, route and none are supported.
+        displayName: Type
+        path: template.gateway.ingress.type
       - description: NodeSelector is the simplest recommended form of node selection
           constraint.
         displayName: Node Selector

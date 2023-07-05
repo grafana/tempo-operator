@@ -211,6 +211,28 @@ spec:
                       Tempo components. Only limits are supported, the operator calculates
                       requests automatically. See http://github.com/grafana/tempo/issues/1540.
                     properties:
+                      claims:
+                        description: "Claims lists the names of resources, defined
+                          in spec.resourceClaims, that are used by this container.
+                          \n This is an alpha field and requires enabling the DynamicResourceAllocation
+                          feature gate. \n This field is immutable. It can only be
+                          set for containers."
+                        items:
+                          description: ResourceClaim references one entry in PodSpec.ResourceClaims.
+                          properties:
+                            name:
+                              description: Name must match the name of one entry in
+                                pod.spec.resourceClaims of the Pod where this field
+                                is used. It makes that resource available inside a
+                                container.
+                              type: string
+                          required:
+                          - name
+                          type: object
+                        type: array
+                        x-kubernetes-list-map-keys:
+                        - name
+                        x-kubernetes-list-type: map
                       limits:
                         additionalProperties:
                           anyOf:
@@ -231,7 +253,8 @@ spec:
                         description: 'Requests describes the minimum amount of compute
                           resources required. If Requests is omitted for a container,
                           it defaults to Limits if that is explicitly specified, otherwise
-                          to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                          to an implementation-defined value. Requests cannot exceed
+                          Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                         type: object
                     type: object
                 type: object
@@ -520,6 +543,47 @@ spec:
                         type: object
                       enabled:
                         type: boolean
+                      ingress:
+                        description: Ingress defines gateway Ingress options.
+                        properties:
+                          annotations:
+                            additionalProperties:
+                              type: string
+                            description: Annotations defines the annotations of the
+                              Ingress object.
+                            type: object
+                          host:
+                            description: Host defines the hostname of the Ingress
+                              object.
+                            type: string
+                          ingressClassName:
+                            description: IngressClassName is the name of an IngressClass
+                              cluster resource. Ingress controller implementations
+                              use this field to know whether they should be serving
+                              this Ingress resource.
+                            type: string
+                          route:
+                            description: Route defines OpenShift Route specific options.
+                            properties:
+                              termination:
+                                description: Termination specifies the termination
+                                  type. By default "edge" is used.
+                                enum:
+                                - insecure
+                                - edge
+                                - passthrough
+                                - reencrypt
+                                type: string
+                            type: object
+                          type:
+                            description: Type defines the type of Ingress for the
+                              Jaeger Query UI. Currently ingress, route and none are
+                              supported.
+                            enum:
+                            - ingress
+                            - route
+                            type: string
+                        type: object
                     required:
                     - enabled
                     type: object

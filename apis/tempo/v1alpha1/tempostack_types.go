@@ -464,6 +464,12 @@ type TempoGatewaySpec struct {
 	TempoComponentSpec `json:"component,omitempty"`
 
 	Enabled bool `json:"enabled"`
+	// Ingress defines gateway Ingress options.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger gateway Ingress Settings"
+	Ingress IngressSpec `json:"ingress,omitempty"`
 }
 
 // TempoQueryFrontendSpec extends TempoComponentSpec with frontend specific parameters.
@@ -499,11 +505,11 @@ type JaegerQuerySpec struct {
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger Query UI Ingress Settings"
-	Ingress JaegerQueryIngressSpec `json:"ingress,omitempty"`
+	Ingress IngressSpec `json:"ingress,omitempty"`
 }
 
-// JaegerQueryIngressSpec defines Jaeger Query Ingress options.
-type JaegerQueryIngressSpec struct {
+// IngressSpec defines Jaeger Query Ingress options.
+type IngressSpec struct {
 	// Type defines the type of Ingress for the Jaeger Query UI.
 	// Currently ingress, route and none are supported.
 	//
@@ -537,11 +543,11 @@ type JaegerQueryIngressSpec struct {
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Route Configuration"
-	Route JaegerQueryRouteSpec `json:"route,omitempty"`
+	Route RouteSpec `json:"route,omitempty"`
 }
 
-// JaegerQueryRouteSpec defines OpenShift Route specific options.
-type JaegerQueryRouteSpec struct {
+// RouteSpec defines OpenShift Route specific options.
+type RouteSpec struct {
 	// Termination specifies the termination type. By default "edge" is used.
 	//
 	// +optional

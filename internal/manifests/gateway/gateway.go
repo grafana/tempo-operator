@@ -10,6 +10,7 @@ import (
 	"github.com/imdario/mergo"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -37,11 +38,6 @@ const (
 
 // BuildGateway creates gateway objects.
 func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
-	if !params.Tempo.Spec.Template.Gateway.Enabled ||
-		params.Tempo.Spec.Tenants == nil {
-		return []client.Object{}, nil
-	}
-
 	rbacCfg, tenantsCfg, err := buildConfigFiles(newOptions(params.Tempo, params.Gates.OpenShift.BaseDomain, params.GatewayTenantSecret, params.GatewayTenantsData))
 	if err != nil {
 		return nil, err
@@ -89,9 +85,16 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 				return nil, err
 			}
 		}
-		if params.Gates.OpenShift.OpenShiftRoute {
-			objs = append(objs, route(params.Tempo))
+	}
+
+	if params.Tempo.Spec.Template.Gateway.Ingress.Type == v1alpha1.IngressTypeIngress {
+		objs = append(objs, ingress(params.Tempo))
+	} else if params.Tempo.Spec.Template.Gateway.Ingress.Type == v1alpha1.IngressTypeRoute {
+		routeObj, err := route(params.Tempo)
+		if err != nil {
+			return nil, err
 		}
+		objs = append(objs, routeObj)
 	}
 
 	dep.Spec.Template, err = patchTracing(params.Tempo, dep.Spec.Template)
@@ -370,4 +373,53 @@ func tenantsConfig(tempo v1alpha1.TempoStack, tenantsCfg string) (*corev1.Secret
 	checksum := hex.EncodeToString(h.Sum(nil))
 
 	return secret, checksum
+}
+
+func ingress(tempo v1alpha1.TempoStack) *networkingv1.Ingress {
+	ingressName := naming.Name(manifestutils.GatewayComponentName, tempo.Name)
+	labels := manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name)
+
+	ingress := &networkingv1.Ingress{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        ingressName,
+			Namespace:   tempo.Namespace,
+			Labels:      labels,
+			Annotations: tempo.Spec.Template.Gateway.Ingress.Annotations,
+		},
+		Spec: networkingv1.IngressSpec{
+			IngressClassName: tempo.Spec.Template.Gateway.Ingress.IngressClassName,
+		},
+	}
+
+	backend := networkingv1.IngressBackend{
+		Service: &networkingv1.IngressServiceBackend{
+			Name: ingressName,
+			Port: networkingv1.ServiceBackendPort{
+				Name: "public",
+			},
+		},
+	}
+
+	if tempo.Spec.Template.Gateway.Ingress.Host == "" {
+		ingress.Spec.DefaultBackend = &backend
+	} else {
+		pathType := networkingv1.PathTypePrefix
+		ingress.Spec.Rules = []networkingv1.IngressRule{
+			{
+				Host: tempo.Spec.Template.Gateway.Ingress.Host,
+				IngressRuleValue: networkingv1.IngressRuleValue{
+					HTTP: &networkingv1.HTTPIngressRuleValue{
+						Paths: []networkingv1.HTTPIngressPath{
+							{
+								Path:     "/",
+								PathType: &pathType,
+								Backend:  backend,
+							},
+						},
+					},
+				},
+			},
+		}
+	}
+	return ingress
 }

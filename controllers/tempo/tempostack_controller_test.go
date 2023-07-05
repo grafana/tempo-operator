@@ -462,7 +462,7 @@ func TestPruneIngress(t *testing.T) {
 				QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
 					JaegerQuery: v1alpha1.JaegerQuerySpec{
 						Enabled: true,
-						Ingress: v1alpha1.JaegerQueryIngressSpec{
+						Ingress: v1alpha1.IngressSpec{
 							Type: v1alpha1.IngressTypeIngress,
 						},
 					},
@@ -713,7 +713,7 @@ func TestReconcileManifestsValidateModes(t *testing.T) {
 			require.NoError(t, err)
 			reconciler := TempoStackReconciler{Client: k8sClient, Scheme: testScheme}
 			req := ctrl.Request{NamespacedName: nsn}
-			err = reconciler.reconcileManifests(context.Background(), logr.Discard(), req, *tempo)
+			err = reconciler.createOrUpdate(context.Background(), logr.Discard(), req, *tempo)
 			tc.validate(t, err)
 		})
 	}
