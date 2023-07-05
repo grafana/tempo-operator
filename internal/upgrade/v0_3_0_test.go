@@ -4,10 +4,11 @@ import (
 	"context"
 	"testing"
 
-	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
-	"github.com/grafana/tempo-operator/internal/version"
 	"github.com/stretchr/testify/require"
 	"k8s.io/client-go/tools/record"
+
+	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/internal/version"
 )
 
 func TestRemoveDeprecatedFields(t *testing.T) {
