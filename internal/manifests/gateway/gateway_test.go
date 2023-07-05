@@ -175,6 +175,30 @@ func TestBuildGateway_openshift(t *testing.T) {
 	assert.Equal(t, 2, len(dep.Spec.Template.Spec.Containers))
 	assert.Equal(t, "opa", dep.Spec.Template.Spec.Containers[1].Name)
 	assert.Equal(t, "tempo-simplest-gateway", dep.Spec.Template.Spec.ServiceAccountName)
+	assert.Equal(t, &corev1.Probe{
+		ProbeHandler: corev1.ProbeHandler{
+			HTTPGet: &corev1.HTTPGetAction{
+				Path:   "/ready",
+				Port:   intstr.FromInt(portInternal),
+				Scheme: corev1.URISchemeHTTP,
+			},
+		},
+		TimeoutSeconds:   1,
+		PeriodSeconds:    5,
+		FailureThreshold: 12,
+	}, dep.Spec.Template.Spec.Containers[0].ReadinessProbe)
+	assert.Equal(t, &corev1.Probe{
+		ProbeHandler: corev1.ProbeHandler{
+			HTTPGet: &corev1.HTTPGetAction{
+				Path:   "/live",
+				Port:   intstr.FromInt(portInternal),
+				Scheme: corev1.URISchemeHTTP,
+			},
+		},
+		TimeoutSeconds:   2,
+		PeriodSeconds:    30,
+		FailureThreshold: 10,
+	}, dep.Spec.Template.Spec.Containers[0].LivenessProbe)
 
 	obj = getObjectByTypeAndName(objects, "tempo-simplest-gateway", reflect.TypeOf(&corev1.ServiceAccount{}))
 	require.NotNil(t, obj)
@@ -391,6 +415,7 @@ func TestTLSParameters(t *testing.T) {
 		},
 	}
 
+	// test with TLS
 	objects, err := BuildGateway(manifestutils.Params{
 		Tempo: tempo,
 		Gates: configv1alpha1.FeatureGates{
@@ -410,14 +435,16 @@ func TestTLSParameters(t *testing.T) {
 	require.True(t, ok)
 
 	args := dep.Spec.Template.Spec.Containers[0].Args
+	assert.Contains(t, args, fmt.Sprintf("--tls.internal.server.key-file=%s/tls.key", manifestutils.TempoServerTLSDir()))
+	assert.Contains(t, args, fmt.Sprintf("--tls.internal.server.cert-file=%s/tls.crt", manifestutils.TempoServerTLSDir()))
 	assert.Contains(t, args, fmt.Sprintf("--traces.tls.key-file=%s/tls.key", manifestutils.TempoServerTLSDir()))
 	assert.Contains(t, args, fmt.Sprintf("--traces.tls.cert-file=%s/tls.crt", manifestutils.TempoServerTLSDir()))
 	assert.Contains(t, args, fmt.Sprintf("--traces.tls.ca-file=%s/service-ca.crt", manifestutils.CABundleDir))
-	assert.Contains(t, args, fmt.Sprintf("--traces.tls.ca-file=%s/service-ca.crt", manifestutils.CABundleDir))
-
 	assert.Contains(t, args, fmt.Sprintf("--traces.read.endpoint=https://%s:16686",
 		naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.QueryFrontendComponentName)))
+	assert.Equal(t, corev1.URISchemeHTTPS, dep.Spec.Template.Spec.Containers[0].ReadinessProbe.HTTPGet.Scheme)
 
+	// test without TLS
 	objects, err = BuildGateway(manifestutils.Params{
 		Tempo: tempo,
 		Gates: configv1alpha1.FeatureGates{
@@ -436,13 +463,14 @@ func TestTLSParameters(t *testing.T) {
 	require.True(t, ok)
 
 	args = dep.Spec.Template.Spec.Containers[0].Args
+	assert.NotContains(t, args, fmt.Sprintf("--tls.internal.server.key-file=%s/tls.key", manifestutils.TempoServerTLSDir()))
+	assert.NotContains(t, args, fmt.Sprintf("--tls.internal.server.cert-file=%s/tls.crt", manifestutils.TempoServerTLSDir()))
 	assert.NotContains(t, args, fmt.Sprintf("--traces.tls.key-file=%s/tls.key", manifestutils.TempoServerTLSDir()))
 	assert.NotContains(t, args, fmt.Sprintf("--traces.tls.cert-file=%s/tls.crt", manifestutils.TempoServerTLSDir()))
 	assert.NotContains(t, args, fmt.Sprintf("--traces.tls.ca-file=%s/service-ca.crt", manifestutils.CABundleDir))
-	assert.NotContains(t, args, fmt.Sprintf("--traces.tls.ca-file=%s/service-ca.crt", manifestutils.CABundleDir))
-
 	assert.Contains(t, args, fmt.Sprintf("--traces.read.endpoint=http://%s:16686",
 		naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.QueryFrontendComponentName)))
+	assert.Equal(t, corev1.URISchemeHTTP, dep.Spec.Template.Spec.Containers[0].ReadinessProbe.HTTPGet.Scheme)
 }
 
 func TestIngress(t *testing.T) {
