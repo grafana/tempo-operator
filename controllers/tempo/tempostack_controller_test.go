@@ -149,9 +149,9 @@ func TestReconcile(t *testing.T) {
 	assert.InDelta(t, metav1.NewTime(time.Now()).Unix(), updatedTempo.Status.Conditions[0].LastTransitionTime.Unix(), 60)
 }
 
-func TestReadyToDegraded(t *testing.T) {
+func TestReadyToConfigurationError(t *testing.T) {
 	// Create object storage secret and Tempo CR
-	nsn := types.NamespacedName{Name: "ready-to-degraded-test", Namespace: "default"}
+	nsn := types.NamespacedName{Name: "ready-to-configerr-test", Namespace: "default"}
 	storageSecret := createSecret(t, nsn)
 	createTempoCR(t, nsn, storageSecret)
 
@@ -192,10 +192,9 @@ func TestReadyToDegraded(t *testing.T) {
 
 	// Reconcile
 	reconcileResult, err = reconciler.Reconcile(context.Background(), req)
-	require.NoError(t, err)
-	assert.Equal(t, false, reconcileResult.Requeue)
+	require.ErrorContains(t, err, "terminal error")
 
-	// Verify status conditions: Ready=false, Degraded=true
+	// Verify status conditions: Ready=false, ConfigurationError=true
 	updatedTempo2 := v1alpha1.TempoStack{}
 	err = k8sClient.Get(context.Background(), nsn, &updatedTempo2)
 	require.NoError(t, err)
@@ -208,7 +207,7 @@ func TestReadyToDegraded(t *testing.T) {
 			Message:            "All components are operational",
 		},
 		{
-			Type:               string(v1alpha1.ConditionDegraded),
+			Type:               string(v1alpha1.ConditionConfigurationError),
 			Status:             "True",
 			LastTransitionTime: updatedTempo2.Status.Conditions[1].LastTransitionTime,
 			Reason:             string(v1alpha1.ReasonInvalidStorageConfig),
@@ -219,9 +218,9 @@ func TestReadyToDegraded(t *testing.T) {
 	assert.Greater(t, updatedTempo2.Status.Conditions[1].LastTransitionTime.UnixNano(), updatedTempo1.Status.Conditions[0].LastTransitionTime.UnixNano())
 }
 
-func TestDegradedToDegraded(t *testing.T) {
+func TestConfigurationErrorToConfigurationError(t *testing.T) {
 	// Create object storage secret and Tempo CR
-	nsn := types.NamespacedName{Name: "degraded-to-degraded-test", Namespace: "default"}
+	nsn := types.NamespacedName{Name: "configerr-to-configerr-test", Namespace: "default"}
 	storageSecret := createSecret(t, nsn)
 	createTempoCR(t, nsn, storageSecret)
 
@@ -241,16 +240,15 @@ func TestDegradedToDegraded(t *testing.T) {
 	req := ctrl.Request{
 		NamespacedName: nsn,
 	}
-	reconcileResult, err := reconciler.Reconcile(context.Background(), req)
-	require.NoError(t, err)
-	assert.Equal(t, false, reconcileResult.Requeue)
+	_, err = reconciler.Reconcile(context.Background(), req)
+	require.ErrorContains(t, err, "terminal error")
 
-	// Verify status conditions: Degraded=true
+	// Verify status conditions: ConfigurationError=true
 	updatedTempo1 := v1alpha1.TempoStack{}
 	err = k8sClient.Get(context.Background(), nsn, &updatedTempo1)
 	require.NoError(t, err)
 	assert.Equal(t, []metav1.Condition{{
-		Type:               string(v1alpha1.ConditionDegraded),
+		Type:               string(v1alpha1.ConditionConfigurationError),
 		Status:             "True",
 		LastTransitionTime: updatedTempo1.Status.Conditions[0].LastTransitionTime,
 		Reason:             string(v1alpha1.ReasonInvalidStorageConfig),
@@ -263,11 +261,10 @@ func TestDegradedToDegraded(t *testing.T) {
 	require.NoError(t, err)
 
 	// Reconcile
-	reconcileResult, err = reconciler.Reconcile(context.Background(), req)
-	require.NoError(t, err)
-	assert.Equal(t, false, reconcileResult.Requeue)
+	_, err = reconciler.Reconcile(context.Background(), req)
+	require.ErrorContains(t, err, "terminal error")
 
-	// Verify status conditions: Degraded=true
+	// Verify status conditions: ConfigurationError=true
 	updatedTempo2 := v1alpha1.TempoStack{}
 	err = k8sClient.Get(context.Background(), nsn, &updatedTempo2)
 	require.NoError(t, err)
@@ -276,7 +273,7 @@ func TestDegradedToDegraded(t *testing.T) {
 	lastTransitionTime := updatedTempo2.Status.Conditions[0].LastTransitionTime
 	assert.Equal(t, []metav1.Condition{
 		{
-			Type:               string(v1alpha1.ConditionDegraded),
+			Type:               string(v1alpha1.ConditionConfigurationError),
 			Status:             "True",
 			LastTransitionTime: lastTransitionTime,
 			Reason:             string(v1alpha1.ReasonInvalidStorageConfig),
@@ -285,9 +282,9 @@ func TestDegradedToDegraded(t *testing.T) {
 	}, updatedTempo2.Status.Conditions)
 }
 
-func TestDegradedToReady(t *testing.T) {
+func TestConfigurationErrorToReady(t *testing.T) {
 	// Create object storage secret and Tempo CR
-	nsn := types.NamespacedName{Name: "degraded-to-ready-test", Namespace: "default"}
+	nsn := types.NamespacedName{Name: "configerr-to-ready-test", Namespace: "default"}
 	storageSecret := createSecret(t, nsn)
 	createTempoCR(t, nsn, storageSecret)
 
@@ -308,15 +305,15 @@ func TestDegradedToReady(t *testing.T) {
 		NamespacedName: nsn,
 	}
 	reconcileResult, err := reconciler.Reconcile(context.Background(), req)
-	require.NoError(t, err)
+	require.ErrorContains(t, err, "terminal error")
 	assert.Equal(t, false, reconcileResult.Requeue)
 
-	// Verify status conditions: Degraded=true
+	// Verify status conditions: ConfigurationError=true
 	updatedTempo1 := v1alpha1.TempoStack{}
 	err = k8sClient.Get(context.Background(), nsn, &updatedTempo1)
 	require.NoError(t, err)
 	assert.Equal(t, []metav1.Condition{{
-		Type:               string(v1alpha1.ConditionDegraded),
+		Type:               string(v1alpha1.ConditionConfigurationError),
 		Status:             "True",
 		LastTransitionTime: updatedTempo1.Status.Conditions[0].LastTransitionTime,
 		Reason:             string(v1alpha1.ReasonInvalidStorageConfig),
@@ -336,13 +333,13 @@ func TestDegradedToReady(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, false, reconcileResult.Requeue)
 
-	// Verify status conditions: Ready=true, Degraded=false
+	// Verify status conditions: Ready=true, ConfigurationError=false
 	updatedTempo2 := v1alpha1.TempoStack{}
 	err = k8sClient.Get(context.Background(), nsn, &updatedTempo2)
 	require.NoError(t, err)
 	assert.Equal(t, []metav1.Condition{
 		{
-			Type:               string(v1alpha1.ConditionDegraded),
+			Type:               string(v1alpha1.ConditionConfigurationError),
 			Status:             "False",
 			LastTransitionTime: updatedTempo2.Status.Conditions[1].LastTransitionTime,
 			Reason:             string(v1alpha1.ReasonInvalidStorageConfig),
@@ -358,6 +355,38 @@ func TestDegradedToReady(t *testing.T) {
 	}, updatedTempo2.Status.Conditions)
 	assert.Greater(t, updatedTempo2.Status.Conditions[0].LastTransitionTime.UnixNano(), updatedTempo1.Status.Conditions[0].LastTransitionTime.UnixNano())
 	assert.Greater(t, updatedTempo2.Status.Conditions[1].LastTransitionTime.UnixNano(), updatedTempo1.Status.Conditions[0].LastTransitionTime.UnixNano())
+}
+
+func TestReconcileGenericError(t *testing.T) {
+	nsn := types.NamespacedName{Name: "reconcile-errors", Namespace: "default"}
+	storageSecret := createSecret(t, nsn)
+	createTempoCR(t, nsn, storageSecret)
+
+	reconciler := TempoStackReconciler{
+		Client: k8sClient,
+		Scheme: testScheme,
+		FeatureGates: configv1alpha1.FeatureGates{
+			TLSProfile:         string(configv1alpha1.TLSProfileIntermediateType),
+			PrometheusOperator: true, // this will throw an error, as the CRD is not installed
+		},
+	}
+	req := ctrl.Request{
+		NamespacedName: nsn,
+	}
+	_, err := reconciler.Reconcile(context.Background(), req)
+	require.Error(t, err)
+
+	updatedTempo := v1alpha1.TempoStack{}
+	err = k8sClient.Get(context.Background(), nsn, &updatedTempo)
+	require.NoError(t, err)
+	assert.Equal(t, []metav1.Condition{{
+		Type:               string(v1alpha1.ConditionFailed),
+		Status:             "True",
+		LastTransitionTime: updatedTempo.Status.Conditions[0].LastTransitionTime,
+		Reason:             string(v1alpha1.ReasonFailedReconciliation),
+		Message:            updatedTempo.Status.Conditions[0].Message,
+	}}, updatedTempo.Status.Conditions)
+	assert.Contains(t, updatedTempo.Status.Conditions[0].Message, "error listing service monitors: no kind is registered for the type v1.ServiceMonitorList")
 }
 
 func TestTLSEnable(t *testing.T) {
@@ -682,7 +711,7 @@ func TestReconcileManifestsValidateModes(t *testing.T) {
 			},
 			validate: func(t *testing.T, err error) {
 				require.Error(t, err)
-				v, ok := err.(*status.DegradedError)
+				v, ok := err.(*status.ConfigurationError)
 				if !ok {
 					t.Fatal("invalid error type")
 				}
@@ -697,7 +726,7 @@ func TestReconcileManifestsValidateModes(t *testing.T) {
 			validate: func(t *testing.T, err error) {
 				require.Error(t, err)
 				assert.Equal(t,
-					"cluster degraded: Invalid tenants configuration: spec.tenants.authentication is required in static mode",
+					"invalid configuration: Invalid tenants configuration: spec.tenants.authentication is required in static mode",
 					err.Error(),
 				)
 			},

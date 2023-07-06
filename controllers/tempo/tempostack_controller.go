@@ -4,14 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
+	"github.com/go-logr/logr"
 	routev1 "github.com/openshift/api/route/v1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -24,7 +25,6 @@ import (
 
 	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
-	tempov1alpha1 "github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/certrotation/handlers"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/status"
@@ -56,13 +56,6 @@ type TempoStackReconciler struct {
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
-// TODO(user): Modify the Reconcile function to compare the state specified by
-// the TempoStack object against the actual cluster state, and then
-// perform operations to make the cluster state reflect the state specified by
-// the user.
-//
-// For more details, check Reconcile and its Result here:
-// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.12.2/pkg/reconcile
 func (r *TempoStackReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := ctrl.LoggerFrom(ctx).WithName("tempostack-reconcile").WithValues("tempo", req.NamespacedName)
 
@@ -82,7 +75,7 @@ func (r *TempoStackReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return ctrl.Result{}, nil
 	}
 
-	if tempo.Spec.ManagementState != tempov1alpha1.ManagementStateManaged {
+	if tempo.Spec.ManagementState != v1alpha1.ManagementStateManaged {
 		log.Info("Skipping reconciliation for unmanaged TempoStack resource", "name", req.String())
 		// Stop requeueing for unmanaged TempoStack custom resources
 		return ctrl.Result{}, nil
@@ -91,60 +84,69 @@ func (r *TempoStackReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	if r.FeatureGates.BuiltInCertManagement.Enabled {
 		err := handlers.CreateOrRotateCertificates(ctx, log, req, r.Client, r.Scheme, r.FeatureGates)
 		if err != nil {
-			return ctrl.Result{}, fmt.Errorf("built in cert manager error: %w", err)
+			return r.handleReconcileStatus(ctx, log, tempo, fmt.Errorf("built in cert manager error: %w", err))
 		}
 	}
 
 	err := r.createOrUpdate(ctx, log, req, tempo)
-	return r.handleStatus(ctx, tempo, err)
+	if err != nil {
+		return r.handleReconcileStatus(ctx, log, tempo, err)
+	}
+
+	// Update the components status also in case of no reconciliation errors.
+	return r.handleReconcileStatus(ctx, log, tempo, nil)
 }
 
-// handleStatus set all components status, then verify if an error is type status.DegradedError, if that is the case, it will update the CR
-// status conditions to Degraded. if not it will throw an error as usual.
-func (r *TempoStackReconciler) handleStatus(ctx context.Context, tempo v1alpha1.TempoStack, err error) (ctrl.Result, error) {
+// handleReconcileStatus updates the status of each component and sets an appropriate status condition:
+//
+//   - No error: Only update components status
+//
+//   - For ConfigurationError: Set the status condition to ConfigurationError.
+//     Return a reconcile.TerminalError to indicate that human intervention is required
+//     to resolve this error, and that the reconciliation request should not be requeued.
+//
+//   - For any other error: Set the status condition to Failed,
+//     the Reason to "FailedReconciliation" and the message to the error message.
+func (r *TempoStackReconciler) handleReconcileStatus(ctx context.Context, log logr.Logger, tempo v1alpha1.TempoStack, reconcileError error) (ctrl.Result, error) {
 	// First refresh components
 	newStatus, rerr := status.GetComponentsStatus(ctx, r, tempo)
-	requeue := false
-
 	if rerr != nil {
-		return ctrl.Result{
-			Requeue:      requeue,
-			RequeueAfter: time.Second,
-		}, err
+		log.Error(rerr, "could not get components status")
 	}
 
-	// If is not degraded error, refresh and return error
-	var degraded *status.DegradedError
-	if !errors.As(err, &degraded) {
-		requeue, rerr := status.Refresh(ctx, r, tempo, &newStatus)
-		// Error refreshing components status
-		if rerr != nil {
-			return ctrl.Result{
-				Requeue:      requeue,
-				RequeueAfter: time.Second,
-			}, err
-		}
-		// Return original error
-		return ctrl.Result{
-			Requeue: false,
-		}, err
-	}
+	var configurationError *status.ConfigurationError
+	if reconcileError == nil {
+		// No error.
+	} else if errors.As(reconcileError, &configurationError) {
+		// Handle configuration error
+		newStatus.Conditions = status.UpdateCondition(tempo, metav1.Condition{
+			Type:    string(v1alpha1.ConditionConfigurationError),
+			Reason:  string(configurationError.Reason),
+			Message: configurationError.Message,
+		})
 
-	// Degraded error
-	newStatus.Conditions = status.DegradedCondition(tempo, degraded.Message, degraded.Reason)
+		// wrap error in reconcile.TerminalError to indicate human intervention is required
+		// and the request should not be requeued.
+		reconcileError = reconcile.TerminalError(configurationError)
+	} else {
+		// Handle all other errors (e.g. permission errors, etc.)
+		newStatus.Conditions = status.UpdateCondition(tempo, metav1.Condition{
+			Type:    string(v1alpha1.ConditionFailed),
+			Reason:  string(v1alpha1.ReasonFailedReconciliation),
+			Message: reconcileError.Error(),
+		})
+	}
 
 	// Refresh status
-	requeue, err = status.Refresh(ctx, r, tempo, &newStatus)
-
-	// Error refreshing status
-	if err != nil {
-		return ctrl.Result{
-			Requeue:      requeue || degraded.Requeue,
-			RequeueAfter: time.Second,
-		}, err
+	rerr = status.Refresh(ctx, r, tempo, &newStatus)
+	if rerr != nil {
+		return ctrl.Result{}, rerr
 	}
-	// No errors at all.
-	return ctrl.Result{}, nil
+
+	// Note: controller-runtime will always reconcile if this function returns any error except TerminalError.
+	// Result.Requeue and Result.RequeueAfter are only respected if err == nil
+	// https://github.com/kubernetes-sigs/controller-runtime/blob/v0.15.0/pkg/internal/controller/controller.go#L315-L341
+	return ctrl.Result{}, reconcileError
 }
 
 // SetupWithManager sets up the controller with the Manager.

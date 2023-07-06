@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -72,18 +73,16 @@ func isNamespaceScoped(obj client.Object) bool {
 func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, log logr.Logger, req ctrl.Request, tempo v1alpha1.TempoStack) error {
 	storageConfig, err := r.getStorageConfig(ctx, tempo)
 	if err != nil {
-		return &status.DegradedError{
+		return &status.ConfigurationError{
 			Reason:  v1alpha1.ReasonInvalidStorageConfig,
 			Message: err.Error(),
-			Requeue: false,
 		}
 	}
 
 	if err = v1alpha1.ValidateTenantConfigs(tempo); err != nil {
-		return &status.DegradedError{
+		return &status.ConfigurationError{
 			Message: fmt.Sprintf("Invalid tenants configuration: %s", err),
 			Reason:  v1alpha1.ReasonInvalidTenantsConfiguration,
-			Requeue: false,
 		}
 	}
 
@@ -101,10 +100,9 @@ func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, log logr.Logg
 		switch err {
 		case tlsprofile.ErrGetProfileFromCluster:
 		case tlsprofile.ErrGetInvalidProfile:
-			return &status.DegradedError{
+			return &status.ConfigurationError{
 				Message: err.Error(),
 				Reason:  v1alpha1.ReasonCouldNotGetOpenShiftTLSPolicy,
-				Requeue: false,
 			}
 		default:
 			return err
@@ -151,7 +149,7 @@ func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, log logr.Logg
 		return fmt.Errorf("error building manifests: %w", err)
 	}
 
-	errCount := 0
+	errs := []error{}
 	for _, obj := range managedObjects {
 		l := log.WithValues(
 			"object_name", obj.GetName(),
@@ -162,7 +160,7 @@ func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, log logr.Logg
 			obj.SetNamespace(req.Namespace)
 			if err := ctrl.SetControllerReference(&tempo, obj, r.Scheme); err != nil {
 				l.Error(err, "failed to set controller owner reference to resource")
-				errCount++
+				errs = append(errs, err)
 				continue
 			}
 		}
@@ -173,7 +171,7 @@ func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, log logr.Logg
 		op, err := ctrl.CreateOrUpdate(ctx, r.Client, obj, mutateFn)
 		if err != nil {
 			l.Error(err, "failed to configure resource")
-			errCount++
+			errs = append(errs, err)
 			continue
 		}
 
@@ -183,12 +181,12 @@ func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, log logr.Logg
 		delete(pruneObjects, obj.GetUID())
 	}
 
-	if errCount > 0 {
-		return fmt.Errorf("failed to create objects for TempoStack %s", req.NamespacedName)
+	if len(errs) > 0 {
+		return fmt.Errorf("failed to create objects for TempoStack %s: %w", req.NamespacedName, errors.Join(errs...))
 	}
 
 	// Prune owned objects in the cluster which are not managed anymore.
-	pruneErrCount := 0
+	pruneErrs := []error{}
 	for _, obj := range pruneObjects {
 		l := log.WithValues(
 			"object_name", obj.GetName(),
@@ -199,11 +197,11 @@ func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, log logr.Logg
 		err = r.Delete(ctx, obj)
 		if err != nil {
 			l.Error(err, "failed to delete resource")
-			pruneErrCount++
+			pruneErrs = append(pruneErrs, err)
 		}
 	}
-	if pruneErrCount > 0 {
-		return fmt.Errorf("failed to prune objects of TempoStack %s", req.NamespacedName)
+	if len(pruneErrs) > 0 {
+		return fmt.Errorf("failed to prune objects of TempoStack %s: %w", req.NamespacedName, errors.Join(pruneErrs...))
 	}
 
 	return nil
