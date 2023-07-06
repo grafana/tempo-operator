@@ -43,10 +43,9 @@ func TestGetTenantSecrets(t *testing.T) {
 					},
 				},
 			},
-			expectedErr: &status.DegradedError{
+			expectedErr: &status.ConfigurationError{
 				Message: fmt.Sprintf("Missing secrets for tenant %s", "ups"),
 				Reason:  v1alpha1.ReasonMissingGatewayTenantSecret,
-				Requeue: true,
 			},
 		},
 		{
@@ -68,10 +67,9 @@ func TestGetTenantSecrets(t *testing.T) {
 					},
 				},
 			},
-			expectedErr: &status.DegradedError{
+			expectedErr: &status.ConfigurationError{
 				Message: fmt.Sprintf("Missing secrets for tenant %s", "ups"),
 				Reason:  v1alpha1.ReasonMissingGatewayTenantSecret,
-				Requeue: true,
 			},
 		},
 		{

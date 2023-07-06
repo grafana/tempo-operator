@@ -33,8 +33,7 @@ func TestRefreshPatchError(t *testing.T) {
 		},
 	}
 	s := &v1alpha1.TempoStackStatus{}
-	requeue, err := Refresh(context.Background(), c, stack, s)
-	assert.True(t, requeue)
+	err := Refresh(context.Background(), c, stack, s)
 	assert.Error(t, err)
 }
 
@@ -57,7 +56,7 @@ func TestRefreshNoError(t *testing.T) {
 	s := v1alpha1.TempoStackStatus{
 		OperatorVersion: "0.1.0",
 		TempoVersion:    "2.0",
-		Conditions:      ReadyCondition(c, stack),
+		Conditions:      ReadyCondition(stack),
 	}
 
 	c.PatchStatusStub = func(ctx context.Context, changed, original *v1alpha1.TempoStack) error {
@@ -66,7 +65,6 @@ func TestRefreshNoError(t *testing.T) {
 		return nil
 	}
 
-	requeue, err := Refresh(context.Background(), c, stack, &s)
-	assert.False(t, requeue)
+	err := Refresh(context.Background(), c, stack, &s)
 	assert.NoError(t, err)
 }

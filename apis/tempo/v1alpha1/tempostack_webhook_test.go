@@ -32,7 +32,6 @@ func TestDefault(t *testing.T) {
 			Distribution: "upstream",
 		},
 	}
-	defaultMaxSearch := 0
 	defaultDefaultResultLimit := 20
 
 	tests := []struct {
@@ -64,7 +63,7 @@ func TestDefault(t *testing.T) {
 					LimitSpec: LimitSpec{
 						Global: RateLimitSpec{
 							Query: QueryLimit{
-								MaxSearchBytesPerTrace: &defaultMaxSearch,
+								MaxSearchDuration: metav1.Duration{Duration: 1 * time.Hour},
 							},
 						},
 					},
@@ -96,7 +95,7 @@ func TestDefault(t *testing.T) {
 					LimitSpec: LimitSpec{
 						Global: RateLimitSpec{
 							Query: QueryLimit{
-								MaxSearchBytesPerTrace: &defaultMaxSearch,
+								MaxSearchDuration: metav1.Duration{Duration: 1 * time.Hour},
 							},
 						},
 					},
@@ -148,7 +147,7 @@ func TestDefault(t *testing.T) {
 					LimitSpec: LimitSpec{
 						Global: RateLimitSpec{
 							Query: QueryLimit{
-								MaxSearchBytesPerTrace: &defaultMaxSearch,
+								MaxSearchDuration: metav1.Duration{Duration: 0},
 							},
 						},
 					},
@@ -209,13 +208,6 @@ func TestDefault(t *testing.T) {
 						},
 					},
 					StorageSize: resource.MustParse("10Gi"),
-					LimitSpec: LimitSpec{
-						Global: RateLimitSpec{
-							Query: QueryLimit{
-								MaxSearchBytesPerTrace: &defaultMaxSearch,
-							},
-						},
-					},
 					SearchSpec: SearchSpec{
 						MaxDuration:        metav1.Duration{Duration: 0},
 						DefaultResultLimit: &defaultDefaultResultLimit,
@@ -1220,7 +1212,7 @@ func TestValidateName(t *testing.T) {
 	tt := []struct {
 		name     string
 		input    TempoStack
-		expected error
+		expected field.ErrorList
 	}{
 		{
 			name: "all good",
@@ -1239,20 +1231,107 @@ func TestValidateName(t *testing.T) {
 					Namespace: "abc",
 				},
 			},
-			expected: apierrors.NewInvalid((&TempoStack{}).GroupVersionKind().GroupKind(),
-				longName, field.ErrorList{
-					field.Invalid(
-						field.NewPath("metadata").Child("name"),
-						longName,
-						fmt.Sprintf("must be no more than %d characters", maxLabelLength),
-					)}),
+			expected: field.ErrorList{
+				field.Invalid(
+					field.NewPath("metadata").Child("name"),
+					longName,
+					fmt.Sprintf("must be no more than %d characters", maxLabelLength),
+				)},
 		},
 	}
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			v := &validator{ctrlConfig: v1alpha1.ProjectConfig{}, client: &k8sFake{}}
-			v.validateStackName(tc.input)
+			assert.Equal(t, tc.expected, v.validateStackName(tc.input))
+		})
+	}
+}
+
+func TestValidateDeprecatedFields(t *testing.T) {
+	zero := 0
+	one := 1
+
+	tt := []struct {
+		name     string
+		input    TempoStack
+		expected field.ErrorList
+	}{
+		{
+			name:  "no deprecated fields",
+			input: TempoStack{},
+		},
+		{
+			name: "deprecated global maxSearchBytesPerTrace set to 0",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					LimitSpec: LimitSpec{
+						Global: RateLimitSpec{
+							Query: QueryLimit{
+								MaxSearchBytesPerTrace: &zero,
+							},
+						},
+					},
+				},
+			},
+			expected: field.ErrorList{
+				field.Invalid(
+					field.NewPath("spec", "limits", "global", "query", "maxSearchBytesPerTrace"),
+					&zero,
+					"this field is deprecated and must be unset",
+				),
+			},
+		},
+		{
+			name: "deprecated global maxSearchBytesPerTrace set to 1",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					LimitSpec: LimitSpec{
+						Global: RateLimitSpec{
+							Query: QueryLimit{
+								MaxSearchBytesPerTrace: &one,
+							},
+						},
+					},
+				},
+			},
+			expected: field.ErrorList{
+				field.Invalid(
+					field.NewPath("spec", "limits", "global", "query", "maxSearchBytesPerTrace"),
+					&one,
+					"this field is deprecated and must be unset",
+				),
+			},
+		},
+		{
+			name: "deprecated per-tenant maxSearchBytesPerTrace set to 0",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					LimitSpec: LimitSpec{
+						PerTenant: map[string]RateLimitSpec{
+							"tenant1": {
+								Query: QueryLimit{
+									MaxSearchBytesPerTrace: &zero,
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: field.ErrorList{
+				field.Invalid(
+					field.NewPath("spec.limits.perTenant[tenant1].query.maxSearchBytesPerTrace"),
+					&zero,
+					"this field is deprecated and must be unset",
+				),
+			},
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			v := &validator{ctrlConfig: v1alpha1.ProjectConfig{}}
+			assert.Equal(t, tc.expected, v.validateDeprecatedFields(tc.input))
 		})
 	}
 }

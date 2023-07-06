@@ -690,11 +690,11 @@ query_frontend:
       `,
 		},
 		{
-			name: "only MaxSearchBytesPerTrace",
+			name: "only MaxSearchDuration",
 			spec: v1alpha1.LimitSpec{
 				Global: v1alpha1.RateLimitSpec{
 					Query: v1alpha1.QueryLimit{
-						MaxSearchBytesPerTrace: intToPointer(1000),
+						MaxSearchDuration: metav1.Duration{Duration: 24 * time.Hour},
 					},
 				},
 			},
@@ -742,7 +742,7 @@ memberlist:
     - tempo-test-gossip-ring
 multitenancy_enabled: false
 overrides:
-  max_search_bytes_per_trace: 1000
+  max_search_duration: 24h0m0s
 querier:
   max_concurrent_queries: 20
   search:
@@ -793,8 +793,8 @@ query_frontend:
 						MaxBytesPerTrace:        intToPointer(400),
 					},
 					Query: v1alpha1.QueryLimit{
-						MaxBytesPerTagValues:   intToPointer(500),
-						MaxSearchBytesPerTrace: intToPointer(1000),
+						MaxBytesPerTagValues: intToPointer(500),
+						MaxSearchDuration:    metav1.Duration{Duration: 24 * time.Hour},
 					},
 				},
 			},
@@ -847,7 +847,7 @@ overrides:
   max_traces_per_user: 300
   max_bytes_per_trace: 400
   max_bytes_per_tag_values_query: 500
-  max_search_bytes_per_trace: 1000
+  max_search_duration: 24h0m0s
 querier:
   max_concurrent_queries: 20
   search:
@@ -899,8 +899,8 @@ query_frontend:
 							MaxBytesPerTrace:        intToPointer(400),
 						},
 						Query: v1alpha1.QueryLimit{
-							MaxBytesPerTagValues:   intToPointer(500),
-							MaxSearchBytesPerTrace: intToPointer(1000),
+							MaxBytesPerTagValues: intToPointer(500),
+							MaxSearchDuration:    metav1.Duration{Duration: 24 * time.Hour},
 						},
 					},
 				},

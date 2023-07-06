@@ -455,6 +455,11 @@ PodStatusMap
 <td><p>ReasonFailedComponents when all/some Tempo components fail to roll out.</p>
 </td>
 
+</tr><tr><td><p>&#34;FailedReconciliation&#34;</p></td>
+
+<td><p>ReasonFailedReconciliation when the operator failed to reconcile.</p>
+</td>
+
 </tr><tr><td><p>&#34;InvalidStorageConfig&#34;</p></td>
 
 <td><p>ReasonInvalidStorageConfig defines that the object storage configuration is invalid (missing or incomplete storage secret).</p>
@@ -490,7 +495,7 @@ PodStatusMap
 
 <div>
 
-<p>ConditionStatus defines the status of a condition (e.g. ready or degraded).</p>
+<p>ConditionStatus defines the status of a condition (e.g. ready, failed, pending or configuration error).</p>
 
 </div>
 
@@ -508,9 +513,9 @@ PodStatusMap
 
 </thead>
 
-<tbody><tr><td><p>&#34;Degraded&#34;</p></td>
+<tbody><tr><td><p>&#34;ConfigurationError&#34;</p></td>
 
-<td><p>ConditionDegraded defines that one or more components are in a degraded state.</p>
+<td><p>ConditionConfigurationError defines that there is a configuration error.</p>
 </td>
 
 </tr><tr><td><p>&#34;Failed&#34;</p></td>
@@ -520,7 +525,7 @@ PodStatusMap
 
 </tr><tr><td><p>&#34;Pending&#34;</p></td>
 
-<td><p>ConditionPending defines that one or more components are in a degraded state.</p>
+<td><p>ConditionPending defines that one or more components are in a pending state.</p>
 </td>
 
 </tr><tr><td><p>&#34;Ready&#34;</p></td>
@@ -1910,9 +1915,37 @@ int
 
 <em>(Optional)</em>
 
-<p>MaxSearchBytesPerTrace defines the maximum size of search data for a single
+<p>DEPRECATED. MaxSearchBytesPerTrace defines the maximum size of search data for a single
 trace in bytes.
 default: <code>0</code> to disable.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>maxSearchDuration</code><br/>
+
+<em>
+
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration">
+
+Kubernetes meta/v1.Duration
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>MaxSearchDuration defines the maximum allowed time range for a search.
+If this value is not set, then spec.search.maxDuration is used.</p>
 
 </td>
 </tr>
