@@ -1,8 +1,0 @@
-apiVersion: batch/v1
-kind: Job
-metadata:
-  name: verify-traces-after-upgrade
-status:
-  conditions:
-    - status: "True"
-      type: Complete
