@@ -13,7 +13,7 @@ LD_FLAGS ?= "-X ${VERSION_PKG}.buildDate=${VERSION_DATE} \
 ARCH ?= $(shell go env GOARCH)
 
 # Image URL to use all building/pushing image targets
-IMG_PREFIX ?= ghcr.io/${USER}/tempo-operator
+IMG_PREFIX ?= ghcr.io/grafana/tempo-operator
 IMG_REPO ?= tempo-operator
 IMG ?= ${IMG_PREFIX}/${IMG_REPO}:v${OPERATOR_VERSION}
 BUNDLE_IMG ?= ${IMG_PREFIX}/${IMG_REPO}-bundle:v${OPERATOR_VERSION}
@@ -402,8 +402,11 @@ endef
 kuttl:
 	./hack/install/install-kuttl.sh
 
+.PHONY: generate-all
+generate-all: generate api-docs bundle ## Update all generated files
+
 .PHONY: ensure-generate-is-noop
-ensure-generate-is-noop: generate api-docs bundle
+ensure-generate-is-noop: generate-all ## Verify that all checked-in, generated code is up-to-date
 	@# on make bundle config/manager/kustomization.yaml includes changes, which should be ignored for the below check
 	@git restore config/manager/kustomization.yaml
 	@git diff -s --exit-code apis/tempo/v1alpha1/zz_generated.*.go || (echo "Build failed: a model has been changed but the generated resources aren't up to date. Run 'make generate' and update your PR." && exit 1)
@@ -413,6 +416,9 @@ ensure-generate-is-noop: generate api-docs bundle
 	@git diff -s --exit-code bundle/openshift/bundle.Dockerfile || (echo "Build failed: the OpenShift bundle.Dockerfile file has been changed. The file should be the same as generated one. Run 'make bundle' and update your PR." && git diff && exit 1)
 	@git diff -s --exit-code docs/operator/api.md || (echo "Build failed: the api.md file has been changed but the generated api.md file isn't up to date. Run 'make api-docs' and update your PR." && git diff && exit 1)
 	@git diff -s --exit-code docs/operator/feature-gates.md || (echo "Build failed: the feature-gates.md file has been changed but the generated feature-gates.md file isn't up to date. Run 'make api-docs' and update your PR." && git diff && exit 1)
+
+reset: ## Reset all generated files to repository defaults
+	unset IMG_PREFIX && unset OPERATOR_VERSION && $(MAKE) generate-all
 
 .PHONY: cert-manager
 cert-manager: cmctl
@@ -479,7 +485,7 @@ web-serve: web-pre ## Run local preview version of the tempo-operator.dev websit
 hugo:
 	test -s $(HUGO) || $(call go-get-tool,$(HUGO),--tags extended github.com/gohugoio/hugo,$(HUGO_VERSION))
 
-#### release
+##@ Release
 CHLOGGEN_VERSION=v0.3.0
 CHLOGGEN ?= $(LOCALBIN)/chloggen-$(CHLOGGEN_VERSION)
 FILENAME?=$(shell git branch --show-current)
@@ -493,21 +499,21 @@ chlog-new: chloggen
 	$(CHLOGGEN) new --filename $(FILENAME)
 
 .PHONY: chlog-validate
-chlog-validate: chloggen
+chlog-validate: chloggen ## Validate changelog
 	$(CHLOGGEN) validate
 
 .PHONY: chlog-preview
-chlog-preview: chloggen
+chlog-preview: chloggen ## Preview changelog
 	$(CHLOGGEN) update --dry --version $(OPERATOR_VERSION)
 	@./hack/list-components.sh
 
 .PHONY: chlog-update
-chlog-update: chloggen
+chlog-update: chloggen ## Update changelog
 	awk -i inplace '{print} /next version/{system("echo && ./hack/list-components.sh")}' CHANGELOG.md
 	$(CHLOGGEN) update --version $(OPERATOR_VERSION)
 
 .PHONY: release-artifacts
-release-artifacts: set-image-controller
+release-artifacts: set-image-controller ## Generate release artifacts
 	mkdir -p dist
 	$(KUSTOMIZE) build config/overlays/community -o dist/tempo-operator.yaml
 	$(KUSTOMIZE) build config/overlays/openshift -o dist/tempo-operator-openshift.yaml

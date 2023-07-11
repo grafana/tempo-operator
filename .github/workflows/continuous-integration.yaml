@@ -27,8 +27,6 @@ jobs:
 
       - name: "basic checks"
         run: make ci
-        env:
-          IMG_PREFIX: ghcr.io/grafana/tempo-operator  # the ensure-generate-is-noop Makefile target should still work in forked repositories
 
       - name: "upload coverage report"
         uses: codecov/codecov-action@v3
