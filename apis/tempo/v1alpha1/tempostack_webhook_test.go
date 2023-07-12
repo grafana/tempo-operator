@@ -1018,7 +1018,7 @@ func TestValidatorObservabilityTracingConfig(t *testing.T) {
 			},
 		},
 		{
-			name: "createServiceMonitors enabled and serviceMonitor feature gate set",
+			name: "createServiceMonitors enabled and prometheusOperator feature gate set",
 			input: TempoStack{
 				Spec: TempoStackSpec{
 					Observability: ObservabilitySpec{
@@ -1036,7 +1036,7 @@ func TestValidatorObservabilityTracingConfig(t *testing.T) {
 			expected: nil,
 		},
 		{
-			name: "createServiceMonitors enabled but serviceMonitor feature gate not set",
+			name: "createServiceMonitors enabled but prometheusOperator feature gate not set",
 			input: TempoStack{
 				Spec: TempoStackSpec{
 					Observability: ObservabilitySpec{
@@ -1055,7 +1055,7 @@ func TestValidatorObservabilityTracingConfig(t *testing.T) {
 			},
 		},
 		{
-			name: "enableAlerts enabled but enableAlerts feature gate not set",
+			name: "createPrometheusRules enabled but prometheusOperator feature gate not set",
 			input: TempoStack{
 				Spec: TempoStackSpec{
 					Observability: ObservabilitySpec{
@@ -1074,7 +1074,26 @@ func TestValidatorObservabilityTracingConfig(t *testing.T) {
 			},
 		},
 		{
-			name: "enableAlerts enabled but enableAlerts feature gate set",
+			name: "createPrometheusRules and createServiceMonitors enabled and prometheusOperator feature gate set",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					Observability: ObservabilitySpec{
+						Metrics: MetricsConfigSpec{
+							CreateServiceMonitors: true,
+							CreatePrometheusRules: true,
+						},
+					},
+				},
+			},
+			ctrlConfig: v1alpha1.ProjectConfig{
+				Gates: v1alpha1.FeatureGates{
+					PrometheusOperator: true,
+				},
+			},
+			expected: nil,
+		},
+		{
+			name: "createPrometheusRules enabled but createServiceMonitors not enabled",
 			input: TempoStack{
 				Spec: TempoStackSpec{
 					Observability: ObservabilitySpec{
@@ -1089,7 +1108,13 @@ func TestValidatorObservabilityTracingConfig(t *testing.T) {
 					PrometheusOperator: true,
 				},
 			},
-			expected: nil,
+			expected: field.ErrorList{
+				field.Invalid(
+					metricsBase.Child("createPrometheusRules"),
+					true,
+					"the Prometheus rules alert based on collected metrics, therefore the createServiceMonitors feature must be enabled when enabling the createPrometheusRules feature",
+				),
+			},
 		},
 		{
 			name: "sampling fraction not a float",
