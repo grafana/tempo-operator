@@ -7,16 +7,24 @@ spec:
     spec:
       containers:
       - name: verify-traces
-        image: registry.access.redhat.com/ubi9/ubi:9.1
+        image: registry.gitlab.com/gitlab-ci-utils/curl-jq
         command:
         - /bin/bash
         - -eux
         - -c
         args:
         - |
-          curl -s -S http://tempo-simplest-query-frontend:16686/api/services | tee /tmp/out.log
-          if ! grep -q telemetrygen /tmp/out.log; then
-            echo && echo "No traces found"
+          curl -sS -G http://tempo-simplest-query-frontend:3200/api/search --data-urlencode "q={}" | tee /tmp/tempo.out
+          num_traces=$(jq ".traces | length" /tmp/tempo.out)
+          if [[ "$num_traces" -ne 10 ]]; then
+            echo && echo "The Tempo API returned $num_traces instead of 10 traces."
+            exit 1
+          fi
+
+          curl -sS -G http://tempo-simplest-query-frontend:16686/api/traces --data-urlencode "service=telemetrygen" | tee /tmp/jaeger.out
+          num_traces=$(jq ".data | length" /tmp/jaeger.out)
+          if [[ "$num_traces" -ne 10 ]]; then
+            echo && echo "The Jaeger API returned $num_traces instead of 10 traces."
             exit 1
           fi
       restartPolicy: Never
