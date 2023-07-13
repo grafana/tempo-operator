@@ -1,23 +1,8 @@
-apiVersion: operators.coreos.com/v1alpha1
-kind: Subscription
+apiVersion: batch/v1
+kind: Job
 metadata:
-  name: tempo
-  namespace: kuttl-operator-upgrade
+  name: verify-traces
 status:
-  state: AtLatestKnown
-  installedCSV: tempo-operator.v100.0.0
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: tempo-operator-controller
-  namespace: kuttl-operator-upgrade
-status:
-  readyReplicas: 1
----
-apiVersion: tempo.grafana.com/v1alpha1
-kind: TempoStack
-metadata:
-  name: simplest
-status:
-  operatorVersion: 100.0.0
+  conditions:
+    - status: "True"
+      type: Complete
