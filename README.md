@@ -26,7 +26,7 @@ This is a Kubernetes operator for [Grafana Tempo](https://github.com/grafana/tem
 2. Build and deploy operator:
 
 ```bash
-IMG_PREFIX=docker.io/${USER} OPERATOR_VERSION=$(date +%s) make generate bundle docker-build docker-push deploy
+IMG_PREFIX=docker.io/${USER} OPERATOR_VERSION=$(date +%s).0.0 make docker-build docker-push deploy
 ``` 
 
 3. Create a secret for minio in the namespace you are using:
