@@ -156,11 +156,16 @@ spec:
           - --web.listen=0.0.0.0:8080
           - --web.internal.listen=0.0.0.0:8081
           - --traces.write.endpoint=tempo-simplest-distributor.kuttl-multitenancy.svc.cluster.local:4317
-          - --traces.read.endpoint=http://tempo-simplest-query-frontend.kuttl-multitenancy.svc.cluster.local:16686
+          - --traces.read.endpoint=https://tempo-simplest-query-frontend.kuttl-multitenancy.svc.cluster.local:16686
           - --grpc.listen=0.0.0.0:8090
           - --rbac.config=/etc/tempo-gateway/cm/rbac.yaml
           - --tenants.config=/etc/tempo-gateway/secret/tenants.yaml
           - --log.level=info
+          - --tls.internal.server.key-file=/var/run/tls/server/tls.key
+          - --tls.internal.server.cert-file=/var/run/tls/server/tls.crt
+          - --traces.tls.key-file=/var/run/tls/server/tls.key
+          - --traces.tls.cert-file=/var/run/tls/server/tls.crt
+          - --traces.tls.ca-file=/var/run/ca/service-ca.crt
           - --tls.server.cert-file=/etc/tempo-gateway/serving-certs/tls.crt
           - --tls.server.key-file=/etc/tempo-gateway/serving-certs/tls.key
           - --tls.healthchecks.server-ca-file=/etc/tempo-gateway/cabundle/service-ca.crt
@@ -185,6 +190,10 @@ spec:
               name: tenant
               readOnly: true
               subPath: tenants.yaml
+            - mountPath: /var/run/ca
+              name: tempo-simplest-ca-bundle
+            - mountPath: /var/run/tls/server
+              name: tempo-simplest-gateway-mtls
             - mountPath: /etc/tempo-gateway/serving-certs
               name: serving-certs
               readOnly: true
@@ -217,6 +226,14 @@ spec:
               - key: tenants.yaml
                 path: tenants.yaml
             secretName: tempo-simplest-gateway
+        - configMap:
+            defaultMode: 420
+            name: tempo-simplest-ca-bundle
+          name: tempo-simplest-ca-bundle
+        - name: tempo-simplest-gateway-mtls
+          secret:
+            defaultMode: 420
+            secretName: tempo-simplest-gateway-mtls
         - name: serving-certs
           secret:
             defaultMode: 420
