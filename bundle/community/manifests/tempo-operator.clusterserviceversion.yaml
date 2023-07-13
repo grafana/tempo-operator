@@ -30,7 +30,7 @@ metadata:
           }
         }
       ]
-    capabilities: Basic Install
+    capabilities: Deep Insights
     categories: Logging & Tracing
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator
     createdAt: "2023-07-07T05:20:41Z"
