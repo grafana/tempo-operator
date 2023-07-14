@@ -295,6 +295,13 @@ func (v *validator) validateObservability(tempo TempoStack) field.ErrorList {
 			)}
 	}
 
+	if tempo.Spec.Observability.Metrics.CreatePrometheusRules && !tempo.Spec.Observability.Metrics.CreateServiceMonitors {
+		return field.ErrorList{
+			field.Invalid(metricsBase.Child("createPrometheusRules"), tempo.Spec.Observability.Metrics.CreatePrometheusRules,
+				"the Prometheus rules alert based on collected metrics, therefore the createServiceMonitors feature must be enabled when enabling the createPrometheusRules feature",
+			)}
+	}
+
 	tracingBase := observabilityBase.Child("tracing")
 	if tempo.Spec.Observability.Tracing.SamplingFraction == "" {
 		return nil

@@ -38,6 +38,10 @@ The project currently uses the [Grafana Slack](https://grafana.slack.com):
 This is a rough outline of what a contributor's workflow looks like:
 
 - Create a topic branch from where you want to base your work (usually `main`).
+- Update the code and test the changes on your local cluster:
+```
+IMG_PREFIX=docker.io/${USER} OPERATOR_VERSION=$(date +%s).0.0 make docker-build docker-push deploy reset
+```
 - Make commits of logical units.
 - Push your changes to a topic branch in your fork of the repository.
 - Make sure the tests pass, and add any new tests as appropriate.
