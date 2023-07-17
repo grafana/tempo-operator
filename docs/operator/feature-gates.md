@@ -401,6 +401,31 @@ This CRD is part of prometheus-operator.</p>
 </td>
 </tr>
 
+<tr>
+
+<td>
+
+<code>observability</code><br/>
+
+<em>
+
+<a href="#config-tempo-grafana-com-v1alpha1-ObservabilityFeatureGates">
+
+ObservabilityFeatureGates
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<p>Observability configures operator observability features.</p>
+
+</td>
+</tr>
+
 </tbody>
 </table>
 
@@ -523,6 +548,139 @@ string
 <em>(Optional)</em>
 
 <p>TempoGatewayOpa defines the OPA sidecar container for TempoGateway.</p>
+
+</td>
+</tr>
+
+</tbody>
+</table>
+
+
+## MetricsFeatureGates { #config-tempo-grafana-com-v1alpha1-MetricsFeatureGates }
+
+<p>
+
+(<em>Appears on:</em><a href="#config-tempo-grafana-com-v1alpha1-ObservabilityFeatureGates">ObservabilityFeatureGates</a>)
+
+</p>
+
+<div>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Field</th>
+
+<th>Description</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td>
+
+<code>createServiceMonitors</code><br/>
+
+<em>
+
+bool
+
+</em>
+
+</td>
+
+<td>
+
+<p>CreateServiceMonitors defines whether the operator should install ServiceMonitors
+to scrape metrics of the operator itself.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>createPrometheusRules</code><br/>
+
+<em>
+
+bool
+
+</em>
+
+</td>
+
+<td>
+
+<p>CreatePrometheusRules defines whether the operator should install PrometheusRules
+to receive alerts about the operator.</p>
+
+</td>
+</tr>
+
+</tbody>
+</table>
+
+
+## ObservabilityFeatureGates { #config-tempo-grafana-com-v1alpha1-ObservabilityFeatureGates }
+
+<p>
+
+(<em>Appears on:</em><a href="#config-tempo-grafana-com-v1alpha1-FeatureGates">FeatureGates</a>)
+
+</p>
+
+<div>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Field</th>
+
+<th>Description</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td>
+
+<code>metrics</code><br/>
+
+<em>
+
+<a href="#config-tempo-grafana-com-v1alpha1-MetricsFeatureGates">
+
+MetricsFeatureGates
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<p>Metrics defines configures metrics of the operator itself.</p>
 
 </td>
 </tr>
