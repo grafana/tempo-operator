@@ -111,7 +111,7 @@ groups:
       message: "Ingesters in {{ $labels.cluster }}/{{ $labels.namespace }} are receiving more data/second than desired, add more ingesters."
       runbook_url: "[[ .RunbookURL ]]#TempoProvisioningTooManyWrites"
     expr: |
-      avg by (cluster, namespace) (rate(tempo_ingester_bytes_received_total{cluster="[[ .Cluster ]]", namespace="[[ .Namespace ]]", ob=~".+/ingester"}[1m])) / 1024 / 1024 > 30
+      avg by (cluster, namespace) (rate(tempo_ingester_bytes_received_total{cluster="[[ .Cluster ]]", namespace="[[ .Namespace ]]", job=~".+/ingester"}[1m])) / 1024 / 1024 > 30
     for: "15m"
     labels:
       severity: "warning"
