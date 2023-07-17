@@ -366,8 +366,10 @@ func TestReconcileGenericError(t *testing.T) {
 		Client: k8sClient,
 		Scheme: testScheme,
 		FeatureGates: configv1alpha1.FeatureGates{
-			TLSProfile:         string(configv1alpha1.TLSProfileIntermediateType),
-			PrometheusOperator: true, // this will throw an error, as the CRD is not installed
+			TLSProfile: string(configv1alpha1.TLSProfileIntermediateType),
+			OpenShift: configv1alpha1.OpenShiftFeatureGates{
+				OpenShiftRoute: true, // this will throw an error, as the CRD is not installed
+			},
 		},
 	}
 	req := ctrl.Request{
@@ -386,7 +388,7 @@ func TestReconcileGenericError(t *testing.T) {
 		Reason:             string(v1alpha1.ReasonFailedReconciliation),
 		Message:            updatedTempo.Status.Conditions[0].Message,
 	}}, updatedTempo.Status.Conditions)
-	assert.Contains(t, updatedTempo.Status.Conditions[0].Message, "error listing service monitors: no kind is registered for the type v1.ServiceMonitorList")
+	assert.Contains(t, updatedTempo.Status.Conditions[0].Message, "error listing routes: no kind is registered for the type v1.RouteList")
 }
 
 func TestTLSEnable(t *testing.T) {
