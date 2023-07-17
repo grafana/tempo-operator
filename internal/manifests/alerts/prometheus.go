@@ -14,8 +14,8 @@ const (
 )
 
 // BuildPrometheusRule returns a list of k8s objects for Tempo PrometheusRule.
-func BuildPrometheusRule(stackName string) ([]client.Object, error) {
-	prometheusRule, err := newPrometheusRule(stackName)
+func BuildPrometheusRule(stackName, namespace string) ([]client.Object, error) {
+	prometheusRule, err := newPrometheusRule(stackName, namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -25,9 +25,11 @@ func BuildPrometheusRule(stackName string) ([]client.Object, error) {
 	}, nil
 }
 
-func newPrometheusRule(stackName string) (*monitoringv1.PrometheusRule, error) {
+func newPrometheusRule(stackName, namespace string) (*monitoringv1.PrometheusRule, error) {
 	alertOpts := Options{
 		RunbookURL: RunbookDefaultURL,
+		Cluster:    stackName,
+		Namespace:  namespace,
 	}
 
 	spec, err := build(alertOpts)
