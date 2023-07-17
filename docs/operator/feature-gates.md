@@ -421,7 +421,7 @@ ObservabilityFeatureGates
 
 <td>
 
-<p>Observability configures operator observability features.</p>
+<p>Observability configures observability features of the operator.</p>
 
 </td>
 </tr>
@@ -566,6 +566,8 @@ string
 
 <div>
 
+<p>MetricsFeatureGates configures metrics and alerts of the operator.</p>
+
 </div>
 
 <table>
@@ -601,7 +603,7 @@ bool
 <td>
 
 <p>CreateServiceMonitors defines whether the operator should install ServiceMonitors
-to scrape metrics of the operator itself.</p>
+to scrape metrics of the operator.</p>
 
 </td>
 </tr>
@@ -642,6 +644,8 @@ to receive alerts about the operator.</p>
 
 <div>
 
+<p>ObservabilityFeatureGates configures observability of the operator.</p>
+
 </div>
 
 <table>
@@ -680,7 +684,7 @@ MetricsFeatureGates
 
 <td>
 
-<p>Metrics defines configures metrics of the operator itself.</p>
+<p>Metrics configures metrics of the operator.</p>
 
 </td>
 </tr>
