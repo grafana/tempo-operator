@@ -7,6 +7,9 @@ COPY . /tmp/tempo-operator
 
 WORKDIR /tmp
 
+# Install dependencies required by test cases and debugging
+RUN apt-get update && apt-get install -y jq vim libreadline-dev
+
 # Install kuttl
 RUN curl -L -o kuttl https://github.com/kudobuilder/kuttl/releases/download/v0.15.0/kubectl-kuttl_0.15.0_linux_x86_64 \
     && chmod +x kuttl \
