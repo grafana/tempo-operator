@@ -1,16 +1,16 @@
 ---
 groups:
-- name: "tempo_rules"
+- name: "tempo_rules_[[ .Cluster ]]_[[ .Namespace ]]"
   rules:
   - expr: "histogram_quantile(0.99, sum(rate(tempo_request_duration_seconds_bucket{cluster=\"[[ .Cluster ]]\", namespace=\"[[ .Namespace ]]\"}[1m])) by (le, cluster, namespace, job, route))"
-    record: "[[ .Cluster ]]_[[ .Namespace ]]:cluster_namespace_job_route:tempo_request_duration_seconds:99quantile"
+    record: "cluster_namespace_job_route:tempo_request_duration_seconds:99quantile"
   - expr: "histogram_quantile(0.50, sum(rate(tempo_request_duration_seconds_bucket{cluster=\"[[ .Cluster ]]\", namespace=\"[[ .Namespace ]]\"}[1m])) by (le, cluster, namespace, job, route))"
-    record: "[[ .Cluster ]]_[[ .Namespace ]]:cluster_namespace_job_route:tempo_request_duration_seconds:50quantile"
+    record: "cluster_namespace_job_route:tempo_request_duration_seconds:50quantile"
   - expr: "sum(rate(tempo_request_duration_seconds_sum{cluster=\"[[ .Cluster ]]\", namespace=\"[[ .Namespace ]]\"}[1m])) by (cluster, namespace, job, route) / sum(rate(tempo_request_duration_seconds_count[1m])) by (cluster, namespace, job, route)"
-    record: "[[ .Cluster ]]_[[ .Namespace ]]:cluster_namespace_job_route:tempo_request_duration_seconds:avg"
+    record: "cluster_namespace_job_route:tempo_request_duration_seconds:avg"
   - expr: "sum(rate(tempo_request_duration_seconds_bucket{cluster=\"[[ .Cluster ]]\", namespace=\"[[ .Namespace ]]\"}[1m])) by (le, cluster, namespace, job, route)"
-    record: "[[ .Cluster ]]_[[ .Namespace ]]:cluster_namespace_job_route:tempo_request_duration_seconds_bucket:sum_rate"
+    record: "cluster_namespace_job_route:tempo_request_duration_seconds_bucket:sum_rate"
   - expr: "sum(rate(tempo_request_duration_seconds_sum{cluster=\"[[ .Cluster ]]\", namespace=\"[[ .Namespace ]]\"}[1m])) by (cluster, namespace, job, route)"
-    record: "[[ .Cluster ]]_[[ .Namespace ]]:cluster_namespace_job_route:tempo_request_duration_seconds_sum:sum_rate"
+    record: "cluster_namespace_job_route:tempo_request_duration_seconds_sum:sum_rate"
   - expr: "sum(rate(tempo_request_duration_seconds_count{cluster=\"[[ .Cluster ]]\", namespace=\"[[ .Namespace ]]\"}[1m])) by (cluster, namespace, job, route)"
-    record: "[[ .Cluster ]]_[[ .Namespace ]]:cluster_namespace_job_route:tempo_request_duration_seconds_count:sum_rate"
+    record: "cluster_namespace_job_route:tempo_request_duration_seconds_count:sum_rate"

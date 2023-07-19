@@ -1,6 +1,6 @@
 ---
 groups:
-- name: "tempo_alerts"
+- name: "tempo_alerts_[[ .Cluster ]]_[[ .Namespace ]]"
   rules:
   - alert: "TempoRequestLatency"
     annotations:
@@ -8,7 +8,7 @@ groups:
         {{ $labels.job }} {{ $labels.route }} is experiencing {{ printf "%.2f" $value }}s 99th percentile latency.
       runbook_url: "[[ .RunbookURL ]]#TempoRequestLatency"
     expr: |
-      [[ .Cluster ]]_[[ .Namespace ]]:cluster_namespace_job_route:tempo_request_duration_seconds:99quantile{route!~"metrics|/frontend.Frontend/Process|debug_pprof"} > 3
+      cluster_namespace_job_route:tempo_request_duration_seconds:99quantile{cluster="[[ .Cluster ]]", namespace="[[ .Namespace ]]", route!~"metrics|/frontend.Frontend/Process|debug_pprof"} > 3
     for: "15m"
     labels:
       severity: "critical"
