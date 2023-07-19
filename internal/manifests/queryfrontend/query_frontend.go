@@ -21,8 +21,10 @@ import (
 const (
 	grpclbPortName        = "grpclb"
 	jaegerMetricsPortName = "jaeger-metrics"
+	jaegerGRPCQuery = "jaeger-gprc"
 	jaegerUIPortName      = "jaeger-ui"
 	portGRPCLBServer      = 9096
+	portJaegerGRPCQuery		  = 16685
 	portJaegerUI          = 16686
 	portJaegerMetrics     = 16687
 )
@@ -179,6 +181,11 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 			},
 			Ports: []corev1.ContainerPort{
 				{
+					Name:          jaegerGRPCQuery,
+					ContainerPort: portJaegerGRPCQuery,
+					Protocol:      corev1.ProtocolTCP,
+				},
+				{
 					Name:          jaegerUIPortName,
 					ContainerPort: portJaegerUI,
 					Protocol:      corev1.ProtocolTCP,
@@ -312,6 +319,11 @@ func services(tempo v1alpha1.TempoStack) []*corev1.Service {
 
 	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled {
 		jaegerPorts := []corev1.ServicePort{
+			{
+				Name:       jaegerGRPCQuery,
+				Port:       portJaegerGRPCQuery,
+				TargetPort: intstr.FromString(jaegerGRPCQuery),
+			},
 			{
 				Name:       jaegerUIPortName,
 				Port:       portJaegerUI,
