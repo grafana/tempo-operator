@@ -21,10 +21,10 @@ import (
 const (
 	grpclbPortName        = "grpclb"
 	jaegerMetricsPortName = "jaeger-metrics"
-	jaegerGRPCQuery = "jaeger-gprc"
+	jaegerGRPCQuery       = "jaeger-gprc"
 	jaegerUIPortName      = "jaeger-ui"
 	portGRPCLBServer      = 9096
-	portJaegerGRPCQuery		  = 16685
+	portJaegerGRPCQuery   = 16685
 	portJaegerUI          = 16686
 	portJaegerMetrics     = 16687
 )

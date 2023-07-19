@@ -4,10 +4,6 @@ metadata:
   name: sample
 spec:
   storageSize: 1Gi
-  storage:
-    secret:
-      name: object-storage
-      type: s3
   resources:
     total:
       limits:
