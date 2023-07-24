@@ -9,7 +9,7 @@ import (
 )
 
 func TestBuildPrometheusRule(t *testing.T) {
-	objects, err := BuildPrometheusRule("tempo-test")
+	objects, err := BuildPrometheusRule("tempo-test", "default")
 
 	require.NoError(t, err)
 	assert.Len(t, objects, 1)
