@@ -1,17 +1,4 @@
 
----
-title: "API"
-description: "Generated API docs for the Tempo Operator"
-lead: ""
-draft: false
-images: []
-menu:
-  docs:
-    parent: "operator"
-weight: 1000
-toc: true
----
-
 This Document contains the types introduced by the Tempo Operator to be consumed by users.
 
 > This page is automatically generated with `gen-crd-api-reference-docs`.
@@ -25,7 +12,6 @@ This Document contains the types introduced by the Tempo Operator to be consumed
 </div>
 
 <b>Resource Types:</b>
-
 
 ## AuthenticationSpec { #tempo-grafana-com-v1alpha1-AuthenticationSpec }
 
@@ -130,7 +116,6 @@ OIDCSpec
 </tbody>
 </table>
 
-
 ## AuthorizationSpec { #tempo-grafana-com-v1alpha1-AuthorizationSpec }
 
 <p>
@@ -218,7 +203,6 @@ configuration per tenant for tempo Gateway component.</p>
 
 </tbody>
 </table>
-
 
 ## ComponentStatus { #tempo-grafana-com-v1alpha1-ComponentStatus }
 
@@ -415,7 +399,6 @@ PodStatusMap
 </tbody>
 </table>
 
-
 ## ConditionReason { #tempo-grafana-com-v1alpha1-ConditionReason }
 
 (<code>string</code> alias)
@@ -488,7 +471,6 @@ PodStatusMap
 </tr></tbody>
 </table>
 
-
 ## ConditionStatus { #tempo-grafana-com-v1alpha1-ConditionStatus }
 
 (<code>string</code> alias)
@@ -535,7 +517,6 @@ PodStatusMap
 
 </tr></tbody>
 </table>
-
 
 ## Defaulter { #tempo-grafana-com-v1alpha1-Defaulter }
 
@@ -586,7 +567,6 @@ Feature Gates.ProjectConfig
 
 </tbody>
 </table>
-
 
 ## IngestionLimitSpec { #tempo-grafana-com-v1alpha1-IngestionLimitSpec }
 
@@ -712,7 +692,6 @@ int
 
 </tbody>
 </table>
-
 
 ## IngressSpec { #tempo-grafana-com-v1alpha1-IngressSpec }
 
@@ -873,7 +852,6 @@ RouteSpec
 </tbody>
 </table>
 
-
 ## IngressType { #tempo-grafana-com-v1alpha1-IngressType }
 
 (<code>string</code> alias)
@@ -921,7 +899,6 @@ RouteSpec
 
 </tr></tbody>
 </table>
-
 
 ## JaegerQuerySpec { #tempo-grafana-com-v1alpha1-JaegerQuerySpec }
 
@@ -1005,7 +982,6 @@ IngressSpec
 
 </tbody>
 </table>
-
 
 ## LimitSpec { #tempo-grafana-com-v1alpha1-LimitSpec }
 
@@ -1094,7 +1070,6 @@ RateLimitSpec
 </tbody>
 </table>
 
-
 ## ManagementStateType { #tempo-grafana-com-v1alpha1-ManagementStateType }
 
 (<code>string</code> alias)
@@ -1139,7 +1114,6 @@ reconciled by the operator.</p>
 
 </tr></tbody>
 </table>
-
 
 ## MetricsConfigSpec { #tempo-grafana-com-v1alpha1-MetricsConfigSpec }
 
@@ -1220,7 +1194,6 @@ bool
 </tbody>
 </table>
 
-
 ## ModeType { #tempo-grafana-com-v1alpha1-ModeType }
 
 (<code>string</code> alias)
@@ -1265,7 +1238,6 @@ using an in-process OpenPolicyAgent Rego authorizer.</p>
 
 </tr></tbody>
 </table>
-
 
 ## OIDCSpec { #tempo-grafana-com-v1alpha1-OIDCSpec }
 
@@ -1419,7 +1391,6 @@ string
 </tbody>
 </table>
 
-
 ## ObjectStorageSecretSpec { #tempo-grafana-com-v1alpha1-ObjectStorageSecretSpec }
 
 <p>
@@ -1499,7 +1470,6 @@ string
 </tbody>
 </table>
 
-
 ## ObjectStorageSecretType { #tempo-grafana-com-v1alpha1-ObjectStorageSecretType }
 
 (<code>string</code> alias)
@@ -1547,7 +1517,6 @@ string
 
 </tr></tbody>
 </table>
-
 
 ## ObjectStorageSpec { #tempo-grafana-com-v1alpha1-ObjectStorageSpec }
 
@@ -1636,7 +1605,6 @@ Name of a secret in the same namespace as the tempo TempoStack custom resource.<
 </tbody>
 </table>
 
-
 ## ObjectStorageTLSSpec { #tempo-grafana-com-v1alpha1-ObjectStorageTLSSpec }
 
 <p>
@@ -1693,7 +1661,6 @@ It needs to be in the same namespace as the Tempo custom resource.</p>
 
 </tbody>
 </table>
-
 
 ## ObservabilitySpec { #tempo-grafana-com-v1alpha1-ObservabilitySpec }
 
@@ -1782,7 +1749,6 @@ TracingConfigSpec
 </tbody>
 </table>
 
-
 ## PermissionType { #tempo-grafana-com-v1alpha1-PermissionType }
 
 (<code>string</code> alias)
@@ -1826,7 +1792,6 @@ TracingConfigSpec
 </tr></tbody>
 </table>
 
-
 ## PodStatusMap { #tempo-grafana-com-v1alpha1-PodStatusMap }
 
 (<code>map[k8s.io/api/core/v1.PodPhase][]string</code> alias)
@@ -1842,7 +1807,6 @@ TracingConfigSpec
 <p>PodStatusMap defines the type for mapping pod status to pod name.</p>
 
 </div>
-
 
 ## QueryLimit { #tempo-grafana-com-v1alpha1-QueryLimit }
 
@@ -1953,7 +1917,6 @@ If this value is not set, then spec.search.maxDuration is used.</p>
 </tbody>
 </table>
 
-
 ## RateLimitSpec { #tempo-grafana-com-v1alpha1-RateLimitSpec }
 
 <p>
@@ -2041,7 +2004,6 @@ QueryLimit
 </tbody>
 </table>
 
-
 ## Resources { #tempo-grafana-com-v1alpha1-Resources }
 
 <p>
@@ -2105,7 +2067,6 @@ See <a href="http://github.com/grafana/tempo/issues/1540">http://github.com/graf
 </tbody>
 </table>
 
-
 ## RetentionConfig { #tempo-grafana-com-v1alpha1-RetentionConfig }
 
 <p>
@@ -2167,7 +2128,6 @@ default: value is 48h.</p>
 
 </tbody>
 </table>
-
 
 ## RetentionSpec { #tempo-grafana-com-v1alpha1-RetentionSpec }
 
@@ -2255,7 +2215,6 @@ RetentionConfig
 
 </tbody>
 </table>
-
 
 ## RoleBindingsSpec { #tempo-grafana-com-v1alpha1-RoleBindingsSpec }
 
@@ -2350,7 +2309,6 @@ string
 
 </tbody>
 </table>
-
 
 ## RoleSpec { #tempo-grafana-com-v1alpha1-RoleSpec }
 
@@ -2465,7 +2423,6 @@ string
 </tbody>
 </table>
 
-
 ## RouteSpec { #tempo-grafana-com-v1alpha1-RouteSpec }
 
 <p>
@@ -2525,7 +2482,6 @@ TLSRouteTerminationType
 
 </tbody>
 </table>
-
 
 ## SearchSpec { #tempo-grafana-com-v1alpha1-SearchSpec }
 
@@ -2635,7 +2591,6 @@ The default value of 0 disables this limit.</p>
 </tbody>
 </table>
 
-
 ## Subject { #tempo-grafana-com-v1alpha1-Subject }
 
 <p>
@@ -2711,7 +2666,6 @@ SubjectKind
 </tbody>
 </table>
 
-
 ## SubjectKind { #tempo-grafana-com-v1alpha1-SubjectKind }
 
 (<code>string</code> alias)
@@ -2754,7 +2708,6 @@ SubjectKind
 
 </tr></tbody>
 </table>
-
 
 ## TLSRouteTerminationType { #tempo-grafana-com-v1alpha1-TLSRouteTerminationType }
 
@@ -2811,7 +2764,6 @@ and re-encrypt using a new certificate.</p>
 
 </tr></tbody>
 </table>
-
 
 ## TempoComponentSpec { #tempo-grafana-com-v1alpha1-TempoComponentSpec }
 
@@ -2918,7 +2870,6 @@ map[string]string
 
 </tbody>
 </table>
-
 
 ## TempoGatewaySpec { #tempo-grafana-com-v1alpha1-TempoGatewaySpec }
 
@@ -3029,7 +2980,6 @@ IngressSpec
 </tbody>
 </table>
 
-
 ## TempoQueryFrontendSpec { #tempo-grafana-com-v1alpha1-TempoQueryFrontendSpec }
 
 <p>
@@ -3119,7 +3069,6 @@ JaegerQuerySpec
 
 </tbody>
 </table>
-
 
 ## TempoStack { #tempo-grafana-com-v1alpha1-TempoStack }
 
@@ -3220,7 +3169,6 @@ TempoStackSpec
 
 </tbody>
 </table>
-
 
 ## TempoStackSpec { #tempo-grafana-com-v1alpha1-TempoStackSpec }
 
@@ -3618,7 +3566,6 @@ ObservabilitySpec
 </tbody>
 </table>
 
-
 ## TempoStackStatus { #tempo-grafana-com-v1alpha1-TempoStackStatus }
 
 <p>
@@ -3775,7 +3722,6 @@ per component.</p>
 
 </tbody>
 </table>
-
 
 ## TempoTemplateSpec { #tempo-grafana-com-v1alpha1-TempoTemplateSpec }
 
@@ -3973,7 +3919,6 @@ TempoGatewaySpec
 </tbody>
 </table>
 
-
 ## TenantSecretSpec { #tempo-grafana-com-v1alpha1-TenantSecretSpec }
 
 <p>
@@ -4030,7 +3975,6 @@ string
 
 </tbody>
 </table>
-
 
 ## TenantsSpec { #tempo-grafana-com-v1alpha1-TenantsSpec }
 
@@ -4145,7 +4089,6 @@ AuthorizationSpec
 </tbody>
 </table>
 
-
 ## TracingConfigSpec { #tempo-grafana-com-v1alpha1-TracingConfigSpec }
 
 <p>
@@ -4227,6 +4170,5 @@ string
 
 <hr/>
 
-
-
++newline
 
