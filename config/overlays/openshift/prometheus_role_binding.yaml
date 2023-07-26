@@ -1,4 +1,4 @@
-# Grant cluster-monitoring access to openshift-operators-redhat metrics
+# Give OpenShift in-cluster-monitoring permissions to list, watch and get services, endpoints and pods in the namespace of the operator
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:

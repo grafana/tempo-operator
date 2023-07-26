@@ -2,11 +2,13 @@ package start
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"runtime"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
+
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
 	"github.com/spf13/cobra"
@@ -14,6 +16,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
+	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
 	tempov1alpha1 "github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/cmd"
 	controllers "github.com/grafana/tempo-operator/controllers/tempo"
@@ -34,17 +37,7 @@ func start(c *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	// run the upgrade mechanism once the manager is ready
-	err = mgr.Add(manager.RunnableFunc(func(ctx context.Context) error {
-		upgrade := &upgrade.Upgrade{
-			Client:     mgr.GetClient(),
-			Recorder:   mgr.GetEventRecorderFor("tempo-upgrade"),
-			CtrlConfig: ctrlConfig,
-			Version:    version,
-			Log:        ctrl.Log.WithName("upgrade"),
-		}
-		return upgrade.TempoStacks(ctx)
-	}))
+	err = addDependencies(mgr, ctrlConfig, version)
 	if err != nil {
 		setupLog.Error(err, "failed to upgrade TempoStack instances")
 		os.Exit(1)
@@ -68,7 +61,6 @@ func start(c *cobra.Command, args []string) {
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "TempoStack")
 		os.Exit(1)
-
 	}
 
 	enableWebhooks := os.Getenv("ENABLE_WEBHOOKS") != "false"
@@ -111,6 +103,34 @@ func start(c *cobra.Command, args []string) {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
 	}
+}
+
+func addDependencies(mgr ctrl.Manager, ctrlConfig configv1alpha1.ProjectConfig, version version.Version) error {
+	err := mgr.Add(manager.RunnableFunc(func(ctx context.Context) error {
+		upgrade := &upgrade.Upgrade{
+			Client:     mgr.GetClient(),
+			Recorder:   mgr.GetEventRecorderFor("tempo-upgrade"),
+			CtrlConfig: ctrlConfig,
+			Version:    version,
+			Log:        ctrl.LoggerFrom(ctx).WithName("upgrade"),
+		}
+		return upgrade.TempoStacks(ctx)
+	}))
+	if err != nil {
+		return fmt.Errorf("failed to setup upgrade process: %w", err)
+	}
+
+	err = mgr.Add(manager.RunnableFunc(func(ctx context.Context) error {
+		reconciler := &controllers.OperatorReconciler{
+			Client: mgr.GetClient(),
+		}
+		return reconciler.Reconcile(ctx, ctrlConfig)
+	}))
+	if err != nil {
+		return fmt.Errorf("failed to setup operator reconciler: %w", err)
+	}
+
+	return nil
 }
 
 // NewStartCommand returns a new start command.

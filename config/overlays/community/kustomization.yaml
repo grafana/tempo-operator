@@ -1,7 +1,5 @@
 resources:
 - ../../default
-# Uncomment the following to enable the ServiceMonitor of the operator
-#- ../../prometheus
 
 # Adds namespace to all resources.
 namespace: tempo-operator-system
