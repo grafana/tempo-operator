@@ -10,6 +10,7 @@ import (
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 )
 
+// ServiceMonitor creates a ServiceMonitor which scrapes the operator metrics.
 func ServiceMonitor(featureGates configv1alpha1.FeatureGates, namespace string) *monitoringv1.ServiceMonitor {
 	var tlsConfig *monitoringv1.TLSConfig
 

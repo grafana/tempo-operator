@@ -6,11 +6,12 @@ import (
 	"text/template"
 
 	"github.com/ViaQ/logerr/v2/kverrors"
-	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/yaml"
+
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 )
 
 var (
@@ -30,6 +31,7 @@ type Options struct {
 	RunbookURL string
 }
 
+// PrometheusRule creates a PrometheusRule containing alerts of the operator.
 func PrometheusRule(namespace string) (*monitoringv1.PrometheusRule, error) {
 	opts := Options{
 		RunbookURL: RunbookDefaultURL,

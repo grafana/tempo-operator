@@ -3,10 +3,11 @@ package prometheus
 import (
 	"testing"
 
-	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 )
 
 func TestPrometheusRule(t *testing.T) {
