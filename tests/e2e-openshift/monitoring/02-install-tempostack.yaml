@@ -1,0 +1,28 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoStack
+metadata:
+  name: tempostack
+  namespace: kuttl-monitoring
+spec:
+  observability:
+    metrics:
+      createPrometheusRules: true
+      createServiceMonitors: true
+  resources:
+    total:
+      limits:
+        cpu: 2000m
+        memory: 2Gi
+  template:
+    queryFrontend:
+      jaegerQuery:
+        enabled: true
+        ingress:
+          route:
+            termination: edge
+          type: route
+  storage:
+    secret:
+      type: s3
+      name: minio-secret
+  storageSize: 10Gi
