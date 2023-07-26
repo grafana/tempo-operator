@@ -1,4 +1,4 @@
-package operatormanifests
+package prometheus
 
 import (
 	"testing"
@@ -8,16 +8,17 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/grafana/tempo-operator/apis/config/v1alpha1"
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 )
 
 func TestServiceMonitorWithoutTLS(t *testing.T) {
-	servicemonitor := serviceMonitor(v1alpha1.FeatureGates{}, "tempo-operator-system")
+	servicemonitor := ServiceMonitor(v1alpha1.FeatureGates{}, "tempo-operator-system")
 
 	assert.Equal(t, &monitoringv1.ServiceMonitor{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "tempo-operator-controller-manager-metrics-monitor",
 			Namespace: "tempo-operator-system",
-			Labels:    CommonLabels(),
+			Labels:    manifestutils.CommonOperatorLabels(),
 		},
 		Spec: monitoringv1.ServiceMonitorSpec{
 			Endpoints: []monitoringv1.Endpoint{{
@@ -41,7 +42,7 @@ func TestServiceMonitorWithoutTLS(t *testing.T) {
 }
 
 func TestServiceMonitorWithTLS(t *testing.T) {
-	servicemonitor := serviceMonitor(
+	servicemonitor := ServiceMonitor(
 		v1alpha1.FeatureGates{
 			OpenShift: v1alpha1.OpenShiftFeatureGates{
 				ServingCertsService: true,
@@ -54,7 +55,7 @@ func TestServiceMonitorWithTLS(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "tempo-operator-controller-manager-metrics-monitor",
 			Namespace: "tempo-operator-system",
-			Labels:    CommonLabels(),
+			Labels:    manifestutils.CommonOperatorLabels(),
 		},
 		Spec: monitoringv1.ServiceMonitorSpec{
 			Endpoints: []monitoringv1.Endpoint{{

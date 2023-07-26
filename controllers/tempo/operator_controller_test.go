@@ -14,7 +14,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
-	"github.com/grafana/tempo-operator/internal/operatormanifests"
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 )
 
 func createOperatorDeployment(t *testing.T, nsn types.NamespacedName) {
@@ -74,7 +74,7 @@ func TestReconcileOperator(t *testing.T) {
 	// Check if objects of specific types were created and are managed by the operator
 	listOpts := []client.ListOption{
 		client.InNamespace(nsn.Namespace),
-		client.MatchingLabels(operatormanifests.CommonLabels()),
+		client.MatchingLabels(manifestutils.CommonOperatorLabels()),
 	}
 	{
 		list := &monitoringv1.ServiceMonitorList{}

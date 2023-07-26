@@ -1,4 +1,4 @@
-package operatormanifests
+package prometheus
 
 import (
 	"fmt"
@@ -7,9 +7,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 )
 
-func serviceMonitor(featureGates configv1alpha1.FeatureGates, namespace string) *monitoringv1.ServiceMonitor {
+func ServiceMonitor(featureGates configv1alpha1.FeatureGates, namespace string) *monitoringv1.ServiceMonitor {
 	var tlsConfig *monitoringv1.TLSConfig
 
 	if featureGates.OpenShift.ServingCertsService {
@@ -32,7 +33,7 @@ func serviceMonitor(featureGates configv1alpha1.FeatureGates, namespace string) 
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: namespace,
 			Name:      "tempo-operator-controller-manager-metrics-monitor",
-			Labels:    CommonLabels(),
+			Labels:    manifestutils.CommonOperatorLabels(),
 		},
 		Spec: monitoringv1.ServiceMonitorSpec{
 			Endpoints: []monitoringv1.Endpoint{{

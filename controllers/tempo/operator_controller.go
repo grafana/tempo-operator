@@ -13,7 +13,8 @@ import (
 
 	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/manifests"
-	"github.com/grafana/tempo-operator/internal/operatormanifests"
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
+	"github.com/grafana/tempo-operator/internal/manifests/operator"
 )
 
 // OperatorReconciler reconciles the operator configuration.
@@ -51,7 +52,7 @@ func (r *OperatorReconciler) Reconcile(ctx context.Context, ctrlConfig configv1a
 		return fmt.Errorf("failed to get operator deployment: %w", err)
 	}
 
-	managedObjects, err := operatormanifests.BuildAll(ctrlConfig.Gates, operatorDeployment.Namespace)
+	managedObjects, err := operator.BuildAll(ctrlConfig.Gates, operatorDeployment.Namespace)
 	if err != nil {
 		return fmt.Errorf("error building manifests: %w", err)
 	}
@@ -91,7 +92,7 @@ func (r *OperatorReconciler) Reconcile(ctx context.Context, ctrlConfig configv1a
 func (r *OperatorReconciler) pruneObjects(ctx context.Context, featureGates configv1alpha1.FeatureGates, namespace string) error {
 	listOps := &client.ListOptions{
 		Namespace:     namespace,
-		LabelSelector: labels.SelectorFromSet(operatormanifests.CommonLabels()),
+		LabelSelector: labels.SelectorFromSet(manifestutils.CommonOperatorLabels()),
 	}
 
 	if featureGates.PrometheusOperator {

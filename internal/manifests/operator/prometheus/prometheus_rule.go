@@ -1,4 +1,4 @@
-package operatormanifests
+package prometheus
 
 import (
 	"bytes"
@@ -6,6 +6,7 @@ import (
 	"text/template"
 
 	"github.com/ViaQ/logerr/v2/kverrors"
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -29,7 +30,7 @@ type Options struct {
 	RunbookURL string
 }
 
-func prometheusRule(namespace string) (*monitoringv1.PrometheusRule, error) {
+func PrometheusRule(namespace string) (*monitoringv1.PrometheusRule, error) {
 	opts := Options{
 		RunbookURL: RunbookDefaultURL,
 	}
@@ -50,7 +51,7 @@ func prometheusRule(namespace string) (*monitoringv1.PrometheusRule, error) {
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: namespace,
 			Name:      "tempo-operator-controller-manager-prometheus-rule",
-			Labels: labels.Merge(CommonLabels(), map[string]string{
+			Labels: labels.Merge(manifestutils.CommonOperatorLabels(), map[string]string{
 				"openshift.io/prometheus-rule-evaluation-scope": "leaf-prometheus",
 			}),
 		},

@@ -1,21 +1,22 @@
-package operatormanifests
+package prometheus
 
 import (
 	"testing"
 
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 )
 
 func TestPrometheusRule(t *testing.T) {
-	prometheusrule, err := prometheusRule("tempo-operator-system")
+	prometheusrule, err := PrometheusRule("tempo-operator-system")
 	assert.NoError(t, err)
 
 	assert.Equal(t, metav1.ObjectMeta{
 		Name:      "tempo-operator-controller-manager-prometheus-rule",
 		Namespace: "tempo-operator-system",
-		Labels: labels.Merge(CommonLabels(), map[string]string{
+		Labels: labels.Merge(manifestutils.CommonOperatorLabels(), map[string]string{
 			"openshift.io/prometheus-rule-evaluation-scope": "leaf-prometheus",
 		}),
 	}, prometheusrule.ObjectMeta)
