@@ -25,6 +25,11 @@ import (
 func getJaegerServicePorts() []corev1.ServicePort {
 	jaegerServicePorts := []corev1.ServicePort{
 		{
+			Name:       jaegerGRPCQuery,
+			Port:       portJaegerGRPCQuery,
+			TargetPort: intstr.FromString(jaegerGRPCQuery),
+		},
+		{
 			Name:       jaegerUIPortName,
 			Port:       portJaegerUI,
 			TargetPort: intstr.FromString(jaegerUIPortName),
@@ -215,6 +220,11 @@ func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 				"--query.bearer-token-propagation=true",
 			},
 			Ports: []corev1.ContainerPort{
+				{
+					Name:          jaegerGRPCQuery,
+					ContainerPort: portJaegerGRPCQuery,
+					Protocol:      corev1.ProtocolTCP,
+				},
 				{
 					Name:          jaegerUIPortName,
 					ContainerPort: portJaegerUI,

@@ -1,0 +1,540 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-tempostack-compactor
+  namespace: kuttl-monitoring
+status:
+  availableReplicas: 1
+  readyReplicas: 1
+  replicas: 1
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-tempostack-distributor
+  namespace: kuttl-monitoring
+status:
+  availableReplicas: 1
+  readyReplicas: 1
+  replicas: 1
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-tempostack-querier
+  namespace: kuttl-monitoring
+status:
+  availableReplicas: 1
+  readyReplicas: 1
+  replicas: 1
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-tempostack-query-frontend
+  namespace: kuttl-monitoring
+status:
+  availableReplicas: 1
+  readyReplicas: 1
+  replicas: 1
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: tempo-tempostack-ingester
+  namespace: kuttl-monitoring
+status:
+  availableReplicas: 1
+  currentReplicas: 1
+  readyReplicas: 1
+  replicas: 1
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: query-frontend
+    app.kubernetes.io/instance: tempostack
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-tempostack-query-frontend
+  namespace: kuttl-monitoring
+spec:
+  internalTrafficPolicy: Cluster
+  ports:
+  - name: http
+    port: 3200
+    protocol: TCP
+    targetPort: http
+  - name: grpc
+    port: 9095
+    protocol: TCP
+    targetPort: grpc
+  - name: jaeger-ui
+    port: 16686
+    protocol: TCP
+    targetPort: jaeger-ui
+  - name: jaeger-metrics
+    port: 16687
+    protocol: TCP
+    targetPort: jaeger-metrics
+  selector:
+    app.kubernetes.io/component: query-frontend
+    app.kubernetes.io/instance: tempostack
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  sessionAffinity: None
+  type: ClusterIP
+
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  labels:
+    app.kubernetes.io/component: query-frontend
+    app.kubernetes.io/instance: tempostack
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-tempostack-query-frontend
+  namespace: kuttl-monitoring
+spec:
+  port:
+    targetPort: jaeger-ui
+  tls:
+    termination: edge
+  to:
+    kind: Service
+    name: tempo-tempostack-query-frontend
+    weight: 100
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app.kubernetes.io/instance: tempostack
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-tempostack-compactor
+  namespace: kuttl-monitoring
+spec:
+  endpoints:
+  - bearerTokenSecret:
+      key: ""
+    path: /metrics
+    port: http
+    relabelings:
+    - action: replace
+      sourceLabels:
+      - __meta_kubernetes_service_label_app_kubernetes_io_instance
+      targetLabel: cluster
+    - action: replace
+      separator: /
+      sourceLabels:
+      - __meta_kubernetes_namespace
+      - __meta_kubernetes_service_label_app_kubernetes_io_component
+      targetLabel: job
+    scheme: https
+    tlsConfig:
+      ca:
+        configMap:
+          key: service-ca.crt
+          name: tempo-tempostack-ca-bundle
+      cert:
+        secret:
+          key: tls.crt
+          name: tempo-tempostack-compactor-mtls
+      keySecret:
+        key: tls.key
+        name: tempo-tempostack-compactor-mtls
+      serverName: tempo-tempostack-compactor.kuttl-monitoring.svc.cluster.local
+  namespaceSelector:
+    matchNames:
+    - kuttl-monitoring
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: compactor
+      app.kubernetes.io/instance: tempostack
+      app.kubernetes.io/managed-by: tempo-operator
+      app.kubernetes.io/name: tempo
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app.kubernetes.io/instance: tempostack
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-tempostack-distributor
+  namespace: kuttl-monitoring
+spec:
+  endpoints:
+  - bearerTokenSecret:
+      key: ""
+    path: /metrics
+    port: http
+    relabelings:
+    - action: replace
+      sourceLabels:
+      - __meta_kubernetes_service_label_app_kubernetes_io_instance
+      targetLabel: cluster
+    - action: replace
+      separator: /
+      sourceLabels:
+      - __meta_kubernetes_namespace
+      - __meta_kubernetes_service_label_app_kubernetes_io_component
+      targetLabel: job
+    scheme: https
+    tlsConfig:
+      ca:
+        configMap:
+          key: service-ca.crt
+          name: tempo-tempostack-ca-bundle
+      cert:
+        secret:
+          key: tls.crt
+          name: tempo-tempostack-distributor-mtls
+      keySecret:
+        key: tls.key
+        name: tempo-tempostack-distributor-mtls
+      serverName: tempo-tempostack-distributor.kuttl-monitoring.svc.cluster.local
+  namespaceSelector:
+    matchNames:
+    - kuttl-monitoring
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: distributor
+      app.kubernetes.io/instance: tempostack
+      app.kubernetes.io/managed-by: tempo-operator
+      app.kubernetes.io/name: tempo
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app.kubernetes.io/instance: tempostack
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-tempostack-ingester
+  namespace: kuttl-monitoring
+spec:
+  endpoints:
+  - bearerTokenSecret:
+      key: ""
+    path: /metrics
+    port: http
+    relabelings:
+    - action: replace
+      sourceLabels:
+      - __meta_kubernetes_service_label_app_kubernetes_io_instance
+      targetLabel: cluster
+    - action: replace
+      separator: /
+      sourceLabels:
+      - __meta_kubernetes_namespace
+      - __meta_kubernetes_service_label_app_kubernetes_io_component
+      targetLabel: job
+    scheme: https
+    tlsConfig:
+      ca:
+        configMap:
+          key: service-ca.crt
+          name: tempo-tempostack-ca-bundle
+      cert:
+        secret:
+          key: tls.crt
+          name: tempo-tempostack-ingester-mtls
+      keySecret:
+        key: tls.key
+        name: tempo-tempostack-ingester-mtls
+      serverName: tempo-tempostack-ingester.kuttl-monitoring.svc.cluster.local
+  namespaceSelector:
+    matchNames:
+    - kuttl-monitoring
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: ingester
+      app.kubernetes.io/instance: tempostack
+      app.kubernetes.io/managed-by: tempo-operator
+      app.kubernetes.io/name: tempo
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app.kubernetes.io/instance: tempostack
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-tempostack-querier
+  namespace: kuttl-monitoring
+spec:
+  endpoints:
+  - bearerTokenSecret:
+      key: ""
+    path: /metrics
+    port: http
+    relabelings:
+    - action: replace
+      sourceLabels:
+      - __meta_kubernetes_service_label_app_kubernetes_io_instance
+      targetLabel: cluster
+    - action: replace
+      separator: /
+      sourceLabels:
+      - __meta_kubernetes_namespace
+      - __meta_kubernetes_service_label_app_kubernetes_io_component
+      targetLabel: job
+    scheme: https
+    tlsConfig:
+      ca:
+        configMap:
+          key: service-ca.crt
+          name: tempo-tempostack-ca-bundle
+      cert:
+        secret:
+          key: tls.crt
+          name: tempo-tempostack-querier-mtls
+      keySecret:
+        key: tls.key
+        name: tempo-tempostack-querier-mtls
+      serverName: tempo-tempostack-querier.kuttl-monitoring.svc.cluster.local
+  namespaceSelector:
+    matchNames:
+    - kuttl-monitoring
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: querier
+      app.kubernetes.io/instance: tempostack
+      app.kubernetes.io/managed-by: tempo-operator
+      app.kubernetes.io/name: tempo
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app.kubernetes.io/instance: tempostack
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-tempostack-query-frontend
+  namespace: kuttl-monitoring
+spec:
+  endpoints:
+  - bearerTokenSecret:
+      key: ""
+    path: /metrics
+    port: http
+    relabelings:
+    - action: replace
+      sourceLabels:
+      - __meta_kubernetes_service_label_app_kubernetes_io_instance
+      targetLabel: cluster
+    - action: replace
+      separator: /
+      sourceLabels:
+      - __meta_kubernetes_namespace
+      - __meta_kubernetes_service_label_app_kubernetes_io_component
+      targetLabel: job
+    scheme: https
+    tlsConfig:
+      ca:
+        configMap:
+          key: service-ca.crt
+          name: tempo-tempostack-ca-bundle
+      cert:
+        secret:
+          key: tls.crt
+          name: tempo-tempostack-query-frontend-mtls
+      keySecret:
+        key: tls.key
+        name: tempo-tempostack-query-frontend-mtls
+      serverName: tempo-tempostack-query-frontend.kuttl-monitoring.svc.cluster.local
+  namespaceSelector:
+    matchNames:
+    - kuttl-monitoring
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: query-frontend
+      app.kubernetes.io/instance: tempostack
+      app.kubernetes.io/managed-by: tempo-operator
+      app.kubernetes.io/name: tempo
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    openshift.io/prometheus-rule-evaluation-scope: leaf-prometheus
+  name: tempostack-prometheus-rule
+  namespace: kuttl-monitoring
+spec:
+  groups:
+  - name: tempo_alerts
+    rules:
+    - alert: TempoRequestLatency
+      annotations:
+        message: |
+          {{ $labels.job }} {{ $labels.route }} is experiencing {{ printf "%.2f" $value }}s 99th percentile latency.
+        runbook_url: https://github.com/grafana/tempo/tree/main/operations/tempo-mixin/runbook.md#TempoRequestLatency
+      expr: |
+        cluster_namespace_job_route:tempo_request_duration_seconds:99quantile{route!~"metrics|/frontend.Frontend/Process|debug_pprof"} > 3
+      for: 15m
+      labels:
+        severity: critical
+    - alert: TempoCompactorUnhealthy
+      annotations:
+        message: There are {{ printf "%f" $value }} unhealthy compactor(s).
+        runbook_url: https://github.com/grafana/tempo/tree/main/operations/tempo-mixin/runbook.md#TempoCompactorUnhealthy
+      expr: |
+        max by (cluster, namespace) (tempo_ring_members{state="Unhealthy", name="compactor", namespace=~".*"}) > 0
+      for: 15m
+      labels:
+        severity: critical
+    - alert: TempoDistributorUnhealthy
+      annotations:
+        message: There are {{ printf "%f" $value }} unhealthy distributor(s).
+        runbook_url: https://github.com/grafana/tempo/tree/main/operations/tempo-mixin/runbook.md#TempoDistributorUnhealthy
+      expr: |
+        max by (cluster, namespace) (tempo_ring_members{state="Unhealthy", name="distributor", namespace=~".*"}) > 0
+      for: 15m
+      labels:
+        severity: warning
+    - alert: TempoCompactionsFailing
+      annotations:
+        message: Greater than 2 compactions have failed in the past hour.
+        runbook_url: https://github.com/grafana/tempo/tree/main/operations/tempo-mixin/runbook.md#TempoCompactionsFailing
+      expr: |
+        sum by (cluster, namespace) (increase(tempodb_compaction_errors_total{}[1h])) > 2 and
+        sum by (cluster, namespace) (increase(tempodb_compaction_errors_total{}[5m])) > 0
+      for: 5m
+      labels:
+        severity: critical
+    - alert: TempoIngesterFlushesUnhealthy
+      annotations:
+        message: Greater than 2 flush retries have occurred in the past hour.
+        runbook_url: https://github.com/grafana/tempo/tree/main/operations/tempo-mixin/runbook.md#TempoIngesterFlushesFailing
+      expr: |
+        sum by (cluster, namespace) (increase(tempo_ingester_failed_flushes_total{}[1h])) > 2 and
+        sum by (cluster, namespace) (increase(tempo_ingester_failed_flushes_total{}[5m])) > 0
+      for: 5m
+      labels:
+        severity: warning
+    - alert: TempoIngesterFlushesFailing
+      annotations:
+        message: Greater than 2 flush retries have failed in the past hour.
+        runbook_url: https://github.com/grafana/tempo/tree/main/operations/tempo-mixin/runbook.md#TempoIngesterFlushesFailing
+      expr: |
+        sum by (cluster, namespace) (increase(tempo_ingester_flush_failed_retries_total{}[1h])) > 2 and
+        sum by (cluster, namespace) (increase(tempo_ingester_flush_failed_retries_total{}[5m])) > 0
+      for: 5m
+      labels:
+        severity: critical
+    - alert: TempoPollsFailing
+      annotations:
+        message: Greater than 2 polls have failed in the past hour.
+        runbook_url: https://github.com/grafana/tempo/tree/main/operations/tempo-mixin/runbook.md#TempoPollsFailing
+      expr: |
+        sum by (cluster, namespace) (increase(tempodb_blocklist_poll_errors_total{}[1h])) > 2 and
+        sum by (cluster, namespace) (increase(tempodb_blocklist_poll_errors_total{}[5m])) > 0
+      labels:
+        severity: critical
+    - alert: TempoTenantIndexFailures
+      annotations:
+        message: Greater than 2 tenant index failures in the past hour.
+        runbook_url: https://github.com/grafana/tempo/tree/main/operations/tempo-mixin/runbook.md#TempoTenantIndexFailures
+      expr: |
+        sum by (cluster, namespace) (increase(tempodb_blocklist_tenant_index_errors_total{}[1h])) > 2 and
+        sum by (cluster, namespace) (increase(tempodb_blocklist_tenant_index_errors_total{}[5m])) > 0
+      labels:
+        severity: critical
+    - alert: TempoNoTenantIndexBuilders
+      annotations:
+        message: No tenant index builders for tenant {{ $labels.tenant }}. Tenant
+          index will quickly become stale.
+        runbook_url: https://github.com/grafana/tempo/tree/main/operations/tempo-mixin/runbook.md#TempoNoTenantIndexBuilders
+      expr: |
+        sum by (cluster, namespace, tenant) (tempodb_blocklist_tenant_index_builder{}) == 0 and
+        max by (cluster, namespace) (tempodb_blocklist_length{}) > 0
+      for: 5m
+      labels:
+        severity: critical
+    - alert: TempoTenantIndexTooOld
+      annotations:
+        message: Tenant index age is 600 seconds old for tenant {{ $labels.tenant
+          }}.
+        runbook_url: https://github.com/grafana/tempo/tree/main/operations/tempo-mixin/runbook.md#TempoTenantIndexTooOld
+      expr: |
+        max by (cluster, namespace, tenant) (tempodb_blocklist_tenant_index_age_seconds{}) > 600
+      for: 5m
+      labels:
+        severity: critical
+    - alert: TempoBadOverrides
+      annotations:
+        message: '{{ $labels.job }} failed to reload overrides.'
+        runbook_url: https://github.com/grafana/tempo/tree/main/operations/tempo-mixin/runbook.md#TempoBadOverrides
+      expr: |
+        sum(tempo_runtime_config_last_reload_successful{namespace=~".*"} == 0) by (cluster, namespace, job)
+      for: 15m
+      labels:
+        severity: warning
+    - alert: TempoProvisioningTooManyWrites
+      annotations:
+        message: Ingesters in {{ $labels.cluster }}/{{ $labels.namespace }} are receiving
+          more data/second than desired, add more ingesters.
+        runbook_url: https://github.com/grafana/tempo/tree/main/operations/tempo-mixin/runbook.md#TempoProvisioningTooManyWrites
+      expr: |
+        avg by (cluster, namespace) (rate(tempo_ingester_bytes_received_total{job=~".+/ingester"}[1m])) / 1024 / 1024 > 30
+      for: 15m
+      labels:
+        severity: warning
+    - alert: TempoCompactorsTooManyOutstandingBlocks
+      annotations:
+        message: There are too many outstanding compaction blocks in {{ $labels.cluster
+          }}/{{ $labels.namespace }} for tenant {{ $labels.tenant }}, increase compactor's
+          CPU or add more compactors.
+        runbook_url: https://github.com/grafana/tempo/tree/main/operations/tempo-mixin/runbook.md#TempoCompactorsTooManyOutstandingBlocks
+      expr: |
+        sum by (cluster, namespace, tenant) (tempodb_compaction_outstanding_blocks{container="compactor", namespace=~".*"}) / ignoring(tenant) group_left count(tempo_build_info{container="compactor", namespace=~".*"}) by (cluster, namespace) > 100
+      for: 6h
+      labels:
+        severity: warning
+    - alert: TempoIngesterReplayErrors
+      annotations:
+        message: Tempo ingester has encountered errors while replaying a block on
+          startup in {{ $labels.cluster }}/{{ $labels.namespace }} for tenant {{ $labels.tenant
+          }}
+        runbook_url: https://github.com/grafana/tempo/tree/main/operations/tempo-mixin/runbook.md#TempoIngesterReplayErrors
+      expr: |
+        sum by (cluster, namespace, tenant) (increase(tempo_ingester_replay_errors_total{namespace=~".*"}[5m])) > 0
+      for: 5m
+      labels:
+        severity: critical
+  - name: tempo_rules
+    rules:
+    - expr: histogram_quantile(0.99, sum(rate(tempo_request_duration_seconds_bucket[1m]))
+        by (le, cluster, namespace, job, route))
+      record: cluster_namespace_job_route:tempo_request_duration_seconds:99quantile
+    - expr: histogram_quantile(0.50, sum(rate(tempo_request_duration_seconds_bucket[1m]))
+        by (le, cluster, namespace, job, route))
+      record: cluster_namespace_job_route:tempo_request_duration_seconds:50quantile
+    - expr: sum(rate(tempo_request_duration_seconds_sum[1m])) by (cluster, namespace,
+        job, route) / sum(rate(tempo_request_duration_seconds_count[1m])) by (cluster,
+        namespace, job, route)
+      record: cluster_namespace_job_route:tempo_request_duration_seconds:avg
+    - expr: sum(rate(tempo_request_duration_seconds_bucket[1m])) by (le, cluster,
+        namespace, job, route)
+      record: cluster_namespace_job_route:tempo_request_duration_seconds_bucket:sum_rate
+    - expr: sum(rate(tempo_request_duration_seconds_sum[1m])) by (cluster, namespace,
+        job, route)
+      record: cluster_namespace_job_route:tempo_request_duration_seconds_sum:sum_rate
+    - expr: sum(rate(tempo_request_duration_seconds_count[1m])) by (cluster, namespace,
+        job, route)
+      record: cluster_namespace_job_route:tempo_request_duration_seconds_count:sum_rate

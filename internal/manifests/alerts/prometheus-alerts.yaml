@@ -1,6 +1,6 @@
 ---
 groups:
-- name: "tempo_alerts"
+- name: "tempo_alerts_[[ .Cluster ]]_[[ .Namespace ]]"
   rules:
   - alert: "TempoRequestLatency"
     annotations:
@@ -8,7 +8,7 @@ groups:
         {{ $labels.job }} {{ $labels.route }} is experiencing {{ printf "%.2f" $value }}s 99th percentile latency.
       runbook_url: "[[ .RunbookURL ]]#TempoRequestLatency"
     expr: |
-      cluster_namespace_job_route:tempo_request_duration_seconds:99quantile{route!~"metrics|/frontend.Frontend/Process|debug_pprof"} > 3
+      cluster_namespace_job_route:tempo_request_duration_seconds:99quantile{cluster="[[ .Cluster ]]", namespace="[[ .Namespace ]]", route!~"metrics|/frontend.Frontend/Process|debug_pprof"} > 3
     for: "15m"
     labels:
       severity: "critical"
@@ -17,7 +17,7 @@ groups:
       message: "There are {{ printf \"%f\" $value }} unhealthy compactor(s)."
       runbook_url: "[[ .RunbookURL ]]#TempoCompactorUnhealthy"
     expr: |
-      max by (cluster, namespace) (tempo_ring_members{state="Unhealthy", name="compactor", namespace=~".*"}) > 0
+      max by (cluster, namespace) (tempo_ring_members{cluster="[[ .Cluster ]]", namespace="[[ .Namespace ]]", state="Unhealthy", name="compactor"}) > 0
     for: "15m"
     labels:
       severity: "critical"
@@ -26,7 +26,7 @@ groups:
       message: "There are {{ printf \"%f\" $value }} unhealthy distributor(s)."
       runbook_url: "[[ .RunbookURL ]]#TempoDistributorUnhealthy"
     expr: |
-      max by (cluster, namespace) (tempo_ring_members{state="Unhealthy", name="distributor", namespace=~".*"}) > 0
+      max by (cluster, namespace) (tempo_ring_members{cluster="[[ .Cluster ]]", namespace="[[ .Namespace ]]", state="Unhealthy", name="distributor"}) > 0
     for: "15m"
     labels:
       severity: "warning"
@@ -35,8 +35,8 @@ groups:
       message: "Greater than 2 compactions have failed in the past hour."
       runbook_url: "[[ .RunbookURL ]]#TempoCompactionsFailing"
     expr: |
-      sum by (cluster, namespace) (increase(tempodb_compaction_errors_total{}[1h])) > 2 and
-      sum by (cluster, namespace) (increase(tempodb_compaction_errors_total{}[5m])) > 0
+      sum by (cluster, namespace) (increase(tempodb_compaction_errors_total{cluster="[[ .Cluster ]]", namespace="[[ .Namespace ]]"}[1h])) > 2 and
+      sum by (cluster, namespace) (increase(tempodb_compaction_errors_total{cluster="[[ .Cluster ]]", namespace="[[ .Namespace ]]"}[5m])) > 0
     for: "5m"
     labels:
       severity: "critical"
@@ -45,8 +45,8 @@ groups:
       message: "Greater than 2 flush retries have occurred in the past hour."
       runbook_url: "[[ .RunbookURL ]]#TempoIngesterFlushesFailing"
     expr: |
-      sum by (cluster, namespace) (increase(tempo_ingester_failed_flushes_total{}[1h])) > 2 and
-      sum by (cluster, namespace) (increase(tempo_ingester_failed_flushes_total{}[5m])) > 0
+      sum by (cluster, namespace) (increase(tempo_ingester_failed_flushes_total{cluster="[[ .Cluster ]]", namespace="[[ .Namespace ]]"}[1h])) > 2 and
+      sum by (cluster, namespace) (increase(tempo_ingester_failed_flushes_total{cluster="[[ .Cluster ]]", namespace="[[ .Namespace ]]"}[5m])) > 0
     for: "5m"
     labels:
       severity: "warning"
@@ -55,8 +55,8 @@ groups:
       message: "Greater than 2 flush retries have failed in the past hour."
       runbook_url: "[[ .RunbookURL ]]#TempoIngesterFlushesFailing"
     expr: |
-      sum by (cluster, namespace) (increase(tempo_ingester_flush_failed_retries_total{}[1h])) > 2 and
-      sum by (cluster, namespace) (increase(tempo_ingester_flush_failed_retries_total{}[5m])) > 0
+      sum by (cluster, namespace) (increase(tempo_ingester_flush_failed_retries_total{cluster="[[ .Cluster ]]", namespace="[[ .Namespace ]]"}[1h])) > 2 and
+      sum by (cluster, namespace) (increase(tempo_ingester_flush_failed_retries_total{cluster="[[ .Cluster ]]", namespace="[[ .Namespace ]]"}[5m])) > 0
     for: "5m"
     labels:
       severity: "critical"
@@ -65,8 +65,8 @@ groups:
       message: "Greater than 2 polls have failed in the past hour."
       runbook_url: "[[ .RunbookURL ]]#TempoPollsFailing"
     expr: |
-      sum by (cluster, namespace) (increase(tempodb_blocklist_poll_errors_total{}[1h])) > 2 and
-      sum by (cluster, namespace) (increase(tempodb_blocklist_poll_errors_total{}[5m])) > 0
+      sum by (cluster, namespace) (increase(tempodb_blocklist_poll_errors_total{cluster="[[ .Cluster ]]", namespace="[[ .Namespace ]]"}[1h])) > 2 and
+      sum by (cluster, namespace) (increase(tempodb_blocklist_poll_errors_total{cluster="[[ .Cluster ]]", namespace="[[ .Namespace ]]"}[5m])) > 0
     labels:
       severity: "critical"
   - alert: "TempoTenantIndexFailures"
@@ -74,8 +74,8 @@ groups:
       message: "Greater than 2 tenant index failures in the past hour."
       runbook_url: "[[ .RunbookURL ]]#TempoTenantIndexFailures"
     expr: |
-      sum by (cluster, namespace) (increase(tempodb_blocklist_tenant_index_errors_total{}[1h])) > 2 and
-      sum by (cluster, namespace) (increase(tempodb_blocklist_tenant_index_errors_total{}[5m])) > 0
+      sum by (cluster, namespace) (increase(tempodb_blocklist_tenant_index_errors_total{cluster="[[ .Cluster ]]", namespace="[[ .Namespace ]]"}[1h])) > 2 and
+      sum by (cluster, namespace) (increase(tempodb_blocklist_tenant_index_errors_total{cluster="[[ .Cluster ]]", namespace="[[ .Namespace ]]"}[5m])) > 0
     labels:
       severity: "critical"
   - alert: "TempoNoTenantIndexBuilders"
@@ -83,8 +83,8 @@ groups:
       message: "No tenant index builders for tenant {{ $labels.tenant }}. Tenant index will quickly become stale."
       runbook_url: "[[ .RunbookURL ]]#TempoNoTenantIndexBuilders"
     expr: |
-      sum by (cluster, namespace, tenant) (tempodb_blocklist_tenant_index_builder{}) == 0 and
-      max by (cluster, namespace) (tempodb_blocklist_length{}) > 0
+      sum by (cluster, namespace, tenant) (tempodb_blocklist_tenant_index_builder{cluster="[[ .Cluster ]]", namespace="[[ .Namespace ]]"}) == 0 and
+      max by (cluster, namespace) (tempodb_blocklist_length{cluster="[[ .Cluster ]]", namespace="[[ .Namespace ]]"}) > 0
     for: "5m"
     labels:
       severity: "critical"
@@ -93,7 +93,7 @@ groups:
       message: "Tenant index age is 600 seconds old for tenant {{ $labels.tenant }}."
       runbook_url: "[[ .RunbookURL ]]#TempoTenantIndexTooOld"
     expr: |
-      max by (cluster, namespace, tenant) (tempodb_blocklist_tenant_index_age_seconds{}) > 600
+      max by (cluster, namespace, tenant) (tempodb_blocklist_tenant_index_age_seconds{cluster="[[ .Cluster ]]", namespace="[[ .Namespace ]]"}) > 600
     for: "5m"
     labels:
       severity: "critical"
@@ -102,7 +102,7 @@ groups:
       message: "{{ $labels.job }} failed to reload overrides."
       runbook_url: "[[ .RunbookURL ]]#TempoBadOverrides"
     expr: |
-      sum(tempo_runtime_config_last_reload_successful{namespace=~".*"} == 0) by (cluster, namespace, job)
+      sum(tempo_runtime_config_last_reload_successful{cluster="[[ .Cluster ]]", namespace="[[ .Namespace ]]"} == 0) by (cluster, namespace, job)
     for: "15m"
     labels:
       severity: "warning"
@@ -111,7 +111,7 @@ groups:
       message: "Ingesters in {{ $labels.cluster }}/{{ $labels.namespace }} are receiving more data/second than desired, add more ingesters."
       runbook_url: "[[ .RunbookURL ]]#TempoProvisioningTooManyWrites"
     expr: |
-      avg by (cluster, namespace) (rate(tempo_ingester_bytes_received_total{job=~".+/ingester"}[1m])) / 1024 / 1024 > 30
+      avg by (cluster, namespace) (rate(tempo_ingester_bytes_received_total{cluster="[[ .Cluster ]]", namespace="[[ .Namespace ]]", job=~".+/ingester"}[1m])) / 1024 / 1024 > 30
     for: "15m"
     labels:
       severity: "warning"
@@ -120,7 +120,7 @@ groups:
       message: "There are too many outstanding compaction blocks in {{ $labels.cluster }}/{{ $labels.namespace }} for tenant {{ $labels.tenant }}, increase compactor's CPU or add more compactors."
       runbook_url: "[[ .RunbookURL ]]#TempoCompactorsTooManyOutstandingBlocks"
     expr: |
-      sum by (cluster, namespace, tenant) (tempodb_compaction_outstanding_blocks{container="compactor", namespace=~".*"}) / ignoring(tenant) group_left count(tempo_build_info{container="compactor", namespace=~".*"}) by (cluster, namespace) > 100
+      sum by (cluster, namespace, tenant) (tempodb_compaction_outstanding_blocks{cluster="[[ .Cluster ]]", namespace="[[ .Namespace ]]", container="compactor"}) / ignoring(tenant) group_left count(tempo_build_info{container="compactor", namespace=~".*"}) by (cluster, namespace) > 100
     for: "6h"
     labels:
       severity: "warning"
@@ -129,7 +129,7 @@ groups:
       message: "Tempo ingester has encountered errors while replaying a block on startup in {{ $labels.cluster }}/{{ $labels.namespace }} for tenant {{ $labels.tenant }}"
       runbook_url: "[[ .RunbookURL ]]#TempoIngesterReplayErrors"
     expr: |
-      sum by (cluster, namespace, tenant) (increase(tempo_ingester_replay_errors_total{namespace=~".*"}[5m])) > 0
+      sum by (cluster, namespace, tenant) (increase(tempo_ingester_replay_errors_total{cluster="[[ .Cluster ]]", namespace="[[ .Namespace ]]"}[5m])) > 0
     for: "5m"
     labels:
       severity: "critical"

@@ -1,16 +1,4 @@
 {{ define "packages" }}
----
-title: "API"
-description: "Generated API docs for the Tempo Operator"
-lead: ""
-draft: false
-images: []
-menu:
-+docs:
-+parent: "operator"
-weight: 1000
-toc: true
----
 
 This Document contains the types introduced by the Tempo Operator to be consumed by users.
 

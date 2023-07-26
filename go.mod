@@ -10,16 +10,16 @@ require (
 	github.com/imdario/mergo v0.3.16
 	github.com/novln/docker-parser v1.0.0
 	github.com/onsi/ginkgo/v2 v2.11.0
-	github.com/onsi/gomega v1.27.8
+	github.com/onsi/gomega v1.27.10
 	github.com/openshift/library-go v0.0.0-20220622115547-84d884f4c9f6
 	github.com/prometheus/client_golang v1.16.0
 	github.com/prometheus/common v0.44.0
 	github.com/spf13/cobra v1.7.0
 	go.uber.org/zap v1.24.0
 	gopkg.in/yaml.v2 v2.4.0
-	k8s.io/api v0.27.3
-	k8s.io/apimachinery v0.27.3
-	k8s.io/apiserver v0.27.3
+	k8s.io/api v0.27.4
+	k8s.io/apimachinery v0.27.4
+	k8s.io/apiserver v0.27.4
 	k8s.io/client-go v12.0.0+incompatible
 	k8s.io/klog/v2 v2.100.1
 	sigs.k8s.io/controller-runtime v0.15.0
@@ -70,11 +70,11 @@ require (
 	github.com/stretchr/objx v0.5.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
-	golang.org/x/net v0.10.0 // indirect
+	golang.org/x/net v0.12.0 // indirect
 	golang.org/x/oauth2 v0.8.0 // indirect
-	golang.org/x/sys v0.9.0 // indirect
-	golang.org/x/term v0.8.0 // indirect
-	golang.org/x/text v0.10.0 // indirect
+	golang.org/x/sys v0.10.0 // indirect
+	golang.org/x/term v0.10.0 // indirect
+	golang.org/x/text v0.11.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/tools v0.9.3 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.3.0 // indirect
@@ -82,7 +82,7 @@ require (
 	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	k8s.io/apiextensions-apiserver v0.27.2 // indirect
-	k8s.io/component-base v0.27.3 // indirect
+	k8s.io/component-base v0.27.4 // indirect
 	k8s.io/kube-openapi v0.0.0-20230501164219-8b0f38b5fd1f // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
