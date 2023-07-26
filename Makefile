@@ -342,9 +342,6 @@ e2e:
 # OpenShift end-to-tests
 .PHONY: prepare-e2e-openshift
 prepare-e2e-openshift: deploy-minio
-	kubectl apply -f ./bundle/openshift/manifests/tempo-operator-manager-config_v1_configmap.yaml -n $(OPERATOR_NAMESPACE)
-	kubectl rollout restart deployment/tempo-operator-controller -n $(OPERATOR_NAMESPACE)
-	kubectl rollout status deployment/tempo-operator-controller -n $(OPERATOR_NAMESPACE) --timeout=30s
 
 .PHONY: e2e-openshift
 e2e-openshift:

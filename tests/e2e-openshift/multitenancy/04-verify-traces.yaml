@@ -8,7 +8,7 @@ spec:
     spec:
       containers:
       - name: verify-traces
-        image: registry.access.redhat.com/ubi9/ubi:9.1
+        image: registry.gitlab.com/gitlab-ci-utils/curl-jq:1.1.0
         command:
         - /bin/bash
         - -eux
@@ -17,14 +17,16 @@ spec:
         - |
           token=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
           curl \
-            -s -S \
+            -sS -G \
             --header "Authorization: Bearer $token" \
             --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
-            https://tempo-simplest-gateway.kuttl-multitenancy.svc:8080/api/traces/v1/dev/api/services \
-            | tee /tmp/out.log
+            https://tempo-simplest-gateway.kuttl-multitenancy.svc:8080/api/traces/v1/dev/api/traces \
+            --data-urlencode "service=telemetrygen" \
+            | tee /tmp/jaeger.out
 
-          if ! grep -q telemetrygen /tmp/out.log; then
-            echo && echo "No traces found"
+          num_traces=$(jq ".data | length" /tmp/jaeger.out)
+          if [[ "$num_traces" != "10" ]]; then
+            echo && echo "The Jaeger API returned $num_traces instead of 10 traces."
             exit 1
           fi
       restartPolicy: Never

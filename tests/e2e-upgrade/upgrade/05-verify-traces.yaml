@@ -1,0 +1,23 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: verify-traces
+spec:
+  template:
+    spec:
+      containers:
+      - name: verify-traces
+        image: registry.gitlab.com/gitlab-ci-utils/curl-jq:1.1.0
+        command:
+        - /bin/bash
+        - -eux
+        - -c
+        args:
+        - |
+          curl -sS -G http://tempo-simplest-query-frontend:16686/api/traces --data-urlencode "service=telemetrygen" | tee /tmp/jaeger.out
+          num_traces=$(jq ".data | length" /tmp/jaeger.out)
+          if [[ "$num_traces" -ne 10 ]]; then
+            echo && echo "The Jaeger API returned $num_traces instead of 10 traces."
+            exit 1
+          fi
+      restartPolicy: Never

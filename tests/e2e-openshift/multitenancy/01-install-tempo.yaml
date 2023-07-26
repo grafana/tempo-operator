@@ -1,23 +1,4 @@
 # based on config/samples/tempo_v1alpha1_openshift.yaml
-
-# The namespace is auto-deleted by kuttl after the test run.
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: kuttl-multitenancy
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: minio-test
-  namespace: kuttl-multitenancy
-stringData:
-  endpoint: http://minio.minio.svc:9000
-  bucket: tempo
-  access_key_id: tempo
-  access_key_secret: supersecret
-type: Opaque
----
 apiVersion: tempo.grafana.com/v1alpha1
 kind:  TempoStack
 metadata:
@@ -26,7 +7,7 @@ metadata:
 spec:
   storage:
     secret:
-      name: minio-test
+      name: minio
       type: s3
   storageSize: 1Gi
   resources:

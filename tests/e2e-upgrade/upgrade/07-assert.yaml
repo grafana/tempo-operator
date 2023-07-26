@@ -1,8 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: generate-traces
-  namespace: kuttl-multitenancy
+  name: verify-traces-after-upgrade
 status:
   conditions:
     - status: "True"

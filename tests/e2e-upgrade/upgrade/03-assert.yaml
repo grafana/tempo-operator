@@ -1,8 +1,34 @@
-apiVersion: batch/v1
-kind: Job
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: generate-traces
+  name: tempo-simplest-compactor
 status:
-  conditions:
-    - status: "True"
-      type: Complete
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-simplest-distributor
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-simplest-querier
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-simplest-query-frontend
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: tempo-simplest-ingester
+status:
+  readyReplicas: 1
