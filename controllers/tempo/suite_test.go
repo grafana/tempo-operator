@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -21,7 +22,10 @@ var testScheme *runtime.Scheme = scheme.Scheme
 
 func TestMain(m *testing.M) {
 	testEnv = &envtest.Environment{
-		CRDDirectoryPaths: []string{filepath.Join("..", "..", "config", "crd", "bases")},
+		CRDDirectoryPaths: []string{
+			filepath.Join("..", "..", "config", "crd", "bases"),
+			filepath.Join("testdata"),
+		},
 	}
 	cfg, err := testEnv.Start()
 	if err != nil {
@@ -30,6 +34,10 @@ func TestMain(m *testing.M) {
 	}
 
 	if err := v1alpha1.AddToScheme(testScheme); err != nil {
+		fmt.Printf("failed to register scheme: %v", err)
+		os.Exit(1)
+	}
+	if err := monitoringv1.AddToScheme(testScheme); err != nil {
 		fmt.Printf("failed to register scheme: %v", err)
 		os.Exit(1)
 	}

@@ -1,7 +1,6 @@
 resources:
 - ../../default
-- ../../prometheus
-# Grant cluster-monitoring access to openshift-operators-redhat metrics
+# Give OpenShift in-cluster-monitoring permissions to list, watch and get services, endpoints and pods in the namespace of the operator
 - prometheus_role.yaml
 - prometheus_role_binding.yaml
 
@@ -33,4 +32,3 @@ configMapGenerator:
 patchesStrategicMerge:
 - metrics_service_tls_patch.yaml
 - manager_auth_proxy_tls_patch.yaml
-- service_monitor_patch.yaml

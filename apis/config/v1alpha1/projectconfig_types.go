@@ -1,9 +1,6 @@
 package v1alpha1
 
 import (
-	"fmt"
-
-	dockerparser "github.com/novln/docker-parser"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	cfg "sigs.k8s.io/controller-runtime/pkg/config/v1alpha1"
 )
@@ -89,6 +86,23 @@ const (
 	TLSProfileModernType TLSProfileType = "Modern"
 )
 
+// MetricsFeatureGates configures metrics and alerts of the operator.
+type MetricsFeatureGates struct {
+	// CreateServiceMonitors defines whether the operator should install ServiceMonitors
+	// to scrape metrics of the operator.
+	CreateServiceMonitors bool `json:"createServiceMonitors,omitempty"`
+
+	// CreatePrometheusRules defines whether the operator should install PrometheusRules
+	// to receive alerts about the operator.
+	CreatePrometheusRules bool `json:"createPrometheusRules,omitempty"`
+}
+
+// ObservabilityFeatureGates configures observability of the operator.
+type ObservabilityFeatureGates struct {
+	// Metrics configures metrics of the operator.
+	Metrics MetricsFeatureGates `json:"metrics,omitempty"`
+}
+
 // FeatureGates is the supported set of all operator feature gates.
 type FeatureGates struct {
 	// OpenShift contains a set of feature gates supported only on OpenShift.
@@ -155,6 +169,9 @@ type FeatureGates struct {
 	// PrometheusOperator defines whether the Prometheus Operator CRD exists in the cluster.
 	// This CRD is part of prometheus-operator.
 	PrometheusOperator bool `json:"prometheusOperator,omitempty"`
+
+	// Observability configures observability features of the operator.
+	Observability ObservabilityFeatureGates `json:"observability,omitempty"`
 }
 
 //+kubebuilder:object:root=true
@@ -176,37 +193,4 @@ type ProjectConfig struct {
 
 func init() {
 	SchemeBuilder.Register(&ProjectConfig{})
-}
-
-// Validate validates the controller configuration (ProjectConfig).
-func (c *ProjectConfig) Validate() error {
-	switch c.Gates.TLSProfile {
-	case string(TLSProfileOldType),
-		string(TLSProfileIntermediateType),
-		string(TLSProfileModernType):
-		// valid setting
-	default:
-		return fmt.Errorf("invalid value '%s' for setting featureGates.tlsProfile (valid values: %s, %s and %s)", c.Gates.TLSProfile, TLSProfileOldType, TLSProfileIntermediateType, TLSProfileModernType)
-	}
-
-	if c.DefaultImages.Tempo != "" {
-		_, err := dockerparser.Parse(c.DefaultImages.Tempo)
-		if err != nil {
-			return fmt.Errorf("invalid value '%s' for setting images.tempo", c.DefaultImages.Tempo)
-		}
-	}
-	if c.DefaultImages.TempoQuery != "" {
-		_, err := dockerparser.Parse(c.DefaultImages.TempoQuery)
-		if err != nil {
-			return fmt.Errorf("invalid value '%s' for setting images.tempoQuery", c.DefaultImages.TempoQuery)
-		}
-	}
-	if c.DefaultImages.TempoGateway != "" {
-		_, err := dockerparser.Parse(c.DefaultImages.TempoGateway)
-		if err != nil {
-			return fmt.Errorf("invalid value '%s' for setting images.tempoGateway", c.DefaultImages.TempoGateway)
-		}
-	}
-
-	return nil
 }

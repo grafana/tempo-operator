@@ -19,3 +19,13 @@ func CommonLabels(instanceName string) map[string]string {
 		"app.kubernetes.io/managed-by": "tempo-operator",
 	}
 }
+
+// CommonOperatorLabels returns the common labels for operator components.
+func CommonOperatorLabels() map[string]string {
+	return map[string]string{
+		"app.kubernetes.io/name":       "tempo-operator",
+		"app.kubernetes.io/part-of":    "tempo-operator",
+		"app.kubernetes.io/managed-by": "operator-lifecycle-manager",
+		"control-plane":                "controller-manager",
+	}
+}

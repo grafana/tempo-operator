@@ -1,9 +1,8 @@
-apiVersion: batch/v1
-kind: Job
+---
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: generate-traces
+  name: dev-collector
   namespace: kuttl-multitenancy
 status:
-  conditions:
-    - status: "True"
-      type: Complete
+  readyReplicas: 1

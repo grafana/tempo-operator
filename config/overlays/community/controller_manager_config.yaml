@@ -43,3 +43,7 @@ featureGates:
     certValidity: 2160h
     # Target certificate refresh at 80% of validity
     certRefresh: 1728h
+  observability:
+    metrics:
+      createServiceMonitors: false
+      createPrometheusRules: false

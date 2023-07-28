@@ -1,0 +1,56 @@
+groups:
+- name: tempooperator_alerts
+  rules:
+  - alert: TempoOperatorFailedUpgrade
+    annotations:
+      message: "Tempo Operator failed to upgrade {{ $value }} TempoStack instance(s)."
+      runbook_url: "[[ .RunbookURL ]]#TempoOperatorFailedUpgrade"
+    expr: |
+      tempooperator_upgrades_total{state="failed"} > 0
+    labels:
+      severity: warning
+
+  - alert: TempoOperatorTerminalReconcileError
+    annotations:
+      message: "Tempo Operator failed to reconcile due to a terminal error. Human intervention is required."
+      runbook_url: "[[ .RunbookURL ]]#TempoOperatorTerminalReconcileError"
+    expr: |
+      increase(controller_runtime_terminal_reconcile_errors_total{service="tempo-operator-controller-manager-metrics-service"}[15m]) > 0
+    for: 15m
+    labels:
+      severity: critical
+
+  # this alert will fire only if TempoOperatorTerminalReconcileError doesn't fire
+  - alert: TempoOperatorReconcileError
+    annotations:
+      message: "Tempo Operator failed to reconcile."
+      runbook_url: "[[ .RunbookURL ]]#TempoOperatorReconcileError"
+    expr: |
+      increase(controller_runtime_reconcile_errors_total{service="tempo-operator-controller-manager-metrics-service"}[15m]) > 0
+      and
+      increase(controller_runtime_terminal_reconcile_errors_total{service="tempo-operator-controller-manager-metrics-service"}[15m]) == 0
+    for: 15m
+    labels:
+      severity: warning
+
+  - alert: TempoOperatorReconcileDurationHigh
+    annotations:
+      message: "Tempo Operator reconciliation takes longer than 10 minutes on average ({{ $value | humanizeDuration }})."
+      runbook_url: "[[ .RunbookURL ]]#TempoOperatorReconcileDurationHigh"
+    expr: |
+      rate(controller_runtime_reconcile_time_seconds_sum{service="tempo-operator-controller-manager-metrics-service"}[5m])
+      / rate(controller_runtime_reconcile_time_seconds_count{service="tempo-operator-controller-manager-metrics-service"}[5m])
+      > 600
+    for: 10m
+    labels:
+      severity: warning
+
+  - alert: TempoStackUnhealthy
+    annotations:
+      message: "TempoStack {{ $labels.stack_name }}/{{ $labels.stack_namespace }} is in {{ $labels.condition }} state."
+      runbook_url: "[[ .RunbookURL ]]#TempoStackUnhealthy"
+    expr: |
+      tempostack_status_condition{condition=~"ConfigurationError|Failed"} == 1
+    for: 5m
+    labels:
+      severity: critical

@@ -4,7 +4,7 @@ VERSION_PKG ?= github.com/grafana/tempo-operator/internal/version
 OPERATOR_VERSION ?= $(or $(shell git describe --tags --abbrev=0 2> /dev/null | sed 's/^v//'), 0.0.0)
 TEMPO_VERSION ?= $(shell cat config/overlays/community/controller_manager_config.yaml | grep -oP "docker.io/grafana/tempo:\K.*")
 TEMPO_QUERY_VERSION ?= $(shell cat config/overlays/community/controller_manager_config.yaml | grep -oP "docker.io/grafana/tempo-query:\K.*")
-COMMIT_SHA = "$(shell git rev-parse HEAD)"
+COMMIT_SHA = $(shell git rev-parse HEAD)
 LD_FLAGS ?= "-X ${VERSION_PKG}.buildDate=${VERSION_DATE} \
 			 -X ${VERSION_PKG}.revision=${COMMIT_SHA} \
 			 -X ${VERSION_PKG}.operatorVersion=${OPERATOR_VERSION} \
@@ -342,9 +342,6 @@ e2e:
 # OpenShift end-to-tests
 .PHONY: prepare-e2e-openshift
 prepare-e2e-openshift: deploy-minio
-	kubectl apply -f ./bundle/openshift/manifests/tempo-operator-manager-config_v1_configmap.yaml -n $(OPERATOR_NAMESPACE)
-	kubectl rollout restart deployment/tempo-operator-controller -n $(OPERATOR_NAMESPACE)
-	kubectl rollout status deployment/tempo-operator-controller -n $(OPERATOR_NAMESPACE) --timeout=30s
 
 .PHONY: e2e-openshift
 e2e-openshift:
@@ -450,10 +447,6 @@ api-docs: docs/operator/api.md docs/operator/feature-gates.md
 TYPES_TARGET := $(shell find apis/tempo -type f -iname "*_types.go")
 docs/operator/api.md: $(TYPES_TARGET) gen-crd-api-reference-docs
 	$(GEN_CRD) -api-dir "github.com/grafana/tempo-operator/apis/tempo/" -config "$(PWD)/config/docs/config.json" -template-dir "$(PWD)/config/docs/templates" -out-file "$(PWD)/$@"
-	sed -i 's/+docs:/  docs:/' $@
-	sed -i 's/+parent:/    parent:/' $@
-	sed -i 's/##/\n##/' $@
-	sed -i 's/+newline/\n/' $@
 
 
 FEATURE_GATES_TARGET := $(shell find apis/config -type f -iname "*_types.go")

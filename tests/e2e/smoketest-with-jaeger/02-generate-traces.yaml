@@ -12,7 +12,6 @@ spec:
         - traces
         - --otlp-endpoint=tempo-simplest-distributor:4317
         - --otlp-insecure
-        - --duration=30s
-        - --workers=1
+        - --traces=10
       restartPolicy: Never
   backoffLimit: 4
