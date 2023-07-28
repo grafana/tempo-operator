@@ -479,7 +479,7 @@ hugo:
 	test -s $(HUGO) || $(call go-get-tool,$(HUGO),--tags extended github.com/gohugoio/hugo,$(HUGO_VERSION))
 
 ##@ Release
-CHLOGGEN_VERSION=v0.3.0
+CHLOGGEN_VERSION=v0.10.0
 CHLOGGEN ?= $(LOCALBIN)/chloggen-$(CHLOGGEN_VERSION)
 FILENAME?=$(shell git branch --show-current)
 
