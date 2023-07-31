@@ -33,7 +33,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator
-    createdAt: "2023-07-31T13:30:45Z"
+    createdAt: "2023-07-31T14:23:46Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operators.operatorframework.io/builder: operator-sdk-v1.27.0
@@ -232,7 +232,7 @@ spec:
         displayName: Global Retention
         path: retention.global
       - description: 'Traces defines retention period. Supported parameter suffixes
-          are “s”, “m” and “h”. example: 336h default: value is 48h.'
+          are "s", "m" and "h". example: 336h default: value is 48h.'
         displayName: Trace Retention Period
         path: retention.global.traces
         x-descriptors:
@@ -241,7 +241,7 @@ spec:
         displayName: PerTenant Retention
         path: retention.perTenant
       - description: 'Traces defines retention period. Supported parameter suffixes
-          are “s”, “m” and “h”. example: 336h default: value is 48h.'
+          are "s", "m" and "h". example: 336h default: value is 48h.'
         displayName: Trace Retention Period
         path: retention.perTenant.traces
         x-descriptors:
@@ -530,7 +530,7 @@ spec:
         x-descriptors:
         - urn:alm:descriptor:io.kubernetes.conditions
       version: v1alpha1
-  description: |
+  description: |-
     Tempo is an open source, easy-to-use, and high-scale distributed tracing backend.
     It can ingest common open source tracing protocols including Jaeger, Zipkin, and OpenTelemetry and requires only object storage to operate.
     Please refer to the [Tempo documentation](https://grafana.com/docs/tempo/latest/) for more information about Tempo.

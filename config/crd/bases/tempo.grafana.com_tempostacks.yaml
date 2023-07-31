@@ -268,7 +268,7 @@ spec:
                     properties:
                       traces:
                         description: 'Traces defines retention period. Supported parameter
-                          suffixes are “s”, “m” and “h”. example: 336h default: value
+                          suffixes are "s", "m" and "h". example: 336h default: value
                           is 48h.'
                         type: string
                     type: object
@@ -279,7 +279,7 @@ spec:
                       properties:
                         traces:
                           description: 'Traces defines retention period. Supported
-                            parameter suffixes are “s”, “m” and “h”. example: 336h
+                            parameter suffixes are "s", "m" and "h". example: 336h
                             default: value is 48h.'
                           type: string
                       type: object

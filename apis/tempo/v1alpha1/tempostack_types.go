@@ -668,7 +668,7 @@ type RetentionSpec struct {
 
 // RetentionConfig defines how long data should be provided.
 type RetentionConfig struct {
-	// Traces defines retention period. Supported parameter suffixes are “s”, “m” and “h”.
+	// Traces defines retention period. Supported parameter suffixes are "s", "m" and "h".
 	// example: 336h
 	// default: value is 48h.
 	//
