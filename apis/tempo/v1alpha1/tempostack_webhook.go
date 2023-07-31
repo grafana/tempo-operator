@@ -137,17 +137,19 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 		r.Spec.ReplicationFactor = defaultReplicationFactor
 	}
 
+	// if tenant mode is Openshift, ingress type should be route by default.
+	if r.Spec.Tenants != nil && r.Spec.Tenants.Mode == OpenShift && r.Spec.Template.Gateway.Ingress.Type == "" {
+		r.Spec.Template.Gateway.Ingress.Type = IngressTypeRoute
+	}
+
+	if r.Spec.Template.Gateway.Ingress.Type == IngressTypeRoute && r.Spec.Template.Gateway.Ingress.Route.Termination == "" {
+		r.Spec.Template.Gateway.Ingress.Route.Termination = TLSRouteTerminationTypeEdge
+	}
+
 	// Terminate TLS of the JaegerQuery Route on the Edge by default
 	if r.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type == IngressTypeRoute && r.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Route.Termination == "" {
 		r.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Route.Termination = TLSRouteTerminationTypeEdge
 	}
-
-	// if tenant mode is Openshift, ingress type should be route by default.
-	if r.Spec.Tenants != nil && r.Spec.Tenants.Mode == OpenShift {
-		r.Spec.Template.Gateway.Ingress.Type = IngressTypeRoute
-		r.Spec.Template.Gateway.Ingress.Route.Termination = TLSRouteTerminationTypePassthrough
-	}
-
 	return nil
 }
 
