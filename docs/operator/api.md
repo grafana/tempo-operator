@@ -2762,6 +2762,10 @@ responsible for decrypting traffic.</p>
 and re-encrypt using a new certificate.</p>
 </td>
 
+</tr><tr><td><p>&#34;passthrough&#34;</p></td>
+
+<td></td>
+
 </tr><tr><td><p>&#34;edge&#34;</p></td>
 
 <td></td>
