@@ -35,6 +35,7 @@ var (
 )
 
 const maxLabelLength = 63
+const defaultRouteTLSTermination = TLSRouteTerminationTypeEdge
 
 // SetupWebhookWithManager initializes the webhook.
 func (r *TempoStack) SetupWebhookWithManager(mgr ctrl.Manager, ctrlConfig v1alpha1.ProjectConfig) error {
@@ -143,12 +144,12 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 	}
 
 	if r.Spec.Template.Gateway.Ingress.Type == IngressTypeRoute && r.Spec.Template.Gateway.Ingress.Route.Termination == "" {
-		r.Spec.Template.Gateway.Ingress.Route.Termination = TLSRouteTerminationTypeEdge
+		r.Spec.Template.Gateway.Ingress.Route.Termination = defaultRouteTLSTermination
 	}
 
 	// Terminate TLS of the JaegerQuery Route on the Edge by default
 	if r.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type == IngressTypeRoute && r.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Route.Termination == "" {
-		r.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Route.Termination = TLSRouteTerminationTypeEdge
+		r.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Route.Termination = defaultRouteTLSTermination
 	}
 	return nil
 }
