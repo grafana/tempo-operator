@@ -123,6 +123,7 @@ func addDependencies(mgr ctrl.Manager, ctrlConfig configv1alpha1.ProjectConfig, 
 	err = mgr.Add(manager.RunnableFunc(func(ctx context.Context) error {
 		reconciler := &controllers.OperatorReconciler{
 			Client: mgr.GetClient(),
+			Scheme: mgr.GetScheme(),
 		}
 		return reconciler.Reconcile(ctx, ctrlConfig)
 	}))

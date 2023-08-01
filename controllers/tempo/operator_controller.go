@@ -4,10 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	v1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -20,6 +22,7 @@ import (
 // OperatorReconciler reconciles the operator configuration.
 type OperatorReconciler struct {
 	client.Client
+	Scheme *runtime.Scheme
 }
 
 func (r *OperatorReconciler) getOperatorDeployment(ctx context.Context) (v1.Deployment, error) {
@@ -33,8 +36,14 @@ func (r *OperatorReconciler) getOperatorDeployment(ctx context.Context) (v1.Depl
 	if err != nil {
 		return v1.Deployment{}, fmt.Errorf("failed to list operator deployments: %w", err)
 	}
-	if len(operatordeploymentsList.Items) != 1 {
-		return v1.Deployment{}, fmt.Errorf("failed to find current operator deployment, found deployments: %v", operatordeploymentsList.Items)
+	if len(operatordeploymentsList.Items) == 0 {
+		return v1.Deployment{}, fmt.Errorf("no deployment matching %v found", listOps)
+	} else if len(operatordeploymentsList.Items) > 1 {
+		nsns := []string{}
+		for _, dep := range operatordeploymentsList.Items {
+			nsns = append(nsns, fmt.Sprintf("%s/%s", dep.Namespace, dep.Name))
+		}
+		return v1.Deployment{}, fmt.Errorf("found multiple tempo-operator deployments: %s", strings.Join(nsns, ", "))
 	}
 
 	return operatordeploymentsList.Items[0], nil
@@ -63,6 +72,15 @@ func (r *OperatorReconciler) Reconcile(ctx context.Context, ctrlConfig configv1a
 			"object_name", obj.GetName(),
 			"object_kind", obj.GetObjectKind(),
 		)
+
+		if isNamespaceScoped(obj) {
+			obj.SetNamespace(operatorDeployment.Namespace)
+			if err := ctrl.SetControllerReference(&operatorDeployment, obj, r.Scheme); err != nil {
+				l.Error(err, "failed to set controller owner reference to resource")
+				errs = append(errs, err)
+				continue
+			}
+		}
 
 		desired := obj.DeepCopyObject().(client.Object)
 		mutateFn := manifests.MutateFuncFor(obj, desired)
