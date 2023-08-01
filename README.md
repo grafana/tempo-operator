@@ -15,7 +15,7 @@ This is a Kubernetes operator for [Grafana Tempo](https://github.com/grafana/tem
 
 ## Documentation
 
-* [Operator documentation](https://tempo-operator.netlify.app)
+* [Operator documentation](https://grafana.com/docs/tempo/next/setup/operator/)
 * [Tempo CRD design](https://docs.google.com/document/d/1avSSf__R226l2b3hbcpXlYH7w6iKtXZsd9VTcpxDqng/edit)
 
 
