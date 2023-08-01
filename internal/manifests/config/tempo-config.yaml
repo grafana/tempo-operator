@@ -23,6 +23,13 @@ distributor:
       protocols:
         grpc:
           endpoint: 0.0.0.0:4317
+{{- if and .Gates.GRPCEncryption .Gateway }}
+          tls:
+            client_ca_file:  {{ .TLS.Paths.CA }}
+            cert_file: {{ .TLS.Paths.Certificate }}
+            key_file: {{ .TLS.Paths.Key }}
+            min_version: {{ .TLS.Profile.MinTLSVersionShort }}
+{{- end }}
 {{- if not .Gateway }}
         http:
           endpoint: 0.0.0.0:4318
