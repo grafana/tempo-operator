@@ -18,13 +18,6 @@ IMG_REPO ?= tempo-operator
 IMG ?= ${IMG_PREFIX}/${IMG_REPO}:v${OPERATOR_VERSION}
 BUNDLE_IMG ?= ${IMG_PREFIX}/${IMG_REPO}-bundle:v${OPERATOR_VERSION}
 
-
-# Website generation variables
-WEBSITE_DIR ?= website
-WEBSITE_BASE_URL ?= https://tempo-operator.netlify.app
-HUGO_VERSION = v0.80.0
-
-
 # When the VERBOSE variable is set to 1, all the commands are shown
 ifeq ("$(VERBOSE)","true")
 echo_prefix=">>>>"
@@ -201,7 +194,6 @@ GEN_CRD = $(LOCALBIN)/gen-crd-api-reference-docs-$(GEN_CRD_VERSION)
 OPERATOR_SDK ?= $(LOCALBIN)/operator-sdk-$(OPERATOR_SDK_VERSION)
 KIND ?= $(LOCALBIN)/kind
 KUTTL ?= $(LOCALBIN)/kubectl-kuttl
-HUGO ?= $(LOCALBIN)/hugo-$(HUGO_VERSION)
 
 # Options for KIND version to use
 export KUBE_VERSION ?= 1.27
@@ -457,26 +449,6 @@ docs/operator/feature-gates.md: $(FEATURE_GATES_TARGET) gen-crd-api-reference-do
 	sed -i 's/+parent:/    parent:/' $@
 	sed -i 's/##/\n##/' $@
 	sed -i 's/+newline/\n/' $@
-
-.PHONY: web-pre
-web-pre: docs/operator/api.md docs/operator/feature-gates.md
-	@echo ">> preprocessing docs for website"
-	@git submodule update --init --recursive
-	cp CONTRIBUTING.md docs/prologue/contributing.md
-	sed -i 's/(LICENSE)/(https:\/\/raw.githubusercontent.com\/grafana\/tempo-operator\/main\/LICENSE)/' docs/prologue/contributing.md
-	sed -i 's/(README.md)/(https:\/\/github.com\/grafana\/tempo-operator#readme)/' docs/prologue/contributing.md
-	cd $(WEBSITE_DIR)/themes/doks/ && npm install && rm -rf content
-
-.PHONY: web
-web: web-pre hugo ## Run production build of the tempo-operator.dev website
-	cd $(WEBSITE_DIR) && $(HUGO) -b $(WEBSITE_BASE_URL)
-
-.PHONY: web-serve
-web-serve: web-pre ## Run local preview version of the tempo-operator.dev website
-	@cd $(WEBSITE_DIR) && $(HUGO) serve
-
-hugo:
-	test -s $(HUGO) || $(call go-get-tool,$(HUGO),--tags extended github.com/gohugoio/hugo,$(HUGO_VERSION))
 
 ##@ Release
 CHLOGGEN_VERSION=v0.3.0
