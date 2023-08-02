@@ -1,7 +1,7 @@
 # Current Operator version
 VERSION_DATE ?= $(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
 VERSION_PKG ?= github.com/grafana/tempo-operator/internal/version
-OPERATOR_VERSION ?= $(or $(shell git describe --tags --abbrev=0 2> /dev/null | sed 's/^v//'), 0.0.0)
+OPERATOR_VERSION ?= 0.3.0
 TEMPO_VERSION ?= $(shell cat config/overlays/community/controller_manager_config.yaml | grep -oP "docker.io/grafana/tempo:\K.*")
 TEMPO_QUERY_VERSION ?= $(shell cat config/overlays/community/controller_manager_config.yaml | grep -oP "docker.io/grafana/tempo-query:\K.*")
 COMMIT_SHA = $(shell git rev-parse HEAD)
