@@ -8,6 +8,7 @@ Changes by Version
 ### 🛑 Breaking changes 🛑
 
 - `operator`: Upgrade tempo to v2.1.1 (#408)
+
   The `maxSearchBytesPerTrace` global and per-tenant limit is deprecated.
   A new `maxSearchDuration` global and per-tenant limit is available.
   Some metrics got renamed or deleted, see the [Tempo v2.1.0 release notes](https://github.com/grafana/tempo/releases/tag/v2.1.0) for details.
@@ -19,6 +20,7 @@ Changes by Version
 - `operator`: Enable mTLS by default for internal components (#505)
 - `operator`: Expose the Jaeger GRPC query port (#513)
 - `operator`: Expose supported protocols on the distributor (#436)
+
   The following protocols are now exposed: 
     - Jaeger: thrift-http port 14268, thrift-binary port 6832, thrift-compact port 6831, Grpc port 14250
     - Zipkin port 9411
@@ -26,14 +28,12 @@ Changes by Version
 - `operator`: Use internal certificate for internal HTTP server of gateway (#480)
 - `operator`: Add ability to create and configure route or ingress for the gateway (#265)
 - `operator`: The operator is now at Level 4 - Deep Insights (#504)
+
   The operator optionally exposes metrics and alerts for the operator and the operand.
   
 - `operator`: Enable mTLS on receivers when gateway is enabled (#535)
 - `operator`: Enable multitenancy without need the gateway (#224)
 - `operator`: Add operator alerts and runbook. (#309)
-  The alerts are only installed for the OpenShift bundle.
-  See https://github.com/grafana/tempo-operator/issues/491 for a discussion to enable them in the community bundle.
-  
 - `operator`: Add new operator configuration options to enable or disable the creation of ServiceMonitor and PrometheusRule for the operator itself (#491)
 - `operator`: Probe webhook server in operator health checks (#459)
 - `operator`: Rename Degraded condition to ConfigurationError and expose reconcile errors via a new FailedReconciliation status (#400, #422)
