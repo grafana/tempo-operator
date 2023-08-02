@@ -5,7 +5,7 @@ resources:
 - prometheus_role_binding.yaml
 
 # Adds namespace to all resources.
-namespace: openshift-operators-redhat
+namespace: tempo-operator-system
 
 # Value of this field is prepended to the
 # names of all resources, e.g. a deployment named
