@@ -13,3 +13,13 @@ metadata:
   namespace: kuttl-operator-upgrade
 status:
   readyReplicas: 1
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  namespace: kuttl-operator-upgrade
+status:
+  containerStatuses:
+  # assert that the readiness probes of both containers (kube-rbac-proxy and tempo-operator) are successful
+  - ready: true
+  - ready: true
