@@ -586,6 +586,12 @@ spec:
           - update
           - watch
         - apiGroups:
+          - apps
+          resources:
+          - deployments/finalizers
+          verbs:
+          - update
+        - apiGroups:
           - config.openshift.io
           resources:
           - dnses
