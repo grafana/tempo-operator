@@ -3,6 +3,10 @@ kind: TempoStack
 metadata:
   name: sample
 spec:
+  storage:
+    secret:
+      name: my-storage-secret
+      type: s3
   storageSize: 1Gi
   resources:
     total:
@@ -13,3 +17,5 @@ spec:
     queryFrontend:
       jaegerQuery:
         enabled: true
+        ingress:
+          type: route

@@ -323,6 +323,7 @@ spec:
                       name:
                         description: Name of a secret in the namespace configured
                           for object storage secrets.
+                        minLength: 1
                         type: string
                       type:
                         description: Type of object storage that should be used
