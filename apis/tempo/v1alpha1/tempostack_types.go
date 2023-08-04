@@ -180,42 +180,42 @@ type ComponentStatus struct {
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=status,xDescriptors="urn:alm:descriptor:com.tectonic.ui:podStatuses",displayName="Compactor",order=5
-	Compactor PodStatusMap `json:"compactor,omitempty"`
+	Compactor PodStatusMap `json:"compactor"`
 
 	// Distributor is a map to the per pod status of the distributor deployment
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=status,xDescriptors="urn:alm:descriptor:com.tectonic.ui:podStatuses",displayName="Distributor",order=1
-	Distributor PodStatusMap `json:"distributor,omitempty"`
+	Distributor PodStatusMap `json:"distributor"`
 
 	// Ingester is a map to the per pod status of the ingester statefulset
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=status,xDescriptors="urn:alm:descriptor:com.tectonic.ui:podStatuses",displayName="Ingester",order=2
-	Ingester PodStatusMap `json:"ingester,omitempty"`
+	Ingester PodStatusMap `json:"ingester"`
 
 	// Querier is a map to the per pod status of the querier deployment
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=status,xDescriptors="urn:alm:descriptor:com.tectonic.ui:podStatuses",displayName="Querier",order=3
-	Querier PodStatusMap `json:"querier,omitempty"`
+	Querier PodStatusMap `json:"querier"`
 
 	// QueryFrontend is a map to the per pod status of the query frontend deployment
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=status,xDescriptors="urn:alm:descriptor:com.tectonic.ui:podStatuses",displayName="Query Frontend",order=4
-	QueryFrontend PodStatusMap `json:"queryFrontend,omitempty"`
+	QueryFrontend PodStatusMap `json:"queryFrontend"`
 
 	// Gateway is a map to the per pod status of the query frontend deployment
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=status,xDescriptors="urn:alm:descriptor:com.tectonic.ui:podStatuses",displayName="Query Frontend",order=4
-	Gateway PodStatusMap `json:"gateway,omitempty"`
+	Gateway PodStatusMap `json:"gateway"`
 }
 
 // TempoStackStatus defines the observed state of TempoStack.
