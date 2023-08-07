@@ -42,6 +42,11 @@ This is a rough outline of what a contributor's workflow looks like:
 ```
 IMG_PREFIX=docker.io/${USER} OPERATOR_VERSION=$(date +%s).0.0 make docker-build docker-push deploy reset
 ```
+- On OpenShift, you can install the operator via OLM:
+```
+kubectl create namespace tempo-operator-system
+IMG_PREFIX=docker.io/${USER} OPERATOR_VERSION=$(date +%s).0.0 BUNDLE_VARIANT=openshift make docker-build docker-push bundle bundle-build bundle-push olm-deploy reset
+```
 - Make commits of logical units.
 - Push your changes to a topic branch in your fork of the repository.
 - Make sure the tests pass, and add any new tests as appropriate.
