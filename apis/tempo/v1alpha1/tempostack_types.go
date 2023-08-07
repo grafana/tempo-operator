@@ -368,7 +368,7 @@ type ObjectStorageSpec struct {
 	TLS *ObjectStorageTLSSpec `json:"tls,omitempty"`
 
 	// Secret for object storage authentication.
-	// Name of a secret in the same namespace as the tempo TempoStack custom resource.
+	// Name of a secret in the same namespace as the TempoStack custom resource.
 	//
 	// +kubebuilder:validation:Required
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Object Storage Secret"
@@ -379,7 +379,7 @@ type ObjectStorageSpec struct {
 // ObjectStorageTLSSpec is the TLS configuration for reaching the object storage endpoint.
 type ObjectStorageTLSSpec struct {
 	// CA is the name of a ConfigMap containing a CA certificate.
-	// It needs to be in the same namespace as the Tempo custom resource.
+	// It needs to be in the same namespace as the TempoStack custom resource.
 	//
 	// +optional
 	// +kubebuilder:validation:optional

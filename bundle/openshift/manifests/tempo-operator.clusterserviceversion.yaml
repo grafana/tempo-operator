@@ -33,7 +33,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator
-    createdAt: "2023-08-02T03:01:18Z"
+    createdAt: "2023-08-04T16:42:28Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operators.operatorframework.io/builder: operator-sdk-v1.27.0
@@ -274,7 +274,7 @@ spec:
         displayName: Object Storage
         path: storage
       - description: Secret for object storage authentication. Name of a secret in
-          the same namespace as the tempo TempoStack custom resource.
+          the same namespace as the TempoStack custom resource.
         displayName: Object Storage Secret
         path: storage.secret
       - description: Name of a secret in the namespace configured for object storage
@@ -294,7 +294,7 @@ spec:
         displayName: TLS Config
         path: storage.tls
       - description: CA is the name of a ConfigMap containing a CA certificate. It
-          needs to be in the same namespace as the Tempo custom resource.
+          needs to be in the same namespace as the TempoStack custom resource.
         displayName: CA ConfigMap Name
         path: storage.tls.caName
         x-descriptors:

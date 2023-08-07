@@ -55,43 +55,9 @@ func (u Upgrade) TempoStacks(ctx context.Context) error {
 	}
 
 	for i := range tempostackList.Items {
-		original := tempostackList.Items[i]
-		itemLogger := u.Log.WithValues("name", original.Name, "namespace", original.Namespace, "from_version", original.Status.OperatorVersion)
-
-		upgraded, err := u.TempoStack(ctx, original)
-		itemLogger = itemLogger.WithValues("to_version", upgraded.Status.OperatorVersion)
-		if err != nil {
-			msg := "automated upgrade is not possible, the CR instance must be corrected and re-created manually"
-			itemLogger.Info(msg)
-			u.Recorder.Event(&original, "Error", "Upgrade", msg)
-			metricUpgrades.WithLabelValues(metricUpgradesStateFailed).Inc()
-			continue
-		}
-
-		// only save if there were changes to the CR
-		if !reflect.DeepEqual(upgraded, tempostackList.Items[i]) {
-			// the resource update overrides the status, so, keep it so that we can reset it later
-			status := upgraded.Status
-			patch := client.MergeFrom(&original)
-			if err := u.Client.Patch(ctx, &upgraded, patch); err != nil {
-				itemLogger.Error(err, "failed to apply changes to instance")
-				metricUpgrades.WithLabelValues(metricUpgradesStateFailed).Inc()
-				continue
-			}
-
-			// the status object requires its own update
-			upgraded.Status = status
-			if err := u.Client.Status().Patch(ctx, &upgraded, patch); err != nil {
-				itemLogger.Error(err, "failed to apply changes to instance's status object")
-				metricUpgrades.WithLabelValues(metricUpgradesStateFailed).Inc()
-				continue
-			}
-
-			itemLogger.Info("upgraded instance")
-			metricUpgrades.WithLabelValues(metricUpgradesStateUpgraded).Inc()
-		} else {
-			metricUpgrades.WithLabelValues(metricUpgradesStateUpToDate).Inc()
-		}
+		// u.TempoStack() logs the errors to the operator log
+		// We continue upgrading the other operands even if an operand fails to upgrade.
+		_ = u.TempoStack(ctx, tempostackList.Items[i])
 	}
 
 	if len(tempostackList.Items) == 0 {
@@ -101,10 +67,52 @@ func (u Upgrade) TempoStacks(ctx context.Context) error {
 	return nil
 }
 
-// TempoStack upgrades a single TempoStack CR to the latest known version.
+// TempoStack upgrades a TempoStack instance in the cluster.
+func (u Upgrade) TempoStack(ctx context.Context, original v1alpha1.TempoStack) error {
+	itemLogger := u.Log.WithValues("name", original.Name, "namespace", original.Namespace, "from_version", original.Status.OperatorVersion)
+
+	upgraded, err := u.updateTempoStackCR(ctx, original)
+	itemLogger = itemLogger.WithValues("to_version", upgraded.Status.OperatorVersion)
+	if err != nil {
+		msg := "automated upgrade is not possible, the CR instance must be corrected and re-created manually"
+		itemLogger.Info(msg)
+		u.Recorder.Event(&original, "Error", "Upgrade", msg)
+		metricUpgrades.WithLabelValues(metricUpgradesStateFailed).Inc()
+		return err
+	}
+
+	// only save if there were changes to the CR
+	if !reflect.DeepEqual(upgraded, original) {
+		// the resource update overrides the status, so, keep it so that we can reset it later
+		status := upgraded.Status
+		patch := client.MergeFrom(&original)
+		if err := u.Client.Patch(ctx, &upgraded, patch); err != nil {
+			itemLogger.Error(err, "failed to apply changes to instance")
+			metricUpgrades.WithLabelValues(metricUpgradesStateFailed).Inc()
+			return err
+		}
+
+		// the status object requires its own update
+		upgraded.Status = status
+		if err := u.Client.Status().Patch(ctx, &upgraded, patch); err != nil {
+			itemLogger.Error(err, "failed to apply changes to instance's status object")
+			metricUpgrades.WithLabelValues(metricUpgradesStateFailed).Inc()
+			return err
+		}
+
+		itemLogger.Info("upgraded instance")
+		metricUpgrades.WithLabelValues(metricUpgradesStateUpgraded).Inc()
+	} else {
+		metricUpgrades.WithLabelValues(metricUpgradesStateUpToDate).Inc()
+	}
+
+	return nil
+}
+
+// updateTempoStackCR upgrades a single updateTempoStackCR CR to the latest known version.
 // It runs all upgrade procedures between the current and latest operator version.
-// Note: It does not save/apply the changes to the CR.
-func (u Upgrade) TempoStack(ctx context.Context, tempo v1alpha1.TempoStack) (v1alpha1.TempoStack, error) {
+// Note: This method does not patch the TempoStack CR in the cluster.
+func (u Upgrade) updateTempoStackCR(ctx context.Context, tempo v1alpha1.TempoStack) (v1alpha1.TempoStack, error) {
 	log := u.Log.WithValues("namespace", tempo.Namespace, "tempo", tempo.Name)
 
 	if tempo.Spec.ManagementState == v1alpha1.ManagementStateUnmanaged {
@@ -143,7 +151,7 @@ func (u Upgrade) TempoStack(ctx context.Context, tempo v1alpha1.TempoStack) (v1a
 
 	for _, availableUpgrade := range upgrades {
 		if availableUpgrade.version.GreaterThan(instanceVersion) {
-			upgraded, err := availableUpgrade.upgrade(u, &tempo)
+			upgraded, err := availableUpgrade.upgrade(ctx, u, &tempo)
 			if err != nil {
 				log.Error(err, "failed to upgrade TempoStack instance", "from_version", tempo.Status.OperatorVersion, "to_version", availableUpgrade.version.String())
 				return tempo, err
@@ -158,8 +166,8 @@ func (u Upgrade) TempoStack(ctx context.Context, tempo v1alpha1.TempoStack) (v1a
 	// update all tempo images to the new default images on every upgrade
 	updateTempoStackImages(u, &tempo)
 
-	// at the end of the upgrade process, the CR is up to date with the current running versions
-	// update all versions with the current running versions
+	// at the end of the upgrade process, the CR is up to date with the current running component versions (Operator, Tempo, TempoQuery)
+	// update all component versions in the Status field of the CR with the current running versions
 	updateTempoStackVersions(u, &tempo)
 
 	return tempo, nil
@@ -184,7 +192,7 @@ func updateTempoStackImages(u Upgrade, tempo *v1alpha1.TempoStack) {
 	}
 }
 
-// updateTempoStackVersions updates all versions in the CR with the current running versions.
+// updateTempoStackVersions updates all component versions in the CR with the current running component versions.
 func updateTempoStackVersions(u Upgrade, tempo *v1alpha1.TempoStack) {
 	tempo.Status.OperatorVersion = u.Version.OperatorVersion
 	tempo.Status.TempoVersion = u.Version.TempoVersion
