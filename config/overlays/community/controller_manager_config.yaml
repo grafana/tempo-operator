@@ -24,7 +24,7 @@ images:
   tempo: docker.io/grafana/tempo:2.1.1
   tempoQuery: docker.io/grafana/tempo-query:2.1.1
   tempoGateway: quay.io/observatorium/api:main-2023-07-31-5904ad0
-  tempoGatewayOpa: quay.io/observatorium/opa-openshift:main-2023-03-13-fd7b736
+  tempoGatewayOpa: quay.io/observatorium/opa-openshift:main-2023-05-24-8e91537
 featureGates:
   openshift:
     openshiftRoute: false

@@ -16,7 +16,7 @@ spec:
         - |
           namespace=$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
           curl \
-            -sS -G \
+            -v -G \
             --cert /var/run/tls/server/tls.crt \
             --key /var/run/tls/server/tls.key \
             --cacert /var/run/ca/service-ca.crt \
@@ -29,7 +29,7 @@ spec:
             exit 1
           fi
 
-          curl -sS -G http://tempo-simplest-query-frontend:16686/api/traces --data-urlencode "service=telemetrygen" | tee /tmp/jaeger.out
+          curl -v -G http://tempo-simplest-query-frontend:16686/api/traces --data-urlencode "service=telemetrygen" | tee /tmp/jaeger.out
           num_traces=$(jq ".data | length" /tmp/jaeger.out)
           if [[ "$num_traces" -ne 10 ]]; then
             echo && echo "The Jaeger API returned $num_traces instead of 10 traces."
