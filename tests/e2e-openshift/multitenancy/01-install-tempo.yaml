@@ -55,3 +55,19 @@ subjects:
   - kind: Group
     apiGroup: rbac.authorization.k8s.io
     name: system:authenticated
+---
+# grant the default serviceaccount in the kuttl-multitenancy namespace
+# access to view resource in kuttl-multitenancy namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: view
+  namespace: kuttl-multitenancy
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: view
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: kuttl-multitenancy
