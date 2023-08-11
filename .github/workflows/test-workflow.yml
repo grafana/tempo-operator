@@ -13,6 +13,7 @@ jobs:
         with:
           app_id: ${{ secrets.PUBLISH_APP_ID }}
           private_key: ${{ secrets.PUBLISH_APP_PRIVATE_KEY }}
+          installation_id: ${{ secrets.PUBLISH_APP_INSTALLATION_ID }}
 
       - name: test-pr
         run: echo "test" > README.md
