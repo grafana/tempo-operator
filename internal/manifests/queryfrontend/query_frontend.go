@@ -118,6 +118,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 								"-target=query-frontend",
 								"-config.file=/conf/tempo.yaml",
 								"-mem-ballast-size-mbs=1024",
+								"-log.level=info",
 							},
 							Ports: []corev1.ContainerPort{
 								{
