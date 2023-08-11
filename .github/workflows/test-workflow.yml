@@ -1,0 +1,22 @@
+on:
+  push:
+    branches: ["julienduchesne/test-workflow"]
+
+jobs:
+  job:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Generate token
+        id: generate_token
+        uses: tibdex/github-app-token@v1
+        with:
+          app_id: ${{ secrets.PUBLISH_APP_ID }}
+          private_key: ${{ secrets.PUBLISH_APP_PRIVATE_KEY }}
+
+      - name: test-pr
+        run: echo "test" > README.md
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ steps.generate_token.outputs.token }}
