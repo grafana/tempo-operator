@@ -22,7 +22,7 @@ type TenantsSpec struct {
 	// +required
 	// +kubebuilder:validation:Required
 	// +kubebuilder:default:=static
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors={"urn:alm:descriptor:com.tectonic.ui:select:static","urn:alm:descriptor:com.tectonic.ui:select:dynamic"},displayName="Mode"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors={"urn:alm:descriptor:com.tectonic.ui:select:static","urn:alm:descriptor:com.tectonic.ui:select:openshift"},displayName="Mode"
 	Mode ModeType `json:"mode"`
 
 	// Authentication defines the tempo-gateway component authentication configuration spec per tenant.
