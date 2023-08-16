@@ -459,7 +459,7 @@ spec:
         path: tenants.mode
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:select:static
-        - urn:alm:descriptor:com.tectonic.ui:select:dynamic
+        - urn:alm:descriptor:com.tectonic.ui:select:openshift
       statusDescriptors:
       - description: Distributor is a map to the per pod status of the distributor
           deployment
