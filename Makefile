@@ -435,7 +435,6 @@ cmctl:
 .PHONY: api-docs
 api-docs: docs/operator/api.md docs/operator/feature-gates.md
 
-##@ Website
 TYPES_TARGET := $(shell find apis/tempo -type f -iname "*_types.go")
 docs/operator/api.md: $(TYPES_TARGET) gen-crd-api-reference-docs
 	$(GEN_CRD) -api-dir "github.com/grafana/tempo-operator/apis/tempo/" -config "$(PWD)/config/docs/config.json" -template-dir "$(PWD)/config/docs/templates" -out-file "$(PWD)/$@"
