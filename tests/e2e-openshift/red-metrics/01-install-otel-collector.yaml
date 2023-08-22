@@ -3,7 +3,7 @@ kind: OpenTelemetryCollector
 metadata:
   name: otel
 spec:
-  image: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.79.0
+  image: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.83.0
   mode: deployment
   ports:
     - name: promexporter

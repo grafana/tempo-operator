@@ -278,6 +278,10 @@ func enableMonitoringTab(tempo v1alpha1.TempoStack, jaegerQueryContainer corev1.
 		},
 		Args: []string{
 			"--prometheus.query.support-spanmetrics-connector",
+			// Just a note that normalization needs to be enabled for < 0.80.0 OTEL collector versions
+			// However, we do not intend to support them.
+			// --prometheus.query.normalize-calls
+			// --prometheus.query.normalize-duration
 		},
 	}
 	// If the endpoint matches Prometheus on OpenShift, configure TLS and token based auth
