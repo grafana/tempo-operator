@@ -243,6 +243,17 @@ func (v *validator) validateQueryFrontend(tempo TempoStack) field.ErrorList {
 		)}
 	}
 
+	if tempo.Spec.Template.QueryFrontend.JaegerQuery.MonitorTab.Enabled {
+		prometheusEndpointPath := field.NewPath("spec").Child("template").Child("queryFrontend").Child("jaegerQuery").Child("monitorTab").Child("prometheusEndpoint")
+		if tempo.Spec.Template.QueryFrontend.JaegerQuery.MonitorTab.PrometheusEndpoint == "" {
+			return field.ErrorList{field.Invalid(
+				prometheusEndpointPath,
+				tempo.Spec.Template.QueryFrontend.JaegerQuery.MonitorTab.PrometheusEndpoint,
+				"Prometheus endpoint must be set when monitoring is enabled",
+			)}
+		}
+	}
+
 	return nil
 }
 

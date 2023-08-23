@@ -2,7 +2,9 @@ package queryfrontend
 
 import (
 	"fmt"
+	"strings"
 
+	"github.com/imdario/mergo"
 	routev1 "github.com/openshift/api/route/v1"
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -242,6 +244,14 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 			)
 		}
 
+		if tempo.Spec.Template.QueryFrontend.JaegerQuery.MonitorTab.Enabled {
+			c, err := enableMonitoringTab(tempo, jaegerQueryContainer)
+			if err != nil {
+				return nil, fmt.Errorf("failed to configure monitor tab in tempo-query container: %w", err)
+			}
+			jaegerQueryContainer = c
+		}
+
 		d.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, jaegerQueryContainer)
 		d.Spec.Template.Spec.Volumes = append(d.Spec.Template.Spec.Volumes, jaegerQueryVolume)
 	}
@@ -251,6 +261,45 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 		return nil, err
 	}
 	return d, nil
+}
+
+func enableMonitoringTab(tempo v1alpha1.TempoStack, jaegerQueryContainer corev1.Container) (corev1.Container, error) {
+	// TODO (pavolloffay) disable/enable monitoring tab https://github.com/grafana/tempo-operator/issues/464
+	container := corev1.Container{
+		Env: []corev1.EnvVar{
+			{
+				Name:  "METRICS_STORAGE_TYPE",
+				Value: "prometheus",
+			},
+			{
+				Name:  "PROMETHEUS_SERVER_URL",
+				Value: tempo.Spec.Template.QueryFrontend.JaegerQuery.MonitorTab.PrometheusEndpoint,
+			},
+		},
+		Args: []string{
+			"--prometheus.query.support-spanmetrics-connector",
+			// Just a note that normalization needs to be enabled for < 0.80.0 OTEL collector versions
+			// However, we do not intend to support them.
+			// --prometheus.query.normalize-calls
+			// --prometheus.query.normalize-duration
+		},
+	}
+	// If the endpoint matches Prometheus on OpenShift, configure TLS and token based auth
+	prometheusEndpoint := strings.TrimSpace(tempo.Spec.Template.QueryFrontend.JaegerQuery.MonitorTab.PrometheusEndpoint)
+	if prometheusEndpoint == "https://thanos-querier.openshift-monitoring.svc.cluster.local:9091" {
+		container.Args = append(container.Args,
+			"--prometheus.tls.enabled=true",
+			// This enables token propagation, however flag --query.bearer-token-propagation=true
+			// overrides the settings and token from the context (incoming) request is used.
+			"--prometheus.token-file=/var/run/secrets/kubernetes.io/serviceaccount/token",
+			"--prometheus.tls.ca=/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt")
+	}
+
+	err := mergo.Merge(&jaegerQueryContainer, container, mergo.WithAppendSlice)
+	if err != nil {
+		return corev1.Container{}, err
+	}
+	return jaegerQueryContainer, nil
 }
 
 func services(tempo v1alpha1.TempoStack) []*corev1.Service {

@@ -1,0 +1,18 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: hotrod-curl
+spec:
+  completions: 1
+  parallelism: 1
+  template:
+    metadata:
+      labels:
+        app: hotrod-curl
+    spec:
+      containers:
+        - name: hotrod-curl
+          image: curlimages/curl
+          args:
+            - "http://hotrod:80/dispatch?customer=123"
+      restartPolicy: Never

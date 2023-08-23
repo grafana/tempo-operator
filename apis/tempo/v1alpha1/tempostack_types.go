@@ -508,6 +508,33 @@ type JaegerQuerySpec struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger Query UI Ingress Settings"
 	Ingress IngressSpec `json:"ingress,omitempty"`
+
+	// MonitorTab defines monitor tab configuration.
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger Query UI Monitor Tab Settings"
+	MonitorTab JaegerQueryMonitor `json:"monitorTab"`
+}
+
+// JaegerQueryMonitor defines configuration for the service monitoring tab in the Jaeger console.
+// The monitoring tab uses Prometheus to query span RED metrics.
+// This feature requires running OpenTelemetry collector with spanmetricsconnector -
+// https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/connector/spanmetricsconnector
+// which derives span RED metrics from spans and exports the metrics to Prometheus.
+type JaegerQueryMonitor struct {
+	// Enabled enables monitoring tab in Jaeger console.
+	// PrometheusEndpoint needs to be set to enable the feature.
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enabled"
+	Enabled bool `json:"enabled"`
+
+	// PrometheusEndpoint configures endpoint to the Prometheus that contains span RED metrics.
+	// For instance on OpenShift this is set to https://thanos-querier.openshift-monitoring.svc.cluster.local:9091
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Prometheus endpoint"
+	PrometheusEndpoint string `json:"prometheusEndpoint"`
 }
 
 // IngressSpec defines Jaeger Query Ingress options.
