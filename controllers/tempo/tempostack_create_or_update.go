@@ -25,11 +25,11 @@ import (
 	"github.com/grafana/tempo-operator/internal/tlsprofile"
 )
 
-func (r *TempoStackReconciler) getStorageConfig(ctx context.Context, tempo v1alpha1.TempoStack) (*manifestutils.StorageParams, error) {
+func (r *TempoStackReconciler) getStorageConfig(ctx context.Context, tempo v1alpha1.TempoStack) (manifestutils.StorageParams, error) {
 	storageSecret := &corev1.Secret{}
 	err := r.Get(ctx, types.NamespacedName{Namespace: tempo.Namespace, Name: tempo.Spec.Storage.Secret.Name}, storageSecret)
 	if err != nil {
-		return nil, fmt.Errorf("could not fetch storage secret: %w", err)
+		return manifestutils.StorageParams{}, fmt.Errorf("could not fetch storage secret: %w", err)
 	}
 
 	fieldErrs := v1alpha1.ValidateStorageSecret(tempo, *storageSecret)
@@ -38,14 +38,10 @@ func (r *TempoStackReconciler) getStorageConfig(ctx context.Context, tempo v1alp
 		for i, fieldErr := range fieldErrs {
 			msgs[i] = fieldErr.Detail
 		}
-		return nil, fmt.Errorf("invalid storage secret: %s", strings.Join(msgs, ", "))
+		return manifestutils.StorageParams{}, fmt.Errorf("invalid storage secret: %s", strings.Join(msgs, ", "))
 	}
 
-	params := manifestutils.StorageParams{
-		AzureStorage: &manifestutils.AzureStorage{},
-		GCS:          &manifestutils.GCS{},
-		S3:           &manifestutils.S3{},
-	}
+	params := manifestutils.StorageParams{}
 
 	switch tempo.Spec.Storage.Secret.Type {
 	case v1alpha1.ObjectStorageSecretAzure:
@@ -55,10 +51,10 @@ func (r *TempoStackReconciler) getStorageConfig(ctx context.Context, tempo v1alp
 	case v1alpha1.ObjectStorageSecretS3:
 		params.S3 = getS3Params(storageSecret)
 	default:
-		return &params, fmt.Errorf("storage secret type is not recognized")
+		return manifestutils.StorageParams{}, fmt.Errorf("storage secret type is not recognized")
 	}
 
-	return &params, nil
+	return params, nil
 }
 
 func isNamespaceScoped(obj client.Object) bool {
@@ -138,7 +134,7 @@ func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, log logr.Logg
 
 	managedObjects, err := manifests.BuildAll(manifestutils.Params{
 		Tempo:               tempo,
-		StorageParams:       *storageConfig,
+		StorageParams:       storageConfig,
 		Gates:               r.FeatureGates,
 		TLSProfile:          tlsProfile,
 		GatewayTenantSecret: tenantSecrets,

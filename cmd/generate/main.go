@@ -183,7 +183,8 @@ func NewGenerateCommand() *cobra.Command {
 	cmd.Flags().StringVar(&outPath, "output", "/dev/stdout", "File to store the manifests")
 	cmd.Flags().StringVar(&params.StorageParams.AzureStorage.Container, "storage.azure.container", "azure", "Azure container(taken from storage secret)")
 	cmd.Flags().StringVar(&params.StorageParams.GCS.Bucket, "storage.gcs.bucket", "tempo", "GCS storage bucket (taken from storage secret)")
-	cmd.Flags().StringVar(&params.StorageParams.S3.Endpoint, "storage.s3.endpoint", "http://minio.minio.svc:9000", "S3 storage endpoint (taken from storage secret)")
+	cmd.Flags().StringVar(&params.StorageParams.S3.Endpoint, "storage.s3.endpoint", "minio.minio.svc:9000", "S3 storage endpoint (taken from storage secret)")
+	cmd.Flags().BoolVar(&params.StorageParams.S3.Insecure, "storage.s3.insecure", true, "S3 storage insecure (taken from storage secret)")
 	cmd.Flags().StringVar(&params.StorageParams.S3.Bucket, "storage.s3.bucket", "tempo", "S3 storage bucket (taken from storage secret)")
 	return cmd
 }
