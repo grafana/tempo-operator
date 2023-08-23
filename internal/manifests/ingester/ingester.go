@@ -76,7 +76,7 @@ func statefulSet(params manifestutils.Params) (*v1.StatefulSet, error) {
 						{
 							Name:  "tempo",
 							Image: tempo.Spec.Images.Tempo,
-							Args:  []string{"-target=ingester", "-config.file=/conf/tempo.yaml"},
+							Args:  []string{"-target=ingester", "-config.file=/conf/tempo.yaml", "-config.expand-env=true"},
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      manifestutils.ConfigVolumeName,

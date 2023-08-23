@@ -118,6 +118,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 								"-target=query-frontend",
 								"-config.file=/conf/tempo.yaml",
 								"-mem-ballast-size-mbs=1024",
+								"-config.expand-env=true",
 							},
 							Ports: []corev1.ContainerPort{
 								{
@@ -145,6 +146,24 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 							},
 							Resources:       manifestutils.Resources(tempo, manifestutils.QueryFrontendComponentName),
 							SecurityContext: manifestutils.TempoContainerSecurityContext(),
+							Env: []corev1.EnvVar{
+								{
+									Name:  "HTTP_CERT_FILE",
+									Value: " ",
+								},
+								{
+									Name:  "HTTP_KEY_FILE",
+									Value: " ",
+								},
+								{
+									Name:  "HTTP_CLIENT_CA_FILE",
+									Value: " ",
+								},
+								{
+									Name:  "HTTP_CLIENT_AUTH_TYPE",
+									Value: " ",
+								},
+							},
 						},
 					},
 					Volumes: []corev1.Volume{

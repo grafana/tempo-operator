@@ -138,10 +138,10 @@ server:
 {{- end }}
 {{- if .Gates.HTTPEncryption }}
   http_tls_config:
-    cert_file:  {{ .TLS.Paths.Certificate }}
-    key_file: {{ .TLS.Paths.Key }}
-    client_ca_file: {{ .TLS.Paths.CA }}
-    client_auth_type: RequireAndVerifyClientCert
+    cert_file: ${HTTP_CERT_FILE:-{{ .TLS.Paths.Certificate }}}
+    key_file:  ${HTTP_KEY_FILE:-{{ .TLS.Paths.Key }}}
+    client_ca_file: ${HTTP_CLIENT_CA_FILE:-{{ .TLS.Paths.CA }}}
+    client_auth_type: ${HTTP_CLIENT_AUTH_TYPE:-RequireAndVerifyClientCert}
 {{- end }}
 storage:
   trace:

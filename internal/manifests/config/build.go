@@ -160,6 +160,7 @@ func buildTempoQueryConfig(tempo v1alpha1.TempoStack, params Params) ([]byte, er
 			HTTPEncryption: params.HTTPEncryption,
 		},
 		TenantHeader: manifestutils.TenantHeader,
+		Gateway:      tempo.Spec.Template.Gateway.Enabled,
 	})
 }
 

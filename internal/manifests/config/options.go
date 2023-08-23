@@ -41,6 +41,7 @@ type tempoQueryOptions struct {
 	TLS          tlsOptions
 	HTTPPort     int
 	TenantHeader string
+	Gateway      bool
 }
 
 type featureGates struct {
