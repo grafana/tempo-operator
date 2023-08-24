@@ -178,15 +178,15 @@ func NewGenerateCommand() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			switch {
 			case azureContainer != "":
-				params.StorageParams.AzureStorage = controllers.GetAzureParams(&corev1.Secret{Data: map[string][]byte{
+				params.StorageParams.AzureStorage = controllers.GetAzureParams(v1alpha1.TempoStack{}, &corev1.Secret{Data: map[string][]byte{
 					"container": []byte(azureContainer),
 				}})
 			case gcsBucket != "":
-				params.StorageParams.GCS = controllers.GetGCSParams(&corev1.Secret{Data: map[string][]byte{
+				params.StorageParams.GCS = controllers.GetGCSParams(v1alpha1.TempoStack{}, &corev1.Secret{Data: map[string][]byte{
 					"bucketname": []byte(gcsBucket),
 				}})
 			case s3Endpoint != "":
-				params.StorageParams.S3 = controllers.GetS3Params(&corev1.Secret{Data: map[string][]byte{
+				params.StorageParams.S3 = controllers.GetS3Params(v1alpha1.TempoStack{}, &corev1.Secret{Data: map[string][]byte{
 					"endpoint": []byte(s3Endpoint),
 					"bucket":   []byte(s3Bucket),
 				}})

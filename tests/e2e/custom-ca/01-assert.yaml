@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-simplest-compactor
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-simplest-distributor
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-simplest-querier
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-simplest-query-frontend
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: tempo-simplest-ingester
+spec:
+  template:
+    spec:
+      containers:
+      - volumeMounts:
+        - mountPath: /conf
+          name: tempo-conf
+          readOnly: true
+        - mountPath: /var/tempo
+          name: data
+        - mountPath: /var/run/tls/storage
+          name: storage-ca
+          readOnly: true
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: tempo-simplest
+        name: tempo-conf
+      - configMap:
+          defaultMode: 420
+          name: custom-ca
+        name: storage-ca
+status:
+  readyReplicas: 1

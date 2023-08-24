@@ -1,0 +1,156 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: minio-cert
+data:
+  public.crt: |
+    -----BEGIN CERTIFICATE-----
+    MIIFFjCCAv6gAwIBAgIUUksdAJSm+c6BXkS5N741Xg9oKx8wDQYJKoZIhvcNAQEL
+    BQAwEzERMA8GA1UEAwwITXlEZW1vQ0EwHhcNMjMwODI0MTYxMTA3WhcNMzMwODIx
+    MTYxMTA3WjAQMQ4wDAYDVQQDDAVtaW5pbzCCAiIwDQYJKoZIhvcNAQEBBQADggIP
+    ADCCAgoCggIBAJ1MkByTnP3pm3uUB+hqSOABJig0qQlOkmZFMAE/3RfAvwwXaS7S
+    11S9ZYuvZlv7wB4/FveQpjO78Dnc/0Plarryed6nytPULczI2jeRRPeaoi7mIeLD
+    nhRGNM3VDr2YDRSA7zyIvwh+1BPBu868+/q9CXZJ75jgaFvfkXsj/x9lsH2ngfkj
+    gu08zJ2dLz5Y7J9C2sJSvWpcqMHyroi8o3iRAcqD7TOTjBgbvHgqXZaBbCDC3hs3
+    ihA1bZd9ywyDSOAcw9spzGoCQZ2WUDoAEQ2O4iiOyGecdpz/nVoPv2Ds8RUaBm2a
+    In5/RYlgaVWj1Ccy7ZPOZWSdIH7/7OIid2m3VtoccCF+LF9euYNmghhWZhBOaeHS
+    2Q1F5C/RwhhTxvlxh/dBtT4XCHPsPj1hDryHNBFKos0wK6GKSv1jBTWPYJQiJb65
+    fc9OoTl7OmBr3loQq5ifAYm3O5ElE3YYokT54hBVxi2xdrpwYD1+ArlciG9ZfdUp
+    UUMzooRMsXb84BLT0IikIK30DD8liWOYrrGa3FoyvGAni965uXH+0KCDTydHZLoV
+    p/07zLCbtH2Lx1xz+gWvgStkgANKqkys7aHJYG/BZCMePHmVy7UY6He1UP6Cg0zr
+    vfTn1jylhDBTwjCjOE1RAs4D2mkLp9q+g/99UFSlAPXKbDMsQgEJEnV3AgMBAAGj
+    ZTBjMB0GA1UdDgQWBBSFXJNkkfnS+436aM44jsHhJLe2AzAfBgNVHSMEGDAWgBRq
+    WjQq8Ax2OCdwP0VdVw2Z0slrVTAPBgNVHRMBAf8EBTADAQH/MBAGA1UdEQQJMAeC
+    BW1pbmlvMA0GCSqGSIb3DQEBCwUAA4ICAQBg9zkXqOu+yVm6ROFAeZNfp7ARbVuM
+    EnnvYnIadCCwUfKbjVpyis/FkTHAWsGOqyzwYsYUuwdKNtrZen3BbMGmP49BsZtT
+    qret94avEz5h+8/TVcvQ4nn7jTjOcH1nRarQ+SvOZLe3Jv7zc6eZ+KrhGQVBPxLk
+    BYylys7p13tdZ6O+uAfLEuVqcJ+jr3XgicTTvP4SjYuSOrQVtcJ00GglOG9yfKn1
+    fZUwF5oTmfyOIYsKKZFNq/7f+kZ4CGNVl+isO8b1NA2M/UdEhf5h0LNhS6a3NoeD
+    7IhSYfxDL6NS5i3ct0dv14mwYx7+8sKMyCorrbPatdFIvUbkOJKwiGTr4IUdqtym
+    snVzuHwLNEmQdamctxN+8bG5Ear4Gi1L9IzCE7CIr9XLH0Xd5Z8aBiHaS5PtG/bW
+    JY9VJRPIyZf/bvCOmQaeFHCymqpI9NqZpTSwCOxUuVixrzdOhjiHDB9EP4071y1Y
+    aTl2AKeqtqf8YfwTRGN3fGkmyDoU/MkDDXjmaUda36eITOMLRzDKZXC6QjPL9xbU
+    qNC1dv29teC6WZcY17/uHiheUPptCI4B/cyU9JrTmwV8BlTe4+5RfFN6BeD8Diwy
+    S64HEFHioOQPcRRPoSj5XW2slLZb2G3WTpqerd7kviADXN1z/gIHmFeh7itNcGXg
+    3KYe0zwZ8BR4mQ==
+    -----END CERTIFICATE-----
+  private.key: |
+    -----BEGIN PRIVATE KEY-----
+    MIIJQgIBADANBgkqhkiG9w0BAQEFAASCCSwwggkoAgEAAoICAQCdTJAck5z96Zt7
+    lAfoakjgASYoNKkJTpJmRTABP90XwL8MF2ku0tdUvWWLr2Zb+8AePxb3kKYzu/A5
+    3P9D5Wq68nnep8rT1C3MyNo3kUT3mqIu5iHiw54URjTN1Q69mA0UgO88iL8IftQT
+    wbvOvPv6vQl2Se+Y4Ghb35F7I/8fZbB9p4H5I4LtPMydnS8+WOyfQtrCUr1qXKjB
+    8q6IvKN4kQHKg+0zk4wYG7x4Kl2WgWwgwt4bN4oQNW2XfcsMg0jgHMPbKcxqAkGd
+    llA6ABENjuIojshnnHac/51aD79g7PEVGgZtmiJ+f0WJYGlVo9QnMu2TzmVknSB+
+    /+ziIndpt1baHHAhfixfXrmDZoIYVmYQTmnh0tkNReQv0cIYU8b5cYf3QbU+Fwhz
+    7D49YQ68hzQRSqLNMCuhikr9YwU1j2CUIiW+uX3PTqE5ezpga95aEKuYnwGJtzuR
+    JRN2GKJE+eIQVcYtsXa6cGA9fgK5XIhvWX3VKVFDM6KETLF2/OAS09CIpCCt9Aw/
+    JYljmK6xmtxaMrxgJ4veublx/tCgg08nR2S6Faf9O8ywm7R9i8dcc/oFr4ErZIAD
+    SqpMrO2hyWBvwWQjHjx5lcu1GOh3tVD+goNM673059Y8pYQwU8IwozhNUQLOA9pp
+    C6favoP/fVBUpQD1ymwzLEIBCRJ1dwIDAQABAoICAEA2bJAV3F00+6FfhTjmBnjX
+    Tz3TfXvMpOv164pfCUD0kKj9d5VDQd8Yb/ctc6IyK7PNOnF2jbqJyp+8bUJIyaCm
+    coSnx59guw+hoJ9VgKt5ZyKxFH0vMP2CyXSLOLjB9Pj9R2xVQHLV33pvOF1FfbHW
+    cKHmvdYRKdjzc76qq6+kAf/RnTfYvM5e5wKik5Iml/XNw2LXhvZ/++4sxP4Rz8Pc
+    ojgLUg4fee2viOkfFlRl4f+fvS6sJgLG5MWWdwjVIS9H3tY9gnJ2GFYd8gMzWsLH
+    pOA8pWfSkgM2QARvcEc/go0EMkKUzOcJypexkV6CAg28dwrDE1YW5Jijng6UVl1g
+    IzhpGT6uTxS42N1WEoqk1rKY4jcMTCSNh/gHdfimdVS9ruF7IFY+0i2lqPwLk69N
+    PY4MBia4oEouDD1LNmp+Mb4GI7vUZw9P+HXHPbKdr3ls9Xyco09DG8WPOCjWgjUM
+    /A6k0ORN3bgXOKx3ZpJngrHQZrcQ6xtQeYdYoipPNO6hFXvsBHAvo2vv3IzIXjgn
+    fdTyIjb8CO5E2vRroJ1SrJuv/CXlLvQ4lsSLWvemeH6hR+BFtIwn+f5+buiEoCgI
+    OEBm2ookdjE5g4Vix88ilBf3ImoVJcbMFcx3NNoSXXsiA3jiQdjzKPqhpLnRAe2q
+    iL5kQWuND6OhTmiR2ZSpAoIBAQDQeBz+xNmHP43DnkUT3FLY0rNzO25xjDVh1tlk
+    BnPXPbzpzeUVgsjFbiYpAkS/BBBWf7Yq3gZrlKC/9BjVSYznfzaY+qD8tO9ac7CG
+    OXMaOPQX1cWZldpolD9DZ4e59jTcGWXVJamAH28Bqvn5OncLaM++fEiAiZ0QYHxz
+    zX+176AGIx8VN4iODE3TnVrS/m52OZU/p8BvYptqjuczAJNWi2Uy809IcLKlrrqy
+    SUOGqpPwPVU1307R2NhubWd/o+qCV1Vz4sdHgEY4qxRjJBc6rWsoenkqYj43HC5F
+    Jt1pbirnap1ZVIHUsMFtINTBAKjJg1qQinPVQn56e8HFC8TJAoIBAQDBKcNFOGs5
+    p9neiE104Zk7IsprK551eWgnX5wkovfcRv1MlKaEsQWTvRAZCDJxSoCzWWpshfHw
+    nHgAJVKq5F9MzAx3Bf+5NPx/VIQdAGljv91buawOP6ecIdZyxrWAJfW5QKh3Kvny
+    //DtFz36RKQ5d+l8UE+W9M1XKmW3TIjm2L0J0QSXtLFKFOcJG6gx1yA75Jz2MFup
+    0+9F32jnC5gUA/nXZTkMz9uduqnX1gPNsqi4MEkFVFr2cewA1vHIlXOpEz/Uq6ho
+    nlbbgDPLaiwWAFNxqnd8tnXUSxJLeQSrOdoEtlXptoF0MqMaAVBGl7zfvxfbsVpk
+    BCCOECh18Mg/AoIBAAGaat6qtOGNY5G1jeJxN1HjjO2970OASIjQFivmwM1O9Dz4
+    EGLx9olOJ4z5L34okdeYc9YwjuwU4IeZYPeC8Up2d/0FMGfBHHYdnaXqmzAAcCAe
+    zL45oMxdF391NF4BvrZSm63f9EW/+CKTJgj8oh28WJymaAhVBpgxpcNeOTU0+o4R
+    hxOqsaol/hM6ipBE1KSkHLm4mIpCv9856h1CS9/Ggqi5pkpwU29iwJzOY26NsUWP
+    szAO35RNjpyKytj4cb0+3rFddRrfqaqV5jo89NDGtKRDDNt+levmk5SEj/9XkYzm
+    DP+63qS8F0C3l+tEDgg+sluaNPnW4RIgEYVqacECggEBAJ/ay/sRAcupGSiMbG15
+    9bF2zUV7x5s4afWLrlCzfaQSK7Wgn13YkeD96cCNhBE1suS57tT41IxnMPgN6yf5
+    7tRDWV123XaMXxmQ+/R0TsN6GNq8AaOZEkCn0C0UPUhcIcq5s7FLI6byIJRVU7k1
+    7SKSFewHGpa26Ohl8d+LuxAv9eGV1NMnekDwo3JqLPtyKP7n5u3mfzVAaxfMF6h9
+    c9G8qJqU7m2n5vvVapFwT51/aRlk/Eko0k55YPIg798rr5gQkhaSKMDLqN3mbva8
+    WteqVWQPyuqupTyXFADZmf+J1N9pdhgALYnYDhqLU7/X+zq/jiMF1uRGdhqbTKCu
+    L0kCggEAT1GAiZt3Xsy8aqZoqcYB/R4/S6aS3/Zls9FIQhNJ5IXgXXKGaMI8RlT7
+    C6nfUyQXRvUTSoxzRzXa5q/YlLE/ifjZyw/PWB0CCCleXhRhu5ibVqw4dwgt6Orr
+    vBkvq/1+RrNMmQZpXK2Bkf0P0XpwvBUZa6ZZ/hc3PicOu5CKuDWXc3ghcNgrxbAs
+    7ZWV0JoRBXN2JKzbBNSaA2PcOhZECFtsmUyd1g8VFyySUOo1FuOp6lFLkmI12EGn
+    GprWOvAJDHp6ssTF4cveTiRDQrZJAhYWM9fvdyMRYW9IQIETVuK2qf5twt7E4vfT
+    vkSgoLpSSMlLOoCxdr4r11LSSXuljA==
+    -----END PRIVATE KEY-----
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minio
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: minio
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: minio
+    spec:
+      containers:
+        - command:
+            - /bin/sh
+            - -c
+            - |
+              mkdir -p /storage/tempo && \
+              minio server /storage
+          env:
+            - name: MINIO_ACCESS_KEY
+              value: tempo
+            - name: MINIO_SECRET_KEY
+              value: supersecret
+          image: minio/minio
+          name: minio
+          ports:
+            - containerPort: 9000
+          volumeMounts:
+            - mountPath: /storage
+              name: storage
+            - name: cert
+              mountPath: /root/.minio/certs
+      volumes:
+        - name: storage
+          emptyDir: {}
+        - name: cert
+          configMap:
+            name: minio-cert
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio
+spec:
+  ports:
+    - port: 9000
+      protocol: TCP
+      targetPort: 9000
+  selector:
+    app.kubernetes.io/name: minio
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: minio
+stringData:
+  endpoint: https://minio:9000
+  bucket: tempo
+  access_key_id: tempo
+  access_key_secret: supersecret
+type: Opaque

@@ -1765,7 +1765,7 @@ string
 
 <em>(Optional)</em>
 
-<p>CA is the name of a ConfigMap containing a CA certificate.
+<p>CA is the name of a ConfigMap containing a <code>ca.crt</code> key with a CA certificate.
 It needs to be in the same namespace as the Tempo custom resource.</p>
 
 </td>
