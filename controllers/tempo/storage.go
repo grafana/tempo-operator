@@ -8,18 +8,21 @@ import (
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 )
 
+// GetAzureParams extracts Azure storage params of a storage secret.
 func GetAzureParams(storageSecret *corev1.Secret) *manifestutils.AzureStorage {
 	return &manifestutils.AzureStorage{
 		Container: string(storageSecret.Data["container"]),
 	}
 }
 
+// GetGCSParams extracts GCS params of a storage secret.
 func GetGCSParams(storageSecret *corev1.Secret) *manifestutils.GCS {
 	return &manifestutils.GCS{
 		Bucket: string(storageSecret.Data["bucketname"]),
 	}
 }
 
+// GetS3Params extracts S3 params of a storage secret.
 func GetS3Params(storageSecret *corev1.Secret) *manifestutils.S3 {
 	endpoint := string(storageSecret.Data["endpoint"])
 	insecure := !strings.HasPrefix(endpoint, "https://")
