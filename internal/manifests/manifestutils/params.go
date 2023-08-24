@@ -39,8 +39,10 @@ type GCS struct {
 
 // S3 holds S3 configuration.
 type S3 struct {
+	// Endpoint without http/https
 	Endpoint string
 	Bucket   string
+	Insecure bool
 }
 
 // GatewayTenantOIDCSecret holds clientID, clientSecret and issuerCAPath for tenant's authentication.

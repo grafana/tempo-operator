@@ -148,14 +148,20 @@ storage:
     backend: {{ .StorageType }}
     blocklist_poll: 5m
     cache: none
+    {{- with .StorageParams.AzureStorage }}
     azure:
-      container_name: {{ .AzureStorage.Container }}
+      container_name: {{ .Container }}
+    {{- end }}
+    {{- with .StorageParams.GCS }}
     gcs:
-      bucket_name: {{ .GCS.Bucket }}
+      bucket_name: {{ .Bucket }}
+    {{- end }}
+    {{- with .StorageParams.S3 }}
     s3:
-      endpoint: {{ .S3.Endpoint }}
-      bucket: {{ .S3.Bucket }}
-      insecure: {{ .S3.Insecure }}
+      endpoint: {{ .Endpoint }}
+      bucket: {{ .Bucket }}
+      insecure: {{ .Insecure }}
+    {{- end }}
     local:
       path: /var/tempo/traces
     wal:
