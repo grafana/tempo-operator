@@ -18,7 +18,7 @@ jobs:
       matrix:
         kube-version:
           - "1.21"
-          - "1.27"
+          - "1.28"
 
     steps:
       - name: Set up Go
