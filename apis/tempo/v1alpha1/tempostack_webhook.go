@@ -152,6 +152,7 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 	if r.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type == IngressTypeRoute && r.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Route.Termination == "" {
 		r.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Route.Termination = defaultUITLSTermination
 	}
+
 	return nil
 }
 
@@ -300,6 +301,14 @@ func (v *validator) validateGateway(tempo TempoStack) field.ErrorList {
 				"please enable the featureGates.openshift.openshiftRoute feature gate to use Routes",
 			)}
 		}
+
+		if tempo.Spec.Template.Gateway.Enabled && tempo.Spec.Template.Distributor.TLS.Enabled {
+			return field.ErrorList{field.Invalid(
+				field.NewPath("spec").Child("template").Child("gateway").Child("enabled"),
+				tempo.Spec.Template.Gateway.Enabled,
+				"Cannot enable gateway and distributor TLS at the same time",
+			)}
+		}
 	}
 	return nil
 }
@@ -406,6 +415,22 @@ func (v *validator) validateDeprecatedFields(tempo TempoStack) field.ErrorList {
 	return nil
 }
 
+func (v *validator) validateReceiverTLS(tempo TempoStack) field.ErrorList {
+	spec := tempo.Spec.Template.Distributor.TLS
+	if spec.Enabled {
+		if spec.Cert == "" {
+			return field.ErrorList{
+				field.Invalid(
+					field.NewPath("spec").Child("template").Child("distributor").Child("tls").Child("cert"),
+					spec.Cert,
+					"need to specify cert secret name",
+				)}
+		}
+
+	}
+	return nil
+}
+
 func (v *validator) validate(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
 	tempo, ok := obj.(*TempoStack)
 	if !ok {
@@ -439,6 +464,7 @@ func (v *validator) validate(ctx context.Context, obj runtime.Object) (admission
 	allErrors = append(allErrors, v.validateTenantConfigs(*tempo)...)
 	allErrors = append(allErrors, v.validateObservability(*tempo)...)
 	allErrors = append(allErrors, v.validateDeprecatedFields(*tempo)...)
+	allErrors = append(allErrors, v.validateReceiverTLS(*tempo)...)
 
 	if len(allErrors) == 0 {
 		return allWarnings, nil

@@ -104,8 +104,11 @@ func TestDefault(t *testing.T) {
 						DefaultResultLimit: &defaultDefaultResultLimit,
 					},
 					Template: TempoTemplateSpec{
-						Distributor: TempoComponentSpec{
-							Replicas: pointer.Int32(1),
+						Distributor: TempoDistributorSpec{
+							TempoComponentSpec: TempoComponentSpec{
+								Replicas: pointer.Int32(1),
+							},
+							TLS: ReceiversTLSSpec{},
 						},
 						Ingester: TempoComponentSpec{
 							Replicas: pointer.Int32(1),
@@ -156,8 +159,11 @@ func TestDefault(t *testing.T) {
 						DefaultResultLimit: &defaultDefaultResultLimit,
 					},
 					Template: TempoTemplateSpec{
-						Distributor: TempoComponentSpec{
-							Replicas: pointer.Int32(1),
+						Distributor: TempoDistributorSpec{
+							TempoComponentSpec: TempoComponentSpec{
+								Replicas: pointer.Int32(1),
+							},
+							TLS: ReceiversTLSSpec{},
 						},
 						Ingester: TempoComponentSpec{
 							Replicas: pointer.Int32(1),
@@ -213,8 +219,11 @@ func TestDefault(t *testing.T) {
 						DefaultResultLimit: &defaultDefaultResultLimit,
 					},
 					Template: TempoTemplateSpec{
-						Distributor: TempoComponentSpec{
-							Replicas: pointer.Int32(1),
+						Distributor: TempoDistributorSpec{
+							TempoComponentSpec: TempoComponentSpec{
+								Replicas: pointer.Int32(1),
+							},
+							TLS: ReceiversTLSSpec{},
 						},
 						Ingester: TempoComponentSpec{
 							Replicas: pointer.Int32(1),
