@@ -45,11 +45,11 @@ func (r *TempoStackReconciler) getStorageConfig(ctx context.Context, tempo v1alp
 
 	switch tempo.Spec.Storage.Secret.Type {
 	case v1alpha1.ObjectStorageSecretAzure:
-		params.AzureStorage = getAzureParams(storageSecret)
+		params.AzureStorage = GetAzureParams(storageSecret)
 	case v1alpha1.ObjectStorageSecretGCS:
-		params.GCS = getGCSParams(storageSecret)
+		params.GCS = GetGCSParams(storageSecret)
 	case v1alpha1.ObjectStorageSecretS3:
-		params.S3 = getS3Params(storageSecret)
+		params.S3 = GetS3Params(storageSecret)
 	default:
 		return manifestutils.StorageParams{}, fmt.Errorf("storage secret type is not recognized")
 	}

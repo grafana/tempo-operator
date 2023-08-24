@@ -8,19 +8,19 @@ import (
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 )
 
-func getAzureParams(storageSecret *corev1.Secret) *manifestutils.AzureStorage {
+func GetAzureParams(storageSecret *corev1.Secret) *manifestutils.AzureStorage {
 	return &manifestutils.AzureStorage{
 		Container: string(storageSecret.Data["container"]),
 	}
 }
 
-func getGCSParams(storageSecret *corev1.Secret) *manifestutils.GCS {
+func GetGCSParams(storageSecret *corev1.Secret) *manifestutils.GCS {
 	return &manifestutils.GCS{
 		Bucket: string(storageSecret.Data["bucketname"]),
 	}
 }
 
-func getS3Params(storageSecret *corev1.Secret) *manifestutils.S3 {
+func GetS3Params(storageSecret *corev1.Secret) *manifestutils.S3 {
 	endpoint := string(storageSecret.Data["endpoint"])
 	insecure := !strings.HasPrefix(endpoint, "https://")
 	endpoint = strings.TrimPrefix(endpoint, "https://")

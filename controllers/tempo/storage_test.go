@@ -15,7 +15,7 @@ func TestGetS3ParamsInsecure(t *testing.T) {
 			"bucket":   []byte("testbucket"),
 		},
 	}
-	s3 := getS3Params(storageSecret)
+	s3 := GetS3Params(storageSecret)
 	assert.Equal(t, "minio:9000", s3.Endpoint)
 	assert.True(t, s3.Insecure)
 	assert.Equal(t, "testbucket", s3.Bucket)
@@ -28,7 +28,7 @@ func TestGetS3ParamsSecure(t *testing.T) {
 			"bucket":   []byte("testbucket"),
 		},
 	}
-	s3 := getS3Params(storageSecret)
+	s3 := GetS3Params(storageSecret)
 	assert.Equal(t, "minio:9000", s3.Endpoint)
 	assert.False(t, s3.Insecure)
 	assert.Equal(t, "testbucket", s3.Bucket)
