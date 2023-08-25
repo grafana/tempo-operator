@@ -45,6 +45,14 @@ func fromRateLimitSpecToRateLimitOptionsMap(ratemaps map[string]v1alpha1.RateLim
 	return result
 }
 
+func buildQueryFrontEndConfig(params manifestutils.Params) ([]byte, error) {
+	if !params.Tempo.Spec.Template.Gateway.Enabled {
+		params.Gates.HTTPEncryption = false
+	}
+
+	return buildConfiguration(params)
+}
+
 func buildConfiguration(params manifestutils.Params) ([]byte, error) {
 	tempo := params.Tempo
 	tlsopts := tlsOptions{}
