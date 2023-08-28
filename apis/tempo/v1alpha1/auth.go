@@ -7,11 +7,11 @@ package v1alpha1
 type ModeType string
 
 const (
-	// Static mode asserts the Authorization Spec's Roles and RoleBindings
+	// ModeStatic mode asserts the Authorization Spec's Roles and RoleBindings
 	// using an in-process OpenPolicyAgent Rego authorizer.
-	Static ModeType = "static"
-	// OpenShift mode uses TokenReview API for authentication and subject access review for authorization.
-	OpenShift ModeType = "openshift"
+	ModeStatic ModeType = "static"
+	// ModeOpenShift mode uses TokenReview API for authentication and subject access review for authorization.
+	ModeOpenShift ModeType = "openshift"
 )
 
 // TenantsSpec defines the mode, authentication and authorization

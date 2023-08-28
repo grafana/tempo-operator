@@ -583,7 +583,7 @@ func TestK8SGatewaySecret(t *testing.T) {
 				},
 			},
 			Tenants: &v1alpha1.TenantsSpec{
-				Mode: v1alpha1.Static,
+				Mode: v1alpha1.ModeStatic,
 				Authentication: []v1alpha1.AuthenticationSpec{
 					{
 						TenantName: "test-tenant-1",
@@ -696,7 +696,7 @@ func TestReconcileManifestsValidateModes(t *testing.T) {
 				},
 			},
 			Tenants: &v1alpha1.TenantsSpec{
-				Mode: v1alpha1.Static,
+				Mode: v1alpha1.ModeStatic,
 			},
 		},
 	}
@@ -709,7 +709,7 @@ func TestReconcileManifestsValidateModes(t *testing.T) {
 		{
 			name: "static mode not configured the right way",
 			tenants: &v1alpha1.TenantsSpec{
-				Mode: v1alpha1.Static,
+				Mode: v1alpha1.ModeStatic,
 			},
 			validate: func(t *testing.T, err error) {
 				require.Error(t, err)
@@ -723,7 +723,7 @@ func TestReconcileManifestsValidateModes(t *testing.T) {
 		{
 			name: "fail get tenant secrets",
 			tenants: &v1alpha1.TenantsSpec{
-				Mode: v1alpha1.Static,
+				Mode: v1alpha1.ModeStatic,
 			},
 			validate: func(t *testing.T, err error) {
 				require.Error(t, err)
