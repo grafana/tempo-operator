@@ -660,7 +660,7 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 						},
 					},
 					Tenants: &TenantsSpec{
-						Mode: Static,
+						Mode: ModeStatic,
 					},
 				},
 			},
@@ -755,7 +755,7 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 						},
 					},
 					Tenants: &TenantsSpec{
-						Mode: Static,
+						Mode: ModeStatic,
 					},
 				},
 			},
@@ -806,7 +806,7 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 						},
 					},
 					Tenants: &TenantsSpec{
-						Mode: Static,
+						Mode: ModeStatic,
 					},
 				},
 			},
@@ -831,7 +831,7 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 						},
 					},
 					Tenants: &TenantsSpec{
-						Mode: Static,
+						Mode: ModeStatic,
 					},
 				},
 			},
@@ -865,7 +865,7 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 						},
 					},
 					Tenants: &TenantsSpec{
-						Mode: Static,
+						Mode: ModeStatic,
 					},
 				},
 			},
@@ -913,7 +913,7 @@ func TestValidateTenantConfigs(t *testing.T) {
 			input: TempoStack{
 				Spec: TempoStackSpec{
 					Tenants: &TenantsSpec{
-						Mode: Static,
+						Mode: ModeStatic,
 					},
 					Template: TempoTemplateSpec{
 						Gateway: TempoGatewaySpec{
@@ -929,7 +929,7 @@ func TestValidateTenantConfigs(t *testing.T) {
 			input: TempoStack{
 				Spec: TempoStackSpec{
 					Tenants: &TenantsSpec{
-						Mode:           Static,
+						Mode:           ModeStatic,
 						Authentication: []AuthenticationSpec{},
 					},
 					Template: TempoTemplateSpec{
@@ -946,7 +946,7 @@ func TestValidateTenantConfigs(t *testing.T) {
 			input: TempoStack{
 				Spec: TempoStackSpec{
 					Tenants: &TenantsSpec{
-						Mode:           Static,
+						Mode:           ModeStatic,
 						Authorization:  &AuthorizationSpec{},
 						Authentication: []AuthenticationSpec{},
 					},
@@ -964,7 +964,7 @@ func TestValidateTenantConfigs(t *testing.T) {
 			input: TempoStack{
 				Spec: TempoStackSpec{
 					Tenants: &TenantsSpec{
-						Mode: Static,
+						Mode: ModeStatic,
 						Authorization: &AuthorizationSpec{
 							Roles: []RoleSpec{},
 						},
@@ -984,7 +984,7 @@ func TestValidateTenantConfigs(t *testing.T) {
 			input: TempoStack{
 				Spec: TempoStackSpec{
 					Tenants: &TenantsSpec{
-						Mode: OpenShift,
+						Mode: ModeOpenShift,
 						Authorization: &AuthorizationSpec{
 							Roles: []RoleSpec{},
 						},
@@ -1003,7 +1003,7 @@ func TestValidateTenantConfigs(t *testing.T) {
 			input: TempoStack{
 				Spec: TempoStackSpec{
 					Tenants: &TenantsSpec{
-						Mode: OpenShift,
+						Mode: ModeOpenShift,
 						Authentication: []AuthenticationSpec{
 							{
 								OIDC: &OIDCSpec{},

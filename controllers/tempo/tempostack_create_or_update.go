@@ -82,7 +82,7 @@ func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, log logr.Logg
 		}
 	}
 
-	if tempo.Spec.Tenants != nil && tempo.Spec.Tenants.Mode == v1alpha1.OpenShift && r.FeatureGates.OpenShift.BaseDomain == "" {
+	if tempo.Spec.Tenants != nil && tempo.Spec.Tenants.Mode == v1alpha1.ModeOpenShift && r.FeatureGates.OpenShift.BaseDomain == "" {
 		domain, err := gateway.GetOpenShiftBaseDomain(ctx, r.Client)
 		if err != nil {
 			return err
@@ -116,7 +116,7 @@ func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, log logr.Logg
 	}
 
 	var tenantSecrets []*manifestutils.GatewayTenantOIDCSecret
-	if tempo.Spec.Tenants != nil && tempo.Spec.Tenants.Mode == v1alpha1.Static {
+	if tempo.Spec.Tenants != nil && tempo.Spec.Tenants.Mode == v1alpha1.ModeStatic {
 		tenantSecrets, err = gateway.GetOIDCTenantSecrets(ctx, r.Client, tempo)
 		if err != nil {
 			return err
@@ -124,7 +124,7 @@ func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, log logr.Logg
 	}
 
 	var gatewayTenantsData []*manifestutils.GatewayTenantsData
-	if tempo.Spec.Tenants != nil && tempo.Spec.Tenants.Mode == v1alpha1.OpenShift {
+	if tempo.Spec.Tenants != nil && tempo.Spec.Tenants.Mode == v1alpha1.ModeOpenShift {
 		gatewayTenantsData, err = gateway.GetGatewayTenantsData(ctx, r.Client, tempo)
 		if err != nil {
 			// just log the error the secret is not created if the loop for an instance runs for the first time.
