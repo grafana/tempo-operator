@@ -8,7 +8,9 @@ import (
 	"github.com/stretchr/testify/require"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/tlsprofile"
 )
 
@@ -81,10 +83,6 @@ storage:
     cache: none
     local:
       path: /var/tempo/traces
-    azure:
-      container_name: "container-test"
-    gcs:
-      bucket_name: test-bucket
     s3:
       bucket: tempo
       endpoint: "minio:9000"
@@ -98,37 +96,36 @@ query_frontend:
     concurrent_jobs: 2000
     max_duration: 0s
 `
-	cfg, err := buildConfiguration(v1alpha1.TempoStack{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "test",
-		},
-		Spec: v1alpha1.TempoStackSpec{
-			Storage: v1alpha1.ObjectStorageSpec{
-				Secret: v1alpha1.ObjectStorageSecretSpec{
-					Type: v1alpha1.ObjectStorageSecretS3,
+	cfg, err := buildConfiguration(manifestutils.Params{
+		Tempo: v1alpha1.TempoStack{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "test",
+			},
+			Spec: v1alpha1.TempoStackSpec{
+				Storage: v1alpha1.ObjectStorageSpec{
+					Secret: v1alpha1.ObjectStorageSecretSpec{
+						Type: v1alpha1.ObjectStorageSecretS3,
+					},
+				},
+				ReplicationFactor: 1,
+				Retention: v1alpha1.RetentionSpec{
+					Global: v1alpha1.RetentionConfig{
+						Traces: metav1.Duration{Duration: 48 * time.Hour},
+					},
 				},
 			},
-			ReplicationFactor: 1,
-			Retention: v1alpha1.RetentionSpec{
-				Global: v1alpha1.RetentionConfig{
-					Traces: metav1.Duration{Duration: 48 * time.Hour},
-				},
+		},
+		StorageParams: manifestutils.StorageParams{
+			S3: &manifestutils.S3{
+				Endpoint: "minio:9000",
+				Bucket:   "tempo",
+				Insecure: true,
 			},
-		},
-	}, Params{
-		AzureStorage: AzureStorage{
-			Container: "container-test",
-		},
-		GCS: GCS{
-			Bucket: "test-bucket",
 		},
 		TLSProfile: tlsprofile.TLSProfileOptions{
 			MinTLSVersion: string(openshiftconfigv1.VersionTLS13),
 		},
-		S3: S3{
-			Endpoint: "http://minio:9000",
-			Bucket:   "tempo",
-		}})
+	})
 	require.NoError(t, err)
 	require.YAMLEq(t, expCfg, string(cfg))
 }
@@ -207,10 +204,6 @@ storage:
     cache: none
     local:
       path: /var/tempo/traces
-    azure:
-      container_name: "container-test"
-    gcs:
-      bucket_name: test-bucket
     s3:
       bucket: tempo
       endpoint: "minio:9000"
@@ -300,10 +293,6 @@ storage:
     cache: none
     local:
       path: /var/tempo/traces
-    azure:
-      container_name: "container-test"
-    gcs:
-      bucket_name: test-bucket
     s3:
       bucket: tempo
       endpoint: "minio:9000"
@@ -392,10 +381,6 @@ storage:
     cache: none
     local:
       path: /var/tempo/traces
-    azure:
-      container_name: "container-test"
-    gcs:
-      bucket_name: test-bucket
     s3:
       bucket: tempo
       endpoint: "minio:9000"
@@ -485,10 +470,6 @@ storage:
     cache: none
     local:
       path: /var/tempo/traces
-    azure:
-      container_name: "container-test"
-    gcs:
-      bucket_name: test-bucket
     s3:
       bucket: tempo
       endpoint: "minio:9000"
@@ -578,10 +559,6 @@ storage:
     cache: none
     local:
       path: /var/tempo/traces
-    azure:
-      container_name: "container-test"
-    gcs:
-      bucket_name: test-bucket
     s3:
       bucket: tempo
       endpoint: "minio:9000"
@@ -671,10 +648,6 @@ storage:
     cache: none
     local:
       path: /var/tempo/traces
-    azure:
-      container_name: "container-test"
-    gcs:
-      bucket_name: test-bucket
     s3:
       bucket: tempo
       endpoint: "minio:9000"
@@ -764,10 +737,6 @@ storage:
     cache: none
     local:
       path: /var/tempo/traces
-    azure:
-      container_name: "container-test"
-    gcs:
-      bucket_name: test-bucket
     s3:
       bucket: tempo
       endpoint: "minio:9000"
@@ -867,10 +836,6 @@ storage:
     backend: s3
     blocklist_poll: 5m
     cache: none
-    azure:
-      container_name: "container-test"
-    gcs:
-      bucket_name: test-bucket
     local:
       path: /var/tempo/traces
     s3:
@@ -972,10 +937,6 @@ storage:
     cache: none
     local:
       path: /var/tempo/traces
-    azure:
-      container_name: "container-test"
-    gcs:
-      bucket_name: test-bucket
     s3:
       bucket: tempo
       endpoint: "minio:9000"
@@ -994,38 +955,37 @@ query_frontend:
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			cfg, err := buildConfiguration(v1alpha1.TempoStack{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: "test",
-				},
-				Spec: v1alpha1.TempoStackSpec{
-					Storage: v1alpha1.ObjectStorageSpec{
-						Secret: v1alpha1.ObjectStorageSecretSpec{
-							Type: v1alpha1.ObjectStorageSecretS3,
-						},
+			cfg, err := buildConfiguration(manifestutils.Params{
+				Tempo: v1alpha1.TempoStack{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "test",
 					},
-					ReplicationFactor: 1,
-					Retention: v1alpha1.RetentionSpec{
-						Global: v1alpha1.RetentionConfig{
-							Traces: metav1.Duration{Duration: 48 * time.Hour},
+					Spec: v1alpha1.TempoStackSpec{
+						Storage: v1alpha1.ObjectStorageSpec{
+							Secret: v1alpha1.ObjectStorageSecretSpec{
+								Type: v1alpha1.ObjectStorageSecretS3,
+							},
 						},
+						ReplicationFactor: 1,
+						Retention: v1alpha1.RetentionSpec{
+							Global: v1alpha1.RetentionConfig{
+								Traces: metav1.Duration{Duration: 48 * time.Hour},
+							},
+						},
+						LimitSpec: tc.spec,
 					},
-					LimitSpec: tc.spec,
 				},
-			}, Params{
+				StorageParams: manifestutils.StorageParams{
+					S3: &manifestutils.S3{
+						Endpoint: "minio:9000",
+						Bucket:   "tempo",
+						Insecure: true,
+					},
+				},
 				TLSProfile: tlsprofile.TLSProfileOptions{
 					MinTLSVersion: string(openshiftconfigv1.VersionTLS13),
 				},
-				AzureStorage: AzureStorage{
-					Container: "container-test",
-				},
-				GCS: GCS{
-					Bucket: "test-bucket",
-				},
-				S3: S3{
-					Endpoint: "http://minio:9000",
-					Bucket:   "tempo",
-				}})
+			})
 			require.NoError(t, err)
 			require.YAMLEq(t, tc.expect, string(cfg))
 		})
@@ -1131,19 +1091,13 @@ server:
   log_format: logfmt
 storage:
   trace:
-    backend: s3
+    backend: gcs
     blocklist_poll: 5m
     cache: none
     local:
       path: /var/tempo/traces
-    azure:
-      container_name: "container-test"
     gcs:
       bucket_name: test-bucket
-    s3:
-      bucket: tempo
-      endpoint: "minio:9000"
-      insecure: true
     wal:
       path: /var/tempo/wal
 usage_report:
@@ -1159,33 +1113,30 @@ query_frontend:
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			cfg, err := buildConfiguration(v1alpha1.TempoStack{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: "test",
-				},
-				Spec: v1alpha1.TempoStackSpec{
-					Storage: v1alpha1.ObjectStorageSpec{
-						Secret: v1alpha1.ObjectStorageSecretSpec{
-							Type: v1alpha1.ObjectStorageSecretS3,
-						},
+			cfg, err := buildConfiguration(manifestutils.Params{
+				Tempo: v1alpha1.TempoStack{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "test",
 					},
-					ReplicationFactor: 1,
-					SearchSpec:        tc.spec,
+					Spec: v1alpha1.TempoStackSpec{
+						Storage: v1alpha1.ObjectStorageSpec{
+							Secret: v1alpha1.ObjectStorageSecretSpec{
+								Type: v1alpha1.ObjectStorageSecretGCS,
+							},
+						},
+						ReplicationFactor: 1,
+						SearchSpec:        tc.spec,
+					},
 				},
-			}, Params{
+				StorageParams: manifestutils.StorageParams{
+					GCS: &manifestutils.GCS{
+						Bucket: "test-bucket",
+					},
+				},
 				TLSProfile: tlsprofile.TLSProfileOptions{
 					MinTLSVersion: string(openshiftconfigv1.VersionTLS13),
 				},
-				AzureStorage: AzureStorage{
-					Container: "container-test",
-				},
-				GCS: GCS{
-					Bucket: "test-bucket",
-				},
-				S3: S3{
-					Endpoint: "http://minio:9000",
-					Bucket:   "tempo",
-				}})
+			})
 			require.NoError(t, err)
 			require.YAMLEq(t, tc.expect, string(cfg))
 		})
@@ -1254,19 +1205,13 @@ server:
   log_format: logfmt
 storage:
   trace:
-    backend: s3
+    backend: azure
     blocklist_poll: 5m
     cache: none
     local:
       path: /var/tempo/traces
     azure:
       container_name: "container-test"
-    gcs:
-      bucket_name: test-bucket
-    s3:
-      bucket: tempo
-      endpoint: "minio:9000"
-      insecure: true
     wal:
       path: /var/tempo/wal
 usage_report:
@@ -1277,32 +1222,29 @@ query_frontend:
     max_duration: 0s
       `
 
-	cfg, err := buildConfiguration(v1alpha1.TempoStack{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "test",
-		},
-		Spec: v1alpha1.TempoStackSpec{
-			Storage: v1alpha1.ObjectStorageSpec{
-				Secret: v1alpha1.ObjectStorageSecretSpec{
-					Type: v1alpha1.ObjectStorageSecretS3,
-				},
+	cfg, err := buildConfiguration(manifestutils.Params{
+		Tempo: v1alpha1.TempoStack{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "test",
 			},
-			ReplicationFactor: replcationFactor,
+			Spec: v1alpha1.TempoStackSpec{
+				Storage: v1alpha1.ObjectStorageSpec{
+					Secret: v1alpha1.ObjectStorageSecretSpec{
+						Type: v1alpha1.ObjectStorageSecretAzure,
+					},
+				},
+				ReplicationFactor: replcationFactor,
+			},
 		},
-	}, Params{
+		StorageParams: manifestutils.StorageParams{
+			AzureStorage: &manifestutils.AzureStorage{
+				Container: "container-test",
+			},
+		},
 		TLSProfile: tlsprofile.TLSProfileOptions{
 			MinTLSVersion: string(openshiftconfigv1.VersionTLS13),
 		},
-		AzureStorage: AzureStorage{
-			Container: "container-test",
-		},
-		GCS: GCS{
-			Bucket: "test-bucket",
-		},
-		S3: S3{
-			Endpoint: "http://minio:9000",
-			Bucket:   "tempo",
-		}})
+	})
 	require.NoError(t, err)
 	require.YAMLEq(t, expect, string(cfg))
 }
@@ -1372,10 +1314,6 @@ storage:
     cache: none
     local:
       path: /var/tempo/traces
-    azure:
-      container_name: "container-test"
-    gcs:
-      bucket_name: test-bucket
     s3:
       bucket: tempo
       endpoint: "minio:9000"
@@ -1389,34 +1327,32 @@ query_frontend:
     concurrent_jobs: 2000
     max_duration: 0s
 `
-	cfg, err := buildConfiguration(v1alpha1.TempoStack{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "test",
-		},
-		Spec: v1alpha1.TempoStackSpec{
-			Storage: v1alpha1.ObjectStorageSpec{
-				Secret: v1alpha1.ObjectStorageSecretSpec{
-					Type: v1alpha1.ObjectStorageSecretS3,
-				},
+	cfg, err := buildConfiguration(manifestutils.Params{
+		Tempo: v1alpha1.TempoStack{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "test",
 			},
-			ReplicationFactor: 1,
-			Retention: v1alpha1.RetentionSpec{
-				Global: v1alpha1.RetentionConfig{
-					Traces: metav1.Duration{Duration: 48 * time.Hour},
+			Spec: v1alpha1.TempoStackSpec{
+				Storage: v1alpha1.ObjectStorageSpec{
+					Secret: v1alpha1.ObjectStorageSecretSpec{
+						Type: v1alpha1.ObjectStorageSecretS3,
+					},
 				},
+				ReplicationFactor: 1,
+				Retention: v1alpha1.RetentionSpec{
+					Global: v1alpha1.RetentionConfig{
+						Traces: metav1.Duration{Duration: 48 * time.Hour},
+					},
+				},
+				Tenants: &v1alpha1.TenantsSpec{},
 			},
-			Tenants: &v1alpha1.TenantsSpec{},
 		},
-	}, Params{
-		AzureStorage: AzureStorage{
-			Container: "container-test",
-		},
-		GCS: GCS{
-			Bucket: "test-bucket",
-		},
-		S3: S3{
-			Endpoint: "http://minio:9000",
-			Bucket:   "tempo",
+		StorageParams: manifestutils.StorageParams{
+			S3: &manifestutils.S3{
+				Endpoint: "minio:9000",
+				Bucket:   "tempo",
+				Insecure: true,
+			},
 		},
 		TLSProfile: tlsprofile.TLSProfileOptions{
 			MinTLSVersion: string(openshiftconfigv1.VersionTLS13),
@@ -1519,10 +1455,6 @@ storage:
     cache: none
     local:
       path: /var/tempo/traces
-    azure:
-      container_name: test-container
-    gcs:
-      bucket_name: test-bucket
     s3:
       bucket: tempo
       endpoint: "minio:9000"
@@ -1546,44 +1478,43 @@ ingester_client:
     tls_cipher_suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
     tls_min_version: VersionTLS12
 `
-	cfg, err := buildConfiguration(v1alpha1.TempoStack{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "test",
-			Namespace: "nstest",
-		},
-		Spec: v1alpha1.TempoStackSpec{
-			Storage: v1alpha1.ObjectStorageSpec{
-				Secret: v1alpha1.ObjectStorageSecretSpec{
-					Type: v1alpha1.ObjectStorageSecretS3,
+	cfg, err := buildConfiguration(manifestutils.Params{
+		Tempo: v1alpha1.TempoStack{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test",
+				Namespace: "nstest",
+			},
+			Spec: v1alpha1.TempoStackSpec{
+				Storage: v1alpha1.ObjectStorageSpec{
+					Secret: v1alpha1.ObjectStorageSecretSpec{
+						Type: v1alpha1.ObjectStorageSecretS3,
+					},
+				},
+				ReplicationFactor: 1,
+				Retention: v1alpha1.RetentionSpec{
+					Global: v1alpha1.RetentionConfig{
+						Traces: metav1.Duration{Duration: 48 * time.Hour},
+					},
 				},
 			},
-			ReplicationFactor: 1,
-			Retention: v1alpha1.RetentionSpec{
-				Global: v1alpha1.RetentionConfig{
-					Traces: metav1.Duration{Duration: 48 * time.Hour},
-				},
+		},
+		StorageParams: manifestutils.StorageParams{
+			S3: &manifestutils.S3{
+				Endpoint: "minio:9000",
+				Bucket:   "tempo",
+				Insecure: true,
 			},
 		},
-	}, Params{
-		AzureStorage: AzureStorage{
-			Container: "test-container",
-		},
-		GCS: GCS{
-			Bucket: "test-bucket",
-		},
-		S3: S3{
-			Endpoint: "http://minio:9000",
-			Bucket:   "tempo",
-			Insecure: true,
-		},
-		HTTPEncryption: true,
-		GRPCEncryption: true,
 		TLSProfile: tlsprofile.TLSProfileOptions{
 			Ciphers: []string{"TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
 				"TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
 				"TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
 				"TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384"},
 			MinTLSVersion: "VersionTLS12",
+		},
+		Gates: configv1alpha1.FeatureGates{
+			HTTPEncryption: true,
+			GRPCEncryption: true,
 		},
 	})
 	require.NoError(t, err)
@@ -1676,10 +1607,6 @@ storage:
     cache: none
     local:
       path: /var/tempo/traces
-    azure:
-      container_name: test-container
-    gcs:
-      bucket_name: test-bucket
     s3:
       bucket: tempo
       endpoint: "minio:9000"
@@ -1703,49 +1630,48 @@ ingester_client:
     tls_cipher_suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
     tls_min_version: VersionTLS12
 `
-	cfg, err := buildConfiguration(v1alpha1.TempoStack{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "test",
-			Namespace: "nstest",
-		},
-		Spec: v1alpha1.TempoStackSpec{
-			Template: v1alpha1.TempoTemplateSpec{
-				Gateway: v1alpha1.TempoGatewaySpec{
-					Enabled: true,
+	cfg, err := buildConfiguration(manifestutils.Params{
+		Tempo: v1alpha1.TempoStack{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test",
+				Namespace: "nstest",
+			},
+			Spec: v1alpha1.TempoStackSpec{
+				Template: v1alpha1.TempoTemplateSpec{
+					Gateway: v1alpha1.TempoGatewaySpec{
+						Enabled: true,
+					},
+				},
+				Storage: v1alpha1.ObjectStorageSpec{
+					Secret: v1alpha1.ObjectStorageSecretSpec{
+						Type: v1alpha1.ObjectStorageSecretS3,
+					},
+				},
+				ReplicationFactor: 1,
+				Retention: v1alpha1.RetentionSpec{
+					Global: v1alpha1.RetentionConfig{
+						Traces: metav1.Duration{Duration: 48 * time.Hour},
+					},
 				},
 			},
-			Storage: v1alpha1.ObjectStorageSpec{
-				Secret: v1alpha1.ObjectStorageSecretSpec{
-					Type: v1alpha1.ObjectStorageSecretS3,
-				},
-			},
-			ReplicationFactor: 1,
-			Retention: v1alpha1.RetentionSpec{
-				Global: v1alpha1.RetentionConfig{
-					Traces: metav1.Duration{Duration: 48 * time.Hour},
-				},
+		},
+		StorageParams: manifestutils.StorageParams{
+			S3: &manifestutils.S3{
+				Endpoint: "minio:9000",
+				Bucket:   "tempo",
+				Insecure: true,
 			},
 		},
-	}, Params{
-		AzureStorage: AzureStorage{
-			Container: "test-container",
-		},
-		GCS: GCS{
-			Bucket: "test-bucket",
-		},
-		S3: S3{
-			Endpoint: "http://minio:9000",
-			Bucket:   "tempo",
-			Insecure: true,
-		},
-		HTTPEncryption: true,
-		GRPCEncryption: true,
 		TLSProfile: tlsprofile.TLSProfileOptions{
 			Ciphers: []string{"TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
 				"TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
 				"TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
 				"TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384"},
 			MinTLSVersion: "VersionTLS12",
+		},
+		Gates: configv1alpha1.FeatureGates{
+			HTTPEncryption: true,
+			GRPCEncryption: true,
 		},
 	})
 	require.NoError(t, err)

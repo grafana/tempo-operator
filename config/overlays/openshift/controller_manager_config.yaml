@@ -21,8 +21,8 @@ leaderElection:
 # after the manager stops then its usage might be unsafe.
 # leaderElectionReleaseOnCancel: true
 images:
-  tempo: docker.io/grafana/tempo:2.1.1
-  tempoQuery: docker.io/grafana/tempo-query:2.1.1
+  tempo: docker.io/grafana/tempo:2.2.1
+  tempoQuery: docker.io/grafana/tempo-query:2.2.1
   tempoGateway: quay.io/observatorium/api:main-2023-07-31-5904ad0
   tempoGatewayOpa: quay.io/observatorium/opa-openshift:main-2023-05-24-8e91537
 featureGates:
@@ -30,11 +30,11 @@ featureGates:
     openshiftRoute: true
     servingCertsService: true
   prometheusOperator: true
-  httpEncryption: true
-  grpcEncryption: true
+  httpEncryption: false
+  grpcEncryption: false
   tlsProfile: Modern
   builtInCertManagement:
-    enabled: true
+    enabled: false
     # CA certificate validity: 5 years
     caValidity: 43830h
     # CA certificate refresh at 80% of validity

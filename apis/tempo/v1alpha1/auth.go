@@ -7,11 +7,11 @@ package v1alpha1
 type ModeType string
 
 const (
-	// Static mode asserts the Authorization Spec's Roles and RoleBindings
+	// ModeStatic mode asserts the Authorization Spec's Roles and RoleBindings
 	// using an in-process OpenPolicyAgent Rego authorizer.
-	Static ModeType = "static"
-	// OpenShift mode uses TokenReview API for authentication and subject access review for authorization.
-	OpenShift ModeType = "openshift"
+	ModeStatic ModeType = "static"
+	// ModeOpenShift mode uses TokenReview API for authentication and subject access review for authorization.
+	ModeOpenShift ModeType = "openshift"
 )
 
 // TenantsSpec defines the mode, authentication and authorization
@@ -22,7 +22,7 @@ type TenantsSpec struct {
 	// +required
 	// +kubebuilder:validation:Required
 	// +kubebuilder:default:=static
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors={"urn:alm:descriptor:com.tectonic.ui:select:static","urn:alm:descriptor:com.tectonic.ui:select:dynamic"},displayName="Mode"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors={"urn:alm:descriptor:com.tectonic.ui:select:static","urn:alm:descriptor:com.tectonic.ui:select:openshift"},displayName="Mode"
 	Mode ModeType `json:"mode"`
 
 	// Authentication defines the tempo-gateway component authentication configuration spec per tenant.

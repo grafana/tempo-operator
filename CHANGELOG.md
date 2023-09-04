@@ -3,6 +3,20 @@ Changes by Version
 
 <!-- next version -->
 
+## 0.4.0
+
+### 💡 Enhancements 💡
+
+- `operator`: Remove operator ServiceMonitor and PrometheusRule when operator deployment is removed (#536)
+
+### 🧰 Bug fixes 🧰
+
+- `operator`: Disable mTLS by default, to allow connections from Grafana to the query-frontend component (#552)
+- `apis/tempo/v1alpha1`: provide correct mode name via operator-sdk annotation for oc console (#556)
+
+### Components
+- Tempo: [v2.1.1](https://github.com/grafana/tempo/releases/tag/v2.1.1)
+
 ## 0.3.0
 
 ### 🛑 Breaking changes 🛑

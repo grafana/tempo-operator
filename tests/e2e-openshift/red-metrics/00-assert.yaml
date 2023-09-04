@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: openshift-user-workload-monitoring
+  name: prometheus-operator
+status:
+  availableReplicas: 1
+  readyReplicas: 1
+  replicas: 1
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  namespace: openshift-user-workload-monitoring
+  name: prometheus-user-workload
+status:
+  availableReplicas: 1
+  replicas: 1
