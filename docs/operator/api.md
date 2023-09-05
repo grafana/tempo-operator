@@ -1339,12 +1339,12 @@ will be configured.</p>
 
 <tbody><tr><td><p>&#34;openshift&#34;</p></td>
 
-<td><p>OpenShift mode uses TokenReview API for authentication and subject access review for authorization.</p>
+<td><p>ModeOpenShift mode uses TokenReview API for authentication and subject access review for authorization.</p>
 </td>
 
 </tr><tr><td><p>&#34;static&#34;</p></td>
 
-<td><p>Static mode asserts the Authorization Spec&rsquo;s Roles and RoleBindings
+<td><p>ModeStatic mode asserts the Authorization Spec&rsquo;s Roles and RoleBindings
 using an in-process OpenPolicyAgent Rego authorizer.</p>
 </td>
 
