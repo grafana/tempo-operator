@@ -37,7 +37,7 @@ func TestBuildAll(t *testing.T) {
 					},
 				},
 				Tenants: &v1alpha1.TenantsSpec{
-					Mode: v1alpha1.Static,
+					Mode: v1alpha1.ModeStatic,
 					Authentication: []v1alpha1.AuthenticationSpec{
 						{
 							TenantName: "test-oidc",

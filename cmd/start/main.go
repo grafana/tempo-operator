@@ -31,6 +31,8 @@ func start(c *cobra.Command, args []string) {
 	setupLog := ctrl.Log.WithName("setup")
 	version := version.Get()
 
+	options.PprofBindAddress, _ = c.Flags().GetString("pprof-addr")
+
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), options)
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
@@ -136,9 +138,11 @@ func addDependencies(mgr ctrl.Manager, ctrlConfig configv1alpha1.ProjectConfig, 
 
 // NewStartCommand returns a new start command.
 func NewStartCommand() *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "start",
 		Short: "Start the Tempo operator",
 		Run:   start,
 	}
+	cmd.Flags().String("pprof-addr", "", "The address the pprof server binds to. Default is empty string which disables the pprof server.")
+	return cmd
 }
