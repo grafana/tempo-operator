@@ -141,6 +141,7 @@ func buildTempoQueryConfig(params manifestutils.Params) ([]byte, error) {
 			HTTPEncryption: params.Gates.HTTPEncryption,
 		},
 		TenantHeader: manifestutils.TenantHeader,
+		Gateway:      params.Tempo.Spec.Template.Gateway.Enabled,
 	})
 }
 
