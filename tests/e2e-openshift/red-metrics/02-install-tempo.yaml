@@ -31,20 +31,3 @@ spec:
         ingress:
           type: route
 ---
-# Allow all OCP users to query metrics in the user-workload monitoring stack.
-# tempo-query flag --query.bearer-token-propagation=true propagates token from the browser to the metrics store.
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: tempo-query-cluster-monitoring-view
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: cluster-monitoring-view
-subjects:
-  - kind: Group
-    apiGroup: rbac.authorization.k8s.io
-    name: system:authenticated
-  - kind: Group
-    apiGroup: rbac.authorization.k8s.io
-    name: system:unauthenticated
