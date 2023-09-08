@@ -33,11 +33,11 @@ data:
         openshiftRoute: true
         servingCertsService: true
       prometheusOperator: true
-      httpEncryption: false
-      grpcEncryption: false
+      httpEncryption: true
+      grpcEncryption: true
       tlsProfile: Modern
       builtInCertManagement:
-        enabled: false
+        enabled: true
         # CA certificate validity: 5 years
         caValidity: 43830h
         # CA certificate refresh at 80% of validity

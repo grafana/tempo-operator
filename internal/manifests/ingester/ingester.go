@@ -105,7 +105,7 @@ func statefulSet(params manifestutils.Params) (*v1.StatefulSet, error) {
 									Protocol:      corev1.ProtocolTCP,
 								},
 							},
-							ReadinessProbe:  manifestutils.TempoReadinessProbe(params.Gates.HTTPEncryption || params.Gates.GRPCEncryption),
+							ReadinessProbe:  manifestutils.TempoReadinessProbe(params.Gates.HTTPEncryption),
 							Resources:       manifestutils.Resources(tempo, manifestutils.IngesterComponentName),
 							SecurityContext: manifestutils.TempoContainerSecurityContext(),
 						},

@@ -1,6 +1,6 @@
 backend: 127.0.0.1:{{ .HTTPPort }}
 tenant_header_key: {{ .TenantHeader }}
-{{- if .Gates.HTTPEncryption }}
+{{- if and .Gates.HTTPEncryption .Gateway }}
 tls_enabled: true
 tls_cert_path: {{ .TLS.Paths.Certificate }}
 tls_key_path: {{ .TLS.Paths.Key }}
