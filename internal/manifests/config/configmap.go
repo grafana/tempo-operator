@@ -29,6 +29,11 @@ func BuildConfigMap(params manifestutils.Params) (*corev1.ConfigMap, string, err
 		return nil, "", err
 	}
 
+	frontendConfig, err := buildQueryFrontEndConfig(params)
+	if err != nil {
+		return nil, "", err
+	}
+
 	labels := manifestutils.ComponentLabels("config", tempo.Name)
 	configMap := &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
@@ -36,8 +41,9 @@ func BuildConfigMap(params manifestutils.Params) (*corev1.ConfigMap, string, err
 			Labels: labels,
 		},
 		Data: map[string]string{
-			"tempo.yaml":     string(config),
-			"overrides.yaml": string(overridesConfig),
+			"tempo.yaml":                string(config),
+			"tempo-query-frontend.yaml": string(frontendConfig),
+			"overrides.yaml":            string(overridesConfig),
 		},
 	}
 	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled {
