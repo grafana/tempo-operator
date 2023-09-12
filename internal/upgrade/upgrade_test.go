@@ -38,6 +38,7 @@ func createTempoCR(t *testing.T, nsn types.NamespacedName, version string, manag
 			Storage: v1alpha1.ObjectStorageSpec{
 				Secret: v1alpha1.ObjectStorageSecretSpec{
 					Type: v1alpha1.ObjectStorageSecretS3,
+					Name: "storage-secret",
 				},
 			},
 		},

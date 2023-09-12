@@ -7,7 +7,7 @@
 #
 # The reporting clients - OpenTelemetry collectors should use
 # dev-collector and prod-collector service accounts to successfully authenticate.
-# See ./tempo_v1alpha1_openshift.yaml for OpenTelemetry collector deployment.
+# See ./tempo_v1alpha1_multitenancy.yaml for OpenTelemetry collector deployment.
 ---
 apiVersion: tempo.grafana.com/v1alpha1
 kind:  TempoStack

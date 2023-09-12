@@ -353,6 +353,7 @@ type ObjectStorageSecretSpec struct {
 	//
 	// +required
 	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:MinLength=1
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors="urn:alm:descriptor:io.kubernetes:Secret",displayName="Object Storage Secret Name"
 	Name string `json:"name"`
 }

@@ -19,11 +19,20 @@ metadata:
                 }
               }
             },
+            "storage": {
+              "secret": {
+                "name": "my-storage-secret",
+                "type": "s3"
+              }
+            },
             "storageSize": "1Gi",
             "template": {
               "queryFrontend": {
                 "jaegerQuery": {
-                  "enabled": true
+                  "enabled": true,
+                  "ingress": {
+                    "type": "ingress"
+                  }
                 }
               }
             }
