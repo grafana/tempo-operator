@@ -15,7 +15,7 @@ jobs:
       uses: actions/setup-go@v4
       with:
         go-version: "1.20"
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Generate bundle
       run: make bundle

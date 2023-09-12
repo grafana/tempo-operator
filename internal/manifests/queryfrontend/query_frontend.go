@@ -118,7 +118,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 							Image: tempo.Spec.Images.Tempo,
 							Args: []string{
 								"-target=query-frontend",
-								"-config.file=/conf/tempo.yaml",
+								"-config.file=/conf/tempo-query-frontend.yaml",
 								"-mem-ballast-size-mbs=1024",
 							},
 							Ports: []corev1.ContainerPort{
@@ -133,7 +133,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 									Protocol:      corev1.ProtocolTCP,
 								},
 							},
-							ReadinessProbe: manifestutils.TempoReadinessProbe(params.Gates.HTTPEncryption || params.Gates.GRPCEncryption),
+							ReadinessProbe: manifestutils.TempoReadinessProbe(params.Gates.HTTPEncryption && params.Tempo.Spec.Template.Gateway.Enabled),
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      manifestutils.ConfigVolumeName,
