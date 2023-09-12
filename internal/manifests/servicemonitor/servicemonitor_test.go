@@ -201,7 +201,7 @@ func TestBuildGatewayServiceMonitorsTLS(t *testing.T) {
 					},
 				},
 				Tenants: &v1alpha1.TenantsSpec{
-					Mode: v1alpha1.OpenShift,
+					Mode: v1alpha1.ModeOpenShift,
 				},
 			},
 		},

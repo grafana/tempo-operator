@@ -180,42 +180,42 @@ type ComponentStatus struct {
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=status,xDescriptors="urn:alm:descriptor:com.tectonic.ui:podStatuses",displayName="Compactor",order=5
-	Compactor PodStatusMap `json:"compactor,omitempty"`
+	Compactor PodStatusMap `json:"compactor"`
 
 	// Distributor is a map to the per pod status of the distributor deployment
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=status,xDescriptors="urn:alm:descriptor:com.tectonic.ui:podStatuses",displayName="Distributor",order=1
-	Distributor PodStatusMap `json:"distributor,omitempty"`
+	Distributor PodStatusMap `json:"distributor"`
 
 	// Ingester is a map to the per pod status of the ingester statefulset
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=status,xDescriptors="urn:alm:descriptor:com.tectonic.ui:podStatuses",displayName="Ingester",order=2
-	Ingester PodStatusMap `json:"ingester,omitempty"`
+	Ingester PodStatusMap `json:"ingester"`
 
 	// Querier is a map to the per pod status of the querier deployment
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=status,xDescriptors="urn:alm:descriptor:com.tectonic.ui:podStatuses",displayName="Querier",order=3
-	Querier PodStatusMap `json:"querier,omitempty"`
+	Querier PodStatusMap `json:"querier"`
 
 	// QueryFrontend is a map to the per pod status of the query frontend deployment
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=status,xDescriptors="urn:alm:descriptor:com.tectonic.ui:podStatuses",displayName="Query Frontend",order=4
-	QueryFrontend PodStatusMap `json:"queryFrontend,omitempty"`
+	QueryFrontend PodStatusMap `json:"queryFrontend"`
 
 	// Gateway is a map to the per pod status of the query frontend deployment
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=status,xDescriptors="urn:alm:descriptor:com.tectonic.ui:podStatuses",displayName="Query Frontend",order=4
-	Gateway PodStatusMap `json:"gateway,omitempty"`
+	Gateway PodStatusMap `json:"gateway"`
 }
 
 // TempoStackStatus defines the observed state of TempoStack.
@@ -509,6 +509,33 @@ type JaegerQuerySpec struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger Query UI Ingress Settings"
 	Ingress IngressSpec `json:"ingress,omitempty"`
+
+	// MonitorTab defines monitor tab configuration.
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger Query UI Monitor Tab Settings"
+	MonitorTab JaegerQueryMonitor `json:"monitorTab"`
+}
+
+// JaegerQueryMonitor defines configuration for the service monitoring tab in the Jaeger console.
+// The monitoring tab uses Prometheus to query span RED metrics.
+// This feature requires running OpenTelemetry collector with spanmetricsconnector -
+// https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/connector/spanmetricsconnector
+// which derives span RED metrics from spans and exports the metrics to Prometheus.
+type JaegerQueryMonitor struct {
+	// Enabled enables monitoring tab in Jaeger console.
+	// PrometheusEndpoint needs to be set to enable the feature.
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enabled"
+	Enabled bool `json:"enabled"`
+
+	// PrometheusEndpoint configures endpoint to the Prometheus that contains span RED metrics.
+	// For instance on OpenShift this is set to https://thanos-querier.openshift-monitoring.svc.cluster.local:9091
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Prometheus endpoint"
+	PrometheusEndpoint string `json:"prometheusEndpoint"`
 }
 
 // IngressSpec defines Jaeger Query Ingress options.

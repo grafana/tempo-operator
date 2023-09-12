@@ -24,7 +24,7 @@ func TestRBACsConfig(t *testing.T) {
 				Namespace: "default",
 				Name:      "foo",
 				Tenants: &tenants{
-					Mode: v1alpha1.Static,
+					Mode: v1alpha1.ModeStatic,
 					Authorization: &v1alpha1.AuthorizationSpec{
 						Roles: []v1alpha1.RoleSpec{
 							{
@@ -76,7 +76,7 @@ roles:
 				Namespace: "default",
 				Name:      "foo",
 				Tenants: &tenants{
-					Mode: v1alpha1.OpenShift,
+					Mode: v1alpha1.ModeOpenShift,
 					Authorization: &v1alpha1.AuthorizationSpec{
 						Roles: []v1alpha1.RoleSpec{
 							{
@@ -127,7 +127,7 @@ func TestTenantsTemplate(t *testing.T) {
 				Namespace: "default",
 				Name:      "foo",
 				Tenants: &tenants{
-					Mode: v1alpha1.Static,
+					Mode: v1alpha1.ModeStatic,
 					Authentication: []authentication{
 						{
 							TenantName: "dev",
@@ -146,7 +146,7 @@ func TestTenantsTemplate(t *testing.T) {
 				Namespace: "default",
 				Name:      "foo",
 				Tenants: &tenants{
-					Mode: v1alpha1.Static,
+					Mode: v1alpha1.ModeStatic,
 					Authentication: []authentication{
 						{
 							TenantName: "dev",
@@ -184,7 +184,7 @@ func TestTenantsTemplate(t *testing.T) {
 				Namespace: "default",
 				Name:      "foo",
 				Tenants: &tenants{
-					Mode: v1alpha1.Static,
+					Mode: v1alpha1.ModeStatic,
 					Authentication: []authentication{
 						{
 							TenantName: "test-oidc",
@@ -219,7 +219,7 @@ func TestTenantsTemplate(t *testing.T) {
 				Name:       "foo",
 				BaseDomain: "apps-crc.testing",
 				Tenants: &tenants{
-					Mode: v1alpha1.OpenShift,
+					Mode: v1alpha1.ModeOpenShift,
 					Authentication: []authentication{
 						{
 							TenantName:            "dev",
@@ -274,7 +274,7 @@ func TestNewOptions(t *testing.T) {
 		},
 		Spec: v1alpha1.TempoStackSpec{
 			Tenants: &v1alpha1.TenantsSpec{
-				Mode: v1alpha1.OpenShift,
+				Mode: v1alpha1.ModeOpenShift,
 				Authentication: []v1alpha1.AuthenticationSpec{
 					{
 						TenantName: "dev",

@@ -140,7 +140,7 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 	}
 
 	// if tenant mode is Openshift, ingress type should be route by default.
-	if r.Spec.Tenants != nil && r.Spec.Tenants.Mode == OpenShift && r.Spec.Template.Gateway.Ingress.Type == "" {
+	if r.Spec.Tenants != nil && r.Spec.Tenants.Mode == ModeOpenShift && r.Spec.Template.Gateway.Ingress.Type == "" {
 		r.Spec.Template.Gateway.Ingress.Type = IngressTypeRoute
 	}
 
@@ -241,6 +241,17 @@ func (v *validator) validateQueryFrontend(tempo TempoStack) field.ErrorList {
 			tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type,
 			"Please enable the featureGates.openshift.openshiftRoute feature gate to use Routes",
 		)}
+	}
+
+	if tempo.Spec.Template.QueryFrontend.JaegerQuery.MonitorTab.Enabled {
+		prometheusEndpointPath := field.NewPath("spec").Child("template").Child("queryFrontend").Child("jaegerQuery").Child("monitorTab").Child("prometheusEndpoint")
+		if tempo.Spec.Template.QueryFrontend.JaegerQuery.MonitorTab.PrometheusEndpoint == "" {
+			return field.ErrorList{field.Invalid(
+				prometheusEndpointPath,
+				tempo.Spec.Template.QueryFrontend.JaegerQuery.MonitorTab.PrometheusEndpoint,
+				"Prometheus endpoint must be set when monitoring is enabled",
+			)}
+		}
 	}
 
 	return nil
@@ -416,7 +427,7 @@ func ValidateTenantConfigs(tempo TempoStack) error {
 	}
 
 	tenants := tempo.Spec.Tenants
-	if tenants.Mode == Static {
+	if tenants.Mode == ModeStatic {
 		// If the static mode is combined with the gateway, we will need the following fields
 		// otherwise this will just enable tempo multitenancy without the gateway
 		if tempo.Spec.Template.Gateway.Enabled {
@@ -436,7 +447,7 @@ func ValidateTenantConfigs(tempo TempoStack) error {
 				return fmt.Errorf("spec.tenants.authorization.roleBindings is required in static mode")
 			}
 		}
-	} else if tenants.Mode == OpenShift {
+	} else if tenants.Mode == ModeOpenShift {
 		if !tempo.Spec.Template.Gateway.Enabled {
 			return fmt.Errorf("openshift mode requires gateway enabled")
 		}

@@ -123,7 +123,7 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 							Image:          tempo.Spec.Images.Tempo,
 							Args:           []string{"-target=distributor", "-config.file=/conf/tempo.yaml"},
 							Ports:          containerPorts,
-							ReadinessProbe: manifestutils.TempoReadinessProbe(params.Gates.HTTPEncryption || params.Gates.GRPCEncryption),
+							ReadinessProbe: manifestutils.TempoReadinessProbe(params.Gates.HTTPEncryption),
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      manifestutils.ConfigVolumeName,

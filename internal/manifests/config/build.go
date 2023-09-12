@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"html/template"
 	"io"
-	"strings"
 
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
@@ -27,31 +26,6 @@ var (
 	tempoQueryYAMLTmpl     = template.Must(template.ParseFS(tempoQueryYAMLTmplFile, "tempo-query.yaml"))
 )
 
-func azureStorageFromParams(params Params) azureStorage {
-	return azureStorage{
-		Container: params.AzureStorage.Container,
-	}
-}
-
-func gcsFromParams(params Params) gcs {
-	return gcs{
-		Bucket: params.GCS.Bucket,
-	}
-}
-
-func s3FromParams(params Params) s3 {
-	s3Endpoint := params.S3.Endpoint
-	s3Insecure := !strings.HasPrefix(s3Endpoint, "https://")
-	s3Endpoint = strings.TrimPrefix(s3Endpoint, "https://")
-	s3Endpoint = strings.TrimPrefix(s3Endpoint, "http://")
-
-	return s3{
-		Endpoint: s3Endpoint,
-		Bucket:   params.S3.Bucket,
-		Insecure: s3Insecure,
-	}
-}
-
 func fromRateLimitSpecToRateLimitOptions(spec v1alpha1.RateLimitSpec) rateLimitsOptions {
 	return rateLimitsOptions{
 		IngestionRateLimitBytes: spec.Ingestion.IngestionRateLimitBytes,
@@ -71,12 +45,21 @@ func fromRateLimitSpecToRateLimitOptionsMap(ratemaps map[string]v1alpha1.RateLim
 	return result
 }
 
-func buildConfiguration(tempo v1alpha1.TempoStack, params Params) ([]byte, error) {
+func buildQueryFrontEndConfig(params manifestutils.Params) ([]byte, error) {
+	if !params.Tempo.Spec.Template.Gateway.Enabled {
+		params.Gates.HTTPEncryption = false
+	}
+
+	return buildConfiguration(params)
+}
+
+func buildConfiguration(params manifestutils.Params) ([]byte, error) {
+	tempo := params.Tempo
 	tlsopts := tlsOptions{}
 	var err error
 
-	if params.GRPCEncryption || params.HTTPEncryption {
-		tlsopts, err = buildTLSConfig(tempo, params)
+	if params.Gates.GRPCEncryption || params.Gates.HTTPEncryption {
+		tlsopts, err = buildTLSConfig(params)
 		if err != nil {
 			return []byte{}, err
 		}
@@ -84,9 +67,7 @@ func buildConfiguration(tempo v1alpha1.TempoStack, params Params) ([]byte, error
 
 	opts := options{
 		StorageType:     string(tempo.Spec.Storage.Secret.Type),
-		AzureStorage:    azureStorageFromParams(params),
-		GCS:             gcsFromParams(params),
-		S3:              s3FromParams(params),
+		StorageParams:   params.StorageParams,
 		GlobalRetention: tempo.Spec.Retention.Global.Traces.Duration.String(),
 		MemberList: []string{
 			naming.Name("gossip-ring", tempo.Name),
@@ -98,8 +79,8 @@ func buildConfiguration(tempo v1alpha1.TempoStack, params Params) ([]byte, error
 		Multitenancy:           tempo.Spec.Tenants != nil,
 		Gateway:                tempo.Spec.Template.Gateway.Enabled,
 		Gates: featureGates{
-			GRPCEncryption: params.GRPCEncryption,
-			HTTPEncryption: params.HTTPEncryption,
+			GRPCEncryption: params.Gates.GRPCEncryption,
+			HTTPEncryption: params.Gates.HTTPEncryption,
 		},
 		TLS: tlsopts,
 	}
@@ -121,8 +102,8 @@ func buildTenantOverrides(tempo v1alpha1.TempoStack) ([]byte, error) {
 	})
 }
 
-func buildTLSConfig(tempo v1alpha1.TempoStack, params Params) (tlsOptions, error) {
-
+func buildTLSConfig(params manifestutils.Params) (tlsOptions, error) {
+	tempo := params.Tempo
 	minTLSShort, err := params.TLSProfile.MinVersionShort()
 	if err != nil {
 		return tlsOptions{}, err
@@ -146,8 +127,8 @@ func buildTLSConfig(tempo v1alpha1.TempoStack, params Params) (tlsOptions, error
 
 }
 
-func buildTempoQueryConfig(tempo v1alpha1.TempoStack, params Params) ([]byte, error) {
-	tlsopts, err := buildTLSConfig(tempo, params)
+func buildTempoQueryConfig(params manifestutils.Params) ([]byte, error) {
+	tlsopts, err := buildTLSConfig(params)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -156,10 +137,11 @@ func buildTempoQueryConfig(tempo v1alpha1.TempoStack, params Params) ([]byte, er
 		TLS:      tlsopts,
 		HTTPPort: manifestutils.PortHTTPServer,
 		Gates: featureGates{
-			GRPCEncryption: params.GRPCEncryption,
-			HTTPEncryption: params.HTTPEncryption,
+			GRPCEncryption: params.Gates.GRPCEncryption,
+			HTTPEncryption: params.Gates.HTTPEncryption,
 		},
 		TenantHeader: manifestutils.TenantHeader,
+		Gateway:      params.Tempo.Spec.Template.Gateway.Enabled,
 	})
 }
 

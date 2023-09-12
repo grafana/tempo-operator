@@ -821,6 +821,20 @@ spec:
                                 - route
                                 type: string
                             type: object
+                          monitorTab:
+                            description: MonitorTab defines monitor tab configuration.
+                            properties:
+                              enabled:
+                                description: Enabled enables monitoring tab in Jaeger
+                                  console. PrometheusEndpoint needs to be set to enable
+                                  the feature.
+                                type: boolean
+                              prometheusEndpoint:
+                                description: PrometheusEndpoint configures endpoint
+                                  to the Prometheus that contains span RED metrics.
+                                  For instance on OpenShift this is set to https://thanos-querier.openshift-monitoring.svc.cluster.local:9091
+                                type: string
+                            type: object
                         type: object
                     type: object
                 type: object
