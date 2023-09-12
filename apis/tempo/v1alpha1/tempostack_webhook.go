@@ -194,16 +194,28 @@ func (v *validator) validateServiceAccount(ctx context.Context, tempo TempoStack
 	return allErrs
 }
 
-func (v *validator) validateStorage(ctx context.Context, tempo TempoStack) field.ErrorList {
+func (v *validator) validateStorageSecret(ctx context.Context, tempo TempoStack) (admission.Warnings, field.ErrorList) {
 	storageSecret := &corev1.Secret{}
 	err := v.client.Get(ctx, types.NamespacedName{Namespace: tempo.Namespace, Name: tempo.Spec.Storage.Secret.Name}, storageSecret)
 	if err != nil {
 		// Do not fail the validation here, the user can create the storage secret later.
 		// The operator will remain in a ConfigurationError status condition until the storage secret is set.
-		return field.ErrorList{}
+		return admission.Warnings{fmt.Sprintf("Secret '%s' does not exist", tempo.Spec.Storage.Secret.Name)}, field.ErrorList{}
 	}
 
-	return ValidateStorageSecret(tempo, *storageSecret)
+	return admission.Warnings{}, ValidateStorageSecret(tempo, *storageSecret)
+}
+
+func (v *validator) validateStorageCA(ctx context.Context, tempo TempoStack) (admission.Warnings, field.ErrorList) {
+	caConfigMap := &corev1.ConfigMap{}
+	err := v.client.Get(ctx, types.NamespacedName{Namespace: tempo.Namespace, Name: tempo.Spec.Storage.TLS.CA}, caConfigMap)
+	if err != nil {
+		// Do not fail the validation here, the user can create the ConfigMap later.
+		// The operator will remain in a ConfigurationError status condition until the ConfigMap is created.
+		return admission.Warnings{fmt.Sprintf("ConfigMap '%s' does not exist", tempo.Spec.Storage.TLS.CA)}, field.ErrorList{}
+	}
+
+	return admission.Warnings{}, ValidateStorageCAConfigMap(*caConfigMap)
 }
 
 func (v *validator) validateReplicationFactor(tempo TempoStack) field.ErrorList {
@@ -403,21 +415,35 @@ func (v *validator) validate(ctx context.Context, obj runtime.Object) (admission
 	log := ctrl.LoggerFrom(ctx).WithName("tempostack-webhook")
 	log.V(1).Info("running validating webhook", "name", tempo.Name)
 
-	var allErrs field.ErrorList
-	allErrs = append(allErrs, v.validateStackName(*tempo)...)
-	allErrs = append(allErrs, v.validateServiceAccount(ctx, *tempo)...)
-	allErrs = append(allErrs, v.validateStorage(ctx, *tempo)...)
-	allErrs = append(allErrs, v.validateReplicationFactor(*tempo)...)
-	allErrs = append(allErrs, v.validateQueryFrontend(*tempo)...)
-	allErrs = append(allErrs, v.validateGateway(*tempo)...)
-	allErrs = append(allErrs, v.validateTenantConfigs(*tempo)...)
-	allErrs = append(allErrs, v.validateObservability(*tempo)...)
-	allErrs = append(allErrs, v.validateDeprecatedFields(*tempo)...)
+	allWarnings := admission.Warnings{}
+	allErrors := field.ErrorList{}
+	var warnings admission.Warnings
+	var errors field.ErrorList
 
-	if len(allErrs) == 0 {
-		return nil, nil
+	allErrors = append(allErrors, v.validateStackName(*tempo)...)
+	allErrors = append(allErrors, v.validateServiceAccount(ctx, *tempo)...)
+
+	warnings, errors = v.validateStorageSecret(ctx, *tempo)
+	allWarnings = append(allWarnings, warnings...)
+	allErrors = append(allErrors, errors...)
+
+	if tempo.Spec.Storage.TLS.CA == "" {
+		warnings, errors = v.validateStorageCA(ctx, *tempo)
+		allWarnings = append(allWarnings, warnings...)
+		allErrors = append(allErrors, errors...)
 	}
-	return nil, apierrors.NewInvalid(tempo.GroupVersionKind().GroupKind(), tempo.Name, allErrs)
+
+	allErrors = append(allErrors, v.validateReplicationFactor(*tempo)...)
+	allErrors = append(allErrors, v.validateQueryFrontend(*tempo)...)
+	allErrors = append(allErrors, v.validateGateway(*tempo)...)
+	allErrors = append(allErrors, v.validateTenantConfigs(*tempo)...)
+	allErrors = append(allErrors, v.validateObservability(*tempo)...)
+	allErrors = append(allErrors, v.validateDeprecatedFields(*tempo)...)
+
+	if len(allErrors) == 0 {
+		return allWarnings, nil
+	}
+	return allWarnings, apierrors.NewInvalid(tempo.GroupVersionKind().GroupKind(), tempo.Name, allErrors)
 }
 
 // ValidateTenantConfigs validates the tenants mode specification.

@@ -14,6 +14,7 @@ import (
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -25,6 +26,14 @@ import (
 	"github.com/grafana/tempo-operator/internal/tlsprofile"
 )
 
+func listErrors(fieldErrs field.ErrorList) string {
+	msgs := make([]string, len(fieldErrs))
+	for i, fieldErr := range fieldErrs {
+		msgs[i] = fieldErr.Detail
+	}
+	return strings.Join(msgs, ", ")
+}
+
 func (r *TempoStackReconciler) getStorageConfig(ctx context.Context, tempo v1alpha1.TempoStack) (manifestutils.StorageParams, error) {
 	storageSecret := &corev1.Secret{}
 	err := r.Get(ctx, types.NamespacedName{Namespace: tempo.Namespace, Name: tempo.Spec.Storage.Secret.Name}, storageSecret)
@@ -34,15 +43,23 @@ func (r *TempoStackReconciler) getStorageConfig(ctx context.Context, tempo v1alp
 
 	fieldErrs := v1alpha1.ValidateStorageSecret(tempo, *storageSecret)
 	if len(fieldErrs) > 0 {
-		msgs := make([]string, len(fieldErrs))
-		for i, fieldErr := range fieldErrs {
-			msgs[i] = fieldErr.Detail
+		return manifestutils.StorageParams{}, fmt.Errorf("invalid storage secret: %s", listErrors(fieldErrs))
+	}
+
+	if tempo.Spec.Storage.TLS.CA != "" {
+		caConfigMap := &corev1.ConfigMap{}
+		err := r.Get(ctx, types.NamespacedName{Namespace: tempo.Namespace, Name: tempo.Spec.Storage.TLS.CA}, caConfigMap)
+		if err != nil {
+			return manifestutils.StorageParams{}, fmt.Errorf("could not fetch CA config map: %w", err)
 		}
-		return manifestutils.StorageParams{}, fmt.Errorf("invalid storage secret: %s", strings.Join(msgs, ", "))
+
+		fieldErrs := v1alpha1.ValidateStorageCAConfigMap(*caConfigMap)
+		if len(fieldErrs) > 0 {
+			return manifestutils.StorageParams{}, fmt.Errorf("invalid CA config map: %s", listErrors(fieldErrs))
+		}
 	}
 
 	params := manifestutils.StorageParams{}
-
 	switch tempo.Spec.Storage.Secret.Type {
 	case v1alpha1.ObjectStorageSecretAzure:
 		params.AzureStorage = GetAzureParams(tempo, storageSecret)
