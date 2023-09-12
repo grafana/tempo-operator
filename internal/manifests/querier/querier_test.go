@@ -116,7 +116,11 @@ func TestBuildQuerier(t *testing.T) {
 						{
 							Name:  "tempo",
 							Image: "docker.io/grafana/tempo:1.5.0",
-							Args:  []string{"-target=querier", "-config.file=/conf/tempo.yaml"},
+							Args: []string{
+								"-target=querier",
+								"-config.file=/conf/tempo.yaml",
+								"-log.level=info",
+							},
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      manifestutils.ConfigVolumeName,

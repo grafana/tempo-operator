@@ -745,6 +745,7 @@ spec:
             spec:
               containers:
               - args:
+                - --zap-log-level=info
                 - start
                 - --config=controller_manager_config.yaml
                 image: ghcr.io/grafana/tempo-operator/tempo-operator:v0.4.0

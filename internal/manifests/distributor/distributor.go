@@ -119,9 +119,13 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 					Affinity:           manifestutils.DefaultAffinity(labels),
 					Containers: []corev1.Container{
 						{
-							Name:           "tempo",
-							Image:          tempo.Spec.Images.Tempo,
-							Args:           []string{"-target=distributor", "-config.file=/conf/tempo.yaml"},
+							Name:  "tempo",
+							Image: tempo.Spec.Images.Tempo,
+							Args: []string{
+								"-target=distributor",
+								"-config.file=/conf/tempo.yaml",
+								"-log.level=info",
+							},
 							Ports:          containerPorts,
 							ReadinessProbe: manifestutils.TempoReadinessProbe(params.Gates.HTTPEncryption),
 							VolumeMounts: []corev1.VolumeMount{

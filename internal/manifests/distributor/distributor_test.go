@@ -247,7 +247,11 @@ func TestBuildDistributor(t *testing.T) {
 								{
 									Name:  "tempo",
 									Image: "docker.io/grafana/tempo:1.5.0",
-									Args:  []string{"-target=distributor", "-config.file=/conf/tempo.yaml"},
+									Args: []string{
+										"-target=distributor",
+										"-config.file=/conf/tempo.yaml",
+										"-log.level=info",
+									},
 									VolumeMounts: []corev1.VolumeMount{
 										{
 											Name:      manifestutils.ConfigVolumeName,
