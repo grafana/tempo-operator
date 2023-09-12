@@ -16,6 +16,7 @@ import (
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -28,6 +29,8 @@ import (
 	"github.com/grafana/tempo-operator/internal/certrotation/handlers"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/status"
+	"github.com/grafana/tempo-operator/internal/upgrade"
+	"github.com/grafana/tempo-operator/internal/version"
 )
 
 const (
@@ -37,8 +40,10 @@ const (
 // TempoStackReconciler reconciles a TempoStack object.
 type TempoStackReconciler struct {
 	client.Client
-	Scheme       *runtime.Scheme
-	FeatureGates configv1alpha1.FeatureGates
+	Scheme     *runtime.Scheme
+	Recorder   record.EventRecorder
+	CtrlConfig configv1alpha1.ProjectConfig
+	Version    version.Version
 }
 
 // +kubebuilder:rbac:groups="",resources=services;configmaps;serviceaccounts;secrets;pods,verbs=get;list;watch;create;update;patch;delete
@@ -82,8 +87,26 @@ func (r *TempoStackReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return ctrl.Result{}, nil
 	}
 
-	if r.FeatureGates.BuiltInCertManagement.Enabled {
-		err := handlers.CreateOrRotateCertificates(ctx, log, req, r.Client, r.Scheme, r.FeatureGates)
+	// Apply upgrades in case a TempoStack is switched back from Unmanaged to Managed state.
+	// In all other cases, the upgrade process at operator startup will upgrade the TempoStack instance.
+	//
+	// New CRs with empty OperatorVersion are ignored, as they're already up-to-date. The operator version
+	// will be set when the status field is refreshed.
+	if tempo.Status.OperatorVersion != "" && tempo.Status.OperatorVersion != r.Version.OperatorVersion {
+		err := upgrade.Upgrade{
+			Client:     r.Client,
+			Recorder:   r.Recorder,
+			CtrlConfig: r.CtrlConfig,
+			Version:    r.Version,
+			Log:        ctrl.LoggerFrom(ctx).WithName("tempostack-reconcile-upgrade"),
+		}.TempoStack(ctx, tempo)
+		if err != nil {
+			return r.handleReconcileStatus(ctx, log, tempo, err)
+		}
+	}
+
+	if r.CtrlConfig.Gates.BuiltInCertManagement.Enabled {
+		err := handlers.CreateOrRotateCertificates(ctx, log, req, r.Client, r.Scheme, r.CtrlConfig.Gates)
 		if err != nil {
 			return r.handleReconcileStatus(ctx, log, tempo, fmt.Errorf("built in cert manager error: %w", err))
 		}
@@ -181,12 +204,12 @@ func (r *TempoStackReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			builder.WithPredicates(predicate.ResourceVersionChangedPredicate{}),
 		)
 
-	if r.FeatureGates.PrometheusOperator {
+	if r.CtrlConfig.Gates.PrometheusOperator {
 		builder = builder.Owns(&monitoringv1.ServiceMonitor{})
 		builder = builder.Owns(&monitoringv1.PrometheusRule{})
 	}
 
-	if r.FeatureGates.OpenShift.OpenShiftRoute {
+	if r.CtrlConfig.Gates.OpenShift.OpenShiftRoute {
 		builder = builder.Owns(&routev1.Route{})
 	}
 

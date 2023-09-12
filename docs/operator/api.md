@@ -1709,7 +1709,7 @@ ObjectStorageSecretSpec
 <td>
 
 <p>Secret for object storage authentication.
-Name of a secret in the same namespace as the tempo TempoStack custom resource.</p>
+Name of a secret in the same namespace as the TempoStack custom resource.</p>
 
 </td>
 </tr>
@@ -1766,7 +1766,7 @@ string
 <em>(Optional)</em>
 
 <p>CA is the name of a ConfigMap containing a CA certificate.
-It needs to be in the same namespace as the Tempo custom resource.</p>
+It needs to be in the same namespace as the TempoStack custom resource.</p>
 
 </td>
 </tr>

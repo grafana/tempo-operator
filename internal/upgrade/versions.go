@@ -1,12 +1,14 @@
 package upgrade
 
 import (
+	"context"
+
 	"github.com/Masterminds/semver/v3"
 
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 )
 
-type upgradeFunc func(u Upgrade, tempo *v1alpha1.TempoStack) (*v1alpha1.TempoStack, error)
+type upgradeFunc func(ctx context.Context, u Upgrade, tempo *v1alpha1.TempoStack) (*v1alpha1.TempoStack, error)
 
 type versionUpgrade struct {
 	version semver.Version

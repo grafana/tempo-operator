@@ -15,12 +15,14 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/status"
+	"github.com/grafana/tempo-operator/internal/version"
 )
 
 func createSecret(t *testing.T, nsn types.NamespacedName) *corev1.Secret {
@@ -91,11 +93,15 @@ func TestReconcile(t *testing.T) {
 	createTempoCR(t, nsn, storageSecret)
 
 	reconciler := TempoStackReconciler{
-		Client: k8sClient,
-		Scheme: testScheme,
-		FeatureGates: configv1alpha1.FeatureGates{
-			TLSProfile: string(configv1alpha1.TLSProfileIntermediateType),
+		Client:   k8sClient,
+		Scheme:   testScheme,
+		Recorder: record.NewFakeRecorder(1),
+		CtrlConfig: configv1alpha1.ProjectConfig{
+			Gates: configv1alpha1.FeatureGates{
+				TLSProfile: string(configv1alpha1.TLSProfileIntermediateType),
+			},
 		},
+		Version: version.Get(),
 	}
 	req := ctrl.Request{
 		NamespacedName: nsn,
@@ -157,11 +163,15 @@ func TestReadyToConfigurationError(t *testing.T) {
 
 	// Reconcile
 	reconciler := TempoStackReconciler{
-		Client: k8sClient,
-		Scheme: testScheme,
-		FeatureGates: configv1alpha1.FeatureGates{
-			TLSProfile: string(configv1alpha1.TLSProfileIntermediateType),
+		Client:   k8sClient,
+		Scheme:   testScheme,
+		Recorder: record.NewFakeRecorder(1),
+		CtrlConfig: configv1alpha1.ProjectConfig{
+			Gates: configv1alpha1.FeatureGates{
+				TLSProfile: string(configv1alpha1.TLSProfileIntermediateType),
+			},
 		},
+		Version: version.Get(),
 	}
 	req := ctrl.Request{
 		NamespacedName: nsn,
@@ -231,11 +241,15 @@ func TestConfigurationErrorToConfigurationError(t *testing.T) {
 
 	// Reconcile
 	reconciler := TempoStackReconciler{
-		Client: k8sClient,
-		Scheme: testScheme,
-		FeatureGates: configv1alpha1.FeatureGates{
-			TLSProfile: string(configv1alpha1.TLSProfileIntermediateType),
+		Client:   k8sClient,
+		Scheme:   testScheme,
+		Recorder: record.NewFakeRecorder(1),
+		CtrlConfig: configv1alpha1.ProjectConfig{
+			Gates: configv1alpha1.FeatureGates{
+				TLSProfile: string(configv1alpha1.TLSProfileIntermediateType),
+			},
 		},
+		Version: version.Get(),
 	}
 	req := ctrl.Request{
 		NamespacedName: nsn,
@@ -295,11 +309,15 @@ func TestConfigurationErrorToReady(t *testing.T) {
 
 	// Reconcile
 	reconciler := TempoStackReconciler{
-		Client: k8sClient,
-		Scheme: testScheme,
-		FeatureGates: configv1alpha1.FeatureGates{
-			TLSProfile: string(configv1alpha1.TLSProfileIntermediateType),
+		Client:   k8sClient,
+		Scheme:   testScheme,
+		Recorder: record.NewFakeRecorder(1),
+		CtrlConfig: configv1alpha1.ProjectConfig{
+			Gates: configv1alpha1.FeatureGates{
+				TLSProfile: string(configv1alpha1.TLSProfileIntermediateType),
+			},
 		},
+		Version: version.Get(),
 	}
 	req := ctrl.Request{
 		NamespacedName: nsn,
@@ -363,14 +381,18 @@ func TestReconcileGenericError(t *testing.T) {
 	createTempoCR(t, nsn, storageSecret)
 
 	reconciler := TempoStackReconciler{
-		Client: k8sClient,
-		Scheme: testScheme,
-		FeatureGates: configv1alpha1.FeatureGates{
-			TLSProfile: string(configv1alpha1.TLSProfileIntermediateType),
-			OpenShift: configv1alpha1.OpenShiftFeatureGates{
-				OpenShiftRoute: true, // this will throw an error, as the CRD is not installed
+		Client:   k8sClient,
+		Scheme:   testScheme,
+		Recorder: record.NewFakeRecorder(1),
+		CtrlConfig: configv1alpha1.ProjectConfig{
+			Gates: configv1alpha1.FeatureGates{
+				TLSProfile: string(configv1alpha1.TLSProfileIntermediateType),
+				OpenShift: configv1alpha1.OpenShiftFeatureGates{
+					OpenShiftRoute: true, // this will throw an error, as the CRD is not installed
+				},
 			},
 		},
+		Version: version.Get(),
 	}
 	req := ctrl.Request{
 		NamespacedName: nsn,
@@ -397,28 +419,32 @@ func TestTLSEnable(t *testing.T) {
 	createTempoCR(t, nsn, storageSecret)
 
 	reconciler := TempoStackReconciler{
-		Client: k8sClient,
-		Scheme: testScheme,
-		FeatureGates: configv1alpha1.FeatureGates{
-			BuiltInCertManagement: configv1alpha1.BuiltInCertManagement{
-				Enabled: true,
-				CACertValidity: metav1.Duration{
-					Duration: time.Hour * 43830,
+		Client:   k8sClient,
+		Scheme:   testScheme,
+		Recorder: record.NewFakeRecorder(1),
+		CtrlConfig: configv1alpha1.ProjectConfig{
+			Gates: configv1alpha1.FeatureGates{
+				BuiltInCertManagement: configv1alpha1.BuiltInCertManagement{
+					Enabled: true,
+					CACertValidity: metav1.Duration{
+						Duration: time.Hour * 43830,
+					},
+					CACertRefresh: metav1.Duration{
+						Duration: time.Hour * 35064,
+					},
+					CertValidity: metav1.Duration{
+						Duration: time.Hour * 2160,
+					},
+					CertRefresh: metav1.Duration{
+						Duration: time.Hour * 1728,
+					},
 				},
-				CACertRefresh: metav1.Duration{
-					Duration: time.Hour * 35064,
-				},
-				CertValidity: metav1.Duration{
-					Duration: time.Hour * 2160,
-				},
-				CertRefresh: metav1.Duration{
-					Duration: time.Hour * 1728,
-				},
+				HTTPEncryption: true,
+				GRPCEncryption: true,
+				TLSProfile:     string(configv1alpha1.TLSProfileIntermediateType),
 			},
-			HTTPEncryption: true,
-			GRPCEncryption: true,
-			TLSProfile:     string(configv1alpha1.TLSProfileIntermediateType),
 		},
+		Version: version.Get(),
 	}
 	req := ctrl.Request{
 		NamespacedName: nsn,
@@ -506,11 +532,15 @@ func TestPruneIngress(t *testing.T) {
 
 	// Reconcile
 	reconciler := TempoStackReconciler{
-		Client: k8sClient,
-		Scheme: testScheme,
-		FeatureGates: configv1alpha1.FeatureGates{
-			TLSProfile: string(configv1alpha1.TLSProfileIntermediateType),
+		Client:   k8sClient,
+		Scheme:   testScheme,
+		Recorder: record.NewFakeRecorder(1),
+		CtrlConfig: configv1alpha1.ProjectConfig{
+			Gates: configv1alpha1.FeatureGates{
+				TLSProfile: string(configv1alpha1.TLSProfileIntermediateType),
+			},
 		},
+		Version: version.Get(),
 	}
 	req := ctrl.Request{
 		NamespacedName: nsn,
@@ -631,28 +661,32 @@ func TestK8SGatewaySecret(t *testing.T) {
 	require.NoError(t, err)
 
 	reconciler := TempoStackReconciler{
-		Client: k8sClient,
-		Scheme: testScheme,
-		FeatureGates: configv1alpha1.FeatureGates{
-			BuiltInCertManagement: configv1alpha1.BuiltInCertManagement{
-				Enabled: true,
-				CACertValidity: metav1.Duration{
-					Duration: time.Hour * 43830,
+		Client:   k8sClient,
+		Scheme:   testScheme,
+		Recorder: record.NewFakeRecorder(1),
+		CtrlConfig: configv1alpha1.ProjectConfig{
+			Gates: configv1alpha1.FeatureGates{
+				BuiltInCertManagement: configv1alpha1.BuiltInCertManagement{
+					Enabled: true,
+					CACertValidity: metav1.Duration{
+						Duration: time.Hour * 43830,
+					},
+					CACertRefresh: metav1.Duration{
+						Duration: time.Hour * 35064,
+					},
+					CertValidity: metav1.Duration{
+						Duration: time.Hour * 2160,
+					},
+					CertRefresh: metav1.Duration{
+						Duration: time.Hour * 1728,
+					},
 				},
-				CACertRefresh: metav1.Duration{
-					Duration: time.Hour * 35064,
-				},
-				CertValidity: metav1.Duration{
-					Duration: time.Hour * 2160,
-				},
-				CertRefresh: metav1.Duration{
-					Duration: time.Hour * 1728,
-				},
+				HTTPEncryption: true,
+				GRPCEncryption: true,
+				TLSProfile:     string(configv1alpha1.TLSProfileIntermediateType),
 			},
-			HTTPEncryption: true,
-			GRPCEncryption: true,
-			TLSProfile:     string(configv1alpha1.TLSProfileIntermediateType),
 		},
+		Version: version.Get(),
 	}
 	req := ctrl.Request{
 		NamespacedName: nsn,
@@ -748,4 +782,44 @@ func TestReconcileManifestsValidateModes(t *testing.T) {
 			tc.validate(t, err)
 		})
 	}
+}
+
+func TestUpgrade(t *testing.T) {
+	// Create object storage secret and Tempo CR
+	nsn := types.NamespacedName{Name: "upgrade-test", Namespace: "default"}
+	storageSecret := createSecret(t, nsn)
+	createTempoCR(t, nsn, storageSecret)
+
+	// Reconcile
+	reconciler := TempoStackReconciler{
+		Client:   k8sClient,
+		Scheme:   testScheme,
+		Recorder: record.NewFakeRecorder(1),
+		CtrlConfig: configv1alpha1.ProjectConfig{
+			Gates: configv1alpha1.FeatureGates{
+				TLSProfile: string(configv1alpha1.TLSProfileIntermediateType),
+			},
+		},
+		Version: version.Get(),
+	}
+	req := ctrl.Request{
+		NamespacedName: nsn,
+	}
+	reconcile, err := reconciler.Reconcile(context.Background(), req)
+	require.NoError(t, err)
+	assert.Equal(t, false, reconcile.Requeue)
+
+	// Bump operator version
+	reconciler.Version.OperatorVersion = "0.0.1"
+
+	// Reconcile should perform upgrade now
+	reconcile, err = reconciler.Reconcile(context.Background(), req)
+	require.NoError(t, err)
+	assert.Equal(t, false, reconcile.Requeue)
+
+	// Verify new version
+	updatedTempo := v1alpha1.TempoStack{}
+	err = k8sClient.Get(context.Background(), nsn, &updatedTempo)
+	require.NoError(t, err)
+	assert.Equal(t, "0.0.1", updatedTempo.Status.OperatorVersion)
 }

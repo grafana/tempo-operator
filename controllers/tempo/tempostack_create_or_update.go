@@ -82,16 +82,16 @@ func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, log logr.Logg
 		}
 	}
 
-	if tempo.Spec.Tenants != nil && tempo.Spec.Tenants.Mode == v1alpha1.ModeOpenShift && r.FeatureGates.OpenShift.BaseDomain == "" {
+	if tempo.Spec.Tenants != nil && tempo.Spec.Tenants.Mode == v1alpha1.ModeOpenShift && r.CtrlConfig.Gates.OpenShift.BaseDomain == "" {
 		domain, err := gateway.GetOpenShiftBaseDomain(ctx, r.Client)
 		if err != nil {
 			return err
 		}
 		log.Info("OpenShift base domain set", "openshift-base-domain", domain)
-		r.FeatureGates.OpenShift.BaseDomain = domain
+		r.CtrlConfig.Gates.OpenShift.BaseDomain = domain
 	}
 
-	tlsProfile, err := tlsprofile.Get(ctx, r.FeatureGates, r.Client, log)
+	tlsProfile, err := tlsprofile.Get(ctx, r.CtrlConfig.Gates, r.Client, log)
 	if err != nil {
 		switch err {
 		case tlsprofile.ErrGetProfileFromCluster:
@@ -135,7 +135,7 @@ func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, log logr.Logg
 	managedObjects, err := manifests.BuildAll(manifestutils.Params{
 		Tempo:               tempo,
 		StorageParams:       storageConfig,
-		Gates:               r.FeatureGates,
+		Gates:               r.CtrlConfig.Gates,
 		TLSProfile:          tlsProfile,
 		GatewayTenantSecret: tenantSecrets,
 		GatewayTenantsData:  gatewayTenantsData,
@@ -222,7 +222,7 @@ func (r *TempoStackReconciler) findObjectsOwnedByTempoOperator(ctx context.Conte
 		ownedObjects[ingressList.Items[i].GetUID()] = &ingressList.Items[i]
 	}
 
-	if r.FeatureGates.PrometheusOperator {
+	if r.CtrlConfig.Gates.PrometheusOperator {
 		servicemonitorList := &monitoringv1.ServiceMonitorList{}
 		err := r.List(ctx, servicemonitorList, listOps)
 		if err != nil {
@@ -242,7 +242,7 @@ func (r *TempoStackReconciler) findObjectsOwnedByTempoOperator(ctx context.Conte
 		}
 	}
 
-	if r.FeatureGates.OpenShift.OpenShiftRoute {
+	if r.CtrlConfig.Gates.OpenShift.OpenShiftRoute {
 		routesList := &routev1.RouteList{}
 		err := r.List(ctx, routesList, listOps)
 		if err != nil {
