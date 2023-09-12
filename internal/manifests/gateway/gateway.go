@@ -65,7 +65,7 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 		}
 	}
 
-	if params.Tempo.Spec.Tenants.Mode == v1alpha1.OpenShift {
+	if params.Tempo.Spec.Tenants.Mode == v1alpha1.ModeOpenShift {
 		dep = patchOCPServiceAccount(params.Tempo, dep)
 		dep, err = patchOCPOPAContainer(params.Tempo, dep)
 		if err != nil {

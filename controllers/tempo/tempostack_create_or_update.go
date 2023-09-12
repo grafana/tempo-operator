@@ -25,11 +25,11 @@ import (
 	"github.com/grafana/tempo-operator/internal/tlsprofile"
 )
 
-func (r *TempoStackReconciler) getStorageConfig(ctx context.Context, tempo v1alpha1.TempoStack) (*manifestutils.StorageParams, error) {
+func (r *TempoStackReconciler) getStorageConfig(ctx context.Context, tempo v1alpha1.TempoStack) (manifestutils.StorageParams, error) {
 	storageSecret := &corev1.Secret{}
 	err := r.Get(ctx, types.NamespacedName{Namespace: tempo.Namespace, Name: tempo.Spec.Storage.Secret.Name}, storageSecret)
 	if err != nil {
-		return nil, fmt.Errorf("could not fetch storage secret: %w", err)
+		return manifestutils.StorageParams{}, fmt.Errorf("could not fetch storage secret: %w", err)
 	}
 
 	fieldErrs := v1alpha1.ValidateStorageSecret(tempo, *storageSecret)
@@ -38,27 +38,23 @@ func (r *TempoStackReconciler) getStorageConfig(ctx context.Context, tempo v1alp
 		for i, fieldErr := range fieldErrs {
 			msgs[i] = fieldErr.Detail
 		}
-		return nil, fmt.Errorf("invalid storage secret: %s", strings.Join(msgs, ", "))
+		return manifestutils.StorageParams{}, fmt.Errorf("invalid storage secret: %s", strings.Join(msgs, ", "))
 	}
 
-	params := manifestutils.StorageParams{
-		AzureStorage: &manifestutils.AzureStorage{},
-		GCS:          &manifestutils.GCS{},
-		S3:           &manifestutils.S3{},
-	}
+	params := manifestutils.StorageParams{}
 
 	switch tempo.Spec.Storage.Secret.Type {
 	case v1alpha1.ObjectStorageSecretAzure:
-		params.AzureStorage = getAzureParams(storageSecret)
+		params.AzureStorage = GetAzureParams(storageSecret)
 	case v1alpha1.ObjectStorageSecretGCS:
-		params.GCS = getGCSParams(storageSecret)
+		params.GCS = GetGCSParams(storageSecret)
 	case v1alpha1.ObjectStorageSecretS3:
-		params.S3 = getS3Params(storageSecret)
+		params.S3 = GetS3Params(storageSecret)
 	default:
-		return &params, fmt.Errorf("storage secret type is not recognized")
+		return manifestutils.StorageParams{}, fmt.Errorf("storage secret type is not recognized")
 	}
 
-	return &params, nil
+	return params, nil
 }
 
 func isNamespaceScoped(obj client.Object) bool {
@@ -86,7 +82,7 @@ func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, log logr.Logg
 		}
 	}
 
-	if tempo.Spec.Tenants != nil && tempo.Spec.Tenants.Mode == v1alpha1.OpenShift && r.CtrlConfig.Gates.OpenShift.BaseDomain == "" {
+	if tempo.Spec.Tenants != nil && tempo.Spec.Tenants.Mode == v1alpha1.ModeOpenShift && r.CtrlConfig.Gates.OpenShift.BaseDomain == "" {
 		domain, err := gateway.GetOpenShiftBaseDomain(ctx, r.Client)
 		if err != nil {
 			return err
@@ -120,7 +116,7 @@ func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, log logr.Logg
 	}
 
 	var tenantSecrets []*manifestutils.GatewayTenantOIDCSecret
-	if tempo.Spec.Tenants != nil && tempo.Spec.Tenants.Mode == v1alpha1.Static {
+	if tempo.Spec.Tenants != nil && tempo.Spec.Tenants.Mode == v1alpha1.ModeStatic {
 		tenantSecrets, err = gateway.GetOIDCTenantSecrets(ctx, r.Client, tempo)
 		if err != nil {
 			return err
@@ -128,7 +124,7 @@ func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, log logr.Logg
 	}
 
 	var gatewayTenantsData []*manifestutils.GatewayTenantsData
-	if tempo.Spec.Tenants != nil && tempo.Spec.Tenants.Mode == v1alpha1.OpenShift {
+	if tempo.Spec.Tenants != nil && tempo.Spec.Tenants.Mode == v1alpha1.ModeOpenShift {
 		gatewayTenantsData, err = gateway.GetGatewayTenantsData(ctx, r.Client, tempo)
 		if err != nil {
 			// just log the error the secret is not created if the loop for an instance runs for the first time.
@@ -138,7 +134,7 @@ func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, log logr.Logg
 
 	managedObjects, err := manifests.BuildAll(manifestutils.Params{
 		Tempo:               tempo,
-		StorageParams:       *storageConfig,
+		StorageParams:       storageConfig,
 		Gates:               r.CtrlConfig.Gates,
 		TLSProfile:          tlsProfile,
 		GatewayTenantSecret: tenantSecrets,

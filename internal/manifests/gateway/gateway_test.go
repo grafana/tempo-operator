@@ -146,7 +146,7 @@ func TestBuildGateway_openshift(t *testing.T) {
 				},
 			},
 			Tenants: &v1alpha1.TenantsSpec{
-				Mode: v1alpha1.OpenShift,
+				Mode: v1alpha1.ModeOpenShift,
 				Authentication: []v1alpha1.AuthenticationSpec{
 					{
 						TenantName: "dev",

@@ -17,7 +17,7 @@ spec:
         - |
           token=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
           curl \
-            -sS -G \
+            -v -G \
             --header "Authorization: Bearer $token" \
             --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
             https://tempo-simplest-gateway.kuttl-multitenancy.svc:8080/api/traces/v1/dev/api/traces \
