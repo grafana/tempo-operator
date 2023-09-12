@@ -1,0 +1,29 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: verify-metrics
+spec:
+  template:
+    spec:
+      containers:
+        - name: verify-metrics
+          image: registry.access.redhat.com/ubi9/ubi:9.1
+          command:
+            - /bin/bash
+            - -eux
+            - -c
+          args:
+            - |
+              SERVICE_NAME="frontend"
+              metrics=$(curl -sSL "http://tempo-redmetrics-query-frontend:16686/api/metrics/calls?service=$SERVICE_NAME")
+              
+              empty_response='{"name":"service_call_rate","type":"GAUGE","help":"calls/sec, grouped by service","metrics":[]}'
+              
+              if [ "$metrics" = "$empty_response" ]; then
+                echo "Metrics for $SERVICE_NAME does not exist in Jaeger."
+                exit 1  # Fail the test step if the trace doesn't exist
+              else
+                echo "Metrics for $SERVICE_NAME exist in Jaeger."
+                exit 0
+              fi
+      restartPolicy: Never

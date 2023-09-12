@@ -31,16 +31,16 @@ metadata:
         }
       ]
     capabilities: Deep Insights
-    categories: Logging & Tracing
+    categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator
-    createdAt: "2023-08-01T00:28:13Z"
+    createdAt: "2023-08-22T09:37:20Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operators.operatorframework.io/builder: operator-sdk-v1.27.0
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     repository: https://github.com/grafana/tempo-operator
     support: Grafana Tempo Operator SIG
-  name: tempo-operator.v0.2.0
+  name: tempo-operator.v0.4.0
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -429,6 +429,17 @@ spec:
           ingress, route and none are supported.
         displayName: Type
         path: template.queryFrontend.jaegerQuery.ingress.type
+      - description: MonitorTab defines monitor tab configuration.
+        displayName: Jaeger Query UI Monitor Tab Settings
+        path: template.queryFrontend.jaegerQuery.monitorTab
+      - description: Enabled enables monitoring tab in Jaeger console. PrometheusEndpoint
+          needs to be set to enable the feature.
+        displayName: Enabled
+        path: template.queryFrontend.jaegerQuery.monitorTab.enabled
+      - description: PrometheusEndpoint configures endpoint to the Prometheus that
+          contains span RED metrics. For instance on OpenShift this is set to https://thanos-querier.openshift-monitoring.svc.cluster.local:9091
+        displayName: Prometheus endpoint
+        path: template.queryFrontend.jaegerQuery.monitorTab.prometheusEndpoint
       - description: NodeSelector is the simplest recommended form of node selection
           constraint.
         displayName: Node Selector
@@ -489,7 +500,7 @@ spec:
         path: tenants.mode
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:select:static
-        - urn:alm:descriptor:com.tectonic.ui:select:dynamic
+        - urn:alm:descriptor:com.tectonic.ui:select:openshift
       statusDescriptors:
       - description: Distributor is a map to the per pod status of the distributor
           deployment
@@ -586,6 +597,12 @@ spec:
           - patch
           - update
           - watch
+        - apiGroups:
+          - apps
+          resources:
+          - deployments/finalizers
+          verbs:
+          - update
         - apiGroups:
           - config.openshift.io
           resources:
@@ -721,7 +738,7 @@ spec:
               - args:
                 - start
                 - --config=controller_manager_config.yaml
-                image: ghcr.io/grafana/tempo-operator/tempo-operator:v0.2.0
+                image: ghcr.io/grafana/tempo-operator/tempo-operator:v0.4.0
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -857,7 +874,7 @@ spec:
   maturity: alpha
   provider:
     name: Grafana Tempo Operator SIG
-  version: 0.2.0
+  version: 0.4.0
   webhookdefinitions:
   - admissionReviewVersions:
     - v1

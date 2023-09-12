@@ -57,6 +57,7 @@ func TestReconcileOperator(t *testing.T) {
 
 	reconciler := OperatorReconciler{
 		Client: k8sClient,
+		Scheme: testScheme,
 	}
 	err := reconciler.Reconcile(context.Background(), configv1alpha1.ProjectConfig{
 		Gates: configv1alpha1.FeatureGates{

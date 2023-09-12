@@ -147,7 +147,7 @@ func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 							Image: "docker.io/grafana/tempo:1.5.0",
 							Args: []string{
 								"-target=query-frontend",
-								"-config.file=/conf/tempo.yaml",
+								"-config.file=/conf/tempo-query-frontend.yaml",
 								"-mem-ballast-size-mbs=1024",
 							},
 							Ports: []corev1.ContainerPort{
@@ -519,4 +519,85 @@ func TestQueryFrontendJaegerTLS(t *testing.T) {
 	assert.Contains(t, args, fmt.Sprintf("--query.grpc.tls.key=%s/tls.key", manifestutils.TempoServerTLSDir()))
 	assert.Contains(t, args, fmt.Sprintf("--query.grpc.tls.cert=%s/tls.crt", manifestutils.TempoServerTLSDir()))
 	assert.Contains(t, args, fmt.Sprintf("--query.grpc.tls.client-ca=%s/service-ca.crt", manifestutils.CABundleDir))
+}
+
+func TestBuildQueryFrontendWithJaegerMonitorTab(t *testing.T) {
+	tests := []struct {
+		name  string
+		tempo v1alpha1.TempoStack
+		args  []string
+		env   []corev1.EnvVar
+	}{
+		{
+			name: "disabled",
+			tempo: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+							JaegerQuery: v1alpha1.JaegerQuerySpec{
+								Enabled: true,
+								MonitorTab: v1alpha1.JaegerQueryMonitor{
+									Enabled:            false,
+									PrometheusEndpoint: "http://prometheus:9091",
+								},
+							},
+						},
+					},
+				},
+			},
+			args: []string{"--query.base-path=/", "--grpc-storage-plugin.configuration-file=/conf/tempo-query.yaml", "--query.bearer-token-propagation=true"},
+		},
+		{
+			name: "custom prometheus",
+			tempo: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+							JaegerQuery: v1alpha1.JaegerQuerySpec{
+								Enabled: true,
+								MonitorTab: v1alpha1.JaegerQueryMonitor{
+									Enabled:            true,
+									PrometheusEndpoint: "http://prometheus:9091",
+								},
+							},
+						},
+					},
+				},
+			},
+			args: []string{"--query.base-path=/", "--grpc-storage-plugin.configuration-file=/conf/tempo-query.yaml", "--query.bearer-token-propagation=true", "--prometheus.query.support-spanmetrics-connector"},
+			env:  []corev1.EnvVar{{Name: "METRICS_STORAGE_TYPE", Value: "prometheus"}, {Name: "PROMETHEUS_SERVER_URL", Value: "http://prometheus:9091"}},
+		},
+		{
+			name: "OpenShift user-workload monitoring",
+			tempo: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+							JaegerQuery: v1alpha1.JaegerQuerySpec{
+								Enabled: true,
+								MonitorTab: v1alpha1.JaegerQueryMonitor{
+									Enabled:            true,
+									PrometheusEndpoint: "https://thanos-querier.openshift-monitoring.svc.cluster.local:9091",
+								},
+							},
+						},
+					},
+				},
+			},
+			args: []string{"--query.base-path=/", "--grpc-storage-plugin.configuration-file=/conf/tempo-query.yaml", "--query.bearer-token-propagation=true", "--prometheus.query.support-spanmetrics-connector", "--prometheus.tls.enabled=true", "--prometheus.token-file=/var/run/secrets/kubernetes.io/serviceaccount/token", "--prometheus.tls.ca=/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt"},
+			env:  []corev1.EnvVar{{Name: "METRICS_STORAGE_TYPE", Value: "prometheus"}, {Name: "PROMETHEUS_SERVER_URL", Value: "https://thanos-querier.openshift-monitoring.svc.cluster.local:9091"}},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			dep, err := deployment(manifestutils.Params{
+				Tempo: test.tempo,
+			})
+			require.NoError(t, err)
+
+			assert.Equal(t, test.args, dep.Spec.Template.Spec.Containers[1].Args)
+			assert.Equal(t, test.env, dep.Spec.Template.Spec.Containers[1].Env)
+		})
+	}
 }

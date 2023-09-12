@@ -1,30 +1,13 @@
 package config
 
-// AzureStorage holds Azure Storage configuration options.
-type azureStorage struct {
-	Container string
-}
-
-// GCS holds Google Cloud Storage configuration options.
-type gcs struct {
-	Bucket string
-}
-
-// S3 holds S3 object storage configuration options.
-type s3 struct {
-	Endpoint string
-	Bucket   string
-	Insecure bool
-}
+import "github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 
 // options holds the configuration template options.
 type options struct {
 	StorageType            string
 	GlobalRetention        string
 	QueryFrontendDiscovery string
-	AzureStorage           azureStorage
-	GCS                    gcs
-	S3                     s3
+	StorageParams          manifestutils.StorageParams
 	GlobalRateLimits       rateLimitsOptions
 	TenantRateLimitsPath   string
 	TLS                    tlsOptions
@@ -41,6 +24,7 @@ type tempoQueryOptions struct {
 	TLS          tlsOptions
 	HTTPPort     int
 	TenantHeader string
+	Gateway      bool
 }
 
 type featureGates struct {

@@ -11,29 +11,34 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/tlsprofile"
 )
 
 func TestConfigmap(t *testing.T) {
-	cm, checksum, err := BuildConfigMap(v1alpha1.TempoStack{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "test",
-		},
-		Spec: v1alpha1.TempoStackSpec{
-			Retention: v1alpha1.RetentionSpec{
-				Global: v1alpha1.RetentionConfig{
-					Traces: metav1.Duration{Duration: 48 * time.Hour},
+	cm, checksum, err := BuildConfigMap(manifestutils.Params{
+		Tempo: v1alpha1.TempoStack{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "test",
+			},
+			Spec: v1alpha1.TempoStackSpec{
+				Retention: v1alpha1.RetentionSpec{
+					Global: v1alpha1.RetentionConfig{
+						Traces: metav1.Duration{Duration: 48 * time.Hour},
+					},
 				},
 			},
 		},
-	}, Params{
 		TLSProfile: tlsprofile.TLSProfileOptions{
 			MinTLSVersion: string(openshiftconfigv1.VersionTLS13),
 		},
-		S3: S3{
-			Endpoint: "http://minio:9000",
-			Bucket:   "tempo",
-		}})
+		StorageParams: manifestutils.StorageParams{
+			S3: &manifestutils.S3{
+				Endpoint: "http://minio:9000",
+				Bucket:   "tempo",
+			},
+		},
+	})
 
 	require.NoError(t, err)
 	require.NotNil(t, cm.Data)
