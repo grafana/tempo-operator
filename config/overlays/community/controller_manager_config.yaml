@@ -23,7 +23,7 @@ leaderElection:
 images:
   tempo: docker.io/grafana/tempo:2.2.1
   tempoQuery: docker.io/grafana/tempo-query:2.2.1
-  tempoGateway: quay.io/observatorium/api:main-2023-07-31-5904ad0
+  tempoGateway: quay.io/observatorium/api:main-2023-09-13-14e06c6
   tempoGatewayOpa: quay.io/observatorium/opa-openshift:main-2023-05-24-8e91537
 featureGates:
   openshift:
