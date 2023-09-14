@@ -8,7 +8,7 @@ spec:
     spec:
       containers:
       - name: verify-traces
-        image: registry.gitlab.com/gitlab-ci-utils/curl-jq:1.1.0
+        image: local/ci-tools:e2e
         command:
         - /bin/bash
         - -eux
