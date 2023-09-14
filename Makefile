@@ -325,12 +325,7 @@ deploy-minio:
 
 # generic end-to-tests
 .PHONY: prepare-e2e
-prepare-e2e: kuttl start-kind cert-manager deploy-minio set-test-image-vars build docker-build load-image-operator deploy test-tools-image
-
-.PHONY: test-tools-image
-test-tools-image:
-	docker build -t local/ci-tools:e2e -f tests/Dockerfile.utils tests
-	kind load docker-image local/ci-tools:e2e
+prepare-e2e: kuttl start-kind cert-manager deploy-minio set-test-image-vars build docker-build load-image-operator deploy
 
 .PHONY: e2e
 e2e:
