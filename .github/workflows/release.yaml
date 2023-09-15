@@ -31,9 +31,10 @@ jobs:
     # Commit all changed files back to the repository
     - name: Commit the changes to the repository
       run: |
-        git commit -m "Release ${{inputs.version}}" \
-        git push \
-        git tag v${{inputs.version}} \
+        git add -A
+        git commit -m "Release ${{inputs.version}}"
+        git push
+        git tag v${{inputs.version}}
         git push v${{inputs.version}}
 
     - name: "generate release resources"
