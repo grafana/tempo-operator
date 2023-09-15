@@ -31,8 +31,9 @@ jobs:
     # Commit all changed files back to the repository
     - name: Commit the changes to the repository
       run: |
+        git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com"
         git add -A
-        git commit -m "Release ${{inputs.version}}"
+        git commit -m "Release ${{inputs.version}}" --author=${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
         git push
         git tag v${{inputs.version}}
         git push v${{inputs.version}}
