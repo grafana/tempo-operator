@@ -28,6 +28,7 @@ data:
         openshiftRoute: true
         servingCertsService: true
       prometheusOperator: true
+      grafanaOperator: true
       httpEncryption: true
       grpcEncryption: true
       tlsProfile: Modern

@@ -111,10 +111,19 @@ type MetricsFeatureGates struct {
 	CreatePrometheusRules bool `json:"createPrometheusRules,omitempty"`
 }
 
+type DatasourcesFeatureGates struct {
+	// CreateDatasources defines whether the operator should install Grafana Datasources
+	// to allow the visualization of metrics on Grafana.
+	CreateDatasources bool `json:"createDatasources,omitempty"`
+}
+
 // ObservabilityFeatureGates configures observability of the operator.
 type ObservabilityFeatureGates struct {
 	// Metrics configures metrics of the operator.
 	Metrics MetricsFeatureGates `json:"metrics,omitempty"`
+
+	// Datasources configures datasources of the operator.
+	Datasources DatasourcesFeatureGates `json:"datasources,omitempty"`
 }
 
 // FeatureGates is the supported set of all operator feature gates.
@@ -186,6 +195,10 @@ type FeatureGates struct {
 
 	// Observability configures observability features of the operator.
 	Observability ObservabilityFeatureGates `json:"observability,omitempty"`
+
+	// GrafanaOperator defines whether the Grafana Operator CRD exists in the cluster.
+	// This CRD is part of grafana-operator.
+	GrafanaOperator bool `json:"grafanaOperator,omitempty"`
 }
 
 //+kubebuilder:object:root=true

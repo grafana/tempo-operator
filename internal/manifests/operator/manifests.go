@@ -5,8 +5,9 @@ import (
 
 	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/manifests/operator/prometheus"
-)
+	"go.searchlight.dev/grafana-operator"
 
+)
 // BuildAll generates manifests for all enabled features of the operator.
 func BuildAll(featureGates configv1alpha1.FeatureGates, namespace string) ([]client.Object, error) {
 	var manifests []client.Object
@@ -22,6 +23,10 @@ func BuildAll(featureGates configv1alpha1.FeatureGates, namespace string) ([]cli
 		}
 
 		manifests = append(manifests, prometheusRule)
+	}
+
+	if featureGates.Observability.Datasources.CreateDatasources{
+		datasources, err := 
 	}
 
 	return manifests, nil

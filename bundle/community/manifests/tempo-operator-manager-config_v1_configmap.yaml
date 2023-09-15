@@ -28,6 +28,7 @@ data:
         openshiftRoute: false
         servingCertsService: false
       prometheusOperator: false
+      grafanaOperator: false
       httpEncryption: true
       grpcEncryption: true
       tlsProfile: Modern
