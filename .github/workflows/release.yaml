@@ -29,10 +29,12 @@ jobs:
         OPERATOR_VERSION: ${{inputs.version}}
 
     # Commit all changed files back to the repository
-    - uses: stefanzweifel/git-auto-commit-action@v4
-      with:
-        commit_message: Release ${{inputs.version}}
-        tagging_message: v${{inputs.version}}
+    - name: Commit the changes to the repository
+      run: |
+        git commit -m "Release ${{inputs.version}}" \
+        git push \
+        git tag v${{inputs.version}} \
+        git push v${{inputs.version}}
 
     - name: "generate release resources"
       run: make release-artifacts
