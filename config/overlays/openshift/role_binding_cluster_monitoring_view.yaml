@@ -1,3 +1,5 @@
+# The operator needs cluster-monitoring-view role
+# because it creates the same binding for the operands
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
