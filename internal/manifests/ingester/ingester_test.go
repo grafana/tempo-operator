@@ -73,6 +73,7 @@ func TestBuildIngester(t *testing.T) {
 			Selector: &metav1.LabelSelector{
 				MatchLabels: labels,
 			},
+			PodManagementPolicy: v1.ParallelPodManagement,
 			Template: corev1.PodTemplateSpec{
 
 				ObjectMeta: metav1.ObjectMeta{
