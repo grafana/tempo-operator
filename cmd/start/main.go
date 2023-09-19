@@ -57,9 +57,11 @@ func start(c *cobra.Command, args []string) {
 	}
 
 	if err = (&controllers.TempoStackReconciler{
-		Client:       mgr.GetClient(),
-		Scheme:       mgr.GetScheme(),
-		FeatureGates: ctrlConfig.Gates,
+		Client:     mgr.GetClient(),
+		Scheme:     mgr.GetScheme(),
+		Recorder:   mgr.GetEventRecorderFor("tempostack-controller"),
+		CtrlConfig: ctrlConfig,
+		Version:    version,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "TempoStack")
 		os.Exit(1)

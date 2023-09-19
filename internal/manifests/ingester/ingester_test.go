@@ -94,8 +94,10 @@ func TestBuildIngester(t *testing.T) {
 							Image: "docker.io/grafana/tempo:1.5.0",
 							Args: []string{"-target=ingester",
 								"-config.file=/conf/tempo.yaml",
+								"-log.level=info",
 								"--storage.trace.s3.secret_key=$(S3_SECRET_KEY)",
-								"--storage.trace.s3.access_key=$(S3_ACCESS_KEY)"},
+								"--storage.trace.s3.access_key=$(S3_ACCESS_KEY)",
+							},
 							Env: []corev1.EnvVar{
 								{
 									Name: "S3_SECRET_KEY",

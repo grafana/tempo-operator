@@ -41,7 +41,7 @@ func TestRemoveDeprecatedFields(t *testing.T) {
 		Log:      logger,
 	}
 
-	upgraded, err := upgrade.TempoStack(context.Background(), tempo)
+	upgraded, err := upgrade.updateTempoStackCR(context.Background(), tempo)
 	require.NoError(t, err)
 	require.Nil(t, upgraded.Spec.LimitSpec.Global.Query.MaxSearchBytesPerTrace)
 	require.Nil(t, upgraded.Spec.LimitSpec.PerTenant["tenant1"].Query.MaxSearchBytesPerTrace)

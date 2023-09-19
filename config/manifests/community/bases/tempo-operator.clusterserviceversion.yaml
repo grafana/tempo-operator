@@ -202,7 +202,7 @@ spec:
         displayName: Global Retention
         path: retention.global
       - description: 'Traces defines retention period. Supported parameter suffixes
-          are “s”, “m” and “h”. example: 336h default: value is 48h.'
+          are "s", "m" and "h". example: 336h default: value is 48h.'
         displayName: Trace Retention Period
         path: retention.global.traces
         x-descriptors:
@@ -211,7 +211,7 @@ spec:
         displayName: PerTenant Retention
         path: retention.perTenant
       - description: 'Traces defines retention period. Supported parameter suffixes
-          are “s”, “m” and “h”. example: 336h default: value is 48h.'
+          are "s", "m" and "h". example: 336h default: value is 48h.'
         displayName: Trace Retention Period
         path: retention.perTenant.traces
         x-descriptors:
@@ -244,7 +244,7 @@ spec:
         displayName: Object Storage
         path: storage
       - description: Secret for object storage authentication. Name of a secret in
-          the same namespace as the tempo TempoStack custom resource.
+          the same namespace as the TempoStack custom resource.
         displayName: Object Storage Secret
         path: storage.secret
       - description: Name of a secret in the namespace configured for object storage
@@ -264,7 +264,7 @@ spec:
         displayName: TLS Config
         path: storage.tls
       - description: CA is the name of a ConfigMap containing a `ca.crt` key with
-          a CA certificate. It needs to be in the same namespace as the Tempo custom
+          a CA certificate. It needs to be in the same namespace as the TempoStack custom
           resource.
         displayName: CA ConfigMap Name
         path: storage.tls.caName
@@ -512,7 +512,7 @@ spec:
         x-descriptors:
         - urn:alm:descriptor:io.kubernetes.conditions
       version: v1alpha1
-  description: |
+  description: |-
     Tempo is an open source, easy-to-use, and high-scale distributed tracing backend.
     It can ingest common open source tracing protocols including Jaeger, Zipkin, and OpenTelemetry and requires only object storage to operate.
     Please refer to the [Tempo documentation](https://grafana.com/docs/tempo/latest/) for more information about Tempo.
@@ -520,12 +520,13 @@ spec:
     The Community Tempo Operator manages Tempo deployments in Microservices mode.
 
     ### Operator features
-    * **Resource Limits**: Overall resource requests and limits can be specified in the TempoStack CR, and the operator will assign fractions of it to each component
-    * **Authentication and Authorization**: Access to Tempo can be secured with RBAC
-    * **Multitenancy**: Traces of multiple tenants can be stored in the same Tempo cluster
-    * **Jaeger UI**: The operator can deploy a Jaeger UI container and expose it via Ingress
-    * **Metrics**: The operator exposes metrics about itself and can create ServiceMonitors for the Prometheus operator, to scrape metrics of each Tempo component
-    * **mTLS**: Communication between the Tempo components can be secured via mTLS
+    * **Resource Limits** - Specify overall resource requests and limits in the `TempoStack` CR; the operator assigns fractions of it to each component
+    * **AuthN and AuthZ** - Supports OpenID Control (OIDC) and role-based access control (RBAC)
+    * **Managed upgrades**: Updating the operator will automatically update all managed Tempo clusters
+    * **Multitenancy** - Multiple tenants can send traces to the same Tempo cluster
+    * **mTLS** - Communication between the Tempo components can be secured via mTLS
+    * **Jaeger UI** - Traces can be visualized in Jaeger UI and exposed via Ingress or OpenShift Route
+    * **Observability** - The operator and `TempoStack` operands expose telemetry (metrics, traces) and integrate with Prometheus `ServiceMonitor` and `PrometheusRule`
 
     ### Prerequisites
     Tempo requires object storage to store its traces.

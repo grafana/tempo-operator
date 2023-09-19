@@ -1709,7 +1709,7 @@ ObjectStorageSecretSpec
 <td>
 
 <p>Secret for object storage authentication.
-Name of a secret in the same namespace as the tempo TempoStack custom resource.</p>
+Name of a secret in the same namespace as the TempoStack custom resource.</p>
 
 </td>
 </tr>
@@ -1766,7 +1766,7 @@ string
 <em>(Optional)</em>
 
 <p>CA is the name of a ConfigMap containing a <code>ca.crt</code> key with a CA certificate.
-It needs to be in the same namespace as the Tempo custom resource.</p>
+It needs to be in the same namespace as the TempoStack custom resource.</p>
 
 </td>
 </tr>
@@ -2231,7 +2231,7 @@ Kubernetes meta/v1.Duration
 
 <em>(Optional)</em>
 
-<p>Traces defines retention period. Supported parameter suffixes are “s”, “m” and “h”.
+<p>Traces defines retention period. Supported parameter suffixes are &ldquo;s&rdquo;, &ldquo;m&rdquo; and &ldquo;h&rdquo;.
 example: 336h
 default: value is 48h.</p>
 
