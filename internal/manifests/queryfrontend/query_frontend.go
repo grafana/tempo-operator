@@ -6,9 +6,10 @@ import (
 
 	"github.com/imdario/mergo"
 	routev1 "github.com/openshift/api/route/v1"
-	v1 "k8s.io/api/apps/v1"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8slabels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -29,6 +30,8 @@ const (
 	portJaegerGRPCQuery   = 16685
 	portJaegerUI          = 16686
 	portJaegerMetrics     = 16687
+
+	thanosQuerierOpenShiftMonitoring = "https://thanos-querier.openshift-monitoring.svc.cluster.local:9091"
 )
 
 // BuildQueryFrontend creates the query-frontend objects.
@@ -80,25 +83,31 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 		}
 	}
 
+	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled && tempo.Spec.Template.QueryFrontend.JaegerQuery.MonitorTab.Enabled &&
+		tempo.Spec.Template.QueryFrontend.JaegerQuery.MonitorTab.PrometheusEndpoint == thanosQuerierOpenShiftMonitoring {
+		clusterRoleBinding := openShiftMonitoringClusterRoleBinding(tempo)
+		manifests = append(manifests, &clusterRoleBinding)
+	}
+
 	return manifests, nil
 }
 
-func deployment(params manifestutils.Params) (*v1.Deployment, error) {
+func deployment(params manifestutils.Params) (*appsv1.Deployment, error) {
 	tempo := params.Tempo
 	labels := manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, tempo.Name)
 	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
 	cfg := tempo.Spec.Template.QueryFrontend
 
-	d := &v1.Deployment{
+	d := &appsv1.Deployment{
 		TypeMeta: metav1.TypeMeta{
-			APIVersion: v1.SchemeGroupVersion.String(),
+			APIVersion: appsv1.SchemeGroupVersion.String(),
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name),
 			Namespace: tempo.Namespace,
 			Labels:    labels,
 		},
-		Spec: v1.DeploymentSpec{
+		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{
 				MatchLabels: labels,
 			},
@@ -287,12 +296,13 @@ func enableMonitoringTab(tempo v1alpha1.TempoStack, jaegerQueryContainer corev1.
 	}
 	// If the endpoint matches Prometheus on OpenShift, configure TLS and token based auth
 	prometheusEndpoint := strings.TrimSpace(tempo.Spec.Template.QueryFrontend.JaegerQuery.MonitorTab.PrometheusEndpoint)
-	if prometheusEndpoint == "https://thanos-querier.openshift-monitoring.svc.cluster.local:9091" {
+	if prometheusEndpoint == thanosQuerierOpenShiftMonitoring {
 		container.Args = append(container.Args,
 			"--prometheus.tls.enabled=true",
 			// This enables token propagation, however flag --query.bearer-token-propagation=true
-			// overrides the settings and token from the context (incoming) request is used.
+			// enabled bearer token propagation, overrides the settings and token from the context (incoming) request is used.
 			"--prometheus.token-file=/var/run/secrets/kubernetes.io/serviceaccount/token",
+			"--prometheus.token-override-from-context=false",
 			"--prometheus.tls.ca=/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt")
 	}
 
@@ -301,6 +311,28 @@ func enableMonitoringTab(tempo v1alpha1.TempoStack, jaegerQueryContainer corev1.
 		return corev1.Container{}, err
 	}
 	return jaegerQueryContainer, nil
+}
+
+func openShiftMonitoringClusterRoleBinding(tempo v1alpha1.TempoStack) rbacv1.ClusterRoleBinding {
+	labels := manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, tempo.Name)
+	return rbacv1.ClusterRoleBinding{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:   naming.Name("cluster-monitoring-view", tempo.Name),
+			Labels: labels,
+		},
+		Subjects: []rbacv1.Subject{
+			{
+				Name:      naming.DefaultServiceAccountName(tempo.Name),
+				Kind:      "ServiceAccount",
+				Namespace: tempo.Namespace,
+			},
+		},
+		RoleRef: rbacv1.RoleRef{
+			APIGroup: "rbac.authorization.k8s.io",
+			Kind:     "ClusterRole",
+			Name:     "cluster-monitoring-view",
+		},
+	}
 }
 
 func services(tempo v1alpha1.TempoStack) []*corev1.Service {
