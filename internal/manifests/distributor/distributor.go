@@ -65,6 +65,11 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 	if !tempo.Spec.Template.Gateway.Enabled {
 		containerPorts = append(containerPorts, []corev1.ContainerPort{
 			{
+				Name:          manifestutils.PortOtlpHttpName,
+				ContainerPort: manifestutils.PortOtlpHttp,
+				Protocol:      corev1.ProtocolTCP,
+			},
+			{
 				Name:          manifestutils.PortJaegerThriftHTTPName,
 				ContainerPort: manifestutils.PortJaegerThriftHTTP,
 				Protocol:      corev1.ProtocolTCP,
@@ -119,9 +124,13 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 					Affinity:           manifestutils.DefaultAffinity(labels),
 					Containers: []corev1.Container{
 						{
-							Name:           "tempo",
-							Image:          tempo.Spec.Images.Tempo,
-							Args:           []string{"-target=distributor", "-config.file=/conf/tempo.yaml"},
+							Name:  "tempo",
+							Image: tempo.Spec.Images.Tempo,
+							Args: []string{
+								"-target=distributor",
+								"-config.file=/conf/tempo.yaml",
+								"-log.level=info",
+							},
 							Ports:          containerPorts,
 							ReadinessProbe: manifestutils.TempoReadinessProbe(params.Gates.HTTPEncryption),
 							VolumeMounts: []corev1.VolumeMount{
@@ -183,6 +192,12 @@ func service(tempo v1alpha1.TempoStack) *corev1.Service {
 
 	if !tempo.Spec.Template.Gateway.Enabled {
 		servicePorts = append(servicePorts, []corev1.ServicePort{
+			{
+				Name:       manifestutils.PortOtlpHttpName,
+				Port:       manifestutils.PortOtlpHttp,
+				TargetPort: intstr.FromString(manifestutils.PortOtlpHttpName),
+				Protocol:   corev1.ProtocolTCP,
+			},
 			{
 				Name:       manifestutils.PortJaegerThriftHTTPName,
 				Port:       manifestutils.PortJaegerThriftHTTP,

@@ -161,6 +161,9 @@ storage:
       endpoint: {{ .Endpoint }}
       bucket: {{ .Bucket }}
       insecure: {{ .Insecure }}
+      {{- if .TLSCAPath }}
+      tls_ca_path: {{ .TLSCAPath }}
+      {{- end }}
     {{- end }}
     local:
       path: /var/tempo/traces

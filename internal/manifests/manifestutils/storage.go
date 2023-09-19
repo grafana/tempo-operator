@@ -10,6 +10,20 @@ import (
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 )
 
+const (
+	storageCAVolumeName = "storage-ca"
+)
+
+// TempoStorageTLSDir returns the mount path of certificates for connecting to object storage.
+func TempoStorageTLSDir() string {
+	return path.Join(TLSDir, "storage")
+}
+
+// TempoStorageTLSCAPath returns the path of the CA certificate for connecting to object storage.
+func TempoStorageTLSCAPath() string {
+	return path.Join(TempoStorageTLSDir(), "ca.crt")
+}
+
 func configureAzureStorage(tempo *v1alpha1.TempoStack, pod *corev1.PodSpec) error {
 	var envVars []corev1.EnvVar = []corev1.EnvVar{
 		{
@@ -122,9 +136,31 @@ func configureS3Storage(tempo *v1alpha1.TempoStack, pod *corev1.PodSpec) error {
 		"--storage.trace.s3.access_key=$(S3_ACCESS_KEY)",
 	}
 
+	volumeMounts := []corev1.VolumeMount{}
+	volumes := []corev1.Volume{}
+	if tempo.Spec.Storage.TLS.CA != "" {
+		volumeMounts = append(volumeMounts, corev1.VolumeMount{
+			Name:      storageCAVolumeName,
+			MountPath: TempoStorageTLSDir(),
+			ReadOnly:  true,
+		})
+		volumes = append(volumes, corev1.Volume{
+			Name: storageCAVolumeName,
+			VolumeSource: corev1.VolumeSource{
+				ConfigMap: &corev1.ConfigMapVolumeSource{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: tempo.Spec.Storage.TLS.CA,
+					},
+				},
+			},
+		})
+	}
+
 	ingesterContainer := pod.Containers[0].DeepCopy()
 	ingesterContainer.Env = append(ingesterContainer.Env, envVars...)
 	ingesterContainer.Args = append(ingesterContainer.Args, args...)
+	ingesterContainer.VolumeMounts = append(ingesterContainer.VolumeMounts, volumeMounts...)
+	pod.Volumes = append(pod.Volumes, volumes...)
 
 	if err := mergo.Merge(&pod.Containers[0], ingesterContainer, mergo.WithOverride); err != nil {
 		return kverrors.Wrap(err, "failed to merge ingester container spec")

@@ -1,7 +1,11 @@
 name: "Prepare the release"
 on:
-  push:
-    tags: [ 'v*' ]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: version of the operator to release
+        required: true
+
 
 jobs:
   release:
@@ -11,8 +15,29 @@ jobs:
       uses: actions/setup-go@v4
       with:
         go-version: "1.20"
-
     - uses: actions/checkout@v4
+
+    - name: Generate bundle
+      run: make bundle
+      env:
+        OPERATOR_VERSION: ${{inputs.version}}
+        IMG_PREFIX: ghcr.io/grafana/tempo-operator
+
+    - name: Generate CHANGELOG
+      run: make chlog-update
+      env:
+        OPERATOR_VERSION: ${{inputs.version}}
+
+    # Commit all changed files back to the repository
+    - name: Commit the changes to the repository
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git add -A
+        git commit -m "Release ${{inputs.version}}" --author="${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>"
+        git push
+        git tag v${{inputs.version}}
+        git push origin v${{inputs.version}}
 
     - name: "generate release resources"
       run: make release-artifacts

@@ -149,6 +149,7 @@ func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 								"-target=query-frontend",
 								"-config.file=/conf/tempo-query-frontend.yaml",
 								"-mem-ballast-size-mbs=1024",
+								"-log.level=info",
 							},
 							Ports: []corev1.ContainerPort{
 								{
@@ -570,6 +571,9 @@ func TestBuildQueryFrontendWithJaegerMonitorTab(t *testing.T) {
 		{
 			name: "OpenShift user-workload monitoring",
 			tempo: v1alpha1.TempoStack{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "simplest",
+				},
 				Spec: v1alpha1.TempoStackSpec{
 					Template: v1alpha1.TempoTemplateSpec{
 						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
@@ -584,7 +588,7 @@ func TestBuildQueryFrontendWithJaegerMonitorTab(t *testing.T) {
 					},
 				},
 			},
-			args: []string{"--query.base-path=/", "--grpc-storage-plugin.configuration-file=/conf/tempo-query.yaml", "--query.bearer-token-propagation=true", "--prometheus.query.support-spanmetrics-connector", "--prometheus.tls.enabled=true", "--prometheus.token-file=/var/run/secrets/kubernetes.io/serviceaccount/token", "--prometheus.tls.ca=/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt"},
+			args: []string{"--query.base-path=/", "--grpc-storage-plugin.configuration-file=/conf/tempo-query.yaml", "--query.bearer-token-propagation=true", "--prometheus.query.support-spanmetrics-connector", "--prometheus.tls.enabled=true", "--prometheus.token-file=/var/run/secrets/kubernetes.io/serviceaccount/token", "--prometheus.token-override-from-context=false", "--prometheus.tls.ca=/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt"},
 			env:  []corev1.EnvVar{{Name: "METRICS_STORAGE_TYPE", Value: "prometheus"}, {Name: "PROMETHEUS_SERVER_URL", Value: "https://thanos-querier.openshift-monitoring.svc.cluster.local:9091"}},
 		},
 	}
@@ -598,6 +602,16 @@ func TestBuildQueryFrontendWithJaegerMonitorTab(t *testing.T) {
 
 			assert.Equal(t, test.args, dep.Spec.Template.Spec.Containers[1].Args)
 			assert.Equal(t, test.env, dep.Spec.Template.Spec.Containers[1].Env)
+
+			if test.tempo.Spec.Template.QueryFrontend.JaegerQuery.MonitorTab.PrometheusEndpoint == thanosQuerierOpenShiftMonitoring {
+				objects, err := BuildQueryFrontend(manifestutils.Params{
+					Tempo: test.tempo,
+				})
+				require.NoError(t, err)
+				assert.Equal(t, 4, len(objects))
+
+				assert.Equal(t, "tempo-simplest-cluster-monitoring-view", objects[3].GetName())
+			}
 		})
 	}
 }

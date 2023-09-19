@@ -1,4 +1,4 @@
-# based on config/samples/tempo_v1alpha1_openshift.yaml
+# based on config/samples/openshift/tempo_v1alpha1_multitenancy.yaml
 apiVersion: tempo.grafana.com/v1alpha1
 kind:  TempoStack
 metadata:

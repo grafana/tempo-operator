@@ -246,7 +246,7 @@ spec:
         displayName: Object Storage
         path: storage
       - description: Secret for object storage authentication. Name of a secret in
-          the same namespace as the tempo TempoStack custom resource.
+          the same namespace as the TempoStack custom resource.
         displayName: Object Storage Secret
         path: storage.secret
       - description: Name of a secret in the namespace configured for object storage
@@ -265,8 +265,9 @@ spec:
       - description: TLS configuration for reaching the object storage endpoint.
         displayName: TLS Config
         path: storage.tls
-      - description: CA is the name of a ConfigMap containing a CA certificate. It
-          needs to be in the same namespace as the Tempo custom resource.
+      - description: CA is the name of a ConfigMap containing a `ca.crt` key with
+          a CA certificate. It needs to be in the same namespace as the TempoStack
+          custom resource.
         displayName: CA ConfigMap Name
         path: storage.tls.caName
         x-descriptors:
@@ -523,7 +524,7 @@ spec:
     ### Operator features
     * **Resource Limits** - Specify overall resource requests and limits in the `TempoStack` CR; the operator assigns fractions of it to each component
     * **AuthN and AuthZ** - Supports OpenID Control (OIDC) and role-based access control (RBAC)
-    * **Managed upgrades**: Updating the operator will automatically update all managed Tempo clusters
+    * **Managed upgrades** - Updating the operator will automatically update all managed Tempo clusters
     * **Multitenancy** - Multiple tenants can send traces to the same Tempo cluster
     * **mTLS** - Communication between the Tempo components can be secured via mTLS
     * **Jaeger UI** - Traces can be visualized in Jaeger UI and exposed via Ingress or OpenShift Route

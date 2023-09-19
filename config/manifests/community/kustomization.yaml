@@ -3,7 +3,7 @@
 resources:
 - bases/tempo-operator.clusterserviceversion.yaml
 - ../../overlays/community
-- ../../samples
+- ../../samples/community
 - ../../scorecard
 
 # [WEBHOOK] To enable webhooks, uncomment all the sections with [WEBHOOK] prefix.

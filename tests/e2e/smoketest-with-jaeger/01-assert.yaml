@@ -165,6 +165,10 @@ spec:
       port: 3200
       protocol: TCP
       targetPort: http
+    - name: otlp-http
+      port: 4318
+      protocol: TCP
+      targetPort: otlp-http
     - name: thrift-http
       port: 14268
       protocol: TCP
@@ -365,3 +369,8 @@ spec:
       name: tempo-simplest-query-frontend
       port:
         name: jaeger-ui
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+commands:
+- command: /bin/sh -c "kubectl get --namespace $NAMESPACE tempo simplest -o jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}' | grep True"

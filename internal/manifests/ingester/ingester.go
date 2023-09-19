@@ -62,6 +62,14 @@ func statefulSet(params manifestutils.Params) (*v1.StatefulSet, error) {
 			Selector: &metav1.LabelSelector{
 				MatchLabels: labels,
 			},
+
+			// Changes to a StatefulSet are not propagated to pods in a broken state (e.g. CrashLoopBackOff)
+			// See https://github.com/kubernetes/kubernetes/issues/67250
+			//
+			// This is a workaround for the above issue.
+			// This setting is also in the tempo-distributed helm chart: https://github.com/grafana/helm-charts/blob/0fdf2e1900733eb104ac734f5fb0a89dc950d2c2/charts/tempo-distributed/templates/ingester/statefulset-ingester.yaml#L21
+			PodManagementPolicy: v1.ParallelPodManagement,
+
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels:      k8slabels.Merge(labels, memberlist.GossipSelector),
@@ -76,7 +84,11 @@ func statefulSet(params manifestutils.Params) (*v1.StatefulSet, error) {
 						{
 							Name:  "tempo",
 							Image: tempo.Spec.Images.Tempo,
-							Args:  []string{"-target=ingester", "-config.file=/conf/tempo.yaml"},
+							Args: []string{
+								"-target=ingester",
+								"-config.file=/conf/tempo.yaml",
+								"-log.level=info",
+							},
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      manifestutils.ConfigVolumeName,

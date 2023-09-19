@@ -9,6 +9,7 @@ spec:
       containers:
       - name: manager
         args:
+        - --zap-log-level=info
         - start
         - "--config=controller_manager_config.yaml"
         volumeMounts:

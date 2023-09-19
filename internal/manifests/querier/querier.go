@@ -76,7 +76,11 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 						{
 							Name:  "tempo",
 							Image: tempo.Spec.Images.Tempo,
-							Args:  []string{"-target=querier", "-config.file=/conf/tempo.yaml"},
+							Args: []string{
+								"-target=querier",
+								"-config.file=/conf/tempo.yaml",
+								"-log.level=info",
+							},
 							Ports: []corev1.ContainerPort{
 								{
 									Name:          manifestutils.HttpPortName,

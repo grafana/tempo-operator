@@ -1,5 +1,4 @@
 ## Append samples you want in your CSV to this file as resources ##
 resources:
 - tempo_v1alpha1_tempostack.yaml
-- config.tempo_v1alpha1_projectconfig.yaml
 #+kubebuilder:scaffold:manifestskustomizesamples

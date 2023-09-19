@@ -1,0 +1,52 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoStack
+metadata:
+  name: simplest
+spec:
+  storage:
+    secret:
+      name: minio
+      type: s3
+    tls:
+      caName: custom-ca
+  storageSize: 200M
+  template:
+    queryFrontend:
+      jaegerQuery:
+        enabled: true
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: custom-ca
+data:
+  ca.crt: |
+    -----BEGIN CERTIFICATE-----
+    MIIFBzCCAu+gAwIBAgIUDwTaPC/j59gRvcgVyvWn0Qd8WaUwDQYJKoZIhvcNAQEL
+    BQAwEzERMA8GA1UEAwwITXlEZW1vQ0EwHhcNMjMwODI0MTYxMTAyWhcNMzMwODIx
+    MTYxMTAyWjATMREwDwYDVQQDDAhNeURlbW9DQTCCAiIwDQYJKoZIhvcNAQEBBQAD
+    ggIPADCCAgoCggIBAInKlIOllf/hGmh8v87UZyygzDrnvmP1wgRxYYcKPDNzQo4T
+    CwSeSl8kCmaSmTZ7ii98BUiLoMS1VkHVkVa3xyK/hmSAjwL4sbWBlkEtuA1b0s8v
+    Hl6nA5EZpGkDKWeJI5vGCLa+YNyuN2iXe7fxz5MXQZ8Rbr1ADGLHp5CG+kyXjuLt
+    nmUO8JwT9NnaOzkmI5sRpePJLGqLLboxzqxiYrNtME1NB1ogjyro7nWCgqIRqAlQ
+    EzJ+PyjQ7ILEgQ3DGYOfxvvwf80WSudsTjU0Ek4QGgSPjylQ/lLXLNTh7xCVvSRS
+    b5FR9UQ1Gy8QH3MZyv0YOphoKN7VNcgdU/9ykSeC7us8q54wGR3/HQlPOcs/6uwQ
+    /5VFajPZrkrX7Lx/8XsIcyAYdsM+WcRhErIL/FZjYard26x7t4fDbUZ2Z/+nvD43
+    jAMoxi4uTyAwMbMxw+Co83zBrsFZEYWN8p8mJ1zpZDudhoAccB8wfHw0t5pvomOV
+    GQ9wIyjJdQcu26wo1DXCNhxrS9lrWaZvSqAYvvsnlvbnocUvoQVlxYyptA879VEJ
+    Uvs+t292w6Qmf5VnT/o9BsdkRht6eX3Wb095dpNuczTRLgyoS7gcxenj2YOs0dML
+    8POhzv/xuuPvj+Y5ZaKTdBe92sRgxvewH4YdxfAzElepmyJjo4wPYnIVLFAFAgMB
+    AAGjUzBRMB0GA1UdDgQWBBRqWjQq8Ax2OCdwP0VdVw2Z0slrVTAfBgNVHSMEGDAW
+    gBRqWjQq8Ax2OCdwP0VdVw2Z0slrVTAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3
+    DQEBCwUAA4ICAQBZnpF4wjLYJmqTjST8Eqz5YNjTms9J7M6ClmG8CABmgmnjfmHb
+    anwfk+sJxOkobo5i7lWtbqvaNUyNIcLnLSEYP3BDibBQl2qJ7tTPz3ZlXUw8dSsf
+    LqOr5BbA4k468tcCEo8sIeZPEFiZdQe+ovPVz/626x/GjOd0XYyGsFC40qkZJ51c
+    NPrI5XLEmshH0s6EKzER+O/1iZzRwuCencTRa7xfDZV4ueKA9lLGenrsPYUuUsoq
+    8082hO9IaNtScRdrDyw9fZKK2OTWtrsydcA/0Vf0afzrcYJwLv0PMsDK32FXUjHH
+    bMAj9Rn1yAq17CZlK75rhDoI8EHHPmZ3CxdwqCfTxUzEA/pBt0aGs0Lpq1BC1gUt
+    rdde09M5BwzzbN4wAOCSTmr2EC9Xq3JNOvyusIRnTrv+yP5JBfZCDd7j3+AQ+KSW
+    3zgss/f2FSxm83E9vZYRX2ETT6xCkcVpyDpl/MT+5qrP2RRpNuu7sN/qvMI6fLFX
+    CdtUMc8S3tQAzOiLXAcA0TmT8NlW3bxpf2tpOCfIG9t9EhNjSq/Iw+uAt581ITta
+    xtdKFBv1LLup2pr/hbmbP+0XHNFuUK36I7oantHhagXL/pGO3vcugppAd+YNzOW9
+    Qr67VgKeixOrNiK6W9FzuaWYadv0XOgrJbFhsvmtYqpEMDGZzfdb5dAzdA==
+    -----END CERTIFICATE-----
