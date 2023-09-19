@@ -416,11 +416,15 @@ func TestReconcileGenericError(t *testing.T) {
 func TestStorageCustomCA(t *testing.T) {
 	nsn := types.NamespacedName{Name: "custom-ca", Namespace: "default"}
 	reconciler := TempoStackReconciler{
-		Client: k8sClient,
-		Scheme: testScheme,
-		FeatureGates: configv1alpha1.FeatureGates{
-			TLSProfile: string(configv1alpha1.TLSProfileIntermediateType),
+		Client:   k8sClient,
+		Scheme:   testScheme,
+		Recorder: record.NewFakeRecorder(1),
+		CtrlConfig: configv1alpha1.ProjectConfig{
+			Gates: configv1alpha1.FeatureGates{
+				TLSProfile: string(configv1alpha1.TLSProfileIntermediateType),
+			},
 		},
+		Version: version.Get(),
 	}
 	req := ctrl.Request{
 		NamespacedName: nsn,
