@@ -27,6 +27,11 @@ func BuildAll(featureGates configv1alpha1.FeatureGates, namespace string) ([]cli
 
 	if featureGates.Observability.Datasources.CreateDatasources{
 		datasources, err := 
+		if err != nil {
+			return nil, err
+		}
+
+		manifests = append(manifests, datasources)
 	}
 
 	return manifests, nil

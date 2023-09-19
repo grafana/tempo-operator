@@ -197,6 +197,15 @@ spec:
                           Valid values are 0 to 1.
                         type: string
                     type: object
+                  datasources:
+                    description: Datasources defines the datasource configuration
+                      for operands.
+                    properties:
+                      createDatasource:
+                        description: CreateDatasource specifies if a datasource should
+                          be created for Tempo.
+                        type: boolean
+                    type: object
                 type: object
               replicationFactor:
                 description: 'NOTE: currently this field is not considered. ReplicationFactor
