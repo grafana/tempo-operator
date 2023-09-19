@@ -47,6 +47,11 @@ func TestBuildDistributor(t *testing.T) {
 					Protocol:      corev1.ProtocolTCP,
 				},
 				{
+					Name:          manifestutils.PortOtlpHttpName,
+					ContainerPort: manifestutils.PortOtlpHttp,
+					Protocol:      corev1.ProtocolTCP,
+				},
+				{
 					Name:          manifestutils.PortJaegerThriftHTTPName,
 					ContainerPort: manifestutils.PortJaegerThriftHTTP,
 					Protocol:      corev1.ProtocolTCP,
@@ -84,6 +89,12 @@ func TestBuildDistributor(t *testing.T) {
 					Protocol:   corev1.ProtocolTCP,
 					Port:       manifestutils.PortHTTPServer,
 					TargetPort: intstr.FromString(manifestutils.HttpPortName),
+				},
+				{
+					Name:       manifestutils.PortOtlpHttpName,
+					Port:       manifestutils.PortOtlpHttp,
+					TargetPort: intstr.FromString(manifestutils.PortOtlpHttpName),
+					Protocol:   corev1.ProtocolTCP,
 				},
 				{
 					Name:       manifestutils.PortJaegerThriftHTTPName,
