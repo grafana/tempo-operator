@@ -303,8 +303,8 @@ spec:
         displayName: TLS Config
         path: storage.tls
       - description: CA is the name of a ConfigMap containing a `ca.crt` key with
-          a CA certificate. It needs to be in the same namespace as the TempoStack custom
-          resource.
+          a CA certificate. It needs to be in the same namespace as the TempoStack
+          custom resource.
         displayName: CA ConfigMap Name
         path: storage.tls.caName
         x-descriptors:
