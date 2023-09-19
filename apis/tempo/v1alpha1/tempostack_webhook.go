@@ -333,6 +333,13 @@ func (v *validator) validateObservability(tempo TempoStack) field.ErrorList {
 		}
 	}
 
+	if tempo.Spec.Observability.Datasources.CreateDatasource && !v.ctrlConfig.Gates.GrafanaOperator {
+		return field.ErrorList{
+			field.Invalid(metricsBase.Child("createDatasource"), tempo.Spec.Observability.Datasources.CreateDatasource,
+				"the grafanaOperator feature gate must be enabled to create a Datasource for Tempo",
+			)}
+	}
+
 	return nil
 }
 

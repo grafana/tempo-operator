@@ -133,6 +133,13 @@ type ObservabilitySpec struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tracing Config"
 	Tracing TracingConfigSpec `json:"tracing,omitempty"`
+
+	// Datasources defines the datasources configuration for operands.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Datasources Config"
+	Datasources DatasourcesConfigSpec `json:"datasources,omitempty"`
 }
 
 // MetricsConfigSpec defines a metrics config.
@@ -168,6 +175,15 @@ type TracingConfigSpec struct {
 	// +kubebuilder:default:="localhost:6831"
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger-Agent-Endpoint"
 	JaegerAgentEndpoint string `json:"jaeger_agent_endpoint,omitempty"`
+}
+
+type DatasourcesConfigSpec struct {
+	// CreateDatasource specifies if a Datasource should be created for Tempo.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Create CreateDatasource for Tempo"
+	CreateDatasource bool `json:"createServiceMonitors,omitempty"`
 }
 
 // PodStatusMap defines the type for mapping pod status to pod name.

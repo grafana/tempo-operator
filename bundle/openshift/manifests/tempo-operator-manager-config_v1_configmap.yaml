@@ -46,6 +46,8 @@ data:
         metrics:
           createServiceMonitors: true
           createPrometheusRules: true
+        datasources:
+          createDatasource: true
 kind: ConfigMap
 metadata:
   labels:
