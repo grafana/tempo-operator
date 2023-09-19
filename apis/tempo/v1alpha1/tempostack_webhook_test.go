@@ -421,6 +421,44 @@ func TestValidateStorageSecret(t *testing.T) {
 	}
 }
 
+func TestValidateStorageCAConfigMap(t *testing.T) {
+	path := field.NewPath("spec").Child("storage").Child("tls").Child("caName")
+
+	tests := []struct {
+		name     string
+		input    corev1.ConfigMap
+		expected field.ErrorList
+	}{
+		{
+			name: "missing ca.crt key",
+			input: corev1.ConfigMap{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+				},
+			},
+			expected: field.ErrorList{
+				field.Invalid(path, "test", "ConfigMap must contain a 'ca.crt' key"),
+			},
+		},
+		{
+			name: "valid configmap",
+			input: corev1.ConfigMap{
+				Data: map[string]string{
+					"ca.crt": "test",
+				},
+			},
+			expected: nil,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			errs := ValidateStorageCAConfigMap(test.input)
+			assert.Equal(t, test.expected, errs)
+		})
+	}
+}
+
 func TestValidateReplicationFactor(t *testing.T) {
 	validator := &validator{}
 	path := field.NewPath("spec").Child("ReplicationFactor")
