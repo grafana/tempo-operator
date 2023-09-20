@@ -6,7 +6,7 @@ resources:
 - role_binding_cluster_monitoring_view.yaml
 
 # Adds namespace to all resources.
-namespace: openshift-operators-redhat
+namespace: tempo-operator-system
 
 # Value of this field is prepended to the
 # names of all resources, e.g. a deployment named

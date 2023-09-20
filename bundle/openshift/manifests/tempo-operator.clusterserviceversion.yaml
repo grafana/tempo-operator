@@ -45,6 +45,8 @@ metadata:
     createdAt: "2023-08-24T16:42:40Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
+    operatorframework.io/cluster-monitoring: "true"
+    operatorframework.io/suggested-namespace: tempo-operator-system
     operators.operatorframework.io/builder: operator-sdk-v1.27.0
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     repository: https://github.com/grafana/tempo-operator

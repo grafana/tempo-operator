@@ -8,6 +8,8 @@ metadata:
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
+    operatorframework.io/cluster-monitoring: "true"
+    operatorframework.io/suggested-namespace: tempo-operator-system
     repository: https://github.com/grafana/tempo-operator
     support: Grafana Tempo Operator SIG
   name: tempo-operator.v0.0.0
