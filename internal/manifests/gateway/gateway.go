@@ -168,6 +168,8 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 								fmt.Sprintf("--traces.write.endpoint=%s:4317", naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.DistributorComponentName)),
 								fmt.Sprintf("--traces.read.endpoint=%s://%s:16686", httpScheme(params.Gates.HTTPEncryption),
 									naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.QueryFrontendComponentName)),
+								fmt.Sprintf("--traces.tempo.endpoint=%s://%s:3200", httpScheme(params.Gates.HTTPEncryption),
+									naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.QueryFrontendComponentName)),
 								fmt.Sprintf("--grpc.listen=0.0.0.0:%d", portGRPC),
 								fmt.Sprintf("--rbac.config=%s", path.Join(tempoGatewayMountDir, "cm", tempoGatewayRbacFileName)),
 								fmt.Sprintf("--tenants.config=%s", path.Join(tempoGatewayMountDir, "secret", manifestutils.GatewayTenantFileName)),
