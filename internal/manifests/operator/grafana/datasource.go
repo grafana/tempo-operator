@@ -5,6 +5,7 @@ import (
 	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
 )
 
-func Datasource(featureGates configv1alpha1.FeatureGates, namespace string) *grafanav1. {
+// Datasource creates a Datasource for Grafana Tempo.
+func Datasource(featureGates configv1alpha1.FeatureGates, namespace string) *grafanav1.GrafanaDatasource {
 
 }
