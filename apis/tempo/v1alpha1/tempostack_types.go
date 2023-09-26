@@ -184,6 +184,14 @@ type DatasourcesConfigSpec struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Create CreateDatasource for Tempo"
 	CreateDatasource bool `json:"createServiceMonitors,omitempty"`
+
+	// JaegerAgentEndpoint defines the jaeger endpoint data gets send to.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default:="localhost:8080"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tempo-Gateway-Endpoint"
+	TempoGatewayEndpoint string `json:"tempo_gateway_endpoint,omitempty"`
 }
 
 // PodStatusMap defines the type for mapping pod status to pod name.

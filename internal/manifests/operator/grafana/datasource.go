@@ -18,7 +18,7 @@ func Datasource(featureGates configv1alpha1.FeatureGates, namespace string) *gra
 				Name:  "Tempo",
 				Type: "tempo",
 				// TODO: Change URL
-				URL:  "http://tempo-tempo-distributor:3100",
+				URL:  "http://tempo-tempo-gateway:8080",
 			},
 			InstanceSelector: metav1.LabelSelector{
 				MatchLabels: map[string]string{
