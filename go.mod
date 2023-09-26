@@ -29,12 +29,12 @@ require (
 )
 
 require (
-	github.com/openshift/api v0.0.0-20230920152731-7d89b46689d4 // release-4.14
+	github.com/openshift/api v3.9.0+incompatible // release-4.14
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.70.0
-	github.com/grafana-operator/grafana-operator/v5 v5.3.0
 	github.com/stretchr/testify v1.8.4
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/utils v0.0.0-20231127182322-b307cd553661
+	github.com/grafana-operator/grafana-operator/v5 v5.3.0
 )
 
 require (
@@ -59,6 +59,7 @@ require (
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/pprof v0.0.0-20210720184732-4bb14d4b1be1 // indirect
 	github.com/google/uuid v1.3.0 // indirect
+	github.com/grafana-operator/grafana-operator/v5 v5.4.1
 	github.com/grafana/grafana-api-golang-client v0.23.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
