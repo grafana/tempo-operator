@@ -200,8 +200,8 @@ spec:
                           Valid values are 0 to 1.
                         type: string
                     type: object
-                  datasources:
-                    description: Datasources defines the datasource configuration
+                  grafana:
+                    description: Grafana defines the grafana configuration
                       for operands.
                     properties:
                       createDatasource:

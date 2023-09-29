@@ -25,7 +25,7 @@ func BuildAll(featureGates configv1alpha1.FeatureGates, namespace string) ([]cli
 		manifests = append(manifests, prometheusRule)
 	}
 
-	if featureGates.Observability.Datasources.CreateDatasources {
+	if featureGates.Observability.Grafana.CreateDatasources {
 		datasources, err := grafana.Datasource(featureGates, namespace)
 		if err != nil {
 			return nil, err

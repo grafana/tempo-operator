@@ -144,7 +144,7 @@ func (r *OperatorReconciler) pruneObjects(ctx context.Context, featureGates conf
 	}
 
 	if featureGates.GrafanaOperator {
-		if featureGates.Observability.Datasources.CreateDatasources {
+		if featureGates.Observability.Grafana.CreateDatasources {
 			datasourceList := &grafanav1.DatasourceList{}
 			err := r.List(ctx, datasourceList, listOps)
 			if err != nil {
