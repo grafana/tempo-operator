@@ -134,12 +134,12 @@ type ObservabilitySpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tracing Config"
 	Tracing TracingConfigSpec `json:"tracing,omitempty"`
 
-	// Datasources defines the datasources configuration for operands.
+	// Grafana defines the Grafana configuration for operands.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Datasources Config"
-	Datasources DatasourcesConfigSpec `json:"datasources,omitempty"`
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Grafana Config"
+	Grafana GrafanaConfigSpec `json:"grafana,omitempty"`
 }
 
 // MetricsConfigSpec defines a metrics config.
@@ -177,21 +177,13 @@ type TracingConfigSpec struct {
 	JaegerAgentEndpoint string `json:"jaeger_agent_endpoint,omitempty"`
 }
 
-type DatasourcesConfigSpec struct {
+type GrafanaConfigSpec struct {
 	// CreateDatasource specifies if a Datasource should be created for Tempo.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Create CreateDatasource for Tempo"
-	CreateDatasource bool `json:"createServiceMonitors,omitempty"`
-
-	// JaegerAgentEndpoint defines the jaeger endpoint data gets send to.
-	//
-	// +optional
-	// +kubebuilder:validation:Optional
-	// +kubebuilder:default:="localhost:8080"
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tempo-Gateway-Endpoint"
-	TempoGatewayEndpoint string `json:"tempo_gateway_endpoint,omitempty"`
+	CreateDatasource bool `json:"createDatasource,omitempty"`
 }
 
 // PodStatusMap defines the type for mapping pod status to pod name.
