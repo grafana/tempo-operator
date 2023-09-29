@@ -1,18 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: openshift-user-workload-monitoring
-  name: prometheus-operator
+  name: minio
 status:
   availableReplicas: 1
   readyReplicas: 1
   replicas: 1
+
 ---
-apiVersion: apps/v1
-kind: StatefulSet
+apiVersion: v1
+kind: Service
 metadata:
-  namespace: openshift-user-workload-monitoring
-  name: prometheus-user-workload
-status:
-  availableReplicas: 1
-  replicas: 1
+  name: minio
+spec:
+  ports:
+  - port: 9000
+    protocol: TCP
+    targetPort: 9000
+  selector:
+    app.kubernetes.io/name: minio
+  type: ClusterIP

@@ -1,7 +1,4 @@
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: otel-collector
-status:
-  readyReplicas: 1
-  replicas: 1
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+commands:
+- script: ./tests/e2e-openshift/red-metrics/check_user_workload_monitoring.sh
