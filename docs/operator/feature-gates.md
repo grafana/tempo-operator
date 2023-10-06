@@ -1057,7 +1057,7 @@ K8S Controller-runtime v1alpha1.ControllerWebhook
 
 <td>
 
-<code>images</code><br/>
+<code>DefaultImages</code><br/>
 
 <em>
 
@@ -1072,6 +1072,8 @@ ImagesSpec
 </td>
 
 <td>
+
+<p>The images are read from environment variables and not from the configuration file</p>
 
 </td>
 </tr>

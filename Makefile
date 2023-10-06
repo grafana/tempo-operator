@@ -2,8 +2,8 @@
 VERSION_DATE ?= $(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
 VERSION_PKG ?= github.com/grafana/tempo-operator/internal/version
 OPERATOR_VERSION ?= 0.4.0
-TEMPO_VERSION ?= $(shell cat config/overlays/community/controller_manager_config.yaml | grep -oP "docker.io/grafana/tempo:\K.*")
-TEMPO_QUERY_VERSION ?= $(shell cat config/overlays/community/controller_manager_config.yaml | grep -oP "docker.io/grafana/tempo-query:\K.*")
+TEMPO_VERSION ?= $(shell cat config/manager/manager.yaml | grep -oP "docker.io/grafana/tempo:\K.*")
+TEMPO_QUERY_VERSION ?= $(shell cat config/manager/manager.yaml | grep -oP "docker.io/grafana/tempo-query:\K.*")
 COMMIT_SHA = $(shell git rev-parse HEAD)
 LD_FLAGS ?= "-X ${VERSION_PKG}.buildDate=${VERSION_DATE} \
 			 -X ${VERSION_PKG}.revision=${COMMIT_SHA} \
