@@ -6,9 +6,16 @@ import (
 )
 
 const (
-	EnvRelatedImageTempo           = "RELATED_IMAGE_TEMPO"
-	EnvRelatedImageTempoQuery      = "RELATED_IMAGE_TEMPO_QUERY"
-	EnvRelatedImageTempoGateway    = "RELATED_IMAGE_TEMPO_GATEWAY"
+	// EnvRelatedImageTempo contains the name of the environment variable where the tempo image location is stored.
+	EnvRelatedImageTempo = "RELATED_IMAGE_TEMPO"
+
+	// EnvRelatedImageTempoQuery contains the name of the environment variable where the tempoQuery image location is stored.
+	EnvRelatedImageTempoQuery = "RELATED_IMAGE_TEMPO_QUERY"
+
+	// EnvRelatedImageTempoGateway contains the name of the environment variable where the tempoGateway image location is stored.
+	EnvRelatedImageTempoGateway = "RELATED_IMAGE_TEMPO_GATEWAY"
+
+	// EnvRelatedImageTempoGatewayOpa contains the name of the environment variable where the tempoGatewayOpa image location is stored.
 	EnvRelatedImageTempoGatewayOpa = "RELATED_IMAGE_TEMPO_GATEWAY_OPA"
 )
 
