@@ -427,7 +427,7 @@ func (v *validator) validate(ctx context.Context, obj runtime.Object) (admission
 	allWarnings = append(allWarnings, warnings...)
 	allErrors = append(allErrors, errors...)
 
-	if tempo.Spec.Storage.TLS.CA == "" {
+	if tempo.Spec.Storage.TLS.CA != "" {
 		warnings, errors = v.validateStorageCA(ctx, *tempo)
 		allWarnings = append(allWarnings, warnings...)
 		allErrors = append(allErrors, errors...)
