@@ -23,7 +23,7 @@ jobs:
         app_id: ${{ secrets.PUBLISH_APP_ID }}
         private_key: ${{ secrets.PUBLISH_APP_PRIVATE_KEY }}
         installation_retrieval_payload:  ${{ secrets.PUBLISH_APP_INSTALLATION_ID }}
-
+        installation_retrieval_mode: id
 
     - uses: actions/checkout@v4
       with:
