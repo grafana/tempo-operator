@@ -1,0 +1,46 @@
+# Simulate Grafana Dashboard API requests.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: verify-traces-grafana
+spec:
+  template:
+    spec:
+      containers:
+      - name: verify-traces-grafana
+        image: registry.gitlab.com/gitlab-ci-utils/curl-jq:1.1.0
+        command:
+        - /bin/bash
+        - -eux
+        - -c
+        args:
+        - |
+          # Get the current Unix timestamp for "end" time, which is the current time
+          end_time=$(date -u +%s)
+
+          # Calculate "start" time by subtracting 24 hours (86400 seconds) from the "end" time
+          start_time=$((end_time - 86400))
+
+          # The query frontend must be accessible via HTTP (no mTLS) to enable connections from Grafana
+
+          # Run the curl command and capture the HTTP status code and output in a file
+          response_file=$(mktemp)
+          http_status=$(curl -s -o "$response_file" -w "%{http_code}" "http://tempo-simplest-query-frontend:3200/api/search?tags=%20service.name%3D%22telemetrygen%22%20name%3D%22okey-dokey%22&limit=20&start=$start_time&end=$end_time")
+
+          # Check the HTTP status code to detect API call failures
+          if [[ "$http_status" -ne 200 ]]; then
+            echo "API call failed with HTTP status code $http_status."
+            exit 1
+          fi
+
+          # Parse the JSON output from the file and check if the "traces" array is empty
+          output=$(cat "$response_file" | jq .)
+
+          if [[ "$(echo "$output" | jq -r '.traces | length')" -eq 0 ]]; then
+            echo "The Tempo API returned 0 Traces."
+            exit 1
+          else
+            echo "Traces found."
+            exit 0
+          fi
+      restartPolicy: Never

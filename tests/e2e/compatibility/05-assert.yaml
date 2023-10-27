@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: verify-traces
+  name: verify-traces-grafana
 status:
   conditions:
     - status: "True"
