@@ -426,7 +426,6 @@ func (v *validator) validateReceiverTLS(tempo TempoStack) field.ErrorList {
 					"need to specify cert secret name",
 				)}
 		}
-
 	}
 	return nil
 }
