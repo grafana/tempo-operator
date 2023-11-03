@@ -1,6 +1,8 @@
 package distributor
 
 import (
+	"github.com/ViaQ/logerr/v2/kverrors"
+	"github.com/imdario/mergo"
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -35,7 +37,87 @@ func BuildDistributor(params manifestutils.Params) ([]client.Object, error) {
 		}
 	}
 
+	if tempo.Spec.Template.Distributor.TLS.Enabled {
+		err = configureReceiversTLS(dep, tempo)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return []client.Object{dep, service(tempo)}, nil
+}
+
+func configureReceiversTLS(dep *v1.Deployment, tempo v1alpha1.TempoStack) error {
+	caSecretName := tempo.Spec.Template.Distributor.TLS.CA
+	certSecretName := tempo.Spec.Template.Distributor.TLS.Cert
+	podSpec := &dep.Spec.Template.Spec
+	if caSecretName != "" {
+		/*Configure CA*/
+		secretCAVolumeSpec := corev1.PodSpec{
+			Volumes: []corev1.Volume{
+				{
+					Name: caSecretName,
+					VolumeSource: corev1.VolumeSource{
+						ConfigMap: &corev1.ConfigMapVolumeSource{
+							LocalObjectReference: corev1.LocalObjectReference{
+								Name: caSecretName,
+							},
+						},
+					},
+				},
+			},
+		}
+
+		secretCAContainerSpec := corev1.Container{
+			VolumeMounts: []corev1.VolumeMount{
+				{
+					Name:      caSecretName,
+					ReadOnly:  true,
+					MountPath: manifestutils.CAReceiver,
+				},
+			},
+		}
+		if err := mergo.Merge(podSpec, secretCAVolumeSpec, mergo.WithAppendSlice); err != nil {
+			return kverrors.Wrap(err, "failed to merge volumes")
+		}
+
+		if err := mergo.Merge(&podSpec.Containers[0], secretCAContainerSpec, mergo.WithAppendSlice); err != nil {
+			return kverrors.Wrap(err, "failed to merge container")
+		}
+	}
+
+	secretCertVolumeSpec := corev1.PodSpec{
+		Volumes: []corev1.Volume{
+			{
+				Name: certSecretName,
+				VolumeSource: corev1.VolumeSource{
+					Secret: &corev1.SecretVolumeSource{
+						SecretName: certSecretName,
+					},
+				},
+			},
+		},
+	}
+	secretCertContainerSpec := corev1.Container{
+		VolumeMounts: []corev1.VolumeMount{
+			{
+				Name:      certSecretName,
+				ReadOnly:  true,
+				MountPath: manifestutils.TempoReceiverTLSDir(),
+			},
+		},
+	}
+
+	/*Configure certificate*/
+
+	if err := mergo.Merge(podSpec, secretCertVolumeSpec, mergo.WithAppendSlice); err != nil {
+		return kverrors.Wrap(err, "failed to merge volumes")
+	}
+
+	if err := mergo.Merge(&podSpec.Containers[0], secretCertContainerSpec, mergo.WithAppendSlice); err != nil {
+		return kverrors.Wrap(err, "failed to merge container")
+	}
+	return nil
 }
 
 func deployment(params manifestutils.Params) *v1.Deployment {

@@ -15,6 +15,11 @@ func TempoServerTLSDir() string {
 	return path.Join(TLSDir, "server")
 }
 
+// TempoReceiverTLSDir returns the mount path of the receivers certificates.
+func TempoReceiverTLSDir() string {
+	return path.Join(TLSDir, "receiver")
+}
+
 // ConfigureServiceCA modify the PodSpec adding the volumes and volumeMounts to the specified containers.
 func ConfigureServiceCA(podSpec *corev1.PodSpec, caBundleName string, containers ...int) error {
 	secretVolumeSpec := corev1.PodSpec{

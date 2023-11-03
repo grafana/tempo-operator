@@ -17,6 +17,7 @@ type options struct {
 	Multitenancy           bool
 	Gateway                bool
 	Gates                  featureGates
+	ReceiverTLS            receiverTLSOptions
 }
 
 type tempoQueryOptions struct {
@@ -62,6 +63,13 @@ type tlsOptions struct {
 	Paths       tlsFilePaths
 	ServerNames serverNames
 	Profile     tlsProfileOptions
+}
+
+type receiverTLSOptions struct {
+	Enabled         bool
+	ClientCAEnabled bool
+	Paths           tlsFilePaths
+	MinTLSVersion   string
 }
 
 // TLSProfileSpec is the desired behavior of a TLSProfileType.

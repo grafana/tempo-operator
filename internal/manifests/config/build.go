@@ -82,7 +82,8 @@ func buildConfiguration(params manifestutils.Params) ([]byte, error) {
 			GRPCEncryption: params.Gates.GRPCEncryption,
 			HTTPEncryption: params.Gates.HTTPEncryption,
 		},
-		TLS: tlsopts,
+		TLS:         tlsopts,
+		ReceiverTLS: buildReceiverTLSConfig(tempo),
 	}
 
 	if isTenantOverridesConfigRequired(tempo.Spec.LimitSpec) {
@@ -100,6 +101,19 @@ func buildTenantOverrides(tempo v1alpha1.TempoStack) ([]byte, error) {
 	return renderTenantOverridesTemplate(tenantOptions{
 		RateLimits: fromRateLimitSpecToRateLimitOptionsMap(tempo.Spec.LimitSpec.PerTenant),
 	})
+}
+
+func buildReceiverTLSConfig(tempo v1alpha1.TempoStack) receiverTLSOptions {
+	return receiverTLSOptions{
+		Enabled:         tempo.Spec.Template.Distributor.TLS.Enabled,
+		ClientCAEnabled: tempo.Spec.Template.Distributor.TLS.CA != "",
+		Paths: tlsFilePaths{
+			CA:          fmt.Sprintf("%s/%s", manifestutils.CAReceiver, manifestutils.ReceiverCAKey),
+			Key:         fmt.Sprintf("%s/%s", manifestutils.TempoReceiverTLSDir(), manifestutils.ReceiverPrivateKey),
+			Certificate: fmt.Sprintf("%s/%s", manifestutils.TempoReceiverTLSDir(), manifestutils.ReceiverPublicKey),
+		},
+		MinTLSVersion: tempo.Spec.Template.Distributor.TLS.MinVersion,
+	}
 }
 
 func buildTLSConfig(params manifestutils.Params) (tlsOptions, error) {
