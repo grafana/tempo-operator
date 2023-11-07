@@ -307,6 +307,27 @@ spec:
           component.
         displayName: Component Replicas
         path: template.distributor.replicas
+      - description: TLS defines TLS configuration for distributor receivers
+        displayName: TLS
+        path: template.distributor.tls
+      - description: caName is the name of a ConfigMap containing a CA certificate.
+          It needs to be in the same namespace as the Tempo custom resource.
+        displayName: CA ConfigMap Name
+        path: template.distributor.tls.caName
+        x-descriptors:
+        - urn:alm:descriptor:io.kubernetes:ConfigMap
+      - description: certName is the name of a Secret containing a certificate and
+          the private key It needs to be in the same namespace as the Tempo custom
+          resource.
+        displayName: Certificate Secret Name
+        path: template.distributor.tls.certName
+        x-descriptors:
+        - urn:alm:descriptor:io.kubernetes:Secret
+      - description: minVersion is the name of a Secret containing a certificate and
+          the private key It needs to be in the same namespace as the Tempo custom
+          resource.
+        displayName: Min TLS Version
+        path: template.distributor.tls.minVersion
       - description: Tolerations defines component specific pod tolerations.
         displayName: Tolerations
         path: template.distributor.tolerations
