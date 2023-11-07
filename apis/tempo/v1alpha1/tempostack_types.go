@@ -366,7 +366,7 @@ type ObjectStorageSpec struct {
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="TLS Config"
-	TLS *ObjectStorageTLSSpec `json:"tls,omitempty"`
+	TLS ObjectStorageTLSSpec `json:"tls,omitempty"`
 
 	// Secret for object storage authentication.
 	// Name of a secret in the same namespace as the TempoStack custom resource.
@@ -379,13 +379,41 @@ type ObjectStorageSpec struct {
 
 // ObjectStorageTLSSpec is the TLS configuration for reaching the object storage endpoint.
 type ObjectStorageTLSSpec struct {
-	// CA is the name of a ConfigMap containing a CA certificate.
+	// CA is the name of a ConfigMap containing a `ca.crt` key with a CA certificate.
 	// It needs to be in the same namespace as the TempoStack custom resource.
 	//
 	// +optional
 	// +kubebuilder:validation:optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors="urn:alm:descriptor:io.kubernetes:ConfigMap",displayName="CA ConfigMap Name"
 	CA string `json:"caName,omitempty"`
+}
+
+// ReceiversTLSSpec is the TLS configuration for the receivers.
+type ReceiversTLSSpec struct {
+	Enabled bool `json:"enabled"`
+	// caName is the name of a ConfigMap containing a CA certificate.
+	// It needs to be in the same namespace as the Tempo custom resource.
+	//
+	// +required
+	// +kubebuilder:validation:Required
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors="urn:alm:descriptor:io.kubernetes:ConfigMap",displayName="CA ConfigMap Name"
+	CA string `json:"caName,omitempty"`
+
+	// certName is the name of a Secret containing a certificate and the private key
+	// It needs to be in the same namespace as the Tempo custom resource.
+	//
+	// +required
+	// +kubebuilder:validation:Required
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors="urn:alm:descriptor:io.kubernetes:Secret",displayName="Certificate Secret Name"
+	Cert string `json:"certName,omitempty"`
+
+	// minVersion is the name of a Secret containing a certificate and the private key
+	// It needs to be in the same namespace as the Tempo custom resource.
+	//
+	// +optional
+	// +kubebuilder:validation:optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Min TLS Version"
+	MinVersion string `json:"minVersion,omitempty"`
 }
 
 // TempoTemplateSpec defines the template of all requirements to configure
@@ -396,7 +424,7 @@ type TempoTemplateSpec struct {
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Distributor pods"
-	Distributor TempoComponentSpec `json:"distributor,omitempty"`
+	Distributor TempoDistributorSpec `json:"distributor,omitempty"`
 
 	// Ingester defines the ingester component spec.
 	//
@@ -432,6 +460,25 @@ type TempoTemplateSpec struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Gateway pods"
 	Gateway TempoGatewaySpec `json:"gateway,omitempty"`
+}
+
+// TempoDistributorSpec defines the template of all requirements to configure
+// scheduling of Tempo distributor component to be deployed.
+type TempoDistributorSpec struct {
+	// TempoComponentSpec is embedded to extend this definition with further options.
+	//
+	// Currently, there is no way to inline this field.
+	// See: https://github.com/golang/go/issues/6213
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	TempoComponentSpec `json:"component,omitempty"`
+
+	// TLS defines TLS configuration for distributor receivers
+	//
+	// +optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="TLS"
+	TLS ReceiversTLSSpec `json:"tls,omitempty"`
 }
 
 // TempoComponentSpec defines specific schedule settings for tempo components.

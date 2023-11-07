@@ -3,9 +3,10 @@ resources:
 # Give OpenShift in-cluster-monitoring permissions to list, watch and get services, endpoints and pods in the namespace of the operator
 - prometheus_role.yaml
 - prometheus_role_binding.yaml
+- role_binding_cluster_monitoring_view.yaml
 
 # Adds namespace to all resources.
-namespace: openshift-operators-redhat
+namespace: tempo-operator-system
 
 # Value of this field is prepended to the
 # names of all resources, e.g. a deployment named

@@ -3,6 +3,37 @@ Changes by Version
 
 <!-- next version -->
 
+## 0.5.0
+
+### 🛑 Breaking changes 🛑
+
+- `operator`: Install operator in tempo-operator-system namespace by default when installed with OLM or manifests of the OpenShift variant (#538)
+
+### 💡 Enhancements 💡
+
+- `operator`: Bump tempo version to 2.2.3 (#646)
+- `operands`: Bump operands to fix CVE-2023-39325 (#650)
+- `operator`: Expose the OTLP HTTP port in the distributor service. (#610)
+- `operator`: Add pprof flag to optionally expose pprof data (#242)
+- `operator`: Use tempo service account to query metrics from OpenShift monitoring stack. (#526)
+  On OpenShift tempo service account is used to query metrics from OpenShift monitoring stack for the monitor tab.
+- `operator`: Support setting a custom CA certificate for S3 object storage (#545)
+- `operator`: Enable ingress (or route) in samples, add MinLength validation to .spec.storage.secret.name of the TempoStack CR (#541)
+- `operator`: Support monitor tab in Jaeger console (#470)
+- `operator`: Explicitly specify log level for all components. (#550)
+- `operator`: Support Tempo 2.2.0 (#525)
+
+### 🧰 Bug fixes 🧰
+
+- `operator`: Fix ingester StatefulSet reconciliation if ingester is in an unhealthy state (#597)
+- `operator`: Enable mTLS for all components except query-frontend. (#561)
+  Only enable mTLS for query-frontend when the gateway is enabled.
+- `operator`: Fix for Http2 reset vulnerability CVE-2023-39325 (#642)
+- `operator`: Upgrade TempoStack instances once they are switched back from Unmanaged to Managed (#478)
+
+### Components
+- Tempo: [v2.2.3](https://github.com/grafana/tempo/releases/tag/v2.2.3)
+
 ## 0.4.0
 
 ### 💡 Enhancements 💡

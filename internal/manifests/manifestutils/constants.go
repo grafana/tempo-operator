@@ -40,6 +40,11 @@ const (
 	// PortOtlpGrpcServer declares the port number of the OpenTelemetry Collector gRPC receiver port.
 	PortOtlpGrpcServer = 4317
 
+	// PortOtlpHttpName declares the port name of the OpenTelemetry protocol over HTTP.
+	PortOtlpHttpName = "otlp-http"
+	// PortOtlpHttp declares the port number of the OpenTelemetry protocol over HTTP.
+	PortOtlpHttp = 4318
+
 	// PortJaegerThriftHTTPName declares the port name of the Jaeger Thrift HTTP protocol.
 	PortJaegerThriftHTTPName = "thrift-http"
 	// PortJaegerThriftHTTP declares the port number of the Jaeger Thrift HTTP protocol.
@@ -84,4 +89,11 @@ const (
 	GatewayComponentName = "gateway"
 	// TenantHeader is the header name that contains tenant name.
 	TenantHeader = "x-scope-orgid"
+
+	// ReceiverCAKey is the key name of the CA file in the configmap.
+	ReceiverCAKey = "service-ca.crt"
+	// ReceiverPublicKey is the key name of the public key file in the configmap.
+	ReceiverPublicKey = "tls.crt"
+	// ReceiverPrivateKey is the key name of the private key file in the configmap.
+	ReceiverPrivateKey = "tls.key"
 )

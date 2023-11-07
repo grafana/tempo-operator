@@ -106,6 +106,53 @@ func TestGetS3Storage(t *testing.T) {
 	assert.Contains(t, pod.Containers[0].Args, "--storage.trace.s3.access_key=$(S3_ACCESS_KEY)")
 }
 
+func TestGetS3StorageWithCA(t *testing.T) {
+	tempo := v1alpha1.TempoStack{
+		Spec: v1alpha1.TempoStackSpec{
+			Storage: v1alpha1.ObjectStorageSpec{
+				Secret: v1alpha1.ObjectStorageSecretSpec{
+					Name: "test",
+					Type: v1alpha1.ObjectStorageSecretAzure,
+				},
+				TLS: v1alpha1.ObjectStorageTLSSpec{
+					CA: "customca",
+				},
+			},
+		},
+	}
+
+	pod := corev1.PodSpec{
+		Containers: []corev1.Container{
+			{
+				Name: "ingester",
+			},
+		},
+	}
+
+	assert.NoError(t, configureS3Storage(&tempo, &pod))
+	assert.Equal(t, []corev1.Volume{
+		{
+			Name: storageCAVolumeName,
+			VolumeSource: corev1.VolumeSource{
+				ConfigMap: &corev1.ConfigMapVolumeSource{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: tempo.Spec.Storage.TLS.CA,
+					},
+				},
+			},
+		},
+	}, pod.Volumes)
+
+	assert.Len(t, pod.Containers[0].VolumeMounts, 1)
+	assert.Equal(t, []corev1.VolumeMount{
+		{
+			Name:      storageCAVolumeName,
+			MountPath: TempoStorageTLSDir(),
+			ReadOnly:  true,
+		},
+	}, pod.Containers[0].VolumeMounts)
+}
+
 func TestConfigureStorage(t *testing.T) {
 	tests := []struct {
 		name    string

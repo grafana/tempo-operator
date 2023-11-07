@@ -413,6 +413,117 @@ func TestReconcileGenericError(t *testing.T) {
 	assert.Contains(t, updatedTempo.Status.Conditions[0].Message, "error listing routes: no kind is registered for the type v1.RouteList")
 }
 
+func TestStorageCustomCA(t *testing.T) {
+	nsn := types.NamespacedName{Name: "custom-ca", Namespace: "default"}
+	reconciler := TempoStackReconciler{
+		Client:   k8sClient,
+		Scheme:   testScheme,
+		Recorder: record.NewFakeRecorder(1),
+		CtrlConfig: configv1alpha1.ProjectConfig{
+			Gates: configv1alpha1.FeatureGates{
+				TLSProfile: string(configv1alpha1.TLSProfileIntermediateType),
+			},
+		},
+		Version: version.Get(),
+	}
+	req := ctrl.Request{
+		NamespacedName: nsn,
+	}
+
+	storageSecret := createSecret(t, nsn)
+	tempo := &v1alpha1.TempoStack{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      nsn.Name,
+			Namespace: nsn.Namespace,
+		},
+		Spec: v1alpha1.TempoStackSpec{
+			Images: configv1alpha1.ImagesSpec{
+				Tempo: "docker.io/grafana/tempo:1.5.0",
+			},
+			LimitSpec: v1alpha1.LimitSpec{
+				PerTenant: map[string]v1alpha1.RateLimitSpec{},
+			},
+			Retention: v1alpha1.RetentionSpec{
+				PerTenant: map[string]v1alpha1.RetentionConfig{},
+			},
+			Storage: v1alpha1.ObjectStorageSpec{
+				Secret: v1alpha1.ObjectStorageSecretSpec{
+					Name: storageSecret.Name,
+					Type: "s3",
+				},
+				TLS: v1alpha1.ObjectStorageTLSSpec{
+					CA: "custom-ca",
+				},
+			},
+		},
+	}
+	err := k8sClient.Create(context.Background(), tempo)
+	require.NoError(t, err)
+
+	_, err = reconciler.Reconcile(context.Background(), req)
+	require.Error(t, err)
+	updatedTempo := v1alpha1.TempoStack{}
+	err = k8sClient.Get(context.Background(), nsn, &updatedTempo)
+	require.NoError(t, err)
+	assert.Equal(t, []metav1.Condition{{
+		Type:               string(v1alpha1.ConditionConfigurationError),
+		Status:             "True",
+		LastTransitionTime: updatedTempo.Status.Conditions[0].LastTransitionTime,
+		Reason:             string(v1alpha1.ReasonInvalidStorageConfig),
+		Message:            "could not fetch CA config map: configmaps \"custom-ca\" not found",
+	}}, updatedTempo.Status.Conditions)
+
+	caConfigMap := &corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "custom-ca",
+			Namespace: nsn.Namespace,
+		},
+	}
+	err = k8sClient.Create(context.Background(), caConfigMap)
+	require.NoError(t, err)
+
+	_, err = reconciler.Reconcile(context.Background(), req)
+	require.Error(t, err)
+	updatedTempo2 := v1alpha1.TempoStack{}
+	err = k8sClient.Get(context.Background(), nsn, &updatedTempo2)
+	require.NoError(t, err)
+	assert.Equal(t, []metav1.Condition{{
+		Type:               string(v1alpha1.ConditionConfigurationError),
+		Status:             "True",
+		LastTransitionTime: updatedTempo2.Status.Conditions[0].LastTransitionTime,
+		Reason:             string(v1alpha1.ReasonInvalidStorageConfig),
+		Message:            "invalid CA config map: ConfigMap must contain a 'ca.crt' key",
+	}}, updatedTempo2.Status.Conditions)
+
+	caConfigMap.Data = map[string]string{
+		"ca.crt": "test",
+	}
+	err = k8sClient.Update(context.Background(), caConfigMap)
+	require.NoError(t, err)
+
+	_, err = reconciler.Reconcile(context.Background(), req)
+	require.NoError(t, err)
+	updatedTempo3 := v1alpha1.TempoStack{}
+	err = k8sClient.Get(context.Background(), nsn, &updatedTempo3)
+	require.NoError(t, err)
+	assert.Equal(t, []metav1.Condition{
+		{
+			Type:               string(v1alpha1.ConditionConfigurationError),
+			Status:             "False",
+			LastTransitionTime: updatedTempo3.Status.Conditions[0].LastTransitionTime,
+			Reason:             string(v1alpha1.ReasonInvalidStorageConfig),
+			Message:            "invalid CA config map: ConfigMap must contain a 'ca.crt' key",
+		},
+		{
+			Type:               string(v1alpha1.ConditionReady),
+			Status:             "True",
+			LastTransitionTime: updatedTempo2.Status.Conditions[0].LastTransitionTime,
+			Reason:             string(v1alpha1.ReasonReady),
+			Message:            "All components are operational",
+		},
+	}, updatedTempo3.Status.Conditions)
+}
+
 func TestTLSEnable(t *testing.T) {
 	nsn := types.NamespacedName{Name: "tls-enabled-test", Namespace: "default"}
 	storageSecret := createSecret(t, nsn)

@@ -48,11 +48,11 @@ jobs:
           sudo chown $(id -u):$(id -g) ~/.kube/config
 
       - name: "run community scorecard tests"
-        run: make scorecard-tests
+        run: for i in {1..5}; do make scorecard-tests && break || sleep 10; done
         env:
           BUNDLE_VARIANT: community
 
       - name: "run OpenShift scorecard tests"
-        run: make scorecard-tests
+        run: for i in {1..5}; do make scorecard-tests && break || sleep 10; done
         env:
           BUNDLE_VARIANT: openshift

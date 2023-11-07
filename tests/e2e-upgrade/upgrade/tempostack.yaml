@@ -1,0 +1,9 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoStack
+metadata:
+  name: check-operator-ready
+spec:
+  storage:
+    secret:
+      name: example
+      type: s3

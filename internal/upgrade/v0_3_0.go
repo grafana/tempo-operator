@@ -6,6 +6,7 @@ import (
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 )
 
+// This upgrade sets the deprecated MaxSearchBytesPerTrace field to nil.
 func upgrade0_3_0(ctx context.Context, u Upgrade, tempo *v1alpha1.TempoStack) (*v1alpha1.TempoStack, error) {
 	if tempo.Spec.LimitSpec.Global.Query.MaxSearchBytesPerTrace != nil {
 		tempo.Spec.LimitSpec.Global.Query.MaxSearchBytesPerTrace = nil

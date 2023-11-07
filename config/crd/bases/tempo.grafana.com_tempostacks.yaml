@@ -337,9 +337,9 @@ spec:
                       endpoint.
                     properties:
                       caName:
-                        description: CA is the name of a ConfigMap containing a CA
-                          certificate. It needs to be in the same namespace as the
-                          TempoStack custom resource.
+                        description: CA is the name of a ConfigMap containing a `ca.crt`
+                          key with a CA certificate. It needs to be in the same namespace
+                          as the TempoStack custom resource.
                         type: string
                     type: object
                 required:
@@ -420,60 +420,93 @@ spec:
                   distributor:
                     description: Distributor defines the distributor component spec.
                     properties:
-                      nodeSelector:
-                        additionalProperties:
-                          type: string
-                        description: NodeSelector is the simplest recommended form
-                          of node selection constraint.
+                      component:
+                        description: "TempoComponentSpec is embedded to extend this
+                          definition with further options. \n Currently, there is
+                          no way to inline this field. See: https://github.com/golang/go/issues/6213"
+                        properties:
+                          nodeSelector:
+                            additionalProperties:
+                              type: string
+                            description: NodeSelector is the simplest recommended
+                              form of node selection constraint.
+                            type: object
+                          replicas:
+                            description: Replicas represents the number of replicas
+                              to create for this component.
+                            format: int32
+                            type: integer
+                          tolerations:
+                            description: Tolerations defines component specific pod
+                              tolerations.
+                            items:
+                              description: The pod this Toleration is attached to
+                                tolerates any taint that matches the triple <key,value,effect>
+                                using the matching operator <operator>.
+                              properties:
+                                effect:
+                                  description: Effect indicates the taint effect to
+                                    match. Empty means match all taint effects. When
+                                    specified, allowed values are NoSchedule, PreferNoSchedule
+                                    and NoExecute.
+                                  type: string
+                                key:
+                                  description: Key is the taint key that the toleration
+                                    applies to. Empty means match all taint keys.
+                                    If the key is empty, operator must be Exists;
+                                    this combination means to match all values and
+                                    all keys.
+                                  type: string
+                                operator:
+                                  description: Operator represents a key's relationship
+                                    to the value. Valid operators are Exists and Equal.
+                                    Defaults to Equal. Exists is equivalent to wildcard
+                                    for value, so that a pod can tolerate all taints
+                                    of a particular category.
+                                  type: string
+                                tolerationSeconds:
+                                  description: TolerationSeconds represents the period
+                                    of time the toleration (which must be of effect
+                                    NoExecute, otherwise this field is ignored) tolerates
+                                    the taint. By default, it is not set, which means
+                                    tolerate the taint forever (do not evict). Zero
+                                    and negative values will be treated as 0 (evict
+                                    immediately) by the system.
+                                  format: int64
+                                  type: integer
+                                value:
+                                  description: Value is the taint value the toleration
+                                    matches to. If the operator is Exists, the value
+                                    should be empty, otherwise just a regular string.
+                                  type: string
+                              type: object
+                            type: array
+                            x-kubernetes-list-type: atomic
                         type: object
-                      replicas:
-                        description: Replicas represents the number of replicas to
-                          create for this component.
-                        format: int32
-                        type: integer
-                      tolerations:
-                        description: Tolerations defines component specific pod tolerations.
-                        items:
-                          description: The pod this Toleration is attached to tolerates
-                            any taint that matches the triple <key,value,effect> using
-                            the matching operator <operator>.
-                          properties:
-                            effect:
-                              description: Effect indicates the taint effect to match.
-                                Empty means match all taint effects. When specified,
-                                allowed values are NoSchedule, PreferNoSchedule and
-                                NoExecute.
-                              type: string
-                            key:
-                              description: Key is the taint key that the toleration
-                                applies to. Empty means match all taint keys. If the
-                                key is empty, operator must be Exists; this combination
-                                means to match all values and all keys.
-                              type: string
-                            operator:
-                              description: Operator represents a key's relationship
-                                to the value. Valid operators are Exists and Equal.
-                                Defaults to Equal. Exists is equivalent to wildcard
-                                for value, so that a pod can tolerate all taints of
-                                a particular category.
-                              type: string
-                            tolerationSeconds:
-                              description: TolerationSeconds represents the period
-                                of time the toleration (which must be of effect NoExecute,
-                                otherwise this field is ignored) tolerates the taint.
-                                By default, it is not set, which means tolerate the
-                                taint forever (do not evict). Zero and negative values
-                                will be treated as 0 (evict immediately) by the system.
-                              format: int64
-                              type: integer
-                            value:
-                              description: Value is the taint value the toleration
-                                matches to. If the operator is Exists, the value should
-                                be empty, otherwise just a regular string.
-                              type: string
-                          type: object
-                        type: array
-                        x-kubernetes-list-type: atomic
+                      tls:
+                        description: TLS defines TLS configuration for distributor
+                          receivers
+                        properties:
+                          caName:
+                            description: caName is the name of a ConfigMap containing
+                              a CA certificate. It needs to be in the same namespace
+                              as the Tempo custom resource.
+                            type: string
+                          certName:
+                            description: certName is the name of a Secret containing
+                              a certificate and the private key It needs to be in
+                              the same namespace as the Tempo custom resource.
+                            type: string
+                          enabled:
+                            type: boolean
+                          minVersion:
+                            description: minVersion is the name of a Secret containing
+                              a certificate and the private key It needs to be in
+                              the same namespace as the Tempo custom resource.
+                            type: string
+                        required:
+                        - enabled
+                        type: object
                     type: object
                   gateway:
                     description: Gateway defines the tempo gateway spec.

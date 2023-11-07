@@ -42,14 +42,16 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator
-    createdAt: "2023-08-22T09:37:20Z"
+    createdAt: "2023-11-02T05:12:48Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
+    operatorframework.io/cluster-monitoring: "true"
+    operatorframework.io/suggested-namespace: tempo-operator-system
     operators.operatorframework.io/builder: operator-sdk-v1.27.0
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     repository: https://github.com/grafana/tempo-operator
     support: Grafana Tempo Operator SIG
-  name: tempo-operator.v0.4.0
+  name: tempo-operator.v0.5.0
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -302,8 +304,9 @@ spec:
       - description: TLS configuration for reaching the object storage endpoint.
         displayName: TLS Config
         path: storage.tls
-      - description: CA is the name of a ConfigMap containing a CA certificate. It
-          needs to be in the same namespace as the TempoStack custom resource.
+      - description: CA is the name of a ConfigMap containing a `ca.crt` key with
+          a CA certificate. It needs to be in the same namespace as the TempoStack
+          custom resource.
         displayName: CA ConfigMap Name
         path: storage.tls.caName
         x-descriptors:
@@ -343,6 +346,27 @@ spec:
           component.
         displayName: Component Replicas
         path: template.distributor.replicas
+      - description: TLS defines TLS configuration for distributor receivers
+        displayName: TLS
+        path: template.distributor.tls
+      - description: caName is the name of a ConfigMap containing a CA certificate.
+          It needs to be in the same namespace as the Tempo custom resource.
+        displayName: CA ConfigMap Name
+        path: template.distributor.tls.caName
+        x-descriptors:
+        - urn:alm:descriptor:io.kubernetes:ConfigMap
+      - description: certName is the name of a Secret containing a certificate and
+          the private key It needs to be in the same namespace as the Tempo custom
+          resource.
+        displayName: Certificate Secret Name
+        path: template.distributor.tls.certName
+        x-descriptors:
+        - urn:alm:descriptor:io.kubernetes:Secret
+      - description: minVersion is the name of a Secret containing a certificate and
+          the private key It needs to be in the same namespace as the Tempo custom
+          resource.
+        displayName: Min TLS Version
+        path: template.distributor.tls.minVersion
       - description: Tolerations defines component specific pod tolerations.
         displayName: Tolerations
         path: template.distributor.tolerations
@@ -560,7 +584,7 @@ spec:
     ### Operator features
     * **Resource Limits** - Specify overall resource requests and limits in the `TempoStack` CR; the operator assigns fractions of it to each component
     * **AuthN and AuthZ** - Supports OpenID Control (OIDC) and role-based access control (RBAC)
-    * **Managed upgrades**: Updating the operator will automatically update all managed Tempo clusters
+    * **Managed upgrades** - Updating the operator will automatically update all managed Tempo clusters
     * **Multitenancy** - Multiple tenants can send traces to the same Tempo cluster
     * **mTLS** - Communication between the Tempo components can be secured via mTLS
     * **Jaeger UI** - Traces can be visualized in Jaeger UI and exposed via Ingress or OpenShift Route
@@ -748,7 +772,7 @@ spec:
                 - --zap-log-level=info
                 - start
                 - --config=controller_manager_config.yaml
-                image: ghcr.io/grafana/tempo-operator/tempo-operator:v0.4.0
+                image: ghcr.io/grafana/tempo-operator/tempo-operator:v0.5.0
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -884,7 +908,7 @@ spec:
   maturity: alpha
   provider:
     name: Grafana Tempo Operator SIG
-  version: 0.4.0
+  version: 0.5.0
   webhookdefinitions:
   - admissionReviewVersions:
     - v1

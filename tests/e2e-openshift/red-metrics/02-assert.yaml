@@ -1,34 +1,7 @@
 apiVersion: apps/v1
-kind: StatefulSet
-metadata:
-  name: tempo-redmetrics-ingester
-status:
-  readyReplicas: 1
----
-apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: tempo-redmetrics-distributor
+  name: otel-collector
 status:
   readyReplicas: 1
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: tempo-redmetrics-querier
-status:
-  readyReplicas: 1
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: tempo-redmetrics-query-frontend
-status:
-  readyReplicas: 1
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: tempo-redmetrics-compactor
-status:
-  readyReplicas: 1
+  replicas: 1

@@ -1,8 +1,6 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: verify-metrics
+  name: hotrod-curl
 status:
-  conditions:
-    - status: "True"
-      type: Complete
+  succeeded: 1

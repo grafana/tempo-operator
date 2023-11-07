@@ -1,0 +1,11 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+commands:
+# Assert TempoStack Ready condition after the CR got upgraded.
+# Do not move this to the previous assert step, as in the previous assert step
+# the status condition might still be true, if the operator wasn't upgraded yet.
+- command: /bin/sh -c "kubectl get --namespace $NAMESPACE tempo simplest -o jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}' | grep True"
+
+# debugging output to verify updated manifests
+- command: kubectl get --namespace $NAMESPACE deployment -o yaml
+- command: kubectl get --namespace $NAMESPACE statefulset -o yaml

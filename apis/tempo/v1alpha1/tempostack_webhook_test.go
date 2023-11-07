@@ -104,8 +104,11 @@ func TestDefault(t *testing.T) {
 						DefaultResultLimit: &defaultDefaultResultLimit,
 					},
 					Template: TempoTemplateSpec{
-						Distributor: TempoComponentSpec{
-							Replicas: pointer.Int32(1),
+						Distributor: TempoDistributorSpec{
+							TempoComponentSpec: TempoComponentSpec{
+								Replicas: pointer.Int32(1),
+							},
+							TLS: ReceiversTLSSpec{},
 						},
 						Ingester: TempoComponentSpec{
 							Replicas: pointer.Int32(1),
@@ -156,8 +159,11 @@ func TestDefault(t *testing.T) {
 						DefaultResultLimit: &defaultDefaultResultLimit,
 					},
 					Template: TempoTemplateSpec{
-						Distributor: TempoComponentSpec{
-							Replicas: pointer.Int32(1),
+						Distributor: TempoDistributorSpec{
+							TempoComponentSpec: TempoComponentSpec{
+								Replicas: pointer.Int32(1),
+							},
+							TLS: ReceiversTLSSpec{},
 						},
 						Ingester: TempoComponentSpec{
 							Replicas: pointer.Int32(1),
@@ -213,8 +219,11 @@ func TestDefault(t *testing.T) {
 						DefaultResultLimit: &defaultDefaultResultLimit,
 					},
 					Template: TempoTemplateSpec{
-						Distributor: TempoComponentSpec{
-							Replicas: pointer.Int32(1),
+						Distributor: TempoDistributorSpec{
+							TempoComponentSpec: TempoComponentSpec{
+								Replicas: pointer.Int32(1),
+							},
+							TLS: ReceiversTLSSpec{},
 						},
 						Ingester: TempoComponentSpec{
 							Replicas: pointer.Int32(1),
@@ -416,6 +425,44 @@ func TestValidateStorageSecret(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			errs := ValidateStorageSecret(test.tempo, test.input)
+			assert.Equal(t, test.expected, errs)
+		})
+	}
+}
+
+func TestValidateStorageCAConfigMap(t *testing.T) {
+	path := field.NewPath("spec").Child("storage").Child("tls").Child("caName")
+
+	tests := []struct {
+		name     string
+		input    corev1.ConfigMap
+		expected field.ErrorList
+	}{
+		{
+			name: "missing ca.crt key",
+			input: corev1.ConfigMap{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+				},
+			},
+			expected: field.ErrorList{
+				field.Invalid(path, "test", "ConfigMap must contain a 'ca.crt' key"),
+			},
+		},
+		{
+			name: "valid configmap",
+			input: corev1.ConfigMap{
+				Data: map[string]string{
+					"ca.crt": "test",
+				},
+			},
+			expected: nil,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			errs := ValidateStorageCAConfigMap(test.input)
 			assert.Equal(t, test.expected, errs)
 		})
 	}
@@ -1386,6 +1433,126 @@ func TestValidateDeprecatedFields(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			v := &validator{ctrlConfig: v1alpha1.ProjectConfig{}}
 			assert.Equal(t, tc.expected, v.validateDeprecatedFields(tc.input))
+		})
+	}
+}
+
+func TestValidateReceiverTLSAndGateway(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    TempoStack
+		expected field.ErrorList
+	}{
+		{
+			name: "valid configuration disable both",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					ReplicationFactor: 3,
+					Template: TempoTemplateSpec{
+						Gateway: TempoGatewaySpec{
+							Enabled: false,
+						},
+						Distributor: TempoDistributorSpec{
+							TLS: ReceiversTLSSpec{
+								Enabled: false,
+							},
+						},
+					},
+					Tenants: &TenantsSpec{
+						Mode: ModeStatic,
+					},
+				},
+			},
+			expected: nil,
+		},
+		{
+			name: "valid configuration enable only gateway",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					ReplicationFactor: 3,
+					Template: TempoTemplateSpec{
+						Gateway: TempoGatewaySpec{
+							Enabled: true,
+						},
+						QueryFrontend: TempoQueryFrontendSpec{
+							JaegerQuery: JaegerQuerySpec{
+								Enabled: true,
+							},
+						},
+						Distributor: TempoDistributorSpec{
+							TLS: ReceiversTLSSpec{
+								Enabled: false,
+							},
+						},
+					},
+					Tenants: &TenantsSpec{
+						Mode: ModeStatic,
+					},
+				},
+			},
+			expected: nil,
+		},
+		{
+			name: "valid configuration enable only receiver TLS",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					ReplicationFactor: 3,
+					Template: TempoTemplateSpec{
+						Gateway: TempoGatewaySpec{
+							Enabled: false,
+						},
+						Distributor: TempoDistributorSpec{
+							TLS: ReceiversTLSSpec{
+								Enabled: true,
+								Cert:    "my-cert",
+							},
+						},
+					},
+					Tenants: &TenantsSpec{
+						Mode: ModeStatic,
+					},
+				},
+			},
+			expected: nil,
+		},
+		{
+			name: "invalid configuration enable both",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					ReplicationFactor: 3,
+					Template: TempoTemplateSpec{
+						Gateway: TempoGatewaySpec{
+							Enabled: true,
+						},
+						QueryFrontend: TempoQueryFrontendSpec{
+							JaegerQuery: JaegerQuerySpec{
+								Enabled: true,
+							},
+						},
+						Distributor: TempoDistributorSpec{
+							TLS: ReceiversTLSSpec{
+								Enabled: true,
+							},
+						},
+					},
+					Tenants: &TenantsSpec{
+						Mode: ModeStatic,
+					},
+				},
+			},
+			expected: field.ErrorList{field.Invalid(
+				field.NewPath("spec").Child("template").Child("gateway").Child("enabled"),
+				true,
+				"Cannot enable gateway and distributor TLS at the same time",
+			)},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			validator := &validator{ctrlConfig: v1alpha1.ProjectConfig{}}
+			errs := validator.validateGateway(test.input)
+			assert.Equal(t, test.expected, errs)
 		})
 	}
 }

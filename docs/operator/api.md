@@ -1765,7 +1765,7 @@ string
 
 <em>(Optional)</em>
 
-<p>CA is the name of a ConfigMap containing a CA certificate.
+<p>CA is the name of a ConfigMap containing a <code>ca.crt</code> key with a CA certificate.
 It needs to be in the same namespace as the TempoStack custom resource.</p>
 
 </td>
@@ -2109,6 +2109,126 @@ QueryLimit
 <em>(Optional)</em>
 
 <p>Query is used to define query rate limits.</p>
+
+</td>
+</tr>
+
+</tbody>
+</table>
+
+## ReceiversTLSSpec { #tempo-grafana-com-v1alpha1-ReceiversTLSSpec }
+
+<p>
+
+(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-TempoDistributorSpec">TempoDistributorSpec</a>)
+
+</p>
+
+<div>
+
+<p>ReceiversTLSSpec is the TLS configuration for the receivers.</p>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Field</th>
+
+<th>Description</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td>
+
+<code>enabled</code><br/>
+
+<em>
+
+bool
+
+</em>
+
+</td>
+
+<td>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>caName</code><br/>
+
+<em>
+
+string
+
+</em>
+
+</td>
+
+<td>
+
+<p>caName is the name of a ConfigMap containing a CA certificate.
+It needs to be in the same namespace as the Tempo custom resource.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>certName</code><br/>
+
+<em>
+
+string
+
+</em>
+
+</td>
+
+<td>
+
+<p>certName is the name of a Secret containing a certificate and the private key
+It needs to be in the same namespace as the Tempo custom resource.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>minVersion</code><br/>
+
+<em>
+
+string
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>minVersion is the name of a Secret containing a certificate and the private key
+It needs to be in the same namespace as the Tempo custom resource.</p>
 
 </td>
 </tr>
@@ -2889,7 +3009,7 @@ and re-encrypt using a new certificate.</p>
 
 <p>
 
-(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-TempoGatewaySpec">TempoGatewaySpec</a>, <a href="#tempo-grafana-com-v1alpha1-TempoQueryFrontendSpec">TempoQueryFrontendSpec</a>, <a href="#tempo-grafana-com-v1alpha1-TempoTemplateSpec">TempoTemplateSpec</a>)
+(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-TempoDistributorSpec">TempoDistributorSpec</a>, <a href="#tempo-grafana-com-v1alpha1-TempoGatewaySpec">TempoGatewaySpec</a>, <a href="#tempo-grafana-com-v1alpha1-TempoQueryFrontendSpec">TempoQueryFrontendSpec</a>, <a href="#tempo-grafana-com-v1alpha1-TempoTemplateSpec">TempoTemplateSpec</a>)
 
 </p>
 
@@ -2984,6 +3104,97 @@ map[string]string
 <em>(Optional)</em>
 
 <p>Tolerations defines component specific pod tolerations.</p>
+
+</td>
+</tr>
+
+</tbody>
+</table>
+
+## TempoDistributorSpec { #tempo-grafana-com-v1alpha1-TempoDistributorSpec }
+
+<p>
+
+(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-TempoTemplateSpec">TempoTemplateSpec</a>)
+
+</p>
+
+<div>
+
+<p>TempoDistributorSpec defines the template of all requirements to configure
+scheduling of Tempo distributor component to be deployed.</p>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Field</th>
+
+<th>Description</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td>
+
+<code>component</code><br/>
+
+<em>
+
+<a href="#tempo-grafana-com-v1alpha1-TempoComponentSpec">
+
+TempoComponentSpec
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>TempoComponentSpec is embedded to extend this definition with further options.</p>
+
+<p>Currently, there is no way to inline this field.
+See: <a href="https://github.com/golang/go/issues/6213">https://github.com/golang/go/issues/6213</a></p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>tls</code><br/>
+
+<em>
+
+<a href="#tempo-grafana-com-v1alpha1-ReceiversTLSSpec">
+
+ReceiversTLSSpec
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>TLS defines TLS configuration for distributor receivers</p>
 
 </td>
 </tr>
@@ -3882,9 +4093,9 @@ scheduling of all Tempo components to be deployed.</p>
 
 <em>
 
-<a href="#tempo-grafana-com-v1alpha1-TempoComponentSpec">
+<a href="#tempo-grafana-com-v1alpha1-TempoDistributorSpec">
 
-TempoComponentSpec
+TempoDistributorSpec
 
 </a>
 

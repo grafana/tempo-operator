@@ -42,6 +42,16 @@ func ValidateStorageSecret(tempo TempoStack, storageSecret corev1.Secret) field.
 	return allErrs
 }
 
+// ValidateStorageCAConfigMap validates the CA config map for accessing object storage.
+func ValidateStorageCAConfigMap(caConfigMap corev1.ConfigMap) field.ErrorList {
+	path := field.NewPath("spec").Child("storage").Child("tls").Child("caName")
+
+	if caConfigMap.Data["ca.crt"] == "" {
+		return field.ErrorList{field.Invalid(path, caConfigMap.Name, "ConfigMap must contain a 'ca.crt' key")}
+	}
+	return nil
+}
+
 func ensureNotEmpty(tempo TempoStack, path *field.Path, storageSecret corev1.Secret, fields []string) field.ErrorList {
 	var allErrs field.ErrorList
 	for _, key := range fields {
