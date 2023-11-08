@@ -1,20 +1,3 @@
-apiVersion: tempo.grafana.com/v1alpha1
-kind: TempoStack
-metadata:
-  name: simplest
-spec:
-  storage:
-    secret:
-      name: minio
-      type: s3
-    tls:
-      caName: custom-ca
-  storageSize: 200M
-  template:
-    queryFrontend:
-      jaegerQuery:
-        enabled: true
----
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -50,3 +33,21 @@ data:
     xtdKFBv1LLup2pr/hbmbP+0XHNFuUK36I7oantHhagXL/pGO3vcugppAd+YNzOW9
     Qr67VgKeixOrNiK6W9FzuaWYadv0XOgrJbFhsvmtYqpEMDGZzfdb5dAzdA==
     -----END CERTIFICATE-----
+
+---
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoStack
+metadata:
+  name: simplest
+spec:
+  storage:
+    secret:
+      name: minio
+      type: s3
+    tls:
+      caName: custom-ca
+  storageSize: 200M
+  template:
+    queryFrontend:
+      jaegerQuery:
+        enabled: true
