@@ -442,6 +442,8 @@ func TestTLSParameters(t *testing.T) {
 	assert.Contains(t, args, fmt.Sprintf("--traces.tls.ca-file=%s/service-ca.crt", manifestutils.CABundleDir))
 	assert.Contains(t, args, fmt.Sprintf("--traces.read.endpoint=https://%s:16686",
 		naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.QueryFrontendComponentName)))
+	assert.Contains(t, args, fmt.Sprintf("--traces.tempo.endpoint=https://%s:%d",
+		naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.QueryFrontendComponentName), manifestutils.PortHTTPServer))
 	assert.Equal(t, corev1.URISchemeHTTPS, dep.Spec.Template.Spec.Containers[0].ReadinessProbe.HTTPGet.Scheme)
 
 	// test without TLS

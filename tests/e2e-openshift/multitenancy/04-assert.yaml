@@ -7,3 +7,13 @@ status:
   conditions:
     - status: "True"
       type: Complete
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: verify-traces-traceql
+  namespace: kuttl-multitenancy
+status:
+  conditions:
+    - status: "True"
+      type: Complete
