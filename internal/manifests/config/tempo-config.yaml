@@ -140,7 +140,9 @@ querier:
       tls_key_path: {{ .TLS.Paths.Key }}
       tls_ca_path: {{ .TLS.Paths.CA }}
       tls_server_name: {{ .TLS.ServerNames.QueryFrontend }}
+{{- if .TLS.Profile.Ciphers }}
       tls_cipher_suites: {{ .TLS.Profile.Ciphers }}
+{{- end }}
       tls_min_version: {{ .TLS.Profile.MinTLSVersion }}
 {{- end }}
   search:
@@ -157,7 +159,9 @@ querier:
 internal_server:
   enable: true
   http_listen_address: ""
+{{- if .TLS.Profile.Ciphers }}
   tls_cipher_suites: {{ .TLS.Profile.Ciphers }}
+{{- end }}
   tls_min_version: {{ .TLS.Profile.MinTLSVersion }}
   http_tls_config:
     cert_file: {{ .TLS.Paths.Certificate }}
@@ -171,7 +175,9 @@ server:
   http_server_write_timeout: 3m
   log_format: logfmt
 {{- if or .Gates.GRPCEncryption .Gates.HTTPEncryption }}
+{{- if .TLS.Profile.Ciphers }}
   tls_cipher_suites: {{ .TLS.Profile.Ciphers }}
+{{- end }}
   tls_min_version: {{ .TLS.Profile.MinTLSVersion }}
 {{- end }}
 {{- if .Gates.GRPCEncryption }}
@@ -239,6 +245,8 @@ ingester_client:
     tls_ca_path: {{ .TLS.Paths.CA }}
     tls_server_name: {{ .TLS.ServerNames.Ingester }}
     tls_insecure_skip_verify: false
+{{- if .TLS.Profile.Ciphers }}
     tls_cipher_suites: {{ .TLS.Profile.Ciphers }}
+{{- end }}
     tls_min_version: {{ .TLS.Profile.MinTLSVersion }}
 {{- end }}
