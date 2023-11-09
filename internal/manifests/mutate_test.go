@@ -12,7 +12,7 @@ import (
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 
 	"github.com/grafana/tempo-operator/internal/manifests"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
@@ -30,8 +30,8 @@ func TestGetMutateFunc_MutateObjectMeta(t *testing.T) {
 			OwnerReferences: []metav1.OwnerReference{
 				{
 					APIVersion:         "tempo.grafana.com/v1alpha1",
-					BlockOwnerDeletion: pointer.Bool(true),
-					Controller:         pointer.Bool(true),
+					BlockOwnerDeletion: ptr.To(true),
+					Controller:         ptr.To(true),
 					Kind:               "TempoStack",
 					Name:               "tempostacks-testing",
 					UID:                "6128aa83-de7f-47c0-abf2-4a380713b599",
@@ -1058,7 +1058,7 @@ func TestGetMutateFunc_MutateRoute(t *testing.T) {
 			To: routev1.RouteTargetReference{
 				Kind:   "Service",
 				Name:   "a-service",
-				Weight: pointer.Int32(100),
+				Weight: ptr.To(int32(100)),
 			},
 			TLS: &routev1.TLSConfig{
 				Termination:                   routev1.TLSTerminationReencrypt,

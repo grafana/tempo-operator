@@ -11,7 +11,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8slabels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 
 	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
@@ -435,7 +435,7 @@ func TestBuildDistributor(t *testing.T) {
 								Cert:    "cert-custom",
 							},
 							TempoComponentSpec: v1alpha1.TempoComponentSpec{
-								Replicas:     pointer.Int32(1),
+								Replicas:     ptr.To(int32(1)),
 								NodeSelector: map[string]string{"a": "b"},
 								Tolerations: []corev1.Toleration{
 									{
@@ -473,7 +473,7 @@ func TestBuildDistributor(t *testing.T) {
 					Labels:    labels,
 				},
 				Spec: v1.DeploymentSpec{
-					Replicas: pointer.Int32(1),
+					Replicas: ptr.To(int32(1)),
 					Selector: &metav1.LabelSelector{
 						MatchLabels: labels,
 					},

@@ -16,7 +16,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 
 	"k8s.io/apimachinery/pkg/util/validation/field"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
@@ -121,7 +121,7 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 		r.Spec.SearchSpec.DefaultResultLimit = &defaultDefaultResultLimit
 	}
 
-	defaultComponentReplicas := pointer.Int32(1)
+	defaultComponentReplicas := ptr.To(int32(1))
 	defaultReplicationFactor := 1
 
 	// Default replicas for ingester if not specified.
