@@ -20,11 +20,6 @@ leaderElection:
 # if you are doing or is intended to do any operation such as perform cleanups
 # after the manager stops then its usage might be unsafe.
 # leaderElectionReleaseOnCancel: true
-images:
-  tempo: docker.io/grafana/tempo:2.2.3
-  tempoQuery: docker.io/grafana/tempo-query:main-2e5e27a
-  tempoGateway: quay.io/observatorium/api:main-2023-11-07-1f40fe4
-  tempoGatewayOpa: quay.io/observatorium/opa-openshift:main-2023-10-13-13d8960
 featureGates:
   openshift:
     openshiftRoute: true

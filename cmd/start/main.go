@@ -98,6 +98,7 @@ func start(c *cobra.Command, args []string) {
 		"default-tempo-image", rootCmdConfig.CtrlConfig.DefaultImages.Tempo,
 		"default-tempo-query-image", rootCmdConfig.CtrlConfig.DefaultImages.TempoQuery,
 		"default-tempo-gateway-image", rootCmdConfig.CtrlConfig.DefaultImages.TempoGateway,
+		"default-tempo-gateway-opa-image", rootCmdConfig.CtrlConfig.DefaultImages.TempoGatewayOpa,
 		"go-version", version.GoVersion,
 		"go-arch", runtime.GOARCH,
 		"go-os", runtime.GOOS,

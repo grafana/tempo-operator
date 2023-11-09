@@ -46,7 +46,7 @@ func TestValidateProjectConfig(t *testing.T) {
 					TLSProfile: "Modern",
 				},
 			},
-			expected: errors.New("invalid value 'abc@def' for setting images.tempo"),
+			expected: errors.New("invalid value 'abc@def': please set the RELATED_IMAGE_TEMPO environment variable to a valid container image"),
 		},
 		{
 			name: "invalid tempoQuery container image",
@@ -58,7 +58,7 @@ func TestValidateProjectConfig(t *testing.T) {
 					TLSProfile: "Modern",
 				},
 			},
-			expected: errors.New("invalid value 'abc@def' for setting images.tempoQuery"),
+			expected: errors.New("invalid value 'abc@def': please set the RELATED_IMAGE_TEMPO_QUERY environment variable to a valid container image"),
 		},
 		{
 			name: "invalid tempoGateway container image",
@@ -70,7 +70,19 @@ func TestValidateProjectConfig(t *testing.T) {
 					TLSProfile: "Modern",
 				},
 			},
-			expected: errors.New("invalid value 'abc@def' for setting images.tempoGateway"),
+			expected: errors.New("invalid value 'abc@def': please set the RELATED_IMAGE_TEMPO_GATEWAY environment variable to a valid container image"),
+		},
+		{
+			name: "invalid tempoGatewayOpa container image",
+			input: ProjectConfig{
+				DefaultImages: ImagesSpec{
+					TempoGatewayOpa: "abc@def",
+				},
+				Gates: FeatureGates{
+					TLSProfile: "Modern",
+				},
+			},
+			expected: errors.New("invalid value 'abc@def': please set the RELATED_IMAGE_TEMPO_GATEWAY_OPA environment variable to a valid container image"),
 		},
 	}
 
