@@ -10,7 +10,7 @@ require (
 	github.com/imdario/mergo v0.3.16
 	github.com/novln/docker-parser v1.0.0
 	github.com/onsi/ginkgo/v2 v2.13.0
-	github.com/onsi/gomega v1.29.0
+	github.com/onsi/gomega v1.30.0
 	github.com/openshift/library-go v0.0.0-20220622115547-84d884f4c9f6
 	github.com/prometheus/client_golang v1.17.0
 	github.com/prometheus/common v0.45.0
