@@ -29,7 +29,7 @@ require (
 
 require (
 	github.com/openshift/api v0.0.0-20230223193310-d964c7a58d75 // release-4.14
-	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.67.1
+	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.69.1
 	github.com/stretchr/testify v1.8.4
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/utils v0.0.0-20230726121419-3b25d923346b
@@ -84,7 +84,7 @@ require (
 	k8s.io/component-base v0.28.3 // indirect
 	k8s.io/kube-openapi v0.0.0-20230717233707-2695361300d9 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
-	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
+	sigs.k8s.io/structured-merge-diff/v4 v4.3.0 // indirect
 )
 
 replace github.com/bradfitz/gomemcache => github.com/themihai/gomemcache v0.0.0-20180902122335-24332e2d58ab
