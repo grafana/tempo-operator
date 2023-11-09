@@ -25,6 +25,8 @@ const (
 	PortHTTPServer = 3200
 	// PortInternalHTTPServer declares the port number of the tempo http port.
 	PortInternalHTTPServer = 3101
+	// PortJaegerQuery declares the port number of the jaeger query UI port.
+	PortJaegerQuery = 16686
 	// TempoReadinessPath specifies the path for the readiness probe.
 	TempoReadinessPath = "/ready"
 	// TempoLivenessPath specifies the path for the liveness probe.
@@ -89,4 +91,11 @@ const (
 	GatewayComponentName = "gateway"
 	// TenantHeader is the header name that contains tenant name.
 	TenantHeader = "x-scope-orgid"
+
+	// ReceiverCAKey is the key name of the CA file in the configmap.
+	ReceiverCAKey = "service-ca.crt"
+	// ReceiverPublicKey is the key name of the public key file in the configmap.
+	ReceiverPublicKey = "tls.crt"
+	// ReceiverPrivateKey is the key name of the private key file in the configmap.
+	ReceiverPrivateKey = "tls.key"
 )

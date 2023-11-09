@@ -2,7 +2,6 @@ package v1alpha1
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"math"
 	"net"
@@ -16,7 +15,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 
 	"k8s.io/apimachinery/pkg/util/validation/field"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
@@ -26,12 +25,8 @@ import (
 )
 
 var (
-	zeroQuantity                  = resource.MustParse("0Gi")
-	tenGBQuantity                 = resource.MustParse("10Gi")
-	errNoDefaultTempoImage        = errors.New("please specify a tempo image in the CR or in the operator configuration")
-	errNoDefaultTempoGatewayImage = errors.New("please specify a tempo-gateway image in the CR or in the operator configuration")
-	errNoDefaultGatewayOPAImage   = errors.New("please specify a opa image in the CR or in the operator configuration")
-	errNoDefaultTempoQueryImage   = errors.New("please specify a tempo-query image in the CR or in the operator configuration")
+	zeroQuantity  = resource.MustParse("0Gi")
+	tenGBQuantity = resource.MustParse("10Gi")
 )
 
 const maxLabelLength = 63
@@ -81,25 +76,25 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 
 	if r.Spec.Images.Tempo == "" {
 		if d.ctrlConfig.DefaultImages.Tempo == "" {
-			return errNoDefaultTempoImage
+			return fmt.Errorf("please specify a tempo image in the CR or in the %s env var", v1alpha1.EnvRelatedImageTempo)
 		}
 		r.Spec.Images.Tempo = d.ctrlConfig.DefaultImages.Tempo
 	}
 	if r.Spec.Images.TempoQuery == "" {
 		if d.ctrlConfig.DefaultImages.TempoQuery == "" {
-			return errNoDefaultTempoQueryImage
+			return fmt.Errorf("please specify a tempoQuery image in the CR or in the %s env var", v1alpha1.EnvRelatedImageTempoQuery)
 		}
 		r.Spec.Images.TempoQuery = d.ctrlConfig.DefaultImages.TempoQuery
 	}
 	if r.Spec.Images.TempoGateway == "" {
 		if d.ctrlConfig.DefaultImages.TempoGateway == "" {
-			return errNoDefaultTempoGatewayImage
+			return fmt.Errorf("please specify a tempoGateway image in the CR or in the %s env var", v1alpha1.EnvRelatedImageTempoGateway)
 		}
 		r.Spec.Images.TempoGateway = d.ctrlConfig.DefaultImages.TempoGateway
 	}
 	if r.Spec.Images.TempoGatewayOpa == "" {
 		if d.ctrlConfig.DefaultImages.TempoGatewayOpa == "" {
-			return errNoDefaultGatewayOPAImage
+			return fmt.Errorf("please specify a tempoGatewayOpa image in the CR or in the %s env var", v1alpha1.EnvRelatedImageTempoGatewayOpa)
 		}
 		r.Spec.Images.TempoGatewayOpa = d.ctrlConfig.DefaultImages.TempoGatewayOpa
 	}
@@ -121,7 +116,7 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 		r.Spec.SearchSpec.DefaultResultLimit = &defaultDefaultResultLimit
 	}
 
-	defaultComponentReplicas := pointer.Int32(1)
+	defaultComponentReplicas := ptr.To(int32(1))
 	defaultReplicationFactor := 1
 
 	// Default replicas for ingester if not specified.
@@ -152,6 +147,7 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 	if r.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type == IngressTypeRoute && r.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Route.Termination == "" {
 		r.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Route.Termination = defaultUITLSTermination
 	}
+
 	return nil
 }
 
@@ -300,6 +296,14 @@ func (v *validator) validateGateway(tempo TempoStack) field.ErrorList {
 				"please enable the featureGates.openshift.openshiftRoute feature gate to use Routes",
 			)}
 		}
+
+		if tempo.Spec.Template.Gateway.Enabled && tempo.Spec.Template.Distributor.TLS.Enabled {
+			return field.ErrorList{field.Invalid(
+				field.NewPath("spec").Child("template").Child("gateway").Child("enabled"),
+				tempo.Spec.Template.Gateway.Enabled,
+				"Cannot enable gateway and distributor TLS at the same time",
+			)}
+		}
 	}
 	return nil
 }
@@ -406,6 +410,21 @@ func (v *validator) validateDeprecatedFields(tempo TempoStack) field.ErrorList {
 	return nil
 }
 
+func (v *validator) validateReceiverTLS(tempo TempoStack) field.ErrorList {
+	spec := tempo.Spec.Template.Distributor.TLS
+	if spec.Enabled {
+		if spec.Cert == "" {
+			return field.ErrorList{
+				field.Invalid(
+					field.NewPath("spec").Child("template").Child("distributor").Child("tls").Child("cert"),
+					spec.Cert,
+					"need to specify cert secret name",
+				)}
+		}
+	}
+	return nil
+}
+
 func (v *validator) validate(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
 	tempo, ok := obj.(*TempoStack)
 	if !ok {
@@ -427,7 +446,7 @@ func (v *validator) validate(ctx context.Context, obj runtime.Object) (admission
 	allWarnings = append(allWarnings, warnings...)
 	allErrors = append(allErrors, errors...)
 
-	if tempo.Spec.Storage.TLS.CA == "" {
+	if tempo.Spec.Storage.TLS.CA != "" {
 		warnings, errors = v.validateStorageCA(ctx, *tempo)
 		allWarnings = append(allWarnings, warnings...)
 		allErrors = append(allErrors, errors...)
@@ -439,6 +458,7 @@ func (v *validator) validate(ctx context.Context, obj runtime.Object) (admission
 	allErrors = append(allErrors, v.validateTenantConfigs(*tempo)...)
 	allErrors = append(allErrors, v.validateObservability(*tempo)...)
 	allErrors = append(allErrors, v.validateDeprecatedFields(*tempo)...)
+	allErrors = append(allErrors, v.validateReceiverTLS(*tempo)...)
 
 	if len(allErrors) == 0 {
 		return allWarnings, nil

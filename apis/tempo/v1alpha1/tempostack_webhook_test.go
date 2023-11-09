@@ -13,7 +13,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/validation/field"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/grafana/tempo-operator/apis/config/v1alpha1"
@@ -104,11 +104,14 @@ func TestDefault(t *testing.T) {
 						DefaultResultLimit: &defaultDefaultResultLimit,
 					},
 					Template: TempoTemplateSpec{
-						Distributor: TempoComponentSpec{
-							Replicas: pointer.Int32(1),
+						Distributor: TempoDistributorSpec{
+							TempoComponentSpec: TempoComponentSpec{
+								Replicas: ptr.To(int32(1)),
+							},
+							TLS: ReceiversTLSSpec{},
 						},
 						Ingester: TempoComponentSpec{
-							Replicas: pointer.Int32(1),
+							Replicas: ptr.To(int32(1)),
 						},
 					},
 				},
@@ -156,11 +159,14 @@ func TestDefault(t *testing.T) {
 						DefaultResultLimit: &defaultDefaultResultLimit,
 					},
 					Template: TempoTemplateSpec{
-						Distributor: TempoComponentSpec{
-							Replicas: pointer.Int32(1),
+						Distributor: TempoDistributorSpec{
+							TempoComponentSpec: TempoComponentSpec{
+								Replicas: ptr.To(int32(1)),
+							},
+							TLS: ReceiversTLSSpec{},
 						},
 						Ingester: TempoComponentSpec{
-							Replicas: pointer.Int32(1),
+							Replicas: ptr.To(int32(1)),
 						},
 					},
 				},
@@ -213,11 +219,14 @@ func TestDefault(t *testing.T) {
 						DefaultResultLimit: &defaultDefaultResultLimit,
 					},
 					Template: TempoTemplateSpec{
-						Distributor: TempoComponentSpec{
-							Replicas: pointer.Int32(1),
+						Distributor: TempoDistributorSpec{
+							TempoComponentSpec: TempoComponentSpec{
+								Replicas: ptr.To(int32(1)),
+							},
+							TLS: ReceiversTLSSpec{},
 						},
 						Ingester: TempoComponentSpec{
-							Replicas: pointer.Int32(1),
+							Replicas: ptr.To(int32(1)),
 						},
 						QueryFrontend: TempoQueryFrontendSpec{
 							JaegerQuery: JaegerQuerySpec{
@@ -475,7 +484,7 @@ func TestValidateReplicationFactor(t *testing.T) {
 					ReplicationFactor: 3,
 					Template: TempoTemplateSpec{
 						Ingester: TempoComponentSpec{
-							Replicas: pointer.Int32(2),
+							Replicas: ptr.To(int32(2)),
 						},
 					},
 				},
@@ -489,7 +498,7 @@ func TestValidateReplicationFactor(t *testing.T) {
 					ReplicationFactor: 3,
 					Template: TempoTemplateSpec{
 						Ingester: TempoComponentSpec{
-							Replicas: pointer.Int32(3),
+							Replicas: ptr.To(int32(3)),
 						},
 					},
 				},
@@ -503,7 +512,7 @@ func TestValidateReplicationFactor(t *testing.T) {
 					ReplicationFactor: 3,
 					Template: TempoTemplateSpec{
 						Ingester: TempoComponentSpec{
-							Replicas: pointer.Int32(1),
+							Replicas: ptr.To(int32(1)),
 						},
 					},
 				},
@@ -1424,6 +1433,126 @@ func TestValidateDeprecatedFields(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			v := &validator{ctrlConfig: v1alpha1.ProjectConfig{}}
 			assert.Equal(t, tc.expected, v.validateDeprecatedFields(tc.input))
+		})
+	}
+}
+
+func TestValidateReceiverTLSAndGateway(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    TempoStack
+		expected field.ErrorList
+	}{
+		{
+			name: "valid configuration disable both",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					ReplicationFactor: 3,
+					Template: TempoTemplateSpec{
+						Gateway: TempoGatewaySpec{
+							Enabled: false,
+						},
+						Distributor: TempoDistributorSpec{
+							TLS: ReceiversTLSSpec{
+								Enabled: false,
+							},
+						},
+					},
+					Tenants: &TenantsSpec{
+						Mode: ModeStatic,
+					},
+				},
+			},
+			expected: nil,
+		},
+		{
+			name: "valid configuration enable only gateway",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					ReplicationFactor: 3,
+					Template: TempoTemplateSpec{
+						Gateway: TempoGatewaySpec{
+							Enabled: true,
+						},
+						QueryFrontend: TempoQueryFrontendSpec{
+							JaegerQuery: JaegerQuerySpec{
+								Enabled: true,
+							},
+						},
+						Distributor: TempoDistributorSpec{
+							TLS: ReceiversTLSSpec{
+								Enabled: false,
+							},
+						},
+					},
+					Tenants: &TenantsSpec{
+						Mode: ModeStatic,
+					},
+				},
+			},
+			expected: nil,
+		},
+		{
+			name: "valid configuration enable only receiver TLS",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					ReplicationFactor: 3,
+					Template: TempoTemplateSpec{
+						Gateway: TempoGatewaySpec{
+							Enabled: false,
+						},
+						Distributor: TempoDistributorSpec{
+							TLS: ReceiversTLSSpec{
+								Enabled: true,
+								Cert:    "my-cert",
+							},
+						},
+					},
+					Tenants: &TenantsSpec{
+						Mode: ModeStatic,
+					},
+				},
+			},
+			expected: nil,
+		},
+		{
+			name: "invalid configuration enable both",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					ReplicationFactor: 3,
+					Template: TempoTemplateSpec{
+						Gateway: TempoGatewaySpec{
+							Enabled: true,
+						},
+						QueryFrontend: TempoQueryFrontendSpec{
+							JaegerQuery: JaegerQuerySpec{
+								Enabled: true,
+							},
+						},
+						Distributor: TempoDistributorSpec{
+							TLS: ReceiversTLSSpec{
+								Enabled: true,
+							},
+						},
+					},
+					Tenants: &TenantsSpec{
+						Mode: ModeStatic,
+					},
+				},
+			},
+			expected: field.ErrorList{field.Invalid(
+				field.NewPath("spec").Child("template").Child("gateway").Child("enabled"),
+				true,
+				"Cannot enable gateway and distributor TLS at the same time",
+			)},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			validator := &validator{ctrlConfig: v1alpha1.ProjectConfig{}}
+			errs := validator.validateGateway(test.input)
+			assert.Equal(t, test.expected, errs)
 		})
 	}
 }

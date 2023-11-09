@@ -5,12 +5,12 @@ change_type: breaking
 component: operator
 
 # A brief description of the change. Surround your text with quotes ("") if it needs to start with a backtick (`).
-note: Install operator in tempo-operator-system namespace by default when installed with OLM or manifests of the OpenShift variant
+note: Move default images from operator configuration to environment variable
 
 # One or more tracking issues related to the change
-issues: [538]
+issues: [591]
 
 # (Optional) One or more lines of additional information to render under the primary note.
 # These lines will be padded with 2 spaces and then inserted directly into the document.
 # Use pipe (|) for multiline entries.
-subtext:
+subtext: |

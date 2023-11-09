@@ -1,6 +1,6 @@
 #!/bin/bash
 
-TEMPO_VERSION=$(cat config/overlays/community/controller_manager_config.yaml | grep -oP "docker.io/grafana/tempo:\K.*")
+TEMPO_VERSION=$(cat config/manager/manager.yaml | grep -oP "docker.io/grafana/tempo:\K.*")
 
 cat << EOF
 ### Components

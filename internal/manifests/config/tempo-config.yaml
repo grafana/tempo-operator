@@ -11,13 +11,40 @@ distributor:
       protocols:
         thrift_http:
           endpoint: 0.0.0.0:14268
+{{- if .ReceiverTLS.Enabled }}
+          tls:
+{{- if .ReceiverTLS.ClientCAEnabled }}
+            client_ca_file:  {{ .ReceiverTLS.Paths.CA }}
+{{- end }}
+            cert_file: {{ .ReceiverTLS.Paths.Certificate }}
+            key_file: {{ .ReceiverTLS.Paths.Key }}
+            min_version: {{ .ReceiverTLS.MinTLSVersion }}
+{{- end }}
         thrift_binary:
           endpoint: 0.0.0.0:6832
         thrift_compact:
           endpoint: 0.0.0.0:6831
         grpc:
           endpoint: 0.0.0.0:14250
+{{- if .ReceiverTLS.Enabled }}
+          tls:
+{{- if .ReceiverTLS.ClientCAEnabled }}
+            client_ca_file:  {{ .ReceiverTLS.Paths.CA }}
+{{- end }}
+            cert_file: {{ .ReceiverTLS.Paths.Certificate }}
+            key_file: {{ .ReceiverTLS.Paths.Key }}
+            min_version: {{ .ReceiverTLS.MinTLSVersion }}
+{{- end }}
     zipkin:
+{{- if .ReceiverTLS.Enabled }}
+      tls:
+{{- if .ReceiverTLS.ClientCAEnabled }}
+        client_ca_file:  {{ .ReceiverTLS.Paths.CA }}
+{{- end }}
+        cert_file: {{ .ReceiverTLS.Paths.Certificate }}
+        key_file: {{ .ReceiverTLS.Paths.Key }}
+        min_version: {{ .ReceiverTLS.MinTLSVersion }}
+  {{- end }}
 {{- end }}
     otlp:
       protocols:
@@ -30,9 +57,27 @@ distributor:
             key_file: {{ .TLS.Paths.Key }}
             min_version: {{ .TLS.Profile.MinTLSVersionShort }}
 {{- end }}
+{{- if .ReceiverTLS.Enabled }}
+          tls:
+{{- if .ReceiverTLS.ClientCAEnabled }}
+            client_ca_file:  {{ .ReceiverTLS.Paths.CA }}
+{{- end }}
+            cert_file: {{ .ReceiverTLS.Paths.Certificate }}
+            key_file: {{ .ReceiverTLS.Paths.Key }}
+            min_version: {{ .ReceiverTLS.MinTLSVersion }}
+{{- end }}
 {{- if not .Gateway }}
         http:
           endpoint: 0.0.0.0:4318
+{{- if .ReceiverTLS.Enabled }}
+          tls:
+{{- if .ReceiverTLS.ClientCAEnabled }}
+            client_ca_file:  {{ .ReceiverTLS.Paths.CA }}
+{{- end }}
+            cert_file: {{ .ReceiverTLS.Paths.Certificate }}
+            key_file: {{ .ReceiverTLS.Paths.Key }}
+            min_version: {{ .ReceiverTLS.MinTLSVersion }}
+{{- end }}
 {{- end }}
   ring:
     kvstore:
@@ -139,9 +184,9 @@ server:
 {{- if .Gates.HTTPEncryption }}
   http_tls_config:
     cert_file:  {{ .TLS.Paths.Certificate }}
+    client_auth_type: RequireAndVerifyClientCert
     key_file: {{ .TLS.Paths.Key }}
     client_ca_file: {{ .TLS.Paths.CA }}
-    client_auth_type: RequireAndVerifyClientCert
 {{- end }}
 storage:
   trace:

@@ -42,7 +42,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator
-    createdAt: "2023-08-24T16:42:41Z"
+    createdAt: "2023-11-09T09:33:10Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -51,7 +51,7 @@ metadata:
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     repository: https://github.com/grafana/tempo-operator
     support: Grafana Tempo Operator SIG
-  name: tempo-operator.v0.4.0
+  name: tempo-operator.v0.5.0
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -346,6 +346,27 @@ spec:
           component.
         displayName: Component Replicas
         path: template.distributor.replicas
+      - description: TLS defines TLS configuration for distributor receivers
+        displayName: TLS
+        path: template.distributor.tls
+      - description: caName is the name of a ConfigMap containing a CA certificate.
+          It needs to be in the same namespace as the Tempo custom resource.
+        displayName: CA ConfigMap Name
+        path: template.distributor.tls.caName
+        x-descriptors:
+        - urn:alm:descriptor:io.kubernetes:ConfigMap
+      - description: certName is the name of a Secret containing a certificate and
+          the private key It needs to be in the same namespace as the Tempo custom
+          resource.
+        displayName: Certificate Secret Name
+        path: template.distributor.tls.certName
+        x-descriptors:
+        - urn:alm:descriptor:io.kubernetes:Secret
+      - description: minVersion is the name of a Secret containing a certificate and
+          the private key It needs to be in the same namespace as the Tempo custom
+          resource.
+        displayName: Min TLS Version
+        path: template.distributor.tls.minVersion
       - description: Tolerations defines component specific pod tolerations.
         displayName: Tolerations
         path: template.distributor.tolerations
@@ -751,7 +772,16 @@ spec:
                 - --zap-log-level=info
                 - start
                 - --config=controller_manager_config.yaml
-                image: ghcr.io/grafana/tempo-operator/tempo-operator:v0.4.0
+                env:
+                - name: RELATED_IMAGE_TEMPO
+                  value: docker.io/grafana/tempo:2.2.3
+                - name: RELATED_IMAGE_TEMPO_QUERY
+                  value: docker.io/grafana/tempo-query:main-2e5e27a
+                - name: RELATED_IMAGE_TEMPO_GATEWAY
+                  value: quay.io/observatorium/api:main-2023-11-07-1f40fe4
+                - name: RELATED_IMAGE_TEMPO_GATEWAY_OPA
+                  value: quay.io/observatorium/opa-openshift:main-2023-10-13-13d8960
+                image: ghcr.io/grafana/tempo-operator/tempo-operator:v0.5.0
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -887,7 +917,16 @@ spec:
   maturity: alpha
   provider:
     name: Grafana Tempo Operator SIG
-  version: 0.4.0
+  relatedImages:
+  - image: docker.io/grafana/tempo:2.2.3
+    name: tempo
+  - image: docker.io/grafana/tempo-query:main-2e5e27a
+    name: tempo-query
+  - image: quay.io/observatorium/api:main-2023-11-07-1f40fe4
+    name: tempo-gateway
+  - image: quay.io/observatorium/opa-openshift:main-2023-10-13-13d8960
+    name: tempo-gateway-opa
+  version: 0.5.0
   webhookdefinitions:
   - admissionReviewVersions:
     - v1

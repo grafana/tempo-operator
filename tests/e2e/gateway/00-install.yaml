@@ -55,7 +55,9 @@ spec:
             - dex
             - serve
             - /data/dex/dex.yaml
-          image: dexidp/dex:v2.30.0
+          # How to build this image: https://gist.github.com/iblancasa/bc5bae33fa14736b367716205229defb
+          # TODO: https://github.com/grafana/tempo-operator/issues/643
+          image: ghcr.io/iblancasa/dex:v2.37.0
           imagePullPolicy: IfNotPresent
           name: hydra
           env:
