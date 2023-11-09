@@ -13,4 +13,6 @@ issues: [674]
 # (Optional) One or more lines of additional information to render under the primary note.
 # These lines will be padded with 2 spaces and then inserted directly into the document.
 # Use pipe (|) for multiline entries.
-subtext: From 0.6.0 onwards, the image location is not stored in the TempoStack CR unless it got changed manually
+subtext: |
+  This upgrade reverts any change to the `spec.images` fields of any TempoStack instance.
+  Beginning with version 0.6.0, the image location is not stored in the TempoStack instance unless it is changed manually.
