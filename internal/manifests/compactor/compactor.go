@@ -24,7 +24,7 @@ func BuildCompactor(params manifestutils.Params) ([]client.Object, error) {
 	if err != nil {
 		return nil, err
 	}
-	gates := params.Gates
+	gates := params.CtrlConfig.Gates
 	tempo := params.Tempo
 	if gates.HTTPEncryption || gates.GRPCEncryption {
 		caBundleName := naming.SigningCABundleName(tempo.Name)
@@ -45,6 +45,10 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 	labels := manifestutils.ComponentLabels(manifestutils.CompactorComponentName, tempo.Name)
 	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
 	cfg := tempo.Spec.Template.Compactor
+	image := tempo.Spec.Images.Tempo
+	if image == "" {
+		image = params.CtrlConfig.DefaultImages.Tempo
+	}
 
 	d := &v1.Deployment{
 		TypeMeta: metav1.TypeMeta{
@@ -71,7 +75,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 					Containers: []corev1.Container{
 						{
 							Name:  "tempo",
-							Image: tempo.Spec.Images.Tempo,
+							Image: image,
 							Args: []string{
 								"-target=compactor",
 								"-config.file=/conf/tempo.yaml",
@@ -89,7 +93,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 									Protocol:      corev1.ProtocolTCP,
 								},
 							},
-							ReadinessProbe: manifestutils.TempoReadinessProbe(params.Gates.HTTPEncryption),
+							ReadinessProbe: manifestutils.TempoReadinessProbe(params.CtrlConfig.Gates.HTTPEncryption),
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      manifestutils.ConfigVolumeName,

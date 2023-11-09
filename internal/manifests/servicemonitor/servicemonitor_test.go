@@ -60,8 +60,10 @@ func TestBuildServiceMonitors(t *testing.T) {
 
 func TestBuildServiceMonitorsTLS(t *testing.T) {
 	objects := BuildServiceMonitors(manifestutils.Params{
-		Gates: configv1alpha1.FeatureGates{
-			HTTPEncryption: true,
+		CtrlConfig: configv1alpha1.ProjectConfig{
+			Gates: configv1alpha1.FeatureGates{
+				HTTPEncryption: true,
+			},
 		},
 		Tempo: v1alpha1.TempoStack{
 			ObjectMeta: metav1.ObjectMeta{
@@ -186,8 +188,10 @@ func TestBuildGatewayServiceMonitor(t *testing.T) {
 
 func TestBuildGatewayServiceMonitorsTLS(t *testing.T) {
 	objects := BuildServiceMonitors(manifestutils.Params{
-		Gates: configv1alpha1.FeatureGates{
-			HTTPEncryption: true,
+		CtrlConfig: configv1alpha1.ProjectConfig{
+			Gates: configv1alpha1.FeatureGates{
+				HTTPEncryption: true,
+			},
 		},
 		Tempo: v1alpha1.TempoStack{
 			ObjectMeta: metav1.ObjectMeta{

@@ -1512,9 +1512,11 @@ ingester_client:
 				"TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384"},
 			MinTLSVersion: "VersionTLS12",
 		},
-		Gates: configv1alpha1.FeatureGates{
-			HTTPEncryption: true,
-			GRPCEncryption: true,
+		CtrlConfig: configv1alpha1.ProjectConfig{
+			Gates: configv1alpha1.FeatureGates{
+				HTTPEncryption: true,
+				GRPCEncryption: true,
+			},
 		},
 	})
 	require.NoError(t, err)
@@ -1669,9 +1671,11 @@ ingester_client:
 				"TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384"},
 			MinTLSVersion: "VersionTLS12",
 		},
-		Gates: configv1alpha1.FeatureGates{
-			HTTPEncryption: true,
-			GRPCEncryption: true,
+		CtrlConfig: configv1alpha1.ProjectConfig{
+			Gates: configv1alpha1.FeatureGates{
+				HTTPEncryption: true,
+				GRPCEncryption: true,
+			},
 		},
 	})
 	require.NoError(t, err)

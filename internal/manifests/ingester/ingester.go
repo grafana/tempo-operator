@@ -26,7 +26,7 @@ func BuildIngester(params manifestutils.Params) ([]client.Object, error) {
 		return nil, err
 	}
 
-	gates := params.Gates
+	gates := params.CtrlConfig.Gates
 	tempo := params.Tempo
 
 	if gates.HTTPEncryption || gates.GRPCEncryption {
@@ -50,6 +50,10 @@ func statefulSet(params manifestutils.Params) (*v1.StatefulSet, error) {
 	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
 	filesystem := corev1.PersistentVolumeFilesystem
 	cfg := tempo.Spec.Template.Ingester
+	image := tempo.Spec.Images.Tempo
+	if image == "" {
+		image = params.CtrlConfig.DefaultImages.Tempo
+	}
 
 	ss := &v1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
@@ -83,7 +87,7 @@ func statefulSet(params manifestutils.Params) (*v1.StatefulSet, error) {
 					Containers: []corev1.Container{
 						{
 							Name:  "tempo",
-							Image: tempo.Spec.Images.Tempo,
+							Image: image,
 							Args: []string{
 								"-target=ingester",
 								"-config.file=/conf/tempo.yaml",
@@ -117,7 +121,7 @@ func statefulSet(params manifestutils.Params) (*v1.StatefulSet, error) {
 									Protocol:      corev1.ProtocolTCP,
 								},
 							},
-							ReadinessProbe:  manifestutils.TempoReadinessProbe(params.Gates.HTTPEncryption),
+							ReadinessProbe:  manifestutils.TempoReadinessProbe(params.CtrlConfig.Gates.HTTPEncryption),
 							Resources:       manifestutils.Resources(tempo, manifestutils.IngesterComponentName),
 							SecurityContext: manifestutils.TempoContainerSecurityContext(),
 						},

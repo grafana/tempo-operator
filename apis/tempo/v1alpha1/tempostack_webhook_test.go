@@ -134,13 +134,8 @@ func TestDefault(t *testing.T) {
 				},
 				Spec: TempoStackSpec{
 					ReplicationFactor: 1,
-					Images: v1alpha1.ImagesSpec{
-						Tempo:           "docker.io/grafana/tempo:x.y.z",
-						TempoQuery:      "docker.io/grafana/tempo-query:x.y.z",
-						TempoGateway:    "docker.io/observatorium/gateway:1.2.3",
-						TempoGatewayOpa: "docker.io/observatorium/opa-openshift:1.2.3",
-					},
-					ServiceAccount: "tempo-test",
+					Images:            v1alpha1.ImagesSpec{},
+					ServiceAccount:    "tempo-test",
 					Retention: RetentionSpec{
 						Global: RetentionConfig{
 							Traces: metav1.Duration{Duration: 48 * time.Hour},
@@ -201,13 +196,8 @@ func TestDefault(t *testing.T) {
 				},
 				Spec: TempoStackSpec{
 					ReplicationFactor: 1,
-					Images: v1alpha1.ImagesSpec{
-						Tempo:           "docker.io/grafana/tempo:x.y.z",
-						TempoQuery:      "docker.io/grafana/tempo-query:x.y.z",
-						TempoGateway:    "docker.io/observatorium/gateway:1.2.3",
-						TempoGatewayOpa: "docker.io/observatorium/opa-openshift:1.2.3",
-					},
-					ServiceAccount: "tempo-test",
+					Images:            v1alpha1.ImagesSpec{},
+					ServiceAccount:    "tempo-test",
 					Retention: RetentionSpec{
 						Global: RetentionConfig{
 							Traces: metav1.Duration{Duration: 48 * time.Hour},

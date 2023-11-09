@@ -19,15 +19,15 @@ import (
 )
 
 func TestBuild(t *testing.T) {
-	ctrlConfig := configv1alpha1.ProjectConfig{
-		DefaultImages: configv1alpha1.ImagesSpec{
-			Tempo:           "tempo-image",
-			TempoQuery:      "tempo-query-image",
-			TempoGateway:    "tempo-gateway-image",
-			TempoGatewayOpa: "tempo-gateway-opa-image",
-		},
-	}
 	params := manifestutils.Params{
+		CtrlConfig: configv1alpha1.ProjectConfig{
+			DefaultImages: configv1alpha1.ImagesSpec{
+				Tempo:           "tempo-image",
+				TempoQuery:      "tempo-query-image",
+				TempoGateway:    "tempo-gateway-image",
+				TempoGatewayOpa: "tempo-gateway-opa-image",
+			},
+		},
 		StorageParams: manifestutils.StorageParams{
 			AzureStorage: &manifestutils.AzureStorage{},
 			GCS:          &manifestutils.GCS{},
@@ -35,7 +35,7 @@ func TestBuild(t *testing.T) {
 		},
 	}
 
-	objects, err := build(ctrlConfig, params)
+	objects, err := build(params)
 	require.NoError(t, err)
 	require.Equal(t, 14, len(objects))
 }

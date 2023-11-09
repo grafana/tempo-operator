@@ -38,7 +38,7 @@ const (
 
 // BuildGateway creates gateway objects.
 func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
-	rbacCfg, tenantsCfg, err := buildConfigFiles(newOptions(params.Tempo, params.Gates.OpenShift.BaseDomain, params.GatewayTenantSecret, params.GatewayTenantsData))
+	rbacCfg, tenantsCfg, err := buildConfigFiles(newOptions(params.Tempo, params.CtrlConfig.Gates.OpenShift.BaseDomain, params.GatewayTenantSecret, params.GatewayTenantsData))
 	if err != nil {
 		return nil, err
 	}
@@ -49,12 +49,12 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 	objs := []client.Object{
 		rbacConfigMap,
 		tenantsSecret,
-		service(params.Tempo, params.Gates.OpenShift.ServingCertsService),
+		service(params.Tempo, params.CtrlConfig.Gates.OpenShift.ServingCertsService),
 	}
 
 	dep := deployment(params, rbacCfgHash, tenantsCfgHash)
 
-	if params.Gates.HTTPEncryption || params.Gates.GRPCEncryption {
+	if params.CtrlConfig.Gates.HTTPEncryption || params.CtrlConfig.Gates.GRPCEncryption {
 		caBundleName := naming.SigningCABundleName(params.Tempo.Name)
 		if err := manifestutils.ConfigureServiceCA(&dep.Spec.Template.Spec, caBundleName); err != nil {
 			return nil, err
@@ -67,7 +67,7 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 
 	if params.Tempo.Spec.Tenants.Mode == v1alpha1.ModeOpenShift {
 		dep = patchOCPServiceAccount(params.Tempo, dep)
-		dep, err = patchOCPOPAContainer(params.Tempo, dep)
+		dep, err = patchOCPOPAContainer(params, dep)
 		if err != nil {
 			return nil, err
 		}
@@ -79,7 +79,7 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 			configMapCABundle(params.Tempo),
 		}...)
 
-		if params.Gates.OpenShift.ServingCertsService {
+		if params.CtrlConfig.Gates.OpenShift.ServingCertsService {
 			dep, err = patchOCPServingCerts(params.Tempo, dep)
 			if err != nil {
 				return nil, err
@@ -123,8 +123,12 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 	cfg := tempo.Spec.Template.Gateway
 	internalServerScheme := corev1.URISchemeHTTP
 	tlsArgs := []string{}
+	image := tempo.Spec.Images.TempoGateway
+	if image == "" {
+		image = params.CtrlConfig.DefaultImages.TempoGateway
+	}
 
-	if params.Gates.HTTPEncryption {
+	if params.CtrlConfig.Gates.HTTPEncryption {
 		internalServerScheme = corev1.URISchemeHTTPS
 		tlsArgs = []string{
 			fmt.Sprintf("--tls.internal.server.key-file=%s/tls.key", manifestutils.TempoServerTLSDir()),
@@ -160,15 +164,15 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 					Containers: []corev1.Container{
 						{
 							Name:  "tempo-gateway",
-							Image: tempo.Spec.Images.TempoGateway,
+							Image: image,
 							Args: append([]string{
 								fmt.Sprintf("--traces.tenant-header=%s", manifestutils.TenantHeader),
 								fmt.Sprintf("--web.listen=0.0.0.0:%d", portPublic),
 								fmt.Sprintf("--web.internal.listen=0.0.0.0:%d", portInternal),
 								fmt.Sprintf("--traces.write.endpoint=%s:%d", naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.DistributorComponentName), manifestutils.PortOtlpGrpcServer),
-								fmt.Sprintf("--traces.read.endpoint=%s://%s:%d", httpScheme(params.Gates.HTTPEncryption),
+								fmt.Sprintf("--traces.read.endpoint=%s://%s:%d", httpScheme(params.CtrlConfig.Gates.HTTPEncryption),
 									naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.QueryFrontendComponentName), manifestutils.PortJaegerQuery),
-								fmt.Sprintf("--traces.tempo.endpoint=%s://%s:%d", httpScheme(params.Gates.HTTPEncryption),
+								fmt.Sprintf("--traces.tempo.endpoint=%s://%s:%d", httpScheme(params.CtrlConfig.Gates.HTTPEncryption),
 									naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.QueryFrontendComponentName), manifestutils.PortHTTPServer),
 								fmt.Sprintf("--grpc.listen=0.0.0.0:%d", portGRPC),
 								fmt.Sprintf("--rbac.config=%s", path.Join(tempoGatewayMountDir, "cm", tempoGatewayRbacFileName)),

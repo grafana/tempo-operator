@@ -29,12 +29,7 @@ func createTempoCR(t *testing.T, nsn types.NamespacedName, version string, manag
 		},
 		Spec: v1alpha1.TempoStackSpec{
 			ManagementState: managementState,
-			Images: configv1alpha1.ImagesSpec{
-				Tempo:           "docker.io/grafana/tempo:0.0.0",
-				TempoQuery:      "docker.io/grafana/tempo-query:0.0.0",
-				TempoGateway:    "quay.io/observatorium/api:0.0.0",
-				TempoGatewayOpa: "quay.io/observatorium/opa-openshift:0.0.0",
-			},
+			Images:          configv1alpha1.ImagesSpec{},
 			Storage: v1alpha1.ObjectStorageSpec{
 				Secret: v1alpha1.ObjectStorageSecretSpec{
 					Type: v1alpha1.ObjectStorageSecretS3,
@@ -82,14 +77,10 @@ func TestUpgradeToLatest(t *testing.T) {
 	upgradedTempo := v1alpha1.TempoStack{}
 	err = k8sClient.Get(context.Background(), nsn, &upgradedTempo)
 	assert.NoError(t, err)
+
+	// assert versions were updated
 	assert.Equal(t, currentV.OperatorVersion, upgradedTempo.Status.OperatorVersion)
 	assert.Equal(t, currentV.TempoVersion, upgradedTempo.Status.TempoVersion)
-
-	// assert images were updated
-	assert.Equal(t, "docker.io/grafana/tempo:latest", upgradedTempo.Spec.Images.Tempo)
-	assert.Equal(t, "docker.io/grafana/tempo-query:latest", upgradedTempo.Spec.Images.TempoQuery)
-	assert.Equal(t, "quay.io/observatorium/api:latest", upgradedTempo.Spec.Images.TempoGateway)
-	assert.Equal(t, "quay.io/observatorium/opa-openshift:latest", upgradedTempo.Spec.Images.TempoGatewayOpa)
 }
 
 func TestSkipUpgrade(t *testing.T) {

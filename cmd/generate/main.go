@@ -16,7 +16,6 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/cmd"
 	controllers "github.com/grafana/tempo-operator/controllers/tempo"
@@ -41,9 +40,9 @@ func loadSpec(r io.Reader) (v1alpha1.TempoStack, error) {
 	return spec, nil
 }
 
-func build(ctrlConfig configv1alpha1.ProjectConfig, params manifestutils.Params) ([]client.Object, error) {
+func build(params manifestutils.Params) ([]client.Object, error) {
 	// apply default values from Defaulter webhook
-	defaulterWebhook := v1alpha1.NewDefaulter(ctrlConfig)
+	defaulterWebhook := v1alpha1.NewDefaulter(params.CtrlConfig)
 	err := defaulterWebhook.Default(context.Background(), &params.Tempo)
 	if err != nil {
 		return nil, err
@@ -105,7 +104,7 @@ func toYAMLManifest(scheme *runtime.Scheme, objects []client.Object, out io.Writ
 
 func generate(c *cobra.Command, crPath string, outPath string, params manifestutils.Params) error {
 	rootCmdConfig := c.Context().Value(cmd.RootConfigKey{}).(cmd.RootConfig)
-	ctrlConfig, options := rootCmdConfig.CtrlConfig, rootCmdConfig.Options
+	options := rootCmdConfig.Options
 
 	var specReader io.Reader
 	if crPath == "/dev/stdin" {
@@ -132,7 +131,7 @@ func generate(c *cobra.Command, crPath string, outPath string, params manifestut
 	}
 
 	params.Tempo = spec
-	objects, err := build(ctrlConfig, params)
+	objects, err := build(params)
 	if err != nil {
 		return fmt.Errorf("error building manifests: %w", err)
 	}
@@ -170,12 +169,16 @@ func NewGenerateCommand() *cobra.Command {
 	var gcsBucket string
 	var s3Endpoint string
 	var s3Bucket string
-	params := manifestutils.Params{}
 
 	cmd := &cobra.Command{
 		Use:   "generate",
 		Short: "Generate YAML manifests from a Tempo CR",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(c *cobra.Command, args []string) error {
+			rootCmdConfig := c.Context().Value(cmd.RootConfigKey{}).(cmd.RootConfig)
+			params := manifestutils.Params{
+				CtrlConfig: rootCmdConfig.CtrlConfig,
+			}
+
 			switch {
 			case azureContainer != "":
 				params.StorageParams.AzureStorage = controllers.GetAzureParams(v1alpha1.TempoStack{}, &corev1.Secret{Data: map[string][]byte{
@@ -191,7 +194,8 @@ func NewGenerateCommand() *cobra.Command {
 					"bucket":   []byte(s3Bucket),
 				}})
 			}
-			return generate(cmd, crPath, outPath, params)
+
+			return generate(c, crPath, outPath, params)
 		},
 	}
 	cmd.Flags().StringVar(&crPath, "cr", "/dev/stdin", "Input CR")

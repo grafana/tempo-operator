@@ -482,9 +482,11 @@ func TestQueryFrontendJaegerRoute(t *testing.T) {
 
 func TestQueryFrontendJaegerTLS(t *testing.T) {
 	objects, err := BuildQueryFrontend(manifestutils.Params{
-		Gates: configv1alpha1.FeatureGates{
-			HTTPEncryption: true,
-			GRPCEncryption: true,
+		CtrlConfig: configv1alpha1.ProjectConfig{
+			Gates: configv1alpha1.FeatureGates{
+				HTTPEncryption: true,
+				GRPCEncryption: true,
+			},
 		},
 		Tempo: v1alpha1.TempoStack{
 			ObjectMeta: metav1.ObjectMeta{
