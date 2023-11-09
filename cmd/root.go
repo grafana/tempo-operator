@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"os"
 
 	configv1 "github.com/openshift/api/config/v1"
 	openshiftoperatorv1 "github.com/openshift/api/operator/v1"
@@ -46,6 +47,12 @@ func init() {
 func readConfig(cmd *cobra.Command, configFile string) error {
 	// default controller configuration
 	ctrlConfig := configv1alpha1.ProjectConfig{
+		DefaultImages: configv1alpha1.ImagesSpec{
+			Tempo:           os.Getenv(configv1alpha1.EnvRelatedImageTempo),
+			TempoQuery:      os.Getenv(configv1alpha1.EnvRelatedImageTempoQuery),
+			TempoGateway:    os.Getenv(configv1alpha1.EnvRelatedImageTempoGateway),
+			TempoGatewayOpa: os.Getenv(configv1alpha1.EnvRelatedImageTempoGatewayOpa),
+		},
 		Gates: configv1alpha1.FeatureGates{
 			TLSProfile: string(configv1.TLSProfileModernType),
 		},

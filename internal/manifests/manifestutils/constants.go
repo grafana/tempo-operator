@@ -25,6 +25,8 @@ const (
 	PortHTTPServer = 3200
 	// PortInternalHTTPServer declares the port number of the tempo http port.
 	PortInternalHTTPServer = 3101
+	// PortJaegerQuery declares the port number of the jaeger query UI port.
+	PortJaegerQuery = 16686
 	// TempoReadinessPath specifies the path for the readiness probe.
 	TempoReadinessPath = "/ready"
 	// TempoLivenessPath specifies the path for the liveness probe.

@@ -157,6 +157,7 @@ spec:
           - --web.internal.listen=0.0.0.0:8081
           - --traces.write.endpoint=tempo-simplest-distributor.kuttl-multitenancy.svc.cluster.local:4317
           - --traces.read.endpoint=https://tempo-simplest-query-frontend.kuttl-multitenancy.svc.cluster.local:16686
+          - --traces.tempo.endpoint=https://tempo-simplest-query-frontend.kuttl-multitenancy.svc.cluster.local:3200
           - --grpc.listen=0.0.0.0:8090
           - --rbac.config=/etc/tempo-gateway/cm/rbac.yaml
           - --tenants.config=/etc/tempo-gateway/secret/tenants.yaml

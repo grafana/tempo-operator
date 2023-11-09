@@ -27,7 +27,7 @@ spec:
             - -c
             - |
               mkdir -p /storage/tempo && \
-              minio server /storage
+              minio server --certs-dir=/root/.minio/certs /storage
           env:
             - name: MINIO_ACCESS_KEY
               value: tempo
