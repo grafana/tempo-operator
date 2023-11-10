@@ -56,7 +56,7 @@ func (r *CertRotationReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	}
 
 	checkExpiryAfter := expiryRetryAfter(rt.TargetCertRefresh)
-	log.Info("Checking if TempoStack certificates expired", "name", req.String(), "interval", checkExpiryAfter.String())
+	log.V(1).Info("Checking if TempoStack certificates expired", "name", req.String(), "interval", checkExpiryAfter.String())
 
 	var expired *certrotation.CertExpiredError
 
@@ -67,7 +67,7 @@ func (r *CertRotationReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	case err != nil:
 		return ctrl.Result{}, err
 	default:
-		log.Info("Skipping cert rotation, all TempoStack certificates still valid", "name", req.String())
+		log.V(1).Info("Skipping cert rotation, all TempoStack certificates still valid", "name", req.String())
 		return ctrl.Result{
 			RequeueAfter: checkExpiryAfter,
 		}, nil
