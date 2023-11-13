@@ -52,7 +52,7 @@ func CreateOrRotateCertificates(ctx context.Context, log logr.Logger,
 		return kverrors.Wrap(err, "failed to build certificate manifests", "name", req.String())
 	}
 
-	ll.Info("certificate manifests built", "count", len(objects))
+	ll.V(1).Info("certificate manifests built", "count", len(objects))
 
 	var errCount int32
 
