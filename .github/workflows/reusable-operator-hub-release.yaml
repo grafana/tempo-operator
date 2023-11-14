@@ -1,0 +1,92 @@
+name: Reusable - Create operator hub pull request
+
+on:
+  workflow_call:
+    inputs:
+      org:
+        type: string
+        required: true
+      repo:
+        type: string
+        required: true
+      branch:
+        type: string
+        required: true
+      oprepo:
+        type: string
+        required: true
+    secrets:
+      TEMPOOPERATORBOT_GITHUB_TOKEN:
+        required: true
+jobs:
+  create-operator-pull-request:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sync fork
+        env:
+          GH_TOKEN: ${{ secrets.TEMPOOPERATORBOT_GITHUB_TOKEN }}
+        run: |
+          # synchronizing the fork is fast, and avoids the need to fetch the full upstream repo
+          # (fetching the upstream repo with "--depth 1" would lead to "shallow update not allowed"
+          #  error when pushing back to the origin repo)
+          gh repo sync tempooperatorbot/${{ inputs.repo }} \
+              --source ${{ inputs.org }}/${{ inputs.repo }} \
+              --force
+
+      - name: Determine operator version to release
+        id: operator-version
+        run: echo "version=${BRANCH#"releases/"}" >> "$GITHUB_OUTPUT"
+        env:
+          BRANCH: ${{ inputs.branch }}
+
+
+      - name: Checkout operatorhub repo
+        uses: actions/checkout@v3
+        with:
+          repository: tempooperatorbot/${{ inputs.repo }}
+          token: ${{ secrets.TEMPOOPERATORBOT_GITHUB_TOKEN }}
+
+      - name: Checkout tempo-operator to tmp/ directory
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ inputs.oprepo }}
+          token: ${{ secrets.TEMPOOPERATORBOT_GITHUB_TOKEN }}
+          path: tmp/
+
+      - name: Update version
+        env:
+          VERSION: ${{ steps.operator-version.outputs.version }}
+        run: |
+          mkdir operators/tempo-operator/${VERSION}
+          cp -R ./tmp/bundle/* operators/tempo-operator/${VERSION}
+          rm -rf ./tmp
+
+      - name: Use CLA approved github bot
+        run: |
+          git config user.name tempobot
+          git config user.email 107717825+grafana@users.noreply.github.com
+
+      - name: Create pull request against ${{ inputs.org }}/${{ inputs.repo }}
+        env:
+          VERSION: ${{ steps.operator-version.outputs.version }}
+          GH_TOKEN: ${{ secrets.TEMPOOPERATORBOT_GITHUB_TOKEN }}
+        run: |
+          message="Update the tempo to $VERSION"
+          body="Release tempo-operator \`$VERSION\`.
+
+          cc @pavolloffay @frzifus @andreasgerstmayr @rubenvp8510 @iblancasa
+          "
+          branch="update-tempo-operator-to-${VERSION}"
+
+          # gh pr create doesn't have a way to explicitly specify different head and base
+          # repositories currently, but it will implicitly pick up the head from a different
+          # repository if you set up a tracking branch
+
+          git checkout -b $branch
+          git add -A
+          git commit -s -m "$message"
+          git push -f --set-upstream origin $branch
+          gh pr create --title "$message" \
+                       --body "$body" \
+                       --repo ${{ inputs.org }}/${{ inputs.repo }} \
+                       --base main

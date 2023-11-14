@@ -44,3 +44,25 @@ jobs:
             -F RELEASE_NOTES.md \
             "v${OPERATOR_VERSION}" \
             'dist/tempo-operator.yaml#Installation manifest for Kubernetes' \
+
+  operator-hub-prod-release:
+    needs: release
+    uses: ./.github/workflows/reusable-operator-hub-release.yaml
+    with:
+      org: redhat-openshift-ecosystem
+      repo: community-operators-prod
+      branch: ${{ github.event.pull_request.head.ref }}
+      oprepo: ${{ github.repository }}
+    secrets:
+      TEMPOOPERATORBOT_GITHUB_TOKEN: ${{ secrets.TEMPOOPERATORBOT_GITHUB_TOKEN }}
+
+  operator-hub-community-release:
+    needs: release
+    uses: ./.github/workflows/reusable-operator-hub-release.yaml
+    with:
+      org: k8s-operatorhub
+      repo: community-operators
+      branch: ${{ github.event.pull_request.head.ref }}
+      oprepo: ${{ github.repository }}
+    secrets:
+      TEMPOOPERATORBOT_GITHUB_TOKEN: ${{ secrets.TEMPOOPERATORBOT_GITHUB_TOKEN }}
