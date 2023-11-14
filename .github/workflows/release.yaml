@@ -1,17 +1,42 @@
 name: "Release"
 on:
-  push:
-    tags: [ 'v*' ]
-
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
 jobs:
   release:
+    if: |
+        github.event.pull_request.merged == true && github.event.pull_request.head.repo.full_name == github.repository
+        && github.event.pull_request.user.login == 'github-actions[bot]' && github.event.pull_request.user.type == 'Bot'
     runs-on: ubuntu-22.04
     steps:
+    - name: Determine operator version to release
+      id: operator-version
+      run: echo "version=${BRANCH#"releases/"}" >> "$GITHUB_OUTPUT"
+      env:
+        BRANCH: ${{ github.event.pull_request.head.ref }}
+
+    - name: Determine repo
+      id: repo
+      run: echo "repo=${{ github.event.pull_request.base.repo.full_name }}"
+
+    - name: Determine user
+      id: user
+      run: echo "User=${{ github.event.pull_request.user.login }}"
+
+    - name: Actor user
+      id: acctor
+      run: echo "User=${{ github.actor }}"
+
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
         go-version: "1.20"
     - uses: actions/checkout@v4
+      with:
+        ref: main
 
     - name: "generate release resources"
       run: make release-artifacts
@@ -21,8 +46,8 @@ jobs:
     - name: "create the release in GitHub"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        OPERATOR_VERSION: ${{ steps.operator-version.outputs.version }}
       run: |
-        OPERATOR_VERSION=$(git describe --tags | sed 's/^v//')
         awk '/^## / {v=$2} v == "'${OPERATOR_VERSION}'" && !/^## / {print}' CHANGELOG.md > RELEASE_NOTES.md
         gh release create \
             -t "Release v${OPERATOR_VERSION}" \
