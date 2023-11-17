@@ -163,33 +163,11 @@ func (u Upgrade) updateTempoStackCR(ctx context.Context, tempo v1alpha1.TempoSta
 		}
 	}
 
-	// update all tempo images to the new default images on every upgrade
-	updateTempoStackImages(u, &tempo)
-
 	// at the end of the upgrade process, the CR is up to date with the current running component versions (Operator, Tempo, TempoQuery)
 	// update all component versions in the Status field of the CR with the current running versions
 	updateTempoStackVersions(u, &tempo)
 
 	return tempo, nil
-}
-
-// updateTempoStackImages updates all images with the default images of the operator configuration.
-func updateTempoStackImages(u Upgrade, tempo *v1alpha1.TempoStack) {
-	if u.CtrlConfig.DefaultImages.Tempo != "" {
-		tempo.Spec.Images.Tempo = u.CtrlConfig.DefaultImages.Tempo
-	}
-
-	if u.CtrlConfig.DefaultImages.TempoQuery != "" {
-		tempo.Spec.Images.TempoQuery = u.CtrlConfig.DefaultImages.TempoQuery
-	}
-
-	if u.CtrlConfig.DefaultImages.TempoGateway != "" {
-		tempo.Spec.Images.TempoGateway = u.CtrlConfig.DefaultImages.TempoGateway
-	}
-
-	if u.CtrlConfig.DefaultImages.TempoGatewayOpa != "" {
-		tempo.Spec.Images.TempoGatewayOpa = u.CtrlConfig.DefaultImages.TempoGatewayOpa
-	}
 }
 
 // updateTempoStackVersions updates all component versions in the CR with the current running component versions.

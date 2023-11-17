@@ -152,7 +152,7 @@ func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, log logr.Logg
 	managedObjects, err := manifests.BuildAll(manifestutils.Params{
 		Tempo:               tempo,
 		StorageParams:       storageConfig,
-		Gates:               r.CtrlConfig.Gates,
+		CtrlConfig:          r.CtrlConfig,
 		TLSProfile:          tlsProfile,
 		GatewayTenantSecret: tenantSecrets,
 		GatewayTenantsData:  gatewayTenantsData,

@@ -62,12 +62,12 @@ func TestRbacConfig(t *testing.T) {
 		StorageParams:       manifestutils.StorageParams{},
 		ConfigChecksum:      "",
 		Tempo:               tempo,
-		Gates:               configv1alpha1.FeatureGates{},
+		CtrlConfig:          configv1alpha1.ProjectConfig{},
 		TLSProfile:          tlsprofile.TLSProfileOptions{},
 		GatewayTenantSecret: []*manifestutils.GatewayTenantOIDCSecret{},
 	}
 
-	cfgOpts := newOptions(params.Tempo, params.Gates.OpenShift.BaseDomain, params.GatewayTenantSecret, params.GatewayTenantsData)
+	cfgOpts := newOptions(params.Tempo, params.CtrlConfig.Gates.OpenShift.BaseDomain, params.GatewayTenantSecret, params.GatewayTenantsData)
 	tenantsCfg, _, err := buildConfigFiles(cfgOpts)
 	assert.NoError(t, err)
 
@@ -113,12 +113,12 @@ func TestTenantsConfig(t *testing.T) {
 		StorageParams:       manifestutils.StorageParams{},
 		ConfigChecksum:      "",
 		Tempo:               tempo,
-		Gates:               configv1alpha1.FeatureGates{},
+		CtrlConfig:          configv1alpha1.ProjectConfig{},
 		TLSProfile:          tlsprofile.TLSProfileOptions{},
 		GatewayTenantSecret: []*manifestutils.GatewayTenantOIDCSecret{},
 	}
 
-	cfgOpts := newOptions(params.Tempo, params.Gates.OpenShift.BaseDomain, params.GatewayTenantSecret, params.GatewayTenantsData)
+	cfgOpts := newOptions(params.Tempo, params.CtrlConfig.Gates.OpenShift.BaseDomain, params.GatewayTenantSecret, params.GatewayTenantsData)
 	_, tenantsCfg, err := buildConfigFiles(cfgOpts)
 	assert.NoError(t, err)
 
@@ -158,11 +158,13 @@ func TestBuildGateway_openshift(t *testing.T) {
 	}
 	objects, err := BuildGateway(manifestutils.Params{
 		Tempo: tempo,
-		Gates: configv1alpha1.FeatureGates{
-			OpenShift: configv1alpha1.OpenShiftFeatureGates{
-				ServingCertsService: true,
-				OpenShiftRoute:      true,
-				BaseDomain:          "domain",
+		CtrlConfig: configv1alpha1.ProjectConfig{
+			Gates: configv1alpha1.FeatureGates{
+				OpenShift: configv1alpha1.OpenShiftFeatureGates{
+					ServingCertsService: true,
+					OpenShiftRoute:      true,
+					BaseDomain:          "domain",
+				},
 			},
 		},
 	})
@@ -418,10 +420,12 @@ func TestTLSParameters(t *testing.T) {
 	// test with TLS
 	objects, err := BuildGateway(manifestutils.Params{
 		Tempo: tempo,
-		Gates: configv1alpha1.FeatureGates{
-			HTTPEncryption: true,
-			OpenShift: configv1alpha1.OpenShiftFeatureGates{
-				BaseDomain: "domain",
+		CtrlConfig: configv1alpha1.ProjectConfig{
+			Gates: configv1alpha1.FeatureGates{
+				HTTPEncryption: true,
+				OpenShift: configv1alpha1.OpenShiftFeatureGates{
+					BaseDomain: "domain",
+				},
 			},
 		},
 	})
@@ -449,10 +453,12 @@ func TestTLSParameters(t *testing.T) {
 	// test without TLS
 	objects, err = BuildGateway(manifestutils.Params{
 		Tempo: tempo,
-		Gates: configv1alpha1.FeatureGates{
-			HTTPEncryption: false,
-			OpenShift: configv1alpha1.OpenShiftFeatureGates{
-				BaseDomain: "domain",
+		CtrlConfig: configv1alpha1.ProjectConfig{
+			Gates: configv1alpha1.FeatureGates{
+				HTTPEncryption: false,
+				OpenShift: configv1alpha1.OpenShiftFeatureGates{
+					BaseDomain: "domain",
+				},
 			},
 		},
 	})

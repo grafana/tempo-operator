@@ -38,6 +38,6 @@ func (o TLSProfileOptions) MinVersionShort() (string, error) {
 	case string(openshiftconfigv1.VersionTLS13):
 		return "1.3", nil
 	default:
-		return "", errors.New("invalid TLS version")
+		return "", ErrInvalidTLSVersion
 	}
 }

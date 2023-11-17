@@ -47,7 +47,7 @@ func fromRateLimitSpecToRateLimitOptionsMap(ratemaps map[string]v1alpha1.RateLim
 
 func buildQueryFrontEndConfig(params manifestutils.Params) ([]byte, error) {
 	if !params.Tempo.Spec.Template.Gateway.Enabled {
-		params.Gates.HTTPEncryption = false
+		params.CtrlConfig.Gates.HTTPEncryption = false
 	}
 
 	return buildConfiguration(params)
@@ -58,7 +58,7 @@ func buildConfiguration(params manifestutils.Params) ([]byte, error) {
 	tlsopts := tlsOptions{}
 	var err error
 
-	if params.Gates.GRPCEncryption || params.Gates.HTTPEncryption {
+	if params.CtrlConfig.Gates.GRPCEncryption || params.CtrlConfig.Gates.HTTPEncryption {
 		tlsopts, err = buildTLSConfig(params)
 		if err != nil {
 			return []byte{}, err
@@ -79,8 +79,8 @@ func buildConfiguration(params manifestutils.Params) ([]byte, error) {
 		Multitenancy:           tempo.Spec.Tenants != nil,
 		Gateway:                tempo.Spec.Template.Gateway.Enabled,
 		Gates: featureGates{
-			GRPCEncryption: params.Gates.GRPCEncryption,
-			HTTPEncryption: params.Gates.HTTPEncryption,
+			GRPCEncryption: params.CtrlConfig.Gates.GRPCEncryption,
+			HTTPEncryption: params.CtrlConfig.Gates.HTTPEncryption,
 		},
 		TLS:         tlsopts,
 		ReceiverTLS: buildReceiverTLSConfig(tempo),
@@ -151,8 +151,8 @@ func buildTempoQueryConfig(params manifestutils.Params) ([]byte, error) {
 		TLS:      tlsopts,
 		HTTPPort: manifestutils.PortHTTPServer,
 		Gates: featureGates{
-			GRPCEncryption: params.Gates.GRPCEncryption,
-			HTTPEncryption: params.Gates.HTTPEncryption,
+			GRPCEncryption: params.CtrlConfig.Gates.GRPCEncryption,
+			HTTPEncryption: params.CtrlConfig.Gates.HTTPEncryption,
 		},
 		TenantHeader: manifestutils.TenantHeader,
 		Gateway:      params.Tempo.Spec.Template.Gateway.Enabled,

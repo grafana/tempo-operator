@@ -26,7 +26,7 @@ func BuildQuerier(params manifestutils.Params) ([]client.Object, error) {
 		return nil, err
 	}
 
-	gates := params.Gates
+	gates := params.CtrlConfig.Gates
 	tempo := params.Tempo
 
 	if gates.HTTPEncryption || gates.GRPCEncryption {
@@ -48,6 +48,10 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 	labels := manifestutils.ComponentLabels(manifestutils.QuerierComponentName, tempo.Name)
 	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
 	cfg := tempo.Spec.Template.Querier
+	image := tempo.Spec.Images.Tempo
+	if image == "" {
+		image = params.CtrlConfig.DefaultImages.Tempo
+	}
 
 	d := &v1.Deployment{
 		TypeMeta: metav1.TypeMeta{
@@ -75,7 +79,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 					Containers: []corev1.Container{
 						{
 							Name:  "tempo",
-							Image: tempo.Spec.Images.Tempo,
+							Image: image,
 							Args: []string{
 								"-target=querier",
 								"-config.file=/conf/tempo.yaml",
@@ -93,7 +97,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 									Protocol:      corev1.ProtocolTCP,
 								},
 							},
-							ReadinessProbe: manifestutils.TempoReadinessProbe(params.Gates.HTTPEncryption),
+							ReadinessProbe: manifestutils.TempoReadinessProbe(params.CtrlConfig.Gates.HTTPEncryption),
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      manifestutils.ConfigVolumeName,

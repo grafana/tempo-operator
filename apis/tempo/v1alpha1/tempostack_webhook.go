@@ -74,31 +74,6 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 	}
 	r.Labels["tempo.grafana.com/distribution"] = d.ctrlConfig.Distribution
 
-	if r.Spec.Images.Tempo == "" {
-		if d.ctrlConfig.DefaultImages.Tempo == "" {
-			return fmt.Errorf("please specify a tempo image in the CR or in the %s env var", v1alpha1.EnvRelatedImageTempo)
-		}
-		r.Spec.Images.Tempo = d.ctrlConfig.DefaultImages.Tempo
-	}
-	if r.Spec.Images.TempoQuery == "" {
-		if d.ctrlConfig.DefaultImages.TempoQuery == "" {
-			return fmt.Errorf("please specify a tempoQuery image in the CR or in the %s env var", v1alpha1.EnvRelatedImageTempoQuery)
-		}
-		r.Spec.Images.TempoQuery = d.ctrlConfig.DefaultImages.TempoQuery
-	}
-	if r.Spec.Images.TempoGateway == "" {
-		if d.ctrlConfig.DefaultImages.TempoGateway == "" {
-			return fmt.Errorf("please specify a tempoGateway image in the CR or in the %s env var", v1alpha1.EnvRelatedImageTempoGateway)
-		}
-		r.Spec.Images.TempoGateway = d.ctrlConfig.DefaultImages.TempoGateway
-	}
-	if r.Spec.Images.TempoGatewayOpa == "" {
-		if d.ctrlConfig.DefaultImages.TempoGatewayOpa == "" {
-			return fmt.Errorf("please specify a tempoGatewayOpa image in the CR or in the %s env var", v1alpha1.EnvRelatedImageTempoGatewayOpa)
-		}
-		r.Spec.Images.TempoGatewayOpa = d.ctrlConfig.DefaultImages.TempoGatewayOpa
-	}
-
 	if r.Spec.ServiceAccount == "" {
 		r.Spec.ServiceAccount = naming.DefaultServiceAccountName(r.Name)
 	}

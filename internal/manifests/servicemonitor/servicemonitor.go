@@ -37,7 +37,7 @@ func buildServiceMonitor(params manifestutils.Params, component string, port str
 	scheme := "http"
 	var tlsConfig *monitoringv1.TLSConfig
 
-	if params.Gates.HTTPEncryption {
+	if params.CtrlConfig.Gates.HTTPEncryption {
 		scheme = "https"
 		serverName := naming.ServiceFqdn(tempo.Namespace, tempo.Name, component)
 

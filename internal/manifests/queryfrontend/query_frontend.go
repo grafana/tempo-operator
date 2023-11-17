@@ -47,7 +47,7 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 	if err != nil {
 		return nil, err
 	}
-	gates := params.Gates
+	gates := params.CtrlConfig.Gates
 	tempo := params.Tempo
 
 	if gates.HTTPEncryption || gates.GRPCEncryption {
@@ -97,6 +97,14 @@ func deployment(params manifestutils.Params) (*appsv1.Deployment, error) {
 	labels := manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, tempo.Name)
 	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
 	cfg := tempo.Spec.Template.QueryFrontend
+	tempoImage := tempo.Spec.Images.Tempo
+	if tempoImage == "" {
+		tempoImage = params.CtrlConfig.DefaultImages.Tempo
+	}
+	tempoQueryImage := tempo.Spec.Images.TempoQuery
+	if tempoQueryImage == "" {
+		tempoQueryImage = params.CtrlConfig.DefaultImages.TempoQuery
+	}
 
 	d := &appsv1.Deployment{
 		TypeMeta: metav1.TypeMeta{
@@ -124,7 +132,7 @@ func deployment(params manifestutils.Params) (*appsv1.Deployment, error) {
 					Containers: []corev1.Container{
 						{
 							Name:  "tempo",
-							Image: tempo.Spec.Images.Tempo,
+							Image: tempoImage,
 							Args: []string{
 								"-target=query-frontend",
 								"-config.file=/conf/tempo-query-frontend.yaml",
@@ -143,7 +151,7 @@ func deployment(params manifestutils.Params) (*appsv1.Deployment, error) {
 									Protocol:      corev1.ProtocolTCP,
 								},
 							},
-							ReadinessProbe: manifestutils.TempoReadinessProbe(params.Gates.HTTPEncryption && params.Tempo.Spec.Template.Gateway.Enabled),
+							ReadinessProbe: manifestutils.TempoReadinessProbe(params.CtrlConfig.Gates.HTTPEncryption && params.Tempo.Spec.Template.Gateway.Enabled),
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      manifestutils.ConfigVolumeName,
@@ -185,7 +193,7 @@ func deployment(params manifestutils.Params) (*appsv1.Deployment, error) {
 	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled {
 		jaegerQueryContainer := corev1.Container{
 			Name:  "tempo-query",
-			Image: tempo.Spec.Images.TempoQuery,
+			Image: tempoQueryImage,
 			Args: []string{
 				"--query.base-path=/",
 				"--grpc-storage-plugin.configuration-file=/conf/tempo-query.yaml",
@@ -236,7 +244,7 @@ func deployment(params manifestutils.Params) (*appsv1.Deployment, error) {
 			}...)
 		}
 
-		if params.Gates.HTTPEncryption && tempo.Spec.Template.Gateway.Enabled {
+		if params.CtrlConfig.Gates.HTTPEncryption && tempo.Spec.Template.Gateway.Enabled {
 			jaegerQueryContainer.Args = append(jaegerQueryContainer.Args,
 				"--query.http.tls.enabled=true",
 				fmt.Sprintf("--query.http.tls.key=%s/tls.key", manifestutils.TempoServerTLSDir()),
@@ -245,7 +253,7 @@ func deployment(params manifestutils.Params) (*appsv1.Deployment, error) {
 			)
 		}
 
-		if params.Gates.GRPCEncryption && tempo.Spec.Template.Gateway.Enabled {
+		if params.CtrlConfig.Gates.GRPCEncryption && tempo.Spec.Template.Gateway.Enabled {
 			jaegerQueryContainer.Args = append(jaegerQueryContainer.Args,
 				"--query.grpc.tls.enabled=true",
 				fmt.Sprintf("--query.grpc.tls.key=%s/tls.key", manifestutils.TempoServerTLSDir()),

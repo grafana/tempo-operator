@@ -11,7 +11,7 @@ type Params struct {
 	StorageParams       StorageParams
 	ConfigChecksum      string
 	Tempo               v1alpha1.TempoStack
-	Gates               configv1alpha1.FeatureGates
+	CtrlConfig          configv1alpha1.ProjectConfig
 	TLSProfile          tlsprofile.TLSProfileOptions
 	GatewayTenantSecret []*GatewayTenantOIDCSecret
 	GatewayTenantsData  []*GatewayTenantsData

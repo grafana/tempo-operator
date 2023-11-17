@@ -24,7 +24,7 @@ func BuildDistributor(params manifestutils.Params) ([]client.Object, error) {
 	if err != nil {
 		return nil, err
 	}
-	gates := params.Gates
+	gates := params.CtrlConfig.Gates
 	tempo := params.Tempo
 	if gates.HTTPEncryption || gates.GRPCEncryption {
 		caBundleName := naming.SigningCABundleName(tempo.Name)
@@ -125,6 +125,10 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 	labels := manifestutils.ComponentLabels(manifestutils.DistributorComponentName, tempo.Name)
 	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
 	cfg := tempo.Spec.Template.Distributor
+	image := tempo.Spec.Images.Tempo
+	if image == "" {
+		image = params.CtrlConfig.DefaultImages.Tempo
+	}
 
 	containerPorts := []corev1.ContainerPort{
 		{
@@ -207,14 +211,14 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 					Containers: []corev1.Container{
 						{
 							Name:  "tempo",
-							Image: tempo.Spec.Images.Tempo,
+							Image: image,
 							Args: []string{
 								"-target=distributor",
 								"-config.file=/conf/tempo.yaml",
 								"-log.level=info",
 							},
 							Ports:          containerPorts,
-							ReadinessProbe: manifestutils.TempoReadinessProbe(params.Gates.HTTPEncryption),
+							ReadinessProbe: manifestutils.TempoReadinessProbe(params.CtrlConfig.Gates.HTTPEncryption),
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      manifestutils.ConfigVolumeName,
