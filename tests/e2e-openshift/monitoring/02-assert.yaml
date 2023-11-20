@@ -128,9 +128,7 @@ metadata:
   namespace: kuttl-monitoring
 spec:
   endpoints:
-  - bearerTokenSecret:
-      key: ""
-    path: /metrics
+  - path: /metrics
     port: http
     relabelings:
     - sourceLabels:
@@ -177,9 +175,7 @@ metadata:
   namespace: kuttl-monitoring
 spec:
   endpoints:
-  - bearerTokenSecret:
-      key: ""
-    path: /metrics
+  - path: /metrics
     port: http
     relabelings:
     - sourceLabels:
@@ -226,9 +222,7 @@ metadata:
   namespace: kuttl-monitoring
 spec:
   endpoints:
-  - bearerTokenSecret:
-      key: ""
-    path: /metrics
+  - path: /metrics
     port: http
     relabelings:
     - sourceLabels:
@@ -275,9 +269,7 @@ metadata:
   namespace: kuttl-monitoring
 spec:
   endpoints:
-  - bearerTokenSecret:
-      key: ""
-    path: /metrics
+  - path: /metrics
     port: http
     relabelings:
     - sourceLabels:
@@ -324,9 +316,7 @@ metadata:
   namespace: kuttl-monitoring
 spec:
   endpoints:
-  - bearerTokenSecret:
-      key: ""
-    path: /metrics
+  - path: /metrics
     port: http
     relabelings:
     - sourceLabels:
