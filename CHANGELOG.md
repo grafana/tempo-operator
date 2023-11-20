@@ -3,6 +3,26 @@ Changes by Version
 
 <!-- next version -->
 
+## 0.6.0
+
+### 🛑 Breaking changes 🛑
+
+- `operator`: Move default images from operator configuration to environment variable (#591)
+- `operator`: Unset (default) images in TempoStack CR (#674)
+  This upgrade reverts any change to the `spec.images` fields of any TempoStack instance.
+  Beginning with version 0.6.0, the image location is not stored in the TempoStack instance unless it is changed manually.
+  
+
+### 💡 Enhancements 💡
+
+- `operator`: Support configuration of TLS in receiver settings (#527)
+- `operator`: Exposing the Tempo API through the gateway (#672)
+- `operator`: Reduce log level of certrotation messages (#623)
+- `operator`: Upgrade tempo to v2.3.0 (#688)
+
+### Components
+- Tempo: [v2.3.0](https://github.com/grafana/tempo/releases/tag/v2.3.0)
+
 ## 0.5.0
 
 ### 🛑 Breaking changes 🛑
