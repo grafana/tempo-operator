@@ -1,0 +1,30 @@
+name: "Publish to operatorHUB"
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: version of the operator to publish
+        required: true
+
+jobs:
+  operator-hub-prod-release:
+    uses: ./.github/workflows/reusable-operator-hub-release.yaml
+    with:
+      org: redhat-openshift-ecosystem
+      repo: community-operators-prod
+      branch: releases/${{inputs.version}}
+      oprepo: ${{ github.repository }}
+      bundletype: openshift
+    secrets:
+      TEMPOOPERATORBOT_GITHUB_TOKEN: ${{ secrets.TEMPOOPERATORBOT_GITHUB_TOKEN }}
+
+  operator-hub-community-release:
+    uses: ./.github/workflows/reusable-operator-hub-release.yaml
+    with:
+      org: k8s-operatorhub
+      repo: community-operators
+      branch: $ releases/${{inputs.version}}
+      oprepo: ${{ github.repository }}
+      bundletype: community
+    secrets:
+      TEMPOOPERATORBOT_GITHUB_TOKEN: ${{ secrets.TEMPOOPERATORBOT_GITHUB_TOKEN }}

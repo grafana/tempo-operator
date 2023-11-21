@@ -53,6 +53,7 @@ jobs:
       repo: community-operators-prod
       branch: ${{ github.event.pull_request.head.ref }}
       oprepo: ${{ github.repository }}
+      bundletype: openshift
     secrets:
       TEMPOOPERATORBOT_GITHUB_TOKEN: ${{ secrets.TEMPOOPERATORBOT_GITHUB_TOKEN }}
 
@@ -64,5 +65,6 @@ jobs:
       repo: community-operators
       branch: ${{ github.event.pull_request.head.ref }}
       oprepo: ${{ github.repository }}
+      bundletype: community
     secrets:
       TEMPOOPERATORBOT_GITHUB_TOKEN: ${{ secrets.TEMPOOPERATORBOT_GITHUB_TOKEN }}
