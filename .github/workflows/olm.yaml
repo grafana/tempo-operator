@@ -23,7 +23,7 @@ jobs:
     with:
       org: k8s-operatorhub
       repo: community-operators
-      branch: $ releases/${{inputs.version}}
+      branch: releases/${{inputs.version}}
       oprepo: ${{ github.repository }}
       bundletype: community
     secrets:
