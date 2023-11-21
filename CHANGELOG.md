@@ -20,6 +20,10 @@ Changes by Version
 - `operator`: Reduce log level of certrotation messages (#623)
 - `operator`: Upgrade tempo to v2.3.0 (#688)
 
+### 🧰 Bug fixes 🧰
+
+- `gateway`: fix CVE-2023-45142 tempo-gateway-container: opentelemetry: DoS vulnerability in otelhttp (#691)
+
 ### Components
 - Tempo: [v2.3.0](https://github.com/grafana/tempo/releases/tag/v2.3.0)
 
