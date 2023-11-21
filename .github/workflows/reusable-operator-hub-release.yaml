@@ -56,7 +56,7 @@ jobs:
           token: ${{ secrets.TEMPOOPERATORBOT_GITHUB_TOKEN }}
           path: tmp/
 
-      - nazºme: Update version
+      - name: Update version
         env:
           VERSION: ${{ steps.operator-version.outputs.version }}
           BUNDLE_TYPE: ${{ inputs.bundletype }}
