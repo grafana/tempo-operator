@@ -75,8 +75,8 @@ type OpenShiftFeatureGates struct {
 	// More details: https://docs.openshift.com/container-platform/latest/networking/understanding-networking.html
 	OpenShiftRoute bool `json:"openshiftRoute,omitempty"`
 
-	// BaseDomain is used internally for redirect URL in gateway OpenShift auth mode.
-	// If empty the operator automatically derives the domain from the cluster.
+	// BaseDomain is used internally for redirect URL in gateway OpenShift auth mode and as Ingress host.
+	// If empty and the route is enabled the operator automatically derives the domain from the cluster.
 	BaseDomain string `json:"baseDomain,omitempty"`
 
 	// ClusterTLSPolicy enables usage of TLS policies set in the API Server.

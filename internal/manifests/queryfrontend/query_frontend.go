@@ -73,7 +73,7 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 		//exhaustive:ignore
 		switch tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type {
 		case v1alpha1.IngressTypeIngress:
-			manifests = append(manifests, ingress(tempo))
+			manifests = append(manifests, ingress(tempo, params.CtrlConfig.Gates.OpenShift.BaseDomain))
 		case v1alpha1.IngressTypeRoute:
 			routeObj, err := route(tempo)
 			if err != nil {
@@ -433,7 +433,7 @@ func services(tempo v1alpha1.TempoStack) []*corev1.Service {
 	return []*corev1.Service{frontEndService, frontEndDiscoveryService}
 }
 
-func ingress(tempo v1alpha1.TempoStack) *networkingv1.Ingress {
+func ingress(tempo v1alpha1.TempoStack, openshiftBaseDomain string) *networkingv1.Ingress {
 	queryFrontendName := naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name)
 	labels := manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, tempo.Name)
 
@@ -449,6 +449,12 @@ func ingress(tempo v1alpha1.TempoStack) *networkingv1.Ingress {
 		},
 	}
 
+	host := tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Host
+	// On OpenShift always use baseDomain, but on kubernetes it should be possible to configure the default backend
+	if host == "" && openshiftBaseDomain != "" {
+		host = fmt.Sprintf("%s-%s.%s", tempo.Name, tempo.Namespace, openshiftBaseDomain)
+	}
+
 	backend := networkingv1.IngressBackend{
 		Service: &networkingv1.IngressServiceBackend{
 			Name: queryFrontendName,
@@ -458,13 +464,13 @@ func ingress(tempo v1alpha1.TempoStack) *networkingv1.Ingress {
 		},
 	}
 
-	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Host == "" {
+	if host == "" {
 		ingress.Spec.DefaultBackend = &backend
 	} else {
 		pathType := networkingv1.PathTypePrefix
 		ingress.Spec.Rules = []networkingv1.IngressRule{
 			{
-				Host: tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Host,
+				Host: host,
 				IngressRuleValue: networkingv1.IngressRuleValue{
 					HTTP: &networkingv1.HTTPIngressRuleValue{
 						Paths: []networkingv1.HTTPIngressPath{

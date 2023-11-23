@@ -772,8 +772,8 @@ string
 
 <td>
 
-<p>BaseDomain is used internally for redirect URL in gateway OpenShift auth mode.
-If empty the operator automatically derives the domain from the cluster.</p>
+<p>BaseDomain is used internally for redirect URL in gateway OpenShift auth mode and as Ingress host.
+If empty and the route is enabled the operator automatically derives the domain from the cluster.</p>
 
 </td>
 </tr>

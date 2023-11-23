@@ -99,7 +99,7 @@ func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, log logr.Logg
 		}
 	}
 
-	if tempo.Spec.Tenants != nil && tempo.Spec.Tenants.Mode == v1alpha1.ModeOpenShift && r.CtrlConfig.Gates.OpenShift.BaseDomain == "" {
+	if r.CtrlConfig.Gates.OpenShift.OpenShiftRoute && r.CtrlConfig.Gates.OpenShift.BaseDomain == "" {
 		domain, err := gateway.GetOpenShiftBaseDomain(ctx, r.Client)
 		if err != nil {
 			return err

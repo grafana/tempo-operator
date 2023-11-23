@@ -434,6 +434,69 @@ func TestQueryFrontendJaegerIngress(t *testing.T) {
 	}, objects[3].(*networkingv1.Ingress))
 }
 
+func TestQueryFrontendJaegerIngressEmptyHostOpenShift(t *testing.T) {
+	tempo := v1alpha1.TempoStack{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test",
+			Namespace: "project1",
+		},
+		Spec: v1alpha1.TempoStackSpec{
+			Template: v1alpha1.TempoTemplateSpec{
+				QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+					JaegerQuery: v1alpha1.JaegerQuerySpec{
+						Enabled: true,
+						Ingress: v1alpha1.IngressSpec{
+							Type: v1alpha1.IngressTypeIngress,
+							Host: "",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	ing := ingress(tempo, "apps-crc.testing")
+	require.NotNil(t, ing)
+	pathType := networkingv1.PathTypePrefix
+	assert.Equal(t, &networkingv1.Ingress{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "tempo-test-query-frontend",
+			Namespace: "project1",
+			Labels: map[string]string{
+				"app.kubernetes.io/component":  "query-frontend",
+				"app.kubernetes.io/instance":   "test",
+				"app.kubernetes.io/managed-by": "tempo-operator",
+				"app.kubernetes.io/name":       "tempo",
+			},
+		},
+		Spec: networkingv1.IngressSpec{
+			Rules: []networkingv1.IngressRule{
+				{
+					Host: "test-project1.apps-crc.testing",
+					IngressRuleValue: networkingv1.IngressRuleValue{
+						HTTP: &networkingv1.HTTPIngressRuleValue{
+							Paths: []networkingv1.HTTPIngressPath{
+								{
+									Path:     "/",
+									PathType: &pathType,
+									Backend: networkingv1.IngressBackend{
+										Service: &networkingv1.IngressServiceBackend{
+											Name: "tempo-test-query-frontend",
+											Port: networkingv1.ServiceBackendPort{
+												Name: "jaeger-ui",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}, ing)
+}
+
 func TestQueryFrontendJaegerRoute(t *testing.T) {
 	objects, err := BuildQueryFrontend(manifestutils.Params{Tempo: v1alpha1.TempoStack{
 		ObjectMeta: metav1.ObjectMeta{
