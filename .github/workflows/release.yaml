@@ -5,6 +5,8 @@ on:
       - main
     types:
       - closed
+    paths:
+      - CHANGELOG.md
 jobs:
   release:
     if: |
