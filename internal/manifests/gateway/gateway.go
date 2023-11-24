@@ -8,6 +8,7 @@ import (
 	"path"
 
 	"github.com/imdario/mergo"
+	"github.com/operator-framework/operator-lib/proxy"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
@@ -165,6 +166,7 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 						{
 							Name:  "tempo-gateway",
 							Image: image,
+							Env:   proxy.ReadProxyVarsFromEnv(),
 							Args: append([]string{
 								fmt.Sprintf("--traces.tenant-header=%s", manifestutils.TenantHeader),
 								fmt.Sprintf("--web.listen=0.0.0.0:%d", portPublic),

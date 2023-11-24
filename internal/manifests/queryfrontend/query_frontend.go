@@ -6,6 +6,7 @@ import (
 
 	"github.com/imdario/mergo"
 	routev1 "github.com/openshift/api/route/v1"
+	"github.com/operator-framework/operator-lib/proxy"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
@@ -133,6 +134,7 @@ func deployment(params manifestutils.Params) (*appsv1.Deployment, error) {
 						{
 							Name:  "tempo",
 							Image: tempoImage,
+							Env:   proxy.ReadProxyVarsFromEnv(),
 							Args: []string{
 								"-target=query-frontend",
 								"-config.file=/conf/tempo-query-frontend.yaml",
@@ -194,6 +196,7 @@ func deployment(params manifestutils.Params) (*appsv1.Deployment, error) {
 		jaegerQueryContainer := corev1.Container{
 			Name:  "tempo-query",
 			Image: tempoQueryImage,
+			Env:   proxy.ReadProxyVarsFromEnv(),
 			Args: []string{
 				"--query.base-path=/",
 				"--grpc-storage-plugin.configuration-file=/conf/tempo-query.yaml",

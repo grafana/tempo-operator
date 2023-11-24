@@ -109,6 +109,7 @@ func TestBuildCompactor(t *testing.T) {
 						{
 							Name:  "tempo",
 							Image: "docker.io/grafana/tempo:1.5.0",
+							Env:   []corev1.EnvVar{},
 							Args: []string{
 								"-target=compactor",
 								"-config.file=/conf/tempo.yaml",

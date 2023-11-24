@@ -500,6 +500,7 @@ func TestBuildDistributor(t *testing.T) {
 										"-config.file=/conf/tempo.yaml",
 										"-log.level=info",
 									},
+									Env:          []corev1.EnvVar{},
 									VolumeMounts: ts.expectedVolumeMounts,
 									Ports:        ts.expectedContainerPorts,
 									ReadinessProbe: &corev1.Probe{

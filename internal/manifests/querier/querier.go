@@ -1,6 +1,7 @@
 package querier
 
 import (
+	"github.com/operator-framework/operator-lib/proxy"
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -80,6 +81,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 						{
 							Name:  "tempo",
 							Image: image,
+							Env:   proxy.ReadProxyVarsFromEnv(),
 							Args: []string{
 								"-target=querier",
 								"-config.file=/conf/tempo.yaml",

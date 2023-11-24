@@ -145,6 +145,7 @@ func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 						{
 							Name:  "tempo",
 							Image: "docker.io/grafana/tempo:1.5.0",
+							Env:   []corev1.EnvVar{},
 							Args: []string{
 								"-target=query-frontend",
 								"-config.file=/conf/tempo-query-frontend.yaml",
@@ -215,6 +216,7 @@ func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 		jaegerQueryContainer := corev1.Container{
 			Name:  "tempo-query",
 			Image: "docker.io/grafana/tempo-query:1.5.0",
+			Env:   []corev1.EnvVar{},
 			Args: []string{
 				"--query.base-path=/",
 				"--grpc-storage-plugin.configuration-file=/conf/tempo-query.yaml",
@@ -548,6 +550,7 @@ func TestBuildQueryFrontendWithJaegerMonitorTab(t *testing.T) {
 					},
 				},
 			},
+			env:  []corev1.EnvVar{},
 			args: []string{"--query.base-path=/", "--grpc-storage-plugin.configuration-file=/conf/tempo-query.yaml", "--query.bearer-token-propagation=true"},
 		},
 		{
