@@ -42,7 +42,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator
-    createdAt: "2023-12-07T18:32:18Z"
+    createdAt: "2023-12-07T19:15:21Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -87,6 +87,20 @@ spec:
         name: ""
         version: v1
       specDescriptors:
+      - description: HashRing defines the spec for the distributed hash ring configuration.
+        displayName: Hash Ring
+        path: hashRing
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:advanced
+      - description: MemberList configuration spec
+        displayName: Memberlist Config
+        path: hashRing.memberlist
+      - description: EnableIPv6 enables IPv6 support for the memberlist based hash
+          ring.
+        displayName: Enable IPv6
+        path: hashRing.memberlist.enableIPv6
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
       - description: Images defines the image for each container.
         displayName: Container Images
         path: images

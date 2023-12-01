@@ -90,6 +90,13 @@ type TempoStackSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Search configuration options"
 	SearchSpec SearchSpec `json:"search,omitempty"`
 
+	// HashRing defines the spec for the distributed hash ring configuration.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors="urn:alm:descriptor:com.tectonic.ui:advanced",displayName="Hash Ring"
+	HashRing HashRingSpec `json:"hashRing,omitempty"`
+
 	// Template defines requirements for a set of tempo components.
 	//
 	// +optional
@@ -410,6 +417,26 @@ type ObjectStorageTLSSpec struct {
 	// +kubebuilder:validation:optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors="urn:alm:descriptor:io.kubernetes:ConfigMap",displayName="CA ConfigMap Name"
 	CA string `json:"caName,omitempty"`
+}
+
+// MemberListSpec defines the configuration for the memberlist based hash ring.
+type MemberListSpec struct {
+	// EnableIPv6 enables IPv6 support for the memberlist based hash ring.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch",displayName="Enable IPv6"
+	EnableIPv6 *bool `json:"enableIPv6,omitempty"`
+}
+
+// HashRingSpec defines the hash ring configuration.
+type HashRingSpec struct {
+	// MemberList configuration spec
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Memberlist Config"
+	MemberList MemberListSpec `json:"memberlist,omitempty"`
 }
 
 // ReceiversTLSSpec is the TLS configuration for the receivers.

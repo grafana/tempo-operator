@@ -53,6 +53,19 @@ spec:
           spec:
             description: TempoStackSpec defines the desired state of TempoStack.
             properties:
+              hashRing:
+                description: HashRing defines the spec for the distributed hash ring
+                  configuration.
+                properties:
+                  memberlist:
+                    description: MemberList configuration spec
+                    properties:
+                      enableIPv6:
+                        description: EnableIPv6 enables IPv6 support for the memberlist
+                          based hash ring.
+                        type: boolean
+                    type: object
+                type: object
               images:
                 description: Images defines the image for each container.
                 properties:

@@ -4,6 +4,9 @@ compactor:
   ring:
     kvstore:
       store: memberlist
+    {{- if .MemberList.EnableIPv6 }}
+    enable_inet6: true
+    {{- end}}
 distributor:
   receivers:
 {{- if not .Gateway }}
@@ -89,11 +92,14 @@ ingester:
         store: memberlist
       replication_factor: {{ .ReplicationFactor }}
     tokens_file_path: /var/tempo/tokens.json
+    {{- if .MemberList.EnableIPv6 }}
+    enable_inet6: true
+    {{- end}}
   max_block_duration: 10m
 memberlist:
   abort_if_cluster_join_fails: false
   join_members:
-  {{- range .MemberList }}
+  {{- range .MemberList.JoinMembers }}
   - {{ . }}
   {{- end }}
 multitenancy_enabled: {{ .Multitenancy }}
