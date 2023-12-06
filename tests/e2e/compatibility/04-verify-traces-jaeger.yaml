@@ -1,12 +1,13 @@
+# Simulate Jaeger Query API requests.
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: verify-traces
+  name: verify-traces-jaeger
 spec:
   template:
     spec:
       containers:
-      - name: verify-traces
+      - name: verify-traces-jaeger
         image: ghcr.io/grafana/tempo-operator/test-utils:main
         command:
         - /bin/bash
