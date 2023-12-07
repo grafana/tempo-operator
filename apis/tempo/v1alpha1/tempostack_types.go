@@ -178,7 +178,7 @@ type TracingConfigSpec struct {
 }
 
 type GrafanaConfigSpec struct {
-	// CreateDatasource specifies if a Datasource should be created for Tempo.
+	// CreateDatasource specifies if a Grafana Datasource should be created for Tempo.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional

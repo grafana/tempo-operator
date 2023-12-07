@@ -286,6 +286,7 @@ func (v *validator) validateGateway(tempo TempoStack) field.ErrorList {
 func (v *validator) validateObservability(tempo TempoStack) field.ErrorList {
 	observabilityBase := field.NewPath("spec").Child("observability")
 	metricsBase := observabilityBase.Child("metrics")
+	grafanaBase := observabilityBase.Child("grafana")
 
 	if tempo.Spec.Observability.Metrics.CreateServiceMonitors && !v.ctrlConfig.Gates.PrometheusOperator {
 		return field.ErrorList{
@@ -335,7 +336,7 @@ func (v *validator) validateObservability(tempo TempoStack) field.ErrorList {
 
 	if tempo.Spec.Observability.Grafana.CreateDatasource && !v.ctrlConfig.Gates.GrafanaOperator {
 		return field.ErrorList{
-			field.Invalid(metricsBase.Child("createDatasource"), tempo.Spec.Observability.Grafana.CreateDatasource,
+			field.Invalid(grafanaBase.Child("createDatasource"), tempo.Spec.Observability.Grafana.CreateDatasource,
 				"the grafanaOperator feature gate must be enabled to create a Datasource for Tempo",
 			)}
 	}

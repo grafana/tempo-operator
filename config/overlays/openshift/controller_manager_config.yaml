@@ -25,7 +25,7 @@ featureGates:
     openshiftRoute: true
     servingCertsService: true
   prometheusOperator: true
-  grafanaOperator: true
+  grafanaOperator: false
   httpEncryption: true
   grpcEncryption: true
   tlsProfile: Modern

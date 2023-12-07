@@ -1,4 +1,4 @@
-package datasource
+package grafana
 
 import (
 	grafanav1 "github.com/grafana-operator/grafana-operator/v5/api/v1beta1"
