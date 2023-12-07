@@ -7,7 +7,6 @@ require (
 	github.com/ViaQ/logerr/v2 v2.1.0
 	github.com/go-logr/logr v1.3.0
 	github.com/go-logr/zapr v1.3.0
-	github.com/grafana-operator/grafana-operator/v5 v5.5.2
 	github.com/imdario/mergo v0.3.16
 	github.com/novln/docker-parser v1.0.0
 	github.com/onsi/ginkgo/v2 v2.13.2
@@ -39,7 +38,6 @@ require (
 
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/blang/semver v3.5.1+incompatible // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/emicklei/go-restful/v3 v3.11.0 // indirect
