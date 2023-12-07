@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/go-logr/logr"
+	grafanav1 "github.com/grafana-operator/grafana-operator/v5/api/v1beta1"
 	routev1 "github.com/openshift/api/route/v1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -267,6 +268,17 @@ func (r *TempoStackReconciler) findObjectsOwnedByTempoOperator(ctx context.Conte
 		}
 		for i := range routesList.Items {
 			ownedObjects[routesList.Items[i].GetUID()] = &routesList.Items[i]
+		}
+	}
+
+	if r.CtrlConfig.Gates.GrafanaOperator {
+		datasourceList := &grafanav1.DatasourceList{}
+		err := r.List(ctx, datasourceList, listOps)
+		if err != nil {
+			return nil, fmt.Errorf("error listing datasources: %w", err)
+		}
+		for i := range datasourceList.Items {
+			ownedObjects[datasourceList.Items[i].GetUID()] = datasourceList.Items[i]
 		}
 	}
 

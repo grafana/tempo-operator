@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"strings"
 
-	grafanav1 "github.com/grafana-operator/grafana-operator/v5/api/v1beta1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	v1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -138,22 +137,6 @@ func (r *OperatorReconciler) pruneObjects(ctx context.Context, featureGates conf
 				err = r.Delete(ctx, obj, &client.DeleteOptions{})
 				if err != nil {
 					return fmt.Errorf("failed to prune prometheus rule: %w", err)
-				}
-			}
-		}
-	}
-
-	if featureGates.GrafanaOperator {
-		if featureGates.Observability.Grafana.CreateDatasources {
-			datasourceList := &grafanav1.DatasourceList{}
-			err := r.List(ctx, datasourceList, listOps)
-			if err != nil {
-				return fmt.Errorf("error listing datasources: %w", err)
-			}
-			for _, obj := range datasourceList.Items {
-				err = r.Delete(ctx, obj, &client.DeleteOptions{})
-				if err != nil {
-					return fmt.Errorf("failed to prune datasource: %w", err)
 				}
 			}
 		}
