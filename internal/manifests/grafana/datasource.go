@@ -28,7 +28,7 @@ func BuildGrafanaDatasource(params manifestutils.Params) (*grafanav1.GrafanaData
 				Access: "proxy",
 				Name:  params.Tempo.Name,
 				Type: "tempo",
-				URL:  fmt.Sprintf("https://%s:%d", naming.ServiceFqdn(params.Tempo.Namespace, params.Tempo.Name, manifestutils.QueryFrontendComponentName), manifestutils.PortHTTPServer),
+				URL:  fmt.Sprintf("https://%s:%d", naming.ServiceFqdn(params.Tempo.Namespace, params.Tempo.Name, url), manifestutils.PortHTTPServer),
 				JSONData: json.RawMessage(fmt.Sprintf(`{"tlsSkipVerify": %t}`, tlsSkipVerify)),
 			},
 			InstanceSelector: metav1.LabelSelector{
