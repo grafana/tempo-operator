@@ -38,7 +38,7 @@ func TestBuildGrafanaDatasource(t *testing.T) {
 				Access:   "proxy",
 				Name:     "test",
 				Type:     "tempo",
-				URL:      "https://tempo-test-query-frontend.svc:3200",
+				URL:      "https://tempo-test-query-frontend.tempo.svc.cluster.local:3200",
 				JSONData: json.RawMessage(fmt.Sprintf(`{"tlsSkipVerify": %t}`, true)),
 			},
 			InstanceSelector: &metav1.LabelSelector{

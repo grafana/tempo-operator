@@ -13,11 +13,9 @@ import (
 // BuildGrafanaDatasource creates a Datasource for Grafana Tempo.
 func BuildGrafanaDatasource(params manifestutils.Params) (*grafanav1.GrafanaDatasource, error) {
 	var tlsSkipVerify = true
-	var url = naming.Name(manifestutils.QueryFrontendComponentName, params.Tempo.Name)
 	var component = manifestutils.QueryFrontendComponentName
 
 	if params.Tempo.Spec.Template.Gateway.Enabled {
-		url = naming.Name(manifestutils.GatewayComponentName, params.Tempo.Name)
 		component = manifestutils.GatewayComponentName
 	}
 
@@ -32,7 +30,7 @@ func BuildGrafanaDatasource(params manifestutils.Params) (*grafanav1.GrafanaData
 				Access:   "proxy",
 				Name:     params.Tempo.Name,
 				Type:     "tempo",
-				URL:      fmt.Sprintf("https://%s:%d", naming.ServiceFqdn(params.Tempo.Namespace, params.Tempo.Name, url), manifestutils.PortHTTPServer),
+				URL:      fmt.Sprintf("https://%s:%d", naming.ServiceFqdn(params.Tempo.Namespace, params.Tempo.Name, component), manifestutils.PortHTTPServer),
 				JSONData: json.RawMessage(fmt.Sprintf(`{"tlsSkipVerify": %t}`, tlsSkipVerify)),
 			},
 			InstanceSelector: &metav1.LabelSelector{
