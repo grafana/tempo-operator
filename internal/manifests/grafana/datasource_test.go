@@ -29,7 +29,7 @@ func TestBuildGrafanaDatasource(t *testing.T) {
 	assert.NotNil(t, datasource)
 	assert.Equal(t, &grafanav1.GrafanaDatasource{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "tempo-test-query-frontend",
+			Name:      "test",
 			Namespace: "tempo",
 			Labels:    labels,
 		},
@@ -38,14 +38,10 @@ func TestBuildGrafanaDatasource(t *testing.T) {
 				Access:   "proxy",
 				Name:     "test",
 				Type:     "tempo",
-				URL:      "https://tempo-test-query-frontend.tempo.svc.cluster.local:3200",
+				URL:      "http://tempo-test-query-frontend.tempo.svc.cluster.local:3200",
 				JSONData: json.RawMessage(fmt.Sprintf(`{"tlsSkipVerify": %t}`, true)),
 			},
-			InstanceSelector: &metav1.LabelSelector{
-				MatchLabels: map[string]string{
-					"app.kubernetes.io/name": "tempo-operator",
-				},
-			},
+			InstanceSelector: &metav1.LabelSelector{},
 		},
 	}, datasource)
 }

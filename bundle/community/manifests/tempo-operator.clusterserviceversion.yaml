@@ -42,7 +42,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator
-    createdAt: "2023-11-20T13:45:36Z"
+    createdAt: "2023-12-07T18:57:13Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -201,6 +201,17 @@ spec:
       - description: ObservabilitySpec defines how telemetry data gets handled.
         displayName: Observability
         path: observability
+      - description: Grafana defines the Grafana configuration for operands.
+        displayName: Grafana Config
+        path: observability.grafana
+      - description: CreateDatasource specifies if a Grafana Datasource should be
+          created for Tempo.
+        displayName: Create Datasource for Tempo
+        path: observability.grafana.createDatasource
+      - description: InstanceSelector specifies the Grafana instance where the datasource
+          should be created.
+        displayName: Create CreateDatasource for Tempo
+        path: observability.grafana.instanceSelector
       - description: Metrics defines the metrics configuration for operands.
         displayName: Metrics Config
         path: observability.metrics
@@ -223,13 +234,6 @@ spec:
           0 to 1.
         displayName: Sampling Fraction
         path: observability.tracing.sampling_fraction
-      - description: Grafana defines the grafana configuration for operands.
-        displayName: Grafana Config
-        path: observability.grafana
-      - description: createDatasource specifies if a DataSource should be created
-          for Tempo.
-        displayName: Create DataSource for Tempo
-        path: observability.grafana.createDatasource
       - description: 'NOTE: currently this field is not considered. ReplicationFactor
           is used to define how many component replicas should exist.'
         displayName: Replication Factor
@@ -650,6 +654,18 @@ spec:
           verbs:
           - get
           - list
+          - watch
+        - apiGroups:
+          - grafana.integreatly.org
+          resources:
+          - grafanadatasources
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
           - watch
         - apiGroups:
           - monitoring.coreos.com

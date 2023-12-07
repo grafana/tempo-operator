@@ -30,7 +30,7 @@ require (
 )
 
 require (
-	github.com/openshift/api v3.9.0+incompatible
+	github.com/openshift/api v3.9.0+incompatible // release-4.14
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.70.0
 	github.com/stretchr/testify v1.8.4
 	gopkg.in/yaml.v3 v3.0.1 // indirect
