@@ -272,13 +272,13 @@ func (r *TempoStackReconciler) findObjectsOwnedByTempoOperator(ctx context.Conte
 	}
 
 	if r.CtrlConfig.Gates.GrafanaOperator {
-		datasourceList := &grafanav1.DatasourceList{}
+		datasourceList := &grafanav1.GrafanaDatasourceList{}
 		err := r.List(ctx, datasourceList, listOps)
 		if err != nil {
 			return nil, fmt.Errorf("error listing datasources: %w", err)
 		}
 		for i := range datasourceList.Items {
-			ownedObjects[datasourceList.Items[i].GetUID()] = datasourceList.Items[i]
+			ownedObjects[datasourceList.Items[i].GetUID()] = &datasourceList.Items[i]
 		}
 	}
 
