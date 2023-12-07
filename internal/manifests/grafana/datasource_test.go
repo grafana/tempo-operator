@@ -7,6 +7,7 @@ import (
 
 	grafanav1 "github.com/grafana-operator/grafana-operator/v5/api/v1beta1"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
@@ -23,7 +24,8 @@ func TestBuildGrafanaDatasource(t *testing.T) {
 	}})
 	labels := manifestutils.CommonLabels("test")
 
-	assert.Nil(t, err)
+	require.NoError(t, err)
+
 	assert.NotNil(t, datasource)
 	assert.Equal(t, &grafanav1.GrafanaDatasource{
 		ObjectMeta: metav1.ObjectMeta{
