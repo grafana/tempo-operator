@@ -4,7 +4,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
-	"github.com/grafana/tempo-operator/internal/manifests/operator/grafana"
 	"github.com/grafana/tempo-operator/internal/manifests/operator/prometheus"
 )
 
@@ -23,15 +22,6 @@ func BuildAll(featureGates configv1alpha1.FeatureGates, namespace string) ([]cli
 		}
 
 		manifests = append(manifests, prometheusRule)
-	}
-
-	if featureGates.Observability.Grafana.CreateDatasources {
-		datasources, err := grafana.Datasource(featureGates, namespace)
-		if err != nil {
-			return nil, err
-		}
-
-		manifests = append(manifests, datasources)
 	}
 
 	return manifests, nil

@@ -82,5 +82,13 @@ func BuildAll(params manifestutils.Params) ([]client.Object, error) {
 		manifests = append(manifests, prometheusRuleObjs...)
 	}
 
+	if params.Tempo.Spec.Observability.Grafana.CreateDatasources {
+		grafanaDatasourceObjs, err := datasource.BuildGrafanaDatasource(params)
+		if err != nil {
+			return nil, err
+		}
+		manifests = append(manifests, grafanaDatasourceObjs...)
+	}
+
 	return manifests, nil
 }
