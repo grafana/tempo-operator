@@ -4,6 +4,7 @@ import (
 	"reflect"
 
 	"github.com/ViaQ/logerr/v2/kverrors"
+	grafanav1 "github.com/grafana-operator/grafana-operator/v5/api/v1beta1"
 	"github.com/imdario/mergo"
 	routev1 "github.com/openshift/api/route/v1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
@@ -113,6 +114,11 @@ func MutateFuncFor(existing, desired client.Object) controllerutil.MutateFn {
 			wantPr := desired.(*corev1.Secret)
 			mutateSecret(pr, wantPr)
 
+		case *grafanav1.GrafanaDatasource:
+			ds := existing.(*grafanav1.GrafanaDatasource)
+			wantDs := desired.(*grafanav1.GrafanaDatasource)
+			mutateGrafanaDatasource(ds, wantDs)
+
 		default:
 			t := reflect.TypeOf(existing).String()
 			return kverrors.New("missing mutate implementation for resource type", "type", t)
@@ -190,6 +196,12 @@ func mutateRoute(existing, desired *routev1.Route) {
 }
 
 func mutatePrometheusRule(existing, desired *monitoringv1.PrometheusRule) {
+	existing.Annotations = desired.Annotations
+	existing.Labels = desired.Labels
+	existing.Spec = desired.Spec
+}
+
+func mutateGrafanaDatasource(existing, desired *grafanav1.GrafanaDatasource) {
 	existing.Annotations = desired.Annotations
 	existing.Labels = desired.Labels
 	existing.Spec = desired.Spec

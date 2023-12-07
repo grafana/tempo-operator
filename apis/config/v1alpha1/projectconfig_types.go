@@ -186,6 +186,10 @@ type FeatureGates struct {
 
 	// Observability configures observability features of the operator.
 	Observability ObservabilityFeatureGates `json:"observability,omitempty"`
+
+	// GrafanaOperator defines whether the Grafana Operator CRD exists in the cluster.
+	// This CRD is part of grafana-operator.
+	GrafanaOperator bool `json:"grafanaOperator,omitempty"`
 }
 
 //+kubebuilder:object:root=true

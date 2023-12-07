@@ -8,6 +8,7 @@ import (
 	"github.com/grafana/tempo-operator/internal/manifests/config"
 	"github.com/grafana/tempo-operator/internal/manifests/distributor"
 	"github.com/grafana/tempo-operator/internal/manifests/gateway"
+	"github.com/grafana/tempo-operator/internal/manifests/grafana"
 	"github.com/grafana/tempo-operator/internal/manifests/ingester"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/manifests/memberlist"
@@ -80,6 +81,14 @@ func BuildAll(params manifestutils.Params) ([]client.Object, error) {
 			return nil, err
 		}
 		manifests = append(manifests, prometheusRuleObjs...)
+	}
+
+	if params.Tempo.Spec.Observability.Grafana.CreateDatasource {
+		grafanaDatasource, err := grafana.BuildGrafanaDatasource(params)
+		if err != nil {
+			return nil, err
+		}
+		manifests = append(manifests, grafanaDatasource)
 	}
 
 	return manifests, nil

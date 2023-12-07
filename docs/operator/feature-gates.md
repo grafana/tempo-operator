@@ -413,6 +413,28 @@ ObservabilityFeatureGates
 </td>
 </tr>
 
+<tr>
+
+<td>
+
+<code>grafanaOperator</code><br/>
+
+<em>
+
+bool
+
+</em>
+
+</td>
+
+<td>
+
+<p>GrafanaOperator defines whether the Grafana Operator CRD exists in the cluster.
+This CRD is part of grafana-operator.</p>
+
+</td>
+</tr>
+
 </tbody>
 </table>
 

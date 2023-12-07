@@ -568,6 +568,89 @@ Feature Gates.ProjectConfig
 </tbody>
 </table>
 
+## GrafanaConfigSpec { #tempo-grafana-com-v1alpha1-GrafanaConfigSpec }
+
+<p>
+
+(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-ObservabilitySpec">ObservabilitySpec</a>)
+
+</p>
+
+<div>
+
+<p>GrafanaConfigSpec defines configuration for Grafana.</p>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Field</th>
+
+<th>Description</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td>
+
+<code>createDatasource</code><br/>
+
+<em>
+
+bool
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>CreateDatasource specifies if a Grafana Datasource should be created for Tempo.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>instanceSelector</code><br/>
+
+<em>
+
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#labelselector-v1-meta">
+
+Kubernetes meta/v1.LabelSelector
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>InstanceSelector specifies the Grafana instance where the datasource should be created.</p>
+
+</td>
+</tr>
+
+</tbody>
+</table>
+
 ## IngestionLimitSpec { #tempo-grafana-com-v1alpha1-IngestionLimitSpec }
 
 <p>
@@ -1854,6 +1937,33 @@ TracingConfigSpec
 <em>(Optional)</em>
 
 <p>Tracing defines a config for operands.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>grafana</code><br/>
+
+<em>
+
+<a href="#tempo-grafana-com-v1alpha1-GrafanaConfigSpec">
+
+GrafanaConfigSpec
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>Grafana defines the Grafana configuration for operands.</p>
 
 </td>
 </tr>

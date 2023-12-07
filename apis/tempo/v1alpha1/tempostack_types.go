@@ -133,6 +133,13 @@ type ObservabilitySpec struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tracing Config"
 	Tracing TracingConfigSpec `json:"tracing,omitempty"`
+
+	// Grafana defines the Grafana configuration for operands.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Grafana Config"
+	Grafana GrafanaConfigSpec `json:"grafana,omitempty"`
 }
 
 // MetricsConfigSpec defines a metrics config.
@@ -168,6 +175,23 @@ type TracingConfigSpec struct {
 	// +kubebuilder:default:="localhost:6831"
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger-Agent-Endpoint"
 	JaegerAgentEndpoint string `json:"jaeger_agent_endpoint,omitempty"`
+}
+
+// GrafanaConfigSpec defines configuration for Grafana.
+type GrafanaConfigSpec struct {
+	// CreateDatasource specifies if a Grafana Datasource should be created for Tempo.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Create Datasource for Tempo"
+	CreateDatasource bool `json:"createDatasource,omitempty"`
+
+	// InstanceSelector specifies the Grafana instance where the datasource should be created.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Create CreateDatasource for Tempo"
+	InstanceSelector metav1.LabelSelector `json:"instanceSelector,omitempty"`
 }
 
 // PodStatusMap defines the type for mapping pod status to pod name.

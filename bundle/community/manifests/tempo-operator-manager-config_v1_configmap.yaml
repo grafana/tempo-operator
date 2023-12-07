@@ -28,6 +28,7 @@ data:
         openshiftRoute: false
         servingCertsService: false
       prometheusOperator: false
+      grafanaOperator: false
       httpEncryption: true
       grpcEncryption: true
       tlsProfile: Modern
@@ -45,6 +46,8 @@ data:
         metrics:
           createServiceMonitors: false
           createPrometheusRules: false
+        grafana:
+          createDatasource: false
 kind: ConfigMap
 metadata:
   labels:

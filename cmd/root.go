@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	grafanav1 "github.com/grafana-operator/grafana-operator/v5/api/v1beta1"
 	configv1 "github.com/openshift/api/config/v1"
 	openshiftoperatorv1 "github.com/openshift/api/operator/v1"
 	routev1 "github.com/openshift/api/route/v1"
@@ -41,6 +42,7 @@ func init() {
 	utilruntime.Must(openshiftoperatorv1.Install(scheme))
 	utilruntime.Must(configv1.Install(scheme))
 	utilruntime.Must(monitoringv1.AddToScheme(scheme))
+	utilruntime.Must(grafanav1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 

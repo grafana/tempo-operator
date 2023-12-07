@@ -7,6 +7,7 @@ require (
 	github.com/ViaQ/logerr/v2 v2.1.0
 	github.com/go-logr/logr v1.3.0
 	github.com/go-logr/zapr v1.3.0
+	github.com/grafana-operator/grafana-operator/v5 v5.5.2
 	github.com/imdario/mergo v0.3.16
 	github.com/novln/docker-parser v1.0.0
 	github.com/onsi/ginkgo/v2 v2.13.2
@@ -29,7 +30,7 @@ require (
 )
 
 require (
-	github.com/openshift/api v0.0.0-20230223193310-d964c7a58d75 // release-4.14
+	github.com/openshift/api v3.9.0+incompatible // release-4.14
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.70.0
 	github.com/stretchr/testify v1.8.4
 	gopkg.in/yaml.v3 v3.0.1 // indirect
@@ -38,6 +39,7 @@ require (
 
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
+	github.com/blang/semver v3.5.1+incompatible // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/emicklei/go-restful/v3 v3.11.0 // indirect
@@ -94,3 +96,5 @@ replace github.com/bradfitz/gomemcache => github.com/themihai/gomemcache v0.0.0-
 // Some funtionalities of the collector have been made internal and it's more difficult to build and configure pipelines in the newer versions.
 // This is a temporary solution while a new configuration design is discussed for the collector (ref: https://github.com/open-telemetry/opentelemetry-collector/issues/3482).
 replace go.opentelemetry.io/collector => github.com/grafana/opentelemetry-collector v0.4.1-0.20220315084747-b05fe1477960
+
+replace github.com/openshift/api => github.com/openshift/api v0.0.0-20230223193310-d964c7a58d75
