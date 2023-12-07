@@ -651,6 +651,66 @@ Kubernetes meta/v1.LabelSelector
 </tbody>
 </table>
 
+## HashRingSpec { #tempo-grafana-com-v1alpha1-HashRingSpec }
+
+<p>
+
+(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-TempoStackSpec">TempoStackSpec</a>)
+
+</p>
+
+<div>
+
+<p>HashRingSpec defines the hash ring configuration.</p>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Field</th>
+
+<th>Description</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td>
+
+<code>memberlist</code><br/>
+
+<em>
+
+<a href="#tempo-grafana-com-v1alpha1-MemberListSpec">
+
+MemberListSpec
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>MemberList configuration spec</p>
+
+</td>
+</tr>
+
+</tbody>
+</table>
+
 ## IngestionLimitSpec { #tempo-grafana-com-v1alpha1-IngestionLimitSpec }
 
 <p>
@@ -1308,6 +1368,62 @@ reconciled by the operator.</p>
 </td>
 
 </tr></tbody>
+</table>
+
+## MemberListSpec { #tempo-grafana-com-v1alpha1-MemberListSpec }
+
+<p>
+
+(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-HashRingSpec">HashRingSpec</a>)
+
+</p>
+
+<div>
+
+<p>MemberListSpec defines the configuration for the memberlist based hash ring.</p>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Field</th>
+
+<th>Description</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td>
+
+<code>enableIPv6</code><br/>
+
+<em>
+
+bool
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>EnableIPv6 enables IPv6 support for the memberlist based hash ring.</p>
+
+</td>
+</tr>
+
+</tbody>
 </table>
 
 ## MetricsConfigSpec { #tempo-grafana-com-v1alpha1-MetricsConfigSpec }
@@ -3895,6 +4011,33 @@ SearchSpec
 <em>(Optional)</em>
 
 <p>SearchSpec control the configuration for the search capabilities.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>hashRing</code><br/>
+
+<em>
+
+<a href="#tempo-grafana-com-v1alpha1-HashRingSpec">
+
+HashRingSpec
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>HashRing defines the spec for the distributed hash ring configuration.</p>
 
 </td>
 </tr>

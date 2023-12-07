@@ -7,6 +7,8 @@ import (
 	"html/template"
 	"io"
 
+	"k8s.io/utils/ptr"
+
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
@@ -69,8 +71,9 @@ func buildConfiguration(params manifestutils.Params) ([]byte, error) {
 		StorageType:     string(tempo.Spec.Storage.Secret.Type),
 		StorageParams:   params.StorageParams,
 		GlobalRetention: tempo.Spec.Retention.Global.Traces.Duration.String(),
-		MemberList: []string{
-			naming.Name("gossip-ring", tempo.Name),
+		MemberList: memberlistOptions{
+			JoinMembers: []string{naming.Name("gossip-ring", tempo.Name)},
+			EnableIPv6:  ptr.Deref(tempo.Spec.HashRing.MemberList.EnableIPv6, false),
 		},
 		QueryFrontendDiscovery: fmt.Sprintf("%s:%d", naming.Name("query-frontend-discovery", tempo.Name), manifestutils.PortGRPCServer),
 		GlobalRateLimits:       fromRateLimitSpecToRateLimitOptions(tempo.Spec.LimitSpec.Global),

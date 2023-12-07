@@ -11,7 +11,7 @@ type options struct {
 	GlobalRateLimits       rateLimitsOptions
 	TenantRateLimitsPath   string
 	TLS                    tlsOptions
-	MemberList             []string
+	MemberList             memberlistOptions
 	Search                 searchOptions
 	ReplicationFactor      int
 	Multitenancy           bool
@@ -63,6 +63,11 @@ type tlsOptions struct {
 	Paths       tlsFilePaths
 	ServerNames serverNames
 	Profile     tlsProfileOptions
+}
+
+type memberlistOptions struct {
+	JoinMembers []string
+	EnableIPv6  bool
 }
 
 type receiverTLSOptions struct {

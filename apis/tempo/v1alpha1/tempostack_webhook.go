@@ -21,6 +21,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 
 	"github.com/grafana/tempo-operator/apis/config/v1alpha1"
+	"github.com/grafana/tempo-operator/internal/autodetect"
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
 )
 
@@ -121,6 +122,13 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 	// Terminate TLS of the JaegerQuery Route on the Edge by default
 	if r.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type == IngressTypeRoute && r.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Route.Termination == "" {
 		r.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Route.Termination = defaultUITLSTermination
+	}
+
+	// Enable IPv6 if the operator pod (and therefore most likely all other pods) only have IPv6 addresses assigned
+	if r.Spec.HashRing.MemberList.EnableIPv6 == nil {
+		if autodetect.DetectIPv6Only([]string{"eth0", "en0"}) {
+			r.Spec.HashRing.MemberList.EnableIPv6 = ptr.To(true)
+		}
 	}
 
 	return nil
