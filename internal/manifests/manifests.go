@@ -83,7 +83,7 @@ func BuildAll(params manifestutils.Params) ([]client.Object, error) {
 	}
 
 	if params.Tempo.Spec.Observability.Grafana.CreateDatasources {
-		grafanaDatasourceObjs, err := datasource.BuildGrafanaDatasource(params)
+		grafanaDatasourceObjs, err := datasource.BuildGrafanaDatasource(params.Tempo.Namespace)
 		if err != nil {
 			return nil, err
 		}

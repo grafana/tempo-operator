@@ -42,9 +42,6 @@ func (c *ProjectConfig) Validate() error {
 	if c.Gates.Observability.Metrics.CreatePrometheusRules && !c.Gates.Observability.Metrics.CreateServiceMonitors {
 		return errors.New("the Prometheus rules alert based on collected metrics, therefore the createServiceMonitors feature must be enabled when enabling the createPrometheusRules feature")
 	}
-	if c.Gates.Observability.Datasources.CreateDatasources && c.Gates.GrafanaOperator {
-		return errors.New("the grafanaOperator feature gate must be enabled to create Grafana datasources for the operator")
-	}
 
 	return nil
 }

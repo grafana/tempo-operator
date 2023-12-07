@@ -6,26 +6,27 @@ import (
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 )
 
-// Datasource creates a Datasource for Grafana Tempo.
-func Datasource(featureGates configv1alpha1.FeatureGates, namespace string) *grafanav1.GrafanaDatasource {
+// BuildGrafanaDatasource creates a Datasource for Grafana Tempo.
+func BuildGrafanaDatasource(string namespace, string name) (*grafanav1.GrafanaDatasource, error) {
 	var tlsSkipVerify = true
+	var url = naming.Name(manifestutils.QueryFrontendComponentName, name)
 
-	if featureGates.OpenShift.ServiceCertsService{
-		tlsSkipVerify = false
+	if params.Tempo.Spec.Template.Gateway.Enabled {
+		url := naming.Name(manifestutils.GatewayComponentName, name)
 	}
 
 	return &grafanav1.GrafanaDatasource{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "tempo",
-			Namespace: namespace,
+			Name:      naming.Name(component, name),
+			Namespace: namespace,,
+			Labels:    manifestutils.CommonLabels(name),
 		},
 		Spec: grafanav1.GrafanaDatasourceSpec{
 			DatasourceSpec: grafanav1.DatasourceSpec{
 				Access: "proxy",
-				Name:  "Tempo",
+				Name:  name,
 				Type: "tempo",
-				// TODO: Change URL
-				URL:  featureGates.Observability.Datasources.TempoGatewayEndpoint,
+				URL:  "http://"+url+namespace+".svc:"+manifestutils.PortHTTPServer,
 				JSONData: json.RawMessage(fmt.Sprintf(`{"tlsSkipVerify": %t}`, tlsSkipVerify)),
 			},
 			InstanceSelector: metav1.LabelSelector{
