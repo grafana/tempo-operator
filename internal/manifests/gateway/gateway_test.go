@@ -405,7 +405,7 @@ func TestPatchJaegerUI(t *testing.T) {
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{
 						{
-							Name: "first",
+							Name: containerNameTempoGateway,
 							Args: []string{
 								"--abc",
 							},
@@ -423,7 +423,7 @@ func TestPatchJaegerUI(t *testing.T) {
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{
 						{
-							Name: "first",
+							Name: containerNameTempoGateway,
 							Args: []string{
 								"--abc",
 								"--traces.read.endpoint=http://tempo-name-query-frontend.default.svc.cluster.local:16686",
@@ -462,7 +462,7 @@ func TestPatchJaegerUI(t *testing.T) {
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{
 						{
-							Name: "first",
+							Name: containerNameTempoGateway,
 							Args: []string{
 								"--abc",
 							},
@@ -474,7 +474,7 @@ func TestPatchJaegerUI(t *testing.T) {
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{
 						{
-							Name: "first",
+							Name: containerNameTempoGateway,
 							Args: []string{
 								"--abc",
 							},

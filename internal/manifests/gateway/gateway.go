@@ -119,6 +119,8 @@ func httpScheme(tls bool) string {
 	return "http"
 }
 
+const containerNameTempoGateway = "tempo-gateway"
+
 func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash string) *appsv1.Deployment {
 	tempo := params.Tempo
 	labels := manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name)
@@ -169,7 +171,7 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 					Tolerations:        cfg.Tolerations,
 					Containers: []corev1.Container{
 						{
-							Name:  "tempo-gateway",
+							Name:  containerNameTempoGateway,
 							Image: image,
 							Env:   proxy.ReadProxyVarsFromEnv(),
 							Args: append([]string{
@@ -295,6 +297,9 @@ func patchJaegerUI(params manifestutils.Params, pod corev1.PodTemplateSpec) (cor
 	}
 
 	for i := range pod.Spec.Containers {
+		if pod.Spec.Containers[i].Name != containerNameTempoGateway {
+			continue
+		}
 		if err := mergo.Merge(&pod.Spec.Containers[i], container, mergo.WithAppendSlice); err != nil {
 			return corev1.PodTemplateSpec{}, err
 		}
