@@ -61,6 +61,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 			Labels:    labels,
 		},
 		Spec: v1.DeploymentSpec{
+			Replicas: tempo.Spec.Template.Compactor.Replicas,
 			Selector: &metav1.LabelSelector{
 				MatchLabels: labels,
 			},

@@ -270,8 +270,8 @@ spec:
                     type: object
                 type: object
               replicationFactor:
-                description: 'NOTE: currently this field is not considered. ReplicationFactor
-                  is used to define how many component replicas should exist.'
+                description: ReplicationFactor is used to define how many component
+                  replicas should exist.
                 type: integer
               resources:
                 description: Resources defines resources configuration.

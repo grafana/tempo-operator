@@ -11,6 +11,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8slabels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/utils/ptr"
 
 	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
@@ -30,6 +31,7 @@ func TestBuildCompactor(t *testing.T) {
 			ServiceAccount: "tempo-test-serviceaccount",
 			Template: v1alpha1.TempoTemplateSpec{
 				Compactor: v1alpha1.TempoComponentSpec{
+					Replicas:     ptr.To(int32(2)),
 					NodeSelector: map[string]string{"a": "b"},
 					Tolerations: []corev1.Toleration{
 						{
@@ -89,6 +91,7 @@ func TestBuildCompactor(t *testing.T) {
 			Labels:    labels,
 		},
 		Spec: v1.DeploymentSpec{
+			Replicas: ptr.To(int32(2)),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: labels,
 			},

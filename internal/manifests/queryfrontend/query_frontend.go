@@ -117,6 +117,7 @@ func deployment(params manifestutils.Params) (*appsv1.Deployment, error) {
 			Labels:    labels,
 		},
 		Spec: appsv1.DeploymentSpec{
+			Replicas: tempo.Spec.Template.QueryFrontend.Replicas,
 			Selector: &metav1.LabelSelector{
 				MatchLabels: labels,
 			},
