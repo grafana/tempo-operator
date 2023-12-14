@@ -42,7 +42,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator
-    createdAt: "2023-12-07T19:15:22Z"
+    createdAt: "2023-12-13T18:24:45Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -248,8 +248,8 @@ spec:
           0 to 1.
         displayName: Sampling Fraction
         path: observability.tracing.sampling_fraction
-      - description: 'NOTE: currently this field is not considered. ReplicationFactor
-          is used to define how many component replicas should exist.'
+      - description: ReplicationFactor is used to define how many component replicas
+          should exist.
         displayName: Replication Factor
         path: replicationFactor
       - description: Resources defines resources configuration.

@@ -104,6 +104,9 @@ func TestDefault(t *testing.T) {
 						DefaultResultLimit: &defaultDefaultResultLimit,
 					},
 					Template: TempoTemplateSpec{
+						Compactor: TempoComponentSpec{
+							Replicas: ptr.To(int32(1)),
+						},
 						Distributor: TempoDistributorSpec{
 							TempoComponentSpec: TempoComponentSpec{
 								Replicas: ptr.To(int32(1)),
@@ -112,6 +115,14 @@ func TestDefault(t *testing.T) {
 						},
 						Ingester: TempoComponentSpec{
 							Replicas: ptr.To(int32(1)),
+						},
+						Querier: TempoComponentSpec{
+							Replicas: ptr.To(int32(1)),
+						},
+						QueryFrontend: TempoQueryFrontendSpec{
+							TempoComponentSpec: TempoComponentSpec{
+								Replicas: ptr.To(int32(1)),
+							},
 						},
 					},
 				},
@@ -154,6 +165,9 @@ func TestDefault(t *testing.T) {
 						DefaultResultLimit: &defaultDefaultResultLimit,
 					},
 					Template: TempoTemplateSpec{
+						Compactor: TempoComponentSpec{
+							Replicas: ptr.To(int32(1)),
+						},
 						Distributor: TempoDistributorSpec{
 							TempoComponentSpec: TempoComponentSpec{
 								Replicas: ptr.To(int32(1)),
@@ -162,6 +176,14 @@ func TestDefault(t *testing.T) {
 						},
 						Ingester: TempoComponentSpec{
 							Replicas: ptr.To(int32(1)),
+						},
+						Querier: TempoComponentSpec{
+							Replicas: ptr.To(int32(1)),
+						},
+						QueryFrontend: TempoQueryFrontendSpec{
+							TempoComponentSpec: TempoComponentSpec{
+								Replicas: ptr.To(int32(1)),
+							},
 						},
 					},
 				},
@@ -209,6 +231,9 @@ func TestDefault(t *testing.T) {
 						DefaultResultLimit: &defaultDefaultResultLimit,
 					},
 					Template: TempoTemplateSpec{
+						Compactor: TempoComponentSpec{
+							Replicas: ptr.To(int32(1)),
+						},
 						Distributor: TempoDistributorSpec{
 							TempoComponentSpec: TempoComponentSpec{
 								Replicas: ptr.To(int32(1)),
@@ -218,7 +243,13 @@ func TestDefault(t *testing.T) {
 						Ingester: TempoComponentSpec{
 							Replicas: ptr.To(int32(1)),
 						},
+						Querier: TempoComponentSpec{
+							Replicas: ptr.To(int32(1)),
+						},
 						QueryFrontend: TempoQueryFrontendSpec{
+							TempoComponentSpec: TempoComponentSpec{
+								Replicas: ptr.To(int32(1)),
+							},
 							JaegerQuery: JaegerQuerySpec{
 								Enabled: true,
 								Ingress: IngressSpec{

@@ -95,14 +95,21 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 	defaultComponentReplicas := ptr.To(int32(1))
 	defaultReplicationFactor := 1
 
-	// Default replicas for ingester if not specified.
+	// Default replicas for all components if not specified.
 	if r.Spec.Template.Ingester.Replicas == nil {
 		r.Spec.Template.Ingester.Replicas = defaultComponentReplicas
 	}
-
-	// Default replicas for distributor if not specified.
 	if r.Spec.Template.Distributor.Replicas == nil {
 		r.Spec.Template.Distributor.Replicas = defaultComponentReplicas
+	}
+	if r.Spec.Template.Compactor.Replicas == nil {
+		r.Spec.Template.Compactor.Replicas = defaultComponentReplicas
+	}
+	if r.Spec.Template.Querier.Replicas == nil {
+		r.Spec.Template.Querier.Replicas = defaultComponentReplicas
+	}
+	if r.Spec.Template.QueryFrontend.Replicas == nil {
+		r.Spec.Template.QueryFrontend.Replicas = defaultComponentReplicas
 	}
 
 	// Default replication factor if not specified.

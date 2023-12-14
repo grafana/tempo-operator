@@ -4087,8 +4087,7 @@ int
 
 <em>(Optional)</em>
 
-<p>NOTE: currently this field is not considered.
-ReplicationFactor is used to define how many component replicas should exist.</p>
+<p>ReplicationFactor is used to define how many component replicas should exist.</p>
 
 </td>
 </tr>
