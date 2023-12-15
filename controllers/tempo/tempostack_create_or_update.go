@@ -12,7 +12,6 @@ import (
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
-	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/validation/field"
@@ -73,15 +72,6 @@ func (r *TempoStackReconciler) getStorageConfig(ctx context.Context, tempo v1alp
 	}
 
 	return params, nil
-}
-
-func isNamespaceScoped(obj client.Object) bool {
-	switch obj.(type) {
-	case *rbacv1.ClusterRole, *rbacv1.ClusterRoleBinding:
-		return false
-	default:
-		return true
-	}
 }
 
 func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, log logr.Logger, req ctrl.Request, tempo v1alpha1.TempoStack) error {

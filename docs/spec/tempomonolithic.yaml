@@ -1,0 +1,39 @@
+apiVersion: tempo.grafana.com/v1alpha1   # APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+kind: TempoMonolithic                    # Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+metadata:
+  name: example
+spec:                                    # TempoMonolithicSpec defines the desired state of TempoMonolithic.
+  extraConfig:                           # ExtraConfig defines any extra (overlay) configuration for components
+    tempo: {}                            # Tempo defines any extra Tempo configuration, which will be merged with the operator's generated Tempo configuration
+  ingestion:                             # Ingestion defines the trace ingestion configuration
+    otlp:                                # OTLP defines the ingestion configuration for OTLP
+      grpc:                              # GRPC defines the OTLP/gRPC configuration
+        enabled: false                   # Enabled defines if the OTLP over gRPC is enabled
+      http:                              # HTTP defines the OTLP/HTTP configuration
+        enabled: false                   # Enabled defines if the OTLP over HTTP is enabled
+    tls:                                 # TLS defines the TLS configuration for ingestion
+      ca: ""                             # CA defines the name of a secret containing the CA certificate
+      cert: ""                           # Cert defines the name of a secret containing the TLS certificate and private key
+      enabled: false                     # Enabled defines if TLS is enabled for ingestion
+  jaegerui:                              # JaegerUI defines the Jaeger UI configuration
+    enabled: false                       # Enabled defines if the Jaeger UI should be enabled
+    ingress:                             # Ingress defines the ingress configuration for Jaeger UI
+      enabled: false                     # Enabled defines if an Ingress object should be created for Jaeger UI
+    route:                               # Route defines the route configuration for Jaeger UI
+      enabled: false                     # Enabled defines if a Route object should be created for Jaeger UI
+  management: ""                         # ManagementState defines whether this instance is managed by the operator or self-managed
+  observability:                         # Observability defines observability configuration for the Tempo deployment
+    metrics:                             # Metrics defines the metrics configuration of the Tempo deployment
+      prometheusRules:                   # ServiceMonitors defines the PrometheusRule configuration
+        enabled: false                   # Enabled defines if the operator should create PrometheusRules for this Tempo deployment
+      serviceMonitors:                   # ServiceMonitors defines the ServiceMonitor configuration
+        enabled: false                   # Enabled defines if the operator should create ServiceMonitors for this Tempo deployment
+  storage:                               # Storage defines the backend storage configuration
+    traces:                              # Traces defines the backend storage configuration for traces
+      backend: ""                        # Backend defines the backend for storing traces
+      pv:                                # PV defines the Persistent Volume configuration
+        size: 1Gi                        # Size defines the size of the Persistent Volume for storing the traces. Defaults to 10Gi.
+      secret: ""                         # Secret defines name of a secret containing the credentials for accessing the specified backend storage
+      wal:                               # WAL defines the write-ahead logging (WAL) configuration
+        size: 1Gi                        # Size defines the size of the Persistent Volume for storing the WAL. Defaults to 10Gi.
+status:                                  # TempoMonolithicStatus defines the observed state of TempoMonolithic.

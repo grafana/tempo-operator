@@ -6,6 +6,20 @@ metadata:
       [
         {
           "apiVersion": "tempo.grafana.com/v1alpha1",
+          "kind": "TempoMonolithic",
+          "metadata": {
+            "name": "sample"
+          },
+          "spec": {
+            "storage": {
+              "traces": {
+                "backend": "memory"
+              }
+            }
+          }
+        },
+        {
+          "apiVersion": "tempo.grafana.com/v1alpha1",
           "kind": "TempoStack",
           "metadata": {
             "name": "sample"
@@ -42,7 +56,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator
-    createdAt: "2023-12-13T18:24:44Z"
+    createdAt: "2023-12-21T12:56:44Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -57,6 +71,11 @@ spec:
   apiservicedefinitions: {}
   customresourcedefinitions:
     owned:
+    - description: TempoMonolithic is the Schema for the tempomonolithics API.
+      displayName: Tempo Monolithic
+      kind: TempoMonolithic
+      name: tempomonolithics.tempo.grafana.com
+      version: v1alpha1
     - description: TempoStack is the spec for Tempo deployments.
       displayName: TempoStack
       kind: TempoStack
@@ -742,6 +761,32 @@ spec:
         - apiGroups:
           - tempo.grafana.com
           resources:
+          - tempomonolithics
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - tempo.grafana.com
+          resources:
+          - tempomonolithics/finalizers
+          verbs:
+          - update
+        - apiGroups:
+          - tempo.grafana.com
+          resources:
+          - tempomonolithics/status
+          verbs:
+          - get
+          - patch
+          - update
+        - apiGroups:
+          - tempo.grafana.com
+          resources:
           - tempostacks
           verbs:
           - create
@@ -981,6 +1026,26 @@ spec:
     containerPort: 443
     deploymentName: tempo-operator-controller
     failurePolicy: Fail
+    generateName: mtempomonolithic.kb.io
+    rules:
+    - apiGroups:
+      - tempo.grafana.com
+      apiVersions:
+      - v1alpha1
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - tempomonolithics
+    sideEffects: None
+    targetPort: 9443
+    type: MutatingAdmissionWebhook
+    webhookPath: /mutate-tempo-grafana-com-v1alpha1-tempomonolithic
+  - admissionReviewVersions:
+    - v1
+    containerPort: 443
+    deploymentName: tempo-operator-controller
+    failurePolicy: Fail
     generateName: mtempostack.tempo.grafana.com
     rules:
     - apiGroups:
@@ -996,6 +1061,26 @@ spec:
     targetPort: 9443
     type: MutatingAdmissionWebhook
     webhookPath: /mutate-tempo-grafana-com-v1alpha1-tempostack
+  - admissionReviewVersions:
+    - v1
+    containerPort: 443
+    deploymentName: tempo-operator-controller
+    failurePolicy: Fail
+    generateName: vtempomonolithic.kb.io
+    rules:
+    - apiGroups:
+      - tempo.grafana.com
+      apiVersions:
+      - v1alpha1
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - tempomonolithics
+    sideEffects: None
+    targetPort: 9443
+    type: ValidatingAdmissionWebhook
+    webhookPath: /validate-tempo-grafana-com-v1alpha1-tempomonolithic
   - admissionReviewVersions:
     - v1
     containerPort: 443

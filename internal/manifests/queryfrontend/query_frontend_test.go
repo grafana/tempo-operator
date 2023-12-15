@@ -26,19 +26,19 @@ import (
 func getJaegerServicePorts() []corev1.ServicePort {
 	jaegerServicePorts := []corev1.ServicePort{
 		{
-			Name:       jaegerGRPCQuery,
-			Port:       portJaegerGRPCQuery,
-			TargetPort: intstr.FromString(jaegerGRPCQuery),
+			Name:       manifestutils.JaegerGRPCQuery,
+			Port:       manifestutils.PortJaegerGRPCQuery,
+			TargetPort: intstr.FromString(manifestutils.JaegerGRPCQuery),
 		},
 		{
-			Name:       jaegerUIPortName,
-			Port:       portJaegerUI,
-			TargetPort: intstr.FromString(jaegerUIPortName),
+			Name:       manifestutils.JaegerUIPortName,
+			Port:       manifestutils.PortJaegerUI,
+			TargetPort: intstr.FromString(manifestutils.JaegerUIPortName),
 		},
 		{
-			Name:       jaegerMetricsPortName,
-			Port:       portJaegerMetrics,
-			TargetPort: intstr.FromString(jaegerMetricsPortName),
+			Name:       manifestutils.JaegerMetricsPortName,
+			Port:       manifestutils.PortJaegerMetrics,
+			TargetPort: intstr.FromString(manifestutils.JaegerMetricsPortName),
 		},
 	}
 	return jaegerServicePorts
@@ -226,18 +226,18 @@ func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 			},
 			Ports: []corev1.ContainerPort{
 				{
-					Name:          jaegerGRPCQuery,
-					ContainerPort: portJaegerGRPCQuery,
+					Name:          manifestutils.JaegerGRPCQuery,
+					ContainerPort: manifestutils.PortJaegerGRPCQuery,
 					Protocol:      corev1.ProtocolTCP,
 				},
 				{
-					Name:          jaegerUIPortName,
-					ContainerPort: portJaegerUI,
+					Name:          manifestutils.JaegerUIPortName,
+					ContainerPort: manifestutils.PortJaegerUI,
 					Protocol:      corev1.ProtocolTCP,
 				},
 				{
-					Name:          jaegerMetricsPortName,
-					ContainerPort: portJaegerMetrics,
+					Name:          manifestutils.JaegerMetricsPortName,
+					ContainerPort: manifestutils.PortJaegerMetrics,
 					Protocol:      corev1.ProtocolTCP,
 				},
 			},
@@ -432,7 +432,7 @@ func TestQueryFrontendJaegerIngress(t *testing.T) {
 										Service: &networkingv1.IngressServiceBackend{
 											Name: naming.Name(manifestutils.QueryFrontendComponentName, "test"),
 											Port: networkingv1.ServiceBackendPort{
-												Name: jaegerUIPortName,
+												Name: manifestutils.JaegerUIPortName,
 											},
 										},
 									},
@@ -483,7 +483,7 @@ func TestQueryFrontendJaegerRoute(t *testing.T) {
 				Name: naming.Name(manifestutils.QueryFrontendComponentName, "test"),
 			},
 			Port: &routev1.RoutePort{
-				TargetPort: intstr.FromString(jaegerUIPortName),
+				TargetPort: intstr.FromString(manifestutils.JaegerUIPortName),
 			},
 			TLS: &routev1.TLSConfig{
 				Termination: routev1.TLSTerminationEdge,

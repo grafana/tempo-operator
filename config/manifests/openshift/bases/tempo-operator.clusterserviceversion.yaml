@@ -18,6 +18,11 @@ spec:
   apiservicedefinitions: {}
   customresourcedefinitions:
     owned:
+    - description: TempoMonolithic is the Schema for the tempomonolithics API.
+      displayName: Tempo Monolithic
+      kind: TempoMonolithic
+      name: tempomonolithics.tempo.grafana.com
+      version: v1alpha1
     - description: TempoStack is the spec for Tempo deployments.
       displayName: TempoStack
       kind: TempoStack

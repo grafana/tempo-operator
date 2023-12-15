@@ -1,0 +1,228 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.9.2
+  creationTimestamp: null
+  labels:
+    app.kubernetes.io/managed-by: operator-lifecycle-manager
+    app.kubernetes.io/name: tempo-operator
+    app.kubernetes.io/part-of: tempo-operator
+  name: tempomonolithics.tempo.grafana.com
+spec:
+  group: tempo.grafana.com
+  names:
+    kind: TempoMonolithic
+    listKind: TempoMonolithicList
+    plural: tempomonolithics
+    singular: tempomonolithic
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: TempoMonolithic is the Schema for the tempomonolithics API.
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: TempoMonolithicSpec defines the desired state of TempoMonolithic.
+            properties:
+              extraConfig:
+                description: ExtraConfig defines any extra (overlay) configuration
+                  for components
+                properties:
+                  tempo:
+                    description: Tempo defines any extra Tempo configuration, which
+                      will be merged with the operator's generated Tempo configuration
+                    x-kubernetes-preserve-unknown-fields: true
+                type: object
+              ingestion:
+                description: Ingestion defines the trace ingestion configuration
+                properties:
+                  otlp:
+                    description: OTLP defines the ingestion configuration for OTLP
+                    properties:
+                      grpc:
+                        description: GRPC defines the OTLP/gRPC configuration
+                        properties:
+                          enabled:
+                            description: Enabled defines if OTLP over gRPC is enabled
+                            type: boolean
+                        required:
+                        - enabled
+                        type: object
+                      http:
+                        description: HTTP defines the OTLP/HTTP configuration
+                        properties:
+                          enabled:
+                            description: Enabled defines if OTLP over HTTP is enabled
+                            type: boolean
+                        required:
+                        - enabled
+                        type: object
+                    type: object
+                  tls:
+                    description: TLS defines the TLS configuration for ingestion
+                    properties:
+                      ca:
+                        description: CA defines the name of a secret containing the
+                          CA certificate
+                        minLength: 1
+                        type: string
+                      cert:
+                        description: Cert defines the name of a secret containing
+                          the TLS certificate and private key
+                        minLength: 1
+                        type: string
+                      enabled:
+                        description: Enabled defines if TLS is enabled for ingestion
+                        type: boolean
+                    required:
+                    - ca
+                    - cert
+                    - enabled
+                    type: object
+                type: object
+              jaegerui:
+                description: JaegerUI defines the Jaeger UI configuration
+                properties:
+                  enabled:
+                    description: Enabled defines if the Jaeger UI should be enabled
+                    type: boolean
+                  ingress:
+                    description: Ingress defines the ingress configuration for Jaeger
+                      UI
+                    properties:
+                      enabled:
+                        description: Enabled defines if an Ingress object should be
+                          created for Jaeger UI
+                        type: boolean
+                    required:
+                    - enabled
+                    type: object
+                  route:
+                    description: Route defines the route configuration for Jaeger
+                      UI
+                    properties:
+                      enabled:
+                        description: Enabled defines if a Route object should be created
+                          for Jaeger UI
+                        type: boolean
+                    required:
+                    - enabled
+                    type: object
+                required:
+                - enabled
+                type: object
+              management:
+                description: ManagementState defines whether this instance is managed
+                  by the operator or self-managed
+                enum:
+                - Managed
+                - Unmanaged
+                type: string
+              observability:
+                description: Observability defines observability configuration for
+                  the Tempo deployment
+                properties:
+                  metrics:
+                    description: Metrics defines the metrics configuration of the
+                      Tempo deployment
+                    properties:
+                      prometheusRules:
+                        description: ServiceMonitors defines the PrometheusRule configuration
+                        properties:
+                          enabled:
+                            description: Enabled defines if the operator should create
+                              PrometheusRules for this Tempo deployment
+                            type: boolean
+                        required:
+                        - enabled
+                        type: object
+                      serviceMonitors:
+                        description: ServiceMonitors defines the ServiceMonitor configuration
+                        properties:
+                          enabled:
+                            description: Enabled defines if the operator should create
+                              ServiceMonitors for this Tempo deployment
+                            type: boolean
+                        required:
+                        - enabled
+                        type: object
+                    type: object
+                type: object
+              storage:
+                description: Storage defines the backend storage configuration
+                properties:
+                  traces:
+                    description: Traces defines the backend storage configuration
+                      for traces
+                    properties:
+                      backend:
+                        description: Backend defines the backend for storing traces
+                        enum:
+                        - memory
+                        - pv
+                        type: string
+                      pv:
+                        description: PV defines the Persistent Volume configuration
+                        properties:
+                          size:
+                            anyOf:
+                            - type: integer
+                            - type: string
+                            description: Size defines the size of the Persistent Volume
+                              for storing the traces. Defaults to 10Gi.
+                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                            x-kubernetes-int-or-string: true
+                        required:
+                        - size
+                        type: object
+                      wal:
+                        description: WAL defines the write-ahead logging (WAL) configuration
+                        properties:
+                          size:
+                            anyOf:
+                            - type: integer
+                            - type: string
+                            description: Size defines the size of the Persistent Volume
+                              for storing the WAL. Defaults to 10Gi.
+                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                            x-kubernetes-int-or-string: true
+                        required:
+                        - size
+                        type: object
+                    required:
+                    - backend
+                    - pv
+                    - wal
+                    type: object
+                required:
+                - traces
+                type: object
+            type: object
+          status:
+            description: TempoMonolithicStatus defines the observed state of TempoMonolithic.
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: null
+  storedVersions: null
