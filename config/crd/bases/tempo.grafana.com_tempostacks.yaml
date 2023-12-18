@@ -50,6 +50,14 @@ spec:
           spec:
             description: TempoStackSpec defines the desired state of TempoStack.
             properties:
+              extraConfig:
+                additionalProperties:
+                  description: Config encapsulates arbitrary config.
+                  type: object
+                description: ConfigLayers represent the different layers can be applied
+                  to different config files.
+                type: object
+                x-kubernetes-preserve-unknown-fields: true
               hashRing:
                 description: HashRing defines the spec for the distributed hash ring
                   configuration.

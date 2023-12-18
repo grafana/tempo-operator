@@ -122,6 +122,10 @@ type TempoStackSpec struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Observability"
 	Observability ObservabilitySpec `json:"observability,omitempty"`
+
+	// +required
+	// +kubebuilder:pruning:PreserveUnknownFields
+	ExtraConfig ConfigLayers `json:"extraConfig,omitempty"`
 }
 
 // ObservabilitySpec defines how telemetry data gets handled.

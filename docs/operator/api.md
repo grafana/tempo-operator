@@ -518,6 +518,72 @@ PodStatusMap
 </tr></tbody>
 </table>
 
+## Config { #tempo-grafana-com-v1alpha1-Config }
+
+<div>
+
+<p>Config encapsulates arbitrary config.</p>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Field</th>
+
+<th>Description</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td>
+
+<code>-</code><br/>
+
+<em>
+
+<a href="#tempo-grafana-com-v1alpha1-Values">
+
+Values
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+</td>
+</tr>
+
+</tbody>
+</table>
+
+## ConfigLayers { #tempo-grafana-com-v1alpha1-ConfigLayers }
+
+(<code>map[string]github.com/grafana/tempo-operator/apis/tempo/v1alpha1.Config</code> alias)
+
+<p>
+
+(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-TempoStackSpec">TempoStackSpec</a>)
+
+</p>
+
+<div>
+
+<p>ConfigLayers represent the different layers can be applied to different config files.</p>
+
+</div>
+
 ## Defaulter { #tempo-grafana-com-v1alpha1-Defaulter }
 
 <div>
@@ -4146,6 +4212,29 @@ ObservabilitySpec
 </td>
 </tr>
 
+<tr>
+
+<td>
+
+<code>extraConfig</code><br/>
+
+<em>
+
+<a href="#tempo-grafana-com-v1alpha1-ConfigLayers">
+
+ConfigLayers
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+</td>
+</tr>
+
 </tbody>
 </table>
 
@@ -4750,6 +4839,22 @@ string
 
 </tbody>
 </table>
+
+## Values { #tempo-grafana-com-v1alpha1-Values }
+
+(<code>map[string]interface{}</code> alias)
+
+<p>
+
+(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-Config">Config</a>)
+
+</p>
+
+<div>
+
+<p>Values represent parts of the config.</p>
+
+</div>
 
 <hr/>
 
