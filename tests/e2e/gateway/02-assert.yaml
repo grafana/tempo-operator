@@ -139,3 +139,155 @@ spec:
 
 status:
   readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/component: query-frontend
+    app.kubernetes.io/instance: foo
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-foo-query-frontend
+  namespace: default
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: query-frontend
+      app.kubernetes.io/instance: foo
+      app.kubernetes.io/managed-by: tempo-operator
+      app.kubernetes.io/name: tempo
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: query-frontend
+        app.kubernetes.io/instance: foo
+        app.kubernetes.io/managed-by: tempo-operator
+        app.kubernetes.io/name: tempo
+        tempo-gossip-member: "true"
+    spec:
+      containers:
+      - args:
+        - -target=query-frontend
+        - -config.file=/conf/tempo-query-frontend.yaml
+        - -mem-ballast-size-mbs=1024
+        - -log.level=info
+        - --storage.trace.s3.secret_key=$(S3_SECRET_KEY)
+        - --storage.trace.s3.access_key=$(S3_ACCESS_KEY)
+        env:
+        - name: S3_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              key: access_key_secret
+              name: minio-test
+        - name: S3_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              key: access_key_id
+              name: minio-test
+        image: docker.io/grafana/tempo:2.3.0
+        imagePullPolicy: IfNotPresent
+        name: tempo
+        ports:
+        - containerPort: 3200
+          name: http
+          protocol: TCP
+        - containerPort: 9095
+          name: grpc
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /ready
+            port: 3101
+            scheme: HTTPS
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        resources: {}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /conf
+          name: tempo-conf
+          readOnly: true
+        - mountPath: /var/tempo
+          name: tempo-tmp-storage
+        - mountPath: /var/run/ca
+          name: tempo-foo-ca-bundle
+        - mountPath: /var/run/tls/server
+          name: tempo-foo-query-frontend-mtls
+      - args:
+        - --query.base-path=/
+        - --grpc-storage-plugin.configuration-file=/conf/tempo-query.yaml
+        - --query.bearer-token-propagation=true
+        - --multi-tenancy.enabled=true
+        - --multi-tenancy.header=x-scope-orgid
+        - --query.http.tls.enabled=true
+        - --query.http.tls.key=/var/run/tls/server/tls.key
+        - --query.http.tls.cert=/var/run/tls/server/tls.crt
+        - --query.http.tls.client-ca=/var/run/ca/service-ca.crt
+        - --query.grpc.tls.enabled=true
+        - --query.grpc.tls.key=/var/run/tls/server/tls.key
+        - --query.grpc.tls.cert=/var/run/tls/server/tls.crt
+        - --query.grpc.tls.client-ca=/var/run/ca/service-ca.crt
+        image: docker.io/grafana/tempo-query:2.3.0
+        imagePullPolicy: IfNotPresent
+        name: tempo-query
+        ports:
+        - containerPort: 16685
+          name: jaeger-gprc
+          protocol: TCP
+        - containerPort: 16686
+          name: jaeger-ui
+          protocol: TCP
+        - containerPort: 16687
+          name: jaeger-metrics
+          protocol: TCP
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /conf
+          name: tempo-conf
+          readOnly: true
+        - mountPath: /var/tempo
+          name: tempo-tmp-storage-query
+        - mountPath: /var/run/ca
+          name: tempo-foo-ca-bundle
+        - mountPath: /var/run/tls/server
+          name: tempo-foo-query-frontend-mtls
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      serviceAccount: tempo-foo
+      serviceAccountName: tempo-foo
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: tempo-foo
+        name: tempo-conf
+      - emptyDir: {}
+        name: tempo-tmp-storage
+      - emptyDir: {}
+        name: tempo-tmp-storage-query
+      - configMap:
+          defaultMode: 420
+          name: tempo-foo-ca-bundle
+        name: tempo-foo-ca-bundle
+      - name: tempo-foo-query-frontend-mtls
+        secret:
+          defaultMode: 420
+          secretName: tempo-foo-query-frontend-mtls
