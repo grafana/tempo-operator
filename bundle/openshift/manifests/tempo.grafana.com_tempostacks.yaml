@@ -55,10 +55,7 @@ spec:
             properties:
               extraConfig:
                 additionalProperties:
-                  description: Config encapsulates arbitrary config.
-                  type: object
-                description: ConfigLayers represent the different layers can be applied
-                  to different config files.
+                  x-kubernetes-preserve-unknown-fields: true
                 type: object
                 x-kubernetes-preserve-unknown-fields: true
               hashRing:
