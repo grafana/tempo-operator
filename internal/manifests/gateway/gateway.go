@@ -98,7 +98,7 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 		objs = append(objs, routeObj)
 	}
 
-	dep.Spec.Template, err = patchJaegerUI(params, dep.Spec.Template)
+	dep.Spec.Template, err = patchTraceReadEndpoint(params, dep.Spec.Template)
 	if err != nil {
 		return nil, err
 	}
@@ -284,7 +284,7 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 	return dep
 }
 
-func patchJaegerUI(params manifestutils.Params, pod corev1.PodTemplateSpec) (corev1.PodTemplateSpec, error) {
+func patchTraceReadEndpoint(params manifestutils.Params, pod corev1.PodTemplateSpec) (corev1.PodTemplateSpec, error) {
 	if !params.Tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled {
 		return pod, nil
 	}

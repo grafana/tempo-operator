@@ -374,7 +374,7 @@ func TestPatchTracing(t *testing.T) {
 	}
 }
 
-func TestPatchJaegerUI(t *testing.T) {
+func TestPatchTraceReadEndpoint(t *testing.T) {
 	tt := []struct {
 		name        string
 		inputParams manifestutils.Params
@@ -487,7 +487,7 @@ func TestPatchJaegerUI(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			pod, err := patchJaegerUI(tc.inputParams, tc.inputPod)
+			pod, err := patchTraceReadEndpoint(tc.inputParams, tc.inputPod)
 			require.Equal(t, tc.expectErr, err)
 			assert.Equal(t, tc.expectPod, pod)
 		})
