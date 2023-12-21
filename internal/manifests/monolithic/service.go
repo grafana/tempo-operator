@@ -1,7 +1,7 @@
 package monolithic
 
 import (
-	v1 "k8s.io/api/apps/v1"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -29,7 +29,8 @@ func buildTempoApiService(opts Options) *corev1.Service {
 	labels := ComponentLabels("tempo", opts.Tempo.Name)
 	return &corev1.Service{
 		TypeMeta: metav1.TypeMeta{
-			APIVersion: v1.SchemeGroupVersion.String(),
+			APIVersion: appsv1.SchemeGroupVersion.String(),
+			Kind:       "Service",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      naming.Name("api", opts.Tempo.Name),
@@ -77,7 +78,8 @@ func buildTempoIngestService(opts Options) *corev1.Service {
 
 	return &corev1.Service{
 		TypeMeta: metav1.TypeMeta{
-			APIVersion: v1.SchemeGroupVersion.String(),
+			APIVersion: appsv1.SchemeGroupVersion.String(),
+			Kind:       "Service",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      naming.Name("ingest", opts.Tempo.Name),
@@ -95,7 +97,8 @@ func buildJaegerUIService(opts Options) *corev1.Service {
 	labels := ComponentLabels("tempo", opts.Tempo.Name)
 	return &corev1.Service{
 		TypeMeta: metav1.TypeMeta{
-			APIVersion: v1.SchemeGroupVersion.String(),
+			APIVersion: appsv1.SchemeGroupVersion.String(),
+			Kind:       "Service",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      naming.Name("jaegerui", opts.Tempo.Name),

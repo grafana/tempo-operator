@@ -8,14 +8,19 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
+	grafanav1 "github.com/grafana-operator/grafana-operator/v5/api/v1beta1"
 	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/manifests/monolithic"
+	routev1 "github.com/openshift/api/route/v1"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 )
 
 // TempoMonolithicReconciler reconciles a TempoMonolithic object.
@@ -63,12 +68,90 @@ func (r *TempoMonolithicReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return ctrl.Result{}, fmt.Errorf("error building manifests: %w", err)
 	}
 
-	err = reconcileManagedObjects(ctx, log, r.Client, &tempo, r.Scheme, managedObjects)
+	ownedObjects, err := r.getOwnedObjects(ctx, tempo)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	err = reconcileManagedObjects(ctx, log, r.Client, &tempo, r.Scheme, managedObjects, ownedObjects)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
 
 	return ctrl.Result{}, nil
+}
+
+func (r *TempoMonolithicReconciler) getOwnedObjects(ctx context.Context, tempo v1alpha1.TempoMonolithic) (map[types.UID]client.Object, error) {
+	ownedObjects := map[types.UID]client.Object{}
+	listOps := &client.ListOptions{
+		Namespace:     tempo.GetNamespace(),
+		LabelSelector: labels.SelectorFromSet(monolithic.CommonLabels(tempo.Name)),
+	}
+
+	// Add all resources where the operator can conditionally create an object.
+	// For example, Ingress and Route can be enabled or disabled in the CR.
+
+	serviceList := &corev1.ServiceList{}
+	err := r.List(ctx, serviceList, listOps)
+	if err != nil {
+		return nil, fmt.Errorf("error listing services: %w", err)
+	}
+	for i := range serviceList.Items {
+		ownedObjects[serviceList.Items[i].GetUID()] = &serviceList.Items[i]
+	}
+
+	ingressList := &networkingv1.IngressList{}
+	err = r.List(ctx, ingressList, listOps)
+	if err != nil {
+		return nil, fmt.Errorf("error listing ingress: %w", err)
+	}
+	for i := range ingressList.Items {
+		ownedObjects[ingressList.Items[i].GetUID()] = &ingressList.Items[i]
+	}
+
+	if r.CtrlConfig.Gates.PrometheusOperator {
+		servicemonitorList := &monitoringv1.ServiceMonitorList{}
+		err := r.List(ctx, servicemonitorList, listOps)
+		if err != nil {
+			return nil, fmt.Errorf("error listing service monitors: %w", err)
+		}
+		for i := range servicemonitorList.Items {
+			ownedObjects[servicemonitorList.Items[i].GetUID()] = servicemonitorList.Items[i]
+		}
+
+		prometheusRulesList := &monitoringv1.PrometheusRuleList{}
+		err = r.List(ctx, prometheusRulesList, listOps)
+		if err != nil {
+			return nil, fmt.Errorf("error listing prometheus rules: %w", err)
+		}
+		for i := range prometheusRulesList.Items {
+			ownedObjects[prometheusRulesList.Items[i].GetUID()] = prometheusRulesList.Items[i]
+		}
+	}
+
+	if r.CtrlConfig.Gates.OpenShift.OpenShiftRoute {
+		routesList := &routev1.RouteList{}
+		err := r.List(ctx, routesList, listOps)
+		if err != nil {
+			return nil, fmt.Errorf("error listing routes: %w", err)
+		}
+		for i := range routesList.Items {
+			ownedObjects[routesList.Items[i].GetUID()] = &routesList.Items[i]
+		}
+	}
+
+	if r.CtrlConfig.Gates.GrafanaOperator {
+		datasourceList := &grafanav1.GrafanaDatasourceList{}
+		err := r.List(ctx, datasourceList, listOps)
+		if err != nil {
+			return nil, fmt.Errorf("error listing datasources: %w", err)
+		}
+		for i := range datasourceList.Items {
+			ownedObjects[datasourceList.Items[i].GetUID()] = &datasourceList.Items[i]
+		}
+	}
+
+	return ownedObjects, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.

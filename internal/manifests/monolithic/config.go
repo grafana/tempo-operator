@@ -7,7 +7,7 @@ import (
 
 	"github.com/imdario/mergo"
 	"gopkg.in/yaml.v2"
-	v1 "k8s.io/api/apps/v1"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -66,7 +66,8 @@ func BuildConfigMap(opts Options) (*corev1.ConfigMap, string, error) {
 
 	configMap := &corev1.ConfigMap{
 		TypeMeta: metav1.TypeMeta{
-			APIVersion: v1.SchemeGroupVersion.String(),
+			APIVersion: appsv1.SchemeGroupVersion.String(),
+			Kind:       "ConfigMap",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      naming.Name("", tempo.Name),

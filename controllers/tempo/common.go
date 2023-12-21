@@ -9,6 +9,7 @@ import (
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -26,7 +27,18 @@ func isNamespaceScoped(obj client.Object) bool {
 
 // reconcileManagedObjects creates or updates all managed objects.
 // If immutable fields are changed, the object will be deleted and re-created.
-func reconcileManagedObjects(ctx context.Context, log logr.Logger, k8sclient client.Client, owner metav1.Object, scheme *runtime.Scheme, managedObjects []client.Object) error {
+func reconcileManagedObjects(
+	ctx context.Context,
+	log logr.Logger,
+	k8sclient client.Client,
+	owner metav1.Object,
+	scheme *runtime.Scheme,
+	managedObjects []client.Object,
+	ownedObjects map[types.UID]client.Object,
+) error {
+	pruneObjects := ownedObjects
+
+	// Create or update all objects managed by the operator
 	errs := []error{}
 	for _, obj := range managedObjects {
 		l := log.WithValues(
@@ -44,7 +56,6 @@ func reconcileManagedObjects(ctx context.Context, log logr.Logger, k8sclient cli
 
 		desired := obj.DeepCopyObject().(client.Object)
 		mutateFn := manifests.MutateFuncFor(obj, desired)
-
 		op, err := ctrl.CreateOrUpdate(ctx, k8sclient, obj, mutateFn)
 
 		var immutableErr *manifests.ImmutableErr
@@ -52,17 +63,39 @@ func reconcileManagedObjects(ctx context.Context, log logr.Logger, k8sclient cli
 			l.Error(err, "detected a change in an immutable field. The object will be deleted, and re-created on next reconcile", "obj", obj.GetName())
 			err = k8sclient.Delete(ctx, desired)
 		}
+
 		if err != nil {
 			l.Error(err, "failed to configure resource")
 			errs = append(errs, err)
-			continue
+		} else {
+			l.V(1).Info(fmt.Sprintf("resource has been %s", op))
 		}
 
-		l.V(1).Info(fmt.Sprintf("resource has been %s", op))
+		// This object is still managed by the operator, remove it from the list of objects to prune
+		delete(pruneObjects, obj.GetUID())
 	}
-
 	if len(errs) > 0 {
 		return fmt.Errorf("failed to create objects for %s: %w", owner.GetName(), errors.Join(errs...))
 	}
+
+	// Prune owned objects in the cluster which are not managed anymore
+	pruneErrs := []error{}
+	for _, obj := range pruneObjects {
+		l := log.WithValues(
+			"objectName", obj.GetName(),
+			"objectKind", obj.GetObjectKind(),
+		)
+
+		l.Info("pruning unmanaged resource")
+		err := k8sclient.Delete(ctx, obj)
+		if err != nil {
+			l.Error(err, "failed to delete resource")
+			pruneErrs = append(pruneErrs, err)
+		}
+	}
+	if len(pruneErrs) > 0 {
+		return fmt.Errorf("failed to prune objects for %s: %w", owner.GetName(), errors.Join(pruneErrs...))
+	}
+
 	return nil
 }

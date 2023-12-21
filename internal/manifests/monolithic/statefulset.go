@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/operator-framework/operator-lib/proxy"
-	v1 "k8s.io/api/apps/v1"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/ptr"
@@ -21,21 +21,22 @@ const (
 )
 
 // BuildTempoStatefulset creates the Tempo statefulset for a monolithic deployment.
-func BuildTempoStatefulset(opts Options) (*v1.StatefulSet, error) {
+func BuildTempoStatefulset(opts Options) (*appsv1.StatefulSet, error) {
 	tempo := opts.Tempo
 	labels := ComponentLabels("tempo", tempo.Name)
 	annotations := manifestutils.CommonAnnotations(opts.ConfigChecksum)
 
-	ss := &v1.StatefulSet{
+	ss := &appsv1.StatefulSet{
 		TypeMeta: metav1.TypeMeta{
-			APIVersion: v1.SchemeGroupVersion.String(),
+			APIVersion: appsv1.SchemeGroupVersion.String(),
+			Kind:       "StatefulSet",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      naming.Name("", tempo.Name),
 			Namespace: tempo.Namespace,
 			Labels:    labels,
 		},
-		Spec: v1.StatefulSetSpec{
+		Spec: appsv1.StatefulSetSpec{
 			Selector: &metav1.LabelSelector{
 				MatchLabels: labels,
 			},
@@ -45,7 +46,7 @@ func BuildTempoStatefulset(opts Options) (*v1.StatefulSet, error) {
 			//
 			// This is a workaround for the above issue.
 			// This setting is also in the tempo-distributed helm chart: https://github.com/grafana/helm-charts/blob/0fdf2e1900733eb104ac734f5fb0a89dc950d2c2/charts/tempo-distributed/templates/ingester/statefulset-ingester.yaml#L21
-			PodManagementPolicy: v1.ParallelPodManagement,
+			PodManagementPolicy: appsv1.ParallelPodManagement,
 
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
@@ -139,7 +140,7 @@ func buildTempoPorts(opts Options) []corev1.ContainerPort {
 	return ports
 }
 
-func configureStorage(opts Options, sts *v1.StatefulSet) error {
+func configureStorage(opts Options, sts *appsv1.StatefulSet) error {
 	tempo := opts.Tempo
 	switch tempo.Spec.Storage.Traces.Backend {
 	case v1alpha1.MonolithicTracesStorageBackendMemory:
@@ -212,7 +213,7 @@ func configureStorage(opts Options, sts *v1.StatefulSet) error {
 	return nil
 }
 
-func configureJaegerUI(opts Options, sts *v1.StatefulSet) {
+func configureJaegerUI(opts Options, sts *appsv1.StatefulSet) {
 	tempoQuery := corev1.Container{
 		Name:  "tempo-query",
 		Image: opts.CtrlConfig.DefaultImages.TempoQuery,
