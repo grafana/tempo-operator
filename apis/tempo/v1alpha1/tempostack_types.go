@@ -124,7 +124,7 @@ type TempoStackSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Observability"
 	Observability ObservabilitySpec `json:"observability,omitempty"`
 
-	// +required
+	// +optional
 	// +kubebuilder:pruning:PreserveUnknownFields
 	ExtraConfig map[string]apiextensionsv1.JSON `json:"extraConfig,omitempty"`
 }
