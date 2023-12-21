@@ -62,7 +62,7 @@ type MonolithicTracesStorageSpec struct {
 	// PV defines the Persistent Volume configuration
 	//
 	// +kubebuilder:validation:Required
-	PV *MonolithicTracesStoragePersistentVolumeSpec `json:"pv"`
+	PV *MonolithicTracesStoragePVSpec `json:"pv"`
 }
 
 // MonolithicTracesStorageBackend defines the backend storage for traces.
@@ -85,8 +85,8 @@ type MonolithicTracesStorageWALSpec struct {
 	Size resource.Quantity `json:"size"`
 }
 
-// MonolithicTracesStoragePersistentVolumeSpec defines the Persistent Volume configuration.
-type MonolithicTracesStoragePersistentVolumeSpec struct {
+// MonolithicTracesStoragePVSpec defines the Persistent Volume configuration.
+type MonolithicTracesStoragePVSpec struct {
 	// Size defines the size of the Persistent Volume for storing the traces. Defaults to 10Gi.
 	//
 	// +kubebuilder:validation:Required
