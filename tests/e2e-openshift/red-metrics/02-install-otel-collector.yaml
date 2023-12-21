@@ -3,7 +3,7 @@ kind: OpenTelemetryCollector
 metadata:
   name: otel
 spec:
-  image: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.83.0
+  image: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.91.0
   mode: deployment
   ports:
     - name: promexporter
@@ -31,6 +31,7 @@ spec:
     
     exporters:
       prometheus:
+        add_metric_suffixes: false
         endpoint: 0.0.0.0:8889
         resource_to_telemetry_conversion: 
           enabled: true # by default resource attributes are dropped
