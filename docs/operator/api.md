@@ -2540,7 +2540,7 @@ MonolithicTracesStorageSpec
 </tr></tbody>
 </table>
 
-## MonolithicTracesStoragePersistentVolumeSpec { #tempo-grafana-com-v1alpha1-MonolithicTracesStoragePersistentVolumeSpec }
+## MonolithicTracesStoragePVSpec { #tempo-grafana-com-v1alpha1-MonolithicTracesStoragePVSpec }
 
 <p>
 
@@ -2550,7 +2550,7 @@ MonolithicTracesStorageSpec
 
 <div>
 
-<p>MonolithicTracesStoragePersistentVolumeSpec defines the Persistent Volume configuration.</p>
+<p>MonolithicTracesStoragePVSpec defines the Persistent Volume configuration.</p>
 
 </div>
 
@@ -2682,9 +2682,9 @@ MonolithicTracesStorageWALSpec
 
 <em>
 
-<a href="#tempo-grafana-com-v1alpha1-MonolithicTracesStoragePersistentVolumeSpec">
+<a href="#tempo-grafana-com-v1alpha1-MonolithicTracesStoragePVSpec">
 
-MonolithicTracesStoragePersistentVolumeSpec
+MonolithicTracesStoragePVSpec
 
 </a>
 
