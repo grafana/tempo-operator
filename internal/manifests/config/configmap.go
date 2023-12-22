@@ -37,8 +37,9 @@ func BuildConfigMap(params manifestutils.Params) (*corev1.ConfigMap, string, err
 	labels := manifestutils.ComponentLabels("config", tempo.Name)
 	configMap := &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:   naming.Name("", tempo.Name),
-			Labels: labels,
+			Name:      naming.Name("", tempo.Name),
+			Namespace: tempo.Namespace,
+			Labels:    labels,
 		},
 		Data: map[string]string{
 			"tempo.yaml":                string(config),

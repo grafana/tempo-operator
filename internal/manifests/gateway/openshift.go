@@ -126,6 +126,7 @@ func configMapCABundle(tempo v1alpha1.TempoStack) *corev1.ConfigMap {
 	return &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        naming.Name("gateway-cabundle", tempo.Name),
+			Namespace:   tempo.Namespace,
 			Labels:      manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name),
 			Annotations: map[string]string{"service.beta.openshift.io/inject-cabundle": "true"},
 		},
