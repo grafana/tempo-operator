@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	grafanav1 "github.com/grafana-operator/grafana-operator/v5/api/v1beta1"
+	routev1 "github.com/openshift/api/route/v1"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
@@ -15,12 +18,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	grafanav1 "github.com/grafana-operator/grafana-operator/v5/api/v1beta1"
 	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/manifests/monolithic"
-	routev1 "github.com/openshift/api/route/v1"
-	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 )
 
 // TempoMonolithicReconciler reconciles a TempoMonolithic object.

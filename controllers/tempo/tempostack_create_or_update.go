@@ -14,7 +14,6 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/validation/field"
-	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
@@ -73,7 +72,7 @@ func (r *TempoStackReconciler) getStorageConfig(ctx context.Context, tempo v1alp
 	return params, nil
 }
 
-func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, log logr.Logger, req ctrl.Request, tempo v1alpha1.TempoStack) error {
+func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, log logr.Logger, tempo v1alpha1.TempoStack) error {
 	storageConfig, err := r.getStorageConfig(ctx, tempo)
 	if err != nil {
 		return &status.ConfigurationError{
