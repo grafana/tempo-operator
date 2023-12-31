@@ -578,6 +578,9 @@ Feature Gates.ProjectConfig
 
 <div>
 
+<p>ExtraConfigSpec defines extra configurations for tempo that will be merged with the operator generated, configurations defined here
+has precedence and could override generated config.</p>
+
 </div>
 
 <table>
