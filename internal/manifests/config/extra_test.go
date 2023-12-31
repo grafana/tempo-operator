@@ -9,7 +9,7 @@ import (
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 )
 
-func TestApplyTempoConfigLayer(t *testing.T) {
+func TestApplyTempoExtraConfig(t *testing.T) {
 	input := `
 ---
 compactor:
@@ -61,7 +61,7 @@ server:
 
 }
 
-func TestApplyTempoConfigLayerNonExisting(t *testing.T) {
+func TestApplyTempoExtraConfigEmpty(t *testing.T) {
 	input := `
 ---
 compactor:
@@ -80,7 +80,28 @@ storage:
 	result, err := mergeExtraConfigWithConfig(extraConfig, []byte(input))
 	require.NoError(t, err)
 	require.YAMLEq(t, input, string(result))
+}
 
+func TestApplyTempoExtraConfigInvalid(t *testing.T) {
+	input := `
+---
+compactor:
+  compaction:
+    block_retention: 48h0m0s
+server:
+  grpc_server_max_recv_msg_size: 4194304
+  http_listen_port: 3200
+  http_server_write_timeout: 3m
+storage:
+  trace:
+    backend: s3
+`
+	extraConfig := &apiextensionsv1.JSON{
+		Raw: []byte("{{{{}"),
+	}
+
+	_, err := mergeExtraConfigWithConfig(extraConfig, []byte(input))
+	require.Error(t, err)
 }
 
 func TestApplyTempoConfigLayerNil(t *testing.T) {

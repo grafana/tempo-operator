@@ -13,7 +13,7 @@ func mergeExtraConfigWithConfig(overridesJSON *apiextensionsv1.JSON, templateRes
 	renderedTemplateMap := make(map[string]interface{})
 	overrides := make(map[string]interface{})
 
-	if overridesJSON == nil {
+	if overridesJSON == nil || len(overridesJSON.Raw) == 0 {
 		return templateResults, nil
 	}
 
