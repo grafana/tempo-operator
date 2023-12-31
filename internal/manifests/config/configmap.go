@@ -38,9 +38,18 @@ func BuildConfigMap(params manifestutils.Params) (*corev1.ConfigMap, string, err
 		return nil, "", err
 	}
 
-	config, err = applyTempoConfigLayer(params.Tempo.Spec.ExtraConfig, config)
-	if err != nil {
-		return nil, "", err
+	if params.Tempo.Spec.ExtraConfig != nil {
+		// For we only support tempo for now.
+		config, err = mergeExtraConfigWithConfig(params.Tempo.Spec.ExtraConfig.Tempo, config)
+		if err != nil {
+			return nil, "", err
+		}
+
+		// Is the same tempo config with certain TLS fields disabled.
+		overridesConfig, err = mergeExtraConfigWithConfig(params.Tempo.Spec.ExtraConfig.Tempo, overridesConfig)
+		if err != nil {
+			return nil, "", err
+		}
 	}
 
 	labels := manifestutils.ComponentLabels("config", tempo.Name)

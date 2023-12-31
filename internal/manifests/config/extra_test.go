@@ -53,10 +53,9 @@ server:
 	raw, err := json.Marshal(rawInput)
 	require.NoError(t, err)
 
-	layers := make(map[string]apiextensionsv1.JSON)
-	layers[tempoConfigKey] = apiextensionsv1.JSON{Raw: raw}
+	extraConfig := &apiextensionsv1.JSON{Raw: raw}
 
-	result, err := applyTempoConfigLayer(layers, []byte(input))
+	result, err := mergeExtraConfigWithConfig(extraConfig, []byte(input))
 	require.NoError(t, err)
 	require.YAMLEq(t, expCfg, string(result))
 
@@ -76,10 +75,9 @@ storage:
   trace:
     backend: s3
 `
+	extraConfig := &apiextensionsv1.JSON{}
 
-	layers := make(map[string]apiextensionsv1.JSON)
-
-	result, err := applyTempoConfigLayer(layers, []byte(input))
+	result, err := mergeExtraConfigWithConfig(extraConfig, []byte(input))
 	require.NoError(t, err)
 	require.YAMLEq(t, input, string(result))
 
@@ -100,7 +98,7 @@ storage:
     backend: s3
 `
 
-	result, err := applyTempoConfigLayer(nil, []byte(input))
+	result, err := mergeExtraConfigWithConfig(nil, []byte(input))
 	require.NoError(t, err)
 	require.YAMLEq(t, input, string(result))
 

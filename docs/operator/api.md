@@ -568,6 +568,62 @@ Feature Gates.ProjectConfig
 </tbody>
 </table>
 
+## ExtraConfigSpec { #tempo-grafana-com-v1alpha1-ExtraConfigSpec }
+
+<p>
+
+(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-TempoStackSpec">TempoStackSpec</a>)
+
+</p>
+
+<div>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Field</th>
+
+<th>Description</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td>
+
+<code>tempo</code><br/>
+
+<em>
+
+<a href="https://pkg.go.dev/k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1#JSON">
+
+k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1.JSON
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+</td>
+</tr>
+
+</tbody>
+</table>
+
 ## GrafanaConfigSpec { #tempo-grafana-com-v1alpha1-GrafanaConfigSpec }
 
 <p>
@@ -4154,9 +4210,9 @@ ObservabilitySpec
 
 <em>
 
-<a href="https://pkg.go.dev/k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1#JSON">
+<a href="#tempo-grafana-com-v1alpha1-ExtraConfigSpec">
 
-map[string]k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1.JSON
+ExtraConfigSpec
 
 </a>
 
@@ -4165,6 +4221,8 @@ map[string]k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1.JSON
 </td>
 
 <td>
+
+<em>(Optional)</em>
 
 </td>
 </tr>

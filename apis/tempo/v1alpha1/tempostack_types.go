@@ -125,8 +125,16 @@ type TempoStackSpec struct {
 	Observability ObservabilitySpec `json:"observability,omitempty"`
 
 	// +optional
-	// +kubebuilder:pruning:PreserveUnknownFields
-	ExtraConfig map[string]apiextensionsv1.JSON `json:"extraConfig,omitempty"`
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Extra Configurations"
+	ExtraConfig *ExtraConfigSpec `json:"extraConfig,omitempty"`
+}
+
+// ExtraConfigSpec defines extra configurations for tempo that will be merged with the operator generated, configurations defined here
+// has precedence and could override generated config.
+type ExtraConfigSpec struct {
+	// +optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tempo Extra Configurations"
+	Tempo *apiextensionsv1.JSON `json:"tempo,omitempty"`
 }
 
 // ObservabilitySpec defines how telemetry data gets handled.
