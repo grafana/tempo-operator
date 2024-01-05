@@ -38,6 +38,7 @@ func TestResources(t *testing.T) {
 		resources corev1.ResourceRequirements
 		name      string
 		tempo     v1alpha1.TempoStack
+		replicas  *int32
 	}{
 		{
 			name: "resources not set",
@@ -100,6 +101,7 @@ func TestResources(t *testing.T) {
 					corev1.ResourceMemory: *resource.NewQuantity(38654708, resource.BinarySI),
 				},
 			},
+			replicas: ptr.To(int32(2)),
 		},
 		{
 			name: "cpu, memory resources set and gateway enable",
@@ -163,6 +165,7 @@ func TestResources(t *testing.T) {
 					corev1.ResourceMemory: *resource.NewQuantity(35433480, resource.BinarySI),
 				},
 			},
+			replicas: ptr.To(int32(2)),
 		},
 		{
 			name: "missing cpu resources",
@@ -214,7 +217,7 @@ func TestResources(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			resources := Resources(test.tempo, "distributor")
+			resources := Resources(test.tempo, "distributor", test.replicas)
 			assert.Equal(t, test.resources, resources)
 		})
 	}
