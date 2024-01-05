@@ -46,7 +46,7 @@ func BuildConfigMap(params manifestutils.Params) (*corev1.ConfigMap, string, err
 		}
 
 		// Is the same tempo config with certain TLS fields disabled.
-		overridesConfig, err = mergeExtraConfigWithConfig(params.Tempo.Spec.ExtraConfig.Tempo, overridesConfig)
+		frontendConfig, err = mergeExtraConfigWithConfig(params.Tempo.Spec.ExtraConfig.Tempo, frontendConfig)
 		if err != nil {
 			return nil, "", err
 		}
