@@ -53,7 +53,7 @@ server:
 	raw, err := json.Marshal(rawInput)
 	require.NoError(t, err)
 
-	extraConfig := &apiextensionsv1.JSON{Raw: raw}
+	extraConfig := apiextensionsv1.JSON{Raw: raw}
 
 	result, err := mergeExtraConfigWithConfig(extraConfig, []byte(input))
 	require.NoError(t, err)
@@ -75,7 +75,7 @@ storage:
   trace:
     backend: s3
 `
-	extraConfig := &apiextensionsv1.JSON{}
+	extraConfig := apiextensionsv1.JSON{}
 
 	result, err := mergeExtraConfigWithConfig(extraConfig, []byte(input))
 	require.NoError(t, err)
@@ -96,31 +96,10 @@ storage:
   trace:
     backend: s3
 `
-	extraConfig := &apiextensionsv1.JSON{
+	extraConfig := apiextensionsv1.JSON{
 		Raw: []byte("{{{{}"),
 	}
 
 	_, err := mergeExtraConfigWithConfig(extraConfig, []byte(input))
 	require.Error(t, err)
-}
-
-func TestApplyTempoConfigLayerNil(t *testing.T) {
-	input := `
----
-compactor:
-  compaction:
-    block_retention: 48h0m0s
-server:
-  grpc_server_max_recv_msg_size: 4194304
-  http_listen_port: 3200
-  http_server_write_timeout: 3m
-storage:
-  trace:
-    backend: s3
-`
-
-	result, err := mergeExtraConfigWithConfig(nil, []byte(input))
-	require.NoError(t, err)
-	require.YAMLEq(t, input, string(result))
-
 }

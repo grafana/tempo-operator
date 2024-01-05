@@ -9,11 +9,11 @@ import (
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 )
 
-func mergeExtraConfigWithConfig(overridesJSON *apiextensionsv1.JSON, templateResults []byte) ([]byte, error) {
+func mergeExtraConfigWithConfig(overridesJSON apiextensionsv1.JSON, templateResults []byte) ([]byte, error) {
 	renderedTemplateMap := make(map[string]interface{})
 	overrides := make(map[string]interface{})
 
-	if overridesJSON == nil || len(overridesJSON.Raw) == 0 {
+	if len(overridesJSON.Raw) == 0 {
 		return templateResults, nil
 	}
 

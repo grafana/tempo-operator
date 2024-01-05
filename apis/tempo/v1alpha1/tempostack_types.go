@@ -134,7 +134,7 @@ type TempoStackSpec struct {
 type ExtraConfigSpec struct {
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tempo Extra Configurations"
-	Tempo *apiextensionsv1.JSON `json:"tempo,omitempty"`
+	Tempo apiextensionsv1.JSON `json:"tempo,omitempty"`
 }
 
 // ObservabilitySpec defines how telemetry data gets handled.

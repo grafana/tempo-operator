@@ -1638,7 +1638,7 @@ func TestWarning(t *testing.T) {
 						},
 					},
 					ExtraConfig: &ExtraConfigSpec{
-						Tempo: &v1.JSON{Raw: []byte("{}")},
+						Tempo: v1.JSON{Raw: []byte("{}")},
 					},
 				},
 			},
