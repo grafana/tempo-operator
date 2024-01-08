@@ -154,12 +154,12 @@ func TestBuildCompactor(t *testing.T) {
 							},
 							Resources: corev1.ResourceRequirements{
 								Limits: corev1.ResourceList{
-									corev1.ResourceCPU:    *resource.NewMilliQuantity(160, resource.BinarySI),
-									corev1.ResourceMemory: *resource.NewQuantity(386547072, resource.BinarySI),
+									corev1.ResourceCPU:    *resource.NewMilliQuantity(80, resource.BinarySI),
+									corev1.ResourceMemory: *resource.NewQuantity(193273536, resource.BinarySI),
 								},
 								Requests: corev1.ResourceList{
-									corev1.ResourceCPU:    *resource.NewMilliQuantity(48, resource.BinarySI),
-									corev1.ResourceMemory: *resource.NewQuantity(115964128, resource.BinarySI),
+									corev1.ResourceCPU:    *resource.NewMilliQuantity(24, resource.BinarySI),
+									corev1.ResourceMemory: *resource.NewQuantity(57982064, resource.BinarySI),
 								},
 							},
 							SecurityContext: manifestutils.TempoContainerSecurityContext(),

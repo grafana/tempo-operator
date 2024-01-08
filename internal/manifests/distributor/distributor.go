@@ -232,7 +232,7 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 									MountPath: manifestutils.TmpStoragePath,
 								},
 							},
-							Resources:       manifestutils.Resources(tempo, manifestutils.DistributorComponentName),
+							Resources:       manifestutils.Resources(tempo, manifestutils.DistributorComponentName, tempo.Spec.Template.Distributor.Replicas),
 							SecurityContext: manifestutils.TempoContainerSecurityContext(),
 						},
 					},

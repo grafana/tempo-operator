@@ -235,7 +235,7 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 									SubPath:   manifestutils.GatewayTenantFileName,
 								},
 							},
-							Resources:       manifestutils.Resources(tempo, manifestutils.GatewayComponentName),
+							Resources:       manifestutils.Resources(tempo, manifestutils.GatewayComponentName, nil),
 							SecurityContext: manifestutils.TempoContainerSecurityContext(),
 						},
 					},

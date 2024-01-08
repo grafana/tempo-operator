@@ -108,7 +108,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 									MountPath: manifestutils.TmpStoragePath,
 								},
 							},
-							Resources:       manifestutils.Resources(tempo, manifestutils.CompactorComponentName),
+							Resources:       manifestutils.Resources(tempo, manifestutils.CompactorComponentName, tempo.Spec.Template.Compactor.Replicas),
 							SecurityContext: manifestutils.TempoContainerSecurityContext(),
 						},
 					},
