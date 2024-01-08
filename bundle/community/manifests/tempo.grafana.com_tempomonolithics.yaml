@@ -205,8 +205,6 @@ spec:
                         type: object
                     required:
                     - backend
-                    - pv
-                    - wal
                     type: object
                 required:
                 - traces

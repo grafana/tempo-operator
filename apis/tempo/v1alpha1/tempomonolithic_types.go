@@ -11,7 +11,7 @@ type TempoMonolithicSpec struct {
 	// Storage defines the backend storage configuration
 	//
 	// +kubebuilder:validation:Optional
-	Storage MonolithicStorageSpec `json:"storage"`
+	Storage MonolithicStorageSpec `json:"storage,omitempty"`
 
 	// Ingestion defines the trace ingestion configuration
 	//
@@ -25,7 +25,7 @@ type TempoMonolithicSpec struct {
 
 	// ManagementState defines whether this instance is managed by the operator or self-managed
 	//
-	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:Optional
 	Management ManagementStateType `json:"management,omitempty"`
 
 	// Observability defines observability configuration for the Tempo deployment
@@ -56,13 +56,13 @@ type MonolithicTracesStorageSpec struct {
 
 	// WAL defines the write-ahead logging (WAL) configuration
 	//
-	// +kubebuilder:validation:Required
-	WAL *MonolithicTracesStorageWALSpec `json:"wal"`
+	// +kubebuilder:validation:Optional
+	WAL *MonolithicTracesStorageWALSpec `json:"wal,omitempty"`
 
 	// PV defines the Persistent Volume configuration
 	//
-	// +kubebuilder:validation:Required
-	PV *MonolithicTracesStoragePVSpec `json:"pv"`
+	// +kubebuilder:validation:Optional
+	PV *MonolithicTracesStoragePVSpec `json:"pv,omitempty"`
 }
 
 // MonolithicTracesStorageBackend defines the backend storage for traces.
