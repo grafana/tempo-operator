@@ -43,7 +43,7 @@ const (
 	PortJaegerUI = 16686
 
 	// JaegerGRPCQuery declares the name of the Jaeger UI gPRC port.
-	JaegerGRPCQuery = "jaeger-gprc"
+	JaegerGRPCQuery = "jaeger-grpc"
 	// PortJaegerGRPCQuery declares the port number of the Jaeger UI gPRC port.
 	PortJaegerGRPCQuery = 16685
 
