@@ -568,6 +568,65 @@ Feature Gates.ProjectConfig
 </tbody>
 </table>
 
+## ExtraConfigSpec { #tempo-grafana-com-v1alpha1-ExtraConfigSpec }
+
+<p>
+
+(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-TempoStackSpec">TempoStackSpec</a>)
+
+</p>
+
+<div>
+
+<p>ExtraConfigSpec defines extra configurations for tempo that will be merged with the operator generated, configurations defined here
+has precedence and could override generated config.</p>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Field</th>
+
+<th>Description</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td>
+
+<code>tempo</code><br/>
+
+<em>
+
+<a href="https://pkg.go.dev/k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1#JSON">
+
+k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1.JSON
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+</td>
+</tr>
+
+</tbody>
+</table>
+
 ## GrafanaConfigSpec { #tempo-grafana-com-v1alpha1-GrafanaConfigSpec }
 
 <p>
@@ -4142,6 +4201,31 @@ ObservabilitySpec
 <em>(Optional)</em>
 
 <p>ObservabilitySpec defines how telemetry data gets handled.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>extraConfig</code><br/>
+
+<em>
+
+<a href="#tempo-grafana-com-v1alpha1-ExtraConfigSpec">
+
+ExtraConfigSpec
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
 
 </td>
 </tr>

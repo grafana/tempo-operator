@@ -450,6 +450,13 @@ func (v *validator) validate(ctx context.Context, obj runtime.Object) (admission
 		allErrors = append(allErrors, errors...)
 	}
 
+	if tempo.Spec.ExtraConfig != nil && len(tempo.Spec.ExtraConfig.Tempo.Raw) > 0 {
+		allWarnings = append(allWarnings, admission.Warnings{
+			"override tempo configuration could potentially break the stack, use it carefully",
+		}...)
+
+	}
+
 	allErrors = append(allErrors, v.validateReplicationFactor(*tempo)...)
 	allErrors = append(allErrors, v.validateQueryFrontend(*tempo)...)
 	allErrors = append(allErrors, v.validateGateway(*tempo)...)

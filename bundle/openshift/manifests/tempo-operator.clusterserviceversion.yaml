@@ -42,7 +42,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator
-    createdAt: "2023-12-13T18:24:44Z"
+    createdAt: "2023-12-31T18:14:22Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -87,6 +87,10 @@ spec:
         name: ""
         version: v1
       specDescriptors:
+      - displayName: Extra Configurations
+        path: extraConfig
+      - displayName: Tempo Extra Configurations
+        path: extraConfig.tempo
       - description: HashRing defines the spec for the distributed hash ring configuration.
         displayName: Hash Ring
         path: hashRing

@@ -53,6 +53,14 @@ spec:
           spec:
             description: TempoStackSpec defines the desired state of TempoStack.
             properties:
+              extraConfig:
+                description: ExtraConfigSpec defines extra configurations for tempo
+                  that will be merged with the operator generated, configurations
+                  defined here has precedence and could override generated config.
+                properties:
+                  tempo:
+                    x-kubernetes-preserve-unknown-fields: true
+                type: object
               hashRing:
                 description: HashRing defines the spec for the distributed hash ring
                   configuration.
