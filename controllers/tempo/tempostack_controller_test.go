@@ -517,7 +517,7 @@ func TestStorageCustomCA(t *testing.T) {
 		{
 			Type:               string(v1alpha1.ConditionReady),
 			Status:             "True",
-			LastTransitionTime: updatedTempo2.Status.Conditions[0].LastTransitionTime,
+			LastTransitionTime: updatedTempo3.Status.Conditions[0].LastTransitionTime,
 			Reason:             string(v1alpha1.ReasonReady),
 			Message:            "All components are operational",
 		},
