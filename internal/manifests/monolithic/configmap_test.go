@@ -86,10 +86,6 @@ storage:
       path: /var/tempo/wal
     local:
       path: /var/tempo/blocks
-distributor:
-  receivers:
-    otlp:
-      protocols: {}
 usage_report:
   reporting_enabled: false
 `,
@@ -104,6 +100,9 @@ usage_report:
 			ingestion: &v1alpha1.MonolithicIngestionSpec{
 				OTLP: &v1alpha1.MonolithicIngestionOTLPSpec{
 					GRPC: &v1alpha1.MonolithicIngestionOTLPProtocolsGRPCSpec{
+						Enabled: true,
+					},
+					HTTP: &v1alpha1.MonolithicIngestionOTLPProtocolsHTTPSpec{
 						Enabled: true,
 					},
 				},
@@ -122,7 +121,8 @@ distributor:
   receivers:
     otlp:
       protocols:
-        grpc: {}
+        grpc:
+        http:
 usage_report:
   reporting_enabled: false
 `,

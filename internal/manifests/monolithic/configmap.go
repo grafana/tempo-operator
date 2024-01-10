@@ -37,12 +37,12 @@ type tempoConfig struct {
 		Receivers struct {
 			OTLP struct {
 				Protocols struct {
-					GRPC *struct{} `yaml:"grpc,omitempty"`
-					HTTP *struct{} `yaml:"http,omitempty"`
-				} `yaml:"protocols"`
-			} `yaml:"otlp"`
-		} `yaml:"receivers"`
-	} `yaml:"distributor"`
+					GRPC *interface{} `yaml:"grpc,omitempty"`
+					HTTP *interface{} `yaml:"http,omitempty"`
+				} `yaml:"protocols,omitempty"`
+			} `yaml:"otlp,omitempty"`
+		} `yaml:"receivers,omitempty"`
+	} `yaml:"distributor,omitempty"`
 
 	UsageReport struct {
 		ReportingEnabled bool `yaml:"reporting_enabled"`
@@ -112,10 +112,12 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 
 	if tempo.Spec.Ingestion != nil && tempo.Spec.Ingestion.OTLP != nil {
 		if tempo.Spec.Ingestion.OTLP.GRPC != nil && tempo.Spec.Ingestion.OTLP.GRPC.Enabled {
-			config.Distributor.Receivers.OTLP.Protocols.GRPC = &struct{}{}
+			var i interface{}
+			config.Distributor.Receivers.OTLP.Protocols.GRPC = &i
 		}
 		if tempo.Spec.Ingestion.OTLP.HTTP != nil && tempo.Spec.Ingestion.OTLP.HTTP.Enabled {
-			config.Distributor.Receivers.OTLP.Protocols.HTTP = &struct{}{}
+			var i interface{}
+			config.Distributor.Receivers.OTLP.Protocols.HTTP = &i
 		}
 	}
 
