@@ -21,8 +21,8 @@ func BuildAll(opts Options) ([]client.Object, error) {
 	}
 	manifests = append(manifests, statefulSet)
 
-	services := BuildServices(opts)
-	manifests = append(manifests, services...)
+	service := BuildTempoService(opts)
+	manifests = append(manifests, service)
 
 	return manifests, nil
 }
