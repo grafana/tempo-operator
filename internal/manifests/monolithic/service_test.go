@@ -122,7 +122,7 @@ func TestBuildTempoService(t *testing.T) {
 		},
 	}
 
-	labels := CommonLabels("sample")
+	labels := Labels("sample")
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			opts.Tempo.Spec = test.input

@@ -57,7 +57,7 @@ type tempoQueryConfig struct {
 // BuildConfigMap creates the Tempo ConfigMap for a monolithic deployment.
 func BuildConfigMap(opts Options) (*corev1.ConfigMap, string, error) {
 	tempo := opts.Tempo
-	labels := ComponentLabels("config", tempo.Name)
+	labels := Labels(tempo.Name)
 
 	tempoConfig, err := buildTempoConfig(opts)
 	if err != nil {

@@ -23,7 +23,7 @@ const (
 // BuildTempoStatefulset creates the Tempo statefulset for a monolithic deployment.
 func BuildTempoStatefulset(opts Options) (*appsv1.StatefulSet, error) {
 	tempo := opts.Tempo
-	labels := ComponentLabels("tempo", tempo.Name)
+	labels := Labels(tempo.Name)
 	annotations := manifestutils.CommonAnnotations(opts.ConfigChecksum)
 
 	ss := &appsv1.StatefulSet{

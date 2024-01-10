@@ -85,7 +85,7 @@ func (r *TempoMonolithicReconciler) getOwnedObjects(ctx context.Context, tempo v
 	ownedObjects := map[types.UID]client.Object{}
 	listOps := &client.ListOptions{
 		Namespace:     tempo.GetNamespace(),
-		LabelSelector: labels.SelectorFromSet(monolithic.CommonLabels(tempo.Name)),
+		LabelSelector: labels.SelectorFromSet(monolithic.Labels(tempo.Name)),
 	}
 
 	// Add all resources where the operator can conditionally create an object.
