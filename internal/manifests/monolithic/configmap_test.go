@@ -24,7 +24,7 @@ func TestBuildConfigMap(t *testing.T) {
 				Namespace: "default",
 			},
 			Spec: v1alpha1.TempoMonolithicSpec{
-				Storage: v1alpha1.MonolithicStorageSpec{
+				Storage: &v1alpha1.MonolithicStorageSpec{
 					Traces: v1alpha1.MonolithicTracesStorageSpec{
 						Backend: "memory",
 					},
@@ -65,13 +65,13 @@ func TestBuildConfig(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		storage   v1alpha1.MonolithicStorageSpec
+		storage   *v1alpha1.MonolithicStorageSpec
 		ingestion *v1alpha1.MonolithicIngestionSpec
 		expected  string
 	}{
 		{
 			name: "memory storage",
-			storage: v1alpha1.MonolithicStorageSpec{
+			storage: &v1alpha1.MonolithicStorageSpec{
 				Traces: v1alpha1.MonolithicTracesStorageSpec{
 					Backend: "memory",
 				},
@@ -92,7 +92,7 @@ usage_report:
 		},
 		{
 			name: "PV storage with OTLP/gRPC and OTLP/HTTP",
-			storage: v1alpha1.MonolithicStorageSpec{
+			storage: &v1alpha1.MonolithicStorageSpec{
 				Traces: v1alpha1.MonolithicTracesStorageSpec{
 					Backend: "pv",
 				},

@@ -14,14 +14,14 @@ func (r *TempoMonolithic) SetupWebhookWithManager(mgr ctrl.Manager) error {
 		Complete()
 }
 
-//+kubebuilder:webhook:path=/mutate-tempo-grafana-com-v1alpha1-tempomonolithic,mutating=true,failurePolicy=fail,sideEffects=None,groups=tempo.grafana.com,resources=tempomonolithics,verbs=create;update,versions=v1alpha1,name=mtempomonolithic.kb.io,admissionReviewVersions=v1
-
-var _ webhook.Defaulter = &TempoMonolithic{}
-
 // Default implements webhook.Defaulter so a webhook will be registered for the type.
 func (r *TempoMonolithic) Default() {
 	log := ctrl.Log.WithName("tempomonolithic-webhook")
 	log.V(1).Info("running defaulter webhook", "name", r.Name)
+
+	if r.Spec.Storage == nil {
+		r.Spec.Storage = &MonolithicStorageSpec{}
+	}
 
 	if r.Spec.Storage.Traces.Backend == "" {
 		r.Spec.Storage.Traces.Backend = MonolithicTracesStorageBackendMemory

@@ -56,7 +56,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator
-    createdAt: "2024-01-08T18:44:22Z"
+    createdAt: "2024-01-10T20:43:07Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -1021,26 +1021,6 @@ spec:
     name: tempo-gateway-opa
   version: 0.6.0
   webhookdefinitions:
-  - admissionReviewVersions:
-    - v1
-    containerPort: 443
-    deploymentName: tempo-operator-controller
-    failurePolicy: Fail
-    generateName: mtempomonolithic.kb.io
-    rules:
-    - apiGroups:
-      - tempo.grafana.com
-      apiVersions:
-      - v1alpha1
-      operations:
-      - CREATE
-      - UPDATE
-      resources:
-      - tempomonolithics
-    sideEffects: None
-    targetPort: 9443
-    type: MutatingAdmissionWebhook
-    webhookPath: /mutate-tempo-grafana-com-v1alpha1-tempomonolithic
   - admissionReviewVersions:
     - v1
     containerPort: 443

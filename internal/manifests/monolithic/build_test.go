@@ -16,7 +16,7 @@ func TestBuildAll(t *testing.T) {
 				Namespace: "default",
 			},
 			Spec: v1alpha1.TempoMonolithicSpec{
-				Storage: v1alpha1.MonolithicStorageSpec{
+				Storage: &v1alpha1.MonolithicStorageSpec{
 					Traces: v1alpha1.MonolithicTracesStorageSpec{
 						Backend: "memory",
 					},

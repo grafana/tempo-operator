@@ -129,6 +129,7 @@ build: generate fmt ## Build manager binary.
 run: manifests generate fmt ## Run a controller from your host.
 	# Disabled webhooks only affects local runs, not the build or in-cluster deployments.
 	@echo -e "\033[33mWebhooks are disabled! Use the normal deployment method to enable full operator functionality.\033[0m"
+	kubectl delete validatingwebhookconfigurations.admissionregistration.k8s.io tempo-operator-validating-webhook-configuration
 	ENABLE_WEBHOOKS=false go run ./main.go start
 
 .PHONY: docker-build

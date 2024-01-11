@@ -19,7 +19,7 @@ func TestMonolithicDefault(t *testing.T) {
 			},
 			expected: &TempoMonolithic{
 				Spec: TempoMonolithicSpec{
-					Storage: MonolithicStorageSpec{
+					Storage: &MonolithicStorageSpec{
 						Traces: MonolithicTracesStorageSpec{
 							Backend: "memory",
 						},
@@ -38,7 +38,7 @@ func TestMonolithicDefault(t *testing.T) {
 			name: "set default values for PV",
 			input: &TempoMonolithic{
 				Spec: TempoMonolithicSpec{
-					Storage: MonolithicStorageSpec{
+					Storage: &MonolithicStorageSpec{
 						Traces: MonolithicTracesStorageSpec{
 							Backend: "pv",
 						},
@@ -47,7 +47,7 @@ func TestMonolithicDefault(t *testing.T) {
 			},
 			expected: &TempoMonolithic{
 				Spec: TempoMonolithicSpec{
-					Storage: MonolithicStorageSpec{
+					Storage: &MonolithicStorageSpec{
 						Traces: MonolithicTracesStorageSpec{
 							Backend: "pv",
 							WAL: &MonolithicTracesStorageWALSpec{
@@ -72,7 +72,7 @@ func TestMonolithicDefault(t *testing.T) {
 			name: "do not change already set values",
 			input: &TempoMonolithic{
 				Spec: TempoMonolithicSpec{
-					Storage: MonolithicStorageSpec{
+					Storage: &MonolithicStorageSpec{
 						Traces: MonolithicTracesStorageSpec{
 							Backend: "s3",
 							WAL: &MonolithicTracesStorageWALSpec{
@@ -92,7 +92,7 @@ func TestMonolithicDefault(t *testing.T) {
 			},
 			expected: &TempoMonolithic{
 				Spec: TempoMonolithicSpec{
-					Storage: MonolithicStorageSpec{
+					Storage: &MonolithicStorageSpec{
 						Traces: MonolithicTracesStorageSpec{
 							Backend: "s3",
 							WAL: &MonolithicTracesStorageWALSpec{

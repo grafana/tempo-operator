@@ -11,7 +11,7 @@ type TempoMonolithicSpec struct {
 	// Storage defines the backend storage configuration
 	//
 	// +kubebuilder:validation:Optional
-	Storage MonolithicStorageSpec `json:"storage,omitempty"`
+	Storage *MonolithicStorageSpec `json:"storage,omitempty"`
 
 	// Ingestion defines the trace ingestion configuration
 	//

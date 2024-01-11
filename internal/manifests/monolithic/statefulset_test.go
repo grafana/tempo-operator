@@ -33,7 +33,7 @@ func TestStatefulsetMemoryStorage(t *testing.T) {
 				Namespace: "default",
 			},
 			Spec: v1alpha1.TempoMonolithicSpec{
-				Storage: v1alpha1.MonolithicStorageSpec{
+				Storage: &v1alpha1.MonolithicStorageSpec{
 					Traces: v1alpha1.MonolithicTracesStorageSpec{
 						Backend: "memory",
 					},
@@ -163,7 +163,7 @@ func TestStatefulsetPVStorage(t *testing.T) {
 				Namespace: "default",
 			},
 			Spec: v1alpha1.TempoMonolithicSpec{
-				Storage: v1alpha1.MonolithicStorageSpec{
+				Storage: &v1alpha1.MonolithicStorageSpec{
 					Traces: v1alpha1.MonolithicTracesStorageSpec{
 						Backend: "pv",
 						WAL: &v1alpha1.MonolithicTracesStorageWALSpec{
@@ -254,7 +254,7 @@ func TestStatefulsetPorts(t *testing.T) {
 				Namespace: "default",
 			},
 			Spec: v1alpha1.TempoMonolithicSpec{
-				Storage: v1alpha1.MonolithicStorageSpec{
+				Storage: &v1alpha1.MonolithicStorageSpec{
 					Traces: v1alpha1.MonolithicTracesStorageSpec{
 						Backend: "memory",
 					},
