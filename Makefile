@@ -1,6 +1,3 @@
-include env
-export $(shell sed 's/=.*//' env)
-
 # Current Operator version
 VERSION_DATE ?= $(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
 VERSION_PKG ?= github.com/grafana/tempo-operator/internal/version
@@ -135,7 +132,7 @@ run: manifests generate fmt ## Run a controller from your host.
 	-kubectl delete ns $(OPERATOR_NAMESPACE)
 	-kubectl delete mutatingwebhookconfigurations.admissionregistration.k8s.io tempo-operator-mutating-webhook-configuration
 	-kubectl delete validatingwebhookconfigurations.admissionregistration.k8s.io tempo-operator-validating-webhook-configuration
-	ENABLE_WEBHOOKS=false go run ./main.go start
+	set -a && . .env && ENABLE_WEBHOOKS=false go run ./main.go start
 
 .PHONY: docker-build
 docker-build: ## Build docker image with the manager.
