@@ -3,9 +3,6 @@ package monolithic
 import (
 	"testing"
 
-	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
-	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
-	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/operator-framework/operator-lib/proxy"
 	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
@@ -13,6 +10,10 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/ptr"
+
+	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
+	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 )
 
 var (

@@ -3,11 +3,12 @@ package monolithic
 import (
 	"testing"
 
-	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+
+	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 )
 
 func TestBuildTempoService(t *testing.T) {

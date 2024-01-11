@@ -8,9 +8,9 @@ spec:                                    # TempoMonolithicSpec defines the desir
   ingestion:                             # Ingestion defines the trace ingestion configuration
     otlp:                                # OTLP defines the ingestion configuration for OTLP
       grpc:                              # GRPC defines the OTLP/gRPC configuration
-        enabled: false                   # Enabled defines if the OTLP over gRPC is enabled
+        enabled: false                   # Enabled defines if OTLP over gRPC is enabled
       http:                              # HTTP defines the OTLP/HTTP configuration
-        enabled: false                   # Enabled defines if the OTLP over HTTP is enabled
+        enabled: false                   # Enabled defines if OTLP over HTTP is enabled
     tls:                                 # TLS defines the TLS configuration for ingestion
       ca: ""                             # CA defines the name of a secret containing the CA certificate
       cert: ""                           # Cert defines the name of a secret containing the TLS certificate and private key
@@ -33,7 +33,6 @@ spec:                                    # TempoMonolithicSpec defines the desir
       backend: ""                        # Backend defines the backend for storing traces
       pv:                                # PV defines the Persistent Volume configuration
         size: 1Gi                        # Size defines the size of the Persistent Volume for storing the traces. Defaults to 10Gi.
-      secret: ""                         # Secret defines name of a secret containing the credentials for accessing the specified backend storage
       wal:                               # WAL defines the write-ahead logging (WAL) configuration
         size: 1Gi                        # Size defines the size of the Persistent Volume for storing the WAL. Defaults to 10Gi.
 status:                                  # TempoMonolithicStatus defines the observed state of TempoMonolithic.
