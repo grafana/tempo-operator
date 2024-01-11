@@ -12,6 +12,10 @@ import (
 )
 
 const tenantOverridesMountPath = "/conf/overrides.yaml"
+const tempoConfigKey = "tempo.yaml"
+const tempoQueryFrontendConfigKey = "tempo-query-frontend.yaml"
+const tempoQueryConfigKey = "tempo-query.yaml"
+const overridesConfigKey = "overrides.yaml"
 
 // BuildConfigMap builds the tempo configuration file and the tenant-specific overrides configuration.
 // It returns a ConfigMap containing both configuration files and the checksum of the main configuration file
@@ -34,6 +38,20 @@ func BuildConfigMap(params manifestutils.Params) (*corev1.ConfigMap, string, err
 		return nil, "", err
 	}
 
+	if params.Tempo.Spec.ExtraConfig != nil {
+		// For we only support tempo for now.
+		config, err = mergeExtraConfigWithConfig(params.Tempo.Spec.ExtraConfig.Tempo, config)
+		if err != nil {
+			return nil, "", err
+		}
+
+		// Is the same tempo config with certain TLS fields disabled.
+		frontendConfig, err = mergeExtraConfigWithConfig(params.Tempo.Spec.ExtraConfig.Tempo, frontendConfig)
+		if err != nil {
+			return nil, "", err
+		}
+	}
+
 	labels := manifestutils.ComponentLabels("config", tempo.Name)
 	configMap := &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
@@ -42,9 +60,9 @@ func BuildConfigMap(params manifestutils.Params) (*corev1.ConfigMap, string, err
 			Labels:    labels,
 		},
 		Data: map[string]string{
-			"tempo.yaml":                string(config),
-			"tempo-query-frontend.yaml": string(frontendConfig),
-			"overrides.yaml":            string(overridesConfig),
+			tempoConfigKey:              string(config),
+			tempoQueryFrontendConfigKey: string(frontendConfig),
+			overridesConfigKey:          string(overridesConfig),
 		},
 	}
 	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled {
@@ -52,7 +70,7 @@ func BuildConfigMap(params manifestutils.Params) (*corev1.ConfigMap, string, err
 		if err != nil {
 			return nil, "", err
 		}
-		configMap.Data["tempo-query.yaml"] = string(tempoQueryConfig)
+		configMap.Data[tempoQueryConfigKey] = string(tempoQueryConfig)
 	}
 
 	// We only need to hash the main ConfigMap, the per-tenant overrides

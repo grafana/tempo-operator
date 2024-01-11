@@ -124,7 +124,7 @@ func statefulSet(params manifestutils.Params) (*v1.StatefulSet, error) {
 								},
 							},
 							ReadinessProbe:  manifestutils.TempoReadinessProbe(params.CtrlConfig.Gates.HTTPEncryption),
-							Resources:       manifestutils.Resources(tempo, manifestutils.IngesterComponentName),
+							Resources:       manifestutils.Resources(tempo, manifestutils.IngesterComponentName, tempo.Spec.Template.Ingester.Replicas),
 							SecurityContext: manifestutils.TempoContainerSecurityContext(),
 						},
 					},

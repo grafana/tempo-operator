@@ -161,12 +161,12 @@ func TestBuildQuerier(t *testing.T) {
 							},
 							Resources: corev1.ResourceRequirements{
 								Limits: corev1.ResourceList{
-									corev1.ResourceCPU:    *resource.NewMilliQuantity(100, resource.BinarySI),
-									corev1.ResourceMemory: *resource.NewQuantity(322122560, resource.BinarySI),
+									corev1.ResourceCPU:    *resource.NewMilliQuantity(33, resource.BinarySI),
+									corev1.ResourceMemory: *resource.NewQuantity(107374184, resource.BinarySI),
 								},
 								Requests: corev1.ResourceList{
-									corev1.ResourceCPU:    *resource.NewMilliQuantity(30, resource.BinarySI),
-									corev1.ResourceMemory: *resource.NewQuantity(96636768, resource.BinarySI),
+									corev1.ResourceCPU:    *resource.NewMilliQuantity(10, resource.BinarySI),
+									corev1.ResourceMemory: *resource.NewQuantity(32212256, resource.BinarySI),
 								},
 							},
 							SecurityContext: manifestutils.TempoContainerSecurityContext(),

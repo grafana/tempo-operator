@@ -33,7 +33,7 @@ var (
 )
 
 // Resources calculates the resource requirements of a specific component.
-func Resources(tempo v1alpha1.TempoStack, component string) corev1.ResourceRequirements {
+func Resources(tempo v1alpha1.TempoStack, component string, replicas *int32) corev1.ResourceRequirements {
 
 	resourcesMap := resourcesMapNoGateway
 	if tempo.Spec.Template.Gateway.Enabled {
@@ -49,6 +49,9 @@ func Resources(tempo v1alpha1.TempoStack, component string) corev1.ResourceRequi
 	if ok {
 		totalCpuInt := totalCpu.MilliValue()
 		cpu := float32(totalCpuInt) * componentResources.cpu
+		if replicas != nil && *replicas > 1 {
+			cpu /= float32(*replicas)
+		}
 
 		resources.Limits = corev1.ResourceList{
 			corev1.ResourceCPU: *resource.NewMilliQuantity(int64(cpu), resource.BinarySI),
@@ -68,6 +71,9 @@ func Resources(tempo v1alpha1.TempoStack, component string) corev1.ResourceRequi
 		}
 		totalMemoryInt := totalMemory.Value()
 		mem := float32(totalMemoryInt) * componentResources.memory
+		if replicas != nil && *replicas > 1 {
+			mem /= float32(*replicas)
+		}
 		resources.Limits[corev1.ResourceMemory] = *resource.NewQuantity(int64(mem), resource.BinarySI)
 		resources.Requests[corev1.ResourceMemory] = *resource.NewQuantity(int64(mem*0.3), resource.BinarySI)
 	}

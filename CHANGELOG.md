@@ -3,6 +3,24 @@ Changes by Version
 
 <!-- next version -->
 
+## 0.7.0
+
+### 💡 Enhancements 💡
+
+- `operator`: Divide assigned limits with replicas (#721)
+- `operator`: Allow override arbitrary tempo configurations (#629)
+- `operator`: Create Grafana Tempo Operator datasource (#423)
+- `operator`: Add .spec.hashRing.memberlist.enableIPv6 option to enable IPv6 support (#704)
+- `operator`: Propagating proxy env vars to component containers (#700)
+- `operator`: Upgrade tempo to v2.3.1 (#729)
+
+### 🧰 Bug fixes 🧰
+
+- `operator`: Configure the number of replicas for compactor, querier and query-frontend according to the CR (#712)
+
+### Components
+- Tempo: [v2.3.1](https://github.com/grafana/tempo/releases/tag/v2.3.1)
+
 ## 0.6.0
 
 ### 🛑 Breaking changes 🛑

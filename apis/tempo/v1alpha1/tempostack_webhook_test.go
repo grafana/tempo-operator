@@ -8,6 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -15,6 +16,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 
 	"github.com/grafana/tempo-operator/apis/config/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
@@ -1578,10 +1580,125 @@ func TestValidateReceiverTLSAndGateway(t *testing.T) {
 	}
 }
 
+func TestWarning(t *testing.T) {
+	gvType := metav1.TypeMeta{
+		APIVersion: "testv1",
+		Kind:       "something",
+	}
+
+	tests := []struct {
+		name     string
+		input    runtime.Object
+		expected admission.Warnings
+		client   client.Client
+	}{
+		{
+			name: "no secret exists",
+			input: &TempoStack{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-obj",
+					Namespace: "abc",
+				},
+				TypeMeta: gvType,
+				Spec: TempoStackSpec{
+					ServiceAccount: naming.DefaultServiceAccountName("test-obj"),
+					Storage: ObjectStorageSpec{
+						Secret: ObjectStorageSecretSpec{
+							Name: "not-found",
+						},
+					},
+					Template: TempoTemplateSpec{
+						Ingester: TempoComponentSpec{
+							Replicas: func(i int32) *int32 { return &i }(1),
+						},
+					},
+				},
+			},
+			client:   &k8sFake{},
+			expected: admission.Warnings{"Secret 'not-found' does not exist"},
+		},
+		{
+			name: "warning for use extra config",
+			input: &TempoStack{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-obj",
+					Namespace: "abc",
+				},
+				TypeMeta: gvType,
+				Spec: TempoStackSpec{
+					ServiceAccount: naming.DefaultServiceAccountName("test-obj"),
+					Storage: ObjectStorageSpec{
+						Secret: ObjectStorageSecretSpec{
+							Name: "not-found",
+						},
+					},
+					Template: TempoTemplateSpec{
+						Ingester: TempoComponentSpec{
+							Replicas: func(i int32) *int32 { return &i }(1),
+						},
+					},
+					ExtraConfig: &ExtraConfigSpec{
+						Tempo: v1.JSON{Raw: []byte("{}")},
+					},
+				},
+			},
+			client: &k8sFake{
+				secret: &corev1.Secret{},
+			},
+			expected: admission.Warnings{
+				"override tempo configuration could potentially break the stack, use it carefully",
+			},
+		},
+		{
+			name: "no extra config used",
+			input: &TempoStack{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-obj",
+					Namespace: "abc",
+				},
+				TypeMeta: gvType,
+				Spec: TempoStackSpec{
+					ServiceAccount: naming.DefaultServiceAccountName("test-obj"),
+					Storage: ObjectStorageSpec{
+						Secret: ObjectStorageSecretSpec{
+							Name: "not-found",
+						},
+					},
+					Template: TempoTemplateSpec{
+						Ingester: TempoComponentSpec{
+							Replicas: func(i int32) *int32 { return &i }(1),
+						},
+					},
+				},
+			},
+			client: &k8sFake{
+				secret: &corev1.Secret{},
+			},
+			expected: admission.Warnings{},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			v := &validator{ctrlConfig: v1alpha1.ProjectConfig{}, client: test.client}
+			wrgs, _ := v.validate(context.Background(), test.input)
+			assert.Equal(t, test.expected, wrgs)
+		})
+	}
+}
+
 type k8sFake struct {
+	secret *corev1.Secret
 	client.Client
 }
 
-func (*k8sFake) Get(ctx context.Context, key client.ObjectKey, obj client.Object, opts ...client.GetOption) error {
+func (k *k8sFake) Get(ctx context.Context, key client.ObjectKey, obj client.Object, opts ...client.GetOption) error {
+	if k.secret != nil {
+		if obj.GetObjectKind().GroupVersionKind().Kind == k.secret.Kind {
+			obj = k.secret
+			return nil
+		}
+	}
+
 	return fmt.Errorf("mock: fails always")
 }
