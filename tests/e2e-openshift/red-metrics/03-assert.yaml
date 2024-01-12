@@ -50,3 +50,8 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: tempo-redmetrics
+
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+commands:
+- command: /bin/sh -c "kubectl get --namespace $NAMESPACE tempo redmetrics -o jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}' | grep True"

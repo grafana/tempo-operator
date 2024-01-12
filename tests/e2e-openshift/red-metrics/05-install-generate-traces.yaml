@@ -3,8 +3,6 @@ kind: Job
 metadata:
   name: hotrod-curl
 spec:
-  completions: 1
-  parallelism: 1
   template:
     metadata:
       labels:
@@ -13,6 +11,7 @@ spec:
       containers:
         - name: hotrod-curl
           image: curlimages/curl
+          command: ["/bin/sh", "-c"]
           args:
-            - "http://hotrod:80/dispatch?customer=123"
+            - "for i in `seq 1 900`; do for j in `seq 1 10`; do curl http://hotrod:80/dispatch?customer=123 & done; wait; sleep 1; done"
       restartPolicy: Never
