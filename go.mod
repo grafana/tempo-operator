@@ -10,7 +10,7 @@ require (
 	github.com/grafana-operator/grafana-operator/v5 v5.5.2
 	github.com/imdario/mergo v0.3.16
 	github.com/novln/docker-parser v1.0.0
-	github.com/onsi/ginkgo/v2 v2.13.2
+	github.com/onsi/ginkgo/v2 v2.14.0
 	github.com/onsi/gomega v1.30.0
 	github.com/openshift/library-go v0.0.0-20220622115547-84d884f4c9f6
 	github.com/operator-framework/operator-lib v0.11.0
@@ -33,7 +33,7 @@ require (
 	github.com/openshift/api v3.9.0+incompatible // release-4.14
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.70.0
 	github.com/stretchr/testify v1.8.4
-	gopkg.in/yaml.v3 v3.0.1 // indirect
+	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/utils v0.0.0-20231127182322-b307cd553661
 )
 
@@ -79,7 +79,7 @@ require (
 	golang.org/x/term v0.15.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
-	golang.org/x/tools v0.14.0 // indirect
+	golang.org/x/tools v0.16.1 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
