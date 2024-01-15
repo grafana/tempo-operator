@@ -6,3 +6,9 @@ status:
   conditions:
     - status: "True"
       type: Complete
+
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+commands:
+- script: ./tests/e2e-openshift/red-metrics/check_alert.sh
