@@ -1,7 +1,9 @@
 package v1alpha1
 
 import (
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
@@ -16,9 +18,6 @@ func (r *TempoMonolithic) SetupWebhookWithManager(mgr ctrl.Manager) error {
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type.
 func (r *TempoMonolithic) Default() {
-	log := ctrl.Log.WithName("tempomonolithic-webhook")
-	log.V(1).Info("running defaulter webhook", "name", r.Name)
-
 	if r.Spec.Storage == nil {
 		r.Spec.Storage = &MonolithicStorageSpec{}
 	}
@@ -70,8 +69,19 @@ func (r *TempoMonolithic) ValidateDelete() (admission.Warnings, error) {
 	return r.validate()
 }
 
-func (r *TempoMonolithic) validate() (admission.Warnings, error) {
+func (tempo *TempoMonolithic) validate() (admission.Warnings, error) {
 	log := ctrl.Log.WithName("tempomonolithic-webhook")
-	log.V(1).Info("running validating webhook", "name", r.Name)
-	return nil, nil
+	log.V(1).Info("running validating webhook", "name", tempo.Name)
+
+	allWarnings := admission.Warnings{}
+	allErrors := field.ErrorList{}
+
+	if tempo.Spec.ExtraConfig != nil && len(tempo.Spec.ExtraConfig.Tempo.Raw) > 0 {
+		allWarnings = append(allWarnings, "overriding Tempo configuration could potentially break the deployment, use it carefully")
+	}
+
+	if len(allErrors) == 0 {
+		return allWarnings, nil
+	}
+	return allWarnings, apierrors.NewInvalid(tempo.GroupVersionKind().GroupKind(), tempo.Name, allErrors)
 }
