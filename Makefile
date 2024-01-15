@@ -398,13 +398,9 @@ generate-all: generate api-docs bundle ## Update all generated files
 ensure-generate-is-noop: generate-all ## Verify that all checked-in, generated code is up-to-date
 	@# on make bundle config/manager/kustomization.yaml includes changes, which should be ignored for the below check
 	@git restore config/manager/kustomization.yaml
-	@git diff -s --exit-code apis/tempo/v1alpha1/zz_generated.*.go || (echo "Build failed: a model has been changed but the generated resources aren't up to date. Run 'make generate' and update your PR." && exit 1)
-	@git diff -s --exit-code apis/config/v1alpha1/zz_generated.*.go || (echo "Build failed: a model has been changed but the generated resources aren't up to date. Run 'make generate' and update your PR." && exit 1)
+	@git diff -s --exit-code apis/tempo/v1alpha1/zz_generated.*.go apis/config/v1alpha1/zz_generated.*.go || (echo "Build failed: a model has been changed but the generated resources aren't up to date. Run 'make generate' and update your PR." && exit 1)
 	@git diff -s --exit-code bundle config || (echo "Build failed: the bundle, config files has been changed but the generated bundle, config files aren't up to date. Run 'make bundle' and update your PR." && git diff && exit 1)
-	@git diff -s --exit-code bundle/community/bundle.Dockerfile || (echo "Build failed: the community bundle.Dockerfile file has been changed. The file should be the same as generated one. Run 'make bundle' and update your PR." && git diff && exit 1)
-	@git diff -s --exit-code bundle/openshift/bundle.Dockerfile || (echo "Build failed: the OpenShift bundle.Dockerfile file has been changed. The file should be the same as generated one. Run 'make bundle' and update your PR." && git diff && exit 1)
-	@git diff -s --exit-code docs/operator/api.md || (echo "Build failed: the api.md file has been changed but the generated api.md file isn't up to date. Run 'make api-docs' and update your PR." && git diff && exit 1)
-	@git diff -s --exit-code docs/operator/feature-gates.md || (echo "Build failed: the feature-gates.md file has been changed but the generated feature-gates.md file isn't up to date. Run 'make api-docs' and update your PR." && git diff && exit 1)
+	@git diff -s --exit-code docs/operator docs/spec || (echo "Build failed: the api docs have been changed but the generated files aren't up to date. Run 'make api-docs' and update your PR." && git diff && exit 1)
 
 reset: ## Reset all generated files to repository defaults
 	unset IMG_PREFIX && unset OPERATOR_VERSION && $(MAKE) generate-all
@@ -433,7 +429,7 @@ cmctl:
 	}
 
 .PHONY: api-docs
-api-docs: docs/operator/api.md docs/operator/feature-gates.md
+api-docs: docs/operator/api.md docs/operator/feature-gates.md docs/spec/tempo.grafana.com_tempostacks.yaml
 
 TYPES_TARGET := $(shell find apis/tempo -type f -iname "*_types.go")
 docs/operator/api.md: $(TYPES_TARGET) gen-crd-api-reference-docs
@@ -448,6 +444,9 @@ docs/operator/feature-gates.md: $(FEATURE_GATES_TARGET) gen-crd-api-reference-do
 	sed -i 's/+parent:/    parent:/' $@
 	sed -i 's/##/\n##/' $@
 	sed -i 's/+newline/\n/' $@
+
+docs/spec/%: bundle/community/manifests/%
+	docker run -i ghcr.io/andreasgerstmayr/crd-to-cr < $^ > $@
 
 ##@ Release
 CHLOGGEN_VERSION=v0.11.0

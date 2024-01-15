@@ -3,6 +3,8 @@ kind: TempoStack                         # Kind is a string value representing t
 metadata:
   name: example
 spec:                                    # TempoStackSpec defines the desired state of TempoStack.
+  extraConfig:                           # ExtraConfigSpec defines extra configurations for tempo that will be merged with the operator generated, configurations defined here has precedence and could override generated config.
+    tempo: {}
   hashRing:                              # HashRing defines the spec for the distributed hash ring configuration.
     memberlist:                          # MemberList configuration spec
       enableIPv6: false                  # EnableIPv6 enables IPv6 support for the memberlist based hash ring.
@@ -51,7 +53,7 @@ spec:                                    # TempoStackSpec defines the desired st
     tracing:                             # Tracing defines a config for operands.
       jaeger_agent_endpoint: ""          # JaegerAgentEndpoint defines the jaeger endpoint data gets send to.
       sampling_fraction: ""              # SamplingFraction defines the sampling ratio. Valid values are 0 to 1.
-  replicationFactor: 0                   # NOTE: currently this field is not considered. ReplicationFactor is used to define how many component replicas should exist.
+  replicationFactor: 0                   # ReplicationFactor is used to define how many component replicas should exist.
   resources:                             # Resources defines resources configuration.
     total:                               # The total amount of resources for Tempo instance. The operator autonomously splits resources between deployed Tempo components. Only limits are supported, the operator calculates requests automatically. See http://github.com/grafana/tempo/issues/1540.
       claims:                            # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.   This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.   This field is immutable. It can only be set for containers.
