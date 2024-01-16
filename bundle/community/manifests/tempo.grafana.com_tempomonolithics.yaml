@@ -170,6 +170,7 @@ spec:
                       for traces
                     properties:
                       backend:
+                        default: memory
                         description: Backend defines the backend for storing traces
                         enum:
                         - memory

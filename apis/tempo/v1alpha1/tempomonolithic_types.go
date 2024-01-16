@@ -52,6 +52,7 @@ type MonolithicTracesStorageSpec struct {
 	// Backend defines the backend for storing traces
 	//
 	// +kubebuilder:validation:Required
+	// +kubebuilder:default=memory
 	Backend MonolithicTracesStorageBackend `json:"backend"`
 
 	// WAL defines the write-ahead logging (WAL) configuration
