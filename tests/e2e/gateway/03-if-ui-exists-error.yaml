@@ -1,0 +1,22 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/component: query-frontend
+    app.kubernetes.io/instance: foo
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-foo-query-frontend
+spec:
+  template:
+    spec:
+      containers:
+        - name: tempo
+          image: docker.io/grafana/tempo:2.3.1
+        - name: tempo-query
+          image: docker.io/grafana/tempo-query:2.3.1
+
+    # case.go:364: failed in step 3-if-ui-exists-error
+    # case.go:366: Deployment.apps "tempo-foo-query-frontend"
+    # is invalid: [spec.template.spec.containers[0].image: Required value, spec.template.spec.containers[1].image: Required value]
