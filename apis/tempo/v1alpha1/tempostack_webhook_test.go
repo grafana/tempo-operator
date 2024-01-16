@@ -781,32 +781,6 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 			expected: nil,
 		},
 		{
-			name: "invalid config disable jaegerQuery",
-			input: TempoStack{
-				Spec: TempoStackSpec{
-					ReplicationFactor: 3,
-					Template: TempoTemplateSpec{
-						QueryFrontend: TempoQueryFrontendSpec{
-							JaegerQuery: JaegerQuerySpec{
-								Enabled: false,
-								Ingress: IngressSpec{
-									Type: "ingress",
-								},
-							},
-						},
-						Gateway: TempoGatewaySpec{
-							Enabled: true,
-						},
-					},
-				},
-			},
-			expected: field.ErrorList{
-				field.Invalid(path, true,
-					"to use the gateway, please enable jaegerQuery",
-				),
-			},
-		},
-		{
 			name: "invalid configuration, ingress and gateway enabled",
 			input: TempoStack{
 				Spec: TempoStackSpec{
