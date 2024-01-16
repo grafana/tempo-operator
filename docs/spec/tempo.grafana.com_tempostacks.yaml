@@ -35,7 +35,7 @@ spec:                                    # TempoStackSpec defines the desired st
           maxBytesPerTagValues: 0        # MaxBytesPerTagValues defines the maximum size in bytes of a tag-values query.
           maxSearchBytesPerTrace: 0      # DEPRECATED. MaxSearchBytesPerTrace defines the maximum size of search data for a single trace in bytes. default: `0` to disable.
           maxSearchDuration: ""          # MaxSearchDuration defines the maximum allowed time range for a search. If this value is not set, then spec.search.maxDuration is used.
-  managementState: ""                    # ManagementState defines if the CR should be managed by the operator or not. Default is managed.
+  managementState: "Managed"             # ManagementState defines if the CR should be managed by the operator or not. Default is managed.
   observability:                         # ObservabilitySpec defines how telemetry data gets handled.
     grafana:                             # Grafana defines the Grafana configuration for operands.
       createDatasource: false            # CreateDatasource specifies if a Grafana Datasource should be created for Tempo.
@@ -51,7 +51,7 @@ spec:                                    # TempoStackSpec defines the desired st
       createPrometheusRules: false       # CreatePrometheusRules specifies if Prometheus rules for alerts should be created for Tempo components.
       createServiceMonitors: false       # CreateServiceMonitors specifies if ServiceMonitors should be created for Tempo components.
     tracing:                             # Tracing defines a config for operands.
-      jaeger_agent_endpoint: ""          # JaegerAgentEndpoint defines the jaeger endpoint data gets send to.
+      jaeger_agent_endpoint: "localhost:6831" # JaegerAgentEndpoint defines the jaeger endpoint data gets send to.
       sampling_fraction: ""              # SamplingFraction defines the sampling ratio. Valid values are 0 to 1.
   replicationFactor: 0                   # ReplicationFactor is used to define how many component replicas should exist.
   resources:                             # Resources defines resources configuration.
@@ -199,7 +199,7 @@ spec:                                    # TempoStackSpec defines the desired st
         - ""
         tenants:
         - ""
-    mode: ""                             # Mode defines the multitenancy mode.
+    mode: "static"                       # Mode defines the multitenancy mode.
 status:                                  # TempoStackStatus defines the observed state of TempoStack.
   components:                            # Components provides summary of all Tempo pod status grouped per component.
     compactor:                           # Compactor is a map to the pod status of the compactor pod.
