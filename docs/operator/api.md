@@ -2588,12 +2588,12 @@ MonolithicTracesStorageSpec
 
 <tbody><tr><td><p>&#34;memory&#34;</p></td>
 
-<td><p>MonolithicTracesStorageBackendMemory specifies a in-memory storage backend.</p>
+<td><p>MonolithicTracesStorageBackendMemory defines storing traces in a tmpfs (in-memory filesystem).</p>
 </td>
 
 </tr><tr><td><p>&#34;pv&#34;</p></td>
 
-<td><p>MonolithicTracesStorageBackendPersistentVolume specifies a Persistent Volume storage backend.</p>
+<td><p>MonolithicTracesStorageBackendPersistentVolume defines storing traces in a Persistent Volume.</p>
 </td>
 
 </tr></tbody>
@@ -2703,7 +2703,7 @@ MonolithicTracesStorageBackend
 
 <td>
 
-<p>Backend defines the backend for storing traces</p>
+<p>Backend defines the backend for storing traces. Default: memory</p>
 
 </td>
 </tr>

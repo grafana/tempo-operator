@@ -49,7 +49,7 @@ type MonolithicStorageSpec struct {
 
 // MonolithicTracesStorageSpec defines the traces storage for the Tempo deployment.
 type MonolithicTracesStorageSpec struct {
-	// Backend defines the backend for storing traces
+	// Backend defines the backend for storing traces. Default: memory
 	//
 	// +kubebuilder:validation:Required
 	// +kubebuilder:default=memory
@@ -72,9 +72,9 @@ type MonolithicTracesStorageSpec struct {
 type MonolithicTracesStorageBackend string
 
 const (
-	// MonolithicTracesStorageBackendMemory specifies a in-memory storage backend.
+	// MonolithicTracesStorageBackendMemory defines storing traces in a tmpfs (in-memory filesystem).
 	MonolithicTracesStorageBackendMemory MonolithicTracesStorageBackend = "memory"
-	// MonolithicTracesStorageBackendPersistentVolume specifies a Persistent Volume storage backend.
+	// MonolithicTracesStorageBackendPersistentVolume defines storing traces in a Persistent Volume.
 	MonolithicTracesStorageBackendPersistentVolume MonolithicTracesStorageBackend = "pv"
 )
 
