@@ -73,7 +73,8 @@ If a changelog entry is not required, add either `[chore]` to the title of the p
 Alternately, copy `./.chloggen/TEMPLATE.yaml`, or just create your file from scratch.
 
 ## Updating related components
-The versions of all related components (tempo, tempo-query, etc.) are stored in the `RELATED_IMAGE_*` environment variables in [config/manager/manager.yaml](config/manager/manager.yaml).
+Versions of all components (operator, tempo, tempo-query, etc.) are stored in the [Makefile](Makefile).
+The `manifests` target will update the image locations and versions of files in `config/`.
 
 ## Manually Testing Operator Upgrades
 ### Using OLM
