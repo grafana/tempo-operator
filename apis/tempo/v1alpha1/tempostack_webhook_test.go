@@ -1251,6 +1251,72 @@ func TestValidatorObservabilityTracingConfig(t *testing.T) {
 	}
 }
 
+func TestValidatorObservabilityGrafana(t *testing.T) {
+	tt := []struct {
+		name       string
+		input      TempoStack
+		ctrlConfig v1alpha1.ProjectConfig
+		expected   field.ErrorList
+	}{
+		{
+			name: "datasource not enabled",
+			input: TempoStack{
+				Spec: TempoStackSpec{},
+			},
+			expected: nil,
+		},
+		{
+			name: "datasource enabled, feature gate not set",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					Observability: ObservabilitySpec{
+						Grafana: GrafanaConfigSpec{
+							CreateDatasource: true,
+						},
+					},
+				},
+			},
+			ctrlConfig: v1alpha1.ProjectConfig{
+				Gates: v1alpha1.FeatureGates{
+					GrafanaOperator: false,
+				},
+			},
+			expected: field.ErrorList{
+				field.Invalid(
+					field.NewPath("spec").Child("observability").Child("grafana").Child("createDatasource"),
+					true,
+					"the grafanaOperator feature gate must be enabled to create a Datasource for Tempo",
+				),
+			},
+		},
+		{
+			name: "datasource enabled, feature gate set",
+			input: TempoStack{
+				Spec: TempoStackSpec{
+					Observability: ObservabilitySpec{
+						Grafana: GrafanaConfigSpec{
+							CreateDatasource: true,
+						},
+					},
+				},
+			},
+			ctrlConfig: v1alpha1.ProjectConfig{
+				Gates: v1alpha1.FeatureGates{
+					GrafanaOperator: true,
+				},
+			},
+			expected: nil,
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			v := &validator{ctrlConfig: tc.ctrlConfig}
+			assert.Equal(t, tc.expected, v.validateObservability(tc.input))
+		})
+	}
+}
+
 func TestValidatorValidate(t *testing.T) {
 
 	gvType := metav1.TypeMeta{
