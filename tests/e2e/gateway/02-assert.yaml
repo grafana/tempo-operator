@@ -139,3 +139,19 @@ spec:
 
 status:
   readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/component: query-frontend
+    app.kubernetes.io/instance: foo
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-foo-query-frontend
+spec:
+  template:
+    spec:
+      containers:
+        - name: tempo
+        - name: tempo-query

@@ -374,6 +374,126 @@ func TestPatchTracing(t *testing.T) {
 	}
 }
 
+func TestPatchTraceReadEndpoint(t *testing.T) {
+	tt := []struct {
+		name        string
+		inputParams manifestutils.Params
+		inputPod    corev1.PodTemplateSpec
+		expectPod   corev1.PodTemplateSpec
+		expectErr   error
+	}{
+		{
+			name: "with trace read endpoint",
+			inputParams: manifestutils.Params{
+				Tempo: v1alpha1.TempoStack{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "name",
+						Namespace: "default",
+					},
+					Spec: v1alpha1.TempoStackSpec{
+						Template: v1alpha1.TempoTemplateSpec{
+							QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+								JaegerQuery: v1alpha1.JaegerQuerySpec{
+									Enabled: true,
+								},
+							},
+						},
+					},
+				},
+			},
+			inputPod: corev1.PodTemplateSpec{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: containerNameTempoGateway,
+							Args: []string{
+								"--abc",
+							},
+						},
+						{
+							Name: "second",
+							Args: []string{
+								"--xyz",
+							},
+						},
+					},
+				},
+			},
+			expectPod: corev1.PodTemplateSpec{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: containerNameTempoGateway,
+							Args: []string{
+								"--abc",
+								"--traces.read.endpoint=http://tempo-name-query-frontend.default.svc.cluster.local:16686",
+							},
+						},
+						{
+							Name: "second",
+							Args: []string{
+								"--xyz",
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "without trace read endpoint",
+			inputParams: manifestutils.Params{
+				Tempo: v1alpha1.TempoStack{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "name",
+						Namespace: "default",
+					},
+					Spec: v1alpha1.TempoStackSpec{
+						Template: v1alpha1.TempoTemplateSpec{
+							QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+								JaegerQuery: v1alpha1.JaegerQuerySpec{
+									Enabled: false,
+								},
+							},
+						},
+					},
+				},
+			},
+			inputPod: corev1.PodTemplateSpec{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: containerNameTempoGateway,
+							Args: []string{
+								"--abc",
+							},
+						},
+					},
+				},
+			},
+			expectPod: corev1.PodTemplateSpec{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: containerNameTempoGateway,
+							Args: []string{
+								"--abc",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			pod, err := patchTraceReadEndpoint(tc.inputParams, tc.inputPod)
+			require.Equal(t, tc.expectErr, err)
+			assert.Equal(t, tc.expectPod, pod)
+		})
+	}
+}
+
 func TestTLSParameters(t *testing.T) {
 	tempo := v1alpha1.TempoStack{
 		ObjectMeta: metav1.ObjectMeta{
@@ -410,6 +530,11 @@ func TestTLSParameters(t *testing.T) {
 				},
 			},
 			Template: v1alpha1.TempoTemplateSpec{
+				QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+					JaegerQuery: v1alpha1.JaegerQuerySpec{
+						Enabled: true,
+					},
+				},
 				Gateway: v1alpha1.TempoGatewaySpec{
 					Enabled: true,
 				},
@@ -444,8 +569,6 @@ func TestTLSParameters(t *testing.T) {
 	assert.Contains(t, args, fmt.Sprintf("--traces.tls.key-file=%s/tls.key", manifestutils.TempoServerTLSDir()))
 	assert.Contains(t, args, fmt.Sprintf("--traces.tls.cert-file=%s/tls.crt", manifestutils.TempoServerTLSDir()))
 	assert.Contains(t, args, fmt.Sprintf("--traces.tls.ca-file=%s/service-ca.crt", manifestutils.CABundleDir))
-	assert.Contains(t, args, fmt.Sprintf("--traces.read.endpoint=https://%s:16686",
-		naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.QueryFrontendComponentName)))
 	assert.Contains(t, args, fmt.Sprintf("--traces.tempo.endpoint=https://%s:%d",
 		naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.QueryFrontendComponentName), manifestutils.PortHTTPServer))
 	assert.Equal(t, corev1.URISchemeHTTPS, dep.Spec.Template.Spec.Containers[0].ReadinessProbe.HTTPGet.Scheme)

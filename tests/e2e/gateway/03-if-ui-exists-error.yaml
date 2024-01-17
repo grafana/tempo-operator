@@ -1,0 +1,5 @@
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+  - script: "while true; do container_names=$(kubectl get deployment/tempo-foo-query-frontend -n $NAMESPACE -o=jsonpath='{.spec.template.spec.containers[*].name}'); if [[ -n $(echo \"$container_names\" | grep \"tempo-query\") ]]; then echo \"tempo-query container still exists. Retrying...\"; else echo \"tempo-query container no longer exists. Test passed.\"; exit 0; fi; sleep 5; done"

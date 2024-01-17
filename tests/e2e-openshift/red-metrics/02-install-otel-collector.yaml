@@ -3,18 +3,17 @@ kind: OpenTelemetryCollector
 metadata:
   name: otel
 spec:
-  image: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.91.0
   mode: deployment
-  ports:
-    - name: promexporter
-      port: 8889
-      protocol: TCP
+  image: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.92.0
+  observability:
+    metrics:
+      enableMetrics: true
   config: |
     connectors:
       spanmetrics:
         histogram:
           explicit:
-            buckets: [100us, 1ms, 2ms, 6ms, 10ms, 100ms, 250ms]
+            buckets: [2ms, 4ms, 6ms, 8ms, 10ms, 50ms, 100ms, 200ms, 400ms, 800ms, 1s, 1400ms, 2s, 5s, 10s, 15s]
         dimensions:
         - name: http.method
           default: GET
@@ -35,7 +34,9 @@ spec:
         endpoint: 0.0.0.0:8889
         resource_to_telemetry_conversion: 
           enabled: true # by default resource attributes are dropped
+
       logging:
+
       otlp:
         endpoint: tempo-redmetrics-distributor:4317
         tls:
@@ -54,27 +55,20 @@ spec:
         metrics:
           receivers: [spanmetrics]
           exporters: [prometheus, logging]
+
 ---
 apiVersion: monitoring.coreos.com/v1
-kind: PodMonitor
+kind: PrometheusRule
 metadata:
-  name: otel-collector
+  name: span-red
 spec:
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: otel-collector
-  podMetricsEndpoints:
-    - port: metrics
-    - port: promexporter
-      relabelings:
-        - action: labeldrop
-          regex: pod
-        - action: labeldrop
-          regex: container
-        - action: labeldrop
-          regex: endpoint
-      metricRelabelings:
-        - action: labeldrop
-          regex: instance
-        - action: labeldrop
-          regex: job
+  groups:
+  - name: server-side-latency
+    rules:
+    - alert: SpanREDFrontendAPIRequestLatency
+      expr: histogram_quantile(0.95, sum(rate(duration_bucket{service_name="frontend", span_kind="SPAN_KIND_SERVER"}[1m])) by (le, service_name, span_name)) > 1000
+      labels:
+        severity: Warning
+      annotations:
+        summary: "High request latency on {{$labels.service_name}} and {{$labels.span_name}}"
+        description: "{{$labels.instance}} has 95th request latency above 2s (current value: {{$value}}s)"
