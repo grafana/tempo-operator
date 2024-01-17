@@ -129,11 +129,11 @@ metadata:
   name: tempo-simplest-gateway
   namespace: kuttl-multitenancy
   ownerReferences:
-    - apiVersion: tempo.grafana.com/v1alpha1
-      blockOwnerDeletion: true
-      controller: true
-      kind: TempoStack
-      name: simplest
+  - apiVersion: tempo.grafana.com/v1alpha1
+    blockOwnerDeletion: true
+    controller: true
+    kind: TempoStack
+    name: simplest
 spec:
   selector:
     matchLabels:
@@ -150,100 +150,165 @@ spec:
         app.kubernetes.io/name: tempo
     spec:
       containers:
-        - name: tempo-gateway
-          args:
-          - --traces.tenant-header=x-scope-orgid
-          - --web.listen=0.0.0.0:8080
-          - --web.internal.listen=0.0.0.0:8081
-          - --traces.write.endpoint=tempo-simplest-distributor.kuttl-multitenancy.svc.cluster.local:4317
-          - --traces.read.endpoint=https://tempo-simplest-query-frontend.kuttl-multitenancy.svc.cluster.local:16686
-          - --traces.tempo.endpoint=https://tempo-simplest-query-frontend.kuttl-multitenancy.svc.cluster.local:3200
-          - --grpc.listen=0.0.0.0:8090
-          - --rbac.config=/etc/tempo-gateway/cm/rbac.yaml
-          - --tenants.config=/etc/tempo-gateway/secret/tenants.yaml
-          - --log.level=info
-          - --tls.internal.server.key-file=/var/run/tls/server/tls.key
-          - --tls.internal.server.cert-file=/var/run/tls/server/tls.crt
-          - --traces.tls.key-file=/var/run/tls/server/tls.key
-          - --traces.tls.cert-file=/var/run/tls/server/tls.crt
-          - --traces.tls.ca-file=/var/run/ca/service-ca.crt
-          - --tls.server.cert-file=/etc/tempo-gateway/serving-certs/tls.crt
-          - --tls.server.key-file=/etc/tempo-gateway/serving-certs/tls.key
-          - --tls.healthchecks.server-ca-file=/etc/tempo-gateway/cabundle/service-ca.crt
-          - --tls.healthchecks.server-name=tempo-simplest-gateway.kuttl-multitenancy.svc.cluster.local
-          - --web.healthchecks.url=https://localhost:8080
-          imagePullPolicy: IfNotPresent
-          ports:
-            - containerPort: 8090
-              name: grpc-public
-              protocol: TCP
-            - containerPort: 8081
-              name: internal
-              protocol: TCP
-            - containerPort: 8080
-              name: public
-              protocol: TCP
-          volumeMounts:
-            - mountPath: /etc/tempo-gateway/cm
-              name: rbac
-              readOnly: true
-            - mountPath: /etc/tempo-gateway/secret/tenants.yaml
-              name: tenant
-              readOnly: true
-              subPath: tenants.yaml
-            - mountPath: /var/run/ca
-              name: tempo-simplest-ca-bundle
-            - mountPath: /var/run/tls/server
-              name: tempo-simplest-gateway-mtls
-            - mountPath: /etc/tempo-gateway/serving-certs
-              name: serving-certs
-              readOnly: true
-            - mountPath: /etc/tempo-gateway/cabundle
-              name: cabundle
-              readOnly: true
-        - name: opa
-          args:
-          - --log.level=warn
-          - --opa.admin-groups=system:cluster-admins,cluster-admin,dedicated-admin
-          - --web.listen=:8082
-          - --web.internal.listen=:8083
-          - --web.healthchecks.url=http://localhost:8082
-          - --opa.package=tempostack
-          - --openshift.mappings=dev=tempo.grafana.com
-          - --openshift.mappings=prod=tempo.grafana.com
-      serviceAccountName: tempo-simplest-gateway
-      volumes:
-        - configMap:
-            defaultMode: 420
-            items:
-              - key: rbac.yaml
-                path: rbac.yaml
-            name: tempo-simplest-gateway
+      - args:
+        - --traces.tenant-header=x-scope-orgid
+        - --web.listen=0.0.0.0:8080
+        - --web.internal.listen=0.0.0.0:8081
+        - --traces.write.endpoint=tempo-simplest-distributor.kuttl-multitenancy.svc.cluster.local:4317
+        - --traces.tempo.endpoint=https://tempo-simplest-query-frontend.kuttl-multitenancy.svc.cluster.local:3200
+        - --grpc.listen=0.0.0.0:8090
+        - --rbac.config=/etc/tempo-gateway/cm/rbac.yaml
+        - --tenants.config=/etc/tempo-gateway/secret/tenants.yaml
+        - --log.level=info
+        - --tls.internal.server.key-file=/var/run/tls/server/tls.key
+        - --tls.internal.server.cert-file=/var/run/tls/server/tls.crt
+        - --traces.tls.key-file=/var/run/tls/server/tls.key
+        - --traces.tls.cert-file=/var/run/tls/server/tls.crt
+        - --traces.tls.ca-file=/var/run/ca/service-ca.crt
+        - --tls.server.cert-file=/etc/tempo-gateway/serving-certs/tls.crt
+        - --tls.server.key-file=/etc/tempo-gateway/serving-certs/tls.key
+        - --tls.healthchecks.server-ca-file=/etc/tempo-gateway/cabundle/service-ca.crt
+        - --tls.healthchecks.server-name=tempo-simplest-gateway.kuttl-multitenancy.svc.cluster.local
+        - --web.healthchecks.url=https://localhost:8080
+        - --traces.read.endpoint=https://tempo-simplest-query-frontend.kuttl-multitenancy.svc.cluster.local:16686
+        livenessProbe:
+          failureThreshold: 10
+          httpGet:
+            path: /live
+            port: 8081
+            scheme: HTTPS
+          periodSeconds: 30
+          successThreshold: 1
+          timeoutSeconds: 2
+        name: tempo-gateway
+        ports:
+        - containerPort: 8090
+          name: grpc-public
+          protocol: TCP
+        - containerPort: 8081
+          name: internal
+          protocol: TCP
+        - containerPort: 8080
+          name: public
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 12
+          httpGet:
+            path: /ready
+            port: 8081
+            scheme: HTTPS
+          periodSeconds: 5
+          successThreshold: 1
+          timeoutSeconds: 1
+        resources:
+          limits:
+            cpu: 120m
+            memory: "107374184"
+          requests:
+            cpu: 36m
+            memory: "32212256"
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /etc/tempo-gateway/cm
           name: rbac
-        - name: tenant
-          secret:
-            defaultMode: 420
-            items:
-              - key: tenants.yaml
-                path: tenants.yaml
-            secretName: tempo-simplest-gateway
-        - configMap:
-            defaultMode: 420
-            name: tempo-simplest-ca-bundle
+          readOnly: true
+        - mountPath: /etc/tempo-gateway/secret/tenants.yaml
+          name: tenant
+          readOnly: true
+          subPath: tenants.yaml
+        - mountPath: /var/run/ca
           name: tempo-simplest-ca-bundle
-        - name: tempo-simplest-gateway-mtls
-          secret:
-            defaultMode: 420
-            secretName: tempo-simplest-gateway-mtls
-        - name: serving-certs
-          secret:
-            defaultMode: 420
-            secretName: tempo-simplest-gateway-tls
-        - name: cabundle
-          configMap:
-            name: tempo-simplest-gateway-cabundle
+        - mountPath: /var/run/tls/server
+          name: tempo-simplest-gateway-mtls
+        - mountPath: /etc/tempo-gateway/serving-certs
+          name: serving-certs
+          readOnly: true
+        - mountPath: /etc/tempo-gateway/cabundle
+          name: cabundle
+          readOnly: true
+      - args:
+        - --log.level=warn
+        - --opa.admin-groups=system:cluster-admins,cluster-admin,dedicated-admin
+        - --web.listen=:8082
+        - --web.internal.listen=:8083
+        - --web.healthchecks.url=http://localhost:8082
+        - --opa.package=tempostack
+        - --openshift.mappings=dev=tempo.grafana.com
+        - --openshift.mappings=prod=tempo.grafana.com
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 10
+          httpGet:
+            path: /live
+            port: 8083
+            scheme: HTTP
+          periodSeconds: 30
+          successThreshold: 1
+          timeoutSeconds: 2
+        name: opa
+        ports:
+        - containerPort: 8082
+          name: public
+          protocol: TCP
+        - containerPort: 8083
+          name: opa-metrics
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 12
+          httpGet:
+            path: /ready
+            port: 8083
+            scheme: HTTP
+          periodSeconds: 5
+          successThreshold: 1
+          timeoutSeconds: 1
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      serviceAccount: tempo-simplest-gateway
+      serviceAccountName: tempo-simplest-gateway
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - configMap:
+          defaultMode: 420
+          items:
+          - key: rbac.yaml
+            path: rbac.yaml
+          name: tempo-simplest-gateway
+        name: rbac
+      - name: tenant
+        secret:
+          defaultMode: 420
+          items:
+          - key: tenants.yaml
+            path: tenants.yaml
+          secretName: tempo-simplest-gateway
+      - configMap:
+          defaultMode: 420
+          name: tempo-simplest-ca-bundle
+        name: tempo-simplest-ca-bundle
+      - name: tempo-simplest-gateway-mtls
+        secret:
+          defaultMode: 420
+          secretName: tempo-simplest-gateway-mtls
+      - name: serving-certs
+        secret:
+          defaultMode: 420
+          secretName: tempo-simplest-gateway-tls
+      - configMap:
+          defaultMode: 420
+          name: tempo-simplest-gateway-cabundle
+        name: cabundle
 status:
   readyReplicas: 1
+  replicas: 1
 ---
 apiVersion: route.openshift.io/v1
 kind: Route
