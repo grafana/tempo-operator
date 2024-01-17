@@ -182,6 +182,7 @@ $(LOCALBIN):
 KUSTOMIZE_VERSION ?= v4.5.5
 CONTROLLER_TOOLS_VERSION ?= v0.9.2
 GEN_CRD_VERSION ?= v0.0.5
+CRD_TO_CR_VERSION ?= v0.0.1
 ENVTEST_VERSION ?= latest
 OPERATOR_SDK_VERSION ?= 1.27.0
 CERTMANAGER_VERSION ?= 1.9.1
@@ -191,6 +192,7 @@ KUSTOMIZE ?= $(LOCALBIN)/kustomize-$(KUSTOMIZE_VERSION)
 CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen-$(CONTROLLER_TOOLS_VERSION)
 ENVTEST ?= $(LOCALBIN)/setup-envtest-$(ENVTEST_VERSION)
 GEN_CRD = $(LOCALBIN)/gen-crd-api-reference-docs-$(GEN_CRD_VERSION)
+CRD_TO_CR = $(LOCALBIN)/crd-to-cr-$(CRD_TO_CR_VERSION)
 OPERATOR_SDK ?= $(LOCALBIN)/operator-sdk-$(OPERATOR_SDK_VERSION)
 KIND ?= $(LOCALBIN)/kind
 KUTTL ?= $(LOCALBIN)/kubectl-kuttl
@@ -299,6 +301,9 @@ lint:
 gen-crd-api-reference-docs: ## Download gen-crd-api-reference-docs locally if necessary.
 	test -s $(GEN_CRD) || $(call go-get-tool,$(GEN_CRD),github.com/ViaQ/gen-crd-api-reference-docs,$(GEN_CRD_VERSION))
 
+.PHONY: crd-to-cr
+crd-to-cr: ## Download crd-to-cr locally if necessary.
+	test -s $(CRD_TO_CR) || $(call go-get-tool,$(CRD_TO_CR),github.com/andreasgerstmayr/crd-to-cr,$(CRD_TO_CR_VERSION))
 
 .PHONY: kustomize
 kustomize: ## Download kustomize locally if necessary.
@@ -445,8 +450,8 @@ docs/operator/feature-gates.md: $(FEATURE_GATES_TARGET) gen-crd-api-reference-do
 	sed -i 's/##/\n##/' $@
 	sed -i 's/+newline/\n/' $@
 
-docs/spec/%: bundle/community/manifests/%
-	docker run -i ghcr.io/andreasgerstmayr/crd-to-cr < $^ > $@
+docs/spec/%: bundle/community/manifests/% | crd-to-cr
+	$(CRD_TO_CR) < $^ > $@
 
 ##@ Release
 CHLOGGEN_VERSION=v0.11.0
