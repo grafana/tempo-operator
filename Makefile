@@ -138,7 +138,7 @@ build: generate fmt ## Build manager binary.
 	CGO_ENABLED=0 go build -o bin/manager -ldflags ${LD_FLAGS} main.go
 
 .PHONY: run
-run: manifests generate fmt ## Run a controller from your host.
+run: manifests generate ## Run a controller from your host.
 	@echo -e "\033[33mRemoving webhooks from the cluster. Use the normal deployment method to enable full operator functionality.\033[0m"
 	-kubectl delete ns $(OPERATOR_NAMESPACE)
 	-kubectl delete mutatingwebhookconfigurations.admissionregistration.k8s.io tempo-operator-mutating-webhook-configuration
