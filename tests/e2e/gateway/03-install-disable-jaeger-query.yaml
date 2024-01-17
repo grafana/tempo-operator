@@ -1,0 +1,47 @@
+---
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoStack
+metadata:
+  name: foo
+spec:
+  template:
+    gateway:
+      enabled: true
+    queryFrontend:
+      jaegerQuery:
+        enabled: false
+  storage:
+    secret:
+      type: s3
+      name: minio-test
+  storageSize: 200M
+  tenants:
+    mode: static
+    authentication:
+      - tenantName: test-oidc
+        tenantId: test-oidc
+        oidc:
+          issuerURL: http://dex.svc:30556/dex
+          redirectURL: http://tempo-foo-gateway.svc:8080/oidc/test-oidc/callback
+          usernameClaim: email
+          secret:
+            name: oidc-test
+    authorization:
+      roleBindings:
+      - name: "test"
+        roles:
+        - read-write
+        subjects:
+        - kind: user
+          name: "admin@example.com"
+      roles:
+      - name: read-write
+        permissions:
+        - read
+        - write
+        resources:
+        - logs
+        - metrics
+        - traces
+        tenants:
+        - test-oidc

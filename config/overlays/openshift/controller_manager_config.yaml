@@ -43,5 +43,3 @@ featureGates:
     metrics:
       createServiceMonitors: true
       createPrometheusRules: true
-    grafana:
-      createDatasource: false

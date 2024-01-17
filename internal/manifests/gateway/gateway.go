@@ -98,6 +98,11 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 		objs = append(objs, routeObj)
 	}
 
+	dep.Spec.Template, err = patchTraceReadEndpoint(params, dep.Spec.Template)
+	if err != nil {
+		return nil, err
+	}
+
 	dep.Spec.Template, err = patchTracing(params.Tempo, dep.Spec.Template)
 	if err != nil {
 		return nil, err
@@ -113,6 +118,8 @@ func httpScheme(tls bool) string {
 	}
 	return "http"
 }
+
+const containerNameTempoGateway = "tempo-gateway"
 
 func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash string) *appsv1.Deployment {
 	tempo := params.Tempo
@@ -164,7 +171,7 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 					Tolerations:        cfg.Tolerations,
 					Containers: []corev1.Container{
 						{
-							Name:  "tempo-gateway",
+							Name:  containerNameTempoGateway,
 							Image: image,
 							Env:   proxy.ReadProxyVarsFromEnv(),
 							Args: append([]string{
@@ -172,8 +179,6 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 								fmt.Sprintf("--web.listen=0.0.0.0:%d", portPublic),
 								fmt.Sprintf("--web.internal.listen=0.0.0.0:%d", portInternal),
 								fmt.Sprintf("--traces.write.endpoint=%s:%d", naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.DistributorComponentName), manifestutils.PortOtlpGrpcServer),
-								fmt.Sprintf("--traces.read.endpoint=%s://%s:%d", httpScheme(params.CtrlConfig.Gates.HTTPEncryption),
-									naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.QueryFrontendComponentName), manifestutils.PortJaegerQuery),
 								fmt.Sprintf("--traces.tempo.endpoint=%s://%s:%d", httpScheme(params.CtrlConfig.Gates.HTTPEncryption),
 									naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.QueryFrontendComponentName), manifestutils.PortHTTPServer),
 								fmt.Sprintf("--grpc.listen=0.0.0.0:%d", portGRPC),
@@ -277,6 +282,30 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 	}
 
 	return dep
+}
+
+func patchTraceReadEndpoint(params manifestutils.Params, pod corev1.PodTemplateSpec) (corev1.PodTemplateSpec, error) {
+	if !params.Tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled {
+		return pod, nil
+	}
+
+	container := corev1.Container{
+		Args: []string{
+			fmt.Sprintf("--traces.read.endpoint=%s://%s:%d", httpScheme(params.CtrlConfig.Gates.HTTPEncryption),
+				naming.ServiceFqdn(params.Tempo.Namespace, params.Tempo.Name, manifestutils.QueryFrontendComponentName), manifestutils.PortJaegerQuery),
+		},
+	}
+
+	for i := range pod.Spec.Containers {
+		if pod.Spec.Containers[i].Name != containerNameTempoGateway {
+			continue
+		}
+		if err := mergo.Merge(&pod.Spec.Containers[i], container, mergo.WithAppendSlice); err != nil {
+			return corev1.PodTemplateSpec{}, err
+		}
+	}
+
+	return pod, nil
 }
 
 func patchTracing(tempo v1alpha1.TempoStack, pod corev1.PodTemplateSpec) (corev1.PodTemplateSpec, error) {

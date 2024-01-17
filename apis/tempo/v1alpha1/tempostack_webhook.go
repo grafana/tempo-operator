@@ -258,13 +258,6 @@ func (v *validator) validateQueryFrontend(tempo TempoStack) field.ErrorList {
 func (v *validator) validateGateway(tempo TempoStack) field.ErrorList {
 	path := field.NewPath("spec").Child("template").Child("gateway").Child("enabled")
 	if tempo.Spec.Template.Gateway.Enabled {
-		if !tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled {
-			return field.ErrorList{
-				field.Invalid(path, tempo.Spec.Template.Gateway.Enabled,
-					"to use the gateway, please enable jaegerQuery",
-				)}
-		}
-
 		if tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type != IngressTypeNone {
 			return field.ErrorList{
 				field.Invalid(path, tempo.Spec.Template.Gateway.Enabled,
@@ -300,9 +293,8 @@ func (v *validator) validateGateway(tempo TempoStack) field.ErrorList {
 
 func (v *validator) validateObservability(tempo TempoStack) field.ErrorList {
 	observabilityBase := field.NewPath("spec").Child("observability")
-	metricsBase := observabilityBase.Child("metrics")
-	grafanaBase := observabilityBase.Child("grafana")
 
+	metricsBase := observabilityBase.Child("metrics")
 	if tempo.Spec.Observability.Metrics.CreateServiceMonitors && !v.ctrlConfig.Gates.PrometheusOperator {
 		return field.ErrorList{
 			field.Invalid(metricsBase.Child("createServiceMonitors"), tempo.Spec.Observability.Metrics.CreateServiceMonitors,
@@ -325,16 +317,15 @@ func (v *validator) validateObservability(tempo TempoStack) field.ErrorList {
 	}
 
 	tracingBase := observabilityBase.Child("tracing")
-	if tempo.Spec.Observability.Tracing.SamplingFraction == "" {
-		return nil
-	}
-	if _, err := strconv.ParseFloat(tempo.Spec.Observability.Tracing.SamplingFraction, 64); err != nil {
-		return field.ErrorList{
-			field.Invalid(
-				tracingBase.Child("sampling_fraction"),
-				tempo.Spec.Observability.Tracing.SamplingFraction,
-				err.Error(),
-			)}
+	if tempo.Spec.Observability.Tracing.SamplingFraction != "" {
+		if _, err := strconv.ParseFloat(tempo.Spec.Observability.Tracing.SamplingFraction, 64); err != nil {
+			return field.ErrorList{
+				field.Invalid(
+					tracingBase.Child("sampling_fraction"),
+					tempo.Spec.Observability.Tracing.SamplingFraction,
+					err.Error(),
+				)}
+		}
 	}
 
 	if tempo.Spec.Observability.Tracing.JaegerAgentEndpoint != "" {
@@ -349,6 +340,7 @@ func (v *validator) validateObservability(tempo TempoStack) field.ErrorList {
 		}
 	}
 
+	grafanaBase := observabilityBase.Child("grafana")
 	if tempo.Spec.Observability.Grafana.CreateDatasource && !v.ctrlConfig.Gates.GrafanaOperator {
 		return field.ErrorList{
 			field.Invalid(grafanaBase.Child("createDatasource"), tempo.Spec.Observability.Grafana.CreateDatasource,

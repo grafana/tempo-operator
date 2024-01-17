@@ -145,7 +145,7 @@ func (u Upgrade) updateTempoStackCR(ctx context.Context, tempo v1alpha1.TempoSta
 	}
 
 	if instanceVersion.GreaterThan(operatorVersion) {
-		log.Info("skipping upgrading this instance because it's newer than the current running operator version", "version", tempo.Status.OperatorVersion, "operator_version", operatorVersion.String())
+		log.V(1).Info("skipping upgrading this instance because it's newer than the current running operator version", "version", tempo.Status.OperatorVersion, "operator_version", operatorVersion.String())
 		return tempo, nil
 	}
 
