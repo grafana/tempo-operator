@@ -1,9 +1,17 @@
 # Current Operator version
-VERSION_DATE ?= $(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
-VERSION_PKG ?= github.com/grafana/tempo-operator/internal/version
 OPERATOR_VERSION ?= 0.7.0
-TEMPO_VERSION ?= $(shell cat config/manager/manager.yaml | grep -oP "docker.io/grafana/tempo:\K.*")
-TEMPO_QUERY_VERSION ?= $(shell cat config/manager/manager.yaml | grep -oP "docker.io/grafana/tempo-query:\K.*")
+TEMPO_VERSION ?= 2.3.1
+TEMPO_QUERY_VERSION ?= 2.3.1
+TEMPO_GATEWAY_VERSION ?= main-2023-11-20-81f8fdf
+TEMPO_GATEWAY_OPA_VERSION ?= main-2023-10-13-13d8960
+
+TEMPO_IMAGE ?= docker.io/grafana/tempo:$(TEMPO_VERSION)
+TEMPO_QUERY_IMAGE ?= docker.io/grafana/tempo-query:$(TEMPO_QUERY_VERSION)
+TEMPO_GATEWAY_IMAGE ?= quay.io/observatorium/api:$(TEMPO_GATEWAY_VERSION)
+TEMPO_GATEWAY_OPA_IMAGE ?= quay.io/observatorium/opa-openshift:$(TEMPO_GATEWAY_OPA_VERSION)
+
+VERSION_PKG ?= github.com/grafana/tempo-operator/internal/version
+VERSION_DATE ?= $(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
 COMMIT_SHA = $(shell git rev-parse HEAD)
 LD_FLAGS ?= "-X ${VERSION_PKG}.buildDate=${VERSION_DATE} \
 			 -X ${VERSION_PKG}.revision=${COMMIT_SHA} \
@@ -101,6 +109,10 @@ help: ## Display this help.
 
 .PHONY: manifests
 manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
+	sed -i '/RELATED_IMAGE_TEMPO$$/{n;s@value: .*@value: $(TEMPO_IMAGE)@}' config/manager/manager.yaml
+	sed -i '/RELATED_IMAGE_TEMPO_QUERY$$/{n;s@value: .*@value: $(TEMPO_QUERY_IMAGE)@}' config/manager/manager.yaml
+	sed -i '/RELATED_IMAGE_TEMPO_GATEWAY$$/{n;s@value: .*@value: $(TEMPO_GATEWAY_IMAGE)@}' config/manager/manager.yaml
+	sed -i '/RELATED_IMAGE_TEMPO_GATEWAY_OPA$$/{n;s@value: .*@value: $(TEMPO_GATEWAY_OPA_IMAGE)@}' config/manager/manager.yaml
 	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 
 .PHONY: generate
@@ -127,9 +139,16 @@ build: generate fmt ## Build manager binary.
 
 .PHONY: run
 run: manifests generate fmt ## Run a controller from your host.
-	# Disabled webhooks only affects local runs, not the build or in-cluster deployments.
-	@echo -e "\033[33mWebhooks are disabled! Use the normal deployment method to enable full operator functionality.\033[0m"
-	ENABLE_WEBHOOKS=false go run ./main.go start
+	@echo -e "\033[33mRemoving webhooks from the cluster. Use the normal deployment method to enable full operator functionality.\033[0m"
+	-kubectl delete ns $(OPERATOR_NAMESPACE)
+	-kubectl delete mutatingwebhookconfigurations.admissionregistration.k8s.io tempo-operator-mutating-webhook-configuration
+	-kubectl delete validatingwebhookconfigurations.admissionregistration.k8s.io tempo-operator-validating-webhook-configuration
+	ENABLE_WEBHOOKS=false \
+	RELATED_IMAGE_TEMPO=$(TEMPO_IMAGE) \
+	RELATED_IMAGE_TEMPO_QUERY=$(TEMPO_QUERY_IMAGE) \
+	RELATED_IMAGE_TEMPO_GATEWAY=$(TEMPO_GATEWAY_IMAGE) \
+	RELATED_IMAGE_TEMPO_GATEWAY_OPA=$(TEMPO_GATEWAY_OPA_IMAGE) \
+	go run ./main.go --zap-log-level=info start
 
 .PHONY: docker-build
 docker-build: ## Build docker image with the manager.
