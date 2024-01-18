@@ -47,8 +47,11 @@ jobs:
             "v${OPERATOR_VERSION}" \
             'dist/tempo-operator.yaml#Installation manifest for Kubernetes' \
 
-  operator-hub-prod-release:
+  publish-images:
     needs: release
+    uses: ./.github/workflows/reusable-publish-images.yaml
+  operator-hub-prod-release:
+    needs: publish-images
     uses: ./.github/workflows/reusable-operator-hub-release.yaml
     with:
       org: redhat-openshift-ecosystem
@@ -58,9 +61,8 @@ jobs:
       bundletype: openshift
     secrets:
       TEMPOOPERATORBOT_GITHUB_TOKEN: ${{ secrets.TEMPOOPERATORBOT_GITHUB_TOKEN }}
-
   operator-hub-community-release:
-    needs: release
+    needs: publish-images
     uses: ./.github/workflows/reusable-operator-hub-release.yaml
     with:
       org: k8s-operatorhub
