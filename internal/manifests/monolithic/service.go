@@ -13,7 +13,7 @@ import (
 // BuildTempoService creates the service for a monolithic deployment.
 func BuildTempoService(opts Options) *corev1.Service {
 	tempo := opts.Tempo
-	labels := Labels(opts.Tempo.Name)
+	labels := Labels(tempo.Name)
 	ports := []corev1.ServicePort{
 		{
 			Name:       manifestutils.HttpPortName,
@@ -43,7 +43,7 @@ func BuildTempoService(opts Options) *corev1.Service {
 		}
 	}
 
-	if opts.Tempo.Spec.JaegerUI != nil && opts.Tempo.Spec.JaegerUI.Enabled {
+	if tempo.Spec.JaegerUI != nil && tempo.Spec.JaegerUI.Enabled {
 		ports = append(ports, []corev1.ServicePort{
 			{
 				Name:       manifestutils.JaegerGRPCQuery,
@@ -69,8 +69,8 @@ func BuildTempoService(opts Options) *corev1.Service {
 			Kind:       "Service",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      naming.Name("", opts.Tempo.Name),
-			Namespace: opts.Tempo.Namespace,
+			Name:      naming.Name("", tempo.Name),
+			Namespace: tempo.Namespace,
 			Labels:    labels,
 		},
 		Spec: corev1.ServiceSpec{

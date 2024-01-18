@@ -10,8 +10,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/util/retry"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	"github.com/grafana/tempo-operator/internal/manifests"
 )
@@ -56,7 +58,13 @@ func reconcileManagedObjects(
 
 		desired := obj.DeepCopyObject().(client.Object)
 		mutateFn := manifests.MutateFuncFor(obj, desired)
-		op, err := ctrl.CreateOrUpdate(ctx, k8sclient, obj, mutateFn)
+
+		var op controllerutil.OperationResult
+		err := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+			var err error
+			op, err = ctrl.CreateOrUpdate(ctx, k8sclient, obj, mutateFn)
+			return err
+		})
 
 		var immutableErr *manifests.ImmutableErr
 		if err != nil && errors.As(err, &immutableErr) {

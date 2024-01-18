@@ -6,7 +6,7 @@ import (
 
 // BuildAll generates all manifests.
 func BuildAll(opts Options) ([]client.Object, error) {
-	var manifests []client.Object
+	manifests := []client.Object{}
 
 	configMap, configChecksum, err := BuildConfigMap(opts)
 	if err != nil {
