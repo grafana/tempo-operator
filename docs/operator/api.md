@@ -2593,7 +2593,7 @@ MonolithicTracesStorageSpec
 
 </tr><tr><td><p>&#34;pv&#34;</p></td>
 
-<td><p>MonolithicTracesStorageBackendPersistentVolume defines storing traces in a Persistent Volume.</p>
+<td><p>MonolithicTracesStorageBackendPV defines storing traces in a Persistent Volume.</p>
 </td>
 
 </tr></tbody>

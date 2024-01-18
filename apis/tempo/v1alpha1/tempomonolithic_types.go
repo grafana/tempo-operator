@@ -74,8 +74,8 @@ type MonolithicTracesStorageBackend string
 const (
 	// MonolithicTracesStorageBackendMemory defines storing traces in a tmpfs (in-memory filesystem).
 	MonolithicTracesStorageBackendMemory MonolithicTracesStorageBackend = "memory"
-	// MonolithicTracesStorageBackendPersistentVolume defines storing traces in a Persistent Volume.
-	MonolithicTracesStorageBackendPersistentVolume MonolithicTracesStorageBackend = "pv"
+	// MonolithicTracesStorageBackendPV defines storing traces in a Persistent Volume.
+	MonolithicTracesStorageBackendPV MonolithicTracesStorageBackend = "pv"
 )
 
 // MonolithicTracesStorageWALSpec defines the write-ahead logging (WAL) configuration.
@@ -83,6 +83,7 @@ type MonolithicTracesStorageWALSpec struct {
 	// Size defines the size of the Persistent Volume for storing the WAL. Defaults to 10Gi.
 	//
 	// +kubebuilder:validation:Required
+	// +kubebuilder:default="10Gi"
 	Size resource.Quantity `json:"size"`
 }
 
@@ -91,6 +92,7 @@ type MonolithicTracesStoragePVSpec struct {
 	// Size defines the size of the Persistent Volume for storing the traces. Defaults to 10Gi.
 	//
 	// +kubebuilder:validation:Required
+	// +kubebuilder:default="10Gi"
 	Size resource.Quantity `json:"size"`
 }
 
@@ -125,6 +127,7 @@ type MonolithicIngestionOTLPProtocolsGRPCSpec struct {
 	// Enabled defines if OTLP over gRPC is enabled
 	//
 	// +kubebuilder:validation:Required
+	// +kubebuilder:default=true
 	Enabled bool `json:"enabled"`
 }
 

@@ -102,7 +102,7 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 	config.Storage.Trace.WAL.Path = "/var/tempo/wal"
 	switch tempo.Spec.Storage.Traces.Backend {
 	case v1alpha1.MonolithicTracesStorageBackendMemory,
-		v1alpha1.MonolithicTracesStorageBackendPersistentVolume:
+		v1alpha1.MonolithicTracesStorageBackendPV:
 		config.Storage.Trace.Backend = "local"
 		config.Storage.Trace.Local.Path = "/var/tempo/blocks"
 

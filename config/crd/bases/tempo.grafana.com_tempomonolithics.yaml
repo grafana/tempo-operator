@@ -54,6 +54,7 @@ spec:
                         description: GRPC defines the OTLP/gRPC configuration
                         properties:
                           enabled:
+                            default: true
                             description: Enabled defines if OTLP over gRPC is enabled
                             type: boolean
                         required:
@@ -181,6 +182,7 @@ spec:
                             anyOf:
                             - type: integer
                             - type: string
+                            default: 10Gi
                             description: Size defines the size of the Persistent Volume
                               for storing the traces. Defaults to 10Gi.
                             pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
@@ -195,6 +197,7 @@ spec:
                             anyOf:
                             - type: integer
                             - type: string
+                            default: 10Gi
                             description: Size defines the size of the Persistent Volume
                               for storing the WAL. Defaults to 10Gi.
                             pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$

@@ -32,7 +32,7 @@ func (r *TempoMonolithic) Default() {
 		}
 	}
 
-	if r.Spec.Storage.Traces.Backend == MonolithicTracesStorageBackendPersistentVolume && r.Spec.Storage.Traces.PV == nil {
+	if r.Spec.Storage.Traces.Backend == MonolithicTracesStorageBackendPV && r.Spec.Storage.Traces.PV == nil {
 		r.Spec.Storage.Traces.PV = &MonolithicTracesStoragePVSpec{
 			Size: tenGBQuantity,
 		}

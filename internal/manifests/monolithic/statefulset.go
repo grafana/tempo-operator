@@ -65,6 +65,13 @@ func BuildTempoStatefulset(opts Options) (*appsv1.StatefulSet, error) {
 								"-mem-ballast-size-mbs=1024",
 								"-log.level=info",
 							},
+
+							// The Tempo Helm chart mounts /var/tempo if persistence is enabled.
+							// Tempo writes its WAL to /var/tempo/wal, and if the local storage backend is enabled, parquet blocks to /var/tempo/blocks.
+							//
+							// Let's mount /var/tempo as WAL, in case Tempo writes caches to additional locations in /var/tempo in the future.
+							// If memory or pv storage is enabled, /var/tempo/blocks will be mounted in a different volume (configured in configureStorage()).
+							// This is to avoid confusion why a PV is required when selecting object storage.
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      manifestutils.ConfigVolumeName,
@@ -73,7 +80,7 @@ func BuildTempoStatefulset(opts Options) (*appsv1.StatefulSet, error) {
 								},
 								{
 									Name:      walVolumeName,
-									MountPath: "/var/tempo/wal",
+									MountPath: "/var/tempo",
 								},
 							},
 							Ports:           buildTempoPorts(opts),
@@ -166,7 +173,7 @@ func configureStorage(opts Options, sts *appsv1.StatefulSet) error {
 			},
 		})
 
-	case v1alpha1.MonolithicTracesStorageBackendPersistentVolume:
+	case v1alpha1.MonolithicTracesStorageBackendPV:
 		if tempo.Spec.Storage.Traces.WAL == nil {
 			return errors.New("please configure .spec.storage.traces.wal")
 		}
