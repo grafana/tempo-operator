@@ -631,6 +631,16 @@ spec:
       clusterPermissions:
       - rules:
         - apiGroups:
+          - monitoring.coreos.com
+          resourceNames:
+          - k8s
+          resources:
+          - prometheuses/api
+          verbs:
+          - get
+          - create
+          - update
+        - apiGroups:
           - ""
           resources:
           - configmaps
