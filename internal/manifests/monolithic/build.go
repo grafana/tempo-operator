@@ -24,5 +24,11 @@ func BuildAll(opts Options) ([]client.Object, error) {
 	service := BuildTempoService(opts)
 	manifests = append(manifests, service)
 
+	ingresses, err := BuildTempoIngress(opts)
+	if err != nil {
+		return nil, err
+	}
+	manifests = append(manifests, ingresses...)
+
 	return manifests, nil
 }

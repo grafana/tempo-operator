@@ -157,6 +157,23 @@ type MonolithicJaegerUIIngressSpec struct {
 	//
 	// +kubebuilder:validation:Required
 	Enabled bool `json:"enabled"`
+
+	// Annotations defines the annotations of the Ingress object.
+	//
+	// +kubebuilder:validation:Optional
+	Annotations map[string]string `json:"annotations,omitempty"`
+
+	// Host defines the hostname of the Ingress object.
+	//
+	// +kubebuilder:validation:Optional
+	Host string `json:"host,omitempty"`
+
+	// IngressClassName is the name of an IngressClass cluster resource. Ingress
+	// controller implementations use this field to know whether they should be
+	// serving this Ingress resource.
+	//
+	// +kubebuilder:validation:Optional
+	IngressClassName *string `json:"ingressClassName,omitempty"`
 }
 
 // MonolithicJaegerUIRouteSpec defines the settings for the Jaeger UI route.
@@ -165,6 +182,22 @@ type MonolithicJaegerUIRouteSpec struct {
 	//
 	// +kubebuilder:validation:Required
 	Enabled bool `json:"enabled"`
+
+	// Annotations defines the annotations of the Route object.
+	//
+	// +kubebuilder:validation:Optional
+	Annotations map[string]string `json:"annotations,omitempty"`
+
+	// Host defines the hostname of the Route object.
+	//
+	// +kubebuilder:validation:Optional
+	Host string `json:"host,omitempty"`
+
+	// Termination specifies the termination type. Default: edge.
+	//
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default=edge
+	Termination TLSRouteTerminationType `json:"termination,omitempty"`
 }
 
 // MonolithicObservabilitySpec defines the observability settings of the Tempo deployment.

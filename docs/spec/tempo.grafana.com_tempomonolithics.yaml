@@ -14,9 +14,17 @@ spec:                                    # TempoMonolithicSpec defines the desir
   jaegerui:                              # JaegerUI defines the Jaeger UI configuration
     enabled: false                       # Enabled defines if the Jaeger UI should be enabled
     ingress:                             # Ingress defines the ingress configuration for Jaeger UI
+      annotations:                       # Annotations defines the annotations of the Ingress object.
+        "key": ""
       enabled: false                     # Enabled defines if an Ingress object should be created for Jaeger UI
+      host: ""                           # Host defines the hostname of the Ingress object.
+      ingressClassName: ""               # IngressClassName is the name of an IngressClass cluster resource. Ingress controller implementations use this field to know whether they should be serving this Ingress resource.
     route:                               # Route defines the route configuration for Jaeger UI
+      annotations:                       # Annotations defines the annotations of the Route object.
+        "key": ""
       enabled: false                     # Enabled defines if a Route object should be created for Jaeger UI
+      host: ""                           # Host defines the hostname of the Route object.
+      termination: "edge"                # Termination specifies the termination type. Default: edge.
   management: ""                         # ManagementState defines whether this instance is managed by the operator or self-managed
   observability:                         # Observability defines observability configuration for the Tempo deployment
     metrics:                             # Metrics defines the metrics configuration of the Tempo deployment

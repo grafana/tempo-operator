@@ -56,6 +56,12 @@ func (r *TempoMonolithic) Default() {
 			Enabled: true,
 		}
 	}
+
+	if r.Spec.JaegerUI != nil && r.Spec.JaegerUI.Enabled &&
+		r.Spec.JaegerUI.Route != nil && r.Spec.JaegerUI.Route.Enabled &&
+		r.Spec.JaegerUI.Route.Termination == "" {
+		r.Spec.JaegerUI.Route.Termination = "edge"
+	}
 }
 
 //+kubebuilder:webhook:path=/validate-tempo-grafana-com-v1alpha1-tempomonolithic,mutating=false,failurePolicy=fail,sideEffects=None,groups=tempo.grafana.com,resources=tempomonolithics,verbs=create;update,versions=v1alpha1,name=vtempomonolithic.kb.io,admissionReviewVersions=v1
