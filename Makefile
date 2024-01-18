@@ -203,6 +203,7 @@ $(LOCALBIN):
 KUSTOMIZE_VERSION ?= v4.5.5
 CONTROLLER_TOOLS_VERSION ?= v0.9.2
 GEN_CRD_VERSION ?= v0.0.5
+CRD_TO_CR_VERSION ?= v0.0.2
 ENVTEST_VERSION ?= latest
 OPERATOR_SDK_VERSION ?= 1.27.0
 CERTMANAGER_VERSION ?= 1.9.1
@@ -212,6 +213,7 @@ KUSTOMIZE ?= $(LOCALBIN)/kustomize-$(KUSTOMIZE_VERSION)
 CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen-$(CONTROLLER_TOOLS_VERSION)
 ENVTEST ?= $(LOCALBIN)/setup-envtest-$(ENVTEST_VERSION)
 GEN_CRD = $(LOCALBIN)/gen-crd-api-reference-docs-$(GEN_CRD_VERSION)
+CRD_TO_CR = $(LOCALBIN)/crd-to-cr-$(CRD_TO_CR_VERSION)
 OPERATOR_SDK ?= $(LOCALBIN)/operator-sdk-$(OPERATOR_SDK_VERSION)
 KIND ?= $(LOCALBIN)/kind
 KUTTL ?= $(LOCALBIN)/kubectl-kuttl
@@ -320,6 +322,9 @@ lint:
 gen-crd-api-reference-docs: ## Download gen-crd-api-reference-docs locally if necessary.
 	test -s $(GEN_CRD) || $(call go-get-tool,$(GEN_CRD),github.com/ViaQ/gen-crd-api-reference-docs,$(GEN_CRD_VERSION))
 
+.PHONY: crd-to-cr
+crd-to-cr: ## Download crd-to-cr locally if necessary.
+	test -s $(CRD_TO_CR) || $(call go-get-tool,$(CRD_TO_CR),github.com/andreasgerstmayr/crd-to-cr,$(CRD_TO_CR_VERSION))
 
 .PHONY: kustomize
 kustomize: ## Download kustomize locally if necessary.
@@ -419,13 +424,9 @@ generate-all: generate api-docs bundle ## Update all generated files
 ensure-generate-is-noop: generate-all ## Verify that all checked-in, generated code is up-to-date
 	@# on make bundle config/manager/kustomization.yaml includes changes, which should be ignored for the below check
 	@git restore config/manager/kustomization.yaml
-	@git diff -s --exit-code apis/tempo/v1alpha1/zz_generated.*.go || (echo "Build failed: a model has been changed but the generated resources aren't up to date. Run 'make generate' and update your PR." && exit 1)
-	@git diff -s --exit-code apis/config/v1alpha1/zz_generated.*.go || (echo "Build failed: a model has been changed but the generated resources aren't up to date. Run 'make generate' and update your PR." && exit 1)
+	@git diff -s --exit-code apis/tempo/v1alpha1/zz_generated.*.go apis/config/v1alpha1/zz_generated.*.go || (echo "Build failed: a model has been changed but the generated resources aren't up to date. Run 'make generate' and update your PR." && exit 1)
 	@git diff -s --exit-code bundle config || (echo "Build failed: the bundle, config files has been changed but the generated bundle, config files aren't up to date. Run 'make bundle' and update your PR." && git diff && exit 1)
-	@git diff -s --exit-code bundle/community/bundle.Dockerfile || (echo "Build failed: the community bundle.Dockerfile file has been changed. The file should be the same as generated one. Run 'make bundle' and update your PR." && git diff && exit 1)
-	@git diff -s --exit-code bundle/openshift/bundle.Dockerfile || (echo "Build failed: the OpenShift bundle.Dockerfile file has been changed. The file should be the same as generated one. Run 'make bundle' and update your PR." && git diff && exit 1)
-	@git diff -s --exit-code docs/operator/api.md || (echo "Build failed: the api.md file has been changed but the generated api.md file isn't up to date. Run 'make api-docs' and update your PR." && git diff && exit 1)
-	@git diff -s --exit-code docs/operator/feature-gates.md || (echo "Build failed: the feature-gates.md file has been changed but the generated feature-gates.md file isn't up to date. Run 'make api-docs' and update your PR." && git diff && exit 1)
+	@git diff -s --exit-code docs/operator docs/spec || (echo "Build failed: the api docs have been changed but the generated files aren't up to date. Run 'make api-docs' and update your PR." && git diff && exit 1)
 
 reset: ## Reset all generated files to repository defaults
 	unset IMG_PREFIX && unset OPERATOR_VERSION && $(MAKE) generate-all
@@ -454,7 +455,7 @@ cmctl:
 	}
 
 .PHONY: api-docs
-api-docs: docs/operator/api.md docs/operator/feature-gates.md
+api-docs: docs/operator/api.md docs/operator/feature-gates.md docs/spec/tempo.grafana.com_tempostacks.yaml
 
 TYPES_TARGET := $(shell find apis/tempo -type f -iname "*_types.go")
 docs/operator/api.md: $(TYPES_TARGET) gen-crd-api-reference-docs
@@ -469,6 +470,9 @@ docs/operator/feature-gates.md: $(FEATURE_GATES_TARGET) gen-crd-api-reference-do
 	sed -i 's/+parent:/    parent:/' $@
 	sed -i 's/##/\n##/' $@
 	sed -i 's/+newline/\n/' $@
+
+docs/spec/%: bundle/community/manifests/% | crd-to-cr
+	$(CRD_TO_CR) < $^ > $@
 
 ##@ Release
 CHLOGGEN_VERSION=v0.11.0
