@@ -94,7 +94,7 @@ func TestStatefulsetMemoryStorage(t *testing.T) {
 								},
 								{
 									Name:      "tempo-wal",
-									MountPath: "/var/tempo/wal",
+									MountPath: "/var/tempo",
 								},
 								{
 									Name:      "tempo-blocks",
@@ -189,7 +189,7 @@ func TestStatefulsetPVStorage(t *testing.T) {
 		},
 		{
 			Name:      "tempo-wal",
-			MountPath: "/var/tempo/wal",
+			MountPath: "/var/tempo",
 		},
 		{
 			Name:      "tempo-blocks",
