@@ -30,7 +30,42 @@ var (
 		"query-frontend": {cpu: 0.08, memory: 0.04},
 		"gateway":        {cpu: 0.06, memory: 0.05},
 	}
+	jaegerUIResourcePercentage = 0.2 // This is the percentage of the resource assigned to the querier component.
 )
+
+func ResourcesForQuerierAndJaegerUI(resources corev1.ResourceRequirements) (*corev1.ResourceRequirements, *corev1.ResourceRequirements) {
+	queryFrontendResources := corev1.ResourceRequirements{}
+	jaegerUIResources := corev1.ResourceRequirements{}
+
+	cpu := resources.Requests.Cpu().Value()
+	memory := resources.Requests.Memory().Value()
+
+	jaegerUICPU := jaegerUIResourcePercentage * float64(cpu)
+	tempoQueryFrontEndCPU := cpu - int64(jaegerUICPU)
+
+	jaegerUIMem := jaegerUIResourcePercentage * float64(memory)
+	tempoQueryFrontEndMem := memory - int64(jaegerUIMem)
+
+	jaegerUIResources.Limits = corev1.ResourceList{
+		corev1.ResourceCPU:    *resource.NewMilliQuantity(int64(jaegerUICPU*0.3), resource.BinarySI),
+		corev1.ResourceMemory: *resource.NewQuantity(int64(jaegerUIMem*0.3), resource.BinarySI),
+	}
+	jaegerUIResources.Requests = corev1.ResourceList{
+		corev1.ResourceCPU:    *resource.NewMilliQuantity(int64(jaegerUICPU), resource.BinarySI),
+		corev1.ResourceMemory: *resource.NewQuantity(int64(jaegerUIMem), resource.BinarySI),
+	}
+
+	queryFrontendResources.Limits = corev1.ResourceList{
+		corev1.ResourceCPU:    *resource.NewMilliQuantity(int64(float64(tempoQueryFrontEndCPU)*0.3), resource.BinarySI),
+		corev1.ResourceMemory: *resource.NewQuantity(int64(float64(tempoQueryFrontEndMem)*0.3), resource.BinarySI),
+	}
+	queryFrontendResources.Requests = corev1.ResourceList{
+		corev1.ResourceCPU:    *resource.NewMilliQuantity(tempoQueryFrontEndCPU, resource.BinarySI),
+		corev1.ResourceMemory: *resource.NewQuantity(tempoQueryFrontEndMem, resource.BinarySI),
+	}
+
+	return &queryFrontendResources, &jaegerUIResources
+}
 
 // Resources calculates the resource requirements of a specific component.
 func Resources(tempo v1alpha1.TempoStack, component string, replicas *int32) corev1.ResourceRequirements {

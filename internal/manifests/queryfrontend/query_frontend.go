@@ -107,6 +107,14 @@ func deployment(params manifestutils.Params) (*appsv1.Deployment, error) {
 		tempoQueryImage = params.CtrlConfig.DefaultImages.TempoQuery
 	}
 
+	resources := manifestutils.Resources(tempo, manifestutils.QueryFrontendComponentName, tempo.Spec.Template.QueryFrontend.Replicas)
+	var jaegerUIResources *corev1.ResourceRequirements
+	var queryFrontEndResources = &resources
+
+	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled {
+		queryFrontEndResources, jaegerUIResources = manifestutils.ResourcesForQuerierAndJaegerUI(resources)
+	}
+
 	d := &appsv1.Deployment{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: appsv1.SchemeGroupVersion.String(),
@@ -166,7 +174,7 @@ func deployment(params manifestutils.Params) (*appsv1.Deployment, error) {
 									MountPath: manifestutils.TmpStoragePath,
 								},
 							},
-							Resources:       manifestutils.Resources(tempo, manifestutils.QueryFrontendComponentName, tempo.Spec.Template.QueryFrontend.Replicas),
+							Resources:       *queryFrontEndResources,
 							SecurityContext: manifestutils.TempoContainerSecurityContext(),
 						},
 					},
@@ -231,7 +239,7 @@ func deployment(params manifestutils.Params) (*appsv1.Deployment, error) {
 					MountPath: manifestutils.TmpStoragePath,
 				},
 			},
-			Resources: manifestutils.Resources(tempo, manifestutils.QueryFrontendComponentName, tempo.Spec.Template.QueryFrontend.Replicas),
+			Resources: *jaegerUIResources,
 		}
 		jaegerQueryVolume := corev1.Volume{
 			Name: manifestutils.TmpStorageVolumeName + "-query",
