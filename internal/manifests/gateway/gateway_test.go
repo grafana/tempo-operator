@@ -564,10 +564,10 @@ func TestTLSParameters(t *testing.T) {
 	require.True(t, ok)
 
 	args := dep.Spec.Template.Spec.Containers[0].Args
-	assert.Contains(t, args, fmt.Sprintf("--tls.internal.server.key-file=%s/tls.key", manifestutils.TempoServerTLSDir()))
-	assert.Contains(t, args, fmt.Sprintf("--tls.internal.server.cert-file=%s/tls.crt", manifestutils.TempoServerTLSDir()))
-	assert.Contains(t, args, fmt.Sprintf("--traces.tls.key-file=%s/tls.key", manifestutils.TempoServerTLSDir()))
-	assert.Contains(t, args, fmt.Sprintf("--traces.tls.cert-file=%s/tls.crt", manifestutils.TempoServerTLSDir()))
+	assert.Contains(t, args, fmt.Sprintf("--tls.internal.server.key-file=%s/tls.key", manifestutils.TempoInternalTLSCertDir))
+	assert.Contains(t, args, fmt.Sprintf("--tls.internal.server.cert-file=%s/tls.crt", manifestutils.TempoInternalTLSCertDir))
+	assert.Contains(t, args, fmt.Sprintf("--traces.tls.key-file=%s/tls.key", manifestutils.TempoInternalTLSCertDir))
+	assert.Contains(t, args, fmt.Sprintf("--traces.tls.cert-file=%s/tls.crt", manifestutils.TempoInternalTLSCertDir))
 	assert.Contains(t, args, fmt.Sprintf("--traces.tls.ca-file=%s/service-ca.crt", manifestutils.CABundleDir))
 	assert.Contains(t, args, fmt.Sprintf("--traces.tempo.endpoint=https://%s:%d",
 		naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.QueryFrontendComponentName), manifestutils.PortHTTPServer))
@@ -594,10 +594,10 @@ func TestTLSParameters(t *testing.T) {
 	require.True(t, ok)
 
 	args = dep.Spec.Template.Spec.Containers[0].Args
-	assert.NotContains(t, args, fmt.Sprintf("--tls.internal.server.key-file=%s/tls.key", manifestutils.TempoServerTLSDir()))
-	assert.NotContains(t, args, fmt.Sprintf("--tls.internal.server.cert-file=%s/tls.crt", manifestutils.TempoServerTLSDir()))
-	assert.NotContains(t, args, fmt.Sprintf("--traces.tls.key-file=%s/tls.key", manifestutils.TempoServerTLSDir()))
-	assert.NotContains(t, args, fmt.Sprintf("--traces.tls.cert-file=%s/tls.crt", manifestutils.TempoServerTLSDir()))
+	assert.NotContains(t, args, fmt.Sprintf("--tls.internal.server.key-file=%s/tls.key", manifestutils.TempoInternalTLSCertDir))
+	assert.NotContains(t, args, fmt.Sprintf("--tls.internal.server.cert-file=%s/tls.crt", manifestutils.TempoInternalTLSCertDir))
+	assert.NotContains(t, args, fmt.Sprintf("--traces.tls.key-file=%s/tls.key", manifestutils.TempoInternalTLSCertDir))
+	assert.NotContains(t, args, fmt.Sprintf("--traces.tls.cert-file=%s/tls.crt", manifestutils.TempoInternalTLSCertDir))
 	assert.NotContains(t, args, fmt.Sprintf("--traces.tls.ca-file=%s/service-ca.crt", manifestutils.CABundleDir))
 	assert.Contains(t, args, fmt.Sprintf("--traces.read.endpoint=http://%s:16686",
 		naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.QueryFrontendComponentName)))

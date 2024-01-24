@@ -92,10 +92,13 @@ const (
 	// TenantHeader is the header name that contains tenant name.
 	TenantHeader = "x-scope-orgid"
 
-	// ReceiverCAKey is the key name of the CA file in the configmap.
-	ReceiverCAKey = "service-ca.crt"
-	// ReceiverPublicKey is the key name of the public key file in the configmap.
-	ReceiverPublicKey = "tls.crt"
-	// ReceiverPrivateKey is the key name of the private key file in the configmap.
-	ReceiverPrivateKey = "tls.key"
+	// TLSCAFilename is the key name of the CA file in the ConfigMap.
+	TLSCAFilename = "service-ca.crt"
+	// TLSCertFilename is the key name of the certificate file in the Secret.
+	TLSCertFilename = "tls.crt"
+	// TLSKeyFilename is the key name of the private key file in the Secret.
+	TLSKeyFilename = "tls.key"
+
+	// StorageTLSCAFilename is the key name of the CA file in the ConfigMap for accessing object storage.
+	StorageTLSCAFilename = "ca.crt"
 )

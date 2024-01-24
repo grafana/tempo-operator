@@ -104,7 +104,7 @@ func configureReceiversTLS(dep *v1.Deployment, tempo v1alpha1.TempoStack) error 
 			{
 				Name:      certSecretName,
 				ReadOnly:  true,
-				MountPath: manifestutils.TempoReceiverTLSDir(),
+				MountPath: manifestutils.ReceiverTLSCertDir,
 			},
 		},
 	}

@@ -526,13 +526,13 @@ func TestQueryFrontendJaegerTLS(t *testing.T) {
 	jaegerContainer := deployment.Spec.Template.Spec.Containers[1]
 	args := jaegerContainer.Args
 	assert.Contains(t, args, "--query.http.tls.enabled=true")
-	assert.Contains(t, args, fmt.Sprintf("--query.http.tls.key=%s/tls.key", manifestutils.TempoServerTLSDir()))
-	assert.Contains(t, args, fmt.Sprintf("--query.http.tls.cert=%s/tls.crt", manifestutils.TempoServerTLSDir()))
+	assert.Contains(t, args, fmt.Sprintf("--query.http.tls.key=%s/tls.key", manifestutils.TempoInternalTLSCertDir))
+	assert.Contains(t, args, fmt.Sprintf("--query.http.tls.cert=%s/tls.crt", manifestutils.TempoInternalTLSCertDir))
 	assert.Contains(t, args, fmt.Sprintf("--query.http.tls.client-ca=%s/service-ca.crt", manifestutils.CABundleDir))
 
 	assert.Contains(t, args, "--query.grpc.tls.enabled=true")
-	assert.Contains(t, args, fmt.Sprintf("--query.grpc.tls.key=%s/tls.key", manifestutils.TempoServerTLSDir()))
-	assert.Contains(t, args, fmt.Sprintf("--query.grpc.tls.cert=%s/tls.crt", manifestutils.TempoServerTLSDir()))
+	assert.Contains(t, args, fmt.Sprintf("--query.grpc.tls.key=%s/tls.key", manifestutils.TempoInternalTLSCertDir))
+	assert.Contains(t, args, fmt.Sprintf("--query.grpc.tls.cert=%s/tls.crt", manifestutils.TempoInternalTLSCertDir))
 	assert.Contains(t, args, fmt.Sprintf("--query.grpc.tls.client-ca=%s/service-ca.crt", manifestutils.CABundleDir))
 }
 

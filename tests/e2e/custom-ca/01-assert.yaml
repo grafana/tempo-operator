@@ -40,7 +40,7 @@ spec:
           readOnly: true
         - mountPath: /var/tempo
           name: data
-        - mountPath: /var/run/tls/storage
+        - mountPath: /var/run/tls/storage/ca
           name: storage-ca
           readOnly: true
         - mountPath: /var/run/ca

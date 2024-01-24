@@ -334,7 +334,7 @@ func TestBuildDistributor(t *testing.T) {
 				},
 				{
 					Name:      "cert-custom",
-					MountPath: manifestutils.TempoReceiverTLSDir(),
+					MountPath: manifestutils.ReceiverTLSCertDir,
 					ReadOnly:  true,
 				},
 			},

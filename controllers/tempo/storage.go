@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"path"
 	"strings"
 
 	corev1 "k8s.io/api/core/v1"
@@ -32,7 +33,7 @@ func GetS3Params(tempo v1alpha1.TempoStack, storageSecret *corev1.Secret) *manif
 
 	caPath := ""
 	if tempo.Spec.Storage.TLS.CA != "" {
-		caPath = manifestutils.TempoStorageTLSCAPath()
+		caPath = path.Join(manifestutils.StorageTLSCADir, manifestutils.StorageTLSCAFilename)
 	}
 
 	return &manifestutils.S3{
