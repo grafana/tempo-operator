@@ -2,7 +2,7 @@ kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 nodes:
 - role: control-plane
-  image: kindest/node:v1.21.14@sha256:27ef72ea623ee879a25fe6f9982690a3e370c68286f4356bf643467c552a3888
+  image: kindest/node:v1.29.0@sha256:eaa1450915475849a73a9227b8f201df25e55e268e5d619312131292e324d570
   kubeadmConfigPatches:
   - |
     kind: InitConfiguration
