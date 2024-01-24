@@ -1,0 +1,8 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoMonolithic
+metadata:
+  name: simplest
+spec:
+  storage:
+    traces:
+      backend: pv

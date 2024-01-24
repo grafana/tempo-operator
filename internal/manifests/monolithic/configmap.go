@@ -27,6 +27,25 @@ type tempoReceiverConfig struct {
 	TLS tempoReceiverTLSConfig `yaml:"tls,omitempty"`
 }
 
+type tempoLocalConfig struct {
+	Path string `yaml:"path"`
+}
+type tempoS3Config struct {
+	Endpoint      string `yaml:"endpoint"`
+	Insecure      bool   `yaml:"insecure"`
+	Bucket        string `yaml:"bucket"`
+	TLSCAPath     string `yaml:"tls_ca_path,omitempty"`
+	TLSCertPath   string `yaml:"tls_cert_path,omitempty"`
+	TLSKeyPath    string `yaml:"tls_key_path,omitempty"`
+	TLSMinVersion string `yaml:"tls_min_version,omitempty"`
+}
+type tempoAzureConfig struct {
+	ContainerName string `yaml:"container_name"`
+}
+type tempoGCSConfig struct {
+	BucketName string `yaml:"bucket_name"`
+}
+
 type tempoConfig struct {
 	Server struct {
 		HttpListenPort int `yaml:"http_listen_port"`
@@ -38,9 +57,10 @@ type tempoConfig struct {
 			WAL     struct {
 				Path string `yaml:"path"`
 			} `yaml:"wal"`
-			Local struct {
-				Path string `yaml:"path"`
-			} `yaml:"local"`
+			Local *tempoLocalConfig `yaml:"local,omitempty"`
+			S3    *tempoS3Config    `yaml:"s3,omitempty"`
+			Azure *tempoAzureConfig `yaml:"azure,omitempty"`
+			GCS   *tempoGCSConfig   `yaml:"gcs,omitempty"`
 		} `yaml:"trace"`
 	} `yaml:"storage"`
 
@@ -125,15 +145,45 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 	config := tempoConfig{}
 	config.Server.HttpListenPort = manifestutils.PortHTTPServer
 
-	config.Storage.Trace.WAL.Path = "/var/tempo/wal"
-	switch tempo.Spec.Storage.Traces.Backend {
-	case v1alpha1.MonolithicTracesStorageBackendMemory,
-		v1alpha1.MonolithicTracesStorageBackendPV:
-		config.Storage.Trace.Backend = "local"
-		config.Storage.Trace.Local.Path = "/var/tempo/blocks"
+	if tempo.Spec.Storage != nil {
+		config.Storage.Trace.WAL.Path = "/var/tempo/wal"
+		switch tempo.Spec.Storage.Traces.Backend {
+		case v1alpha1.MonolithicTracesStorageBackendMemory,
+			v1alpha1.MonolithicTracesStorageBackendPV:
+			config.Storage.Trace.Backend = "local"
+			config.Storage.Trace.Local = &tempoLocalConfig{}
+			config.Storage.Trace.Local.Path = "/var/tempo/blocks"
 
-	default:
-		return nil, fmt.Errorf("invalid storage backend: '%s'", tempo.Spec.Storage.Traces.Backend)
+		case v1alpha1.MonolithicTracesStorageBackendS3:
+			config.Storage.Trace.Backend = "s3"
+			config.Storage.Trace.S3 = &tempoS3Config{}
+			config.Storage.Trace.S3.Endpoint = opts.StorageParams.S3.Endpoint
+			config.Storage.Trace.S3.Insecure = opts.StorageParams.S3.Insecure
+			config.Storage.Trace.S3.Bucket = opts.StorageParams.S3.Bucket
+			if tempo.Spec.Storage.Traces.S3.TLS != nil && tempo.Spec.Storage.Traces.S3.TLS.Enabled {
+				if tempo.Spec.Storage.Traces.S3.TLS.CA != "" {
+					config.Storage.Trace.S3.TLSCAPath = path.Join(manifestutils.StorageTLSCADir, opts.StorageParams.S3.TLS.CAFilename)
+				}
+				if tempo.Spec.Storage.Traces.S3.TLS.Cert != "" {
+					config.Storage.Trace.S3.TLSCertPath = path.Join(manifestutils.StorageTLSCertDir, manifestutils.TLSCertFilename)
+					config.Storage.Trace.S3.TLSKeyPath = path.Join(manifestutils.StorageTLSCertDir, manifestutils.TLSKeyFilename)
+				}
+				config.Storage.Trace.S3.TLSMinVersion = tempo.Spec.Storage.Traces.S3.TLS.MinVersion
+			}
+
+		case v1alpha1.MonolithicTracesStorageBackendAzure:
+			config.Storage.Trace.Backend = "azure"
+			config.Storage.Trace.Azure = &tempoAzureConfig{}
+			config.Storage.Trace.Azure.ContainerName = opts.StorageParams.AzureStorage.Container
+
+		case v1alpha1.MonolithicTracesStorageBackendGCS:
+			config.Storage.Trace.Backend = "gcs"
+			config.Storage.Trace.GCS = &tempoGCSConfig{}
+			config.Storage.Trace.GCS.BucketName = opts.StorageParams.GCS.Bucket
+
+		default:
+			return nil, fmt.Errorf("invalid storage backend: '%s'", tempo.Spec.Storage.Traces.Backend)
+		}
 	}
 
 	if tempo.Spec.Ingestion != nil {

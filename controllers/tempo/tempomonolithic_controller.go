@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	grafanav1 "github.com/grafana-operator/grafana-operator/v5/api/v1beta1"
@@ -20,6 +21,7 @@ import (
 
 	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/internal/handlers/storage"
 	"github.com/grafana/tempo-operator/internal/manifests/monolithic"
 )
 
@@ -63,9 +65,15 @@ func (r *TempoMonolithicReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return ctrl.Result{}, nil
 	}
 
+	storageParams, errs := storage.GetStorageParamsForTempoMonolithic(ctx, r.Client, tempo)
+	if len(errs) > 0 {
+		return ctrl.Result{}, errors.New(storage.ListFieldErrors(errs))
+	}
+
 	managedObjects, err := monolithic.BuildAll(monolithic.Options{
-		CtrlConfig: r.CtrlConfig,
-		Tempo:      tempo,
+		CtrlConfig:    r.CtrlConfig,
+		Tempo:         tempo,
+		StorageParams: storageParams,
 	})
 	if err != nil {
 		return ctrl.Result{}, fmt.Errorf("error building manifests: %w", err)

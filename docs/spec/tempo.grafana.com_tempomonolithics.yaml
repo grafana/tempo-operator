@@ -15,7 +15,7 @@ spec:                                    # TempoMonolithicSpec defines the desir
           enabled: false                 # enabled defines if TLS is enabled.
           minVersion: ""                 # minVersion defines the minimum acceptable TLS version.
       http:                              # HTTP defines the OTLP/HTTP configuration
-        enabled: false                   # Enabled defines if OTLP over HTTP is enabled
+        enabled: true                    # Enabled defines if OTLP over HTTP is enabled
         tls:                             # TLS defines the TLS configuration for OTLP/HTTP ingestion
           caName: ""                     # caName is the name of a ConfigMap containing a CA certificate (service-ca.crt). It needs to be in the same namespace as the Tempo custom resource.
           certName: ""                   # certName is the name of a Secret containing a certificate (tls.crt) and private key (tls.key). It needs to be in the same namespace as the Tempo custom resource.
@@ -44,9 +44,17 @@ spec:                                    # TempoMonolithicSpec defines the desir
         enabled: false                   # Enabled defines if the operator should create ServiceMonitors for this Tempo deployment
   storage:                               # Storage defines the backend storage configuration
     traces:                              # Traces defines the backend storage configuration for traces
+      azure:                             # Azure defines the Azure Storage configuration
+        secret: ""                       # secret is the name of a Secret containing credentials for accessing object storage. It needs to be in the same namespace as the Tempo custom resource.
       backend: "memory"                  # Backend defines the backend for storing traces. Default: memory
-      pv:                                # PV defines the Persistent Volume configuration
-        size: "10Gi"                     # Size defines the size of the Persistent Volume for storing the traces. Defaults to 10Gi.
-      wal:                               # WAL defines the write-ahead logging (WAL) configuration
-        size: "10Gi"                     # Size defines the size of the Persistent Volume for storing the WAL. Defaults to 10Gi.
+      gcs:                               # GCP defines the Google Cloud Storage configuration
+        secret: ""                       # secret is the name of a Secret containing credentials for accessing object storage. It needs to be in the same namespace as the Tempo custom resource.
+      s3:                                # S3 defines the AWS S3 configuration
+        secret: ""                       # secret is the name of a Secret containing credentials for accessing object storage. It needs to be in the same namespace as the Tempo custom resource.
+        tls:                             # tls defines the TLS configuration for AWS S3.
+          caName: ""                     # caName is the name of a ConfigMap containing a CA certificate (service-ca.crt). It needs to be in the same namespace as the Tempo custom resource.
+          certName: ""                   # certName is the name of a Secret containing a certificate (tls.crt) and private key (tls.key). It needs to be in the same namespace as the Tempo custom resource.
+          enabled: false                 # enabled defines if TLS is enabled.
+          minVersion: ""                 # minVersion defines the minimum acceptable TLS version.
+      size: "10Gi"                       # Size defines the size of the volume where traces are stored. For in-memory storage, this defines the size of the tmpfs volume. For persistent volume storage, this defines the size of the persistent volume. For object storage, this defines the size of the persistent volume containing the Write-Ahead Log (WAL) of Tempo. Defaults to 10Gi.
 status:                                  # TempoMonolithicStatus defines the observed state of TempoMonolithic.

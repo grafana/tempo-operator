@@ -221,7 +221,7 @@ func TestReadyToConfigurationError(t *testing.T) {
 			Status:             "True",
 			LastTransitionTime: updatedTempo2.Status.Conditions[1].LastTransitionTime,
 			Reason:             string(v1alpha1.ReasonInvalidStorageConfig),
-			Message:            "invalid storage secret: \"endpoint\" field of storage secret must be a valid URL",
+			Message:            "\"endpoint\" field of storage secret must be a valid URL",
 		},
 	}, updatedTempo2.Status.Conditions)
 	assert.Greater(t, updatedTempo2.Status.Conditions[0].LastTransitionTime.UnixNano(), updatedTempo1.Status.Conditions[0].LastTransitionTime.UnixNano())
@@ -266,7 +266,7 @@ func TestConfigurationErrorToConfigurationError(t *testing.T) {
 		Status:             "True",
 		LastTransitionTime: updatedTempo1.Status.Conditions[0].LastTransitionTime,
 		Reason:             string(v1alpha1.ReasonInvalidStorageConfig),
-		Message:            "invalid storage secret: \"endpoint\" field of storage secret must be a valid URL",
+		Message:            "\"endpoint\" field of storage secret must be a valid URL",
 	}}, updatedTempo1.Status.Conditions)
 
 	// Remove access_key from the storage secret
@@ -291,7 +291,7 @@ func TestConfigurationErrorToConfigurationError(t *testing.T) {
 			Status:             "True",
 			LastTransitionTime: lastTransitionTime,
 			Reason:             string(v1alpha1.ReasonInvalidStorageConfig),
-			Message:            "invalid storage secret: storage secret must contain \"access_key_id\" field, \"endpoint\" field of storage secret must be a valid URL",
+			Message:            "storage secret must contain \"access_key_id\" field, \"endpoint\" field of storage secret must be a valid URL",
 		},
 	}, updatedTempo2.Status.Conditions)
 }
@@ -335,7 +335,7 @@ func TestConfigurationErrorToReady(t *testing.T) {
 		Status:             "True",
 		LastTransitionTime: updatedTempo1.Status.Conditions[0].LastTransitionTime,
 		Reason:             string(v1alpha1.ReasonInvalidStorageConfig),
-		Message:            "invalid storage secret: \"endpoint\" field of storage secret must be a valid URL",
+		Message:            "\"endpoint\" field of storage secret must be a valid URL",
 	}}, updatedTempo1.Status.Conditions)
 
 	// Update the storage secret to a valid endpoint
@@ -361,7 +361,7 @@ func TestConfigurationErrorToReady(t *testing.T) {
 			Status:             "False",
 			LastTransitionTime: updatedTempo2.Status.Conditions[1].LastTransitionTime,
 			Reason:             string(v1alpha1.ReasonInvalidStorageConfig),
-			Message:            "invalid storage secret: \"endpoint\" field of storage secret must be a valid URL",
+			Message:            "\"endpoint\" field of storage secret must be a valid URL",
 		},
 		{
 			Type:               string(v1alpha1.ConditionReady),
@@ -452,7 +452,8 @@ func TestStorageCustomCA(t *testing.T) {
 					Type: "s3",
 				},
 				TLS: v1alpha1.TLSSpec{
-					CA: "custom-ca",
+					Enabled: true,
+					CA:      "custom-ca",
 				},
 			},
 		},
@@ -470,7 +471,7 @@ func TestStorageCustomCA(t *testing.T) {
 		Status:             "True",
 		LastTransitionTime: updatedTempo.Status.Conditions[0].LastTransitionTime,
 		Reason:             string(v1alpha1.ReasonInvalidStorageConfig),
-		Message:            "could not fetch CA config map: configmaps \"custom-ca\" not found",
+		Message:            "could not fetch ConfigMap: configmaps \"custom-ca\" not found",
 	}}, updatedTempo.Status.Conditions)
 
 	caConfigMap := &corev1.ConfigMap{
@@ -492,7 +493,7 @@ func TestStorageCustomCA(t *testing.T) {
 		Status:             "True",
 		LastTransitionTime: updatedTempo2.Status.Conditions[0].LastTransitionTime,
 		Reason:             string(v1alpha1.ReasonInvalidStorageConfig),
-		Message:            "invalid CA config map: ConfigMap must contain a 'ca.crt' key",
+		Message:            "CA ConfigMap must contain a 'service-ca.crt' key",
 	}}, updatedTempo2.Status.Conditions)
 
 	caConfigMap.Data = map[string]string{
@@ -512,7 +513,7 @@ func TestStorageCustomCA(t *testing.T) {
 			Status:             "False",
 			LastTransitionTime: updatedTempo3.Status.Conditions[0].LastTransitionTime,
 			Reason:             string(v1alpha1.ReasonInvalidStorageConfig),
-			Message:            "invalid CA config map: ConfigMap must contain a 'ca.crt' key",
+			Message:            "CA ConfigMap must contain a 'service-ca.crt' key",
 		},
 		{
 			Type:               string(v1alpha1.ConditionReady),
