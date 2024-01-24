@@ -13,7 +13,7 @@ func TestMonolithicDefault(t *testing.T) {
 		expected *TempoMonolithic
 	}{
 		{
-			name: "empty spec, set memory backend and enable OTLP/gRPC",
+			name: "empty spec, set memory backend and enable OTLP/gRPC and OTLP/HTTP",
 			input: &TempoMonolithic{
 				Spec: TempoMonolithicSpec{},
 			},
@@ -27,6 +27,9 @@ func TestMonolithicDefault(t *testing.T) {
 					Ingestion: &MonolithicIngestionSpec{
 						OTLP: &MonolithicIngestionOTLPSpec{
 							GRPC: &MonolithicIngestionOTLPProtocolsGRPCSpec{
+								Enabled: true,
+							},
+							HTTP: &MonolithicIngestionOTLPProtocolsHTTPSpec{
 								Enabled: true,
 							},
 						},
@@ -63,6 +66,9 @@ func TestMonolithicDefault(t *testing.T) {
 							GRPC: &MonolithicIngestionOTLPProtocolsGRPCSpec{
 								Enabled: true,
 							},
+							HTTP: &MonolithicIngestionOTLPProtocolsHTTPSpec{
+								Enabled: true,
+							},
 						},
 					},
 				},
@@ -82,7 +88,10 @@ func TestMonolithicDefault(t *testing.T) {
 					},
 					Ingestion: &MonolithicIngestionSpec{
 						OTLP: &MonolithicIngestionOTLPSpec{
-							// HTTP is already set, GRPC should not be enabled by webhook
+							// GRPC is explicitly disabled and should not be enabled by webhook
+							GRPC: &MonolithicIngestionOTLPProtocolsGRPCSpec{
+								Enabled: false,
+							},
 							HTTP: &MonolithicIngestionOTLPProtocolsHTTPSpec{
 								Enabled: true,
 							},
@@ -102,6 +111,9 @@ func TestMonolithicDefault(t *testing.T) {
 					},
 					Ingestion: &MonolithicIngestionSpec{
 						OTLP: &MonolithicIngestionOTLPSpec{
+							GRPC: &MonolithicIngestionOTLPProtocolsGRPCSpec{
+								Enabled: false,
+							},
 							HTTP: &MonolithicIngestionOTLPProtocolsHTTPSpec{
 								Enabled: true,
 							},

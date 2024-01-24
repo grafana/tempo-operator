@@ -38,6 +38,10 @@ spec:
     port: 4317
     protocol: TCP
     targetPort: otlp-grpc
+  - name: otlp-http
+    port: 4318
+    protocol: TCP
+    targetPort: otlp-http
   - name: jaeger-grpc
     port: 16685
     protocol: TCP

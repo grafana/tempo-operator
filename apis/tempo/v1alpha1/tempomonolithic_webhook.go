@@ -39,12 +39,19 @@ func (r *TempoMonolithic) Default() {
 	}
 
 	if r.Spec.Ingestion == nil {
-		r.Spec.Ingestion = &MonolithicIngestionSpec{
-			OTLP: &MonolithicIngestionOTLPSpec{
-				GRPC: &MonolithicIngestionOTLPProtocolsGRPCSpec{
-					Enabled: true,
-				},
-			},
+		r.Spec.Ingestion = &MonolithicIngestionSpec{}
+	}
+	if r.Spec.Ingestion.OTLP == nil {
+		r.Spec.Ingestion.OTLP = &MonolithicIngestionOTLPSpec{}
+	}
+	if r.Spec.Ingestion.OTLP.GRPC == nil {
+		r.Spec.Ingestion.OTLP.GRPC = &MonolithicIngestionOTLPProtocolsGRPCSpec{
+			Enabled: true,
+		}
+	}
+	if r.Spec.Ingestion.OTLP.HTTP == nil {
+		r.Spec.Ingestion.OTLP.HTTP = &MonolithicIngestionOTLPProtocolsHTTPSpec{
+			Enabled: true,
 		}
 	}
 }
