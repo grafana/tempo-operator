@@ -18,11 +18,13 @@ IMG_PREFIX=docker.io/your_username OPERATOR_VERSION=x.y.z BUNDLE_VARIANT=openshi
 make e2e e2e-openshift
 ```
 
-## Release Manager Schedule
-| Version | Release Manager                                          |
-| ------- | -------------------------------------------------------- |
-| 0.8.0   | [Andreas Gerstmayr](https://github.com/andreasgerstmayr) |
-| 0.9.0   | [Benedikt Bongartz](https://github.com/frzifus)          |
-| 0.10.0  | [Israel Blancas](https://github.com/iblancasa)           |
-| 0.11.0  | [Ruben Vargas](https://github.com/rubenvp8510)           |
-| 0.12.0  | [Pavol Loffay](https://github.com/pavolloffay)           |
+## Release Schedule
+We plan to release the operator monthly, **at the end of each month**.
+
+| Release Date | Version | Release Manager                                          |
+| ------------ | ------- | -------------------------------------------------------- |
+| Jan 2024     | 0.8.0   | [Andreas Gerstmayr](https://github.com/andreasgerstmayr) |
+| Feb 2024     | 0.9.0   | [Benedikt Bongartz](https://github.com/frzifus)          |
+| Mar 2024     | 0.10.0  | [Israel Blancas](https://github.com/iblancasa)           |
+| Apr 2024     | 0.11.0  | [Ruben Vargas](https://github.com/rubenvp8510)           |
+| May 2024     | 0.12.0  | [Pavol Loffay](https://github.com/pavolloffay)           |
