@@ -102,11 +102,6 @@ type MonolithicIngestionSpec struct {
 	//
 	// +kubebuilder:validation:Optional
 	OTLP *MonolithicIngestionOTLPSpec `json:"otlp,omitempty"`
-
-	// TLS defines the TLS configuration for ingestion
-	//
-	// +kubebuilder:validation:Optional
-	TLS *MonolithicIngestionTLSSpec `json:"tls,omitempty"`
 }
 
 // MonolithicIngestionOTLPSpec defines the settings for OTLP ingestion.
@@ -137,26 +132,6 @@ type MonolithicIngestionOTLPProtocolsHTTPSpec struct {
 	//
 	// +kubebuilder:validation:Required
 	Enabled bool `json:"enabled"`
-}
-
-// MonolithicIngestionTLSSpec defines the TLS settings for ingestion.
-type MonolithicIngestionTLSSpec struct {
-	// Enabled defines if TLS is enabled for ingestion
-	//
-	// +kubebuilder:validation:Required
-	Enabled bool `json:"enabled"`
-
-	// CA defines the name of a secret containing the CA certificate
-	//
-	// +kubebuilder:validation:Required
-	// +kubebuilder:validation:MinLength=1
-	CA string `json:"ca"`
-
-	// Cert defines the name of a secret containing the TLS certificate and private key
-	//
-	// +kubebuilder:validation:Required
-	// +kubebuilder:validation:MinLength=1
-	Cert string `json:"cert"`
 }
 
 // MonolithicJaegerUISpec defines the settings for the Jaeger UI.

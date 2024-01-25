@@ -11,10 +11,6 @@ spec:                                    # TempoMonolithicSpec defines the desir
         enabled: true                    # Enabled defines if OTLP over gRPC is enabled
       http:                              # HTTP defines the OTLP/HTTP configuration
         enabled: false                   # Enabled defines if OTLP over HTTP is enabled
-    tls:                                 # TLS defines the TLS configuration for ingestion
-      ca: ""                             # CA defines the name of a secret containing the CA certificate
-      cert: ""                           # Cert defines the name of a secret containing the TLS certificate and private key
-      enabled: false                     # Enabled defines if TLS is enabled for ingestion
   jaegerui:                              # JaegerUI defines the Jaeger UI configuration
     enabled: false                       # Enabled defines if the Jaeger UI should be enabled
     ingress:                             # Ingress defines the ingress configuration for Jaeger UI

@@ -73,27 +73,6 @@ spec:
                         - enabled
                         type: object
                     type: object
-                  tls:
-                    description: TLS defines the TLS configuration for ingestion
-                    properties:
-                      ca:
-                        description: CA defines the name of a secret containing the
-                          CA certificate
-                        minLength: 1
-                        type: string
-                      cert:
-                        description: Cert defines the name of a secret containing
-                          the TLS certificate and private key
-                        minLength: 1
-                        type: string
-                      enabled:
-                        description: Enabled defines if TLS is enabled for ingestion
-                        type: boolean
-                    required:
-                    - ca
-                    - cert
-                    - enabled
-                    type: object
                 type: object
               jaegerui:
                 description: JaegerUI defines the Jaeger UI configuration
