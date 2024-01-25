@@ -16,7 +16,9 @@ func (r *TempoMonolithic) SetupWebhookWithManager(mgr ctrl.Manager) error {
 		Complete()
 }
 
-// Default implements webhook.Defaulter so a webhook will be registered for the type.
+// Default sets all default values in a central place, instead of setting it at every place where the value is accessed.
+// NOTE: This function is called inside the Reconcile loop, NOT in the webhook.
+// We want to keep the CR as minimal as the user configures it, and not modify it in any way (except for upgrades).
 func (r *TempoMonolithic) Default() {
 	if r.Spec.Storage == nil {
 		r.Spec.Storage = &MonolithicStorageSpec{}
