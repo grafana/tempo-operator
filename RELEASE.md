@@ -17,3 +17,12 @@ Note: The e2e tests require MinIO (`make deploy-minio`) and opentelemetry-operat
 IMG_PREFIX=docker.io/your_username OPERATOR_VERSION=x.y.z BUNDLE_VARIANT=openshift OPERATOR_NAMESPACE=tempo-operator-system make bundle docker-build docker-push bundle-build bundle-push olm-deploy
 make e2e e2e-openshift
 ```
+
+## Release Manager Schedule
+| Version | Release Manager                                          |
+| ------- | -------------------------------------------------------- |
+| 0.8.0   | [Andreas Gerstmayr](https://github.com/andreasgerstmayr) |
+| 0.9.0   | [Benedikt Bongartz](https://github.com/frzifus)          |
+| 0.10.0  | [Israel Blancas](https://github.com/iblancasa)           |
+| 0.11.0  | [Ruben Vargas](https://github.com/rubenvp8510)           |
+| 0.12.0  | [Pavol Loffay](https://github.com/pavolloffay)           |
