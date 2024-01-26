@@ -40,13 +40,13 @@ func BuildConfigMap(params manifestutils.Params) (*corev1.ConfigMap, string, err
 
 	if params.Tempo.Spec.ExtraConfig != nil {
 		// For we only support tempo for now.
-		config, err = mergeExtraConfigWithConfig(params.Tempo.Spec.ExtraConfig.Tempo, config)
+		config, err = MergeExtraConfigWithConfig(params.Tempo.Spec.ExtraConfig.Tempo, config)
 		if err != nil {
 			return nil, "", err
 		}
 
 		// Is the same tempo config with certain TLS fields disabled.
-		frontendConfig, err = mergeExtraConfigWithConfig(params.Tempo.Spec.ExtraConfig.Tempo, frontendConfig)
+		frontendConfig, err = MergeExtraConfigWithConfig(params.Tempo.Spec.ExtraConfig.Tempo, frontendConfig)
 		if err != nil {
 			return nil, "", err
 		}

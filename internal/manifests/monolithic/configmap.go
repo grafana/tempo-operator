@@ -2,16 +2,15 @@ package monolithic
 
 import (
 	"crypto/sha256"
-	"encoding/json"
 	"fmt"
 
-	"github.com/imdario/mergo"
 	"gopkg.in/yaml.v2"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	tempoStackConfig "github.com/grafana/tempo-operator/internal/manifests/config"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
 )
@@ -121,39 +120,16 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 		}
 	}
 
-	if tempo.Spec.ExtraConfig == nil || len(tempo.Spec.ExtraConfig.Tempo.Raw) == 0 {
-		return yaml.Marshal(config)
-	} else {
-		return overlayJson(config, tempo.Spec.ExtraConfig.Tempo.Raw)
-	}
-}
-
-func overlayJson(config tempoConfig, overlay []byte) ([]byte, error) {
-	// mergo.Merge requires that both variables have the same type
-	generatedCfg := make(map[string]interface{})
-	overlayCfg := make(map[string]interface{})
-
-	// Convert tempoConfig{} to map[string]interface{}
 	generatedYaml, err := yaml.Marshal(config)
 	if err != nil {
 		return nil, err
 	}
-	if err := yaml.Unmarshal(generatedYaml, &generatedCfg); err != nil {
-		return nil, err
-	}
 
-	// Unmarshal overlay of type []byte to map[string]interface{}
-	if err := json.Unmarshal(overlay, &overlayCfg); err != nil {
-		return nil, err
+	if tempo.Spec.ExtraConfig == nil || len(tempo.Spec.ExtraConfig.Tempo.Raw) == 0 {
+		return generatedYaml, nil
+	} else {
+		return tempoStackConfig.MergeExtraConfigWithConfig(tempo.Spec.ExtraConfig.Tempo, generatedYaml)
 	}
-
-	// Override generated config with extra config
-	err = mergo.Merge(&generatedCfg, overlayCfg, mergo.WithOverride)
-	if err != nil {
-		return nil, err
-	}
-
-	return yaml.Marshal(generatedCfg)
 }
 
 func buildTempoQueryConfig() ([]byte, error) {

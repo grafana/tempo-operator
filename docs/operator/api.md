@@ -572,7 +572,7 @@ Feature Gates.ProjectConfig
 
 <p>
 
-(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-TempoStackSpec">TempoStackSpec</a>)
+(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-TempoMonolithicSpec">TempoMonolithicSpec</a>, <a href="#tempo-grafana-com-v1alpha1-TempoStackSpec">TempoStackSpec</a>)
 
 </p>
 
@@ -620,6 +620,8 @@ k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1.JSON
 <td>
 
 <em>(Optional)</em>
+
+<p>Tempo defines any extra Tempo configuration, which will be merged with the operator&rsquo;s generated Tempo configuration</p>
 
 </td>
 </tr>
@@ -1607,64 +1609,6 @@ using an in-process OpenPolicyAgent Rego authorizer.</p>
 </td>
 
 </tr></tbody>
-</table>
-
-## MonolithicExtraConfigSpec { #tempo-grafana-com-v1alpha1-MonolithicExtraConfigSpec }
-
-<p>
-
-(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-TempoMonolithicSpec">TempoMonolithicSpec</a>)
-
-</p>
-
-<div>
-
-<p>MonolithicExtraConfigSpec defines extra configuration for this deployment.</p>
-
-</div>
-
-<table>
-
-<thead>
-
-<tr>
-
-<th>Field</th>
-
-<th>Description</th>
-
-</tr>
-
-</thead>
-
-<tbody>
-
-<tr>
-
-<td>
-
-<code>tempo</code><br/>
-
-<em>
-
-<a href="https://pkg.go.dev/k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1#JSON">
-
-k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1.JSON
-
-</a>
-
-</em>
-
-</td>
-
-<td>
-
-<p>Tempo defines any extra Tempo configuration, which will be merged with the operator&rsquo;s generated Tempo configuration</p>
-
-</td>
-</tr>
-
-</tbody>
 </table>
 
 ## MonolithicIngestionOTLPProtocolsGRPCSpec { #tempo-grafana-com-v1alpha1-MonolithicIngestionOTLPProtocolsGRPCSpec }
@@ -4944,9 +4888,9 @@ MonolithicObservabilitySpec
 
 <em>
 
-<a href="#tempo-grafana-com-v1alpha1-MonolithicExtraConfigSpec">
+<a href="#tempo-grafana-com-v1alpha1-ExtraConfigSpec">
 
-MonolithicExtraConfigSpec
+ExtraConfigSpec
 
 </a>
 

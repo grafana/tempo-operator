@@ -4,7 +4,7 @@ metadata:
   name: example
 spec:                                    # TempoStackSpec defines the desired state of TempoStack.
   extraConfig:                           # ExtraConfigSpec defines extra configurations for tempo that will be merged with the operator generated, configurations defined here has precedence and could override generated config.
-    tempo: {}
+    tempo: {}                            # Tempo defines any extra Tempo configuration, which will be merged with the operator's generated Tempo configuration
   hashRing:                              # HashRing defines the spec for the distributed hash ring configuration.
     memberlist:                          # MemberList configuration spec
       enableIPv6: false                  # EnableIPv6 enables IPv6 support for the memberlist based hash ring.

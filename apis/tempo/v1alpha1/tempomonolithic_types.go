@@ -1,7 +1,6 @@
 package v1alpha1
 
 import (
-	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -36,7 +35,7 @@ type TempoMonolithicSpec struct {
 	// ExtraConfig defines any extra (overlay) configuration for components
 	//
 	// +kubebuilder:validation:Optional
-	ExtraConfig *MonolithicExtraConfigSpec `json:"extraConfig,omitempty"`
+	ExtraConfig *ExtraConfigSpec `json:"extraConfig,omitempty"`
 }
 
 // MonolithicStorageSpec defines the storage for the Tempo deployment.
@@ -203,13 +202,6 @@ type MonolithicObservabilityMetricsPrometheusRulesSpec struct {
 	//
 	// +kubebuilder:validation:Required
 	Enabled bool `json:"enabled"`
-}
-
-// MonolithicExtraConfigSpec defines extra configuration for this deployment.
-type MonolithicExtraConfigSpec struct {
-	// Tempo defines any extra Tempo configuration, which will be merged with the operator's generated Tempo configuration
-	// +kubebuilder:validation:Optional
-	Tempo apiextensionsv1.JSON `json:"tempo,omitempty"`
 }
 
 // TempoMonolithicStatus defines the observed state of TempoMonolithic.

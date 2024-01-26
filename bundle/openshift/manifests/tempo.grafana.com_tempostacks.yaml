@@ -59,6 +59,8 @@ spec:
                   defined here has precedence and could override generated config.
                 properties:
                   tempo:
+                    description: Tempo defines any extra Tempo configuration, which
+                      will be merged with the operator's generated Tempo configuration
                     x-kubernetes-preserve-unknown-fields: true
                 type: object
               hashRing:

@@ -9,7 +9,8 @@ import (
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 )
 
-func mergeExtraConfigWithConfig(overridesJSON apiextensionsv1.JSON, templateResults []byte) ([]byte, error) {
+func MergeExtraConfigWithConfig(overridesJSON apiextensionsv1.JSON, templateResults []byte) ([]byte, error) {
+	// mergo.Merge requires that both variables have the same type
 	renderedTemplateMap := make(map[string]interface{})
 	overrides := make(map[string]interface{})
 
@@ -17,6 +18,7 @@ func mergeExtraConfigWithConfig(overridesJSON apiextensionsv1.JSON, templateResu
 		return templateResults, nil
 	}
 
+	// Unmarshal overlay of type []byte to map[string]interface{}
 	if err := json.Unmarshal(overridesJSON.Raw, &overrides); err != nil {
 		return nil, err
 	}
@@ -25,6 +27,7 @@ func mergeExtraConfigWithConfig(overridesJSON apiextensionsv1.JSON, templateResu
 		return nil, err
 	}
 
+	// Override generated config with extra config
 	if err := mergo.Merge(&renderedTemplateMap, overrides, mergo.WithOverride); err != nil {
 		return nil, err
 	}
