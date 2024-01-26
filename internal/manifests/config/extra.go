@@ -9,6 +9,7 @@ import (
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 )
 
+// MergeExtraConfigWithConfig overlays configuration from overridesJSON onto templateResults.
 func MergeExtraConfigWithConfig(overridesJSON apiextensionsv1.JSON, templateResults []byte) ([]byte, error) {
 	// mergo.Merge requires that both variables have the same type
 	renderedTemplateMap := make(map[string]interface{})
