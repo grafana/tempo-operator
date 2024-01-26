@@ -11,8 +11,8 @@ require (
 	github.com/grafana-operator/grafana-operator/v5 v5.5.2
 	github.com/imdario/mergo v0.3.16
 	github.com/novln/docker-parser v1.0.0
-	github.com/onsi/ginkgo/v2 v2.14.0
-	github.com/onsi/gomega v1.30.0
+	github.com/onsi/ginkgo/v2 v2.15.0
+	github.com/onsi/gomega v1.31.1
 	github.com/openshift/library-go v0.0.0-20220622115547-84d884f4c9f6
 	github.com/operator-framework/operator-lib v0.12.0
 	github.com/prometheus/client_golang v1.18.0

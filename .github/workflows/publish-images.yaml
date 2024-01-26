@@ -3,81 +3,11 @@ name: "Publish operator"
 on:
   push:
     branches: [main]
-    tags: ["v*"]
-
-  release:
-    types: [published]
+    # will run only on main, for tag branches we run it as part of the release process.
+    tags-ignore: ["v*"]
 
   workflow_dispatch:
 
 jobs:
-  publish:
-    name: Publish container images
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Unshallow
-        run: git fetch --prune --unshallow
-
-      - name: Describe the current state
-        run: git describe --tags --always
-
-      - name: Docker meta
-        id: docker_meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/${{ github.repository }}/tempo-operator
-          tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{raw}}
-            type=ref,event=branch
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Cache Docker layers
-        uses: actions/cache@v3
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
-
-      - name: Login to GitHub Package Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and push Operator image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./Dockerfile
-          platforms: linux/amd64,linux/arm64
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.docker_meta.outputs.tags }}
-          labels: ${{ steps.docker_meta.outputs.labels }}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
-      -
-        # Temp fix
-        # https://github.com/docker/build-push-action/issues/252
-        # https://github.com/moby/buildkit/issues/1896
-        name: Move cache
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
-        shell: bash
-
-      - name: Publish operator bundle and catalog
-        if: ${{ startsWith(github.ref, 'refs/tags/v') }}
-        run: make bundle bundle-build bundle-push catalog-build catalog-push
-        env:
-          IMG_PREFIX: ghcr.io/${{ github.repository }}
+  publish-images:
+    uses: ./.github/workflows/reusable-publish-images.yaml

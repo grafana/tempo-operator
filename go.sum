@@ -84,10 +84,10 @@ github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 h1:C3w9PqII01/Oq
 github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822/go.mod h1:+n7T8mK8HuQTcFwEeznm/DIxMOiR9yIdICNftLE1DvQ=
 github.com/novln/docker-parser v1.0.0 h1:PjEBd9QnKixcWczNGyEdfUrP6GR0YUilAqG7Wksg3uc=
 github.com/novln/docker-parser v1.0.0/go.mod h1:oCeM32fsoUwkwByB5wVjsrsVQySzPWkl3JdlTn1txpE=
-github.com/onsi/ginkgo/v2 v2.14.0 h1:vSmGj2Z5YPb9JwCWT6z6ihcUvDhuXLc3sJiqd3jMKAY=
-github.com/onsi/ginkgo/v2 v2.14.0/go.mod h1:JkUdW7JkN0V6rFvsHcJ478egV3XH9NxpD27Hal/PhZw=
-github.com/onsi/gomega v1.30.0 h1:hvMK7xYz4D3HapigLTeGdId/NcfQx1VHMJc60ew99+8=
-github.com/onsi/gomega v1.30.0/go.mod h1:9sxs+SwGrKI0+PWe4Fxa9tFQQBG5xSsSbMXOI8PPpoQ=
+github.com/onsi/ginkgo/v2 v2.15.0 h1:79HwNRBAZHOEwrczrgSOPy+eFTTlIGELKy5as+ClttY=
+github.com/onsi/ginkgo/v2 v2.15.0/go.mod h1:HlxMHtYF57y6Dpf+mc5529KKmSq9h2FpCF+/ZkwUxKM=
+github.com/onsi/gomega v1.31.1 h1:KYppCUK+bUgAZwHOu7EXVBKyQA6ILvOESHkn/tgoqvo=
+github.com/onsi/gomega v1.31.1/go.mod h1:y40C95dwAD1Nz36SsEnxvfFe8FFfNxzI5eJ0EYGyAy0=
 github.com/openshift/api v0.0.0-20230223193310-d964c7a58d75 h1:OQJsfiach1cKBI1xUSNXKzuqi8nTpDRccR8gMGFkTIU=
 github.com/openshift/api v0.0.0-20230223193310-d964c7a58d75/go.mod h1:ctXNyWanKEjGj8sss1KjjHQ3ENKFm33FFnS5BKaIPh4=
 github.com/openshift/library-go v0.0.0-20220622115547-84d884f4c9f6 h1:lmfmsIGq62lmj17qrZh4Gbbb86WvJw6pLhCNwNjB2Yk=
