@@ -74,7 +74,7 @@ func configureReceiversTLS(dep *v1.Deployment, tempo v1alpha1.TempoStack) error 
 				{
 					Name:      caSecretName,
 					ReadOnly:  true,
-					MountPath: manifestutils.CAReceiver,
+					MountPath: manifestutils.ReceiverTLSCADir,
 				},
 			},
 		}

@@ -112,7 +112,7 @@ func buildReceiverTLSConfig(tempo v1alpha1.TempoStack) receiverTLSOptions {
 		Enabled:         tempo.Spec.Template.Distributor.TLS.Enabled,
 		ClientCAEnabled: tempo.Spec.Template.Distributor.TLS.CA != "",
 		Paths: tlsFilePaths{
-			CA:          path.Join(manifestutils.CAReceiver, manifestutils.TLSCAFilename),
+			CA:          path.Join(manifestutils.ReceiverTLSCADir, manifestutils.TLSCAFilename),
 			Key:         path.Join(manifestutils.ReceiverTLSCertDir, manifestutils.TLSKeyFilename),
 			Certificate: path.Join(manifestutils.ReceiverTLSCertDir, manifestutils.TLSCertFilename),
 		},
@@ -128,7 +128,7 @@ func buildTLSConfig(params manifestutils.Params) (tlsOptions, error) {
 	}
 	return tlsOptions{
 		Paths: tlsFilePaths{
-			CA:          path.Join(manifestutils.CABundleDir, manifestutils.TLSCAFilename),
+			CA:          path.Join(manifestutils.TempoInternalTLSCADir, manifestutils.TLSCAFilename),
 			Key:         path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSKeyFilename),
 			Certificate: path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSCertFilename),
 		},

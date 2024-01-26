@@ -329,7 +329,7 @@ func TestBuildDistributor(t *testing.T) {
 				},
 				{
 					Name:      "ca-custom",
-					MountPath: manifestutils.CAReceiver,
+					MountPath: manifestutils.ReceiverTLSCADir,
 					ReadOnly:  true,
 				},
 				{

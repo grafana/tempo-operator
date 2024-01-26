@@ -254,7 +254,7 @@ func deployment(params manifestutils.Params) (*appsv1.Deployment, error) {
 				"--query.http.tls.enabled=true",
 				fmt.Sprintf("--query.http.tls.key=%s", path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSKeyFilename)),
 				fmt.Sprintf("--query.http.tls.cert=%s", path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSCertFilename)),
-				fmt.Sprintf("--query.http.tls.client-ca=%s", path.Join(manifestutils.CABundleDir, manifestutils.TLSCAFilename)),
+				fmt.Sprintf("--query.http.tls.client-ca=%s", path.Join(manifestutils.TempoInternalTLSCADir, manifestutils.TLSCAFilename)),
 			)
 		}
 
@@ -263,7 +263,7 @@ func deployment(params manifestutils.Params) (*appsv1.Deployment, error) {
 				"--query.grpc.tls.enabled=true",
 				fmt.Sprintf("--query.grpc.tls.key=%s", path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSKeyFilename)),
 				fmt.Sprintf("--query.grpc.tls.cert=%s", path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSCertFilename)),
-				fmt.Sprintf("--query.grpc.tls.client-ca=%s", path.Join(manifestutils.CABundleDir, manifestutils.TLSCAFilename)),
+				fmt.Sprintf("--query.grpc.tls.client-ca=%s", path.Join(manifestutils.TempoInternalTLSCADir, manifestutils.TLSCAFilename)),
 			)
 		}
 

@@ -30,7 +30,7 @@ func ConfigureServiceCA(podSpec *corev1.PodSpec, caBundleName string, containers
 			{
 				Name:      caBundleName,
 				ReadOnly:  false,
-				MountPath: CABundleDir,
+				MountPath: TempoInternalTLSCADir,
 			},
 		},
 	}
