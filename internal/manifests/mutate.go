@@ -5,6 +5,7 @@ import (
 	"reflect"
 
 	"github.com/ViaQ/logerr/v2/kverrors"
+	"github.com/google/go-cmp/cmp"
 	grafanav1 "github.com/grafana-operator/grafana-operator/v5/api/v1beta1"
 	"github.com/imdario/mergo"
 	routev1 "github.com/openshift/api/route/v1"
@@ -26,7 +27,7 @@ type ImmutableErr struct {
 }
 
 func (m *ImmutableErr) Error() string {
-	return fmt.Sprintf("update to immutable field %s is forbidden", m.field)
+	return fmt.Sprintf("update to immutable field %s is forbidden, diff: %s", m.field, cmp.Diff(m.existing, m.desired))
 }
 
 // MutateFuncFor returns a mutate function based on the
