@@ -14,16 +14,6 @@ const (
 	storageCAVolumeName = "storage-ca"
 )
 
-// TempoStorageTLSDir returns the mount path of certificates for connecting to object storage.
-func TempoStorageTLSDir() string {
-	return path.Join(TLSDir, "storage")
-}
-
-// TempoStorageTLSCAPath returns the path of the CA certificate for connecting to object storage.
-func TempoStorageTLSCAPath() string {
-	return path.Join(TempoStorageTLSDir(), "ca.crt")
-}
-
 func configureAzureStorage(tempo *v1alpha1.TempoStack, pod *corev1.PodSpec) error {
 	var envVars []corev1.EnvVar = []corev1.EnvVar{
 		{
@@ -141,7 +131,7 @@ func configureS3Storage(tempo *v1alpha1.TempoStack, pod *corev1.PodSpec) error {
 	if tempo.Spec.Storage.TLS.CA != "" {
 		volumeMounts = append(volumeMounts, corev1.VolumeMount{
 			Name:      storageCAVolumeName,
-			MountPath: TempoStorageTLSDir(),
+			MountPath: StorageTLSCADir,
 			ReadOnly:  true,
 		})
 		volumes = append(volumes, corev1.Volume{

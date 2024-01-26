@@ -139,11 +139,11 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 	if params.CtrlConfig.Gates.HTTPEncryption {
 		internalServerScheme = corev1.URISchemeHTTPS
 		tlsArgs = []string{
-			fmt.Sprintf("--tls.internal.server.key-file=%s/tls.key", manifestutils.TempoServerTLSDir()),
-			fmt.Sprintf("--tls.internal.server.cert-file=%s/tls.crt", manifestutils.TempoServerTLSDir()),
-			fmt.Sprintf("--traces.tls.key-file=%s/tls.key", manifestutils.TempoServerTLSDir()),
-			fmt.Sprintf("--traces.tls.cert-file=%s/tls.crt", manifestutils.TempoServerTLSDir()),
-			fmt.Sprintf("--traces.tls.ca-file=%s/service-ca.crt", manifestutils.CABundleDir),
+			fmt.Sprintf("--tls.internal.server.key-file=%s", path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSKeyFilename)),
+			fmt.Sprintf("--tls.internal.server.cert-file=%s", path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSCertFilename)),
+			fmt.Sprintf("--traces.tls.key-file=%s", path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSKeyFilename)),
+			fmt.Sprintf("--traces.tls.cert-file=%s", path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSCertFilename)),
+			fmt.Sprintf("--traces.tls.ca-file=%s", path.Join(manifestutils.TempoInternalTLSCADir, manifestutils.TLSCAFilename)),
 		}
 	}
 

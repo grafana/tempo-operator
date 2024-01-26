@@ -147,7 +147,7 @@ func TestGetS3StorageWithCA(t *testing.T) {
 	assert.Equal(t, []corev1.VolumeMount{
 		{
 			Name:      storageCAVolumeName,
-			MountPath: TempoStorageTLSDir(),
+			MountPath: StorageTLSCADir,
 			ReadOnly:  true,
 		},
 	}, pod.Containers[0].VolumeMounts)
