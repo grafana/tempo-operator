@@ -72,7 +72,7 @@ func (r *TempoStackReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	tempo := v1alpha1.TempoStack{}
 	if err := r.Get(ctx, req.NamespacedName, &tempo); err != nil {
 		if !apierrors.IsNotFound(err) {
-			log.Error(err, "unable to fetch TempoTempoStack")
+			log.Error(err, "unable to fetch TempoStack")
 			return ctrl.Result{}, fmt.Errorf("could not fetch tempo: %w", err)
 		}
 
@@ -113,7 +113,7 @@ func (r *TempoStackReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		}
 	}
 
-	err := r.createOrUpdate(ctx, log, req, tempo)
+	err := r.createOrUpdate(ctx, log, tempo)
 	if err != nil {
 		return r.handleReconcileStatus(ctx, log, tempo, err)
 	}

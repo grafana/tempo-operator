@@ -38,6 +38,26 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
+      path: /validate-tempo-grafana-com-v1alpha1-tempomonolithic
+  failurePolicy: Fail
+  name: vtempomonolithic.kb.io
+  rules:
+  - apiGroups:
+    - tempo.grafana.com
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - tempomonolithics
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
       path: /validate-tempo-grafana-com-v1alpha1-tempostack
   failurePolicy: Fail
   name: vtempostack.tempo.grafana.com

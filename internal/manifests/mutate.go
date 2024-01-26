@@ -1,9 +1,11 @@
 package manifests
 
 import (
+	"fmt"
 	"reflect"
 
 	"github.com/ViaQ/logerr/v2/kverrors"
+	"github.com/google/go-cmp/cmp"
 	grafanav1 "github.com/grafana-operator/grafana-operator/v5/api/v1beta1"
 	"github.com/imdario/mergo"
 	routev1 "github.com/openshift/api/route/v1"
@@ -12,9 +14,21 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
+	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
+
+// ImmutableErr occurs if an immutable field should be changed.
+type ImmutableErr struct {
+	field    string
+	existing interface{}
+	desired  interface{}
+}
+
+func (m *ImmutableErr) Error() string {
+	return fmt.Sprintf("update to immutable field %s is forbidden, diff: %s", m.field, cmp.Diff(m.existing, m.desired))
+}
 
 // MutateFuncFor returns a mutate function based on the
 // existing resource's concrete type. It supports currently
@@ -127,6 +141,7 @@ func MutateFuncFor(existing, desired client.Object) controllerutil.MutateFn {
 	}
 }
 
+// Override non-empty dst attributes with non-empty src attributes values.
 func mergeWithOverride(dst, src interface{}) error {
 	err := mergo.Merge(dst, src, mergo.WithOverride)
 	if err != nil {
@@ -231,12 +246,32 @@ func mutateDeployment(existing, desired *appsv1.Deployment) error {
 	return nil
 }
 
-func mutateStatefulSet(existing, desired *appsv1.StatefulSet) error {
-	// StatefulSet selector is immutable so we set this value only if
-	// a new object is going to be created
-	if existing.CreationTimestamp.IsZero() {
-		existing.Spec.Selector = desired.Spec.Selector
+func statefulSetVolumeClaimTemplatesChanged(existing, desired *appsv1.StatefulSet) bool {
+	if len(desired.Spec.VolumeClaimTemplates) != len(existing.Spec.VolumeClaimTemplates) {
+		return true
 	}
+	for i := range desired.Spec.VolumeClaimTemplates {
+		if desired.Spec.VolumeClaimTemplates[i].Name != existing.Spec.VolumeClaimTemplates[i].Name ||
+			!apiequality.Semantic.DeepEqual(desired.Spec.VolumeClaimTemplates[i].Annotations, existing.Spec.VolumeClaimTemplates[i].Annotations) ||
+			!apiequality.Semantic.DeepEqual(desired.Spec.VolumeClaimTemplates[i].Spec, existing.Spec.VolumeClaimTemplates[i].Spec) {
+			return true
+		}
+	}
+	return false
+}
+
+func mutateStatefulSet(existing, desired *appsv1.StatefulSet) error {
+	// list of mutable fields: https://github.com/kubernetes/kubernetes/blob/b1cf91b300a82bd05fdd7b115559e5b83680d768/pkg/apis/apps/validation/validation.go#L184
+	if !existing.CreationTimestamp.IsZero() {
+		if !apiequality.Semantic.DeepEqual(desired.Spec.Selector, existing.Spec.Selector) {
+			return &ImmutableErr{".spec.selector", existing.Spec.Selector, desired.Spec.Selector}
+		}
+		if statefulSetVolumeClaimTemplatesChanged(existing, desired) {
+			return &ImmutableErr{".spec.volumeClaimTemplates", existing.Spec.VolumeClaimTemplates, desired.Spec.VolumeClaimTemplates}
+		}
+	}
+
+	existing.Spec.Selector = desired.Spec.Selector
 	existing.Spec.PodManagementPolicy = desired.Spec.PodManagementPolicy
 	existing.Spec.Replicas = desired.Spec.Replicas
 	for i := range existing.Spec.VolumeClaimTemplates {

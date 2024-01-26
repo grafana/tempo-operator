@@ -55,7 +55,7 @@ server:
 
 	extraConfig := apiextensionsv1.JSON{Raw: raw}
 
-	result, err := mergeExtraConfigWithConfig(extraConfig, []byte(input))
+	result, err := MergeExtraConfigWithConfig(extraConfig, []byte(input))
 	require.NoError(t, err)
 	require.YAMLEq(t, expCfg, string(result))
 
@@ -77,7 +77,7 @@ storage:
 `
 	extraConfig := apiextensionsv1.JSON{}
 
-	result, err := mergeExtraConfigWithConfig(extraConfig, []byte(input))
+	result, err := MergeExtraConfigWithConfig(extraConfig, []byte(input))
 	require.NoError(t, err)
 	require.YAMLEq(t, input, string(result))
 }
@@ -100,6 +100,6 @@ storage:
 		Raw: []byte("{{{{}"),
 	}
 
-	_, err := mergeExtraConfigWithConfig(extraConfig, []byte(input))
+	_, err := MergeExtraConfigWithConfig(extraConfig, []byte(input))
 	require.Error(t, err)
 }

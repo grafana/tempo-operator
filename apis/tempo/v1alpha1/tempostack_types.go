@@ -132,6 +132,8 @@ type TempoStackSpec struct {
 // ExtraConfigSpec defines extra configurations for tempo that will be merged with the operator generated, configurations defined here
 // has precedence and could override generated config.
 type ExtraConfigSpec struct {
+	// Tempo defines any extra Tempo configuration, which will be merged with the operator's generated Tempo configuration
+	//
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tempo Extra Configurations"
 	Tempo apiextensionsv1.JSON `json:"tempo,omitempty"`

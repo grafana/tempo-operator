@@ -642,9 +642,10 @@ func TestGeMutateFunc_MutateStatefulSetSpec(t *testing.T) {
 	one := int32(1)
 	two := int32(2)
 	type test struct {
+		name string
 		got  *appsv1.StatefulSet
 		want *appsv1.StatefulSet
-		name string
+		err  error
 	}
 	table := []test{
 		{
@@ -710,7 +711,7 @@ func TestGeMutateFunc_MutateStatefulSetSpec(t *testing.T) {
 			},
 		},
 		{
-			name: "update spec without selector",
+			name: "update mutable field .spec.template",
 			got: &appsv1.StatefulSet{
 				ObjectMeta: metav1.ObjectMeta{CreationTimestamp: metav1.Now()},
 				Spec: appsv1.StatefulSetSpec{
@@ -746,7 +747,68 @@ func TestGeMutateFunc_MutateStatefulSetSpec(t *testing.T) {
 					Selector: &metav1.LabelSelector{
 						MatchLabels: map[string]string{
 							"test": "test",
-							"and":  "another",
+						},
+					},
+					Replicas: &two,
+					Template: corev1.PodTemplateSpec{
+						Spec: corev1.PodSpec{
+							Containers: []corev1.Container{
+								{
+									Name: "test",
+									Args: []string{"--do-nothing"},
+								},
+							},
+						},
+					},
+					VolumeClaimTemplates: []corev1.PersistentVolumeClaim{
+						{
+							Spec: corev1.PersistentVolumeClaimSpec{
+								AccessModes: []corev1.PersistentVolumeAccessMode{
+									corev1.ReadWriteOnce,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "update immutable field .spec.volumeClaimTemplates",
+			got: &appsv1.StatefulSet{
+				ObjectMeta: metav1.ObjectMeta{CreationTimestamp: metav1.Now()},
+				Spec: appsv1.StatefulSetSpec{
+					PodManagementPolicy: appsv1.ParallelPodManagement,
+					Selector: &metav1.LabelSelector{
+						MatchLabels: map[string]string{
+							"test": "test",
+						},
+					},
+					Replicas: &one,
+					Template: corev1.PodTemplateSpec{
+						Spec: corev1.PodSpec{
+							Containers: []corev1.Container{
+								{Name: "test"},
+							},
+						},
+					},
+					VolumeClaimTemplates: []corev1.PersistentVolumeClaim{
+						{
+							Spec: corev1.PersistentVolumeClaimSpec{
+								AccessModes: []corev1.PersistentVolumeAccessMode{
+									corev1.ReadWriteOnce,
+								},
+							},
+						},
+					},
+				},
+			},
+			want: &appsv1.StatefulSet{
+				ObjectMeta: metav1.ObjectMeta{CreationTimestamp: metav1.Now()},
+				Spec: appsv1.StatefulSetSpec{
+					PodManagementPolicy: appsv1.OrderedReadyPodManagement,
+					Selector: &metav1.LabelSelector{
+						MatchLabels: map[string]string{
+							"test": "test",
 						},
 					},
 					Replicas: &two,
@@ -772,6 +834,7 @@ func TestGeMutateFunc_MutateStatefulSetSpec(t *testing.T) {
 					},
 				},
 			},
+			err: &manifests.ImmutableErr{},
 		},
 	}
 	for _, tst := range table {
@@ -780,19 +843,18 @@ func TestGeMutateFunc_MutateStatefulSetSpec(t *testing.T) {
 			t.Parallel()
 			f := manifests.MutateFuncFor(tst.got, tst.want)
 			err := f()
-			require.NoError(t, err)
 
-			// Ensure conditional mutation applied
-			if tst.got.CreationTimestamp.IsZero() {
-				require.Equal(t, tst.got.Spec.Selector, tst.want.Spec.Selector)
+			if tst.err != nil {
+				require.ErrorAs(t, err, &tst.err)
 			} else {
-				require.NotEqual(t, tst.got.Spec.Selector, tst.want.Spec.Selector)
-			}
+				require.NoError(t, err)
 
-			// Ensure partial mutation applied
-			require.Equal(t, tst.got.Spec.Replicas, tst.want.Spec.Replicas)
-			require.Equal(t, tst.got.Spec.Template, tst.want.Spec.Template)
-			require.Equal(t, tst.got.Spec.VolumeClaimTemplates, tst.got.Spec.VolumeClaimTemplates)
+				// Ensure partial mutation applied
+				require.Equal(t, tst.got.Spec.Selector, tst.want.Spec.Selector)
+				require.Equal(t, tst.got.Spec.Replicas, tst.want.Spec.Replicas)
+				require.Equal(t, tst.got.Spec.Template, tst.want.Spec.Template)
+				require.Equal(t, tst.got.Spec.VolumeClaimTemplates, tst.want.Spec.VolumeClaimTemplates)
+			}
 		})
 	}
 }

@@ -37,6 +37,21 @@ const (
 	// PortGRPCServer declares the port number of the tempo gRPC port.
 	PortGRPCServer = 9095
 
+	// JaegerUIPortName declares the name of the Jaeger UI HTTP port.
+	JaegerUIPortName = "jaeger-ui"
+	// PortJaegerUI declares the port number of the Jaeger UI HTTP port.
+	PortJaegerUI = 16686
+
+	// JaegerGRPCQuery declares the name of the Jaeger UI gPRC port.
+	JaegerGRPCQuery = "jaeger-grpc"
+	// PortJaegerGRPCQuery declares the port number of the Jaeger UI gPRC port.
+	PortJaegerGRPCQuery = 16685
+
+	// JaegerMetricsPortName declares the name of the Jaeger UI metrics port.
+	JaegerMetricsPortName = "jaeger-metrics"
+	// PortJaegerMetrics declares the port number of the Jaeger UI metrics port.
+	PortJaegerMetrics = 16687
+
 	// OtlpGrpcPortName declares the name of the OpenTelemetry Collector gRPC receiver port.
 	OtlpGrpcPortName = "otlp-grpc"
 	// PortOtlpGrpcServer declares the port number of the OpenTelemetry Collector gRPC receiver port.

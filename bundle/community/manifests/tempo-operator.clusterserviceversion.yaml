@@ -6,6 +6,20 @@ metadata:
       [
         {
           "apiVersion": "tempo.grafana.com/v1alpha1",
+          "kind": "TempoMonolithic",
+          "metadata": {
+            "name": "sample"
+          },
+          "spec": {
+            "storage": {
+              "traces": {
+                "backend": "memory"
+              }
+            }
+          }
+        },
+        {
+          "apiVersion": "tempo.grafana.com/v1alpha1",
           "kind": "TempoStack",
           "metadata": {
             "name": "sample"
@@ -42,7 +56,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.7.0
-    createdAt: "2024-01-17T16:42:02Z"
+    createdAt: "2024-01-26T12:10:07Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -57,6 +71,16 @@ spec:
   apiservicedefinitions: {}
   customresourcedefinitions:
     owned:
+    - description: TempoMonolithic is the Schema for the tempomonolithics API.
+      displayName: Tempo Monolithic
+      kind: TempoMonolithic
+      name: tempomonolithics.tempo.grafana.com
+      specDescriptors:
+      - description: Tempo defines any extra Tempo configuration, which will be merged
+          with the operator's generated Tempo configuration
+        displayName: Tempo Extra Configurations
+        path: extraConfig.tempo
+      version: v1alpha1
     - description: TempoStack is the spec for Tempo deployments.
       displayName: TempoStack
       kind: TempoStack
@@ -89,7 +113,9 @@ spec:
       specDescriptors:
       - displayName: Extra Configurations
         path: extraConfig
-      - displayName: Tempo Extra Configurations
+      - description: Tempo defines any extra Tempo configuration, which will be merged
+          with the operator's generated Tempo configuration
+        displayName: Tempo Extra Configurations
         path: extraConfig.tempo
       - description: HashRing defines the spec for the distributed hash ring configuration.
         displayName: Hash Ring
@@ -746,6 +772,32 @@ spec:
         - apiGroups:
           - tempo.grafana.com
           resources:
+          - tempomonolithics
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - tempo.grafana.com
+          resources:
+          - tempomonolithics/finalizers
+          verbs:
+          - update
+        - apiGroups:
+          - tempo.grafana.com
+          resources:
+          - tempomonolithics/status
+          verbs:
+          - get
+          - patch
+          - update
+        - apiGroups:
+          - tempo.grafana.com
+          resources:
           - tempostacks
           verbs:
           - create
@@ -989,6 +1041,26 @@ spec:
     targetPort: 9443
     type: MutatingAdmissionWebhook
     webhookPath: /mutate-tempo-grafana-com-v1alpha1-tempostack
+  - admissionReviewVersions:
+    - v1
+    containerPort: 443
+    deploymentName: tempo-operator-controller
+    failurePolicy: Fail
+    generateName: vtempomonolithic.kb.io
+    rules:
+    - apiGroups:
+      - tempo.grafana.com
+      apiVersions:
+      - v1alpha1
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - tempomonolithics
+    sideEffects: None
+    targetPort: 9443
+    type: ValidatingAdmissionWebhook
+    webhookPath: /validate-tempo-grafana-com-v1alpha1-tempomonolithic
   - admissionReviewVersions:
     - v1
     containerPort: 443

@@ -40,13 +40,13 @@ func BuildConfigMap(params manifestutils.Params) (*corev1.ConfigMap, string, err
 
 	if params.Tempo.Spec.ExtraConfig != nil {
 		// For we only support tempo for now.
-		config, err = mergeExtraConfigWithConfig(params.Tempo.Spec.ExtraConfig.Tempo, config)
+		config, err = MergeExtraConfigWithConfig(params.Tempo.Spec.ExtraConfig.Tempo, config)
 		if err != nil {
 			return nil, "", err
 		}
 
 		// Is the same tempo config with certain TLS fields disabled.
-		frontendConfig, err = mergeExtraConfigWithConfig(params.Tempo.Spec.ExtraConfig.Tempo, frontendConfig)
+		frontendConfig, err = MergeExtraConfigWithConfig(params.Tempo.Spec.ExtraConfig.Tempo, frontendConfig)
 		if err != nil {
 			return nil, "", err
 		}
@@ -55,8 +55,9 @@ func BuildConfigMap(params manifestutils.Params) (*corev1.ConfigMap, string, err
 	labels := manifestutils.ComponentLabels("config", tempo.Name)
 	configMap := &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:   naming.Name("", tempo.Name),
-			Labels: labels,
+			Name:      naming.Name("", tempo.Name),
+			Namespace: tempo.Namespace,
+			Labels:    labels,
 		},
 		Data: map[string]string{
 			tempoConfigKey:              string(config),

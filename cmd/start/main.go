@@ -67,10 +67,23 @@ func start(c *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
+	if err = (&controllers.TempoMonolithicReconciler{
+		Client:     mgr.GetClient(),
+		Scheme:     mgr.GetScheme(),
+		CtrlConfig: ctrlConfig,
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "TempoMonolithic")
+		os.Exit(1)
+	}
+
 	enableWebhooks := os.Getenv("ENABLE_WEBHOOKS") != "false"
 	if enableWebhooks {
 		if err = (&tempov1alpha1.TempoStack{}).SetupWebhookWithManager(mgr, ctrlConfig); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "TempoStack")
+			os.Exit(1)
+		}
+		if err = (&tempov1alpha1.TempoMonolithic{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "TempoMonolithic")
 			os.Exit(1)
 		}
 	}

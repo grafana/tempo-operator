@@ -75,10 +75,10 @@ spec:
     port: 9095
     protocol: TCP
     targetPort: grpc
-  - name: jaeger-gprc
+  - name: jaeger-grpc
     port: 16685
     protocol: TCP
-    targetPort: jaeger-gprc
+    targetPort: jaeger-grpc
   - name: jaeger-ui
     port: 16686
     protocol: TCP

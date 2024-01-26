@@ -18,6 +18,16 @@ spec:
   apiservicedefinitions: {}
   customresourcedefinitions:
     owned:
+    - description: TempoMonolithic is the Schema for the tempomonolithics API.
+      displayName: Tempo Monolithic
+      kind: TempoMonolithic
+      name: tempomonolithics.tempo.grafana.com
+      specDescriptors:
+      - description: Tempo defines any extra Tempo configuration, which will be merged
+          with the operator's generated Tempo configuration
+        displayName: Tempo Extra Configurations
+        path: extraConfig.tempo
+      version: v1alpha1
     - description: TempoStack is the spec for Tempo deployments.
       displayName: TempoStack
       kind: TempoStack
@@ -50,7 +60,9 @@ spec:
       specDescriptors:
       - displayName: Extra Configurations
         path: extraConfig
-      - displayName: Tempo Extra Configurations
+      - description: Tempo defines any extra Tempo configuration, which will be merged
+          with the operator's generated Tempo configuration
+        displayName: Tempo Extra Configurations
         path: extraConfig.tempo
       - description: HashRing defines the spec for the distributed hash ring configuration.
         displayName: Hash Ring

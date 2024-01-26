@@ -455,7 +455,7 @@ cmctl:
 	}
 
 .PHONY: api-docs
-api-docs: docs/operator/api.md docs/operator/feature-gates.md docs/spec/tempo.grafana.com_tempostacks.yaml
+api-docs: docs/operator/api.md docs/operator/feature-gates.md docs/spec/tempo.grafana.com_tempostacks.yaml docs/spec/tempo.grafana.com_tempomonolithics.yaml
 
 TYPES_TARGET := $(shell find apis/tempo -type f -iname "*_types.go")
 docs/operator/api.md: $(TYPES_TARGET) gen-crd-api-reference-docs

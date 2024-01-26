@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 
@@ -12,11 +11,9 @@ import (
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
-	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/validation/field"
-	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
@@ -75,16 +72,7 @@ func (r *TempoStackReconciler) getStorageConfig(ctx context.Context, tempo v1alp
 	return params, nil
 }
 
-func isNamespaceScoped(obj client.Object) bool {
-	switch obj.(type) {
-	case *rbacv1.ClusterRole, *rbacv1.ClusterRoleBinding:
-		return false
-	default:
-		return true
-	}
-}
-
-func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, log logr.Logger, req ctrl.Request, tempo v1alpha1.TempoStack) error {
+func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, log logr.Logger, tempo v1alpha1.TempoStack) error {
 	storageConfig, err := r.getStorageConfig(ctx, tempo)
 	if err != nil {
 		return &status.ConfigurationError{
@@ -124,15 +112,6 @@ func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, log logr.Logg
 
 	}
 
-	// Collect all objects owned by the operator, to be able to prune objects
-	// which exist in the cluster but are not managed by the operator anymore.
-	// For example, when the Jaeger Query Ingress is enabled and later disabled,
-	// the Ingress object should be removed from the cluster.
-	pruneObjects, err := r.findObjectsOwnedByTempoOperator(ctx, tempo)
-	if err != nil {
-		return err
-	}
-
 	var tenantSecrets []*manifestutils.GatewayTenantOIDCSecret
 	if tempo.Spec.Tenants != nil && tempo.Spec.Tenants.Mode == v1alpha1.ModeStatic {
 		tenantSecrets, err = gateway.GetOIDCTenantSecrets(ctx, r.Client, tempo)
@@ -163,59 +142,18 @@ func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, log logr.Logg
 		return fmt.Errorf("error building manifests: %w", err)
 	}
 
-	errs := []error{}
-	for _, obj := range managedObjects {
-		l := log.WithValues(
-			"object_name", obj.GetName(),
-			"object_kind", obj.GetObjectKind(),
-		)
-
-		if isNamespaceScoped(obj) {
-			obj.SetNamespace(req.Namespace)
-			if err := ctrl.SetControllerReference(&tempo, obj, r.Scheme); err != nil {
-				l.Error(err, "failed to set controller owner reference to resource")
-				errs = append(errs, err)
-				continue
-			}
-		}
-
-		desired := obj.DeepCopyObject().(client.Object)
-		mutateFn := manifests.MutateFuncFor(obj, desired)
-
-		op, err := ctrl.CreateOrUpdate(ctx, r.Client, obj, mutateFn)
-		if err != nil {
-			l.Error(err, "failed to configure resource")
-			errs = append(errs, err)
-			continue
-		}
-
-		l.V(1).Info(fmt.Sprintf("resource has been %s", op))
-
-		// This object is still managed by the operator, remove it from the list of objects to prune
-		delete(pruneObjects, obj.GetUID())
+	// Collect all objects owned by the operator, to be able to prune objects
+	// which exist in the cluster but are not managed by the operator anymore.
+	// For example, when the Jaeger Query Ingress is enabled and later disabled,
+	// the Ingress object should be removed from the cluster.
+	ownedObjects, err := r.findObjectsOwnedByTempoOperator(ctx, tempo)
+	if err != nil {
+		return err
 	}
 
-	if len(errs) > 0 {
-		return fmt.Errorf("failed to create objects for TempoStack %s: %w", req.NamespacedName, errors.Join(errs...))
-	}
-
-	// Prune owned objects in the cluster which are not managed anymore.
-	pruneErrs := []error{}
-	for _, obj := range pruneObjects {
-		l := log.WithValues(
-			"object_name", obj.GetName(),
-			"object_kind", obj.GetObjectKind(),
-		)
-		l.Info("pruning unmanaged resource")
-
-		err = r.Delete(ctx, obj)
-		if err != nil {
-			l.Error(err, "failed to delete resource")
-			pruneErrs = append(pruneErrs, err)
-		}
-	}
-	if len(pruneErrs) > 0 {
-		return fmt.Errorf("failed to prune objects of TempoStack %s: %w", req.NamespacedName, errors.Join(pruneErrs...))
+	err = reconcileManagedObjects(ctx, log, r.Client, &tempo, r.Scheme, managedObjects, ownedObjects)
+	if err != nil {
+		return err
 	}
 
 	return nil
