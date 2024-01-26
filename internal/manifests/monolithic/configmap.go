@@ -3,6 +3,7 @@ package monolithic
 import (
 	"crypto/sha256"
 	"fmt"
+	"path"
 
 	"gopkg.in/yaml.v2"
 	appsv1 "k8s.io/api/apps/v1"
@@ -14,6 +15,17 @@ import (
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
 )
+
+type tempoReceiverTLSConfig struct {
+	CAFile     string `yaml:"client_ca_file,omitempty"`
+	CertFile   string `yaml:"cert_file,omitempty"`
+	KeyFile    string `yaml:"key_file,omitempty"`
+	MinVersion string `yaml:"min_version,omitempty"`
+}
+
+type tempoReceiverConfig struct {
+	TLS tempoReceiverTLSConfig `yaml:"tls,omitempty"`
+}
 
 type tempoConfig struct {
 	Server struct {
@@ -36,8 +48,8 @@ type tempoConfig struct {
 		Receivers struct {
 			OTLP struct {
 				Protocols struct {
-					GRPC *interface{} `yaml:"grpc,omitempty"`
-					HTTP *interface{} `yaml:"http,omitempty"`
+					GRPC *tempoReceiverConfig `yaml:"grpc,omitempty"`
+					HTTP *tempoReceiverConfig `yaml:"http,omitempty"`
 				} `yaml:"protocols,omitempty"`
 			} `yaml:"otlp,omitempty"`
 		} `yaml:"receivers,omitempty"`
@@ -109,14 +121,30 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 		return nil, fmt.Errorf("invalid storage backend: '%s'", tempo.Spec.Storage.Traces.Backend)
 	}
 
-	if tempo.Spec.Ingestion != nil && tempo.Spec.Ingestion.OTLP != nil {
-		if tempo.Spec.Ingestion.OTLP.GRPC != nil && tempo.Spec.Ingestion.OTLP.GRPC.Enabled {
-			var i interface{}
-			config.Distributor.Receivers.OTLP.Protocols.GRPC = &i
+	if tempo.Spec.Ingestion != nil {
+		tls := tempoReceiverTLSConfig{}
+		if tempo.Spec.Ingestion.TLS != nil && tempo.Spec.Ingestion.TLS.Enabled {
+			if tempo.Spec.Ingestion.TLS.Cert != "" {
+				tls.CertFile = path.Join(manifestutils.ReceiverTLSCertDir, manifestutils.TLSCertFilename)
+				tls.KeyFile = path.Join(manifestutils.ReceiverTLSCertDir, manifestutils.TLSKeyFilename)
+			}
+			if tempo.Spec.Ingestion.TLS.CA != "" {
+				tls.CAFile = path.Join(manifestutils.ReceiverTLSCADir, manifestutils.TLSCAFilename)
+			}
+			tls.MinVersion = tempo.Spec.Ingestion.TLS.MinVersion
 		}
-		if tempo.Spec.Ingestion.OTLP.HTTP != nil && tempo.Spec.Ingestion.OTLP.HTTP.Enabled {
-			var i interface{}
-			config.Distributor.Receivers.OTLP.Protocols.HTTP = &i
+
+		if tempo.Spec.Ingestion.OTLP != nil {
+			if tempo.Spec.Ingestion.OTLP.GRPC != nil && tempo.Spec.Ingestion.OTLP.GRPC.Enabled {
+				config.Distributor.Receivers.OTLP.Protocols.GRPC = &tempoReceiverConfig{
+					TLS: tls,
+				}
+			}
+			if tempo.Spec.Ingestion.OTLP.HTTP != nil && tempo.Spec.Ingestion.OTLP.HTTP.Enabled {
+				config.Distributor.Receivers.OTLP.Protocols.HTTP = &tempoReceiverConfig{
+					TLS: tls,
+				}
+			}
 		}
 	}
 

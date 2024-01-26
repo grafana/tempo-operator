@@ -113,7 +113,7 @@ func TestDefault(t *testing.T) {
 							TempoComponentSpec: TempoComponentSpec{
 								Replicas: ptr.To(int32(1)),
 							},
-							TLS: ReceiversTLSSpec{},
+							TLS: TLSSpec{},
 						},
 						Ingester: TempoComponentSpec{
 							Replicas: ptr.To(int32(1)),
@@ -174,7 +174,7 @@ func TestDefault(t *testing.T) {
 							TempoComponentSpec: TempoComponentSpec{
 								Replicas: ptr.To(int32(1)),
 							},
-							TLS: ReceiversTLSSpec{},
+							TLS: TLSSpec{},
 						},
 						Ingester: TempoComponentSpec{
 							Replicas: ptr.To(int32(1)),
@@ -240,7 +240,7 @@ func TestDefault(t *testing.T) {
 							TempoComponentSpec: TempoComponentSpec{
 								Replicas: ptr.To(int32(1)),
 							},
-							TLS: ReceiversTLSSpec{},
+							TLS: TLSSpec{},
 						},
 						Ingester: TempoComponentSpec{
 							Replicas: ptr.To(int32(1)),
@@ -1516,7 +1516,7 @@ func TestValidateReceiverTLSAndGateway(t *testing.T) {
 							Enabled: false,
 						},
 						Distributor: TempoDistributorSpec{
-							TLS: ReceiversTLSSpec{
+							TLS: TLSSpec{
 								Enabled: false,
 							},
 						},
@@ -1543,7 +1543,7 @@ func TestValidateReceiverTLSAndGateway(t *testing.T) {
 							},
 						},
 						Distributor: TempoDistributorSpec{
-							TLS: ReceiversTLSSpec{
+							TLS: TLSSpec{
 								Enabled: false,
 							},
 						},
@@ -1565,7 +1565,7 @@ func TestValidateReceiverTLSAndGateway(t *testing.T) {
 							Enabled: false,
 						},
 						Distributor: TempoDistributorSpec{
-							TLS: ReceiversTLSSpec{
+							TLS: TLSSpec{
 								Enabled: true,
 								Cert:    "my-cert",
 							},
@@ -1593,7 +1593,7 @@ func TestValidateReceiverTLSAndGateway(t *testing.T) {
 							},
 						},
 						Distributor: TempoDistributorSpec{
-							TLS: ReceiversTLSSpec{
+							TLS: TLSSpec{
 								Enabled: true,
 							},
 						},

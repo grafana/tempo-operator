@@ -1826,7 +1826,7 @@ func TestBuildConfigurationReceiversTLS(t *testing.T) {
 		{
 			name: "receiver tls not enabled",
 			spec: v1alpha1.TempoDistributorSpec{
-				TLS: v1alpha1.ReceiversTLSSpec{
+				TLS: v1alpha1.TLSSpec{
 					Enabled: false,
 					Cert:    "my-cert",
 				},
@@ -1912,7 +1912,7 @@ query_frontend:
 		{
 			name: "specify cert secret name",
 			spec: v1alpha1.TempoDistributorSpec{
-				TLS: v1alpha1.ReceiversTLSSpec{
+				TLS: v1alpha1.TLSSpec{
 					Enabled:    true,
 					Cert:       "my-cert",
 					MinVersion: string(openshiftconfigv1.VersionTLS13),
@@ -2020,7 +2020,7 @@ query_frontend:
 		{
 			name: "specify  secret name and CA configmap",
 			spec: v1alpha1.TempoDistributorSpec{
-				TLS: v1alpha1.ReceiversTLSSpec{
+				TLS: v1alpha1.TLSSpec{
 					Enabled:    true,
 					Cert:       "my-cert",
 					CA:         "my-ca",

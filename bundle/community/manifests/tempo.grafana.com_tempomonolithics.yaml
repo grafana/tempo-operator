@@ -73,6 +73,29 @@ spec:
                         - enabled
                         type: object
                     type: object
+                  tls:
+                    description: TLS defines the TLS configuration for ingestion
+                    properties:
+                      caName:
+                        description: caName is the name of a ConfigMap containing
+                          a CA certificate (service-ca.crt). It needs to be in the
+                          same namespace as the Tempo custom resource.
+                        type: string
+                      certName:
+                        description: certName is the name of a Secret containing a
+                          certificate (tls.crt) and private key (tls.key). It needs
+                          to be in the same namespace as the Tempo custom resource.
+                        type: string
+                      enabled:
+                        description: enabled defines if TLS is enabled.
+                        type: boolean
+                      minVersion:
+                        description: minVersion defines the minimum acceptable TLS
+                          version.
+                        type: string
+                    required:
+                    - enabled
+                    type: object
                 type: object
               jaegerui:
                 description: JaegerUI defines the Jaeger UI configuration

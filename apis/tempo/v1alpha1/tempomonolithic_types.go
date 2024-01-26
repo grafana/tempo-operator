@@ -101,6 +101,11 @@ type MonolithicIngestionSpec struct {
 	//
 	// +kubebuilder:validation:Optional
 	OTLP *MonolithicIngestionOTLPSpec `json:"otlp,omitempty"`
+
+	// TLS defines the TLS configuration for ingestion
+	//
+	// +kubebuilder:validation:Optional
+	TLS *TLSSpec `json:"tls,omitempty"`
 }
 
 // MonolithicIngestionOTLPSpec defines the settings for OTLP ingestion.

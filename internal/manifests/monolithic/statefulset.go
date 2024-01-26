@@ -114,6 +114,10 @@ func BuildTempoStatefulset(opts Options) (*appsv1.StatefulSet, error) {
 		configureJaegerUI(opts, ss)
 	}
 
+	if tempo.Spec.Ingestion != nil && tempo.Spec.Ingestion.TLS != nil && tempo.Spec.Ingestion.TLS.Enabled {
+		configureIngestionTLS(opts, ss)
+	}
+
 	return ss, nil
 }
 
@@ -257,4 +261,42 @@ func configureJaegerUI(opts Options, sts *appsv1.StatefulSet) {
 	}
 
 	sts.Spec.Template.Spec.Containers = append(sts.Spec.Template.Spec.Containers, tempoQuery)
+}
+
+func configureIngestionTLS(opts Options, sts *appsv1.StatefulSet) {
+	tempo := opts.Tempo
+
+	if tempo.Spec.Ingestion.TLS.Cert != "" {
+		sts.Spec.Template.Spec.Containers[0].VolumeMounts = append(sts.Spec.Template.Spec.Containers[0].VolumeMounts, corev1.VolumeMount{
+			Name:      "ingestion-cert",
+			MountPath: manifestutils.ReceiverTLSCertDir,
+			ReadOnly:  true,
+		})
+		sts.Spec.Template.Spec.Volumes = append(sts.Spec.Template.Spec.Volumes, corev1.Volume{
+			Name: "ingestion-cert",
+			VolumeSource: corev1.VolumeSource{
+				Secret: &corev1.SecretVolumeSource{
+					SecretName: tempo.Spec.Ingestion.TLS.Cert,
+				},
+			},
+		})
+	}
+
+	if tempo.Spec.Ingestion.TLS.CA != "" {
+		sts.Spec.Template.Spec.Containers[0].VolumeMounts = append(sts.Spec.Template.Spec.Containers[0].VolumeMounts, corev1.VolumeMount{
+			Name:      "ingestion-ca",
+			MountPath: manifestutils.ReceiverTLSCADir,
+			ReadOnly:  true,
+		})
+		sts.Spec.Template.Spec.Volumes = append(sts.Spec.Template.Spec.Volumes, corev1.Volume{
+			Name: "ingestion-ca",
+			VolumeSource: corev1.VolumeSource{
+				ConfigMap: &corev1.ConfigMapVolumeSource{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: tempo.Spec.Ingestion.TLS.CA,
+					},
+				},
+			},
+		})
+	}
 }

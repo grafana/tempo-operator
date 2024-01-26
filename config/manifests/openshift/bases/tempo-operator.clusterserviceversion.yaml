@@ -27,6 +27,23 @@ spec:
           with the operator's generated Tempo configuration
         displayName: Tempo Extra Configurations
         path: extraConfig.tempo
+      - description: caName is the name of a ConfigMap containing a CA certificate
+          (service-ca.crt). It needs to be in the same namespace as the Tempo custom
+          resource.
+        displayName: CA ConfigMap Name
+        path: ingestion.tls.caName
+        x-descriptors:
+        - urn:alm:descriptor:io.kubernetes:ConfigMap
+      - description: certName is the name of a Secret containing a certificate (tls.crt)
+          and private key (tls.key). It needs to be in the same namespace as the Tempo
+          custom resource.
+        displayName: Certificate Secret Name
+        path: ingestion.tls.certName
+        x-descriptors:
+        - urn:alm:descriptor:io.kubernetes:Secret
+      - description: minVersion defines the minimum acceptable TLS version.
+        displayName: Min TLS Version
+        path: ingestion.tls.minVersion
       version: v1alpha1
     - description: TempoStack is the spec for Tempo deployments.
       displayName: TempoStack
@@ -351,22 +368,21 @@ spec:
       - description: TLS defines TLS configuration for distributor receivers
         displayName: TLS
         path: template.distributor.tls
-      - description: caName is the name of a ConfigMap containing a CA certificate.
-          It needs to be in the same namespace as the Tempo custom resource.
+      - description: caName is the name of a ConfigMap containing a CA certificate
+          (service-ca.crt). It needs to be in the same namespace as the Tempo custom
+          resource.
         displayName: CA ConfigMap Name
         path: template.distributor.tls.caName
         x-descriptors:
         - urn:alm:descriptor:io.kubernetes:ConfigMap
-      - description: certName is the name of a Secret containing a certificate and
-          the private key It needs to be in the same namespace as the Tempo custom
-          resource.
+      - description: certName is the name of a Secret containing a certificate (tls.crt)
+          and private key (tls.key). It needs to be in the same namespace as the Tempo
+          custom resource.
         displayName: Certificate Secret Name
         path: template.distributor.tls.certName
         x-descriptors:
         - urn:alm:descriptor:io.kubernetes:Secret
-      - description: minVersion is the name of a Secret containing a certificate and
-          the private key It needs to be in the same namespace as the Tempo custom
-          resource.
+      - description: minVersion defines the minimum acceptable TLS version.
         displayName: Min TLS Version
         path: template.distributor.tls.minVersion
       - description: Tolerations defines component specific pod tolerations.

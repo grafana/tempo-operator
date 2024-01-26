@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	openshiftconfigv1 "github.com/openshift/api/config/v1"
 	"github.com/stretchr/testify/require"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -57,13 +58,7 @@ func TestBuildConfig(t *testing.T) {
 	}{
 		{
 			name: "memory storage",
-			spec: v1alpha1.TempoMonolithicSpec{
-				Storage: &v1alpha1.MonolithicStorageSpec{
-					Traces: v1alpha1.MonolithicTracesStorageSpec{
-						Backend: "memory",
-					},
-				},
-			},
+			spec: v1alpha1.TempoMonolithicSpec{},
 			expected: `
 server:
   http_listen_port: 3200
@@ -78,8 +73,8 @@ distributor:
   receivers:
     otlp:
       protocols:
-        grpc:
-        http:
+        grpc: {}
+        http: {}
 usage_report:
   reporting_enabled: false
 `,
@@ -92,14 +87,41 @@ usage_report:
 						Backend: "pv",
 					},
 				},
+			},
+			expected: `
+server:
+  http_listen_port: 3200
+storage:
+  trace:
+    backend: local
+    wal:
+      path: /var/tempo/wal
+    local:
+      path: /var/tempo/blocks
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        grpc: {}
+        http: {}
+usage_report:
+  reporting_enabled: false
+`,
+		},
+		{
+			name: "OTLP/gRPC with mTLS",
+			spec: v1alpha1.TempoMonolithicSpec{
 				Ingestion: &v1alpha1.MonolithicIngestionSpec{
 					OTLP: &v1alpha1.MonolithicIngestionOTLPSpec{
-						GRPC: &v1alpha1.MonolithicIngestionOTLPProtocolsGRPCSpec{
-							Enabled: true,
-						},
 						HTTP: &v1alpha1.MonolithicIngestionOTLPProtocolsHTTPSpec{
-							Enabled: true,
+							Enabled: false,
 						},
+					},
+					TLS: &v1alpha1.TLSSpec{
+						Enabled:    true,
+						CA:         "ca",
+						Cert:       "cert",
+						MinVersion: string(openshiftconfigv1.VersionTLS13),
 					},
 				},
 			},
@@ -118,7 +140,11 @@ distributor:
     otlp:
       protocols:
         grpc:
-        http:
+          tls:
+            client_ca_file: /var/run/ca-receiver/service-ca.crt
+            cert_file: /var/run/tls/receiver/tls.crt
+            key_file: /var/run/tls/receiver/tls.key
+            min_version: VersionTLS13
 usage_report:
   reporting_enabled: false
 `,
@@ -150,8 +176,8 @@ distributor:
   receivers:
     otlp:
       protocols:
-        grpc:
-        http:
+        grpc: {}
+        http: {}
 usage_report:
   reporting_enabled: false
 `,
