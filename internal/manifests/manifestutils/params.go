@@ -17,7 +17,7 @@ type Params struct {
 	GatewayTenantsData  []*GatewayTenantsData
 }
 
-// StorageParams holds storage configuration.
+// StorageParams holds storage configuration from the storage secret, except the credentials.
 type StorageParams struct {
 	AzureStorage *AzureStorage
 	GCS          *GCS

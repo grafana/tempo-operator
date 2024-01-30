@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"path"
 
 	"k8s.io/utils/ptr"
 
@@ -111,9 +112,9 @@ func buildReceiverTLSConfig(tempo v1alpha1.TempoStack) receiverTLSOptions {
 		Enabled:         tempo.Spec.Template.Distributor.TLS.Enabled,
 		ClientCAEnabled: tempo.Spec.Template.Distributor.TLS.CA != "",
 		Paths: tlsFilePaths{
-			CA:          fmt.Sprintf("%s/%s", manifestutils.CAReceiver, manifestutils.ReceiverCAKey),
-			Key:         fmt.Sprintf("%s/%s", manifestutils.TempoReceiverTLSDir(), manifestutils.ReceiverPrivateKey),
-			Certificate: fmt.Sprintf("%s/%s", manifestutils.TempoReceiverTLSDir(), manifestutils.ReceiverPublicKey),
+			CA:          path.Join(manifestutils.ReceiverTLSCADir, manifestutils.TLSCAFilename),
+			Key:         path.Join(manifestutils.ReceiverTLSCertDir, manifestutils.TLSKeyFilename),
+			Certificate: path.Join(manifestutils.ReceiverTLSCertDir, manifestutils.TLSCertFilename),
 		},
 		MinTLSVersion: tempo.Spec.Template.Distributor.TLS.MinVersion,
 	}
@@ -127,9 +128,9 @@ func buildTLSConfig(params manifestutils.Params) (tlsOptions, error) {
 	}
 	return tlsOptions{
 		Paths: tlsFilePaths{
-			CA:          fmt.Sprintf("%s/service-ca.crt", manifestutils.CABundleDir),
-			Key:         fmt.Sprintf("%s/tls.key", manifestutils.TempoServerTLSDir()),
-			Certificate: fmt.Sprintf("%s/tls.crt", manifestutils.TempoServerTLSDir()),
+			CA:          path.Join(manifestutils.TempoInternalTLSCADir, manifestutils.TLSCAFilename),
+			Key:         path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSKeyFilename),
+			Certificate: path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSCertFilename),
 		},
 		ServerNames: serverNames{
 			QueryFrontend: naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.QueryFrontendComponentName),

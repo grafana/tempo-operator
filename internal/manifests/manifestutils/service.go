@@ -1,24 +1,12 @@
 package manifestutils
 
 import (
-	"path"
-
 	"github.com/ViaQ/logerr/v2/kverrors"
 	"github.com/imdario/mergo"
 	corev1 "k8s.io/api/core/v1"
 
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
 )
-
-// TempoServerTLSDir returns the mount path of the HTTP service certificates.
-func TempoServerTLSDir() string {
-	return path.Join(TLSDir, "server")
-}
-
-// TempoReceiverTLSDir returns the mount path of the receivers certificates.
-func TempoReceiverTLSDir() string {
-	return path.Join(TLSDir, "receiver")
-}
 
 // ConfigureServiceCA modify the PodSpec adding the volumes and volumeMounts to the specified containers.
 func ConfigureServiceCA(podSpec *corev1.PodSpec, caBundleName string, containers ...int) error {
@@ -42,7 +30,7 @@ func ConfigureServiceCA(podSpec *corev1.PodSpec, caBundleName string, containers
 			{
 				Name:      caBundleName,
 				ReadOnly:  false,
-				MountPath: CABundleDir,
+				MountPath: TempoInternalTLSCADir,
 			},
 		},
 	}
@@ -90,7 +78,7 @@ func ConfigureServicePKI(tempoStackName string, component string, podSpec *corev
 			{
 				Name:      serviceName,
 				ReadOnly:  false,
-				MountPath: TempoServerTLSDir(),
+				MountPath: TempoInternalTLSCertDir,
 			},
 		},
 	}

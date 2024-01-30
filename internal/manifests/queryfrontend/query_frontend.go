@@ -2,6 +2,7 @@ package queryfrontend
 
 import (
 	"fmt"
+	"path"
 	"strings"
 
 	"github.com/imdario/mergo"
@@ -244,18 +245,18 @@ func deployment(params manifestutils.Params) (*appsv1.Deployment, error) {
 		if params.CtrlConfig.Gates.HTTPEncryption && tempo.Spec.Template.Gateway.Enabled {
 			jaegerQueryContainer.Args = append(jaegerQueryContainer.Args,
 				"--query.http.tls.enabled=true",
-				fmt.Sprintf("--query.http.tls.key=%s/tls.key", manifestutils.TempoServerTLSDir()),
-				fmt.Sprintf("--query.http.tls.cert=%s/tls.crt", manifestutils.TempoServerTLSDir()),
-				fmt.Sprintf("--query.http.tls.client-ca=%s/service-ca.crt", manifestutils.CABundleDir),
+				fmt.Sprintf("--query.http.tls.key=%s", path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSKeyFilename)),
+				fmt.Sprintf("--query.http.tls.cert=%s", path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSCertFilename)),
+				fmt.Sprintf("--query.http.tls.client-ca=%s", path.Join(manifestutils.TempoInternalTLSCADir, manifestutils.TLSCAFilename)),
 			)
 		}
 
 		if params.CtrlConfig.Gates.GRPCEncryption && tempo.Spec.Template.Gateway.Enabled {
 			jaegerQueryContainer.Args = append(jaegerQueryContainer.Args,
 				"--query.grpc.tls.enabled=true",
-				fmt.Sprintf("--query.grpc.tls.key=%s/tls.key", manifestutils.TempoServerTLSDir()),
-				fmt.Sprintf("--query.grpc.tls.cert=%s/tls.crt", manifestutils.TempoServerTLSDir()),
-				fmt.Sprintf("--query.grpc.tls.client-ca=%s/service-ca.crt", manifestutils.CABundleDir),
+				fmt.Sprintf("--query.grpc.tls.key=%s", path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSKeyFilename)),
+				fmt.Sprintf("--query.grpc.tls.cert=%s", path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSCertFilename)),
+				fmt.Sprintf("--query.grpc.tls.client-ca=%s", path.Join(manifestutils.TempoInternalTLSCADir, manifestutils.TLSCAFilename)),
 			)
 		}
 

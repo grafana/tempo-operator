@@ -33,7 +33,6 @@ data:
     xtdKFBv1LLup2pr/hbmbP+0XHNFuUK36I7oantHhagXL/pGO3vcugppAd+YNzOW9
     Qr67VgKeixOrNiK6W9FzuaWYadv0XOgrJbFhsvmtYqpEMDGZzfdb5dAzdA==
     -----END CERTIFICATE-----
-
 ---
 apiVersion: tempo.grafana.com/v1alpha1
 kind: TempoStack
