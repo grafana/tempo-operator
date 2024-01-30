@@ -1,4 +1,4 @@
-package v1alpha1
+package webhooks
 
 import (
 	"context"
@@ -24,7 +24,8 @@ import (
 
 	//+kubebuilder:scaffold:imports
 
-	"github.com/grafana/tempo-operator/apis/config/v1alpha1"
+	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
+	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 )
 
 // These tests use Ginkgo (BDD-style Go testing framework). Refer to
@@ -63,7 +64,7 @@ var _ = BeforeSuite(func() {
 	Expect(cfg).NotTo(BeNil())
 
 	scheme := runtime.NewScheme()
-	err = AddToScheme(scheme)
+	err = v1alpha1.AddToScheme(scheme)
 	Expect(err).NotTo(HaveOccurred())
 
 	err = admissionv1beta1.AddToScheme(scheme)
@@ -91,7 +92,7 @@ var _ = BeforeSuite(func() {
 	})
 	Expect(err).NotTo(HaveOccurred())
 
-	err = (&TempoStack{}).SetupWebhookWithManager(mgr, v1alpha1.ProjectConfig{})
+	err = (&TempoStackWebhook{}).SetupWebhookWithManager(mgr, configv1alpha1.ProjectConfig{})
 	Expect(err).NotTo(HaveOccurred())
 
 	//+kubebuilder:scaffold:webhook
