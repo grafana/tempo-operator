@@ -1,8 +1,9 @@
-package v1alpha1
+package webhooks
 
 import (
 	"context"
 	"fmt"
+
 	"testing"
 	"time"
 
@@ -18,14 +19,15 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 
-	"github.com/grafana/tempo-operator/apis/config/v1alpha1"
+	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
+	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
 )
 
 func TestDefault(t *testing.T) {
 	defaulter := &Defaulter{
-		ctrlConfig: v1alpha1.ProjectConfig{
-			DefaultImages: v1alpha1.ImagesSpec{
+		ctrlConfig: configv1alpha1.ProjectConfig{
+			DefaultImages: configv1alpha1.ImagesSpec{
 				Tempo:           "docker.io/grafana/tempo:x.y.z",
 				TempoQuery:      "docker.io/grafana/tempo-query:x.y.z",
 				TempoGateway:    "docker.io/observatorium/gateway:1.2.3",
@@ -37,41 +39,41 @@ func TestDefault(t *testing.T) {
 	defaultDefaultResultLimit := 20
 
 	tests := []struct {
-		input    *TempoStack
-		expected *TempoStack
+		input    *v1alpha1.TempoStack
+		expected *v1alpha1.TempoStack
 		name     string
 	}{
 		{
 			name: "no action default values are provided",
-			input: &TempoStack{
+			input: &v1alpha1.TempoStack{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "test",
 				},
-				Spec: TempoStackSpec{
+				Spec: v1alpha1.TempoStackSpec{
 					ReplicationFactor: 2,
-					Images: v1alpha1.ImagesSpec{
+					Images: configv1alpha1.ImagesSpec{
 						Tempo:           "docker.io/grafana/tempo:1.2.3",
 						TempoQuery:      "docker.io/grafana/tempo-query:1.2.3",
 						TempoGateway:    "docker.io/observatorium/gateway:1.2.3",
 						TempoGatewayOpa: "docker.io/observatorium/opa-openshift:1.2.4",
 					},
 					ServiceAccount: "tempo-test",
-					Retention: RetentionSpec{
-						Global: RetentionConfig{
+					Retention: v1alpha1.RetentionSpec{
+						Global: v1alpha1.RetentionConfig{
 							Traces: metav1.Duration{Duration: time.Hour},
 						},
 					},
 					StorageSize: resource.MustParse("1Gi"),
-					LimitSpec: LimitSpec{
-						Global: RateLimitSpec{
-							Query: QueryLimit{
+					LimitSpec: v1alpha1.LimitSpec{
+						Global: v1alpha1.RateLimitSpec{
+							Query: v1alpha1.QueryLimit{
 								MaxSearchDuration: metav1.Duration{Duration: 1 * time.Hour},
 							},
 						},
 					},
 				},
 			},
-			expected: &TempoStack{
+			expected: &v1alpha1.TempoStack{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "test",
 					Labels: map[string]string{
@@ -79,50 +81,50 @@ func TestDefault(t *testing.T) {
 						"tempo.grafana.com/distribution": "upstream",
 					},
 				},
-				Spec: TempoStackSpec{
+				Spec: v1alpha1.TempoStackSpec{
 					ReplicationFactor: 2,
-					Images: v1alpha1.ImagesSpec{
+					Images: configv1alpha1.ImagesSpec{
 						Tempo:           "docker.io/grafana/tempo:1.2.3",
 						TempoQuery:      "docker.io/grafana/tempo-query:1.2.3",
 						TempoGateway:    "docker.io/observatorium/gateway:1.2.3",
 						TempoGatewayOpa: "docker.io/observatorium/opa-openshift:1.2.4",
 					},
 					ServiceAccount: "tempo-test",
-					Retention: RetentionSpec{
-						Global: RetentionConfig{
+					Retention: v1alpha1.RetentionSpec{
+						Global: v1alpha1.RetentionConfig{
 							Traces: metav1.Duration{Duration: time.Hour},
 						},
 					},
 					StorageSize: resource.MustParse("1Gi"),
-					LimitSpec: LimitSpec{
-						Global: RateLimitSpec{
-							Query: QueryLimit{
+					LimitSpec: v1alpha1.LimitSpec{
+						Global: v1alpha1.RateLimitSpec{
+							Query: v1alpha1.QueryLimit{
 								MaxSearchDuration: metav1.Duration{Duration: 1 * time.Hour},
 							},
 						},
 					},
-					SearchSpec: SearchSpec{
+					SearchSpec: v1alpha1.SearchSpec{
 						MaxDuration:        metav1.Duration{Duration: 0},
 						DefaultResultLimit: &defaultDefaultResultLimit,
 					},
-					Template: TempoTemplateSpec{
-						Compactor: TempoComponentSpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						Compactor: v1alpha1.TempoComponentSpec{
 							Replicas: ptr.To(int32(1)),
 						},
-						Distributor: TempoDistributorSpec{
-							TempoComponentSpec: TempoComponentSpec{
+						Distributor: v1alpha1.TempoDistributorSpec{
+							TempoComponentSpec: v1alpha1.TempoComponentSpec{
 								Replicas: ptr.To(int32(1)),
 							},
-							TLS: TLSSpec{},
+							TLS: v1alpha1.TLSSpec{},
 						},
-						Ingester: TempoComponentSpec{
+						Ingester: v1alpha1.TempoComponentSpec{
 							Replicas: ptr.To(int32(1)),
 						},
-						Querier: TempoComponentSpec{
+						Querier: v1alpha1.TempoComponentSpec{
 							Replicas: ptr.To(int32(1)),
 						},
-						QueryFrontend: TempoQueryFrontendSpec{
-							TempoComponentSpec: TempoComponentSpec{
+						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+							TempoComponentSpec: v1alpha1.TempoComponentSpec{
 								Replicas: ptr.To(int32(1)),
 							},
 						},
@@ -132,12 +134,12 @@ func TestDefault(t *testing.T) {
 		},
 		{
 			name: "default values are set in the webhook",
-			input: &TempoStack{
+			input: &v1alpha1.TempoStack{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "test",
 				},
 			},
-			expected: &TempoStack{
+			expected: &v1alpha1.TempoStack{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "test",
 					Labels: map[string]string{
@@ -145,45 +147,45 @@ func TestDefault(t *testing.T) {
 						"tempo.grafana.com/distribution": "upstream",
 					},
 				},
-				Spec: TempoStackSpec{
+				Spec: v1alpha1.TempoStackSpec{
 					ReplicationFactor: 1,
-					Images:            v1alpha1.ImagesSpec{},
+					Images:            configv1alpha1.ImagesSpec{},
 					ServiceAccount:    "tempo-test",
-					Retention: RetentionSpec{
-						Global: RetentionConfig{
+					Retention: v1alpha1.RetentionSpec{
+						Global: v1alpha1.RetentionConfig{
 							Traces: metav1.Duration{Duration: 48 * time.Hour},
 						},
 					},
 					StorageSize: resource.MustParse("10Gi"),
-					LimitSpec: LimitSpec{
-						Global: RateLimitSpec{
-							Query: QueryLimit{
+					LimitSpec: v1alpha1.LimitSpec{
+						Global: v1alpha1.RateLimitSpec{
+							Query: v1alpha1.QueryLimit{
 								MaxSearchDuration: metav1.Duration{Duration: 0},
 							},
 						},
 					},
-					SearchSpec: SearchSpec{
+					SearchSpec: v1alpha1.SearchSpec{
 						MaxDuration:        metav1.Duration{Duration: 0},
 						DefaultResultLimit: &defaultDefaultResultLimit,
 					},
-					Template: TempoTemplateSpec{
-						Compactor: TempoComponentSpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						Compactor: v1alpha1.TempoComponentSpec{
 							Replicas: ptr.To(int32(1)),
 						},
-						Distributor: TempoDistributorSpec{
-							TempoComponentSpec: TempoComponentSpec{
+						Distributor: v1alpha1.TempoDistributorSpec{
+							TempoComponentSpec: v1alpha1.TempoComponentSpec{
 								Replicas: ptr.To(int32(1)),
 							},
-							TLS: TLSSpec{},
+							TLS: v1alpha1.TLSSpec{},
 						},
-						Ingester: TempoComponentSpec{
+						Ingester: v1alpha1.TempoComponentSpec{
 							Replicas: ptr.To(int32(1)),
 						},
-						Querier: TempoComponentSpec{
+						Querier: v1alpha1.TempoComponentSpec{
 							Replicas: ptr.To(int32(1)),
 						},
-						QueryFrontend: TempoQueryFrontendSpec{
-							TempoComponentSpec: TempoComponentSpec{
+						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+							TempoComponentSpec: v1alpha1.TempoComponentSpec{
 								Replicas: ptr.To(int32(1)),
 							},
 						},
@@ -193,24 +195,24 @@ func TestDefault(t *testing.T) {
 		},
 		{
 			name: "use Edge TLS termination if unset",
-			input: &TempoStack{
+			input: &v1alpha1.TempoStack{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "test",
 				},
-				Spec: TempoStackSpec{
-					Template: TempoTemplateSpec{
-						QueryFrontend: TempoQueryFrontendSpec{
-							JaegerQuery: JaegerQuerySpec{
+				Spec: v1alpha1.TempoStackSpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+							JaegerQuery: v1alpha1.JaegerQuerySpec{
 								Enabled: true,
-								Ingress: IngressSpec{
-									Type: IngressTypeRoute,
+								Ingress: v1alpha1.IngressSpec{
+									Type: v1alpha1.IngressTypeRoute,
 								},
 							},
 						},
 					},
 				},
 			},
-			expected: &TempoStack{
+			expected: &v1alpha1.TempoStack{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "test",
 					Labels: map[string]string{
@@ -218,45 +220,45 @@ func TestDefault(t *testing.T) {
 						"tempo.grafana.com/distribution": "upstream",
 					},
 				},
-				Spec: TempoStackSpec{
+				Spec: v1alpha1.TempoStackSpec{
 					ReplicationFactor: 1,
-					Images:            v1alpha1.ImagesSpec{},
+					Images:            configv1alpha1.ImagesSpec{},
 					ServiceAccount:    "tempo-test",
-					Retention: RetentionSpec{
-						Global: RetentionConfig{
+					Retention: v1alpha1.RetentionSpec{
+						Global: v1alpha1.RetentionConfig{
 							Traces: metav1.Duration{Duration: 48 * time.Hour},
 						},
 					},
 					StorageSize: resource.MustParse("10Gi"),
-					SearchSpec: SearchSpec{
+					SearchSpec: v1alpha1.SearchSpec{
 						MaxDuration:        metav1.Duration{Duration: 0},
 						DefaultResultLimit: &defaultDefaultResultLimit,
 					},
-					Template: TempoTemplateSpec{
-						Compactor: TempoComponentSpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						Compactor: v1alpha1.TempoComponentSpec{
 							Replicas: ptr.To(int32(1)),
 						},
-						Distributor: TempoDistributorSpec{
-							TempoComponentSpec: TempoComponentSpec{
+						Distributor: v1alpha1.TempoDistributorSpec{
+							TempoComponentSpec: v1alpha1.TempoComponentSpec{
 								Replicas: ptr.To(int32(1)),
 							},
-							TLS: TLSSpec{},
+							TLS: v1alpha1.TLSSpec{},
 						},
-						Ingester: TempoComponentSpec{
+						Ingester: v1alpha1.TempoComponentSpec{
 							Replicas: ptr.To(int32(1)),
 						},
-						Querier: TempoComponentSpec{
+						Querier: v1alpha1.TempoComponentSpec{
 							Replicas: ptr.To(int32(1)),
 						},
-						QueryFrontend: TempoQueryFrontendSpec{
-							TempoComponentSpec: TempoComponentSpec{
+						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+							TempoComponentSpec: v1alpha1.TempoComponentSpec{
 								Replicas: ptr.To(int32(1)),
 							},
-							JaegerQuery: JaegerQuerySpec{
+							JaegerQuery: v1alpha1.JaegerQuerySpec{
 								Enabled: true,
-								Ingress: IngressSpec{
+								Ingress: v1alpha1.IngressSpec{
 									Type: "route",
-									Route: RouteSpec{
+									Route: v1alpha1.RouteSpec{
 										Termination: "edge",
 									},
 								},
@@ -278,20 +280,20 @@ func TestDefault(t *testing.T) {
 }
 
 func TestValidateStorageSecret(t *testing.T) {
-	tempoAzure := TempoStack{
-		Spec: TempoStackSpec{
-			Storage: ObjectStorageSpec{
-				Secret: ObjectStorageSecretSpec{
+	tempoAzure := v1alpha1.TempoStack{
+		Spec: v1alpha1.TempoStackSpec{
+			Storage: v1alpha1.ObjectStorageSpec{
+				Secret: v1alpha1.ObjectStorageSecretSpec{
 					Name: "testsecret",
 					Type: "azure",
 				},
 			},
 		},
 	}
-	tempoS3 := TempoStack{
-		Spec: TempoStackSpec{
-			Storage: ObjectStorageSpec{
-				Secret: ObjectStorageSecretSpec{
+	tempoS3 := v1alpha1.TempoStack{
+		Spec: v1alpha1.TempoStackSpec{
+			Storage: v1alpha1.ObjectStorageSpec{
+				Secret: v1alpha1.ObjectStorageSecretSpec{
 					Name: "testsecret",
 					Type: "s3",
 				},
@@ -299,10 +301,10 @@ func TestValidateStorageSecret(t *testing.T) {
 		},
 	}
 
-	tempoUnknown := TempoStack{
-		Spec: TempoStackSpec{
-			Storage: ObjectStorageSpec{
-				Secret: ObjectStorageSecretSpec{
+	tempoUnknown := v1alpha1.TempoStack{
+		Spec: v1alpha1.TempoStackSpec{
+			Storage: v1alpha1.ObjectStorageSpec{
+				Secret: v1alpha1.ObjectStorageSecretSpec{
 					Name: "testsecret",
 					Type: "unknown",
 				},
@@ -310,10 +312,10 @@ func TestValidateStorageSecret(t *testing.T) {
 		},
 	}
 
-	tempoEmtpyType := TempoStack{
-		Spec: TempoStackSpec{
-			Storage: ObjectStorageSpec{
-				Secret: ObjectStorageSecretSpec{
+	tempoEmtpyType := v1alpha1.TempoStack{
+		Spec: v1alpha1.TempoStackSpec{
+			Storage: v1alpha1.ObjectStorageSpec{
+				Secret: v1alpha1.ObjectStorageSecretSpec{
 					Name: "testsecret",
 					Type: "",
 				},
@@ -323,7 +325,7 @@ func TestValidateStorageSecret(t *testing.T) {
 
 	type Test struct {
 		name     string
-		tempo    TempoStack
+		tempo    v1alpha1.TempoStack
 		input    corev1.Secret
 		expected field.ErrorList
 	}
@@ -447,7 +449,7 @@ func TestValidateStorageSecret(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			errs := ValidateStorageSecret(test.tempo, test.input)
+			errs := v1alpha1.ValidateStorageSecret(test.tempo, test.input)
 			assert.Equal(t, test.expected, errs)
 		})
 	}
@@ -485,7 +487,7 @@ func TestValidateStorageCAConfigMap(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			errs := ValidateStorageCAConfigMap(test.input)
+			errs := v1alpha1.ValidateStorageCAConfigMap(test.input)
 			assert.Equal(t, test.expected, errs)
 		})
 	}
@@ -498,15 +500,15 @@ func TestValidateReplicationFactor(t *testing.T) {
 	tests := []struct {
 		name     string
 		expected field.ErrorList
-		input    TempoStack
+		input    v1alpha1.TempoStack
 	}{
 		{
 			name: "no error replicas equal to floor(replication_factor/2) + 1",
-			input: TempoStack{
-				Spec: TempoStackSpec{
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
 					ReplicationFactor: 3,
-					Template: TempoTemplateSpec{
-						Ingester: TempoComponentSpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						Ingester: v1alpha1.TempoComponentSpec{
 							Replicas: ptr.To(int32(2)),
 						},
 					},
@@ -516,11 +518,11 @@ func TestValidateReplicationFactor(t *testing.T) {
 		},
 		{
 			name: "no error replicas greater than floor(replication_factor/2) + 1",
-			input: TempoStack{
-				Spec: TempoStackSpec{
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
 					ReplicationFactor: 3,
-					Template: TempoTemplateSpec{
-						Ingester: TempoComponentSpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						Ingester: v1alpha1.TempoComponentSpec{
 							Replicas: ptr.To(int32(3)),
 						},
 					},
@@ -530,11 +532,11 @@ func TestValidateReplicationFactor(t *testing.T) {
 		},
 		{
 			name: "error replicas less than floor(replication_factor/2) + 1",
-			input: TempoStack{
-				Spec: TempoStackSpec{
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
 					ReplicationFactor: 3,
-					Template: TempoTemplateSpec{
-						Ingester: TempoComponentSpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						Ingester: v1alpha1.TempoComponentSpec{
 							Replicas: ptr.To(int32(1)),
 						},
 					},
@@ -561,20 +563,20 @@ func TestValidateQueryFrontend(t *testing.T) {
 
 	tests := []struct {
 		name       string
-		input      TempoStack
-		ctrlConfig v1alpha1.ProjectConfig
+		input      v1alpha1.TempoStack
+		ctrlConfig configv1alpha1.ProjectConfig
 		expected   field.ErrorList
 	}{
 		{
 			name: "valid ingress configuration",
-			input: TempoStack{
-				Spec: TempoStackSpec{
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
 					ReplicationFactor: 3,
-					Template: TempoTemplateSpec{
-						QueryFrontend: TempoQueryFrontendSpec{
-							JaegerQuery: JaegerQuerySpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+							JaegerQuery: v1alpha1.JaegerQuerySpec{
 								Enabled: true,
-								Ingress: IngressSpec{
+								Ingress: v1alpha1.IngressSpec{
 									Type: "ingress",
 								},
 							},
@@ -586,14 +588,14 @@ func TestValidateQueryFrontend(t *testing.T) {
 		},
 		{
 			name: "valid route configuration",
-			input: TempoStack{
-				Spec: TempoStackSpec{
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
 					ReplicationFactor: 3,
-					Template: TempoTemplateSpec{
-						QueryFrontend: TempoQueryFrontendSpec{
-							JaegerQuery: JaegerQuerySpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+							JaegerQuery: v1alpha1.JaegerQuerySpec{
 								Enabled: true,
-								Ingress: IngressSpec{
+								Ingress: v1alpha1.IngressSpec{
 									Type: "route",
 								},
 							},
@@ -601,9 +603,9 @@ func TestValidateQueryFrontend(t *testing.T) {
 					},
 				},
 			},
-			ctrlConfig: v1alpha1.ProjectConfig{
-				Gates: v1alpha1.FeatureGates{
-					OpenShift: v1alpha1.OpenShiftFeatureGates{
+			ctrlConfig: configv1alpha1.ProjectConfig{
+				Gates: configv1alpha1.FeatureGates{
+					OpenShift: configv1alpha1.OpenShiftFeatureGates{
 						OpenShiftRoute: true,
 					},
 				},
@@ -612,14 +614,14 @@ func TestValidateQueryFrontend(t *testing.T) {
 		},
 		{
 			name: "ingress enabled but queryfrontend disabled",
-			input: TempoStack{
-				Spec: TempoStackSpec{
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
 					ReplicationFactor: 3,
-					Template: TempoTemplateSpec{
-						QueryFrontend: TempoQueryFrontendSpec{
-							JaegerQuery: JaegerQuerySpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+							JaegerQuery: v1alpha1.JaegerQuerySpec{
 								Enabled: false,
-								Ingress: IngressSpec{
+								Ingress: v1alpha1.IngressSpec{
 									Type: "ingress",
 								},
 							},
@@ -630,21 +632,21 @@ func TestValidateQueryFrontend(t *testing.T) {
 			expected: field.ErrorList{
 				field.Invalid(
 					ingressTypePath,
-					IngressTypeIngress,
+					v1alpha1.IngressTypeIngress,
 					"Ingress cannot be enabled if jaegerQuery is disabled",
 				),
 			},
 		},
 		{
 			name: "route enabled but route feature gate disabled",
-			input: TempoStack{
-				Spec: TempoStackSpec{
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
 					ReplicationFactor: 3,
-					Template: TempoTemplateSpec{
-						QueryFrontend: TempoQueryFrontendSpec{
-							JaegerQuery: JaegerQuerySpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+							JaegerQuery: v1alpha1.JaegerQuerySpec{
 								Enabled: true,
-								Ingress: IngressSpec{
+								Ingress: v1alpha1.IngressSpec{
 									Type: "route",
 								},
 							},
@@ -652,9 +654,9 @@ func TestValidateQueryFrontend(t *testing.T) {
 					},
 				},
 			},
-			ctrlConfig: v1alpha1.ProjectConfig{
-				Gates: v1alpha1.FeatureGates{
-					OpenShift: v1alpha1.OpenShiftFeatureGates{
+			ctrlConfig: configv1alpha1.ProjectConfig{
+				Gates: configv1alpha1.FeatureGates{
+					OpenShift: configv1alpha1.OpenShiftFeatureGates{
 						OpenShiftRoute: false,
 					},
 				},
@@ -662,21 +664,21 @@ func TestValidateQueryFrontend(t *testing.T) {
 			expected: field.ErrorList{
 				field.Invalid(
 					ingressTypePath,
-					IngressTypeRoute,
+					v1alpha1.IngressTypeRoute,
 					"Please enable the featureGates.openshift.openshiftRoute feature gate to use Routes",
 				),
 			},
 		},
 		{
 			name: "monitor tab enabled, missing prometheus endpoint",
-			input: TempoStack{
-				Spec: TempoStackSpec{
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
 					ReplicationFactor: 3,
-					Template: TempoTemplateSpec{
-						QueryFrontend: TempoQueryFrontendSpec{
-							JaegerQuery: JaegerQuerySpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+							JaegerQuery: v1alpha1.JaegerQuerySpec{
 								Enabled: true,
-								MonitorTab: JaegerQueryMonitor{
+								MonitorTab: v1alpha1.JaegerQueryMonitor{
 									Enabled: true,
 								},
 							},
@@ -684,8 +686,8 @@ func TestValidateQueryFrontend(t *testing.T) {
 					},
 				},
 			},
-			ctrlConfig: v1alpha1.ProjectConfig{
-				Gates: v1alpha1.FeatureGates{},
+			ctrlConfig: configv1alpha1.ProjectConfig{
+				Gates: configv1alpha1.FeatureGates{},
 			},
 			expected: field.ErrorList{
 				field.Invalid(
@@ -711,26 +713,26 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		input    TempoStack
+		input    v1alpha1.TempoStack
 		expected field.ErrorList
 	}{
 		{
 			name: "valid configuration enabled both",
-			input: TempoStack{
-				Spec: TempoStackSpec{
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
 					ReplicationFactor: 3,
-					Template: TempoTemplateSpec{
-						QueryFrontend: TempoQueryFrontendSpec{
-							JaegerQuery: JaegerQuerySpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+							JaegerQuery: v1alpha1.JaegerQuerySpec{
 								Enabled: true,
 							},
 						},
-						Gateway: TempoGatewaySpec{
+						Gateway: v1alpha1.TempoGatewaySpec{
 							Enabled: true,
 						},
 					},
-					Tenants: &TenantsSpec{
-						Mode: ModeStatic,
+					Tenants: &v1alpha1.TenantsSpec{
+						Mode: v1alpha1.ModeStatic,
 					},
 				},
 			},
@@ -738,19 +740,19 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 		},
 		{
 			name: "valid config disable gateway and enable jaegerQuery",
-			input: TempoStack{
-				Spec: TempoStackSpec{
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
 					ReplicationFactor: 3,
-					Template: TempoTemplateSpec{
-						QueryFrontend: TempoQueryFrontendSpec{
-							JaegerQuery: JaegerQuerySpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+							JaegerQuery: v1alpha1.JaegerQuerySpec{
 								Enabled: true,
-								Ingress: IngressSpec{
+								Ingress: v1alpha1.IngressSpec{
 									Type: "route",
 								},
 							},
 						},
-						Gateway: TempoGatewaySpec{
+						Gateway: v1alpha1.TempoGatewaySpec{
 							Enabled: false,
 						},
 					},
@@ -760,19 +762,19 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 		},
 		{
 			name: "valid config disable both",
-			input: TempoStack{
-				Spec: TempoStackSpec{
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
 					ReplicationFactor: 3,
-					Template: TempoTemplateSpec{
-						QueryFrontend: TempoQueryFrontendSpec{
-							JaegerQuery: JaegerQuerySpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+							JaegerQuery: v1alpha1.JaegerQuerySpec{
 								Enabled: false,
-								Ingress: IngressSpec{
+								Ingress: v1alpha1.IngressSpec{
 									Type: "route",
 								},
 							},
 						},
-						Gateway: TempoGatewaySpec{
+						Gateway: v1alpha1.TempoGatewaySpec{
 							Enabled: false,
 						},
 					},
@@ -782,24 +784,24 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 		},
 		{
 			name: "invalid configuration, ingress and gateway enabled",
-			input: TempoStack{
-				Spec: TempoStackSpec{
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
 					ReplicationFactor: 3,
-					Template: TempoTemplateSpec{
-						QueryFrontend: TempoQueryFrontendSpec{
-							JaegerQuery: JaegerQuerySpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+							JaegerQuery: v1alpha1.JaegerQuerySpec{
 								Enabled: true,
-								Ingress: IngressSpec{
+								Ingress: v1alpha1.IngressSpec{
 									Type: "ingress",
 								},
 							},
 						},
-						Gateway: TempoGatewaySpec{
+						Gateway: v1alpha1.TempoGatewaySpec{
 							Enabled: true,
 						},
 					},
-					Tenants: &TenantsSpec{
-						Mode: ModeStatic,
+					Tenants: &v1alpha1.TenantsSpec{
+						Mode: v1alpha1.ModeStatic,
 					},
 				},
 			},
@@ -811,15 +813,15 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 		},
 		{
 			name: "invalid configuration, gateway enabled but no tenant configured",
-			input: TempoStack{
-				Spec: TempoStackSpec{
-					Template: TempoTemplateSpec{
-						QueryFrontend: TempoQueryFrontendSpec{
-							JaegerQuery: JaegerQuerySpec{
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+							JaegerQuery: v1alpha1.JaegerQuerySpec{
 								Enabled: true,
 							},
 						},
-						Gateway: TempoGatewaySpec{
+						Gateway: v1alpha1.TempoGatewaySpec{
 							Enabled: true,
 						},
 					},
@@ -833,24 +835,24 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 		},
 		{
 			name: "valid ingress configuration",
-			input: TempoStack{
-				Spec: TempoStackSpec{
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
 					ReplicationFactor: 3,
-					Template: TempoTemplateSpec{
-						QueryFrontend: TempoQueryFrontendSpec{
-							JaegerQuery: JaegerQuerySpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+							JaegerQuery: v1alpha1.JaegerQuerySpec{
 								Enabled: true,
 							},
 						},
-						Gateway: TempoGatewaySpec{
+						Gateway: v1alpha1.TempoGatewaySpec{
 							Enabled: true,
-							Ingress: IngressSpec{
+							Ingress: v1alpha1.IngressSpec{
 								Type: "ingress",
 							},
 						},
 					},
-					Tenants: &TenantsSpec{
-						Mode: ModeStatic,
+					Tenants: &v1alpha1.TenantsSpec{
+						Mode: v1alpha1.ModeStatic,
 					},
 				},
 			},
@@ -858,58 +860,58 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 		},
 		{
 			name: "invalid route, feature gateway disabled",
-			input: TempoStack{
-				Spec: TempoStackSpec{
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
 					ReplicationFactor: 3,
-					Template: TempoTemplateSpec{
-						QueryFrontend: TempoQueryFrontendSpec{
-							JaegerQuery: JaegerQuerySpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+							JaegerQuery: v1alpha1.JaegerQuerySpec{
 								Enabled: true,
 							},
 						},
-						Gateway: TempoGatewaySpec{
+						Gateway: v1alpha1.TempoGatewaySpec{
 							Enabled: true,
-							Ingress: IngressSpec{
+							Ingress: v1alpha1.IngressSpec{
 								Type: "route",
 							},
 						},
 					},
-					Tenants: &TenantsSpec{
-						Mode: ModeStatic,
+					Tenants: &v1alpha1.TenantsSpec{
+						Mode: v1alpha1.ModeStatic,
 					},
 				},
 			},
 			expected: field.ErrorList{
 				field.Invalid(
 					field.NewPath("spec").Child("template").Child("gateway").Child("ingress").Child("type"),
-					IngressType("route"),
+					v1alpha1.IngressType("route"),
 					"please enable the featureGates.openshift.openshiftRoute feature gate to use Routes",
 				),
 			},
 		},
 		{
 			name: "invalid configuration, enable two ingesss",
-			input: TempoStack{
-				Spec: TempoStackSpec{
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
 					ReplicationFactor: 3,
-					Template: TempoTemplateSpec{
-						QueryFrontend: TempoQueryFrontendSpec{
-							JaegerQuery: JaegerQuerySpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+							JaegerQuery: v1alpha1.JaegerQuerySpec{
 								Enabled: true,
-								Ingress: IngressSpec{
+								Ingress: v1alpha1.IngressSpec{
 									Type: "ingress",
 								},
 							},
 						},
-						Gateway: TempoGatewaySpec{
+						Gateway: v1alpha1.TempoGatewaySpec{
 							Enabled: true,
-							Ingress: IngressSpec{
+							Ingress: v1alpha1.IngressSpec{
 								Type: "ingress",
 							},
 						},
 					},
-					Tenants: &TenantsSpec{
-						Mode: ModeStatic,
+					Tenants: &v1alpha1.TenantsSpec{
+						Mode: v1alpha1.ModeStatic,
 					},
 				},
 			},
@@ -925,7 +927,7 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			validator := &validator{ctrlConfig: v1alpha1.ProjectConfig{}}
+			validator := &validator{ctrlConfig: configv1alpha1.ProjectConfig{}}
 			errs := validator.validateGateway(test.input)
 			assert.Equal(t, test.expected, errs)
 		})
@@ -935,32 +937,32 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 func TestValidateTenantConfigs(t *testing.T) {
 	tt := []struct {
 		name    string
-		input   TempoStack
+		input   v1alpha1.TempoStack
 		wantErr error
 	}{
 		{
 			name: "missing tenants",
-			input: TempoStack{
-				Spec: TempoStackSpec{},
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{},
 			},
 		},
 		{
 			name: "another mode",
-			input: TempoStack{
-				Spec: TempoStackSpec{
-					Tenants: &TenantsSpec{},
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Tenants: &v1alpha1.TenantsSpec{},
 				},
 			},
 		},
 		{
 			name: "static missing authentication",
-			input: TempoStack{
-				Spec: TempoStackSpec{
-					Tenants: &TenantsSpec{
-						Mode: ModeStatic,
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Tenants: &v1alpha1.TenantsSpec{
+						Mode: v1alpha1.ModeStatic,
 					},
-					Template: TempoTemplateSpec{
-						Gateway: TempoGatewaySpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						Gateway: v1alpha1.TempoGatewaySpec{
 							Enabled: true,
 						},
 					},
@@ -970,14 +972,14 @@ func TestValidateTenantConfigs(t *testing.T) {
 		},
 		{
 			name: "static missing authorization",
-			input: TempoStack{
-				Spec: TempoStackSpec{
-					Tenants: &TenantsSpec{
-						Mode:           ModeStatic,
-						Authentication: []AuthenticationSpec{},
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Tenants: &v1alpha1.TenantsSpec{
+						Mode:           v1alpha1.ModeStatic,
+						Authentication: []v1alpha1.AuthenticationSpec{},
 					},
-					Template: TempoTemplateSpec{
-						Gateway: TempoGatewaySpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						Gateway: v1alpha1.TempoGatewaySpec{
 							Enabled: true,
 						},
 					},
@@ -987,15 +989,15 @@ func TestValidateTenantConfigs(t *testing.T) {
 		},
 		{
 			name: "static missing roles",
-			input: TempoStack{
-				Spec: TempoStackSpec{
-					Tenants: &TenantsSpec{
-						Mode:           ModeStatic,
-						Authorization:  &AuthorizationSpec{},
-						Authentication: []AuthenticationSpec{},
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Tenants: &v1alpha1.TenantsSpec{
+						Mode:           v1alpha1.ModeStatic,
+						Authorization:  &v1alpha1.AuthorizationSpec{},
+						Authentication: []v1alpha1.AuthenticationSpec{},
 					},
-					Template: TempoTemplateSpec{
-						Gateway: TempoGatewaySpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						Gateway: v1alpha1.TempoGatewaySpec{
 							Enabled: true,
 						},
 					},
@@ -1005,17 +1007,17 @@ func TestValidateTenantConfigs(t *testing.T) {
 		},
 		{
 			name: "static missing role bindings",
-			input: TempoStack{
-				Spec: TempoStackSpec{
-					Tenants: &TenantsSpec{
-						Mode: ModeStatic,
-						Authorization: &AuthorizationSpec{
-							Roles: []RoleSpec{},
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Tenants: &v1alpha1.TenantsSpec{
+						Mode: v1alpha1.ModeStatic,
+						Authorization: &v1alpha1.AuthorizationSpec{
+							Roles: []v1alpha1.RoleSpec{},
 						},
-						Authentication: []AuthenticationSpec{},
+						Authentication: []v1alpha1.AuthenticationSpec{},
 					},
-					Template: TempoTemplateSpec{
-						Gateway: TempoGatewaySpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						Gateway: v1alpha1.TempoGatewaySpec{
 							Enabled: true,
 						},
 					},
@@ -1025,16 +1027,16 @@ func TestValidateTenantConfigs(t *testing.T) {
 		},
 		{
 			name: "openshift: RBAC should not be defined",
-			input: TempoStack{
-				Spec: TempoStackSpec{
-					Tenants: &TenantsSpec{
-						Mode: ModeOpenShift,
-						Authorization: &AuthorizationSpec{
-							Roles: []RoleSpec{},
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Tenants: &v1alpha1.TenantsSpec{
+						Mode: v1alpha1.ModeOpenShift,
+						Authorization: &v1alpha1.AuthorizationSpec{
+							Roles: []v1alpha1.RoleSpec{},
 						},
 					},
-					Template: TempoTemplateSpec{
-						Gateway: TempoGatewaySpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						Gateway: v1alpha1.TempoGatewaySpec{
 							Enabled: true,
 						},
 					},
@@ -1044,18 +1046,18 @@ func TestValidateTenantConfigs(t *testing.T) {
 		},
 		{
 			name: "openshift: OIDC should not be defined",
-			input: TempoStack{
-				Spec: TempoStackSpec{
-					Tenants: &TenantsSpec{
-						Mode: ModeOpenShift,
-						Authentication: []AuthenticationSpec{
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Tenants: &v1alpha1.TenantsSpec{
+						Mode: v1alpha1.ModeOpenShift,
+						Authentication: []v1alpha1.AuthenticationSpec{
 							{
-								OIDC: &OIDCSpec{},
+								OIDC: &v1alpha1.OIDCSpec{},
 							},
 						},
 					},
-					Template: TempoTemplateSpec{
-						Gateway: TempoGatewaySpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						Gateway: v1alpha1.TempoGatewaySpec{
 							Enabled: true,
 						},
 					},
@@ -1080,29 +1082,29 @@ func TestValidatorObservabilityTracingConfig(t *testing.T) {
 
 	tt := []struct {
 		name       string
-		input      TempoStack
-		ctrlConfig v1alpha1.ProjectConfig
+		input      v1alpha1.TempoStack
+		ctrlConfig configv1alpha1.ProjectConfig
 		expected   field.ErrorList
 	}{
 		{
 			name: "not set",
-			input: TempoStack{
-				Spec: TempoStackSpec{},
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{},
 			},
 		},
 		{
 			name: "createServiceMonitors enabled and prometheusOperator feature gate set",
-			input: TempoStack{
-				Spec: TempoStackSpec{
-					Observability: ObservabilitySpec{
-						Metrics: MetricsConfigSpec{
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Observability: v1alpha1.ObservabilitySpec{
+						Metrics: v1alpha1.MetricsConfigSpec{
 							CreateServiceMonitors: true,
 						},
 					},
 				},
 			},
-			ctrlConfig: v1alpha1.ProjectConfig{
-				Gates: v1alpha1.FeatureGates{
+			ctrlConfig: configv1alpha1.ProjectConfig{
+				Gates: configv1alpha1.FeatureGates{
 					PrometheusOperator: true,
 				},
 			},
@@ -1110,10 +1112,10 @@ func TestValidatorObservabilityTracingConfig(t *testing.T) {
 		},
 		{
 			name: "createServiceMonitors enabled but prometheusOperator feature gate not set",
-			input: TempoStack{
-				Spec: TempoStackSpec{
-					Observability: ObservabilitySpec{
-						Metrics: MetricsConfigSpec{
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Observability: v1alpha1.ObservabilitySpec{
+						Metrics: v1alpha1.MetricsConfigSpec{
 							CreateServiceMonitors: true,
 						},
 					},
@@ -1129,10 +1131,10 @@ func TestValidatorObservabilityTracingConfig(t *testing.T) {
 		},
 		{
 			name: "createPrometheusRules enabled but prometheusOperator feature gate not set",
-			input: TempoStack{
-				Spec: TempoStackSpec{
-					Observability: ObservabilitySpec{
-						Metrics: MetricsConfigSpec{
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Observability: v1alpha1.ObservabilitySpec{
+						Metrics: v1alpha1.MetricsConfigSpec{
 							CreatePrometheusRules: true,
 						},
 					},
@@ -1148,18 +1150,18 @@ func TestValidatorObservabilityTracingConfig(t *testing.T) {
 		},
 		{
 			name: "createPrometheusRules and createServiceMonitors enabled and prometheusOperator feature gate set",
-			input: TempoStack{
-				Spec: TempoStackSpec{
-					Observability: ObservabilitySpec{
-						Metrics: MetricsConfigSpec{
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Observability: v1alpha1.ObservabilitySpec{
+						Metrics: v1alpha1.MetricsConfigSpec{
 							CreateServiceMonitors: true,
 							CreatePrometheusRules: true,
 						},
 					},
 				},
 			},
-			ctrlConfig: v1alpha1.ProjectConfig{
-				Gates: v1alpha1.FeatureGates{
+			ctrlConfig: configv1alpha1.ProjectConfig{
+				Gates: configv1alpha1.FeatureGates{
 					PrometheusOperator: true,
 				},
 			},
@@ -1167,17 +1169,17 @@ func TestValidatorObservabilityTracingConfig(t *testing.T) {
 		},
 		{
 			name: "createPrometheusRules enabled but createServiceMonitors not enabled",
-			input: TempoStack{
-				Spec: TempoStackSpec{
-					Observability: ObservabilitySpec{
-						Metrics: MetricsConfigSpec{
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Observability: v1alpha1.ObservabilitySpec{
+						Metrics: v1alpha1.MetricsConfigSpec{
 							CreatePrometheusRules: true,
 						},
 					},
 				},
 			},
-			ctrlConfig: v1alpha1.ProjectConfig{
-				Gates: v1alpha1.FeatureGates{
+			ctrlConfig: configv1alpha1.ProjectConfig{
+				Gates: configv1alpha1.FeatureGates{
 					PrometheusOperator: true,
 				},
 			},
@@ -1191,10 +1193,10 @@ func TestValidatorObservabilityTracingConfig(t *testing.T) {
 		},
 		{
 			name: "sampling fraction not a float",
-			input: TempoStack{
-				Spec: TempoStackSpec{
-					Observability: ObservabilitySpec{
-						Tracing: TracingConfigSpec{
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Observability: v1alpha1.ObservabilitySpec{
+						Tracing: v1alpha1.TracingConfigSpec{
 							SamplingFraction: "a",
 						},
 					},
@@ -1210,10 +1212,10 @@ func TestValidatorObservabilityTracingConfig(t *testing.T) {
 		},
 		{
 			name: "invalid jaeger agent address",
-			input: TempoStack{
-				Spec: TempoStackSpec{
-					Observability: ObservabilitySpec{
-						Tracing: TracingConfigSpec{
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Observability: v1alpha1.ObservabilitySpec{
+						Tracing: v1alpha1.TracingConfigSpec{
 							SamplingFraction:    "0.5",
 							JaegerAgentEndpoint: "--invalid--",
 						},
@@ -1230,10 +1232,10 @@ func TestValidatorObservabilityTracingConfig(t *testing.T) {
 		},
 		{
 			name: "valid configuration",
-			input: TempoStack{
-				Spec: TempoStackSpec{
-					Observability: ObservabilitySpec{
-						Tracing: TracingConfigSpec{
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Observability: v1alpha1.ObservabilitySpec{
+						Tracing: v1alpha1.TracingConfigSpec{
 							SamplingFraction:    "0.5",
 							JaegerAgentEndpoint: "agent:1234",
 						},
@@ -1254,30 +1256,30 @@ func TestValidatorObservabilityTracingConfig(t *testing.T) {
 func TestValidatorObservabilityGrafana(t *testing.T) {
 	tt := []struct {
 		name       string
-		input      TempoStack
-		ctrlConfig v1alpha1.ProjectConfig
+		input      v1alpha1.TempoStack
+		ctrlConfig configv1alpha1.ProjectConfig
 		expected   field.ErrorList
 	}{
 		{
 			name: "datasource not enabled",
-			input: TempoStack{
-				Spec: TempoStackSpec{},
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{},
 			},
 			expected: nil,
 		},
 		{
 			name: "datasource enabled, feature gate not set",
-			input: TempoStack{
-				Spec: TempoStackSpec{
-					Observability: ObservabilitySpec{
-						Grafana: GrafanaConfigSpec{
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Observability: v1alpha1.ObservabilitySpec{
+						Grafana: v1alpha1.GrafanaConfigSpec{
 							CreateDatasource: true,
 						},
 					},
 				},
 			},
-			ctrlConfig: v1alpha1.ProjectConfig{
-				Gates: v1alpha1.FeatureGates{
+			ctrlConfig: configv1alpha1.ProjectConfig{
+				Gates: configv1alpha1.FeatureGates{
 					GrafanaOperator: false,
 				},
 			},
@@ -1291,17 +1293,17 @@ func TestValidatorObservabilityGrafana(t *testing.T) {
 		},
 		{
 			name: "datasource enabled, feature gate set",
-			input: TempoStack{
-				Spec: TempoStackSpec{
-					Observability: ObservabilitySpec{
-						Grafana: GrafanaConfigSpec{
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Observability: v1alpha1.ObservabilitySpec{
+						Grafana: v1alpha1.GrafanaConfigSpec{
 							CreateDatasource: true,
 						},
 					},
 				},
 			},
-			ctrlConfig: v1alpha1.ProjectConfig{
-				Gates: v1alpha1.FeatureGates{
+			ctrlConfig: configv1alpha1.ProjectConfig{
+				Gates: configv1alpha1.FeatureGates{
 					GrafanaOperator: true,
 				},
 			},
@@ -1335,21 +1337,21 @@ func TestValidatorValidate(t *testing.T) {
 		},
 		{
 			name: "pass all validators",
-			input: &TempoStack{
+			input: &v1alpha1.TempoStack{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test-obj",
 					Namespace: "abc",
 				},
 				TypeMeta: gvType,
-				Spec: TempoStackSpec{
+				Spec: v1alpha1.TempoStackSpec{
 					ServiceAccount: naming.DefaultServiceAccountName("test-obj"),
-					Storage: ObjectStorageSpec{
-						Secret: ObjectStorageSecretSpec{
+					Storage: v1alpha1.ObjectStorageSpec{
+						Secret: v1alpha1.ObjectStorageSecretSpec{
 							Name: "not-found",
 						},
 					},
-					Template: TempoTemplateSpec{
-						Ingester: TempoComponentSpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						Ingester: v1alpha1.TempoComponentSpec{
 							Replicas: func(i int32) *int32 { return &i }(1),
 						},
 					},
@@ -1360,7 +1362,7 @@ func TestValidatorValidate(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			v := &validator{ctrlConfig: v1alpha1.ProjectConfig{}, client: &k8sFake{}}
+			v := &validator{ctrlConfig: configv1alpha1.ProjectConfig{}, client: &k8sFake{}}
 			_, err := v.validate(context.Background(), tc.input)
 			assert.Equal(t, tc.expected, err)
 		})
@@ -1375,12 +1377,12 @@ func TestValidateName(t *testing.T) {
 
 	tt := []struct {
 		name     string
-		input    TempoStack
+		input    v1alpha1.TempoStack
 		expected field.ErrorList
 	}{
 		{
 			name: "all good",
-			input: TempoStack{
+			input: v1alpha1.TempoStack{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test-obj",
 					Namespace: "abc",
@@ -1389,7 +1391,7 @@ func TestValidateName(t *testing.T) {
 		},
 		{
 			name: "too long",
-			input: TempoStack{
+			input: v1alpha1.TempoStack{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      longName,
 					Namespace: "abc",
@@ -1406,7 +1408,7 @@ func TestValidateName(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			v := &validator{ctrlConfig: v1alpha1.ProjectConfig{}, client: &k8sFake{}}
+			v := &validator{ctrlConfig: configv1alpha1.ProjectConfig{}, client: &k8sFake{}}
 			assert.Equal(t, tc.expected, v.validateStackName(tc.input))
 		})
 	}
@@ -1418,20 +1420,20 @@ func TestValidateDeprecatedFields(t *testing.T) {
 
 	tt := []struct {
 		name     string
-		input    TempoStack
+		input    v1alpha1.TempoStack
 		expected field.ErrorList
 	}{
 		{
 			name:  "no deprecated fields",
-			input: TempoStack{},
+			input: v1alpha1.TempoStack{},
 		},
 		{
 			name: "deprecated global maxSearchBytesPerTrace set to 0",
-			input: TempoStack{
-				Spec: TempoStackSpec{
-					LimitSpec: LimitSpec{
-						Global: RateLimitSpec{
-							Query: QueryLimit{
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					LimitSpec: v1alpha1.LimitSpec{
+						Global: v1alpha1.RateLimitSpec{
+							Query: v1alpha1.QueryLimit{
 								MaxSearchBytesPerTrace: &zero,
 							},
 						},
@@ -1448,11 +1450,11 @@ func TestValidateDeprecatedFields(t *testing.T) {
 		},
 		{
 			name: "deprecated global maxSearchBytesPerTrace set to 1",
-			input: TempoStack{
-				Spec: TempoStackSpec{
-					LimitSpec: LimitSpec{
-						Global: RateLimitSpec{
-							Query: QueryLimit{
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					LimitSpec: v1alpha1.LimitSpec{
+						Global: v1alpha1.RateLimitSpec{
+							Query: v1alpha1.QueryLimit{
 								MaxSearchBytesPerTrace: &one,
 							},
 						},
@@ -1469,12 +1471,12 @@ func TestValidateDeprecatedFields(t *testing.T) {
 		},
 		{
 			name: "deprecated per-tenant maxSearchBytesPerTrace set to 0",
-			input: TempoStack{
-				Spec: TempoStackSpec{
-					LimitSpec: LimitSpec{
-						PerTenant: map[string]RateLimitSpec{
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					LimitSpec: v1alpha1.LimitSpec{
+						PerTenant: map[string]v1alpha1.RateLimitSpec{
 							"tenant1": {
-								Query: QueryLimit{
+								Query: v1alpha1.QueryLimit{
 									MaxSearchBytesPerTrace: &zero,
 								},
 							},
@@ -1494,7 +1496,7 @@ func TestValidateDeprecatedFields(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			v := &validator{ctrlConfig: v1alpha1.ProjectConfig{}}
+			v := &validator{ctrlConfig: configv1alpha1.ProjectConfig{}}
 			assert.Equal(t, tc.expected, v.validateDeprecatedFields(tc.input))
 		})
 	}
@@ -1503,26 +1505,26 @@ func TestValidateDeprecatedFields(t *testing.T) {
 func TestValidateReceiverTLSAndGateway(t *testing.T) {
 	tests := []struct {
 		name     string
-		input    TempoStack
+		input    v1alpha1.TempoStack
 		expected field.ErrorList
 	}{
 		{
 			name: "valid configuration disable both",
-			input: TempoStack{
-				Spec: TempoStackSpec{
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
 					ReplicationFactor: 3,
-					Template: TempoTemplateSpec{
-						Gateway: TempoGatewaySpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						Gateway: v1alpha1.TempoGatewaySpec{
 							Enabled: false,
 						},
-						Distributor: TempoDistributorSpec{
-							TLS: TLSSpec{
+						Distributor: v1alpha1.TempoDistributorSpec{
+							TLS: v1alpha1.TLSSpec{
 								Enabled: false,
 							},
 						},
 					},
-					Tenants: &TenantsSpec{
-						Mode: ModeStatic,
+					Tenants: &v1alpha1.TenantsSpec{
+						Mode: v1alpha1.ModeStatic,
 					},
 				},
 			},
@@ -1530,26 +1532,26 @@ func TestValidateReceiverTLSAndGateway(t *testing.T) {
 		},
 		{
 			name: "valid configuration enable only gateway",
-			input: TempoStack{
-				Spec: TempoStackSpec{
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
 					ReplicationFactor: 3,
-					Template: TempoTemplateSpec{
-						Gateway: TempoGatewaySpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						Gateway: v1alpha1.TempoGatewaySpec{
 							Enabled: true,
 						},
-						QueryFrontend: TempoQueryFrontendSpec{
-							JaegerQuery: JaegerQuerySpec{
+						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+							JaegerQuery: v1alpha1.JaegerQuerySpec{
 								Enabled: true,
 							},
 						},
-						Distributor: TempoDistributorSpec{
-							TLS: TLSSpec{
+						Distributor: v1alpha1.TempoDistributorSpec{
+							TLS: v1alpha1.TLSSpec{
 								Enabled: false,
 							},
 						},
 					},
-					Tenants: &TenantsSpec{
-						Mode: ModeStatic,
+					Tenants: &v1alpha1.TenantsSpec{
+						Mode: v1alpha1.ModeStatic,
 					},
 				},
 			},
@@ -1557,22 +1559,22 @@ func TestValidateReceiverTLSAndGateway(t *testing.T) {
 		},
 		{
 			name: "valid configuration enable only receiver TLS",
-			input: TempoStack{
-				Spec: TempoStackSpec{
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
 					ReplicationFactor: 3,
-					Template: TempoTemplateSpec{
-						Gateway: TempoGatewaySpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						Gateway: v1alpha1.TempoGatewaySpec{
 							Enabled: false,
 						},
-						Distributor: TempoDistributorSpec{
-							TLS: TLSSpec{
+						Distributor: v1alpha1.TempoDistributorSpec{
+							TLS: v1alpha1.TLSSpec{
 								Enabled: true,
 								Cert:    "my-cert",
 							},
 						},
 					},
-					Tenants: &TenantsSpec{
-						Mode: ModeStatic,
+					Tenants: &v1alpha1.TenantsSpec{
+						Mode: v1alpha1.ModeStatic,
 					},
 				},
 			},
@@ -1580,26 +1582,26 @@ func TestValidateReceiverTLSAndGateway(t *testing.T) {
 		},
 		{
 			name: "invalid configuration enable both",
-			input: TempoStack{
-				Spec: TempoStackSpec{
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
 					ReplicationFactor: 3,
-					Template: TempoTemplateSpec{
-						Gateway: TempoGatewaySpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						Gateway: v1alpha1.TempoGatewaySpec{
 							Enabled: true,
 						},
-						QueryFrontend: TempoQueryFrontendSpec{
-							JaegerQuery: JaegerQuerySpec{
+						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+							JaegerQuery: v1alpha1.JaegerQuerySpec{
 								Enabled: true,
 							},
 						},
-						Distributor: TempoDistributorSpec{
-							TLS: TLSSpec{
+						Distributor: v1alpha1.TempoDistributorSpec{
+							TLS: v1alpha1.TLSSpec{
 								Enabled: true,
 							},
 						},
 					},
-					Tenants: &TenantsSpec{
-						Mode: ModeStatic,
+					Tenants: &v1alpha1.TenantsSpec{
+						Mode: v1alpha1.ModeStatic,
 					},
 				},
 			},
@@ -1613,7 +1615,7 @@ func TestValidateReceiverTLSAndGateway(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			validator := &validator{ctrlConfig: v1alpha1.ProjectConfig{}}
+			validator := &validator{ctrlConfig: configv1alpha1.ProjectConfig{}}
 			errs := validator.validateGateway(test.input)
 			assert.Equal(t, test.expected, errs)
 		})
@@ -1634,21 +1636,21 @@ func TestWarning(t *testing.T) {
 	}{
 		{
 			name: "no secret exists",
-			input: &TempoStack{
+			input: &v1alpha1.TempoStack{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test-obj",
 					Namespace: "abc",
 				},
 				TypeMeta: gvType,
-				Spec: TempoStackSpec{
+				Spec: v1alpha1.TempoStackSpec{
 					ServiceAccount: naming.DefaultServiceAccountName("test-obj"),
-					Storage: ObjectStorageSpec{
-						Secret: ObjectStorageSecretSpec{
+					Storage: v1alpha1.ObjectStorageSpec{
+						Secret: v1alpha1.ObjectStorageSecretSpec{
 							Name: "not-found",
 						},
 					},
-					Template: TempoTemplateSpec{
-						Ingester: TempoComponentSpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						Ingester: v1alpha1.TempoComponentSpec{
 							Replicas: func(i int32) *int32 { return &i }(1),
 						},
 					},
@@ -1659,25 +1661,25 @@ func TestWarning(t *testing.T) {
 		},
 		{
 			name: "warning for use extra config",
-			input: &TempoStack{
+			input: &v1alpha1.TempoStack{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test-obj",
 					Namespace: "abc",
 				},
 				TypeMeta: gvType,
-				Spec: TempoStackSpec{
+				Spec: v1alpha1.TempoStackSpec{
 					ServiceAccount: naming.DefaultServiceAccountName("test-obj"),
-					Storage: ObjectStorageSpec{
-						Secret: ObjectStorageSecretSpec{
+					Storage: v1alpha1.ObjectStorageSpec{
+						Secret: v1alpha1.ObjectStorageSecretSpec{
 							Name: "not-found",
 						},
 					},
-					Template: TempoTemplateSpec{
-						Ingester: TempoComponentSpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						Ingester: v1alpha1.TempoComponentSpec{
 							Replicas: func(i int32) *int32 { return &i }(1),
 						},
 					},
-					ExtraConfig: &ExtraConfigSpec{
+					ExtraConfig: &v1alpha1.ExtraConfigSpec{
 						Tempo: v1.JSON{Raw: []byte("{}")},
 					},
 				},
@@ -1691,21 +1693,21 @@ func TestWarning(t *testing.T) {
 		},
 		{
 			name: "no extra config used",
-			input: &TempoStack{
+			input: &v1alpha1.TempoStack{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test-obj",
 					Namespace: "abc",
 				},
 				TypeMeta: gvType,
-				Spec: TempoStackSpec{
+				Spec: v1alpha1.TempoStackSpec{
 					ServiceAccount: naming.DefaultServiceAccountName("test-obj"),
-					Storage: ObjectStorageSpec{
-						Secret: ObjectStorageSecretSpec{
+					Storage: v1alpha1.ObjectStorageSpec{
+						Secret: v1alpha1.ObjectStorageSecretSpec{
 							Name: "not-found",
 						},
 					},
-					Template: TempoTemplateSpec{
-						Ingester: TempoComponentSpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						Ingester: v1alpha1.TempoComponentSpec{
 							Replicas: func(i int32) *int32 { return &i }(1),
 						},
 					},
@@ -1720,7 +1722,7 @@ func TestWarning(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			v := &validator{ctrlConfig: v1alpha1.ProjectConfig{}, client: test.client}
+			v := &validator{ctrlConfig: configv1alpha1.ProjectConfig{}, client: test.client}
 			wrgs, _ := v.validate(context.Background(), test.input)
 			assert.Equal(t, test.expected, wrgs)
 		})

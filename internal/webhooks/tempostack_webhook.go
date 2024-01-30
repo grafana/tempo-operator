@@ -1,4 +1,4 @@
-package v1alpha1
+package webhooks
 
 import (
 	"context"
@@ -20,7 +20,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 
-	"github.com/grafana/tempo-operator/apis/config/v1alpha1"
+	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
+	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/autodetect"
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
 )
@@ -30,14 +31,18 @@ var (
 	tenGBQuantity = resource.MustParse("10Gi")
 )
 
+// TempoStackWebhook provides webhooks for TempoStack CR.
+type TempoStackWebhook struct {
+}
+
 const maxLabelLength = 63
-const defaultRouteGatewayTLSTermination = TLSRouteTerminationTypePassthrough
-const defaultUITLSTermination = TLSRouteTerminationTypeEdge
+const defaultRouteGatewayTLSTermination = v1alpha1.TLSRouteTerminationTypePassthrough
+const defaultUITLSTermination = v1alpha1.TLSRouteTerminationTypeEdge
 
 // SetupWebhookWithManager initializes the webhook.
-func (r *TempoStack) SetupWebhookWithManager(mgr ctrl.Manager, ctrlConfig v1alpha1.ProjectConfig) error {
+func (w *TempoStackWebhook) SetupWebhookWithManager(mgr ctrl.Manager, ctrlConfig configv1alpha1.ProjectConfig) error {
 	return ctrl.NewWebhookManagedBy(mgr).
-		For(r).
+		For(&v1alpha1.TempoStack{}).
 		WithDefaulter(NewDefaulter(ctrlConfig)).
 		WithValidator(&validator{client: mgr.GetClient(), ctrlConfig: ctrlConfig}).
 		Complete()
@@ -46,7 +51,7 @@ func (r *TempoStack) SetupWebhookWithManager(mgr ctrl.Manager, ctrlConfig v1alph
 //+kubebuilder:webhook:path=/mutate-tempo-grafana-com-v1alpha1-tempostack,mutating=true,failurePolicy=fail,sideEffects=None,groups=tempo.grafana.com,resources=tempostacks,verbs=create;update,versions=v1alpha1,name=mtempostack.tempo.grafana.com,admissionReviewVersions=v1
 
 // NewDefaulter creates a new instance of Defaulter, which implements functions for setting defaults on the Tempo CR.
-func NewDefaulter(ctrlConfig v1alpha1.ProjectConfig) *Defaulter {
+func NewDefaulter(ctrlConfig configv1alpha1.ProjectConfig) *Defaulter {
 	return &Defaulter{
 		ctrlConfig: ctrlConfig,
 	}
@@ -54,12 +59,12 @@ func NewDefaulter(ctrlConfig v1alpha1.ProjectConfig) *Defaulter {
 
 // Defaulter implements the CustomDefaulter interface.
 type Defaulter struct {
-	ctrlConfig v1alpha1.ProjectConfig
+	ctrlConfig configv1alpha1.ProjectConfig
 }
 
 // Default applies default values to a Kubernetes object.
 func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
-	r, ok := obj.(*TempoStack)
+	r, ok := obj.(*v1alpha1.TempoStack)
 	if !ok {
 		return apierrors.NewBadRequest(fmt.Sprintf("expected a TempoStack object but got %T", obj))
 	}
@@ -118,16 +123,16 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 	}
 
 	// if tenant mode is Openshift, ingress type should be route by default.
-	if r.Spec.Tenants != nil && r.Spec.Tenants.Mode == ModeOpenShift && r.Spec.Template.Gateway.Ingress.Type == "" {
-		r.Spec.Template.Gateway.Ingress.Type = IngressTypeRoute
+	if r.Spec.Tenants != nil && r.Spec.Tenants.Mode == v1alpha1.ModeOpenShift && r.Spec.Template.Gateway.Ingress.Type == "" {
+		r.Spec.Template.Gateway.Ingress.Type = v1alpha1.IngressTypeRoute
 	}
 
-	if r.Spec.Template.Gateway.Ingress.Type == IngressTypeRoute && r.Spec.Template.Gateway.Ingress.Route.Termination == "" {
+	if r.Spec.Template.Gateway.Ingress.Type == v1alpha1.IngressTypeRoute && r.Spec.Template.Gateway.Ingress.Route.Termination == "" {
 		r.Spec.Template.Gateway.Ingress.Route.Termination = defaultRouteGatewayTLSTermination
 	}
 
 	// Terminate TLS of the JaegerQuery Route on the Edge by default
-	if r.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type == IngressTypeRoute && r.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Route.Termination == "" {
+	if r.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type == v1alpha1.IngressTypeRoute && r.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Route.Termination == "" {
 		r.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Route.Termination = defaultUITLSTermination
 	}
 
@@ -145,7 +150,7 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 
 type validator struct {
 	client     client.Client
-	ctrlConfig v1alpha1.ProjectConfig
+	ctrlConfig configv1alpha1.ProjectConfig
 }
 
 func (v *validator) ValidateCreate(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
@@ -161,7 +166,7 @@ func (v *validator) ValidateDelete(ctx context.Context, obj runtime.Object) (adm
 	return nil, nil
 }
 
-func (v *validator) validateServiceAccount(ctx context.Context, tempo TempoStack) field.ErrorList {
+func (v *validator) validateServiceAccount(ctx context.Context, tempo v1alpha1.TempoStack) field.ErrorList {
 	var allErrs field.ErrorList
 
 	// the default service account gets created later in the reconciliation loop
@@ -180,7 +185,7 @@ func (v *validator) validateServiceAccount(ctx context.Context, tempo TempoStack
 	return allErrs
 }
 
-func (v *validator) validateStorageSecret(ctx context.Context, tempo TempoStack) (admission.Warnings, field.ErrorList) {
+func (v *validator) validateStorageSecret(ctx context.Context, tempo v1alpha1.TempoStack) (admission.Warnings, field.ErrorList) {
 	storageSecret := &corev1.Secret{}
 	err := v.client.Get(ctx, types.NamespacedName{Namespace: tempo.Namespace, Name: tempo.Spec.Storage.Secret.Name}, storageSecret)
 	if err != nil {
@@ -189,10 +194,10 @@ func (v *validator) validateStorageSecret(ctx context.Context, tempo TempoStack)
 		return admission.Warnings{fmt.Sprintf("Secret '%s' does not exist", tempo.Spec.Storage.Secret.Name)}, field.ErrorList{}
 	}
 
-	return admission.Warnings{}, ValidateStorageSecret(tempo, *storageSecret)
+	return admission.Warnings{}, v1alpha1.ValidateStorageSecret(tempo, *storageSecret)
 }
 
-func (v *validator) validateStorageCA(ctx context.Context, tempo TempoStack) (admission.Warnings, field.ErrorList) {
+func (v *validator) validateStorageCA(ctx context.Context, tempo v1alpha1.TempoStack) (admission.Warnings, field.ErrorList) {
 	caConfigMap := &corev1.ConfigMap{}
 	err := v.client.Get(ctx, types.NamespacedName{Namespace: tempo.Namespace, Name: tempo.Spec.Storage.TLS.CA}, caConfigMap)
 	if err != nil {
@@ -201,10 +206,10 @@ func (v *validator) validateStorageCA(ctx context.Context, tempo TempoStack) (ad
 		return admission.Warnings{fmt.Sprintf("ConfigMap '%s' does not exist", tempo.Spec.Storage.TLS.CA)}, field.ErrorList{}
 	}
 
-	return admission.Warnings{}, ValidateStorageCAConfigMap(*caConfigMap)
+	return admission.Warnings{}, v1alpha1.ValidateStorageCAConfigMap(*caConfigMap)
 }
 
-func (v *validator) validateReplicationFactor(tempo TempoStack) field.ErrorList {
+func (v *validator) validateReplicationFactor(tempo v1alpha1.TempoStack) field.ErrorList {
 	// Validate minimum quorum on ingestors according to replicas and replication factor
 	replicatonFactor := tempo.Spec.ReplicationFactor
 	// Ingester replicas should not be nil at this point, due defauler.
@@ -222,10 +227,10 @@ func (v *validator) validateReplicationFactor(tempo TempoStack) field.ErrorList 
 	return nil
 }
 
-func (v *validator) validateQueryFrontend(tempo TempoStack) field.ErrorList {
+func (v *validator) validateQueryFrontend(tempo v1alpha1.TempoStack) field.ErrorList {
 	path := field.NewPath("spec").Child("template").Child("queryFrontend").Child("jaegerQuery").Child("ingress").Child("type")
 
-	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type != IngressTypeNone && !tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled {
+	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type != v1alpha1.IngressTypeNone && !tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled {
 		return field.ErrorList{field.Invalid(
 			path,
 			tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type,
@@ -233,7 +238,7 @@ func (v *validator) validateQueryFrontend(tempo TempoStack) field.ErrorList {
 		)}
 	}
 
-	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type == IngressTypeRoute && !v.ctrlConfig.Gates.OpenShift.OpenShiftRoute {
+	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type == v1alpha1.IngressTypeRoute && !v.ctrlConfig.Gates.OpenShift.OpenShiftRoute {
 		return field.ErrorList{field.Invalid(
 			path,
 			tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type,
@@ -255,10 +260,10 @@ func (v *validator) validateQueryFrontend(tempo TempoStack) field.ErrorList {
 	return nil
 }
 
-func (v *validator) validateGateway(tempo TempoStack) field.ErrorList {
+func (v *validator) validateGateway(tempo v1alpha1.TempoStack) field.ErrorList {
 	path := field.NewPath("spec").Child("template").Child("gateway").Child("enabled")
 	if tempo.Spec.Template.Gateway.Enabled {
-		if tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type != IngressTypeNone {
+		if tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type != v1alpha1.IngressTypeNone {
 			return field.ErrorList{
 				field.Invalid(path, tempo.Spec.Template.Gateway.Enabled,
 					"cannot enable gateway and jaeger query ingress at the same time, please use the Jaeger UI from the gateway",
@@ -272,7 +277,7 @@ func (v *validator) validateGateway(tempo TempoStack) field.ErrorList {
 				)}
 		}
 
-		if tempo.Spec.Template.Gateway.Ingress.Type == IngressTypeRoute && !v.ctrlConfig.Gates.OpenShift.OpenShiftRoute {
+		if tempo.Spec.Template.Gateway.Ingress.Type == v1alpha1.IngressTypeRoute && !v.ctrlConfig.Gates.OpenShift.OpenShiftRoute {
 			return field.ErrorList{field.Invalid(
 				field.NewPath("spec").Child("template").Child("gateway").Child("ingress").Child("type"),
 				tempo.Spec.Template.Gateway.Ingress.Type,
@@ -291,7 +296,7 @@ func (v *validator) validateGateway(tempo TempoStack) field.ErrorList {
 	return nil
 }
 
-func (v *validator) validateObservability(tempo TempoStack) field.ErrorList {
+func (v *validator) validateObservability(tempo v1alpha1.TempoStack) field.ErrorList {
 	observabilityBase := field.NewPath("spec").Child("observability")
 
 	metricsBase := observabilityBase.Child("metrics")
@@ -351,7 +356,7 @@ func (v *validator) validateObservability(tempo TempoStack) field.ErrorList {
 	return nil
 }
 
-func (v *validator) validateTenantConfigs(tempo TempoStack) field.ErrorList {
+func (v *validator) validateTenantConfigs(tempo v1alpha1.TempoStack) field.ErrorList {
 	if err := ValidateTenantConfigs(tempo); err != nil {
 		return field.ErrorList{
 			field.Invalid(
@@ -363,7 +368,7 @@ func (v *validator) validateTenantConfigs(tempo TempoStack) field.ErrorList {
 	return nil
 }
 
-func (v *validator) validateStackName(tempo TempoStack) field.ErrorList {
+func (v *validator) validateStackName(tempo v1alpha1.TempoStack) field.ErrorList {
 	// We need to check this because the name is used as a label value for app.kubernetes.io/instance
 	// Only validate the length, because the DNS rules are enforced by the functions in the `naming` package.
 	if len(tempo.Name) > maxLabelLength {
@@ -377,7 +382,7 @@ func (v *validator) validateStackName(tempo TempoStack) field.ErrorList {
 	return nil
 }
 
-func (v *validator) validateDeprecatedFields(tempo TempoStack) field.ErrorList {
+func (v *validator) validateDeprecatedFields(tempo v1alpha1.TempoStack) field.ErrorList {
 	if tempo.Spec.LimitSpec.Global.Query.MaxSearchBytesPerTrace != nil {
 		return field.ErrorList{
 			field.Invalid(
@@ -400,7 +405,7 @@ func (v *validator) validateDeprecatedFields(tempo TempoStack) field.ErrorList {
 	return nil
 }
 
-func (v *validator) validateReceiverTLS(tempo TempoStack) field.ErrorList {
+func (v *validator) validateReceiverTLS(tempo v1alpha1.TempoStack) field.ErrorList {
 	spec := tempo.Spec.Template.Distributor.TLS
 	if spec.Enabled {
 		if spec.Cert == "" {
@@ -416,7 +421,7 @@ func (v *validator) validateReceiverTLS(tempo TempoStack) field.ErrorList {
 }
 
 func (v *validator) validate(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
-	tempo, ok := obj.(*TempoStack)
+	tempo, ok := obj.(*v1alpha1.TempoStack)
 	if !ok {
 		return nil, apierrors.NewBadRequest(fmt.Sprintf("expected a TempoStack object but got %T", obj))
 	}
@@ -464,13 +469,13 @@ func (v *validator) validate(ctx context.Context, obj runtime.Object) (admission
 }
 
 // ValidateTenantConfigs validates the tenants mode specification.
-func ValidateTenantConfigs(tempo TempoStack) error {
+func ValidateTenantConfigs(tempo v1alpha1.TempoStack) error {
 	if tempo.Spec.Tenants == nil {
 		return nil
 	}
 
 	tenants := tempo.Spec.Tenants
-	if tenants.Mode == ModeStatic {
+	if tenants.Mode == v1alpha1.ModeStatic {
 		// If the static mode is combined with the gateway, we will need the following fields
 		// otherwise this will just enable tempo multitenancy without the gateway
 		if tempo.Spec.Template.Gateway.Enabled {
@@ -490,7 +495,7 @@ func ValidateTenantConfigs(tempo TempoStack) error {
 				return fmt.Errorf("spec.tenants.authorization.roleBindings is required in static mode")
 			}
 		}
-	} else if tenants.Mode == ModeOpenShift {
+	} else if tenants.Mode == v1alpha1.ModeOpenShift {
 		if !tempo.Spec.Template.Gateway.Enabled {
 			return fmt.Errorf("openshift mode requires gateway enabled")
 		}

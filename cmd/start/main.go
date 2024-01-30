@@ -17,11 +17,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
-	tempov1alpha1 "github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/cmd"
 	controllers "github.com/grafana/tempo-operator/controllers/tempo"
 	"github.com/grafana/tempo-operator/internal/upgrade"
 	"github.com/grafana/tempo-operator/internal/version"
+	"github.com/grafana/tempo-operator/internal/webhooks"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -78,11 +78,11 @@ func start(c *cobra.Command, args []string) {
 
 	enableWebhooks := os.Getenv("ENABLE_WEBHOOKS") != "false"
 	if enableWebhooks {
-		if err = (&tempov1alpha1.TempoStack{}).SetupWebhookWithManager(mgr, ctrlConfig); err != nil {
+		if err = (&webhooks.TempoStackWebhook{}).SetupWebhookWithManager(mgr, ctrlConfig); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "TempoStack")
 			os.Exit(1)
 		}
-		if err = (&tempov1alpha1.TempoMonolithic{}).SetupWebhookWithManager(mgr); err != nil {
+		if err = (&webhooks.TempoMonolithicWebhook{}).SetupWebhookWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "TempoMonolithic")
 			os.Exit(1)
 		}
