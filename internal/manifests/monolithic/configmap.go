@@ -104,6 +104,21 @@ func BuildConfigMap(opts Options) (*corev1.ConfigMap, string, error) {
 	return configMap, checksum, nil
 }
 
+func configureReceiverTLS(tlsSpec *v1alpha1.TLSSpec) tempoReceiverTLSConfig {
+	tlsCfg := tempoReceiverTLSConfig{}
+	if tlsSpec != nil && tlsSpec.Enabled {
+		if tlsSpec.Cert != "" {
+			tlsCfg.CertFile = path.Join(manifestutils.ReceiverTLSCertDir, manifestutils.TLSCertFilename)
+			tlsCfg.KeyFile = path.Join(manifestutils.ReceiverTLSCertDir, manifestutils.TLSKeyFilename)
+		}
+		if tlsSpec.CA != "" {
+			tlsCfg.CAFile = path.Join(manifestutils.ReceiverTLSCADir, manifestutils.TLSCAFilename)
+		}
+		tlsCfg.MinVersion = tlsSpec.MinVersion
+	}
+	return tlsCfg
+}
+
 func buildTempoConfig(opts Options) ([]byte, error) {
 	tempo := opts.Tempo
 
@@ -122,27 +137,15 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 	}
 
 	if tempo.Spec.Ingestion != nil {
-		tls := tempoReceiverTLSConfig{}
-		if tempo.Spec.Ingestion.TLS != nil && tempo.Spec.Ingestion.TLS.Enabled {
-			if tempo.Spec.Ingestion.TLS.Cert != "" {
-				tls.CertFile = path.Join(manifestutils.ReceiverTLSCertDir, manifestutils.TLSCertFilename)
-				tls.KeyFile = path.Join(manifestutils.ReceiverTLSCertDir, manifestutils.TLSKeyFilename)
-			}
-			if tempo.Spec.Ingestion.TLS.CA != "" {
-				tls.CAFile = path.Join(manifestutils.ReceiverTLSCADir, manifestutils.TLSCAFilename)
-			}
-			tls.MinVersion = tempo.Spec.Ingestion.TLS.MinVersion
-		}
-
 		if tempo.Spec.Ingestion.OTLP != nil {
 			if tempo.Spec.Ingestion.OTLP.GRPC != nil && tempo.Spec.Ingestion.OTLP.GRPC.Enabled {
 				config.Distributor.Receivers.OTLP.Protocols.GRPC = &tempoReceiverConfig{
-					TLS: tls,
+					TLS: configureReceiverTLS(tempo.Spec.Ingestion.OTLP.GRPC.TLS),
 				}
 			}
 			if tempo.Spec.Ingestion.OTLP.HTTP != nil && tempo.Spec.Ingestion.OTLP.HTTP.Enabled {
 				config.Distributor.Receivers.OTLP.Protocols.HTTP = &tempoReceiverConfig{
-					TLS: tls,
+					TLS: configureReceiverTLS(tempo.Spec.Ingestion.OTLP.HTTP.TLS),
 				}
 			}
 		}

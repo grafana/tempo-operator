@@ -4,10 +4,12 @@ metadata:
   name: simplest
 spec:
   ingestion:
-    tls:
-      enabled: true
-      caName: custom-ca
-      certName: tempo-cert
+    otlp:
+      grpc:
+        tls:
+          enabled: true
+          caName: custom-ca
+          certName: tempo-cert
 ---
 apiVersion: v1
 kind: ConfigMap

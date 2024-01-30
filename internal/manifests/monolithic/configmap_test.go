@@ -113,15 +113,18 @@ usage_report:
 			spec: v1alpha1.TempoMonolithicSpec{
 				Ingestion: &v1alpha1.MonolithicIngestionSpec{
 					OTLP: &v1alpha1.MonolithicIngestionOTLPSpec{
+						GRPC: &v1alpha1.MonolithicIngestionOTLPProtocolsGRPCSpec{
+							Enabled: true,
+							TLS: &v1alpha1.TLSSpec{
+								Enabled:    true,
+								CA:         "ca",
+								Cert:       "cert",
+								MinVersion: string(openshiftconfigv1.VersionTLS13),
+							},
+						},
 						HTTP: &v1alpha1.MonolithicIngestionOTLPProtocolsHTTPSpec{
 							Enabled: false,
 						},
-					},
-					TLS: &v1alpha1.TLSSpec{
-						Enabled:    true,
-						CA:         "ca",
-						Cert:       "cert",
-						MinVersion: string(openshiftconfigv1.VersionTLS13),
 					},
 				},
 			},

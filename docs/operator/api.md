@@ -1612,6 +1612,31 @@ bool
 </td>
 </tr>
 
+<tr>
+
+<td>
+
+<code>tls</code><br/>
+
+<em>
+
+<a href="#tempo-grafana-com-v1alpha1-TLSSpec">
+
+TLSSpec
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<p>TLS defines the TLS configuration for OTLP/gRPC ingestion</p>
+
+</td>
+</tr>
+
 </tbody>
 </table>
 
@@ -1662,6 +1687,31 @@ bool
 <td>
 
 <p>Enabled defines if OTLP over HTTP is enabled</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>tls</code><br/>
+
+<em>
+
+<a href="#tempo-grafana-com-v1alpha1-TLSSpec">
+
+TLSSpec
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<p>TLS defines the TLS configuration for OTLP/HTTP ingestion</p>
 
 </td>
 </tr>
@@ -1803,31 +1853,6 @@ MonolithicIngestionOTLPSpec
 <td>
 
 <p>OTLP defines the ingestion configuration for OTLP</p>
-
-</td>
-</tr>
-
-<tr>
-
-<td>
-
-<code>tls</code><br/>
-
-<em>
-
-<a href="#tempo-grafana-com-v1alpha1-TLSSpec">
-
-TLSSpec
-
-</a>
-
-</em>
-
-</td>
-
-<td>
-
-<p>TLS defines the TLS configuration for ingestion</p>
 
 </td>
 </tr>
@@ -4170,7 +4195,7 @@ and re-encrypt using a new certificate.</p>
 
 <p>
 
-(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-MonolithicIngestionSpec">MonolithicIngestionSpec</a>, <a href="#tempo-grafana-com-v1alpha1-TempoDistributorSpec">TempoDistributorSpec</a>)
+(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-MonolithicIngestionOTLPProtocolsGRPCSpec">MonolithicIngestionOTLPProtocolsGRPCSpec</a>, <a href="#tempo-grafana-com-v1alpha1-MonolithicIngestionOTLPProtocolsHTTPSpec">MonolithicIngestionOTLPProtocolsHTTPSpec</a>, <a href="#tempo-grafana-com-v1alpha1-TempoDistributorSpec">TempoDistributorSpec</a>)
 
 </p>
 
