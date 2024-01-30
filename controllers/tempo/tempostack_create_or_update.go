@@ -22,6 +22,7 @@ import (
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/status"
 	"github.com/grafana/tempo-operator/internal/tlsprofile"
+	"github.com/grafana/tempo-operator/internal/webhooks"
 )
 
 func listErrors(fieldErrs field.ErrorList) string {
@@ -81,7 +82,7 @@ func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, log logr.Logg
 		}
 	}
 
-	if err = v1alpha1.ValidateTenantConfigs(tempo); err != nil {
+	if err = webhooks.ValidateTenantConfigs(tempo); err != nil {
 		return &status.ConfigurationError{
 			Message: fmt.Sprintf("Invalid tenants configuration: %s", err),
 			Reason:  v1alpha1.ReasonInvalidTenantsConfiguration,

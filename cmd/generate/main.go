@@ -21,6 +21,7 @@ import (
 	controllers "github.com/grafana/tempo-operator/controllers/tempo"
 	"github.com/grafana/tempo-operator/internal/manifests"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
+	"github.com/grafana/tempo-operator/internal/webhooks"
 )
 
 // yamlOrJsonDecoderBufferSize determines how far into the stream
@@ -42,7 +43,7 @@ func loadSpec(r io.Reader) (v1alpha1.TempoStack, error) {
 
 func build(params manifestutils.Params) ([]client.Object, error) {
 	// apply default values from Defaulter webhook
-	defaulterWebhook := v1alpha1.NewDefaulter(params.CtrlConfig)
+	defaulterWebhook := webhooks.NewDefaulter(params.CtrlConfig)
 	err := defaulterWebhook.Default(context.Background(), &params.Tempo)
 	if err != nil {
 		return nil, err

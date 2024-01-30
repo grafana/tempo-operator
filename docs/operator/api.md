@@ -518,56 +518,6 @@ PodStatusMap
 </tr></tbody>
 </table>
 
-## Defaulter { #tempo-grafana-com-v1alpha1-Defaulter }
-
-<div>
-
-<p>Defaulter implements the CustomDefaulter interface.</p>
-
-</div>
-
-<table>
-
-<thead>
-
-<tr>
-
-<th>Field</th>
-
-<th>Description</th>
-
-</tr>
-
-</thead>
-
-<tbody>
-
-<tr>
-
-<td>
-
-<code>ctrlConfig</code><br/>
-
-<em>
-
-<a href="../v1/feature-gates.md#tempo-grafana-com-v1alpha1-ProjectConfig">
-
-Feature Gates.ProjectConfig
-
-</a>
-
-</em>
-
-</td>
-
-<td>
-
-</td>
-</tr>
-
-</tbody>
-</table>
-
 ## ExtraConfigSpec { #tempo-grafana-com-v1alpha1-ExtraConfigSpec }
 
 <p>
@@ -4307,14 +4257,6 @@ responsible for decrypting traffic.</p>
 <td><p>TLSRouteTerminationTypeReencrypt indicates that traffic will be decrypted on the edge
 and re-encrypt using a new certificate.</p>
 </td>
-
-</tr><tr><td><p>&#34;passthrough&#34;</p></td>
-
-<td></td>
-
-</tr><tr><td><p>&#34;edge&#34;</p></td>
-
-<td></td>
 
 </tr></tbody>
 </table>
