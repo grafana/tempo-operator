@@ -150,11 +150,16 @@ func (r *TempoMonolithicReconciler) getOwnedObjects(ctx context.Context, tempo v
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *TempoMonolithicReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
+	builder := ctrl.NewControllerManagedBy(mgr).
 		For(&v1alpha1.TempoMonolithic{}).
 		Owns(&corev1.ConfigMap{}).
 		Owns(&corev1.Service{}).
 		Owns(&appsv1.StatefulSet{}).
-		Owns(&networkingv1.Ingress{}).
-		Complete(r)
+		Owns(&networkingv1.Ingress{})
+
+	if r.CtrlConfig.Gates.OpenShift.OpenShiftRoute {
+		builder = builder.Owns(&routev1.Route{})
+	}
+
+	return builder.Complete(r)
 }

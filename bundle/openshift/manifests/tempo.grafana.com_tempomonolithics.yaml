@@ -134,10 +134,25 @@ spec:
                     description: Ingress defines the ingress configuration for Jaeger
                       UI
                     properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        description: Annotations defines the annotations of the Ingress
+                          object.
+                        type: object
                       enabled:
                         description: Enabled defines if an Ingress object should be
                           created for Jaeger UI
                         type: boolean
+                      host:
+                        description: Host defines the hostname of the Ingress object.
+                        type: string
+                      ingressClassName:
+                        description: IngressClassName is the name of an IngressClass
+                          cluster resource. Ingress controller implementations use
+                          this field to know whether they should be serving this Ingress
+                          resource.
+                        type: string
                     required:
                     - enabled
                     type: object
@@ -145,10 +160,29 @@ spec:
                     description: Route defines the route configuration for Jaeger
                       UI
                     properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        description: Annotations defines the annotations of the Route
+                          object.
+                        type: object
                       enabled:
                         description: Enabled defines if a Route object should be created
                           for Jaeger UI
                         type: boolean
+                      host:
+                        description: Host defines the hostname of the Route object.
+                        type: string
+                      termination:
+                        default: edge
+                        description: 'Termination specifies the termination type.
+                          Default: edge.'
+                        enum:
+                        - insecure
+                        - edge
+                        - passthrough
+                        - reencrypt
+                        type: string
                     required:
                     - enabled
                     type: object

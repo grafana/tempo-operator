@@ -46,4 +46,10 @@ func (r *TempoMonolithic) Default() {
 			Enabled: true,
 		}
 	}
+
+	if r.Spec.JaegerUI != nil && r.Spec.JaegerUI.Enabled &&
+		r.Spec.JaegerUI.Route != nil && r.Spec.JaegerUI.Route.Enabled &&
+		r.Spec.JaegerUI.Route.Termination == "" {
+		r.Spec.JaegerUI.Route.Termination = "edge"
+	}
 }

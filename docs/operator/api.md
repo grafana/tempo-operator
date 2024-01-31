@@ -1911,6 +1911,71 @@ bool
 </td>
 </tr>
 
+<tr>
+
+<td>
+
+<code>annotations</code><br/>
+
+<em>
+
+map[string]string
+
+</em>
+
+</td>
+
+<td>
+
+<p>Annotations defines the annotations of the Ingress object.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>host</code><br/>
+
+<em>
+
+string
+
+</em>
+
+</td>
+
+<td>
+
+<p>Host defines the hostname of the Ingress object.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>ingressClassName</code><br/>
+
+<em>
+
+string
+
+</em>
+
+</td>
+
+<td>
+
+<p>IngressClassName is the name of an IngressClass cluster resource. Ingress
+controller implementations use this field to know whether they should be
+serving this Ingress resource.</p>
+
+</td>
+</tr>
+
 </tbody>
 </table>
 
@@ -1961,6 +2026,73 @@ bool
 <td>
 
 <p>Enabled defines if a Route object should be created for Jaeger UI</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>annotations</code><br/>
+
+<em>
+
+map[string]string
+
+</em>
+
+</td>
+
+<td>
+
+<p>Annotations defines the annotations of the Route object.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>host</code><br/>
+
+<em>
+
+string
+
+</em>
+
+</td>
+
+<td>
+
+<p>Host defines the hostname of the Route object.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>termination</code><br/>
+
+<em>
+
+<a href="#tempo-grafana-com-v1alpha1-TLSRouteTerminationType">
+
+TLSRouteTerminationType
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<p>Termination specifies the termination type. Default: edge.</p>
 
 </td>
 </tr>
@@ -4141,7 +4273,7 @@ SubjectKind
 
 <p>
 
-(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-RouteSpec">RouteSpec</a>)
+(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-MonolithicJaegerUIRouteSpec">MonolithicJaegerUIRouteSpec</a>, <a href="#tempo-grafana-com-v1alpha1-RouteSpec">RouteSpec</a>)
 
 </p>
 
