@@ -1612,6 +1612,31 @@ bool
 </td>
 </tr>
 
+<tr>
+
+<td>
+
+<code>tls</code><br/>
+
+<em>
+
+<a href="#tempo-grafana-com-v1alpha1-TLSSpec">
+
+TLSSpec
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<p>TLS defines the TLS configuration for OTLP/gRPC ingestion</p>
+
+</td>
+</tr>
+
 </tbody>
 </table>
 
@@ -1662,6 +1687,31 @@ bool
 <td>
 
 <p>Enabled defines if OTLP over HTTP is enabled</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>tls</code><br/>
+
+<em>
+
+<a href="#tempo-grafana-com-v1alpha1-TLSSpec">
+
+TLSSpec
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<p>TLS defines the TLS configuration for OTLP/HTTP ingestion</p>
 
 </td>
 </tr>
@@ -3512,126 +3562,6 @@ QueryLimit
 </tbody>
 </table>
 
-## ReceiversTLSSpec { #tempo-grafana-com-v1alpha1-ReceiversTLSSpec }
-
-<p>
-
-(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-TempoDistributorSpec">TempoDistributorSpec</a>)
-
-</p>
-
-<div>
-
-<p>ReceiversTLSSpec is the TLS configuration for the receivers.</p>
-
-</div>
-
-<table>
-
-<thead>
-
-<tr>
-
-<th>Field</th>
-
-<th>Description</th>
-
-</tr>
-
-</thead>
-
-<tbody>
-
-<tr>
-
-<td>
-
-<code>enabled</code><br/>
-
-<em>
-
-bool
-
-</em>
-
-</td>
-
-<td>
-
-</td>
-</tr>
-
-<tr>
-
-<td>
-
-<code>caName</code><br/>
-
-<em>
-
-string
-
-</em>
-
-</td>
-
-<td>
-
-<p>caName is the name of a ConfigMap containing a CA certificate.
-It needs to be in the same namespace as the Tempo custom resource.</p>
-
-</td>
-</tr>
-
-<tr>
-
-<td>
-
-<code>certName</code><br/>
-
-<em>
-
-string
-
-</em>
-
-</td>
-
-<td>
-
-<p>certName is the name of a Secret containing a certificate and the private key
-It needs to be in the same namespace as the Tempo custom resource.</p>
-
-</td>
-</tr>
-
-<tr>
-
-<td>
-
-<code>minVersion</code><br/>
-
-<em>
-
-string
-
-</em>
-
-</td>
-
-<td>
-
-<em>(Optional)</em>
-
-<p>minVersion is the name of a Secret containing a certificate and the private key
-It needs to be in the same namespace as the Tempo custom resource.</p>
-
-</td>
-</tr>
-
-</tbody>
-</table>
-
 ## Resources { #tempo-grafana-com-v1alpha1-Resources }
 
 <p>
@@ -4393,6 +4323,127 @@ and re-encrypt using a new certificate.</p>
 </tr></tbody>
 </table>
 
+## TLSSpec { #tempo-grafana-com-v1alpha1-TLSSpec }
+
+<p>
+
+(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-MonolithicIngestionOTLPProtocolsGRPCSpec">MonolithicIngestionOTLPProtocolsGRPCSpec</a>, <a href="#tempo-grafana-com-v1alpha1-MonolithicIngestionOTLPProtocolsHTTPSpec">MonolithicIngestionOTLPProtocolsHTTPSpec</a>, <a href="#tempo-grafana-com-v1alpha1-TempoDistributorSpec">TempoDistributorSpec</a>)
+
+</p>
+
+<div>
+
+<p>TLSSpec is the TLS configuration.</p>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Field</th>
+
+<th>Description</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td>
+
+<code>enabled</code><br/>
+
+<em>
+
+bool
+
+</em>
+
+</td>
+
+<td>
+
+<p>enabled defines if TLS is enabled.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>caName</code><br/>
+
+<em>
+
+string
+
+</em>
+
+</td>
+
+<td>
+
+<p>caName is the name of a ConfigMap containing a CA certificate (service-ca.crt).
+It needs to be in the same namespace as the Tempo custom resource.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>certName</code><br/>
+
+<em>
+
+string
+
+</em>
+
+</td>
+
+<td>
+
+<p>certName is the name of a Secret containing a certificate (tls.crt) and private key (tls.key).
+It needs to be in the same namespace as the Tempo custom resource.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>minVersion</code><br/>
+
+<em>
+
+string
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>minVersion defines the minimum acceptable TLS version.</p>
+
+</td>
+</tr>
+
+</tbody>
+</table>
+
 ## TempoComponentSpec { #tempo-grafana-com-v1alpha1-TempoComponentSpec }
 
 <p>
@@ -4568,9 +4619,9 @@ See: <a href="https://github.com/golang/go/issues/6213">https://github.com/golan
 
 <em>
 
-<a href="#tempo-grafana-com-v1alpha1-ReceiversTLSSpec">
+<a href="#tempo-grafana-com-v1alpha1-TLSSpec">
 
-ReceiversTLSSpec
+TLSSpec
 
 </a>
 

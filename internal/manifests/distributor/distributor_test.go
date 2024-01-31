@@ -429,7 +429,7 @@ func TestBuildDistributor(t *testing.T) {
 					ServiceAccount: "tempo-test-serviceaccount",
 					Template: v1alpha1.TempoTemplateSpec{
 						Distributor: v1alpha1.TempoDistributorSpec{
-							TLS: v1alpha1.ReceiversTLSSpec{
+							TLS: v1alpha1.TLSSpec{
 								Enabled: ts.enableReceiverTLS,
 								CA:      "ca-custom",
 								Cert:    "cert-custom",

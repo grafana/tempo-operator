@@ -123,6 +123,11 @@ type MonolithicIngestionOTLPProtocolsGRPCSpec struct {
 	// +kubebuilder:validation:Required
 	// +kubebuilder:default=true
 	Enabled bool `json:"enabled"`
+
+	// TLS defines the TLS configuration for OTLP/gRPC ingestion
+	//
+	// +kubebuilder:validation:Optional
+	TLS *TLSSpec `json:"tls,omitempty"`
 }
 
 // MonolithicIngestionOTLPProtocolsHTTPSpec defines the settings for OTLP ingestion over HTTP.
@@ -131,6 +136,11 @@ type MonolithicIngestionOTLPProtocolsHTTPSpec struct {
 	//
 	// +kubebuilder:validation:Required
 	Enabled bool `json:"enabled"`
+
+	// TLS defines the TLS configuration for OTLP/HTTP ingestion
+	//
+	// +kubebuilder:validation:Optional
+	TLS *TLSSpec `json:"tls,omitempty"`
 }
 
 // MonolithicJaegerUISpec defines the settings for the Jaeger UI.

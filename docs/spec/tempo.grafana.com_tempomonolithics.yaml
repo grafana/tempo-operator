@@ -9,8 +9,18 @@ spec:                                    # TempoMonolithicSpec defines the desir
     otlp:                                # OTLP defines the ingestion configuration for OTLP
       grpc:                              # GRPC defines the OTLP/gRPC configuration
         enabled: true                    # Enabled defines if OTLP over gRPC is enabled
+        tls:                             # TLS defines the TLS configuration for OTLP/gRPC ingestion
+          caName: ""                     # caName is the name of a ConfigMap containing a CA certificate (service-ca.crt). It needs to be in the same namespace as the Tempo custom resource.
+          certName: ""                   # certName is the name of a Secret containing a certificate (tls.crt) and private key (tls.key). It needs to be in the same namespace as the Tempo custom resource.
+          enabled: false                 # enabled defines if TLS is enabled.
+          minVersion: ""                 # minVersion defines the minimum acceptable TLS version.
       http:                              # HTTP defines the OTLP/HTTP configuration
         enabled: false                   # Enabled defines if OTLP over HTTP is enabled
+        tls:                             # TLS defines the TLS configuration for OTLP/HTTP ingestion
+          caName: ""                     # caName is the name of a ConfigMap containing a CA certificate (service-ca.crt). It needs to be in the same namespace as the Tempo custom resource.
+          certName: ""                   # certName is the name of a Secret containing a certificate (tls.crt) and private key (tls.key). It needs to be in the same namespace as the Tempo custom resource.
+          enabled: false                 # enabled defines if TLS is enabled.
+          minVersion: ""                 # minVersion defines the minimum acceptable TLS version.
   jaegerui:                              # JaegerUI defines the Jaeger UI configuration
     enabled: false                       # Enabled defines if the Jaeger UI should be enabled
     ingress:                             # Ingress defines the ingress configuration for Jaeger UI

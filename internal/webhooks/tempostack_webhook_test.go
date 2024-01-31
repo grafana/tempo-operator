@@ -115,7 +115,7 @@ func TestDefault(t *testing.T) {
 							TempoComponentSpec: v1alpha1.TempoComponentSpec{
 								Replicas: ptr.To(int32(1)),
 							},
-							TLS: v1alpha1.ReceiversTLSSpec{},
+							TLS: v1alpha1.TLSSpec{},
 						},
 						Ingester: v1alpha1.TempoComponentSpec{
 							Replicas: ptr.To(int32(1)),
@@ -176,7 +176,7 @@ func TestDefault(t *testing.T) {
 							TempoComponentSpec: v1alpha1.TempoComponentSpec{
 								Replicas: ptr.To(int32(1)),
 							},
-							TLS: v1alpha1.ReceiversTLSSpec{},
+							TLS: v1alpha1.TLSSpec{},
 						},
 						Ingester: v1alpha1.TempoComponentSpec{
 							Replicas: ptr.To(int32(1)),
@@ -242,7 +242,7 @@ func TestDefault(t *testing.T) {
 							TempoComponentSpec: v1alpha1.TempoComponentSpec{
 								Replicas: ptr.To(int32(1)),
 							},
-							TLS: v1alpha1.ReceiversTLSSpec{},
+							TLS: v1alpha1.TLSSpec{},
 						},
 						Ingester: v1alpha1.TempoComponentSpec{
 							Replicas: ptr.To(int32(1)),
@@ -1518,7 +1518,7 @@ func TestValidateReceiverTLSAndGateway(t *testing.T) {
 							Enabled: false,
 						},
 						Distributor: v1alpha1.TempoDistributorSpec{
-							TLS: v1alpha1.ReceiversTLSSpec{
+							TLS: v1alpha1.TLSSpec{
 								Enabled: false,
 							},
 						},
@@ -1545,7 +1545,7 @@ func TestValidateReceiverTLSAndGateway(t *testing.T) {
 							},
 						},
 						Distributor: v1alpha1.TempoDistributorSpec{
-							TLS: v1alpha1.ReceiversTLSSpec{
+							TLS: v1alpha1.TLSSpec{
 								Enabled: false,
 							},
 						},
@@ -1567,7 +1567,7 @@ func TestValidateReceiverTLSAndGateway(t *testing.T) {
 							Enabled: false,
 						},
 						Distributor: v1alpha1.TempoDistributorSpec{
-							TLS: v1alpha1.ReceiversTLSSpec{
+							TLS: v1alpha1.TLSSpec{
 								Enabled: true,
 								Cert:    "my-cert",
 							},
@@ -1595,7 +1595,7 @@ func TestValidateReceiverTLSAndGateway(t *testing.T) {
 							},
 						},
 						Distributor: v1alpha1.TempoDistributorSpec{
-							TLS: v1alpha1.ReceiversTLSSpec{
+							TLS: v1alpha1.TLSSpec{
 								Enabled: true,
 							},
 						},

@@ -3,6 +3,7 @@ package monolithic
 import (
 	"crypto/sha256"
 	"fmt"
+	"path"
 
 	"gopkg.in/yaml.v2"
 	appsv1 "k8s.io/api/apps/v1"
@@ -14,6 +15,17 @@ import (
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
 )
+
+type tempoReceiverTLSConfig struct {
+	CAFile     string `yaml:"client_ca_file,omitempty"`
+	CertFile   string `yaml:"cert_file,omitempty"`
+	KeyFile    string `yaml:"key_file,omitempty"`
+	MinVersion string `yaml:"min_version,omitempty"`
+}
+
+type tempoReceiverConfig struct {
+	TLS tempoReceiverTLSConfig `yaml:"tls,omitempty"`
+}
 
 type tempoConfig struct {
 	Server struct {
@@ -36,8 +48,8 @@ type tempoConfig struct {
 		Receivers struct {
 			OTLP struct {
 				Protocols struct {
-					GRPC *interface{} `yaml:"grpc,omitempty"`
-					HTTP *interface{} `yaml:"http,omitempty"`
+					GRPC *tempoReceiverConfig `yaml:"grpc,omitempty"`
+					HTTP *tempoReceiverConfig `yaml:"http,omitempty"`
 				} `yaml:"protocols,omitempty"`
 			} `yaml:"otlp,omitempty"`
 		} `yaml:"receivers,omitempty"`
@@ -92,6 +104,21 @@ func BuildConfigMap(opts Options) (*corev1.ConfigMap, string, error) {
 	return configMap, checksum, nil
 }
 
+func configureReceiverTLS(tlsSpec *v1alpha1.TLSSpec) tempoReceiverTLSConfig {
+	tlsCfg := tempoReceiverTLSConfig{}
+	if tlsSpec != nil && tlsSpec.Enabled {
+		if tlsSpec.Cert != "" {
+			tlsCfg.CertFile = path.Join(manifestutils.ReceiverTLSCertDir, manifestutils.TLSCertFilename)
+			tlsCfg.KeyFile = path.Join(manifestutils.ReceiverTLSCertDir, manifestutils.TLSKeyFilename)
+		}
+		if tlsSpec.CA != "" {
+			tlsCfg.CAFile = path.Join(manifestutils.ReceiverTLSCADir, manifestutils.TLSCAFilename)
+		}
+		tlsCfg.MinVersion = tlsSpec.MinVersion
+	}
+	return tlsCfg
+}
+
 func buildTempoConfig(opts Options) ([]byte, error) {
 	tempo := opts.Tempo
 
@@ -109,14 +136,18 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 		return nil, fmt.Errorf("invalid storage backend: '%s'", tempo.Spec.Storage.Traces.Backend)
 	}
 
-	if tempo.Spec.Ingestion != nil && tempo.Spec.Ingestion.OTLP != nil {
-		if tempo.Spec.Ingestion.OTLP.GRPC != nil && tempo.Spec.Ingestion.OTLP.GRPC.Enabled {
-			var i interface{}
-			config.Distributor.Receivers.OTLP.Protocols.GRPC = &i
-		}
-		if tempo.Spec.Ingestion.OTLP.HTTP != nil && tempo.Spec.Ingestion.OTLP.HTTP.Enabled {
-			var i interface{}
-			config.Distributor.Receivers.OTLP.Protocols.HTTP = &i
+	if tempo.Spec.Ingestion != nil {
+		if tempo.Spec.Ingestion.OTLP != nil {
+			if tempo.Spec.Ingestion.OTLP.GRPC != nil && tempo.Spec.Ingestion.OTLP.GRPC.Enabled {
+				config.Distributor.Receivers.OTLP.Protocols.GRPC = &tempoReceiverConfig{
+					TLS: configureReceiverTLS(tempo.Spec.Ingestion.OTLP.GRPC.TLS),
+				}
+			}
+			if tempo.Spec.Ingestion.OTLP.HTTP != nil && tempo.Spec.Ingestion.OTLP.HTTP.Enabled {
+				config.Distributor.Receivers.OTLP.Protocols.HTTP = &tempoReceiverConfig{
+					TLS: configureReceiverTLS(tempo.Spec.Ingestion.OTLP.HTTP.TLS),
+				}
+			}
 		}
 	}
 
