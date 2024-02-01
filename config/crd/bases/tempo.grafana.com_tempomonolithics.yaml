@@ -245,36 +245,6 @@ spec:
                 - Managed
                 - Unmanaged
                 type: string
-              observability:
-                description: Observability defines observability configuration for
-                  the Tempo deployment
-                properties:
-                  metrics:
-                    description: Metrics defines the metrics configuration of the
-                      Tempo deployment
-                    properties:
-                      prometheusRules:
-                        description: ServiceMonitors defines the PrometheusRule configuration
-                        properties:
-                          enabled:
-                            description: Enabled defines if the operator should create
-                              PrometheusRules for this Tempo deployment
-                            type: boolean
-                        required:
-                        - enabled
-                        type: object
-                      serviceMonitors:
-                        description: ServiceMonitors defines the ServiceMonitor configuration
-                        properties:
-                          enabled:
-                            description: Enabled defines if the operator should create
-                              ServiceMonitors for this Tempo deployment
-                            type: boolean
-                        required:
-                        - enabled
-                        type: object
-                    type: object
-                type: object
               resources:
                 description: Resources defines the compute resource requirements of
                   Tempo.
