@@ -155,11 +155,6 @@ usage_report:
 		{
 			name: "extra config",
 			spec: v1alpha1.TempoMonolithicSpec{
-				Storage: &v1alpha1.MonolithicStorageSpec{
-					Traces: v1alpha1.MonolithicTracesStorageSpec{
-						Backend: "memory",
-					},
-				},
 				ExtraConfig: &v1alpha1.ExtraConfigSpec{
 					Tempo: apiextensionsv1.JSON{Raw: []byte(`{"storage": {"trace": {"wal": {"overlay_setting": "abc"}}}}`)},
 				},

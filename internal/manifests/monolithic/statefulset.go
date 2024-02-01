@@ -26,7 +26,7 @@ func BuildTempoStatefulset(opts Options) (*appsv1.StatefulSet, error) {
 	labels := Labels(tempo.Name)
 	annotations := manifestutils.CommonAnnotations(opts.ConfigChecksum)
 
-	ss := &appsv1.StatefulSet{
+	sts := &appsv1.StatefulSet{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: appsv1.SchemeGroupVersion.String(),
 			Kind:       "StatefulSet",
@@ -105,27 +105,33 @@ func BuildTempoStatefulset(opts Options) (*appsv1.StatefulSet, error) {
 		},
 	}
 
-	err := configureStorage(opts, ss)
+	err := configureStorage(opts, sts)
 	if err != nil {
 		return nil, err
 	}
 
 	if tempo.Spec.JaegerUI != nil && tempo.Spec.JaegerUI.Enabled {
-		configureJaegerUI(opts, ss)
+		configureJaegerUI(opts, sts)
 	}
 
 	if tempo.Spec.Ingestion != nil && tempo.Spec.Ingestion.OTLP != nil {
 		if tempo.Spec.Ingestion.OTLP.GRPC != nil && tempo.Spec.Ingestion.OTLP.GRPC.Enabled &&
 			tempo.Spec.Ingestion.OTLP.GRPC.TLS != nil && tempo.Spec.Ingestion.OTLP.GRPC.TLS.Enabled {
-			configureReceiverTLSVolumes("receiver-tls-grpc", *tempo.Spec.Ingestion.OTLP.GRPC.TLS, ss)
+			manifestutils.ConfigureTLSVolumes(
+				&sts.Spec.Template.Spec, 0, *tempo.Spec.Ingestion.OTLP.GRPC.TLS,
+				manifestutils.ReceiverTLSCADir, manifestutils.ReceiverTLSCertDir, "receiver-tls-grpc",
+			)
 		}
 		if tempo.Spec.Ingestion.OTLP.HTTP != nil && tempo.Spec.Ingestion.OTLP.HTTP.Enabled &&
 			tempo.Spec.Ingestion.OTLP.HTTP.TLS != nil && tempo.Spec.Ingestion.OTLP.HTTP.TLS.Enabled {
-			configureReceiverTLSVolumes("receiver-tls-http", *tempo.Spec.Ingestion.OTLP.HTTP.TLS, ss)
+			manifestutils.ConfigureTLSVolumes(
+				&sts.Spec.Template.Spec, 0, *tempo.Spec.Ingestion.OTLP.HTTP.TLS,
+				manifestutils.ReceiverTLSCADir, manifestutils.ReceiverTLSCertDir, "receiver-tls-http",
+			)
 		}
 	}
 
-	return ss, nil
+	return sts, nil
 }
 
 func buildTempoPorts(opts Options) []corev1.ContainerPort {
@@ -268,42 +274,4 @@ func configureJaegerUI(opts Options, sts *appsv1.StatefulSet) {
 	}
 
 	sts.Spec.Template.Spec.Containers = append(sts.Spec.Template.Spec.Containers, tempoQuery)
-}
-
-func configureReceiverTLSVolumes(volumeNamePrefix string, tlsSpec v1alpha1.TLSSpec, sts *appsv1.StatefulSet) {
-	if tlsSpec.Cert != "" {
-		volumeName := fmt.Sprintf("%s-cert", volumeNamePrefix)
-		sts.Spec.Template.Spec.Containers[0].VolumeMounts = append(sts.Spec.Template.Spec.Containers[0].VolumeMounts, corev1.VolumeMount{
-			Name:      volumeName,
-			MountPath: manifestutils.ReceiverTLSCertDir,
-			ReadOnly:  true,
-		})
-		sts.Spec.Template.Spec.Volumes = append(sts.Spec.Template.Spec.Volumes, corev1.Volume{
-			Name: volumeName,
-			VolumeSource: corev1.VolumeSource{
-				Secret: &corev1.SecretVolumeSource{
-					SecretName: tlsSpec.Cert,
-				},
-			},
-		})
-	}
-
-	if tlsSpec.CA != "" {
-		volumeName := fmt.Sprintf("%s-ca", volumeNamePrefix)
-		sts.Spec.Template.Spec.Containers[0].VolumeMounts = append(sts.Spec.Template.Spec.Containers[0].VolumeMounts, corev1.VolumeMount{
-			Name:      volumeName,
-			MountPath: manifestutils.ReceiverTLSCADir,
-			ReadOnly:  true,
-		})
-		sts.Spec.Template.Spec.Volumes = append(sts.Spec.Template.Spec.Volumes, corev1.Volume{
-			Name: volumeName,
-			VolumeSource: corev1.VolumeSource{
-				ConfigMap: &corev1.ConfigMapVolumeSource{
-					LocalObjectReference: corev1.LocalObjectReference{
-						Name: tlsSpec.CA,
-					},
-				},
-			},
-		})
-	}
 }

@@ -242,6 +242,116 @@ func TestStatefulsetPVStorage(t *testing.T) {
 	}, sts.Spec.VolumeClaimTemplates)
 }
 
+func TestStatefulsetReceiverTLS(t *testing.T) {
+	opts := Options{
+		CtrlConfig: configv1alpha1.ProjectConfig{
+			DefaultImages: configv1alpha1.ImagesSpec{
+				Tempo: "docker.io/grafana/tempo:x.y.z",
+			},
+		},
+		Tempo: v1alpha1.TempoMonolithic{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "sample",
+				Namespace: "default",
+			},
+			Spec: v1alpha1.TempoMonolithicSpec{
+				Storage: &v1alpha1.MonolithicStorageSpec{
+					Traces: v1alpha1.MonolithicTracesStorageSpec{
+						Backend: "memory",
+					},
+				},
+				Ingestion: &v1alpha1.MonolithicIngestionSpec{
+					OTLP: &v1alpha1.MonolithicIngestionOTLPSpec{
+						GRPC: &v1alpha1.MonolithicIngestionOTLPProtocolsGRPCSpec{
+							Enabled: true,
+							TLS: &v1alpha1.TLSSpec{
+								Enabled: true,
+								CA:      "custom-ca",
+								Cert:    "custom-cert",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	sts, err := BuildTempoStatefulset(opts)
+	require.NoError(t, err)
+
+	require.Equal(t, []corev1.VolumeMount{
+		{
+			Name:      "tempo-conf",
+			MountPath: "/conf",
+			ReadOnly:  true,
+		},
+		{
+			Name:      "tempo-wal",
+			MountPath: "/var/tempo",
+		},
+		{
+			Name:      "tempo-blocks",
+			MountPath: "/var/tempo/blocks",
+		},
+		{
+			Name:      "receiver-tls-grpc-ca",
+			MountPath: "/var/run/ca-receiver",
+			ReadOnly:  true,
+		},
+		{
+			Name:      "receiver-tls-grpc-cert",
+			MountPath: "/var/run/tls/receiver",
+			ReadOnly:  true,
+		},
+	}, sts.Spec.Template.Spec.Containers[0].VolumeMounts)
+
+	require.Equal(t, []corev1.Volume{
+		{
+			Name: "tempo-conf",
+			VolumeSource: corev1.VolumeSource{
+				ConfigMap: &corev1.ConfigMapVolumeSource{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: "tempo-sample",
+					},
+				},
+			},
+		},
+		{
+			Name: "tempo-wal",
+			VolumeSource: corev1.VolumeSource{
+				EmptyDir: &corev1.EmptyDirVolumeSource{
+					Medium: corev1.StorageMediumMemory,
+				},
+			},
+		},
+		{
+			Name: "tempo-blocks",
+			VolumeSource: corev1.VolumeSource{
+				EmptyDir: &corev1.EmptyDirVolumeSource{
+					Medium: corev1.StorageMediumMemory,
+				},
+			},
+		},
+		{
+			Name: "receiver-tls-grpc-ca",
+			VolumeSource: corev1.VolumeSource{
+				ConfigMap: &corev1.ConfigMapVolumeSource{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: "custom-ca",
+					},
+				},
+			},
+		},
+		{
+			Name: "receiver-tls-grpc-cert",
+			VolumeSource: corev1.VolumeSource{
+				Secret: &corev1.SecretVolumeSource{
+					SecretName: "custom-cert",
+				},
+			},
+		},
+	}, sts.Spec.Template.Spec.Volumes)
+}
+
 func TestStatefulsetPorts(t *testing.T) {
 	opts := Options{
 		CtrlConfig: configv1alpha1.ProjectConfig{
