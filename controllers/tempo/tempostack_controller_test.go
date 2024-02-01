@@ -451,7 +451,7 @@ func TestStorageCustomCA(t *testing.T) {
 					Name: storageSecret.Name,
 					Type: "s3",
 				},
-				TLS: v1alpha1.ObjectStorageTLSSpec{
+				TLS: v1alpha1.TLSSpec{
 					CA: "custom-ca",
 				},
 			},

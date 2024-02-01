@@ -411,7 +411,7 @@ type ObjectStorageSpec struct {
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="TLS Config"
-	TLS ObjectStorageTLSSpec `json:"tls,omitempty"`
+	TLS TLSSpec `json:"tls,omitempty"`
 
 	// Secret for object storage authentication.
 	// Name of a secret in the same namespace as the TempoStack custom resource.
@@ -420,17 +420,6 @@ type ObjectStorageSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Object Storage Secret"
 	Secret ObjectStorageSecretSpec `json:"secret"`
 	// Don't forget to update storageSecretField in tempostack_controller.go if this field name changes.
-}
-
-// ObjectStorageTLSSpec is the TLS configuration for reaching the object storage endpoint.
-type ObjectStorageTLSSpec struct {
-	// CA is the name of a ConfigMap containing a `ca.crt` key with a CA certificate.
-	// It needs to be in the same namespace as the TempoStack custom resource.
-	//
-	// +optional
-	// +kubebuilder:validation:optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors="urn:alm:descriptor:io.kubernetes:ConfigMap",displayName="CA ConfigMap Name"
-	CA string `json:"caName,omitempty"`
 }
 
 // MemberListSpec defines the configuration for the memberlist based hash ring.

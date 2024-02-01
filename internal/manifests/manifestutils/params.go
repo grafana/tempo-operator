@@ -33,8 +33,7 @@ type AzureStorage struct {
 
 // GCS for Google Cloud Storage.
 type GCS struct {
-	Bucket  string
-	KeyJson string
+	Bucket string
 }
 
 // S3 holds S3 configuration.

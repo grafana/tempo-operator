@@ -3088,9 +3088,9 @@ storage bucket to persist traces by the ingester component.</p>
 
 <em>
 
-<a href="#tempo-grafana-com-v1alpha1-ObjectStorageTLSSpec">
+<a href="#tempo-grafana-com-v1alpha1-TLSSpec">
 
-ObjectStorageTLSSpec
+TLSSpec
 
 </a>
 
@@ -3129,63 +3129,6 @@ ObjectStorageSecretSpec
 
 <p>Secret for object storage authentication.
 Name of a secret in the same namespace as the TempoStack custom resource.</p>
-
-</td>
-</tr>
-
-</tbody>
-</table>
-
-## ObjectStorageTLSSpec { #tempo-grafana-com-v1alpha1-ObjectStorageTLSSpec }
-
-<p>
-
-(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-ObjectStorageSpec">ObjectStorageSpec</a>)
-
-</p>
-
-<div>
-
-<p>ObjectStorageTLSSpec is the TLS configuration for reaching the object storage endpoint.</p>
-
-</div>
-
-<table>
-
-<thead>
-
-<tr>
-
-<th>Field</th>
-
-<th>Description</th>
-
-</tr>
-
-</thead>
-
-<tbody>
-
-<tr>
-
-<td>
-
-<code>caName</code><br/>
-
-<em>
-
-string
-
-</em>
-
-</td>
-
-<td>
-
-<em>(Optional)</em>
-
-<p>CA is the name of a ConfigMap containing a <code>ca.crt</code> key with a CA certificate.
-It needs to be in the same namespace as the TempoStack custom resource.</p>
 
 </td>
 </tr>
@@ -4327,7 +4270,7 @@ and re-encrypt using a new certificate.</p>
 
 <p>
 
-(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-MonolithicIngestionOTLPProtocolsGRPCSpec">MonolithicIngestionOTLPProtocolsGRPCSpec</a>, <a href="#tempo-grafana-com-v1alpha1-MonolithicIngestionOTLPProtocolsHTTPSpec">MonolithicIngestionOTLPProtocolsHTTPSpec</a>, <a href="#tempo-grafana-com-v1alpha1-TempoDistributorSpec">TempoDistributorSpec</a>)
+(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-MonolithicIngestionOTLPProtocolsGRPCSpec">MonolithicIngestionOTLPProtocolsGRPCSpec</a>, <a href="#tempo-grafana-com-v1alpha1-MonolithicIngestionOTLPProtocolsHTTPSpec">MonolithicIngestionOTLPProtocolsHTTPSpec</a>, <a href="#tempo-grafana-com-v1alpha1-ObjectStorageSpec">ObjectStorageSpec</a>, <a href="#tempo-grafana-com-v1alpha1-TempoDistributorSpec">TempoDistributorSpec</a>)
 
 </p>
 
@@ -4433,8 +4376,6 @@ string
 </td>
 
 <td>
-
-<em>(Optional)</em>
 
 <p>minVersion defines the minimum acceptable TLS version.</p>
 

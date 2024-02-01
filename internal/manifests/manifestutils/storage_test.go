@@ -114,7 +114,7 @@ func TestGetS3StorageWithCA(t *testing.T) {
 					Name: "test",
 					Type: v1alpha1.ObjectStorageSecretAzure,
 				},
-				TLS: v1alpha1.ObjectStorageTLSSpec{
+				TLS: v1alpha1.TLSSpec{
 					CA: "customca",
 				},
 			},
