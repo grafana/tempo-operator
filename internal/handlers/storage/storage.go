@@ -3,7 +3,6 @@ package storage
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -11,15 +10,6 @@ import (
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 )
-
-// ListFieldErrors converts field.ErrorList to a comma separated string of errors.
-func ListFieldErrors(fieldErrs field.ErrorList) string {
-	msgs := make([]string, len(fieldErrs))
-	for i, fieldErr := range fieldErrs {
-		msgs[i] = fieldErr.Detail
-	}
-	return strings.Join(msgs, ", ")
-}
 
 // GetStorageParamsForTempoStack validates and retrieves StorageParams of the TempoStack CR.
 func GetStorageParamsForTempoStack(ctx context.Context, client client.Client, tempo v1alpha1.TempoStack) (manifestutils.StorageParams, field.ErrorList) {

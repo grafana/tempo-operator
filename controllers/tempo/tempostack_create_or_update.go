@@ -28,7 +28,7 @@ func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, log logr.Logg
 	if len(errs) > 0 {
 		return &status.ConfigurationError{
 			Reason:  v1alpha1.ReasonInvalidStorageConfig,
-			Message: storage.ListFieldErrors(errs),
+			Message: listFieldErrors(errs),
 		}
 	}
 

@@ -67,7 +67,7 @@ func (r *TempoMonolithicReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 
 	storageParams, errs := storage.GetStorageParamsForTempoMonolithic(ctx, r.Client, tempo)
 	if len(errs) > 0 {
-		return ctrl.Result{}, errors.New(storage.ListFieldErrors(errs))
+		return ctrl.Result{}, errors.New(listFieldErrors(errs))
 	}
 
 	managedObjects, err := monolithic.BuildAll(monolithic.Options{
