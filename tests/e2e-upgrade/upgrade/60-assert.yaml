@@ -21,3 +21,11 @@ metadata:
   name: simplest
 status:
   operatorVersion: 100.0.0
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+collectors:
+- command: kubectl -n kuttl-operator-upgrade get subscriptions.operators.coreos.com tempo -o yaml
+- namespace: kuttl-operator-upgrade
+  selector: app.kubernetes.io/name=tempo-operator
+  tail: 100

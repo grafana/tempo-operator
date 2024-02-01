@@ -5,5 +5,5 @@ metadata:
 spec:
   storage:
     secret:
-      name: example
+      name: minio
       type: s3
