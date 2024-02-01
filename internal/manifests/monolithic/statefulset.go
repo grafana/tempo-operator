@@ -7,12 +7,17 @@ import (
 	"github.com/operator-framework/operator-lib/proxy"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/ptr"
 
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
+)
+
+var (
+	tenGBQuantity = resource.MustParse("10Gi")
 )
 
 // BuildTempoStatefulset creates the Tempo statefulset for a monolithic deployment.
@@ -181,7 +186,7 @@ func configureStorage(opts Options, sts *appsv1.StatefulSet) error {
 				AccessModes: []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
 				Resources: corev1.ResourceRequirements{
 					Requests: corev1.ResourceList{
-						corev1.ResourceStorage: *tempo.Spec.Storage.Traces.Size,
+						corev1.ResourceStorage: ptr.Deref(tempo.Spec.Storage.Traces.Size, tenGBQuantity),
 					},
 				},
 				VolumeMode: ptr.To(corev1.PersistentVolumeFilesystem),
