@@ -86,8 +86,9 @@ func buildConfiguration(params manifestutils.Params) ([]byte, error) {
 			GRPCEncryption: params.CtrlConfig.Gates.GRPCEncryption,
 			HTTPEncryption: params.CtrlConfig.Gates.HTTPEncryption,
 		},
-		TLS:         tlsopts,
-		ReceiverTLS: buildReceiverTLSConfig(tempo),
+		TLS:          tlsopts,
+		ReceiverTLS:  buildReceiverTLSConfig(tempo),
+		S3StorageTLS: buildS3StorageTLSConfig(params),
 	}
 
 	if isTenantOverridesConfigRequired(tempo.Spec.LimitSpec) {
@@ -118,6 +119,22 @@ func buildReceiverTLSConfig(tempo v1alpha1.TempoStack) receiverTLSOptions {
 		},
 		MinTLSVersion: tempo.Spec.Template.Distributor.TLS.MinVersion,
 	}
+}
+
+func buildS3StorageTLSConfig(params manifestutils.Params) storageTLSOptions {
+	tempo := params.Tempo
+	opts := storageTLSOptions{
+		Enabled:       params.Tempo.Spec.Storage.TLS.Enabled,
+		MinTLSVersion: params.Tempo.Spec.Storage.TLS.MinVersion,
+	}
+	if tempo.Spec.Storage.TLS.CA != "" {
+		opts.CA = path.Join(manifestutils.StorageTLSCADir, params.StorageParams.S3.TLS.CAFilename)
+	}
+	if tempo.Spec.Storage.TLS.Cert != "" {
+		opts.Certificate = path.Join(manifestutils.StorageTLSCertDir, manifestutils.TLSCertFilename)
+		opts.Key = path.Join(manifestutils.StorageTLSCertDir, manifestutils.TLSKeyFilename)
+	}
+	return opts
 }
 
 func buildTLSConfig(params manifestutils.Params) (tlsOptions, error) {

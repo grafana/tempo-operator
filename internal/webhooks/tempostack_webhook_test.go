@@ -21,6 +21,7 @@ import (
 
 	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/internal/handlers/storage"
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
 )
 
@@ -331,81 +332,111 @@ func TestValidateStorageSecret(t *testing.T) {
 	}
 
 	path := field.NewPath("spec").Child("storage").Child("secret")
+	secretNamePath := path.Child("name")
+	secretTypePath := path.Child("type")
 
 	tests := []Test{
 		{
 			name:  "unknown secret type",
 			tempo: tempoUnknown,
 			input: corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: tempoUnknown.Spec.Storage.Secret.Name,
+				},
 				Data: map[string][]byte{
 					"container": []byte("container-test"),
 				},
 			},
 			expected: field.ErrorList{
-				field.Invalid(path, tempoUnknown.Spec.Storage.Secret, "unknown is not an allowed storage secret type"),
+				field.Invalid(secretTypePath, tempoUnknown.Spec.Storage.Secret.Type, "unknown is not an allowed storage secret type"),
 			},
 		},
 		{
 			name:  "empty secret type",
 			tempo: tempoEmtpyType,
 			input: corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: tempoEmtpyType.Spec.Storage.Secret.Name,
+				},
 				Data: map[string][]byte{
 					"container": []byte("container-test"),
 				},
 			},
 			expected: field.ErrorList{
-				field.Invalid(path, tempoEmtpyType.Spec.Storage.Secret, "storage secret must specify the type"),
+				field.Invalid(secretTypePath, tempoEmtpyType.Spec.Storage.Secret.Type, "storage secret type is required"),
 			},
 		},
 		{
 			name:  "empty Azure Storage secret",
 			tempo: tempoAzure,
-			input: corev1.Secret{},
+			input: corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: tempoAzure.Spec.Storage.Secret.Name,
+				},
+			},
 			expected: field.ErrorList{
-				field.Invalid(path, tempoAzure.Spec.Storage.Secret, "storage secret is empty"),
+				field.Invalid(secretNamePath, tempoAzure.Spec.Storage.Secret.Name, "storage secret must contain \"container\" field"),
+				field.Invalid(secretNamePath, tempoAzure.Spec.Storage.Secret.Name, "storage secret must contain \"account_name\" field"),
+				field.Invalid(secretNamePath, tempoAzure.Spec.Storage.Secret.Name, "storage secret must contain \"account_key\" field"),
 			},
 		},
 		{
 			name:  "missing or empty fields in Azure secret",
 			tempo: tempoAzure,
 			input: corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: tempoAzure.Spec.Storage.Secret.Name,
+				},
 				Data: map[string][]byte{
 					"container":    []byte("container-test"),
 					"account_name": []byte(""),
 				},
 			},
 			expected: field.ErrorList{
-				field.Invalid(path, tempoAzure.Spec.Storage.Secret, "storage secret must contain \"account_name\" field"),
-				field.Invalid(path, tempoAzure.Spec.Storage.Secret, "storage secret must contain \"account_key\" field"),
+				field.Invalid(secretNamePath, tempoAzure.Spec.Storage.Secret.Name, "storage secret must contain \"account_name\" field"),
+				field.Invalid(secretNamePath, tempoAzure.Spec.Storage.Secret.Name, "storage secret must contain \"account_key\" field"),
 			},
 		},
 		{
 			name:  "empty S3 secret",
 			tempo: tempoS3,
-			input: corev1.Secret{},
+			input: corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: tempoS3.Spec.Storage.Secret.Name,
+				},
+			},
 			expected: field.ErrorList{
-				field.Invalid(path, tempoS3.Spec.Storage.Secret, "storage secret is empty"),
+				field.Invalid(secretNamePath, tempoS3.Spec.Storage.Secret.Name, "storage secret must contain \"endpoint\" field"),
+				field.Invalid(secretNamePath, tempoS3.Spec.Storage.Secret.Name, "storage secret must contain \"bucket\" field"),
+				field.Invalid(secretNamePath, tempoS3.Spec.Storage.Secret.Name, "storage secret must contain \"access_key_id\" field"),
+				field.Invalid(secretNamePath, tempoS3.Spec.Storage.Secret.Name, "storage secret must contain \"access_key_secret\" field"),
 			},
 		},
 		{
 			name:  "missing or empty fields in S3 secret",
 			tempo: tempoS3,
 			input: corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: tempoS3.Spec.Storage.Secret.Name,
+				},
 				Data: map[string][]byte{
 					"bucket": []byte(""),
 				},
 			},
 			expected: field.ErrorList{
-				field.Invalid(path, tempoS3.Spec.Storage.Secret, "storage secret must contain \"endpoint\" field"),
-				field.Invalid(path, tempoS3.Spec.Storage.Secret, "storage secret must contain \"bucket\" field"),
-				field.Invalid(path, tempoS3.Spec.Storage.Secret, "storage secret must contain \"access_key_id\" field"),
-				field.Invalid(path, tempoS3.Spec.Storage.Secret, "storage secret must contain \"access_key_secret\" field"),
+				field.Invalid(secretNamePath, tempoS3.Spec.Storage.Secret.Name, "storage secret must contain \"endpoint\" field"),
+				field.Invalid(secretNamePath, tempoS3.Spec.Storage.Secret.Name, "storage secret must contain \"bucket\" field"),
+				field.Invalid(secretNamePath, tempoS3.Spec.Storage.Secret.Name, "storage secret must contain \"access_key_id\" field"),
+				field.Invalid(secretNamePath, tempoS3.Spec.Storage.Secret.Name, "storage secret must contain \"access_key_secret\" field"),
 			},
 		},
 		{
 			name:  "invalid endpoint 'invalid'",
 			tempo: tempoS3,
 			input: corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: tempoS3.Spec.Storage.Secret.Name,
+				},
 				Data: map[string][]byte{
 					"endpoint":          []byte("invalid"),
 					"bucket":            []byte("bucket"),
@@ -414,13 +445,16 @@ func TestValidateStorageSecret(t *testing.T) {
 				},
 			},
 			expected: field.ErrorList{
-				field.Invalid(path, tempoS3.Spec.Storage.Secret, "\"endpoint\" field of storage secret must be a valid URL"),
+				field.Invalid(secretNamePath, tempoS3.Spec.Storage.Secret.Name, "\"endpoint\" field of storage secret must be a valid URL"),
 			},
 		},
 		{
 			name:  "invalid endpoint '/invalid'",
 			tempo: tempoS3,
 			input: corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: tempoS3.Spec.Storage.Secret.Name,
+				},
 				Data: map[string][]byte{
 					"endpoint":          []byte("/invalid"),
 					"bucket":            []byte("bucket"),
@@ -429,7 +463,7 @@ func TestValidateStorageSecret(t *testing.T) {
 				},
 			},
 			expected: field.ErrorList{
-				field.Invalid(path, tempoS3.Spec.Storage.Secret, "\"endpoint\" field of storage secret must be a valid URL"),
+				field.Invalid(secretNamePath, tempoS3.Spec.Storage.Secret.Name, "\"endpoint\" field of storage secret must be a valid URL"),
 			},
 		},
 		{
@@ -449,7 +483,8 @@ func TestValidateStorageSecret(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			errs := v1alpha1.ValidateStorageSecret(test.tempo, test.input)
+			client := &k8sFake{secret: &test.input}
+			_, errs := storage.GetStorageParamsForTempoStack(context.Background(), client, test.tempo)
 			assert.Equal(t, test.expected, errs)
 		})
 	}
@@ -457,6 +492,28 @@ func TestValidateStorageSecret(t *testing.T) {
 
 func TestValidateStorageCAConfigMap(t *testing.T) {
 	path := field.NewPath("spec").Child("storage").Child("tls").Child("caName")
+	tempo := v1alpha1.TempoStack{
+		Spec: v1alpha1.TempoStackSpec{
+			Storage: v1alpha1.ObjectStorageSpec{
+				Secret: v1alpha1.ObjectStorageSecretSpec{
+					Name: "testsecret",
+					Type: "s3",
+				},
+				TLS: v1alpha1.TLSSpec{
+					Enabled: true,
+					CA:      "custom-ca",
+				},
+			},
+		},
+	}
+	storageSecret := corev1.Secret{
+		Data: map[string][]byte{
+			"endpoint":          []byte("http://minio.minio.svc:9000"),
+			"bucket":            []byte("bucket"),
+			"access_key_id":     []byte("id"),
+			"access_key_secret": []byte("secret"),
+		},
+	}
 
 	tests := []struct {
 		name     string
@@ -464,18 +521,27 @@ func TestValidateStorageCAConfigMap(t *testing.T) {
 		expected field.ErrorList
 	}{
 		{
-			name: "missing ca.crt key",
+			name: "missing cert key",
 			input: corev1.ConfigMap{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "test",
 				},
 			},
 			expected: field.ErrorList{
-				field.Invalid(path, "test", "ConfigMap must contain a 'ca.crt' key"),
+				field.Invalid(path, "test", "CA ConfigMap must contain a 'service-ca.crt' key"),
 			},
 		},
 		{
 			name: "valid configmap",
+			input: corev1.ConfigMap{
+				Data: map[string]string{
+					"service-ca.crt": "test",
+				},
+			},
+			expected: nil,
+		},
+		{
+			name: "valid legacy configmap for backwards compatibility",
 			input: corev1.ConfigMap{
 				Data: map[string]string{
 					"ca.crt": "test",
@@ -487,7 +553,8 @@ func TestValidateStorageCAConfigMap(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			errs := v1alpha1.ValidateStorageCAConfigMap(test.input)
+			client := &k8sFake{secret: &storageSecret, configmap: &test.input}
+			_, errs := storage.GetStorageParamsForTempoStack(context.Background(), client, tempo)
 			assert.Equal(t, test.expected, errs)
 		})
 	}
@@ -1657,7 +1724,7 @@ func TestWarning(t *testing.T) {
 				},
 			},
 			client:   &k8sFake{},
-			expected: admission.Warnings{"Secret 'not-found' does not exist"},
+			expected: admission.Warnings{"could not fetch Secret: mock: fails always"},
 		},
 		{
 			name: "warning for use extra config",
@@ -1730,17 +1797,23 @@ func TestWarning(t *testing.T) {
 }
 
 type k8sFake struct {
-	secret *corev1.Secret
+	secret    *corev1.Secret
+	configmap *corev1.ConfigMap
 	client.Client
 }
 
 func (k *k8sFake) Get(ctx context.Context, key client.ObjectKey, obj client.Object, opts ...client.GetOption) error {
-	if k.secret != nil {
-		if obj.GetObjectKind().GroupVersionKind().Kind == k.secret.Kind {
-			obj = k.secret
+	switch typed := obj.(type) {
+	case *corev1.Secret:
+		if k.secret != nil {
+			k.secret.DeepCopyInto(typed)
+			return nil
+		}
+	case *corev1.ConfigMap:
+		if k.configmap != nil {
+			k.configmap.DeepCopyInto(typed)
 			return nil
 		}
 	}
-
 	return fmt.Errorf("mock: fails always")
 }

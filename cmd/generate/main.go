@@ -10,7 +10,6 @@ import (
 
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	k8syaml "k8s.io/apimachinery/pkg/util/yaml"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -18,7 +17,6 @@ import (
 
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/cmd"
-	controllers "github.com/grafana/tempo-operator/controllers/tempo"
 	"github.com/grafana/tempo-operator/internal/manifests"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/webhooks"
@@ -182,18 +180,18 @@ func NewGenerateCommand() *cobra.Command {
 
 			switch {
 			case azureContainer != "":
-				params.StorageParams.AzureStorage = controllers.GetAzureParams(v1alpha1.TempoStack{}, &corev1.Secret{Data: map[string][]byte{
-					"container": []byte(azureContainer),
-				}})
+				params.StorageParams.AzureStorage = &manifestutils.AzureStorage{
+					Container: azureContainer,
+				}
 			case gcsBucket != "":
-				params.StorageParams.GCS = controllers.GetGCSParams(v1alpha1.TempoStack{}, &corev1.Secret{Data: map[string][]byte{
-					"bucketname": []byte(gcsBucket),
-				}})
+				params.StorageParams.GCS = &manifestutils.GCS{
+					Bucket: gcsBucket,
+				}
 			case s3Endpoint != "":
-				params.StorageParams.S3 = controllers.GetS3Params(v1alpha1.TempoStack{}, &corev1.Secret{Data: map[string][]byte{
-					"endpoint": []byte(s3Endpoint),
-					"bucket":   []byte(s3Bucket),
-				}})
+				params.StorageParams.S3 = &manifestutils.S3{
+					Endpoint: s3Endpoint,
+					Bucket:   s3Bucket,
+				}
 			}
 
 			return generate(c, crPath, outPath, params)
@@ -201,7 +199,7 @@ func NewGenerateCommand() *cobra.Command {
 	}
 	cmd.Flags().StringVar(&crPath, "cr", "/dev/stdin", "Input CR")
 	cmd.Flags().StringVar(&outPath, "output", "/dev/stdout", "File to store the manifests")
-	cmd.Flags().StringVar(&azureContainer, "storage.azure.container", "azure", "Azure container(taken from storage secret)")
+	cmd.Flags().StringVar(&azureContainer, "storage.azure.container", "azure", "Azure container (taken from storage secret)")
 	cmd.Flags().StringVar(&gcsBucket, "storage.gcs.bucket", "tempo", "GCS storage bucket (taken from storage secret)")
 	cmd.Flags().StringVar(&s3Endpoint, "storage.s3.endpoint", "http://minio.minio.svc:9000", "S3 storage endpoint (taken from storage secret)")
 	cmd.Flags().StringVar(&s3Bucket, "storage.s3.bucket", "tempo", "S3 storage bucket (taken from storage secret)")

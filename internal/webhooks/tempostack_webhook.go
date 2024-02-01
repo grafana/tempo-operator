@@ -6,6 +6,7 @@ import (
 	"math"
 	"net"
 	"strconv"
+	"strings"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
@@ -23,6 +24,7 @@ import (
 	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/autodetect"
+	"github.com/grafana/tempo-operator/internal/handlers/storage"
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
 )
 
@@ -185,28 +187,14 @@ func (v *validator) validateServiceAccount(ctx context.Context, tempo v1alpha1.T
 	return allErrs
 }
 
-func (v *validator) validateStorageSecret(ctx context.Context, tempo v1alpha1.TempoStack) (admission.Warnings, field.ErrorList) {
-	storageSecret := &corev1.Secret{}
-	err := v.client.Get(ctx, types.NamespacedName{Namespace: tempo.Namespace, Name: tempo.Spec.Storage.Secret.Name}, storageSecret)
-	if err != nil {
-		// Do not fail the validation here, the user can create the storage secret later.
-		// The operator will remain in a ConfigurationError status condition until the storage secret is set.
-		return admission.Warnings{fmt.Sprintf("Secret '%s' does not exist", tempo.Spec.Storage.Secret.Name)}, field.ErrorList{}
+func (v *validator) validateStorage(ctx context.Context, tempo v1alpha1.TempoStack) (admission.Warnings, field.ErrorList) { //nolint:unparam
+	_, errs := storage.GetStorageParamsForTempoStack(ctx, v.client, tempo)
+	if len(errs) == 1 && (strings.HasPrefix(errs[0].Detail, storage.ErrFetchingSecret) || strings.HasPrefix(errs[0].Detail, storage.ErrFetchingConfigMap)) {
+		// Do not fail the validation if the storage secret or TLS CA ConfigMap is not found, the user can create these objects later.
+		// The operator will remain in a ConfigurationError status condition until the storage secret is created.
+		return admission.Warnings{errs[0].Detail}, field.ErrorList{}
 	}
-
-	return admission.Warnings{}, v1alpha1.ValidateStorageSecret(tempo, *storageSecret)
-}
-
-func (v *validator) validateStorageCA(ctx context.Context, tempo v1alpha1.TempoStack) (admission.Warnings, field.ErrorList) {
-	caConfigMap := &corev1.ConfigMap{}
-	err := v.client.Get(ctx, types.NamespacedName{Namespace: tempo.Namespace, Name: tempo.Spec.Storage.TLS.CA}, caConfigMap)
-	if err != nil {
-		// Do not fail the validation here, the user can create the ConfigMap later.
-		// The operator will remain in a ConfigurationError status condition until the ConfigMap is created.
-		return admission.Warnings{fmt.Sprintf("ConfigMap '%s' does not exist", tempo.Spec.Storage.TLS.CA)}, field.ErrorList{}
-	}
-
-	return admission.Warnings{}, v1alpha1.ValidateStorageCAConfigMap(*caConfigMap)
+	return nil, errs
 }
 
 func (v *validator) validateReplicationFactor(tempo v1alpha1.TempoStack) field.ErrorList {
@@ -437,15 +425,9 @@ func (v *validator) validate(ctx context.Context, obj runtime.Object) (admission
 	allErrors = append(allErrors, v.validateStackName(*tempo)...)
 	allErrors = append(allErrors, v.validateServiceAccount(ctx, *tempo)...)
 
-	warnings, errors = v.validateStorageSecret(ctx, *tempo)
+	warnings, errors = v.validateStorage(ctx, *tempo)
 	allWarnings = append(allWarnings, warnings...)
 	allErrors = append(allErrors, errors...)
-
-	if tempo.Spec.Storage.TLS.CA != "" {
-		warnings, errors = v.validateStorageCA(ctx, *tempo)
-		allWarnings = append(allWarnings, warnings...)
-		allErrors = append(allErrors, errors...)
-	}
 
 	if tempo.Spec.ExtraConfig != nil && len(tempo.Spec.ExtraConfig.Tempo.Raw) > 0 {
 		allWarnings = append(allWarnings, admission.Warnings{

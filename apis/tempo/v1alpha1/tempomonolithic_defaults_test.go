@@ -4,6 +4,11 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"k8s.io/apimachinery/pkg/api/resource"
+)
+
+var (
+	twentyGBQuantity = resource.MustParse("20Gi")
 )
 
 func TestMonolithicDefault(t *testing.T) {
@@ -22,43 +27,7 @@ func TestMonolithicDefault(t *testing.T) {
 					Storage: &MonolithicStorageSpec{
 						Traces: MonolithicTracesStorageSpec{
 							Backend: "memory",
-						},
-					},
-					Ingestion: &MonolithicIngestionSpec{
-						OTLP: &MonolithicIngestionOTLPSpec{
-							GRPC: &MonolithicIngestionOTLPProtocolsGRPCSpec{
-								Enabled: true,
-							},
-							HTTP: &MonolithicIngestionOTLPProtocolsHTTPSpec{
-								Enabled: true,
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			name: "set default values for PV",
-			input: &TempoMonolithic{
-				Spec: TempoMonolithicSpec{
-					Storage: &MonolithicStorageSpec{
-						Traces: MonolithicTracesStorageSpec{
-							Backend: "pv",
-						},
-					},
-				},
-			},
-			expected: &TempoMonolithic{
-				Spec: TempoMonolithicSpec{
-					Storage: &MonolithicStorageSpec{
-						Traces: MonolithicTracesStorageSpec{
-							Backend: "pv",
-							WAL: &MonolithicTracesStorageWALSpec{
-								Size: tenGBQuantity,
-							},
-							PV: &MonolithicTracesStoragePVSpec{
-								Size: tenGBQuantity,
-							},
+							Size:    &tenGBQuantity,
 						},
 					},
 					Ingestion: &MonolithicIngestionSpec{
@@ -81,9 +50,7 @@ func TestMonolithicDefault(t *testing.T) {
 					Storage: &MonolithicStorageSpec{
 						Traces: MonolithicTracesStorageSpec{
 							Backend: "s3",
-							WAL: &MonolithicTracesStorageWALSpec{
-								Size: tenGBQuantity,
-							},
+							Size:    &twentyGBQuantity,
 						},
 					},
 					Ingestion: &MonolithicIngestionSpec{
@@ -104,9 +71,7 @@ func TestMonolithicDefault(t *testing.T) {
 					Storage: &MonolithicStorageSpec{
 						Traces: MonolithicTracesStorageSpec{
 							Backend: "s3",
-							WAL: &MonolithicTracesStorageWALSpec{
-								Size: tenGBQuantity,
-							},
+							Size:    &twentyGBQuantity,
 						},
 					},
 					Ingestion: &MonolithicIngestionSpec{

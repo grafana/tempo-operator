@@ -2511,6 +2511,61 @@ MonolithicTracesStorageSpec
 </tbody>
 </table>
 
+## MonolithicTracesObjectStorageSpec { #tempo-grafana-com-v1alpha1-MonolithicTracesObjectStorageSpec }
+
+<p>
+
+(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-MonolithicTracesStorageS3Spec">MonolithicTracesStorageS3Spec</a>, <a href="#tempo-grafana-com-v1alpha1-MonolithicTracesStorageSpec">MonolithicTracesStorageSpec</a>)
+
+</p>
+
+<div>
+
+<p>MonolithicTracesObjectStorageSpec defines object storage configuration.</p>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Field</th>
+
+<th>Description</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td>
+
+<code>secret</code><br/>
+
+<em>
+
+string
+
+</em>
+
+</td>
+
+<td>
+
+<p>secret is the name of a Secret containing credentials for accessing object storage.
+It needs to be in the same namespace as the Tempo custom resource.</p>
+
+</td>
+</tr>
+
+</tbody>
+</table>
+
 ## MonolithicTracesStorageBackend { #tempo-grafana-com-v1alpha1-MonolithicTracesStorageBackend }
 
 (<code>string</code> alias)
@@ -2541,7 +2596,17 @@ MonolithicTracesStorageSpec
 
 </thead>
 
-<tbody><tr><td><p>&#34;memory&#34;</p></td>
+<tbody><tr><td><p>&#34;azure&#34;</p></td>
+
+<td><p>MonolithicTracesStorageBackendAzure defines storing traces in Azure Storage.</p>
+</td>
+
+</tr><tr><td><p>&#34;gcs&#34;</p></td>
+
+<td><p>MonolithicTracesStorageBackendGCS defines storing traces in Google Cloud Storage.</p>
+</td>
+
+</tr><tr><td><p>&#34;memory&#34;</p></td>
 
 <td><p>MonolithicTracesStorageBackendMemory defines storing traces in a tmpfs (in-memory filesystem).</p>
 </td>
@@ -2551,16 +2616,15 @@ MonolithicTracesStorageSpec
 <td><p>MonolithicTracesStorageBackendPV defines storing traces in a Persistent Volume.</p>
 </td>
 
+</tr><tr><td><p>&#34;s3&#34;</p></td>
+
+<td><p>MonolithicTracesStorageBackendS3 defines storing traces in AWS S3.</p>
+</td>
+
 </tr></tbody>
 </table>
 
 ## MonolithicTracesStoragePVSpec { #tempo-grafana-com-v1alpha1-MonolithicTracesStoragePVSpec }
-
-<p>
-
-(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-MonolithicTracesStorageSpec">MonolithicTracesStorageSpec</a>)
-
-</p>
 
 <div>
 
@@ -2601,6 +2665,86 @@ k8s.io/apimachinery/pkg/api/resource.Quantity
 <td>
 
 <p>Size defines the size of the Persistent Volume for storing the traces. Defaults to 10Gi.</p>
+
+</td>
+</tr>
+
+</tbody>
+</table>
+
+## MonolithicTracesStorageS3Spec { #tempo-grafana-com-v1alpha1-MonolithicTracesStorageS3Spec }
+
+<p>
+
+(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-MonolithicTracesStorageSpec">MonolithicTracesStorageSpec</a>)
+
+</p>
+
+<div>
+
+<p>MonolithicTracesStorageS3Spec defines the AWS S3 configuration.</p>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Field</th>
+
+<th>Description</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td>
+
+<code>secret</code><br/>
+
+<em>
+
+string
+
+</em>
+
+</td>
+
+<td>
+
+<p>secret is the name of a Secret containing credentials for accessing object storage.
+It needs to be in the same namespace as the Tempo custom resource.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>tls</code><br/>
+
+<em>
+
+<a href="#tempo-grafana-com-v1alpha1-TLSSpec">
+
+TLSSpec
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<p>tls defines the TLS configuration for AWS S3.</p>
 
 </td>
 </tr>
@@ -2667,15 +2811,11 @@ MonolithicTracesStorageBackend
 
 <td>
 
-<code>wal</code><br/>
+<code>size</code><br/>
 
 <em>
 
-<a href="#tempo-grafana-com-v1alpha1-MonolithicTracesStorageWALSpec">
-
-MonolithicTracesStorageWALSpec
-
-</a>
+k8s.io/apimachinery/pkg/api/resource.Quantity
 
 </em>
 
@@ -2683,7 +2823,11 @@ MonolithicTracesStorageWALSpec
 
 <td>
 
-<p>WAL defines the write-ahead logging (WAL) configuration</p>
+<p>Size defines the size of the volume where traces are stored.
+For in-memory storage, this defines the size of the tmpfs volume.
+For persistent volume storage, this defines the size of the persistent volume.
+For object storage, this defines the size of the persistent volume containing the Write-Ahead Log (WAL) of Tempo.
+Defaults to 10Gi.</p>
 
 </td>
 </tr>
@@ -2692,13 +2836,13 @@ MonolithicTracesStorageWALSpec
 
 <td>
 
-<code>pv</code><br/>
+<code>s3</code><br/>
 
 <em>
 
-<a href="#tempo-grafana-com-v1alpha1-MonolithicTracesStoragePVSpec">
+<a href="#tempo-grafana-com-v1alpha1-MonolithicTracesStorageS3Spec">
 
-MonolithicTracesStoragePVSpec
+MonolithicTracesStorageS3Spec
 
 </a>
 
@@ -2708,7 +2852,57 @@ MonolithicTracesStoragePVSpec
 
 <td>
 
-<p>PV defines the Persistent Volume configuration</p>
+<p>S3 defines the AWS S3 configuration</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>azure</code><br/>
+
+<em>
+
+<a href="#tempo-grafana-com-v1alpha1-MonolithicTracesObjectStorageSpec">
+
+MonolithicTracesObjectStorageSpec
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<p>Azure defines the Azure Storage configuration</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>gcs</code><br/>
+
+<em>
+
+<a href="#tempo-grafana-com-v1alpha1-MonolithicTracesObjectStorageSpec">
+
+MonolithicTracesObjectStorageSpec
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<p>GCP defines the Google Cloud Storage configuration</p>
 
 </td>
 </tr>
@@ -2717,12 +2911,6 @@ MonolithicTracesStoragePVSpec
 </table>
 
 ## MonolithicTracesStorageWALSpec { #tempo-grafana-com-v1alpha1-MonolithicTracesStorageWALSpec }
-
-<p>
-
-(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-MonolithicTracesStorageSpec">MonolithicTracesStorageSpec</a>)
-
-</p>
 
 <div>
 
@@ -4270,7 +4458,7 @@ and re-encrypt using a new certificate.</p>
 
 <p>
 
-(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-MonolithicIngestionOTLPProtocolsGRPCSpec">MonolithicIngestionOTLPProtocolsGRPCSpec</a>, <a href="#tempo-grafana-com-v1alpha1-MonolithicIngestionOTLPProtocolsHTTPSpec">MonolithicIngestionOTLPProtocolsHTTPSpec</a>, <a href="#tempo-grafana-com-v1alpha1-ObjectStorageSpec">ObjectStorageSpec</a>, <a href="#tempo-grafana-com-v1alpha1-TempoDistributorSpec">TempoDistributorSpec</a>)
+(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-MonolithicIngestionOTLPProtocolsGRPCSpec">MonolithicIngestionOTLPProtocolsGRPCSpec</a>, <a href="#tempo-grafana-com-v1alpha1-MonolithicIngestionOTLPProtocolsHTTPSpec">MonolithicIngestionOTLPProtocolsHTTPSpec</a>, <a href="#tempo-grafana-com-v1alpha1-MonolithicTracesStorageS3Spec">MonolithicTracesStorageS3Spec</a>, <a href="#tempo-grafana-com-v1alpha1-ObjectStorageSpec">ObjectStorageSpec</a>, <a href="#tempo-grafana-com-v1alpha1-TempoDistributorSpec">TempoDistributorSpec</a>)
 
 </p>
 

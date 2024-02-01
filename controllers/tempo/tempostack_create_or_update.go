@@ -3,21 +3,19 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/go-logr/logr"
 	grafanav1 "github.com/grafana-operator/grafana-operator/v5/api/v1beta1"
 	routev1 "github.com/openshift/api/route/v1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
-	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/validation/field"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/handlers/gateway"
+	"github.com/grafana/tempo-operator/internal/handlers/storage"
 	"github.com/grafana/tempo-operator/internal/manifests"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/status"
@@ -25,64 +23,16 @@ import (
 	"github.com/grafana/tempo-operator/internal/webhooks"
 )
 
-func listErrors(fieldErrs field.ErrorList) string {
-	msgs := make([]string, len(fieldErrs))
-	for i, fieldErr := range fieldErrs {
-		msgs[i] = fieldErr.Detail
-	}
-	return strings.Join(msgs, ", ")
-}
-
-func (r *TempoStackReconciler) getStorageConfig(ctx context.Context, tempo v1alpha1.TempoStack) (manifestutils.StorageParams, error) {
-	storageSecret := &corev1.Secret{}
-	err := r.Get(ctx, types.NamespacedName{Namespace: tempo.Namespace, Name: tempo.Spec.Storage.Secret.Name}, storageSecret)
-	if err != nil {
-		return manifestutils.StorageParams{}, fmt.Errorf("could not fetch storage secret: %w", err)
-	}
-
-	fieldErrs := v1alpha1.ValidateStorageSecret(tempo, *storageSecret)
-	if len(fieldErrs) > 0 {
-		return manifestutils.StorageParams{}, fmt.Errorf("invalid storage secret: %s", listErrors(fieldErrs))
-	}
-
-	if tempo.Spec.Storage.TLS.CA != "" {
-		caConfigMap := &corev1.ConfigMap{}
-		err := r.Get(ctx, types.NamespacedName{Namespace: tempo.Namespace, Name: tempo.Spec.Storage.TLS.CA}, caConfigMap)
-		if err != nil {
-			return manifestutils.StorageParams{}, fmt.Errorf("could not fetch CA config map: %w", err)
-		}
-
-		fieldErrs := v1alpha1.ValidateStorageCAConfigMap(*caConfigMap)
-		if len(fieldErrs) > 0 {
-			return manifestutils.StorageParams{}, fmt.Errorf("invalid CA config map: %s", listErrors(fieldErrs))
-		}
-	}
-
-	params := manifestutils.StorageParams{}
-	switch tempo.Spec.Storage.Secret.Type {
-	case v1alpha1.ObjectStorageSecretAzure:
-		params.AzureStorage = GetAzureParams(tempo, storageSecret)
-	case v1alpha1.ObjectStorageSecretGCS:
-		params.GCS = GetGCSParams(tempo, storageSecret)
-	case v1alpha1.ObjectStorageSecretS3:
-		params.S3 = GetS3Params(tempo, storageSecret)
-	default:
-		return manifestutils.StorageParams{}, fmt.Errorf("storage secret type is not recognized")
-	}
-
-	return params, nil
-}
-
 func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, log logr.Logger, tempo v1alpha1.TempoStack) error {
-	storageConfig, err := r.getStorageConfig(ctx, tempo)
-	if err != nil {
+	storageConfig, errs := storage.GetStorageParamsForTempoStack(ctx, r.Client, tempo)
+	if len(errs) > 0 {
 		return &status.ConfigurationError{
 			Reason:  v1alpha1.ReasonInvalidStorageConfig,
-			Message: err.Error(),
+			Message: storage.ListFieldErrors(errs),
 		}
 	}
 
-	if err = webhooks.ValidateTenantConfigs(tempo); err != nil {
+	if err := webhooks.ValidateTenantConfigs(tempo); err != nil {
 		return &status.ConfigurationError{
 			Message: fmt.Sprintf("Invalid tenants configuration: %s", err),
 			Reason:  v1alpha1.ReasonInvalidTenantsConfiguration,

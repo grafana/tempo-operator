@@ -39,7 +39,7 @@ func TestConfigureAzureStorage(t *testing.T) {
 		},
 	}
 
-	assert.NoError(t, configureAzureStorage(&tempo, &pod))
+	assert.NoError(t, ConfigureAzureStorage(&pod, 0, tempo.Spec.Storage.Secret.Name, &tempo.Spec.Storage.TLS))
 	assert.Len(t, pod.Containers[0].Env, 2)
 	assert.NoError(t, findEnvVar("AZURE_ACCOUNT_NAME", &pod.Containers[0].Env))
 	assert.NoError(t, findEnvVar("AZURE_ACCOUNT_KEY", &pod.Containers[0].Env))
@@ -69,7 +69,7 @@ func TestGetGCSStorage(t *testing.T) {
 		},
 	}
 
-	assert.NoError(t, configureGCS(&tempo, &pod))
+	assert.NoError(t, ConfigureGCS(&pod, 0, tempo.Spec.Storage.Secret.Name, &tempo.Spec.Storage.TLS))
 	assert.Len(t, pod.Containers[0].Env, 1)
 	assert.NoError(t, findEnvVar("GOOGLE_APPLICATION_CREDENTIALS", &pod.Containers[0].Env))
 
@@ -96,7 +96,7 @@ func TestGetS3Storage(t *testing.T) {
 		},
 	}
 
-	assert.NoError(t, configureS3Storage(&tempo, &pod))
+	assert.NoError(t, ConfigureS3Storage(&pod, 0, tempo.Spec.Storage.Secret.Name, &tempo.Spec.Storage.TLS))
 	assert.Len(t, pod.Containers[0].Env, 2)
 	assert.NoError(t, findEnvVar("S3_SECRET_KEY", &pod.Containers[0].Env))
 	assert.NoError(t, findEnvVar("S3_ACCESS_KEY", &pod.Containers[0].Env))
@@ -115,7 +115,8 @@ func TestGetS3StorageWithCA(t *testing.T) {
 					Type: v1alpha1.ObjectStorageSecretAzure,
 				},
 				TLS: v1alpha1.TLSSpec{
-					CA: "customca",
+					Enabled: true,
+					CA:      "customca",
 				},
 			},
 		},
@@ -129,10 +130,10 @@ func TestGetS3StorageWithCA(t *testing.T) {
 		},
 	}
 
-	assert.NoError(t, configureS3Storage(&tempo, &pod))
+	assert.NoError(t, ConfigureS3Storage(&pod, 0, tempo.Spec.Storage.Secret.Name, &tempo.Spec.Storage.TLS))
 	assert.Equal(t, []corev1.Volume{
 		{
-			Name: storageCAVolumeName,
+			Name: "storage-ca",
 			VolumeSource: corev1.VolumeSource{
 				ConfigMap: &corev1.ConfigMapVolumeSource{
 					LocalObjectReference: corev1.LocalObjectReference{
@@ -146,7 +147,7 @@ func TestGetS3StorageWithCA(t *testing.T) {
 	assert.Len(t, pod.Containers[0].VolumeMounts, 1)
 	assert.Equal(t, []corev1.VolumeMount{
 		{
-			Name:      storageCAVolumeName,
+			Name:      "storage-ca",
 			MountPath: StorageTLSCADir,
 			ReadOnly:  true,
 		},

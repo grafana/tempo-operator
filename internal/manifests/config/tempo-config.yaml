@@ -218,10 +218,18 @@ storage:
       endpoint: {{ .Endpoint }}
       bucket: {{ .Bucket }}
       insecure: {{ .Insecure }}
-      {{- if .TLSCAPath }}
-      tls_ca_path: {{ .TLSCAPath }}
-      {{- end }}
     {{- end }}
+{{- if and .StorageParams.S3 .S3StorageTLS.Enabled }}
+    {{- if .S3StorageTLS.CA }}
+      tls_ca_path: {{ .S3StorageTLS.CA }}
+    {{- end }}
+    {{- if .S3StorageTLS.Certificate }}
+      tls_cert_path: {{ .S3StorageTLS.Certificate }}
+    {{- end }}
+    {{- if and .S3StorageTLS.Key }}
+      tls_key_path: {{ .S3StorageTLS.Key }}
+    {{- end }}
+{{- end }}
     local:
       path: /var/tempo/traces
     wal:

@@ -1,6 +1,9 @@
 package v1alpha1
 
-import "k8s.io/apimachinery/pkg/api/resource"
+import (
+	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/utils/ptr"
+)
 
 var (
 	tenGBQuantity = resource.MustParse("10Gi")
@@ -18,16 +21,8 @@ func (r *TempoMonolithic) Default() {
 		r.Spec.Storage.Traces.Backend = MonolithicTracesStorageBackendMemory
 	}
 
-	if r.Spec.Storage.Traces.Backend != MonolithicTracesStorageBackendMemory && r.Spec.Storage.Traces.WAL == nil {
-		r.Spec.Storage.Traces.WAL = &MonolithicTracesStorageWALSpec{
-			Size: tenGBQuantity,
-		}
-	}
-
-	if r.Spec.Storage.Traces.Backend == MonolithicTracesStorageBackendPV && r.Spec.Storage.Traces.PV == nil {
-		r.Spec.Storage.Traces.PV = &MonolithicTracesStoragePVSpec{
-			Size: tenGBQuantity,
-		}
+	if r.Spec.Storage.Traces.Size == nil {
+		r.Spec.Storage.Traces.Size = ptr.To(tenGBQuantity)
 	}
 
 	if r.Spec.Ingestion == nil {
