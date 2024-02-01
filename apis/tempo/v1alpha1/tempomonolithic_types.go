@@ -33,11 +33,6 @@ type TempoMonolithicSpec struct {
 	// +kubebuilder:validation:Optional
 	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 
-	// Observability defines observability configuration for the Tempo deployment
-	//
-	// +kubebuilder:validation:Optional
-	Observability *MonolithicObservabilitySpec `json:"observability,omitempty"`
-
 	// ExtraConfig defines any extra (overlay) configuration for components
 	//
 	// +kubebuilder:validation:Optional
@@ -261,43 +256,6 @@ type MonolithicJaegerUIRouteSpec struct {
 	// +kubebuilder:validation:Optional
 	// +kubebuilder:default=edge
 	Termination TLSRouteTerminationType `json:"termination,omitempty"`
-}
-
-// MonolithicObservabilitySpec defines the observability settings of the Tempo deployment.
-type MonolithicObservabilitySpec struct {
-	// Metrics defines the metrics configuration of the Tempo deployment
-	//
-	// +kubebuilder:validation:Optional
-	Metrics *MonolithicObservabilityMetricsSpec `json:"metrics,omitempty"`
-}
-
-// MonolithicObservabilityMetricsSpec defines the metrics settings of the Tempo deployment.
-type MonolithicObservabilityMetricsSpec struct {
-	// ServiceMonitors defines the ServiceMonitor configuration
-	//
-	// +kubebuilder:validation:Optional
-	ServiceMonitors *MonolithicObservabilityMetricsServiceMonitorsSpec `json:"serviceMonitors,omitempty"`
-
-	// ServiceMonitors defines the PrometheusRule configuration
-	//
-	// +kubebuilder:validation:Optional
-	PrometheusRules *MonolithicObservabilityMetricsPrometheusRulesSpec `json:"prometheusRules,omitempty"`
-}
-
-// MonolithicObservabilityMetricsServiceMonitorsSpec defines the ServiceMonitor settings.
-type MonolithicObservabilityMetricsServiceMonitorsSpec struct {
-	// Enabled defines if the operator should create ServiceMonitors for this Tempo deployment
-	//
-	// +kubebuilder:validation:Required
-	Enabled bool `json:"enabled"`
-}
-
-// MonolithicObservabilityMetricsPrometheusRulesSpec defines the PrometheusRules settings.
-type MonolithicObservabilityMetricsPrometheusRulesSpec struct {
-	// Enabled defines if the operator should create PrometheusRules for this Tempo deployment
-	//
-	// +kubebuilder:validation:Required
-	Enabled bool `json:"enabled"`
 }
 
 // TempoMonolithicStatus defines the observed state of TempoMonolithic.

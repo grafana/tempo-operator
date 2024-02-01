@@ -641,7 +641,7 @@ spec:
     It can ingest common open source tracing protocols including Jaeger, Zipkin, and OpenTelemetry and requires only object storage to operate.
     Please refer to the [Tempo documentation](https://grafana.com/docs/tempo/latest/) for more information about Tempo.
 
-    The Community Tempo Operator manages Tempo deployments in Microservices mode.
+    The Community Tempo Operator can manage Tempo deployments in Microservices mode (`TempoStack` CR) and Monolithic mode (`TempoMonolithic` CR).
 
     ### Operator features
     * **Resource Limits** - Specify overall resource requests and limits in the `TempoStack` CR; the operator assigns fractions of it to each component
@@ -653,7 +653,7 @@ spec:
     * **Observability** - The operator and `TempoStack` operands expose telemetry (metrics, traces) and integrate with Prometheus `ServiceMonitor` and `PrometheusRule`
 
     ### Prerequisites
-    Tempo requires object storage to store its traces.
+    `TempoStack` requires object storage to store its traces. `TempoMonolithic` can store traces in-memory, in a Persistent Volume and in object storage.
     Please ensure that an object storage solution is available and configured.
   displayName: Community Tempo Operator
   icon:
