@@ -98,12 +98,12 @@ jobs:
     - name: Install kuttl, OLM and minio
       run: |
         ./hack/install/install-kuttl.sh
-        make olm-install deploy-minio
+        make olm-install
 
     - name: Build and push operator and bundle image to local container registry
       run: |
         export LATEST_TAG=$(git describe --tags --abbrev=0)
-        export BUNDLE_IMGS=ghcr.io/grafana/tempo-operator/tempo-operator-bundle:${LATEST_TAG},localregistry:5000/tempo-operator-bundle:v100.0.0
+        export BUNDLE_IMGS=ghcr.io/grafana/tempo-operator/tempo-operator-bundle:${LATEST_TAG},${IMG_PREFIX}/tempo-operator-bundle:v${OPERATOR_VERSION}
         make bundle docker-build docker-push bundle-build bundle-push catalog-build catalog-push
       env:
         IMG_PREFIX: localregistry:5000

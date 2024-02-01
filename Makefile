@@ -351,16 +351,13 @@ deploy-minio:
 
 # generic end-to-tests
 .PHONY: prepare-e2e
-prepare-e2e: kuttl start-kind cert-manager deploy-minio set-test-image-vars build docker-build load-image-operator deploy
+prepare-e2e: kuttl start-kind cert-manager set-test-image-vars build docker-build load-image-operator deploy
 
 .PHONY: e2e
 e2e:
 	$(KUTTL) test
 
 # OpenShift end-to-tests
-.PHONY: prepare-e2e-openshift
-prepare-e2e-openshift: deploy-minio
-
 .PHONY: e2e-openshift
 e2e-openshift:
 	$(KUTTL) test --config kuttl-test-openshift.yaml
