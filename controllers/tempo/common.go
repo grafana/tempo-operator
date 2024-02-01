@@ -4,12 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/go-logr/logr"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/client-go/util/retry"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -106,4 +108,13 @@ func reconcileManagedObjects(
 	}
 
 	return nil
+}
+
+// listFieldErrors converts field.ErrorList to a comma separated string of errors.
+func listFieldErrors(fieldErrs field.ErrorList) string {
+	msgs := make([]string, len(fieldErrs))
+	for i, fieldErr := range fieldErrs {
+		msgs[i] = fieldErr.Detail
+	}
+	return strings.Join(msgs, ", ")
 }
