@@ -1,6 +1,7 @@
 package v1alpha1
 
 import (
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -26,6 +27,11 @@ type TempoMonolithicSpec struct {
 	//
 	// +kubebuilder:validation:Optional
 	Management ManagementStateType `json:"management,omitempty"`
+
+	// Resources defines the compute resource requirements of Tempo.
+	//
+	// +kubebuilder:validation:Optional
+	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 
 	// Observability defines observability configuration for the Tempo deployment
 	//
@@ -201,6 +207,11 @@ type MonolithicJaegerUISpec struct {
 	//
 	// +kubebuilder:validation:Optional
 	Route *MonolithicJaegerUIRouteSpec `json:"route,omitempty"`
+
+	// Resources defines the compute resource requirements of Jaeger UI.
+	//
+	// +kubebuilder:validation:Optional
+	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 }
 
 // MonolithicJaegerUIIngressSpec defines the settings for the Jaeger UI ingress.

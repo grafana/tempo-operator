@@ -75,6 +75,7 @@ func BuildTempoStatefulset(opts Options) (*appsv1.StatefulSet, error) {
 							Ports:           buildTempoPorts(opts),
 							ReadinessProbe:  manifestutils.TempoReadinessProbe(false),
 							SecurityContext: manifestutils.TempoContainerSecurityContext(),
+							Resources:       ptr.Deref(tempo.Spec.Resources, corev1.ResourceRequirements{}),
 						},
 					},
 					Volumes: []corev1.Volume{
@@ -268,6 +269,7 @@ func configureJaegerUI(opts Options, sts *appsv1.StatefulSet) {
 				ReadOnly:  true,
 			},
 		},
+		Resources: ptr.Deref(opts.Tempo.Spec.JaegerUI.Resources, corev1.ResourceRequirements{}),
 	}
 
 	sts.Spec.Template.Spec.Containers = append(sts.Spec.Template.Spec.Containers, tempoQuery)

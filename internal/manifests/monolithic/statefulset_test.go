@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/ptr"
 
@@ -38,6 +39,16 @@ func TestStatefulsetMemoryStorage(t *testing.T) {
 						GRPC: &v1alpha1.MonolithicIngestionOTLPProtocolsGRPCSpec{
 							Enabled: true,
 						},
+					},
+				},
+				Resources: &corev1.ResourceRequirements{
+					Requests: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("1Gi"),
+						corev1.ResourceMemory: resource.MustParse("2Gi"),
+					},
+					Limits: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("3Gi"),
+						corev1.ResourceMemory: resource.MustParse("4Gi"),
 					},
 				},
 			},
@@ -105,6 +116,16 @@ func TestStatefulsetMemoryStorage(t *testing.T) {
 							},
 							ReadinessProbe:  manifestutils.TempoReadinessProbe(false),
 							SecurityContext: manifestutils.TempoContainerSecurityContext(),
+							Resources: corev1.ResourceRequirements{
+								Requests: corev1.ResourceList{
+									corev1.ResourceCPU:    resource.MustParse("1Gi"),
+									corev1.ResourceMemory: resource.MustParse("2Gi"),
+								},
+								Limits: corev1.ResourceList{
+									corev1.ResourceCPU:    resource.MustParse("3Gi"),
+									corev1.ResourceMemory: resource.MustParse("4Gi"),
+								},
+							},
 						},
 					},
 					Volumes: []corev1.Volume{

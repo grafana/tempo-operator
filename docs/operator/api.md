@@ -2201,6 +2201,31 @@ MonolithicJaegerUIRouteSpec
 </td>
 </tr>
 
+<tr>
+
+<td>
+
+<code>resources</code><br/>
+
+<em>
+
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#resourcerequirements-v1-core">
+
+Kubernetes core/v1.ResourceRequirements
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<p>Resources defines the compute resource requirements of Jaeger UI.</p>
+
+</td>
+</tr>
+
 </tbody>
 </table>
 
@@ -5105,6 +5130,31 @@ ManagementStateType
 <td>
 
 <p>ManagementState defines whether this instance is managed by the operator or self-managed</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>resources</code><br/>
+
+<em>
+
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#resourcerequirements-v1-core">
+
+Kubernetes core/v1.ResourceRequirements
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<p>Resources defines the compute resource requirements of Tempo.</p>
 
 </td>
 </tr>
