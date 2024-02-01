@@ -13,6 +13,10 @@ var (
 // NOTE: This function is called inside the Reconcile loop, NOT in the webhook.
 // We want to keep the CR as minimal as the user configures it, and not modify it in any way (except for upgrades).
 func (r *TempoMonolithic) Default() {
+	if r.Spec.Management == "" {
+		r.Spec.Management = ManagementStateManaged
+	}
+
 	if r.Spec.Storage == nil {
 		r.Spec.Storage = &MonolithicStorageSpec{}
 	}

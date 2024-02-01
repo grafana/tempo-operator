@@ -40,6 +40,7 @@ func TestMonolithicDefault(t *testing.T) {
 							},
 						},
 					},
+					Management: "Managed",
 				},
 			},
 		},
@@ -64,6 +65,7 @@ func TestMonolithicDefault(t *testing.T) {
 							},
 						},
 					},
+					Management: "Unmanaged",
 				},
 			},
 			expected: &TempoMonolithic{
@@ -84,6 +86,7 @@ func TestMonolithicDefault(t *testing.T) {
 							},
 						},
 					},
+					Management: "Unmanaged",
 				},
 			},
 		},

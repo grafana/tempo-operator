@@ -29,6 +29,13 @@ spec:                                    # TempoMonolithicSpec defines the desir
       enabled: false                     # Enabled defines if an Ingress object should be created for Jaeger UI
       host: ""                           # Host defines the hostname of the Ingress object.
       ingressClassName: ""               # IngressClassName is the name of an IngressClass cluster resource. Ingress controller implementations use this field to know whether they should be serving this Ingress resource.
+    resources:                           # Resources defines the compute resource requirements of Jaeger UI.
+      claims:                            # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.   This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.   This field is immutable. It can only be set for containers.
+      - name: ""                         # Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.
+      limits:                            # Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+        "key": 1Gi
+      requests:                          # Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. Requests cannot exceed Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+        "key": 1Gi
     route:                               # Route defines the route configuration for Jaeger UI
       annotations:                       # Annotations defines the annotations of the Route object.
         "key": ""
@@ -42,6 +49,13 @@ spec:                                    # TempoMonolithicSpec defines the desir
         enabled: false                   # Enabled defines if the operator should create PrometheusRules for this Tempo deployment
       serviceMonitors:                   # ServiceMonitors defines the ServiceMonitor configuration
         enabled: false                   # Enabled defines if the operator should create ServiceMonitors for this Tempo deployment
+  resources:                             # Resources defines the compute resource requirements of Tempo.
+    claims:                              # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.   This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.   This field is immutable. It can only be set for containers.
+    - name: ""                           # Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.
+    limits:                              # Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+      "key": 1Gi
+    requests:                            # Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. Requests cannot exceed Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+      "key": 1Gi
   storage:                               # Storage defines the backend storage configuration
     traces:                              # Traces defines the backend storage configuration for traces
       azure:                             # Azure defines the Azure Storage configuration
