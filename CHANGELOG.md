@@ -9,6 +9,7 @@ Changes by Version
 
 - `operator`: Make Tempo-Query forwarding on gateway optional (#628)
 - `operator`: Support monolithic deployment mode (#710)
+
   The operator exposes a new CRD `TempoMonolithic`, which manages a Tempo instance in monolithic mode.
   The monolithic mode supports the following additional storage backends: in-memory and file system (persistent volume).
   
