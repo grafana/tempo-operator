@@ -3,6 +3,25 @@ Changes by Version
 
 <!-- next version -->
 
+## 0.8.0
+
+### 💡 Enhancements 💡
+
+- `operator`: Make Tempo-Query forwarding on gateway optional (#628)
+- `operator`: Support monolithic deployment mode (#710)
+
+  The operator exposes a new CRD `TempoMonolithic`, which manages a Tempo instance in monolithic mode.
+  The monolithic mode supports the following additional storage backends: in-memory and file system (persistent volume).
+  
+
+### 🧰 Bug fixes 🧰
+
+- `operator`: Fix the cluster-monitoring-view RBAC when operator is deployed in arbitrary namespace (#741)
+- `operator`: NIL pointer dereference when OIDC not specified for tenants in static mode (#647)
+
+### Components
+- Tempo: [v2.3.1](https://github.com/grafana/tempo/releases/tag/v2.3.1)
+
 ## 0.7.0
 
 ### 💡 Enhancements 💡
