@@ -46,6 +46,8 @@ IMG_PREFIX=docker.io/${USER} OPERATOR_VERSION=$(date +%s).0.0 make docker-build 
 ```
 kubectl create namespace tempo-operator-system
 IMG_PREFIX=docker.io/${USER} OPERATOR_VERSION=$(date +%s).0.0 BUNDLE_VARIANT=openshift make docker-build docker-push bundle bundle-build bundle-push olm-deploy reset
+
+# If the operator is already installed, replace `olm-deploy` with `olm-upgrade`
 ```
 - Make commits of logical units.
 - Push your changes to a topic branch in your fork of the repository.
