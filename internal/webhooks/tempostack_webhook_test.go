@@ -1132,6 +1132,29 @@ func TestValidateTenantConfigs(t *testing.T) {
 			},
 			wantErr: fmt.Errorf("spec.tenants.authentication.oidc should not be defined in openshift mode"),
 		},
+		{
+			name: "static: OIDC should be defined",
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Tenants: &v1alpha1.TenantsSpec{
+						Mode: v1alpha1.ModeStatic,
+						Authorization: &v1alpha1.AuthorizationSpec{
+							Roles:        []v1alpha1.RoleSpec{},
+							RoleBindings: []v1alpha1.RoleBindingsSpec{},
+						},
+						Authentication: []v1alpha1.AuthenticationSpec{
+							{},
+						},
+					},
+					Template: v1alpha1.TempoTemplateSpec{
+						Gateway: v1alpha1.TempoGatewaySpec{
+							Enabled: true,
+						},
+					},
+				},
+			},
+			wantErr: fmt.Errorf("spec.tenants.authorization.oidc is required for each tenant in static mode"),
+		},
 	}
 
 	for _, tc := range tt {

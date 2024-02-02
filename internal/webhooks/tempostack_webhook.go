@@ -450,6 +450,15 @@ func (v *validator) validate(ctx context.Context, obj runtime.Object) (admission
 	return allWarnings, apierrors.NewInvalid(tempo.GroupVersionKind().GroupKind(), tempo.Name, allErrors)
 }
 
+func validateTenantsOICD(spec *v1alpha1.TenantsSpec) error {
+	for _, authSpec := range spec.Authentication {
+		if authSpec.OIDC == nil {
+			return fmt.Errorf("spec.tenants.authorization.oidc is required for each tenant in static mode")
+		}
+	}
+	return nil
+}
+
 // ValidateTenantConfigs validates the tenants mode specification.
 func ValidateTenantConfigs(tempo v1alpha1.TempoStack) error {
 	if tempo.Spec.Tenants == nil {
@@ -476,6 +485,7 @@ func ValidateTenantConfigs(tempo v1alpha1.TempoStack) error {
 			if tenants.Authorization.RoleBindings == nil {
 				return fmt.Errorf("spec.tenants.authorization.roleBindings is required in static mode")
 			}
+			return validateTenantsOICD(tenants)
 		}
 	} else if tenants.Mode == v1alpha1.ModeOpenShift {
 		if !tempo.Spec.Template.Gateway.Enabled {
