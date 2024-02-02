@@ -88,10 +88,10 @@ spec:                                    # TempoStackSpec defines the desired st
   storageSize: "10Gi"                    # StorageSize for PVCs used by ingester. Defaults to 10Gi.
   template:                              # Template defines requirements for a set of tempo components.
     compactor:                           # Compactor defines the tempo compactor component spec.
-      nodeSelector:                      # NodeSelector is the simplest recommended form of node selection constraint.
+      nodeSelector:                      # NodeSelector defines the simple form of the node-selection constraint.
         "key": ""
-      replicas: 0                        # Replicas represents the number of replicas to create for this component.
-      tolerations:                       # Tolerations defines component specific pod tolerations.
+      replicas: 0                        # Replicas defines the number of replicas to be created for this component.
+      tolerations:                       # Tolerations defines component-specific pod tolerations.
       - effect: ""                       # Effect indicates the taint effect to match. Empty means match all taint effects. When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute.
         key: ""                          # Key is the taint key that the toleration applies to. Empty means match all taint keys. If the key is empty, operator must be Exists; this combination means to match all values and all keys.
         operator: ""                     # Operator represents a key's relationship to the value. Valid operators are Exists and Equal. Defaults to Equal. Exists is equivalent to wildcard for value, so that a pod can tolerate all taints of a particular category.
@@ -99,10 +99,10 @@ spec:                                    # TempoStackSpec defines the desired st
         value: ""                        # Value is the taint value the toleration matches to. If the operator is Exists, the value should be empty, otherwise just a regular string.
     distributor:                         # Distributor defines the distributor component spec.
       component:                         # TempoComponentSpec is embedded to extend this definition with further options.   Currently, there is no way to inline this field. See: https://github.com/golang/go/issues/6213
-        nodeSelector:                    # NodeSelector is the simplest recommended form of node selection constraint.
+        nodeSelector:                    # NodeSelector defines the simple form of the node-selection constraint.
           "key": ""
-        replicas: 0                      # Replicas represents the number of replicas to create for this component.
-        tolerations:                     # Tolerations defines component specific pod tolerations.
+        replicas: 0                      # Replicas defines the number of replicas to be created for this component.
+        tolerations:                     # Tolerations defines component-specific pod tolerations.
         - effect: ""                     # Effect indicates the taint effect to match. Empty means match all taint effects. When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute.
           key: ""                        # Key is the taint key that the toleration applies to. Empty means match all taint keys. If the key is empty, operator must be Exists; this combination means to match all values and all keys.
           operator: ""                   # Operator represents a key's relationship to the value. Valid operators are Exists and Equal. Defaults to Equal. Exists is equivalent to wildcard for value, so that a pod can tolerate all taints of a particular category.
@@ -115,10 +115,10 @@ spec:                                    # TempoStackSpec defines the desired st
         minVersion: ""                   # MinVersion defines the minimum acceptable TLS version.
     gateway:                             # Gateway defines the tempo gateway spec.
       component:                         # TempoComponentSpec is embedded to extend this definition with further options.   Currently there is no way to inline this field. See: https://github.com/golang/go/issues/6213
-        nodeSelector:                    # NodeSelector is the simplest recommended form of node selection constraint.
+        nodeSelector:                    # NodeSelector defines the simple form of the node-selection constraint.
           "key": ""
-        replicas: 0                      # Replicas represents the number of replicas to create for this component.
-        tolerations:                     # Tolerations defines component specific pod tolerations.
+        replicas: 0                      # Replicas defines the number of replicas to be created for this component.
+        tolerations:                     # Tolerations defines component-specific pod tolerations.
         - effect: ""                     # Effect indicates the taint effect to match. Empty means match all taint effects. When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute.
           key: ""                        # Key is the taint key that the toleration applies to. Empty means match all taint keys. If the key is empty, operator must be Exists; this combination means to match all values and all keys.
           operator: ""                   # Operator represents a key's relationship to the value. Valid operators are Exists and Equal. Defaults to Equal. Exists is equivalent to wildcard for value, so that a pod can tolerate all taints of a particular category.
@@ -129,25 +129,25 @@ spec:                                    # TempoStackSpec defines the desired st
         annotations:                     # Annotations defines the annotations of the Ingress object.
           "key": ""
         host: ""                         # Host defines the hostname of the Ingress object.
-        ingressClassName: ""             # IngressClassName is the name of an IngressClass cluster resource. Ingress controller implementations use this field to know whether they should be serving this Ingress resource.
-        route:                           # Route defines OpenShift Route specific options.
-          termination: ""                # Termination specifies the termination type. By default "edge" is used.
+        ingressClassName: ""             # IngressClassName defines the name of an IngressClass cluster resource. Defines which ingress controller serves this ingress resource.
+        route:                           # Route defines the options for the OpenShift route.
+          termination: ""                # Termination defines the termination type. The default is "edge".
         type: ""                         # Type defines the type of Ingress for the Jaeger Query UI. Currently ingress, route and none are supported.
     ingester:                            # Ingester defines the ingester component spec.
-      nodeSelector:                      # NodeSelector is the simplest recommended form of node selection constraint.
+      nodeSelector:                      # NodeSelector defines the simple form of the node-selection constraint.
         "key": ""
-      replicas: 0                        # Replicas represents the number of replicas to create for this component.
-      tolerations:                       # Tolerations defines component specific pod tolerations.
+      replicas: 0                        # Replicas defines the number of replicas to be created for this component.
+      tolerations:                       # Tolerations defines component-specific pod tolerations.
       - effect: ""                       # Effect indicates the taint effect to match. Empty means match all taint effects. When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute.
         key: ""                          # Key is the taint key that the toleration applies to. Empty means match all taint keys. If the key is empty, operator must be Exists; this combination means to match all values and all keys.
         operator: ""                     # Operator represents a key's relationship to the value. Valid operators are Exists and Equal. Defaults to Equal. Exists is equivalent to wildcard for value, so that a pod can tolerate all taints of a particular category.
         tolerationSeconds: 0             # TolerationSeconds represents the period of time the toleration (which must be of effect NoExecute, otherwise this field is ignored) tolerates the taint. By default, it is not set, which means tolerate the taint forever (do not evict). Zero and negative values will be treated as 0 (evict immediately) by the system.
         value: ""                        # Value is the taint value the toleration matches to. If the operator is Exists, the value should be empty, otherwise just a regular string.
     querier:                             # Querier defines the querier component spec.
-      nodeSelector:                      # NodeSelector is the simplest recommended form of node selection constraint.
+      nodeSelector:                      # NodeSelector defines the simple form of the node-selection constraint.
         "key": ""
-      replicas: 0                        # Replicas represents the number of replicas to create for this component.
-      tolerations:                       # Tolerations defines component specific pod tolerations.
+      replicas: 0                        # Replicas defines the number of replicas to be created for this component.
+      tolerations:                       # Tolerations defines component-specific pod tolerations.
       - effect: ""                       # Effect indicates the taint effect to match. Empty means match all taint effects. When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute.
         key: ""                          # Key is the taint key that the toleration applies to. Empty means match all taint keys. If the key is empty, operator must be Exists; this combination means to match all values and all keys.
         operator: ""                     # Operator represents a key's relationship to the value. Valid operators are Exists and Equal. Defaults to Equal. Exists is equivalent to wildcard for value, so that a pod can tolerate all taints of a particular category.
@@ -155,28 +155,28 @@ spec:                                    # TempoStackSpec defines the desired st
         value: ""                        # Value is the taint value the toleration matches to. If the operator is Exists, the value should be empty, otherwise just a regular string.
     queryFrontend:                       # TempoQueryFrontendSpec defines the query frontend spec.
       component:                         # TempoComponentSpec is embedded to extend this definition with further options.   Currently there is no way to inline this field. See: https://github.com/golang/go/issues/6213
-        nodeSelector:                    # NodeSelector is the simplest recommended form of node selection constraint.
+        nodeSelector:                    # NodeSelector defines the simple form of the node-selection constraint.
           "key": ""
-        replicas: 0                      # Replicas represents the number of replicas to create for this component.
-        tolerations:                     # Tolerations defines component specific pod tolerations.
+        replicas: 0                      # Replicas defines the number of replicas to be created for this component.
+        tolerations:                     # Tolerations defines component-specific pod tolerations.
         - effect: ""                     # Effect indicates the taint effect to match. Empty means match all taint effects. When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute.
           key: ""                        # Key is the taint key that the toleration applies to. Empty means match all taint keys. If the key is empty, operator must be Exists; this combination means to match all values and all keys.
           operator: ""                   # Operator represents a key's relationship to the value. Valid operators are Exists and Equal. Defaults to Equal. Exists is equivalent to wildcard for value, so that a pod can tolerate all taints of a particular category.
           tolerationSeconds: 0           # TolerationSeconds represents the period of time the toleration (which must be of effect NoExecute, otherwise this field is ignored) tolerates the taint. By default, it is not set, which means tolerate the taint forever (do not evict). Zero and negative values will be treated as 0 (evict immediately) by the system.
           value: ""                      # Value is the taint value the toleration matches to. If the operator is Exists, the value should be empty, otherwise just a regular string.
-      jaegerQuery:                       # JaegerQuerySpec defines Jaeger Query specific options.
-        enabled: false                   # Enabled is used to define if Jaeger Query component should be created.
-        ingress:                         # Ingress defines Jaeger Query Ingress options.
+      jaegerQuery:                       # JaegerQuery defines options specific to the Jaeger Query component.
+        enabled: false                   # Enabled defines if the Jaeger Query component should be created.
+        ingress:                         # Ingress defines the options for the Jaeger Query ingress.
           annotations:                   # Annotations defines the annotations of the Ingress object.
             "key": ""
           host: ""                       # Host defines the hostname of the Ingress object.
-          ingressClassName: ""           # IngressClassName is the name of an IngressClass cluster resource. Ingress controller implementations use this field to know whether they should be serving this Ingress resource.
-          route:                         # Route defines OpenShift Route specific options.
-            termination: ""              # Termination specifies the termination type. By default "edge" is used.
+          ingressClassName: ""           # IngressClassName defines the name of an IngressClass cluster resource. Defines which ingress controller serves this ingress resource.
+          route:                         # Route defines the options for the OpenShift route.
+            termination: ""              # Termination defines the termination type. The default is "edge".
           type: ""                       # Type defines the type of Ingress for the Jaeger Query UI. Currently ingress, route and none are supported.
-        monitorTab:                      # MonitorTab defines monitor tab configuration.
-          enabled: false                 # Enabled enables monitoring tab in Jaeger console. PrometheusEndpoint needs to be set to enable the feature.
-          prometheusEndpoint: ""         # PrometheusEndpoint configures endpoint to the Prometheus that contains span RED metrics. For instance on OpenShift this is set to https://thanos-querier.openshift-monitoring.svc.cluster.local:9091
+        monitorTab:                      # MonitorTab defines the monitor tab configuration.
+          enabled: false                 # Enabled enables the monitor tab in the Jaeger console. The PrometheusEndpoint must be configured to enable this feature.
+          prometheusEndpoint: ""         # PrometheusEndpoint defines the endpoint to the Prometheus instance that contains the span rate, error, and duration (RED) metrics. For instance on OpenShift this is set to https://thanos-querier.openshift-monitoring.svc.cluster.local:9091
   tenants:                               # Tenants defines the per-tenant authentication and authorization spec.
     authentication:                      # Authentication defines the tempo-gateway component authentication configuration spec per tenant.
     - oidc:                              # OIDC defines the spec for the OIDC tenant's authentication.

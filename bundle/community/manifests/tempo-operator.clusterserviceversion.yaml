@@ -62,7 +62,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.7.0
-    createdAt: "2024-02-02T13:51:31Z"
+    createdAt: "2024-02-02T14:34:26Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -181,12 +181,12 @@ spec:
       - description: JaegerUI defines the Jaeger UI configuration.
         displayName: Jaeger UI
         path: jaegerui
-      - description: Enabled defines if the Jaeger UI should be enabled.
+      - description: Enabled defines if the Jaeger UI component should be created.
         displayName: Enabled
         path: jaegerui.enabled
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
-      - description: Ingress defines the ingress configuration for Jaeger UI.
+      - description: Ingress defines the Ingress configuration for the Jaeger UI.
         displayName: Ingress
         path: jaegerui.ingress
       - description: Annotations defines the annotations of the Ingress object.
@@ -199,11 +199,10 @@ spec:
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
       - description: Host defines the hostname of the Ingress object.
-        displayName: Host
+        displayName: Hostname
         path: jaegerui.ingress.host
-      - description: IngressClassName is the name of an IngressClass cluster resource.
-          Ingress controller implementations use this field to know whether they should
-          be serving this Ingress resource.
+      - description: IngressClassName defines the name of an IngressClass cluster
+          resource. Defines which ingress controller serves this ingress resource.
         displayName: Ingress Class Name
         path: jaegerui.ingress.ingressClassName
       - description: Resources defines the compute resource requirements of the Jaeger
@@ -212,7 +211,8 @@ spec:
         path: jaegerui.resources
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:resourceRequirements
-      - description: Route defines the route configuration for Jaeger UI.
+      - description: Route defines the OpenShift route configuration for the Jaeger
+          UI.
         displayName: Route
         path: jaegerui.route
       - description: Annotations defines the annotations of the Route object.
@@ -225,7 +225,7 @@ spec:
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
       - description: Host defines the hostname of the Route object.
-        displayName: Host
+        displayName: Hostname
         path: jaegerui.route.host
       - description: 'Termination specifies the termination type. Default: edge.'
         displayName: TLS Termination
@@ -625,25 +625,23 @@ spec:
       - description: Compactor defines the tempo compactor component spec.
         displayName: Compactor pods
         path: template.compactor
-      - description: NodeSelector is the simplest recommended form of node selection
-          constraint.
+      - description: NodeSelector defines the simple form of the node-selection constraint.
         displayName: Node Selector
         path: template.compactor.nodeSelector
-      - description: Replicas represents the number of replicas to create for this
+      - description: Replicas defines the number of replicas to be created for this
           component.
         displayName: Component Replicas
         path: template.compactor.replicas
-      - description: Tolerations defines component specific pod tolerations.
+      - description: Tolerations defines component-specific pod tolerations.
         displayName: Tolerations
         path: template.compactor.tolerations
       - description: Distributor defines the distributor component spec.
         displayName: Distributor pods
         path: template.distributor
-      - description: NodeSelector is the simplest recommended form of node selection
-          constraint.
+      - description: NodeSelector defines the simple form of the node-selection constraint.
         displayName: Node Selector
         path: template.distributor.nodeSelector
-      - description: Replicas represents the number of replicas to create for this
+      - description: Replicas defines the number of replicas to be created for this
           component.
         displayName: Component Replicas
         path: template.distributor.replicas
@@ -671,7 +669,7 @@ spec:
       - description: MinVersion defines the minimum acceptable TLS version.
         displayName: Min TLS Version
         path: template.distributor.tls.minVersion
-      - description: Tolerations defines component specific pod tolerations.
+      - description: Tolerations defines component-specific pod tolerations.
         displayName: Tolerations
         path: template.distributor.tolerations
       - description: Gateway defines the tempo gateway spec.
@@ -690,69 +688,64 @@ spec:
       - description: Host defines the hostname of the Ingress object.
         displayName: Host
         path: template.gateway.ingress.host
-      - description: Route defines OpenShift Route specific options.
+      - description: Route defines the options for the OpenShift route.
         displayName: Route Configuration
         path: template.gateway.ingress.route
-      - description: Termination specifies the termination type. By default "edge"
-          is used.
+      - description: Termination defines the termination type. The default is "edge".
         displayName: TLS Termination Policy
         path: template.gateway.ingress.route.termination
       - description: Type defines the type of Ingress for the Jaeger Query UI. Currently
           ingress, route and none are supported.
         displayName: Type
         path: template.gateway.ingress.type
-      - description: NodeSelector is the simplest recommended form of node selection
-          constraint.
+      - description: NodeSelector defines the simple form of the node-selection constraint.
         displayName: Node Selector
         path: template.gateway.nodeSelector
-      - description: Replicas represents the number of replicas to create for this
+      - description: Replicas defines the number of replicas to be created for this
           component.
         displayName: Component Replicas
         path: template.gateway.replicas
-      - description: Tolerations defines component specific pod tolerations.
+      - description: Tolerations defines component-specific pod tolerations.
         displayName: Tolerations
         path: template.gateway.tolerations
       - description: Ingester defines the ingester component spec.
         displayName: Ingester pods
         path: template.ingester
-      - description: NodeSelector is the simplest recommended form of node selection
-          constraint.
+      - description: NodeSelector defines the simple form of the node-selection constraint.
         displayName: Node Selector
         path: template.ingester.nodeSelector
-      - description: Replicas represents the number of replicas to create for this
+      - description: Replicas defines the number of replicas to be created for this
           component.
         displayName: Component Replicas
         path: template.ingester.replicas
-      - description: Tolerations defines component specific pod tolerations.
+      - description: Tolerations defines component-specific pod tolerations.
         displayName: Tolerations
         path: template.ingester.tolerations
       - description: Querier defines the querier component spec.
         displayName: Querier pods
         path: template.querier
-      - description: NodeSelector is the simplest recommended form of node selection
-          constraint.
+      - description: NodeSelector defines the simple form of the node-selection constraint.
         displayName: Node Selector
         path: template.querier.nodeSelector
-      - description: Replicas represents the number of replicas to create for this
+      - description: Replicas defines the number of replicas to be created for this
           component.
         displayName: Component Replicas
         path: template.querier.replicas
-      - description: Tolerations defines component specific pod tolerations.
+      - description: Tolerations defines component-specific pod tolerations.
         displayName: Tolerations
         path: template.querier.tolerations
       - description: TempoQueryFrontendSpec defines the query frontend spec.
         displayName: Query Frontend pods
         path: template.queryFrontend
-      - description: JaegerQuerySpec defines Jaeger Query specific options.
+      - description: JaegerQuery defines options specific to the Jaeger Query component.
         displayName: Jaeger Query Settings
         path: template.queryFrontend.jaegerQuery
-      - description: Enabled is used to define if Jaeger Query component should be
-          created.
+      - description: Enabled defines if the Jaeger Query component should be created.
         displayName: Enable Jaeger Query UI
         path: template.queryFrontend.jaegerQuery.enabled
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
-      - description: Ingress defines Jaeger Query Ingress options.
+      - description: Ingress defines the options for the Jaeger Query ingress.
         displayName: Jaeger Query UI Ingress Settings
         path: template.queryFrontend.jaegerQuery.ingress
       - description: Annotations defines the annotations of the Ingress object.
@@ -761,39 +754,38 @@ spec:
       - description: Host defines the hostname of the Ingress object.
         displayName: Host
         path: template.queryFrontend.jaegerQuery.ingress.host
-      - description: Route defines OpenShift Route specific options.
+      - description: Route defines the options for the OpenShift route.
         displayName: Route Configuration
         path: template.queryFrontend.jaegerQuery.ingress.route
-      - description: Termination specifies the termination type. By default "edge"
-          is used.
+      - description: Termination defines the termination type. The default is "edge".
         displayName: TLS Termination Policy
         path: template.queryFrontend.jaegerQuery.ingress.route.termination
       - description: Type defines the type of Ingress for the Jaeger Query UI. Currently
           ingress, route and none are supported.
         displayName: Type
         path: template.queryFrontend.jaegerQuery.ingress.type
-      - description: MonitorTab defines monitor tab configuration.
+      - description: MonitorTab defines the monitor tab configuration.
         displayName: Jaeger Query UI Monitor Tab Settings
         path: template.queryFrontend.jaegerQuery.monitorTab
-      - description: Enabled enables monitoring tab in Jaeger console. PrometheusEndpoint
-          needs to be set to enable the feature.
+      - description: Enabled enables the monitor tab in the Jaeger console. The PrometheusEndpoint
+          must be configured to enable this feature.
         displayName: Enabled
         path: template.queryFrontend.jaegerQuery.monitorTab.enabled
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
-      - description: PrometheusEndpoint configures endpoint to the Prometheus that
-          contains span RED metrics. For instance on OpenShift this is set to https://thanos-querier.openshift-monitoring.svc.cluster.local:9091
+      - description: PrometheusEndpoint defines the endpoint to the Prometheus instance
+          that contains the span rate, error, and duration (RED) metrics. For instance
+          on OpenShift this is set to https://thanos-querier.openshift-monitoring.svc.cluster.local:9091
         displayName: Prometheus endpoint
         path: template.queryFrontend.jaegerQuery.monitorTab.prometheusEndpoint
-      - description: NodeSelector is the simplest recommended form of node selection
-          constraint.
+      - description: NodeSelector defines the simple form of the node-selection constraint.
         displayName: Node Selector
         path: template.queryFrontend.nodeSelector
-      - description: Replicas represents the number of replicas to create for this
+      - description: Replicas defines the number of replicas to be created for this
           component.
         displayName: Component Replicas
         path: template.queryFrontend.replicas
-      - description: Tolerations defines component specific pod tolerations.
+      - description: Tolerations defines component-specific pod tolerations.
         displayName: Tolerations
         path: template.queryFrontend.tolerations
       - description: Tenants defines the per-tenant authentication and authorization

@@ -510,18 +510,18 @@ type TempoDistributorSpec struct {
 
 // TempoComponentSpec defines specific schedule settings for tempo components.
 type TempoComponentSpec struct {
-	// Replicas represents the number of replicas to create for this component.
+	// Replicas defines the number of replicas to be created for this component.
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Component Replicas"
 	Replicas *int32 `json:"replicas,omitempty"`
 
-	// NodeSelector is the simplest recommended form of node selection constraint.
+	// NodeSelector defines the simple form of the node-selection constraint.
 	//
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Node Selector"
 	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
 
-	// Tolerations defines component specific pod tolerations.
+	// Tolerations defines component-specific pod tolerations.
 	//
 	// +optional
 	// +listType=atomic
@@ -562,7 +562,7 @@ type TempoQueryFrontendSpec struct {
 	// +kubebuilder:validation:Optional
 	TempoComponentSpec `json:"component,omitempty"`
 
-	// JaegerQuerySpec defines Jaeger Query specific options.
+	// JaegerQuery defines options specific to the Jaeger Query component.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
@@ -572,21 +572,21 @@ type TempoQueryFrontendSpec struct {
 
 // JaegerQuerySpec defines Jaeger Query options.
 type JaegerQuerySpec struct {
-	// Enabled is used to define if Jaeger Query component should be created.
+	// Enabled defines if the Jaeger Query component should be created.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enable Jaeger Query UI",xDescriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
 	Enabled bool `json:"enabled"`
 
-	// Ingress defines Jaeger Query Ingress options.
+	// Ingress defines the options for the Jaeger Query ingress.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger Query UI Ingress Settings"
 	Ingress IngressSpec `json:"ingress,omitempty"`
 
-	// MonitorTab defines monitor tab configuration.
+	// MonitorTab defines the monitor tab configuration.
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger Query UI Monitor Tab Settings"
@@ -599,14 +599,14 @@ type JaegerQuerySpec struct {
 // https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/connector/spanmetricsconnector
 // which derives span RED metrics from spans and exports the metrics to Prometheus.
 type JaegerQueryMonitor struct {
-	// Enabled enables monitoring tab in Jaeger console.
-	// PrometheusEndpoint needs to be set to enable the feature.
+	// Enabled enables the monitor tab in the Jaeger console.
+	// The PrometheusEndpoint must be configured to enable this feature.
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enabled",xDescriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
 	Enabled bool `json:"enabled"`
 
-	// PrometheusEndpoint configures endpoint to the Prometheus that contains span RED metrics.
+	// PrometheusEndpoint defines the endpoint to the Prometheus instance that contains the span rate, error, and duration (RED) metrics.
 	// For instance on OpenShift this is set to https://thanos-querier.openshift-monitoring.svc.cluster.local:9091
 	// +optional
 	// +kubebuilder:validation:Optional
@@ -638,13 +638,12 @@ type IngressSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Host"
 	Host string `json:"host,omitempty"`
 
-	// IngressClassName is the name of an IngressClass cluster resource. Ingress
-	// controller implementations use this field to know whether they should be
-	// serving this Ingress resource.
+	// IngressClassName defines the name of an IngressClass cluster resource.
+	// Defines which ingress controller serves this ingress resource.
 	// +optional
 	IngressClassName *string `json:"ingressClassName,omitempty"`
 
-	// Route defines OpenShift Route specific options.
+	// Route defines the options for the OpenShift route.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
@@ -654,7 +653,8 @@ type IngressSpec struct {
 
 // RouteSpec defines OpenShift Route specific options.
 type RouteSpec struct {
-	// Termination specifies the termination type. By default "edge" is used.
+	// Termination defines the termination type.
+	// The default is "edge".
 	//
 	// +optional
 	// +kubebuilder:validation:Optional

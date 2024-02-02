@@ -132,11 +132,12 @@ spec:
                 description: JaegerUI defines the Jaeger UI configuration.
                 properties:
                   enabled:
-                    description: Enabled defines if the Jaeger UI should be enabled.
+                    description: Enabled defines if the Jaeger UI component should
+                      be created.
                     type: boolean
                   ingress:
-                    description: Ingress defines the ingress configuration for Jaeger
-                      UI.
+                    description: Ingress defines the Ingress configuration for the
+                      Jaeger UI.
                     properties:
                       annotations:
                         additionalProperties:
@@ -152,10 +153,9 @@ spec:
                         description: Host defines the hostname of the Ingress object.
                         type: string
                       ingressClassName:
-                        description: IngressClassName is the name of an IngressClass
-                          cluster resource. Ingress controller implementations use
-                          this field to know whether they should be serving this Ingress
-                          resource.
+                        description: IngressClassName defines the name of an IngressClass
+                          cluster resource. Defines which ingress controller serves
+                          this ingress resource.
                         type: string
                     required:
                     - enabled
@@ -211,8 +211,8 @@ spec:
                         type: object
                     type: object
                   route:
-                    description: Route defines the route configuration for Jaeger
-                      UI.
+                    description: Route defines the OpenShift route configuration for
+                      the Jaeger UI.
                     properties:
                       annotations:
                         additionalProperties:

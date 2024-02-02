@@ -22,13 +22,13 @@ spec:                                    # TempoMonolithicSpec defines the desir
           enabled: false                 # Enabled defines if TLS is enabled.
           minVersion: ""                 # MinVersion defines the minimum acceptable TLS version.
   jaegerui:                              # JaegerUI defines the Jaeger UI configuration.
-    enabled: false                       # Enabled defines if the Jaeger UI should be enabled.
-    ingress:                             # Ingress defines the ingress configuration for Jaeger UI.
+    enabled: false                       # Enabled defines if the Jaeger UI component should be created.
+    ingress:                             # Ingress defines the Ingress configuration for the Jaeger UI.
       annotations:                       # Annotations defines the annotations of the Ingress object.
         "key": ""
       enabled: false                     # Enabled defines if an Ingress object should be created for Jaeger UI.
       host: ""                           # Host defines the hostname of the Ingress object.
-      ingressClassName: ""               # IngressClassName is the name of an IngressClass cluster resource. Ingress controller implementations use this field to know whether they should be serving this Ingress resource.
+      ingressClassName: ""               # IngressClassName defines the name of an IngressClass cluster resource. Defines which ingress controller serves this ingress resource.
     resources:                           # Resources defines the compute resource requirements of the Jaeger UI container.
       claims:                            # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.   This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.   This field is immutable. It can only be set for containers.
       - name: ""                         # Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.
@@ -38,7 +38,7 @@ spec:                                    # TempoMonolithicSpec defines the desir
       requests:                          # Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. Requests cannot exceed Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
         cpu: "500m"
         memory: "1Gi"
-    route:                               # Route defines the route configuration for Jaeger UI.
+    route:                               # Route defines the OpenShift route configuration for the Jaeger UI.
       annotations:                       # Annotations defines the annotations of the Route object.
         "key": ""
       enabled: false                     # Enabled defines if a Route object should be created for Jaeger UI.

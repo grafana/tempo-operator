@@ -969,9 +969,8 @@ string
 
 <em>(Optional)</em>
 
-<p>IngressClassName is the name of an IngressClass cluster resource. Ingress
-controller implementations use this field to know whether they should be
-serving this Ingress resource.</p>
+<p>IngressClassName defines the name of an IngressClass cluster resource.
+Defines which ingress controller serves this ingress resource.</p>
 
 </td>
 </tr>
@@ -998,7 +997,7 @@ RouteSpec
 
 <em>(Optional)</em>
 
-<p>Route defines OpenShift Route specific options.</p>
+<p>Route defines the options for the OpenShift route.</p>
 
 </td>
 </tr>
@@ -1106,8 +1105,8 @@ bool
 
 <em>(Optional)</em>
 
-<p>Enabled enables monitoring tab in Jaeger console.
-PrometheusEndpoint needs to be set to enable the feature.</p>
+<p>Enabled enables the monitor tab in the Jaeger console.
+The PrometheusEndpoint must be configured to enable this feature.</p>
 
 </td>
 </tr>
@@ -1130,7 +1129,7 @@ string
 
 <em>(Optional)</em>
 
-<p>PrometheusEndpoint configures endpoint to the Prometheus that contains span RED metrics.
+<p>PrometheusEndpoint defines the endpoint to the Prometheus instance that contains the span rate, error, and duration (RED) metrics.
 For instance on OpenShift this is set to <a href="https://thanos-querier.openshift-monitoring.svc.cluster.local:9091">https://thanos-querier.openshift-monitoring.svc.cluster.local:9091</a></p>
 
 </td>
@@ -1187,7 +1186,7 @@ bool
 
 <em>(Optional)</em>
 
-<p>Enabled is used to define if Jaeger Query component should be created.</p>
+<p>Enabled defines if the Jaeger Query component should be created.</p>
 
 </td>
 </tr>
@@ -1214,7 +1213,7 @@ IngressSpec
 
 <em>(Optional)</em>
 
-<p>Ingress defines Jaeger Query Ingress options.</p>
+<p>Ingress defines the options for the Jaeger Query ingress.</p>
 
 </td>
 </tr>
@@ -1241,7 +1240,7 @@ JaegerQueryMonitor
 
 <em>(Optional)</em>
 
-<p>MonitorTab defines monitor tab configuration.</p>
+<p>MonitorTab defines the monitor tab configuration.</p>
 
 </td>
 </tr>
@@ -1971,9 +1970,8 @@ string
 
 <td>
 
-<p>IngressClassName is the name of an IngressClass cluster resource. Ingress
-controller implementations use this field to know whether they should be
-serving this Ingress resource.</p>
+<p>IngressClassName defines the name of an IngressClass cluster resource.
+Defines which ingress controller serves this ingress resource.</p>
 
 </td>
 </tr>
@@ -2149,7 +2147,7 @@ bool
 
 <td>
 
-<p>Enabled defines if the Jaeger UI should be enabled.</p>
+<p>Enabled defines if the Jaeger UI component should be created.</p>
 
 </td>
 </tr>
@@ -2174,7 +2172,7 @@ MonolithicJaegerUIIngressSpec
 
 <td>
 
-<p>Ingress defines the ingress configuration for Jaeger UI.</p>
+<p>Ingress defines the Ingress configuration for the Jaeger UI.</p>
 
 </td>
 </tr>
@@ -2199,7 +2197,7 @@ MonolithicJaegerUIRouteSpec
 
 <td>
 
-<p>Route defines the route configuration for Jaeger UI.</p>
+<p>Route defines the OpenShift route configuration for the Jaeger UI.</p>
 
 </td>
 </tr>
@@ -3848,7 +3846,8 @@ TLSRouteTerminationType
 
 <em>(Optional)</em>
 
-<p>Termination specifies the termination type. By default &ldquo;edge&rdquo; is used.</p>
+<p>Termination defines the termination type.
+The default is &ldquo;edge&rdquo;.</p>
 
 </td>
 </tr>
@@ -4305,7 +4304,7 @@ int32
 
 <em>(Optional)</em>
 
-<p>Replicas represents the number of replicas to create for this component.</p>
+<p>Replicas defines the number of replicas to be created for this component.</p>
 
 </td>
 </tr>
@@ -4328,7 +4327,7 @@ map[string]string
 
 <em>(Optional)</em>
 
-<p>NodeSelector is the simplest recommended form of node selection constraint.</p>
+<p>NodeSelector defines the simple form of the node-selection constraint.</p>
 
 </td>
 </tr>
@@ -4355,7 +4354,7 @@ map[string]string
 
 <em>(Optional)</em>
 
-<p>Tolerations defines component specific pod tolerations.</p>
+<p>Tolerations defines component-specific pod tolerations.</p>
 
 </td>
 </tr>
@@ -4943,7 +4942,7 @@ JaegerQuerySpec
 
 <em>(Optional)</em>
 
-<p>JaegerQuerySpec defines Jaeger Query specific options.</p>
+<p>JaegerQuery defines options specific to the Jaeger Query component.</p>
 
 </td>
 </tr>

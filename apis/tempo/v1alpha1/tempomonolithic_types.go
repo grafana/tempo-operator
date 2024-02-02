@@ -195,19 +195,19 @@ type MonolithicIngestionOTLPProtocolsHTTPSpec struct {
 
 // MonolithicJaegerUISpec defines the settings for the Jaeger UI.
 type MonolithicJaegerUISpec struct {
-	// Enabled defines if the Jaeger UI should be enabled.
+	// Enabled defines if the Jaeger UI component should be created.
 	//
 	// +kubebuilder:validation:Required
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enabled",xDescriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
 	Enabled bool `json:"enabled"`
 
-	// Ingress defines the ingress configuration for Jaeger UI.
+	// Ingress defines the Ingress configuration for the Jaeger UI.
 	//
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Ingress"
 	Ingress *MonolithicJaegerUIIngressSpec `json:"ingress,omitempty"`
 
-	// Route defines the route configuration for Jaeger UI.
+	// Route defines the OpenShift route configuration for the Jaeger UI.
 	//
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Route"
@@ -237,12 +237,11 @@ type MonolithicJaegerUIIngressSpec struct {
 	// Host defines the hostname of the Ingress object.
 	//
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Host"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Hostname"
 	Host string `json:"host,omitempty"`
 
-	// IngressClassName is the name of an IngressClass cluster resource. Ingress
-	// controller implementations use this field to know whether they should be
-	// serving this Ingress resource.
+	// IngressClassName defines the name of an IngressClass cluster resource.
+	// Defines which ingress controller serves this ingress resource.
 	//
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Ingress Class Name"
@@ -266,7 +265,7 @@ type MonolithicJaegerUIRouteSpec struct {
 	// Host defines the hostname of the Route object.
 	//
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Host"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Hostname"
 	Host string `json:"host,omitempty"`
 
 	// Termination specifies the termination type.
