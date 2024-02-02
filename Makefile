@@ -415,7 +415,7 @@ kuttl:
 	./hack/install/install-kuttl.sh
 
 .PHONY: generate-all
-generate-all: generate api-docs bundle ## Update all generated files
+generate-all: generate bundle api-docs ## Update all generated files
 
 .PHONY: ensure-generate-is-noop
 ensure-generate-is-noop: generate-all ## Verify that all checked-in, generated code is up-to-date
