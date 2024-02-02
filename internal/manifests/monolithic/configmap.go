@@ -160,7 +160,7 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 			config.Storage.Trace.S3.Endpoint = opts.StorageParams.S3.Endpoint
 			config.Storage.Trace.S3.Insecure = opts.StorageParams.S3.Insecure
 			config.Storage.Trace.S3.Bucket = opts.StorageParams.S3.Bucket
-			if tempo.Spec.Storage.Traces.S3.TLS != nil && tempo.Spec.Storage.Traces.S3.TLS.Enabled {
+			if tempo.Spec.Storage.Traces.S3 != nil && tempo.Spec.Storage.Traces.S3.TLS != nil && tempo.Spec.Storage.Traces.S3.TLS.Enabled {
 				if tempo.Spec.Storage.Traces.S3.TLS.CA != "" {
 					config.Storage.Trace.S3.TLSCAPath = path.Join(manifestutils.StorageTLSCADir, opts.StorageParams.S3.TLS.CAFilename)
 				}
