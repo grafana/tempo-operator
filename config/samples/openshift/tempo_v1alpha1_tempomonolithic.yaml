@@ -6,3 +6,7 @@ spec:
   storage:
     traces:
       backend: memory
+  jaegerui:
+    enabled: true
+    route:
+      enabled: true

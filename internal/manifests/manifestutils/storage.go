@@ -70,7 +70,7 @@ func ConfigureGCS(pod *corev1.PodSpec, containerIdx int, storageSecretName strin
 	return nil
 }
 
-// ConfigureS3Storage mounts the AWS S3 credentials and TLS certs in a pod.
+// ConfigureS3Storage mounts the Amazon S3 credentials and TLS certs in a pod.
 func ConfigureS3Storage(pod *corev1.PodSpec, containerIdx int, storageSecretName string, tlsSpec *v1alpha1.TLSSpec) error {
 	pod.Containers[containerIdx].Env = append(pod.Containers[containerIdx].Env, []corev1.EnvVar{
 		{

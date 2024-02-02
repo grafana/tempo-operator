@@ -11,6 +11,12 @@ metadata:
             "name": "sample"
           },
           "spec": {
+            "jaegerui": {
+              "enabled": true,
+              "ingress": {
+                "enabled": true
+              }
+            },
             "storage": {
               "traces": {
                 "backend": "memory"
@@ -56,7 +62,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.7.0
-    createdAt: "2024-02-01T17:34:26Z"
+    createdAt: "2024-02-02T13:43:01Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -71,68 +77,243 @@ spec:
   apiservicedefinitions: {}
   customresourcedefinitions:
     owned:
-    - description: TempoMonolithic is the Schema for the tempomonolithics API.
-      displayName: Tempo Monolithic
+    - description: TempoMonolithic manages a Tempo deployment in monolithic mode.
+      displayName: TempoMonolithic
       kind: TempoMonolithic
       name: tempomonolithics.tempo.grafana.com
+      resources:
+      - kind: ConfigMap
+        name: ""
+        version: v1
+      - kind: Ingress
+        name: ""
+        version: v1
+      - kind: Route
+        name: ""
+        version: v1
+      - kind: Secret
+        name: ""
+        version: v1
+      - kind: Service
+        name: ""
+        version: v1
+      - kind: StatefulSet
+        name: ""
+        version: v1
       specDescriptors:
+      - description: ExtraConfig defines any extra (overlay) configuration of components.
+        displayName: Extra Configuration
+        path: extraConfig
       - description: Tempo defines any extra Tempo configuration, which will be merged
           with the operator's generated Tempo configuration
         displayName: Tempo Extra Configurations
         path: extraConfig.tempo
-      - description: caName is the name of a ConfigMap containing a CA certificate
-          (service-ca.crt). It needs to be in the same namespace as the Tempo custom
-          resource.
-        displayName: CA ConfigMap Name
+      - description: Ingestion defines the trace ingestion configuration.
+        displayName: Ingestion
+        path: ingestion
+      - description: OTLP defines the ingestion configuration for the OTLP protocol.
+        displayName: OTLP
+        path: ingestion.otlp
+      - description: GRPC defines the OTLP over gRPC configuration.
+        displayName: gRPC
+        path: ingestion.otlp.grpc
+      - description: 'Enabled defines if OTLP over gRPC is enabled. Default: enabled.'
+        displayName: Enabled
+        path: ingestion.otlp.grpc.enabled
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
+      - description: TLS defines the TLS configuration for OTLP/gRPC ingestion.
+        displayName: TLS
+        path: ingestion.otlp.grpc.tls
+      - description: CA is the name of a ConfigMap containing a CA certificate (service-ca.crt).
+          It needs to be in the same namespace as the Tempo custom resource.
+        displayName: CA ConfigMap
         path: ingestion.otlp.grpc.tls.caName
         x-descriptors:
         - urn:alm:descriptor:io.kubernetes:ConfigMap
-      - description: certName is the name of a Secret containing a certificate (tls.crt)
+      - description: Cert is the name of a Secret containing a certificate (tls.crt)
           and private key (tls.key). It needs to be in the same namespace as the Tempo
           custom resource.
-        displayName: Certificate Secret Name
+        displayName: Certificate Secret
         path: ingestion.otlp.grpc.tls.certName
         x-descriptors:
         - urn:alm:descriptor:io.kubernetes:Secret
-      - description: minVersion defines the minimum acceptable TLS version.
+      - description: Enabled defines if TLS is enabled.
+        displayName: Enabled
+        path: ingestion.otlp.grpc.tls.enabled
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
+      - description: MinVersion defines the minimum acceptable TLS version.
         displayName: Min TLS Version
         path: ingestion.otlp.grpc.tls.minVersion
-      - description: caName is the name of a ConfigMap containing a CA certificate
-          (service-ca.crt). It needs to be in the same namespace as the Tempo custom
-          resource.
-        displayName: CA ConfigMap Name
+      - description: HTTP defines the OTLP over HTTP configuration.
+        displayName: HTTP
+        path: ingestion.otlp.http
+      - description: 'Enabled defines if OTLP over HTTP is enabled. Default: enabled.'
+        displayName: Enabled
+        path: ingestion.otlp.http.enabled
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
+      - description: TLS defines the TLS configuration for OTLP/HTTP ingestion.
+        displayName: TLS
+        path: ingestion.otlp.http.tls
+      - description: CA is the name of a ConfigMap containing a CA certificate (service-ca.crt).
+          It needs to be in the same namespace as the Tempo custom resource.
+        displayName: CA ConfigMap
         path: ingestion.otlp.http.tls.caName
         x-descriptors:
         - urn:alm:descriptor:io.kubernetes:ConfigMap
-      - description: certName is the name of a Secret containing a certificate (tls.crt)
+      - description: Cert is the name of a Secret containing a certificate (tls.crt)
           and private key (tls.key). It needs to be in the same namespace as the Tempo
           custom resource.
-        displayName: Certificate Secret Name
+        displayName: Certificate Secret
         path: ingestion.otlp.http.tls.certName
         x-descriptors:
         - urn:alm:descriptor:io.kubernetes:Secret
-      - description: minVersion defines the minimum acceptable TLS version.
+      - description: Enabled defines if TLS is enabled.
+        displayName: Enabled
+        path: ingestion.otlp.http.tls.enabled
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
+      - description: MinVersion defines the minimum acceptable TLS version.
         displayName: Min TLS Version
         path: ingestion.otlp.http.tls.minVersion
-      - description: caName is the name of a ConfigMap containing a CA certificate
-          (service-ca.crt). It needs to be in the same namespace as the Tempo custom
-          resource.
-        displayName: CA ConfigMap Name
+      - description: JaegerUI defines the Jaeger UI configuration.
+        displayName: Jaeger UI
+        path: jaegerui
+      - description: Enabled defines if the Jaeger UI should be enabled.
+        displayName: Enabled
+        path: jaegerui.enabled
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
+      - description: Ingress defines the ingress configuration for Jaeger UI.
+        displayName: Ingress
+        path: jaegerui.ingress
+      - description: Annotations defines the annotations of the Ingress object.
+        displayName: Annotations
+        path: jaegerui.ingress.annotations
+      - description: Enabled defines if an Ingress object should be created for Jaeger
+          UI.
+        displayName: Enabled
+        path: jaegerui.ingress.enabled
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
+      - description: Host defines the hostname of the Ingress object.
+        displayName: Host
+        path: jaegerui.ingress.host
+      - description: IngressClassName is the name of an IngressClass cluster resource.
+          Ingress controller implementations use this field to know whether they should
+          be serving this Ingress resource.
+        displayName: Ingress Class Name
+        path: jaegerui.ingress.ingressClassName
+      - description: Resources defines the compute resource requirements of the Jaeger
+          UI container.
+        displayName: Resources
+        path: jaegerui.resources
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:resourceRequirements
+      - description: Route defines the route configuration for Jaeger UI.
+        displayName: Route
+        path: jaegerui.route
+      - description: Annotations defines the annotations of the Route object.
+        displayName: Annotations
+        path: jaegerui.route.annotations
+      - description: Enabled defines if a Route object should be created for Jaeger
+          UI.
+        displayName: Enabled
+        path: jaegerui.route.enabled
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
+      - description: Host defines the hostname of the Route object.
+        displayName: Host
+        path: jaegerui.route.host
+      - description: 'Termination specifies the termination type. Default: edge.'
+        displayName: TLS Termination
+        path: jaegerui.route.termination
+      - description: 'ManagementState defines whether this instance is managed by
+          the operator or self-managed. Default: Managed.'
+        displayName: Management State
+        path: management
+      - description: Resources defines the compute resource requirements of the Tempo
+          container.
+        displayName: Resources
+        path: resources
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:resourceRequirements
+      - description: Storage defines the storage configuration.
+        displayName: Storage
+        path: storage
+      - description: Traces defines the storage configuration for traces.
+        displayName: Traces
+        path: storage.traces
+      - description: Azure defines the configuration for Azure Storage.
+        displayName: Azure Storage
+        path: storage.traces.azure
+      - description: Secret is the name of a Secret containing credentials for accessing
+          object storage. It needs to be in the same namespace as the TempoMonolithic
+          custom resource.
+        displayName: Storage Secret Name
+        path: storage.traces.azure.secret
+        x-descriptors:
+        - urn:alm:descriptor:io.kubernetes:Secret
+      - description: 'Backend defines the backend for storing traces. Default: memory.'
+        displayName: Storage Backend
+        path: storage.traces.backend
+      - description: GCP defines the configuration for Google Cloud Storage.
+        displayName: Google Cloud Storage
+        path: storage.traces.gcs
+      - description: Secret is the name of a Secret containing credentials for accessing
+          object storage. It needs to be in the same namespace as the TempoMonolithic
+          custom resource.
+        displayName: Storage Secret Name
+        path: storage.traces.gcs.secret
+        x-descriptors:
+        - urn:alm:descriptor:io.kubernetes:Secret
+      - description: S3 defines the configuration for Amazon S3.
+        displayName: Amazon S3
+        path: storage.traces.s3
+      - description: Secret is the name of a Secret containing credentials for accessing
+          object storage. It needs to be in the same namespace as the TempoMonolithic
+          custom resource.
+        displayName: Storage Secret Name
+        path: storage.traces.s3.secret
+        x-descriptors:
+        - urn:alm:descriptor:io.kubernetes:Secret
+      - description: TLS defines the TLS configuration for Amazon S3.
+        displayName: TLS
+        path: storage.traces.s3.tls
+      - description: CA is the name of a ConfigMap containing a CA certificate (service-ca.crt).
+          It needs to be in the same namespace as the Tempo custom resource.
+        displayName: CA ConfigMap
         path: storage.traces.s3.tls.caName
         x-descriptors:
         - urn:alm:descriptor:io.kubernetes:ConfigMap
-      - description: certName is the name of a Secret containing a certificate (tls.crt)
+      - description: Cert is the name of a Secret containing a certificate (tls.crt)
           and private key (tls.key). It needs to be in the same namespace as the Tempo
           custom resource.
-        displayName: Certificate Secret Name
+        displayName: Certificate Secret
         path: storage.traces.s3.tls.certName
         x-descriptors:
         - urn:alm:descriptor:io.kubernetes:Secret
-      - description: minVersion defines the minimum acceptable TLS version.
+      - description: Enabled defines if TLS is enabled.
+        displayName: Enabled
+        path: storage.traces.s3.tls.enabled
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
+      - description: MinVersion defines the minimum acceptable TLS version.
         displayName: Min TLS Version
         path: storage.traces.s3.tls.minVersion
+      - description: 'Size defines the size of the volume where traces are stored.
+          For in-memory storage, this defines the size of the tmpfs volume. For persistent
+          volume storage, this defines the size of the persistent volume. For object
+          storage, this defines the size of the persistent volume containing the Write-Ahead
+          Log (WAL) of Tempo. Default: 10Gi.'
+        displayName: Size
+        path: storage.traces.size
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:text
       version: v1alpha1
-    - description: TempoStack is the spec for Tempo deployments.
+    - description: TempoStack manages a Tempo deployment in microservices mode.
       displayName: TempoStack
       kind: TempoStack
       name: tempostacks.tempo.grafana.com
@@ -410,21 +591,25 @@ spec:
       - description: TLS configuration for reaching the object storage endpoint.
         displayName: TLS Config
         path: storage.tls
-      - description: caName is the name of a ConfigMap containing a CA certificate
-          (service-ca.crt). It needs to be in the same namespace as the Tempo custom
-          resource.
-        displayName: CA ConfigMap Name
+      - description: CA is the name of a ConfigMap containing a CA certificate (service-ca.crt).
+          It needs to be in the same namespace as the Tempo custom resource.
+        displayName: CA ConfigMap
         path: storage.tls.caName
         x-descriptors:
         - urn:alm:descriptor:io.kubernetes:ConfigMap
-      - description: certName is the name of a Secret containing a certificate (tls.crt)
+      - description: Cert is the name of a Secret containing a certificate (tls.crt)
           and private key (tls.key). It needs to be in the same namespace as the Tempo
           custom resource.
-        displayName: Certificate Secret Name
+        displayName: Certificate Secret
         path: storage.tls.certName
         x-descriptors:
         - urn:alm:descriptor:io.kubernetes:Secret
-      - description: minVersion defines the minimum acceptable TLS version.
+      - description: Enabled defines if TLS is enabled.
+        displayName: Enabled
+        path: storage.tls.enabled
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
+      - description: MinVersion defines the minimum acceptable TLS version.
         displayName: Min TLS Version
         path: storage.tls.minVersion
       - description: StorageClassName for PVCs used by ingester. Defaults to nil (default
@@ -465,21 +650,25 @@ spec:
       - description: TLS defines TLS configuration for distributor receivers
         displayName: TLS
         path: template.distributor.tls
-      - description: caName is the name of a ConfigMap containing a CA certificate
-          (service-ca.crt). It needs to be in the same namespace as the Tempo custom
-          resource.
-        displayName: CA ConfigMap Name
+      - description: CA is the name of a ConfigMap containing a CA certificate (service-ca.crt).
+          It needs to be in the same namespace as the Tempo custom resource.
+        displayName: CA ConfigMap
         path: template.distributor.tls.caName
         x-descriptors:
         - urn:alm:descriptor:io.kubernetes:ConfigMap
-      - description: certName is the name of a Secret containing a certificate (tls.crt)
+      - description: Cert is the name of a Secret containing a certificate (tls.crt)
           and private key (tls.key). It needs to be in the same namespace as the Tempo
           custom resource.
-        displayName: Certificate Secret Name
+        displayName: Certificate Secret
         path: template.distributor.tls.certName
         x-descriptors:
         - urn:alm:descriptor:io.kubernetes:Secret
-      - description: minVersion defines the minimum acceptable TLS version.
+      - description: Enabled defines if TLS is enabled.
+        displayName: Enabled
+        path: template.distributor.tls.enabled
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
+      - description: MinVersion defines the minimum acceptable TLS version.
         displayName: Min TLS Version
         path: template.distributor.tls.minVersion
       - description: Tolerations defines component specific pod tolerations.
@@ -488,6 +677,10 @@ spec:
       - description: Gateway defines the tempo gateway spec.
         displayName: Gateway pods
         path: template.gateway
+      - displayName: Enabled
+        path: template.gateway.enabled
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
       - description: Ingress defines gateway Ingress options.
         displayName: Jaeger gateway Ingress Settings
         path: template.gateway.ingress
@@ -557,6 +750,8 @@ spec:
           created.
         displayName: Enable Jaeger Query UI
         path: template.queryFrontend.jaegerQuery.enabled
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
       - description: Ingress defines Jaeger Query Ingress options.
         displayName: Jaeger Query UI Ingress Settings
         path: template.queryFrontend.jaegerQuery.ingress
@@ -584,6 +779,8 @@ spec:
           needs to be set to enable the feature.
         displayName: Enabled
         path: template.queryFrontend.jaegerQuery.monitorTab.enabled
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
       - description: PrometheusEndpoint configures endpoint to the Prometheus that
           contains span RED metrics. For instance on OpenShift this is set to https://thanos-querier.openshift-monitoring.svc.cluster.local:9091
         displayName: Prometheus endpoint

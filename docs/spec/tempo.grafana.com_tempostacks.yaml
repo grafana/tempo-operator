@@ -59,9 +59,11 @@ spec:                                    # TempoStackSpec defines the desired st
       claims:                            # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.   This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.   This field is immutable. It can only be set for containers.
       - name: ""                         # Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.
       limits:                            # Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
-        "key": 1Gi
+        cpu: "750m"
+        memory: "2Gi"
       requests:                          # Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. Requests cannot exceed Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
-        "key": 1Gi
+        cpu: "500m"
+        memory: "1Gi"
   retention:                             # NOTE: currently this field is not considered. Retention period defined by dataset. User can specify how long data should be stored.
     global:                              # Global is used to configure global retention.
       traces: ""                         # Traces defines retention period. Supported parameter suffixes are "s", "m" and "h". example: 336h default: value is 48h.
@@ -78,12 +80,12 @@ spec:                                    # TempoStackSpec defines the desired st
       name: ""                           # Name of a secret in the namespace configured for object storage secrets.
       type: ""                           # Type of object storage that should be used
     tls:                                 # TLS configuration for reaching the object storage endpoint.
-      caName: ""                         # caName is the name of a ConfigMap containing a CA certificate (service-ca.crt). It needs to be in the same namespace as the Tempo custom resource.
-      certName: ""                       # certName is the name of a Secret containing a certificate (tls.crt) and private key (tls.key). It needs to be in the same namespace as the Tempo custom resource.
-      enabled: false                     # enabled defines if TLS is enabled.
-      minVersion: ""                     # minVersion defines the minimum acceptable TLS version.
+      caName: ""                         # CA is the name of a ConfigMap containing a CA certificate (service-ca.crt). It needs to be in the same namespace as the Tempo custom resource.
+      certName: ""                       # Cert is the name of a Secret containing a certificate (tls.crt) and private key (tls.key). It needs to be in the same namespace as the Tempo custom resource.
+      enabled: false                     # Enabled defines if TLS is enabled.
+      minVersion: ""                     # MinVersion defines the minimum acceptable TLS version.
   storageClassName: ""                   # StorageClassName for PVCs used by ingester. Defaults to nil (default storage class in the cluster).
-  storageSize: 1Gi                       # StorageSize for PVCs used by ingester. Defaults to 10Gi.
+  storageSize: "10Gi"                    # StorageSize for PVCs used by ingester. Defaults to 10Gi.
   template:                              # Template defines requirements for a set of tempo components.
     compactor:                           # Compactor defines the tempo compactor component spec.
       nodeSelector:                      # NodeSelector is the simplest recommended form of node selection constraint.
@@ -107,10 +109,10 @@ spec:                                    # TempoStackSpec defines the desired st
           tolerationSeconds: 0           # TolerationSeconds represents the period of time the toleration (which must be of effect NoExecute, otherwise this field is ignored) tolerates the taint. By default, it is not set, which means tolerate the taint forever (do not evict). Zero and negative values will be treated as 0 (evict immediately) by the system.
           value: ""                      # Value is the taint value the toleration matches to. If the operator is Exists, the value should be empty, otherwise just a regular string.
       tls:                               # TLS defines TLS configuration for distributor receivers
-        caName: ""                       # caName is the name of a ConfigMap containing a CA certificate (service-ca.crt). It needs to be in the same namespace as the Tempo custom resource.
-        certName: ""                     # certName is the name of a Secret containing a certificate (tls.crt) and private key (tls.key). It needs to be in the same namespace as the Tempo custom resource.
-        enabled: false                   # enabled defines if TLS is enabled.
-        minVersion: ""                   # minVersion defines the minimum acceptable TLS version.
+        caName: ""                       # CA is the name of a ConfigMap containing a CA certificate (service-ca.crt). It needs to be in the same namespace as the Tempo custom resource.
+        certName: ""                     # Cert is the name of a Secret containing a certificate (tls.crt) and private key (tls.key). It needs to be in the same namespace as the Tempo custom resource.
+        enabled: false                   # Enabled defines if TLS is enabled.
+        minVersion: ""                   # MinVersion defines the minimum acceptable TLS version.
     gateway:                             # Gateway defines the tempo gateway spec.
       component:                         # TempoComponentSpec is embedded to extend this definition with further options.   Currently there is no way to inline this field. See: https://github.com/golang/go/issues/6213
         nodeSelector:                    # NodeSelector is the simplest recommended form of node selection constraint.

@@ -33,7 +33,7 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: TempoStack is the spec for Tempo deployments.
+        description: TempoStack manages a Tempo deployment in microservices mode.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -415,20 +415,20 @@ spec:
                       endpoint.
                     properties:
                       caName:
-                        description: caName is the name of a ConfigMap containing
-                          a CA certificate (service-ca.crt). It needs to be in the
-                          same namespace as the Tempo custom resource.
+                        description: CA is the name of a ConfigMap containing a CA
+                          certificate (service-ca.crt). It needs to be in the same
+                          namespace as the Tempo custom resource.
                         type: string
                       certName:
-                        description: certName is the name of a Secret containing a
-                          certificate (tls.crt) and private key (tls.key). It needs
-                          to be in the same namespace as the Tempo custom resource.
+                        description: Cert is the name of a Secret containing a certificate
+                          (tls.crt) and private key (tls.key). It needs to be in the
+                          same namespace as the Tempo custom resource.
                         type: string
                       enabled:
-                        description: enabled defines if TLS is enabled.
+                        description: Enabled defines if TLS is enabled.
                         type: boolean
                       minVersion:
-                        description: minVersion defines the minimum acceptable TLS
+                        description: MinVersion defines the minimum acceptable TLS
                           version.
                         type: string
                     type: object
@@ -443,6 +443,7 @@ spec:
                 anyOf:
                 - type: integer
                 - type: string
+                default: 10Gi
                 description: StorageSize for PVCs used by ingester. Defaults to 10Gi.
                 pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                 x-kubernetes-int-or-string: true
@@ -578,21 +579,21 @@ spec:
                           receivers
                         properties:
                           caName:
-                            description: caName is the name of a ConfigMap containing
+                            description: CA is the name of a ConfigMap containing
                               a CA certificate (service-ca.crt). It needs to be in
                               the same namespace as the Tempo custom resource.
                             type: string
                           certName:
-                            description: certName is the name of a Secret containing
-                              a certificate (tls.crt) and private key (tls.key). It
+                            description: Cert is the name of a Secret containing a
+                              certificate (tls.crt) and private key (tls.key). It
                               needs to be in the same namespace as the Tempo custom
                               resource.
                             type: string
                           enabled:
-                            description: enabled defines if TLS is enabled.
+                            description: Enabled defines if TLS is enabled.
                             type: boolean
                           minVersion:
-                            description: minVersion defines the minimum acceptable
+                            description: MinVersion defines the minimum acceptable
                               TLS version.
                             type: string
                         type: object

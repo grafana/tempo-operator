@@ -55,6 +55,7 @@ type TempoStackSpec struct {
 	// StorageSize for PVCs used by ingester. Defaults to 10Gi.
 	//
 	// +optional
+	// +kubebuilder:default="10Gi"
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Storage size for PVCs"
 	StorageSize resource.Quantity `json:"storageSize,omitempty"`
 
@@ -539,7 +540,9 @@ type TempoGatewaySpec struct {
 	// +kubebuilder:validation:Optional
 	TempoComponentSpec `json:"component,omitempty"`
 
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enabled",xDescriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
 	Enabled bool `json:"enabled"`
+
 	// Ingress defines gateway Ingress options.
 	//
 	// +optional
@@ -573,7 +576,7 @@ type JaegerQuerySpec struct {
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enable Jaeger Query UI"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enable Jaeger Query UI",xDescriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
 	Enabled bool `json:"enabled"`
 
 	// Ingress defines Jaeger Query Ingress options.
@@ -600,7 +603,7 @@ type JaegerQueryMonitor struct {
 	// PrometheusEndpoint needs to be set to enable the feature.
 	// +optional
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enabled"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enabled",xDescriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
 	Enabled bool `json:"enabled"`
 
 	// PrometheusEndpoint configures endpoint to the Prometheus that contains span RED metrics.
@@ -785,7 +788,7 @@ type RetentionConfig struct {
 //+kubebuilder:printcolumn:name="Tempo Version",type="string",JSONPath=".status.tempoVersion",description="Tempo Version"
 //+kubebuilder:printcolumn:name="Management",type="string",JSONPath=".spec.managementState",description="Management State"
 
-// TempoStack is the spec for Tempo deployments.
+// TempoStack manages a Tempo deployment in microservices mode.
 //
 // +operator-sdk:csv:customresourcedefinitions:displayName="TempoStack",resources={{ConfigMap,v1},{ServiceAccount,v1},{Service,v1},{Secret,v1},{StatefulSet,v1},{Deployment,v1},{Ingress,v1},{Route,v1}}
 // +kubebuilder:resource:shortName=tempo;tempos
