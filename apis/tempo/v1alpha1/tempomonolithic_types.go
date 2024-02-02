@@ -289,7 +289,7 @@ type TempoMonolithicStatus struct {
 
 // TempoMonolithic manages a Tempo deployment in monolithic mode.
 //
-// +operator-sdk:csv:customresourcedefinitions:displayName="TempoMonolithic",resources={{ConfigMap,v1},{Service,v1},{Secret,v1},{StatefulSet,v1},{Ingress,v1},{Route,v1}}
+// +operator-sdk:csv:customresourcedefinitions:displayName="TempoMonolithic",resources={{ConfigMap,v1},{Service,v1},{StatefulSet,v1},{Ingress,v1},{Route,v1}}
 //
 //nolint:godot
 type TempoMonolithic struct {

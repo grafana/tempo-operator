@@ -32,9 +32,6 @@ spec:
       - kind: Route
         name: ""
         version: v1
-      - kind: Secret
-        name: ""
-        version: v1
       - kind: Service
         name: ""
         version: v1
