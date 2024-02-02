@@ -193,7 +193,7 @@ spec:
       - description: Secret is the name of a Secret containing credentials for accessing
           object storage. It needs to be in the same namespace as the TempoMonolithic
           custom resource.
-        displayName: Storage Secret Name
+        displayName: Storage Secret
         path: storage.traces.azure.secret
         x-descriptors:
         - urn:alm:descriptor:io.kubernetes:Secret
@@ -206,7 +206,7 @@ spec:
       - description: Secret is the name of a Secret containing credentials for accessing
           object storage. It needs to be in the same namespace as the TempoMonolithic
           custom resource.
-        displayName: Storage Secret Name
+        displayName: Storage Secret
         path: storage.traces.gcs.secret
         x-descriptors:
         - urn:alm:descriptor:io.kubernetes:Secret
@@ -216,7 +216,7 @@ spec:
       - description: Secret is the name of a Secret containing credentials for accessing
           object storage. It needs to be in the same namespace as the TempoMonolithic
           custom resource.
-        displayName: Storage Secret Name
+        displayName: Storage Secret
         path: storage.traces.s3.secret
         x-descriptors:
         - urn:alm:descriptor:io.kubernetes:Secret

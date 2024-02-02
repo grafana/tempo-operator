@@ -120,7 +120,7 @@ type MonolithicTracesObjectStorageSpec struct {
 	//
 	// +kubebuilder:validation:Required
 	// +kubebuilder:validation:MinLength=1
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Storage Secret Name",xDescriptors="urn:alm:descriptor:io.kubernetes:Secret"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Storage Secret",xDescriptors="urn:alm:descriptor:io.kubernetes:Secret"
 	Secret string `json:"secret"`
 }
 
