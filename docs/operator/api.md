@@ -969,9 +969,8 @@ string
 
 <em>(Optional)</em>
 
-<p>IngressClassName is the name of an IngressClass cluster resource. Ingress
-controller implementations use this field to know whether they should be
-serving this Ingress resource.</p>
+<p>IngressClassName defines the name of an IngressClass cluster resource.
+Defines which ingress controller serves this ingress resource.</p>
 
 </td>
 </tr>
@@ -998,7 +997,7 @@ RouteSpec
 
 <em>(Optional)</em>
 
-<p>Route defines OpenShift Route specific options.</p>
+<p>Route defines the options for the OpenShift route.</p>
 
 </td>
 </tr>
@@ -1106,8 +1105,8 @@ bool
 
 <em>(Optional)</em>
 
-<p>Enabled enables monitoring tab in Jaeger console.
-PrometheusEndpoint needs to be set to enable the feature.</p>
+<p>Enabled enables the monitor tab in the Jaeger console.
+The PrometheusEndpoint must be configured to enable this feature.</p>
 
 </td>
 </tr>
@@ -1130,7 +1129,7 @@ string
 
 <em>(Optional)</em>
 
-<p>PrometheusEndpoint configures endpoint to the Prometheus that contains span RED metrics.
+<p>PrometheusEndpoint defines the endpoint to the Prometheus instance that contains the span rate, error, and duration (RED) metrics.
 For instance on OpenShift this is set to <a href="https://thanos-querier.openshift-monitoring.svc.cluster.local:9091">https://thanos-querier.openshift-monitoring.svc.cluster.local:9091</a></p>
 
 </td>
@@ -1187,7 +1186,7 @@ bool
 
 <em>(Optional)</em>
 
-<p>Enabled is used to define if Jaeger Query component should be created.</p>
+<p>Enabled defines if the Jaeger Query component should be created.</p>
 
 </td>
 </tr>
@@ -1214,7 +1213,7 @@ IngressSpec
 
 <em>(Optional)</em>
 
-<p>Ingress defines Jaeger Query Ingress options.</p>
+<p>Ingress defines the options for the Jaeger Query ingress.</p>
 
 </td>
 </tr>
@@ -1241,7 +1240,7 @@ JaegerQueryMonitor
 
 <em>(Optional)</em>
 
-<p>MonitorTab defines monitor tab configuration.</p>
+<p>MonitorTab defines the monitor tab configuration.</p>
 
 </td>
 </tr>
@@ -1607,7 +1606,8 @@ bool
 
 <td>
 
-<p>Enabled defines if OTLP over gRPC is enabled</p>
+<p>Enabled defines if OTLP over gRPC is enabled.
+Default: enabled.</p>
 
 </td>
 </tr>
@@ -1632,7 +1632,7 @@ TLSSpec
 
 <td>
 
-<p>TLS defines the TLS configuration for OTLP/gRPC ingestion</p>
+<p>TLS defines the TLS configuration for OTLP/gRPC ingestion.</p>
 
 </td>
 </tr>
@@ -1686,7 +1686,8 @@ bool
 
 <td>
 
-<p>Enabled defines if OTLP over HTTP is enabled</p>
+<p>Enabled defines if OTLP over HTTP is enabled.
+Default: enabled.</p>
 
 </td>
 </tr>
@@ -1711,7 +1712,7 @@ TLSSpec
 
 <td>
 
-<p>TLS defines the TLS configuration for OTLP/HTTP ingestion</p>
+<p>TLS defines the TLS configuration for OTLP/HTTP ingestion.</p>
 
 </td>
 </tr>
@@ -1769,7 +1770,7 @@ MonolithicIngestionOTLPProtocolsGRPCSpec
 
 <td>
 
-<p>GRPC defines the OTLP/gRPC configuration</p>
+<p>GRPC defines the OTLP over gRPC configuration.</p>
 
 </td>
 </tr>
@@ -1794,7 +1795,7 @@ MonolithicIngestionOTLPProtocolsHTTPSpec
 
 <td>
 
-<p>HTTP defines the OTLP/HTTP configuration</p>
+<p>HTTP defines the OTLP over HTTP configuration.</p>
 
 </td>
 </tr>
@@ -1852,7 +1853,7 @@ MonolithicIngestionOTLPSpec
 
 <td>
 
-<p>OTLP defines the ingestion configuration for OTLP</p>
+<p>OTLP defines the ingestion configuration for the OTLP protocol.</p>
 
 </td>
 </tr>
@@ -1906,7 +1907,7 @@ bool
 
 <td>
 
-<p>Enabled defines if an Ingress object should be created for Jaeger UI</p>
+<p>Enabled defines if an Ingress object should be created for Jaeger UI.</p>
 
 </td>
 </tr>
@@ -1969,9 +1970,8 @@ string
 
 <td>
 
-<p>IngressClassName is the name of an IngressClass cluster resource. Ingress
-controller implementations use this field to know whether they should be
-serving this Ingress resource.</p>
+<p>IngressClassName defines the name of an IngressClass cluster resource.
+Defines which ingress controller serves this ingress resource.</p>
 
 </td>
 </tr>
@@ -2025,7 +2025,7 @@ bool
 
 <td>
 
-<p>Enabled defines if a Route object should be created for Jaeger UI</p>
+<p>Enabled defines if a Route object should be created for Jaeger UI.</p>
 
 </td>
 </tr>
@@ -2092,7 +2092,8 @@ TLSRouteTerminationType
 
 <td>
 
-<p>Termination specifies the termination type. Default: edge.</p>
+<p>Termination specifies the termination type.
+Default: edge.</p>
 
 </td>
 </tr>
@@ -2146,7 +2147,7 @@ bool
 
 <td>
 
-<p>Enabled defines if the Jaeger UI should be enabled</p>
+<p>Enabled defines if the Jaeger UI component should be created.</p>
 
 </td>
 </tr>
@@ -2171,7 +2172,7 @@ MonolithicJaegerUIIngressSpec
 
 <td>
 
-<p>Ingress defines the ingress configuration for Jaeger UI</p>
+<p>Ingress defines the Ingress configuration for the Jaeger UI.</p>
 
 </td>
 </tr>
@@ -2196,7 +2197,7 @@ MonolithicJaegerUIRouteSpec
 
 <td>
 
-<p>Route defines the route configuration for Jaeger UI</p>
+<p>Route defines the OpenShift route configuration for the Jaeger UI.</p>
 
 </td>
 </tr>
@@ -2221,7 +2222,7 @@ Kubernetes core/v1.ResourceRequirements
 
 <td>
 
-<p>Resources defines the compute resource requirements of Jaeger UI.</p>
+<p>Resources defines the compute resource requirements of the Jaeger UI container.</p>
 
 </td>
 </tr>
@@ -2279,7 +2280,7 @@ MonolithicTracesStorageSpec
 
 <td>
 
-<p>Traces defines the backend storage configuration for traces</p>
+<p>Traces defines the storage configuration for traces.</p>
 
 </td>
 </tr>
@@ -2333,8 +2334,8 @@ string
 
 <td>
 
-<p>secret is the name of a Secret containing credentials for accessing object storage.
-It needs to be in the same namespace as the Tempo custom resource.</p>
+<p>Secret is the name of a Secret containing credentials for accessing object storage.
+It needs to be in the same namespace as the TempoMonolithic custom resource.</p>
 
 </td>
 </tr>
@@ -2394,58 +2395,10 @@ It needs to be in the same namespace as the Tempo custom resource.</p>
 
 </tr><tr><td><p>&#34;s3&#34;</p></td>
 
-<td><p>MonolithicTracesStorageBackendS3 defines storing traces in AWS S3.</p>
+<td><p>MonolithicTracesStorageBackendS3 defines storing traces in Amazon S3.</p>
 </td>
 
 </tr></tbody>
-</table>
-
-## MonolithicTracesStoragePVSpec { #tempo-grafana-com-v1alpha1-MonolithicTracesStoragePVSpec }
-
-<div>
-
-<p>MonolithicTracesStoragePVSpec defines the Persistent Volume configuration.</p>
-
-</div>
-
-<table>
-
-<thead>
-
-<tr>
-
-<th>Field</th>
-
-<th>Description</th>
-
-</tr>
-
-</thead>
-
-<tbody>
-
-<tr>
-
-<td>
-
-<code>size</code><br/>
-
-<em>
-
-k8s.io/apimachinery/pkg/api/resource.Quantity
-
-</em>
-
-</td>
-
-<td>
-
-<p>Size defines the size of the Persistent Volume for storing the traces. Defaults to 10Gi.</p>
-
-</td>
-</tr>
-
-</tbody>
 </table>
 
 ## MonolithicTracesStorageS3Spec { #tempo-grafana-com-v1alpha1-MonolithicTracesStorageS3Spec }
@@ -2458,7 +2411,7 @@ k8s.io/apimachinery/pkg/api/resource.Quantity
 
 <div>
 
-<p>MonolithicTracesStorageS3Spec defines the AWS S3 configuration.</p>
+<p>MonolithicTracesStorageS3Spec defines the Amazon S3 configuration.</p>
 
 </div>
 
@@ -2494,8 +2447,8 @@ string
 
 <td>
 
-<p>secret is the name of a Secret containing credentials for accessing object storage.
-It needs to be in the same namespace as the Tempo custom resource.</p>
+<p>Secret is the name of a Secret containing credentials for accessing object storage.
+It needs to be in the same namespace as the TempoMonolithic custom resource.</p>
 
 </td>
 </tr>
@@ -2520,7 +2473,7 @@ TLSSpec
 
 <td>
 
-<p>tls defines the TLS configuration for AWS S3.</p>
+<p>TLS defines the TLS configuration for Amazon S3.</p>
 
 </td>
 </tr>
@@ -2578,7 +2531,8 @@ MonolithicTracesStorageBackend
 
 <td>
 
-<p>Backend defines the backend for storing traces. Default: memory</p>
+<p>Backend defines the backend for storing traces.
+Default: memory.</p>
 
 </td>
 </tr>
@@ -2603,7 +2557,7 @@ k8s.io/apimachinery/pkg/api/resource.Quantity
 For in-memory storage, this defines the size of the tmpfs volume.
 For persistent volume storage, this defines the size of the persistent volume.
 For object storage, this defines the size of the persistent volume containing the Write-Ahead Log (WAL) of Tempo.
-Defaults to 10Gi.</p>
+Default: 10Gi.</p>
 
 </td>
 </tr>
@@ -2628,7 +2582,7 @@ MonolithicTracesStorageS3Spec
 
 <td>
 
-<p>S3 defines the AWS S3 configuration</p>
+<p>S3 defines the configuration for Amazon S3.</p>
 
 </td>
 </tr>
@@ -2653,7 +2607,7 @@ MonolithicTracesObjectStorageSpec
 
 <td>
 
-<p>Azure defines the Azure Storage configuration</p>
+<p>Azure defines the configuration for Azure Storage.</p>
 
 </td>
 </tr>
@@ -2678,55 +2632,7 @@ MonolithicTracesObjectStorageSpec
 
 <td>
 
-<p>GCP defines the Google Cloud Storage configuration</p>
-
-</td>
-</tr>
-
-</tbody>
-</table>
-
-## MonolithicTracesStorageWALSpec { #tempo-grafana-com-v1alpha1-MonolithicTracesStorageWALSpec }
-
-<div>
-
-<p>MonolithicTracesStorageWALSpec defines the write-ahead logging (WAL) configuration.</p>
-
-</div>
-
-<table>
-
-<thead>
-
-<tr>
-
-<th>Field</th>
-
-<th>Description</th>
-
-</tr>
-
-</thead>
-
-<tbody>
-
-<tr>
-
-<td>
-
-<code>size</code><br/>
-
-<em>
-
-k8s.io/apimachinery/pkg/api/resource.Quantity
-
-</em>
-
-</td>
-
-<td>
-
-<p>Size defines the size of the Persistent Volume for storing the WAL. Defaults to 10Gi.</p>
+<p>GCP defines the configuration for Google Cloud Storage.</p>
 
 </td>
 </tr>
@@ -3940,7 +3846,8 @@ TLSRouteTerminationType
 
 <em>(Optional)</em>
 
-<p>Termination specifies the termination type. By default &ldquo;edge&rdquo; is used.</p>
+<p>Termination defines the termination type.
+The default is &ldquo;edge&rdquo;.</p>
 
 </td>
 </tr>
@@ -4276,7 +4183,7 @@ bool
 
 <td>
 
-<p>enabled defines if TLS is enabled.</p>
+<p>Enabled defines if TLS is enabled.</p>
 
 </td>
 </tr>
@@ -4297,7 +4204,7 @@ string
 
 <td>
 
-<p>caName is the name of a ConfigMap containing a CA certificate (service-ca.crt).
+<p>CA is the name of a ConfigMap containing a CA certificate (service-ca.crt).
 It needs to be in the same namespace as the Tempo custom resource.</p>
 
 </td>
@@ -4319,7 +4226,7 @@ string
 
 <td>
 
-<p>certName is the name of a Secret containing a certificate (tls.crt) and private key (tls.key).
+<p>Cert is the name of a Secret containing a certificate (tls.crt) and private key (tls.key).
 It needs to be in the same namespace as the Tempo custom resource.</p>
 
 </td>
@@ -4341,7 +4248,7 @@ string
 
 <td>
 
-<p>minVersion defines the minimum acceptable TLS version.</p>
+<p>MinVersion defines the minimum acceptable TLS version.</p>
 
 </td>
 </tr>
@@ -4397,7 +4304,7 @@ int32
 
 <em>(Optional)</em>
 
-<p>Replicas represents the number of replicas to create for this component.</p>
+<p>Replicas defines the number of replicas to be created for this component.</p>
 
 </td>
 </tr>
@@ -4420,7 +4327,7 @@ map[string]string
 
 <em>(Optional)</em>
 
-<p>NodeSelector is the simplest recommended form of node selection constraint.</p>
+<p>NodeSelector defines the simple form of the node-selection constraint.</p>
 
 </td>
 </tr>
@@ -4447,7 +4354,7 @@ map[string]string
 
 <em>(Optional)</em>
 
-<p>Tolerations defines component specific pod tolerations.</p>
+<p>Tolerations defines component-specific pod tolerations.</p>
 
 </td>
 </tr>
@@ -4659,7 +4566,7 @@ IngressSpec
 
 <div>
 
-<p>TempoMonolithic is the Schema for the tempomonolithics API.</p>
+<p>TempoMonolithic manages a Tempo deployment in monolithic mode.</p>
 
 </div>
 
@@ -4805,7 +4712,7 @@ MonolithicStorageSpec
 
 <td>
 
-<p>Storage defines the backend storage configuration</p>
+<p>Storage defines the storage configuration.</p>
 
 </td>
 </tr>
@@ -4830,7 +4737,7 @@ MonolithicIngestionSpec
 
 <td>
 
-<p>Ingestion defines the trace ingestion configuration</p>
+<p>Ingestion defines the trace ingestion configuration.</p>
 
 </td>
 </tr>
@@ -4855,7 +4762,7 @@ MonolithicJaegerUISpec
 
 <td>
 
-<p>JaegerUI defines the Jaeger UI configuration</p>
+<p>JaegerUI defines the Jaeger UI configuration.</p>
 
 </td>
 </tr>
@@ -4880,7 +4787,8 @@ ManagementStateType
 
 <td>
 
-<p>ManagementState defines whether this instance is managed by the operator or self-managed</p>
+<p>ManagementState defines whether this instance is managed by the operator or self-managed.
+Default: Managed.</p>
 
 </td>
 </tr>
@@ -4905,7 +4813,7 @@ Kubernetes core/v1.ResourceRequirements
 
 <td>
 
-<p>Resources defines the compute resource requirements of Tempo.</p>
+<p>Resources defines the compute resource requirements of the Tempo container.</p>
 
 </td>
 </tr>
@@ -4930,7 +4838,7 @@ ExtraConfigSpec
 
 <td>
 
-<p>ExtraConfig defines any extra (overlay) configuration for components</p>
+<p>ExtraConfig defines any extra (overlay) configuration of components.</p>
 
 </td>
 </tr>
@@ -5034,7 +4942,7 @@ JaegerQuerySpec
 
 <em>(Optional)</em>
 
-<p>JaegerQuerySpec defines Jaeger Query specific options.</p>
+<p>JaegerQuery defines options specific to the Jaeger Query component.</p>
 
 </td>
 </tr>
@@ -5046,7 +4954,7 @@ JaegerQuerySpec
 
 <div>
 
-<p>TempoStack is the spec for Tempo deployments.</p>
+<p>TempoStack manages a Tempo deployment in microservices mode.</p>
 
 </div>
 

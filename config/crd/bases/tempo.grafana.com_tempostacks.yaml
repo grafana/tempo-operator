@@ -33,7 +33,7 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: TempoStack is the spec for Tempo deployments.
+        description: TempoStack manages a Tempo deployment in microservices mode.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -415,20 +415,20 @@ spec:
                       endpoint.
                     properties:
                       caName:
-                        description: caName is the name of a ConfigMap containing
-                          a CA certificate (service-ca.crt). It needs to be in the
-                          same namespace as the Tempo custom resource.
+                        description: CA is the name of a ConfigMap containing a CA
+                          certificate (service-ca.crt). It needs to be in the same
+                          namespace as the Tempo custom resource.
                         type: string
                       certName:
-                        description: certName is the name of a Secret containing a
-                          certificate (tls.crt) and private key (tls.key). It needs
-                          to be in the same namespace as the Tempo custom resource.
+                        description: Cert is the name of a Secret containing a certificate
+                          (tls.crt) and private key (tls.key). It needs to be in the
+                          same namespace as the Tempo custom resource.
                         type: string
                       enabled:
-                        description: enabled defines if TLS is enabled.
+                        description: Enabled defines if TLS is enabled.
                         type: boolean
                       minVersion:
-                        description: minVersion defines the minimum acceptable TLS
+                        description: MinVersion defines the minimum acceptable TLS
                           version.
                         type: string
                     type: object
@@ -443,6 +443,7 @@ spec:
                 anyOf:
                 - type: integer
                 - type: string
+                default: 10Gi
                 description: StorageSize for PVCs used by ingester. Defaults to 10Gi.
                 pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                 x-kubernetes-int-or-string: true
@@ -455,16 +456,16 @@ spec:
                       nodeSelector:
                         additionalProperties:
                           type: string
-                        description: NodeSelector is the simplest recommended form
-                          of node selection constraint.
+                        description: NodeSelector defines the simple form of the node-selection
+                          constraint.
                         type: object
                       replicas:
-                        description: Replicas represents the number of replicas to
-                          create for this component.
+                        description: Replicas defines the number of replicas to be
+                          created for this component.
                         format: int32
                         type: integer
                       tolerations:
-                        description: Tolerations defines component specific pod tolerations.
+                        description: Tolerations defines component-specific pod tolerations.
                         items:
                           description: The pod this Toleration is attached to tolerates
                             any taint that matches the triple <key,value,effect> using
@@ -518,16 +519,16 @@ spec:
                           nodeSelector:
                             additionalProperties:
                               type: string
-                            description: NodeSelector is the simplest recommended
-                              form of node selection constraint.
+                            description: NodeSelector defines the simple form of the
+                              node-selection constraint.
                             type: object
                           replicas:
-                            description: Replicas represents the number of replicas
-                              to create for this component.
+                            description: Replicas defines the number of replicas to
+                              be created for this component.
                             format: int32
                             type: integer
                           tolerations:
-                            description: Tolerations defines component specific pod
+                            description: Tolerations defines component-specific pod
                               tolerations.
                             items:
                               description: The pod this Toleration is attached to
@@ -578,21 +579,21 @@ spec:
                           receivers
                         properties:
                           caName:
-                            description: caName is the name of a ConfigMap containing
+                            description: CA is the name of a ConfigMap containing
                               a CA certificate (service-ca.crt). It needs to be in
                               the same namespace as the Tempo custom resource.
                             type: string
                           certName:
-                            description: certName is the name of a Secret containing
-                              a certificate (tls.crt) and private key (tls.key). It
+                            description: Cert is the name of a Secret containing a
+                              certificate (tls.crt) and private key (tls.key). It
                               needs to be in the same namespace as the Tempo custom
                               resource.
                             type: string
                           enabled:
-                            description: enabled defines if TLS is enabled.
+                            description: Enabled defines if TLS is enabled.
                             type: boolean
                           minVersion:
-                            description: minVersion defines the minimum acceptable
+                            description: MinVersion defines the minimum acceptable
                               TLS version.
                             type: string
                         type: object
@@ -608,16 +609,16 @@ spec:
                           nodeSelector:
                             additionalProperties:
                               type: string
-                            description: NodeSelector is the simplest recommended
-                              form of node selection constraint.
+                            description: NodeSelector defines the simple form of the
+                              node-selection constraint.
                             type: object
                           replicas:
-                            description: Replicas represents the number of replicas
-                              to create for this component.
+                            description: Replicas defines the number of replicas to
+                              be created for this component.
                             format: int32
                             type: integer
                           tolerations:
-                            description: Tolerations defines component specific pod
+                            description: Tolerations defines component-specific pod
                               tolerations.
                             items:
                               description: The pod this Toleration is attached to
@@ -679,17 +680,17 @@ spec:
                               object.
                             type: string
                           ingressClassName:
-                            description: IngressClassName is the name of an IngressClass
-                              cluster resource. Ingress controller implementations
-                              use this field to know whether they should be serving
-                              this Ingress resource.
+                            description: IngressClassName defines the name of an IngressClass
+                              cluster resource. Defines which ingress controller serves
+                              this ingress resource.
                             type: string
                           route:
-                            description: Route defines OpenShift Route specific options.
+                            description: Route defines the options for the OpenShift
+                              route.
                             properties:
                               termination:
-                                description: Termination specifies the termination
-                                  type. By default "edge" is used.
+                                description: Termination defines the termination type.
+                                  The default is "edge".
                                 enum:
                                 - insecure
                                 - edge
@@ -715,16 +716,16 @@ spec:
                       nodeSelector:
                         additionalProperties:
                           type: string
-                        description: NodeSelector is the simplest recommended form
-                          of node selection constraint.
+                        description: NodeSelector defines the simple form of the node-selection
+                          constraint.
                         type: object
                       replicas:
-                        description: Replicas represents the number of replicas to
-                          create for this component.
+                        description: Replicas defines the number of replicas to be
+                          created for this component.
                         format: int32
                         type: integer
                       tolerations:
-                        description: Tolerations defines component specific pod tolerations.
+                        description: Tolerations defines component-specific pod tolerations.
                         items:
                           description: The pod this Toleration is attached to tolerates
                             any taint that matches the triple <key,value,effect> using
@@ -773,16 +774,16 @@ spec:
                       nodeSelector:
                         additionalProperties:
                           type: string
-                        description: NodeSelector is the simplest recommended form
-                          of node selection constraint.
+                        description: NodeSelector defines the simple form of the node-selection
+                          constraint.
                         type: object
                       replicas:
-                        description: Replicas represents the number of replicas to
-                          create for this component.
+                        description: Replicas defines the number of replicas to be
+                          created for this component.
                         format: int32
                         type: integer
                       tolerations:
-                        description: Tolerations defines component specific pod tolerations.
+                        description: Tolerations defines component-specific pod tolerations.
                         items:
                           description: The pod this Toleration is attached to tolerates
                             any taint that matches the triple <key,value,effect> using
@@ -837,16 +838,16 @@ spec:
                           nodeSelector:
                             additionalProperties:
                               type: string
-                            description: NodeSelector is the simplest recommended
-                              form of node selection constraint.
+                            description: NodeSelector defines the simple form of the
+                              node-selection constraint.
                             type: object
                           replicas:
-                            description: Replicas represents the number of replicas
-                              to create for this component.
+                            description: Replicas defines the number of replicas to
+                              be created for this component.
                             format: int32
                             type: integer
                           tolerations:
-                            description: Tolerations defines component specific pod
+                            description: Tolerations defines component-specific pod
                               tolerations.
                             items:
                               description: The pod this Toleration is attached to
@@ -893,15 +894,16 @@ spec:
                             x-kubernetes-list-type: atomic
                         type: object
                       jaegerQuery:
-                        description: JaegerQuerySpec defines Jaeger Query specific
-                          options.
+                        description: JaegerQuery defines options specific to the Jaeger
+                          Query component.
                         properties:
                           enabled:
-                            description: Enabled is used to define if Jaeger Query
-                              component should be created.
+                            description: Enabled defines if the Jaeger Query component
+                              should be created.
                             type: boolean
                           ingress:
-                            description: Ingress defines Jaeger Query Ingress options.
+                            description: Ingress defines the options for the Jaeger
+                              Query ingress.
                             properties:
                               annotations:
                                 additionalProperties:
@@ -914,18 +916,17 @@ spec:
                                   object.
                                 type: string
                               ingressClassName:
-                                description: IngressClassName is the name of an IngressClass
-                                  cluster resource. Ingress controller implementations
-                                  use this field to know whether they should be serving
-                                  this Ingress resource.
+                                description: IngressClassName defines the name of
+                                  an IngressClass cluster resource. Defines which
+                                  ingress controller serves this ingress resource.
                                 type: string
                               route:
-                                description: Route defines OpenShift Route specific
-                                  options.
+                                description: Route defines the options for the OpenShift
+                                  route.
                                 properties:
                                   termination:
-                                    description: Termination specifies the termination
-                                      type. By default "edge" is used.
+                                    description: Termination defines the termination
+                                      type. The default is "edge".
                                     enum:
                                     - insecure
                                     - edge
@@ -943,17 +944,18 @@ spec:
                                 type: string
                             type: object
                           monitorTab:
-                            description: MonitorTab defines monitor tab configuration.
+                            description: MonitorTab defines the monitor tab configuration.
                             properties:
                               enabled:
-                                description: Enabled enables monitoring tab in Jaeger
-                                  console. PrometheusEndpoint needs to be set to enable
-                                  the feature.
+                                description: Enabled enables the monitor tab in the
+                                  Jaeger console. The PrometheusEndpoint must be configured
+                                  to enable this feature.
                                 type: boolean
                               prometheusEndpoint:
-                                description: PrometheusEndpoint configures endpoint
-                                  to the Prometheus that contains span RED metrics.
-                                  For instance on OpenShift this is set to https://thanos-querier.openshift-monitoring.svc.cluster.local:9091
+                                description: PrometheusEndpoint defines the endpoint
+                                  to the Prometheus instance that contains the span
+                                  rate, error, and duration (RED) metrics. For instance
+                                  on OpenShift this is set to https://thanos-querier.openshift-monitoring.svc.cluster.local:9091
                                 type: string
                             type: object
                         type: object

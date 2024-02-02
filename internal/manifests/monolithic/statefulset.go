@@ -158,6 +158,10 @@ func configureStorage(opts Options, sts *appsv1.StatefulSet) error {
 	tempo := opts.Tempo
 	const volumeName = "tempo-storage"
 
+	if tempo.Spec.Storage == nil {
+		return errors.New("storage not configured")
+	}
+
 	sts.Spec.Template.Spec.Containers[0].VolumeMounts = append(sts.Spec.Template.Spec.Containers[0].VolumeMounts, corev1.VolumeMount{
 		Name:      volumeName,
 		MountPath: "/var/tempo",

@@ -8,76 +8,90 @@ import (
 
 // TempoMonolithicSpec defines the desired state of TempoMonolithic.
 type TempoMonolithicSpec struct {
-	// Storage defines the backend storage configuration
+	// Storage defines the storage configuration.
 	//
 	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Storage"
 	Storage *MonolithicStorageSpec `json:"storage,omitempty"`
 
-	// Ingestion defines the trace ingestion configuration
+	// Ingestion defines the trace ingestion configuration.
 	//
 	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Ingestion"
 	Ingestion *MonolithicIngestionSpec `json:"ingestion,omitempty"`
 
-	// JaegerUI defines the Jaeger UI configuration
+	// JaegerUI defines the Jaeger UI configuration.
 	//
 	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger UI"
 	JaegerUI *MonolithicJaegerUISpec `json:"jaegerui,omitempty"`
 
-	// ManagementState defines whether this instance is managed by the operator or self-managed
+	// ManagementState defines whether this instance is managed by the operator or self-managed.
+	// Default: Managed.
 	//
 	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Management State"
 	Management ManagementStateType `json:"management,omitempty"`
 
-	// Resources defines the compute resource requirements of Tempo.
+	// Resources defines the compute resource requirements of the Tempo container.
 	//
 	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Resources",xDescriptors="urn:alm:descriptor:com.tectonic.ui:resourceRequirements"
 	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 
-	// ExtraConfig defines any extra (overlay) configuration for components
+	// ExtraConfig defines any extra (overlay) configuration of components.
 	//
 	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Extra Configuration"
 	ExtraConfig *ExtraConfigSpec `json:"extraConfig,omitempty"`
 }
 
 // MonolithicStorageSpec defines the storage for the Tempo deployment.
 type MonolithicStorageSpec struct {
-	// Traces defines the backend storage configuration for traces
+	// Traces defines the storage configuration for traces.
 	//
 	// +kubebuilder:validation:Required
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Traces"
 	Traces MonolithicTracesStorageSpec `json:"traces"`
 }
 
 // MonolithicTracesStorageSpec defines the traces storage for the Tempo deployment.
 type MonolithicTracesStorageSpec struct {
-	// Backend defines the backend for storing traces. Default: memory
+	// Backend defines the backend for storing traces.
+	// Default: memory.
 	//
 	// +kubebuilder:validation:Required
 	// +kubebuilder:default=memory
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Storage Backend"
 	Backend MonolithicTracesStorageBackend `json:"backend"`
 
 	// Size defines the size of the volume where traces are stored.
 	// For in-memory storage, this defines the size of the tmpfs volume.
 	// For persistent volume storage, this defines the size of the persistent volume.
 	// For object storage, this defines the size of the persistent volume containing the Write-Ahead Log (WAL) of Tempo.
-	// Defaults to 10Gi.
+	// Default: 10Gi.
 	//
 	// +kubebuilder:validation:Optional
 	// +kubebuilder:default="10Gi"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Size",xDescriptors="urn:alm:descriptor:com.tectonic.ui:text"
 	Size *resource.Quantity `json:"size,omitempty"`
 
-	// S3 defines the AWS S3 configuration
+	// S3 defines the configuration for Amazon S3.
 	//
 	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Amazon S3"
 	S3 *MonolithicTracesStorageS3Spec `json:"s3,omitempty"`
 
-	// Azure defines the Azure Storage configuration
+	// Azure defines the configuration for Azure Storage.
 	//
 	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Azure Storage"
 	Azure *MonolithicTracesObjectStorageSpec `json:"azure,omitempty"`
 
-	// GCP defines the Google Cloud Storage configuration
+	// GCP defines the configuration for Google Cloud Storage.
 	//
 	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Google Cloud Storage"
 	GCS *MonolithicTracesObjectStorageSpec `json:"gcs,omitempty"`
 }
 
@@ -95,166 +109,171 @@ const (
 	MonolithicTracesStorageBackendAzure MonolithicTracesStorageBackend = "azure"
 	// MonolithicTracesStorageBackendGCS defines storing traces in Google Cloud Storage.
 	MonolithicTracesStorageBackendGCS MonolithicTracesStorageBackend = "gcs"
-	// MonolithicTracesStorageBackendS3 defines storing traces in AWS S3.
+	// MonolithicTracesStorageBackendS3 defines storing traces in Amazon S3.
 	MonolithicTracesStorageBackendS3 MonolithicTracesStorageBackend = "s3"
 )
 
-// MonolithicTracesStorageWALSpec defines the write-ahead logging (WAL) configuration.
-type MonolithicTracesStorageWALSpec struct {
-	// Size defines the size of the Persistent Volume for storing the WAL. Defaults to 10Gi.
-	//
-	// +kubebuilder:validation:Required
-	// +kubebuilder:default="10Gi"
-	Size resource.Quantity `json:"size"`
-}
-
-// MonolithicTracesStoragePVSpec defines the Persistent Volume configuration.
-type MonolithicTracesStoragePVSpec struct {
-	// Size defines the size of the Persistent Volume for storing the traces. Defaults to 10Gi.
-	//
-	// +kubebuilder:validation:Required
-	// +kubebuilder:default="10Gi"
-	Size resource.Quantity `json:"size"`
-}
-
 // MonolithicTracesObjectStorageSpec defines object storage configuration.
 type MonolithicTracesObjectStorageSpec struct {
-	// secret is the name of a Secret containing credentials for accessing object storage.
-	// It needs to be in the same namespace as the Tempo custom resource.
+	// Secret is the name of a Secret containing credentials for accessing object storage.
+	// It needs to be in the same namespace as the TempoMonolithic custom resource.
 	//
 	// +kubebuilder:validation:Required
 	// +kubebuilder:validation:MinLength=1
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Storage Secret",xDescriptors="urn:alm:descriptor:io.kubernetes:Secret"
 	Secret string `json:"secret"`
 }
 
-// MonolithicTracesStorageS3Spec defines the AWS S3 configuration.
+// MonolithicTracesStorageS3Spec defines the Amazon S3 configuration.
 type MonolithicTracesStorageS3Spec struct {
 	MonolithicTracesObjectStorageSpec `json:",inline"`
 
-	// tls defines the TLS configuration for AWS S3.
+	// TLS defines the TLS configuration for Amazon S3.
 	//
 	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="TLS"
 	TLS *TLSSpec `json:"tls,omitempty"`
 }
 
 // MonolithicIngestionSpec defines the ingestion settings.
 type MonolithicIngestionSpec struct {
-	// OTLP defines the ingestion configuration for OTLP
+	// OTLP defines the ingestion configuration for the OTLP protocol.
 	//
 	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="OTLP"
 	OTLP *MonolithicIngestionOTLPSpec `json:"otlp,omitempty"`
 }
 
 // MonolithicIngestionOTLPSpec defines the settings for OTLP ingestion.
 type MonolithicIngestionOTLPSpec struct {
-	// GRPC defines the OTLP/gRPC configuration
+	// GRPC defines the OTLP over gRPC configuration.
 	//
 	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="gRPC"
 	GRPC *MonolithicIngestionOTLPProtocolsGRPCSpec `json:"grpc,omitempty"`
 
-	// HTTP defines the OTLP/HTTP configuration
+	// HTTP defines the OTLP over HTTP configuration.
 	//
 	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="HTTP"
 	HTTP *MonolithicIngestionOTLPProtocolsHTTPSpec `json:"http,omitempty"`
 }
 
 // MonolithicIngestionOTLPProtocolsGRPCSpec defines the settings for OTLP ingestion over GRPC.
 type MonolithicIngestionOTLPProtocolsGRPCSpec struct {
-	// Enabled defines if OTLP over gRPC is enabled
+	// Enabled defines if OTLP over gRPC is enabled.
+	// Default: enabled.
 	//
 	// +kubebuilder:validation:Required
 	// +kubebuilder:default=true
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enabled",xDescriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
 	Enabled bool `json:"enabled"`
 
-	// TLS defines the TLS configuration for OTLP/gRPC ingestion
+	// TLS defines the TLS configuration for OTLP/gRPC ingestion.
 	//
 	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="TLS"
 	TLS *TLSSpec `json:"tls,omitempty"`
 }
 
 // MonolithicIngestionOTLPProtocolsHTTPSpec defines the settings for OTLP ingestion over HTTP.
 type MonolithicIngestionOTLPProtocolsHTTPSpec struct {
-	// Enabled defines if OTLP over HTTP is enabled
+	// Enabled defines if OTLP over HTTP is enabled.
+	// Default: enabled.
 	//
 	// +kubebuilder:validation:Required
 	// +kubebuilder:default=true
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enabled",xDescriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
 	Enabled bool `json:"enabled"`
 
-	// TLS defines the TLS configuration for OTLP/HTTP ingestion
+	// TLS defines the TLS configuration for OTLP/HTTP ingestion.
 	//
 	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="TLS"
 	TLS *TLSSpec `json:"tls,omitempty"`
 }
 
 // MonolithicJaegerUISpec defines the settings for the Jaeger UI.
 type MonolithicJaegerUISpec struct {
-	// Enabled defines if the Jaeger UI should be enabled
+	// Enabled defines if the Jaeger UI component should be created.
 	//
 	// +kubebuilder:validation:Required
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enabled",xDescriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
 	Enabled bool `json:"enabled"`
 
-	// Ingress defines the ingress configuration for Jaeger UI
+	// Ingress defines the Ingress configuration for the Jaeger UI.
 	//
 	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Ingress"
 	Ingress *MonolithicJaegerUIIngressSpec `json:"ingress,omitempty"`
 
-	// Route defines the route configuration for Jaeger UI
+	// Route defines the OpenShift route configuration for the Jaeger UI.
 	//
 	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Route"
 	Route *MonolithicJaegerUIRouteSpec `json:"route,omitempty"`
 
-	// Resources defines the compute resource requirements of Jaeger UI.
+	// Resources defines the compute resource requirements of the Jaeger UI container.
 	//
 	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Resources",xDescriptors="urn:alm:descriptor:com.tectonic.ui:resourceRequirements"
 	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 }
 
 // MonolithicJaegerUIIngressSpec defines the settings for the Jaeger UI ingress.
 type MonolithicJaegerUIIngressSpec struct {
-	// Enabled defines if an Ingress object should be created for Jaeger UI
+	// Enabled defines if an Ingress object should be created for Jaeger UI.
 	//
 	// +kubebuilder:validation:Required
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enabled",xDescriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
 	Enabled bool `json:"enabled"`
 
 	// Annotations defines the annotations of the Ingress object.
 	//
 	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Annotations"
 	Annotations map[string]string `json:"annotations,omitempty"`
 
 	// Host defines the hostname of the Ingress object.
 	//
 	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Hostname"
 	Host string `json:"host,omitempty"`
 
-	// IngressClassName is the name of an IngressClass cluster resource. Ingress
-	// controller implementations use this field to know whether they should be
-	// serving this Ingress resource.
+	// IngressClassName defines the name of an IngressClass cluster resource.
+	// Defines which ingress controller serves this ingress resource.
 	//
 	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Ingress Class Name"
 	IngressClassName *string `json:"ingressClassName,omitempty"`
 }
 
 // MonolithicJaegerUIRouteSpec defines the settings for the Jaeger UI route.
 type MonolithicJaegerUIRouteSpec struct {
-	// Enabled defines if a Route object should be created for Jaeger UI
+	// Enabled defines if a Route object should be created for Jaeger UI.
 	//
 	// +kubebuilder:validation:Required
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enabled",xDescriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
 	Enabled bool `json:"enabled"`
 
 	// Annotations defines the annotations of the Route object.
 	//
 	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Annotations"
 	Annotations map[string]string `json:"annotations,omitempty"`
 
 	// Host defines the hostname of the Route object.
 	//
 	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Hostname"
 	Host string `json:"host,omitempty"`
 
-	// Termination specifies the termination type. Default: edge.
+	// Termination specifies the termination type.
+	// Default: edge.
 	//
 	// +kubebuilder:validation:Optional
 	// +kubebuilder:default=edge
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="TLS Termination"
 	Termination TLSRouteTerminationType `json:"termination,omitempty"`
 }
 
@@ -266,9 +285,13 @@ type TempoMonolithicStatus struct {
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
-//+kubebuilder:printcolumn:name="Storage",type="string",JSONPath=".spec.storage.traces.backend",description="Storage"
+//+kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 
-// TempoMonolithic is the Schema for the tempomonolithics API.
+// TempoMonolithic manages a Tempo deployment in monolithic mode.
+//
+// +operator-sdk:csv:customresourcedefinitions:displayName="TempoMonolithic",resources={{ConfigMap,v1},{Service,v1},{StatefulSet,v1},{Ingress,v1},{Route,v1}}
+//
+//nolint:godot
 type TempoMonolithic struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
