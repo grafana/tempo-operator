@@ -6,7 +6,15 @@ spec:
   storage:
     traces:
       backend: memory
+  resources:
+    limits:
+      cpu: "2"
+      memory: "2Gi"
   jaegerui:
     enabled: true
     ingress:
       enabled: true
+    resources:
+      limits:
+        cpu: "2"
+        memory: "2Gi"

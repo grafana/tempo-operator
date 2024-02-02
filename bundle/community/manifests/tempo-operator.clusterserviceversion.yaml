@@ -15,6 +15,18 @@ metadata:
               "enabled": true,
               "ingress": {
                 "enabled": true
+              },
+              "resources": {
+                "limits": {
+                  "cpu": "2",
+                  "memory": "2Gi"
+                }
+              }
+            },
+            "resources": {
+              "limits": {
+                "cpu": "2",
+                "memory": "2Gi"
               }
             },
             "storage": {
@@ -62,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.7.0
-    createdAt: "2024-02-02T16:21:12Z"
+    createdAt: "2024-02-02T17:03:05Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
