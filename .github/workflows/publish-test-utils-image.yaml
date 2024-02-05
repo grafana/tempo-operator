@@ -28,7 +28,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/grafana/tempo-operator/test-utils
+          images: ghcr.io/${{ github.repository }}/test-utils
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
