@@ -1,15 +1,157 @@
 package status
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/ptr"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 )
+
+func TestGetStatefulSetStatus(t *testing.T) {
+	tests := []struct {
+		name     string
+		client   client.Client
+		expected v1alpha1.PodStatusMap
+	}{
+		{
+			name: "sts rolling out",
+			client: &k8sFake{
+				stss: &appsv1.StatefulSetList{
+					Items: []appsv1.StatefulSet{{
+						ObjectMeta: metav1.ObjectMeta{
+							Name: "tempo",
+						},
+						Spec: appsv1.StatefulSetSpec{
+							Replicas: ptr.To[int32](1),
+						},
+						Status: appsv1.StatefulSetStatus{
+							ReadyReplicas: 0,
+						},
+					}},
+				},
+			},
+			expected: map[corev1.PodPhase][]string{
+				corev1.PodPending: {"tempo"},
+			},
+		},
+		{
+			name: "pod pending",
+			client: &k8sFake{
+				stss: &appsv1.StatefulSetList{
+					Items: []appsv1.StatefulSet{{
+						ObjectMeta: metav1.ObjectMeta{
+							Name: "tempo",
+						},
+						Spec: appsv1.StatefulSetSpec{
+							Replicas: ptr.To[int32](1),
+						},
+						Status: appsv1.StatefulSetStatus{
+							ReadyReplicas: 1,
+						},
+					}},
+				},
+				pods: &corev1.PodList{
+					Items: []corev1.Pod{{
+						ObjectMeta: metav1.ObjectMeta{
+							Name: "tempo-xyz",
+						},
+						Status: corev1.PodStatus{
+							Phase: corev1.PodPending,
+						},
+					}},
+				},
+			},
+			expected: map[corev1.PodPhase][]string{
+				corev1.PodPending: {"tempo-xyz"},
+			},
+		},
+		{
+			name: "pod running but not ready",
+			client: &k8sFake{
+				stss: &appsv1.StatefulSetList{
+					Items: []appsv1.StatefulSet{{
+						ObjectMeta: metav1.ObjectMeta{
+							Name: "tempo",
+						},
+						Spec: appsv1.StatefulSetSpec{
+							Replicas: ptr.To[int32](1),
+						},
+						Status: appsv1.StatefulSetStatus{
+							ReadyReplicas: 1,
+						},
+					}},
+				},
+				pods: &corev1.PodList{
+					Items: []corev1.Pod{{
+						ObjectMeta: metav1.ObjectMeta{
+							Name: "tempo-xyz",
+						},
+						Status: corev1.PodStatus{
+							Phase: corev1.PodRunning,
+							ContainerStatuses: []corev1.ContainerStatus{{
+								Ready: false,
+							}},
+						},
+					}},
+				},
+			},
+			expected: map[corev1.PodPhase][]string{
+				corev1.PodPending: {"tempo-xyz"},
+			},
+		},
+		{
+			name: "pod running and ready",
+			client: &k8sFake{
+				stss: &appsv1.StatefulSetList{
+					Items: []appsv1.StatefulSet{{
+						ObjectMeta: metav1.ObjectMeta{
+							Name: "tempo",
+						},
+						Spec: appsv1.StatefulSetSpec{
+							Replicas: ptr.To[int32](1),
+						},
+						Status: appsv1.StatefulSetStatus{
+							ReadyReplicas: 1,
+						},
+					}},
+				},
+				pods: &corev1.PodList{
+					Items: []corev1.Pod{{
+						ObjectMeta: metav1.ObjectMeta{
+							Name: "tempo-xyz",
+						},
+						Status: corev1.PodStatus{
+							Phase: corev1.PodRunning,
+							ContainerStatuses: []corev1.ContainerStatus{{
+								Ready: true,
+							}},
+						},
+					}},
+				},
+			},
+			expected: map[corev1.PodPhase][]string{
+				corev1.PodRunning: {"tempo-xyz"},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			psm, err := getStatefulSetStatus(context.Background(), tc.client, "", "")
+			require.NoError(t, err)
+			require.Equal(t, tc.expected, psm)
+		})
+	}
+}
 
 func TestUpdateConditions(t *testing.T) {
 	tests := []struct {
@@ -237,4 +379,26 @@ func TestUpdateConditions(t *testing.T) {
 			require.Equal(t, tc.expectedConditions, updatedConditions)
 		})
 	}
+}
+
+type k8sFake struct {
+	client.Client
+	stss *appsv1.StatefulSetList
+	pods *corev1.PodList
+}
+
+func (k *k8sFake) List(ctx context.Context, list client.ObjectList, opts ...client.ListOption) error {
+	switch typed := list.(type) {
+	case *appsv1.StatefulSetList:
+		if k.stss != nil {
+			k.stss.DeepCopyInto(typed)
+			return nil
+		}
+	case *corev1.PodList:
+		if k.pods != nil {
+			k.pods.DeepCopyInto(typed)
+			return nil
+		}
+	}
+	return fmt.Errorf("mock: not implemented")
 }

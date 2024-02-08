@@ -27,7 +27,7 @@ func isPodReady(pod corev1.Pod) bool {
 	return true
 }
 
-func getPodStatusOfStatefulSet(ctx context.Context, c client.Client, namespace string, name string) (v1alpha1.PodStatusMap, error) {
+func getStatefulSetStatus(ctx context.Context, c client.Client, namespace string, name string) (v1alpha1.PodStatusMap, error) {
 	psm := v1alpha1.PodStatusMap{}
 
 	opts := []client.ListOption{
@@ -76,7 +76,7 @@ func getComponentsStatus(ctx context.Context, client client.Client, tempo v1alph
 	var err error
 	components := v1alpha1.MonolithicComponentStatus{}
 
-	components.Tempo, err = getPodStatusOfStatefulSet(ctx, client, tempo.Namespace, tempo.Name)
+	components.Tempo, err = getStatefulSetStatus(ctx, client, tempo.Namespace, tempo.Name)
 	if err != nil {
 		return v1alpha1.MonolithicComponentStatus{}, fmt.Errorf("cannot get pod status: %w", err)
 	}
