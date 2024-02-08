@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/go-logr/logr"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -16,6 +15,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	"github.com/grafana/tempo-operator/internal/manifests"
 )
@@ -33,13 +33,13 @@ func isNamespaceScoped(obj client.Object) bool {
 // If immutable fields are changed, the object will be deleted and re-created.
 func reconcileManagedObjects(
 	ctx context.Context,
-	log logr.Logger,
 	k8sclient client.Client,
 	owner metav1.Object,
 	scheme *runtime.Scheme,
 	managedObjects []client.Object,
 	ownedObjects map[types.UID]client.Object,
 ) error {
+	log := log.FromContext(ctx)
 	pruneObjects := ownedObjects
 
 	// Create or update all objects managed by the operator

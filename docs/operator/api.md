@@ -1560,6 +1560,66 @@ using an in-process OpenPolicyAgent Rego authorizer.</p>
 </tr></tbody>
 </table>
 
+## MonolithicComponentStatus { #tempo-grafana-com-v1alpha1-MonolithicComponentStatus }
+
+<p>
+
+(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-TempoMonolithicStatus">TempoMonolithicStatus</a>)
+
+</p>
+
+<div>
+
+<p>MonolithicComponentStatus defines the status of each component.</p>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Field</th>
+
+<th>Description</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td>
+
+<code>tempo</code><br/>
+
+<em>
+
+<a href="#tempo-grafana-com-v1alpha1-PodStatusMap">
+
+PodStatusMap
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>Tempo is a map of the pod status of the Tempo pods.</p>
+
+</td>
+</tr>
+
+</tbody>
+</table>
+
 ## MonolithicIngestionOTLPProtocolsGRPCSpec { #tempo-grafana-com-v1alpha1-MonolithicIngestionOTLPProtocolsGRPCSpec }
 
 <p>
@@ -3169,7 +3229,7 @@ GrafanaConfigSpec
 
 <p>
 
-(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-ComponentStatus">ComponentStatus</a>)
+(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-ComponentStatus">ComponentStatus</a>, <a href="#tempo-grafana-com-v1alpha1-MonolithicComponentStatus">MonolithicComponentStatus</a>)
 
 </p>
 
@@ -4859,6 +4919,75 @@ ExtraConfigSpec
 <p>TempoMonolithicStatus defines the observed state of TempoMonolithic.</p>
 
 </div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Field</th>
+
+<th>Description</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td>
+
+<code>components</code><br/>
+
+<em>
+
+<a href="#tempo-grafana-com-v1alpha1-MonolithicComponentStatus">
+
+MonolithicComponentStatus
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<p>Components provides summary of all Tempo pod status, grouped per component.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>conditions</code><br/>
+
+<em>
+
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#condition-v1-meta">
+
+[]Kubernetes meta/v1.Condition
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<p>Conditions of the Tempo deployment health.</p>
+
+</td>
+</tr>
+
+</tbody>
+</table>
 
 ## TempoQueryFrontendSpec { #tempo-grafana-com-v1alpha1-TempoQueryFrontendSpec }
 
