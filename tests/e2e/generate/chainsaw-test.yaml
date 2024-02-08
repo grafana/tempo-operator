@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/kyverno/chainsaw/main/.schemas/json/test-chainsaw-v1alpha1.json
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  creationTimestamp: null
+  name: generate
+spec:
+  steps:
+  - name: step-00
+    try:
+    - apply:
+        file: 00-storage-secret.yaml
+  - name: step-01
+    try:
+    - command:
+        args:
+        - apply
+        - -n
+        - $NAMESPACE
+        - -f
+        - generated.yaml
+        entrypoint: kubectl
+    - command:
+        args:
+        - -c
+        - RELATED_IMAGE_TEMPO=docker.io/grafana/tempo:2.2.1 RELATED_IMAGE_TEMPO_QUERY=docker.io/grafana/tempo-query:2.2.1
+          RELATED_IMAGE_TEMPO_GATEWAY=quay.io/observatorium/api:main-2023-09-13-14e06c6
+          RELATED_IMAGE_TEMPO_GATEWAY_OPA=quay.io/observatorium/opa-openshift:main-2023-05-24-8e91537
+          ../../../bin/manager generate --config config.yaml --cr cr.yaml --output
+          generated.yaml
+        entrypoint: /bin/sh
+    - assert:
+        file: 01-assert.yaml

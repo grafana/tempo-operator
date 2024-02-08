@@ -10,10 +10,8 @@ WORKDIR /tmp
 # Install dependencies required by test cases and debugging
 RUN apt-get update && apt-get install -y jq vim libreadline-dev
 
-# Install kuttl
-RUN curl -L -o kuttl https://github.com/kudobuilder/kuttl/releases/download/v0.15.0/kubectl-kuttl_0.15.0_linux_x86_64 \
-    && chmod +x kuttl \
-    && mv kuttl /usr/local/bin/kuttl
+# Install chainsaw
+RUN go install github.com/kyverno/chainsaw@latest
 
 # Install kubectl and oc
 RUN curl -L -o oc.tar.gz https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest/openshift-client-linux.tar.gz \

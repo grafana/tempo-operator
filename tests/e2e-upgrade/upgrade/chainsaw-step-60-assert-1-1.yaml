@@ -3,8 +3,6 @@ kind: Subscription
 metadata:
   name: tempo
   namespace: chainsaw-operator-upgrade
-spec:
-  channel: alpha
-  name: tempo-operator
-  source: old-catalog
-  sourceNamespace: chainsaw-operator-upgrade
+status:
+  installedCSV: tempo-operator.v100.0.0
+  state: AtLatestKnown

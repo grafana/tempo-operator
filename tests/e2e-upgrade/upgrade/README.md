@@ -7,8 +7,8 @@
 
 ## Test Steps
 * setup old and new catalog
-* install operator in `kuttl-operator-upgrade` namespace
-* install Tempo in random `kuttl-*` namespace
+* install operator in `chainsaw-operator-upgrade` namespace
+* install Tempo in random `chainsaw-*` namespace
 * generate and verify traces
 * switch catalog to new catalog
 * assert operator got upgraded
@@ -28,5 +28,5 @@ export BUNDLE_IMGS=ghcr.io/grafana/tempo-operator/tempo-operator-bundle:${LATEST
 make bundle docker-build docker-push bundle-build bundle-push catalog-build catalog-push
 
 sed -i "s@localregistry:5000@${IMG_PREFIX}@g" tests/e2e-upgrade/upgrade/10-setup-olm.yaml
-kubectl-kuttl test --config kuttl-test-upgrade.yaml --skip-delete
+chainsaw test --test-dir ./tests/e2e-upgrade --config .chainsaw-upgrade.yaml --skip-delete
 ```

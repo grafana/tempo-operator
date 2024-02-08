@@ -1,7 +1,6 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: minio
-  namespace: chainsaw-multitenancy
+  name: tempo-redmetrics-query-frontend
 status:
   readyReplicas: 1

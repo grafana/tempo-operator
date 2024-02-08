@@ -2,7 +2,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: verify-traces
-  namespace: kuttl-multitenancy
+  namespace: chainsaw-multitenancy
 status:
   conditions:
     - status: "True"
@@ -12,7 +12,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: verify-traces-traceql
-  namespace: kuttl-multitenancy
+  namespace: chainsaw-multitenancy
 status:
   conditions:
     - status: "True"

@@ -29,8 +29,8 @@ jobs:
       - name: Check out code into the Go module directory
         uses: actions/checkout@v4
 
-      - name: "install kuttl"
-        run: ./hack/install/install-kuttl.sh
+      - name: "install chainsaw"
+        run: ./hack/install/install-chainsaw.sh
 
       - name: "start kind"
         env:

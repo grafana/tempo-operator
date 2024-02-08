@@ -32,8 +32,8 @@ jobs:
     - name: Check out code into the Go module directory
       uses: actions/checkout@v4
 
-    - name: "install kuttl"
-      run: ./hack/install/install-kuttl.sh
+    - name: "install chainsaw"
+      run: ./hack/install/install-chainsaw.sh
 
     - name: "run tests"
       env:
@@ -95,9 +95,9 @@ jobs:
           -p 5000:5000 \
           registry:2
 
-    - name: Install kuttl, OLM and minio
+    - name: Install chainsaw, OLM and minio
       run: |
-        ./hack/install/install-kuttl.sh
+        ./hack/install/install-chainsaw.sh
         make olm-install
 
     - name: Build and push operator and bundle image to local container registry

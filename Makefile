@@ -216,7 +216,7 @@ GEN_CRD = $(LOCALBIN)/gen-crd-api-reference-docs-$(GEN_CRD_VERSION)
 GEN_API_DOCS = $(LOCALBIN)/gen-api-docs-$(GEN_API_DOCS_VERSION)
 OPERATOR_SDK ?= $(LOCALBIN)/operator-sdk-$(OPERATOR_SDK_VERSION)
 KIND ?= $(LOCALBIN)/kind
-KUTTL ?= $(LOCALBIN)/kubectl-kuttl
+CHAINSAW ?= $(LOCALBIN)/chainsaw
 
 # Options for KIND version to use
 export KUBE_VERSION ?= 1.27
@@ -351,20 +351,20 @@ deploy-minio:
 
 # generic end-to-tests
 .PHONY: prepare-e2e
-prepare-e2e: kuttl start-kind cert-manager set-test-image-vars build docker-build load-image-operator deploy
+prepare-e2e: chainsaw start-kind cert-manager set-test-image-vars build docker-build load-image-operator deploy
 
 .PHONY: e2e
 e2e:
-	$(KUTTL) test
+	$(CHAINSAW) test --test-dir ./tests/e2e
 
 # OpenShift end-to-tests
 .PHONY: e2e-openshift
 e2e-openshift:
-	$(KUTTL) test --config kuttl-test-openshift.yaml
+	$(CHAINSAW) test --test-dir ./tests/e2e-openshift --config .chainsaw-openshift.yaml
 
 # upgrade tests
 e2e-upgrade:
-	$(KUTTL) test --config kuttl-test-upgrade.yaml
+	$(CHAINSAW) test --test-dir ./tests/e2e-upgrade --config .chainsaw-upgrade.yaml
 
 .PHONY: scorecard-tests
 scorecard-tests: operator-sdk
@@ -410,9 +410,9 @@ rm -rf $$TMP_DIR ;\
 }
 endef
 
-.PHONY: kuttl
-kuttl:
-	./hack/install/install-kuttl.sh
+.PHONY: chainsaw
+chainsaw:
+	./hack/install/install-chainsaw.sh
 
 .PHONY: generate-all
 generate-all: generate bundle api-docs ## Update all generated files

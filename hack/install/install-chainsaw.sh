@@ -1,14 +1,14 @@
 #!/bin/bash
-VERSION="0.15.0"
+VERSION="0.1.3"
 
-echo "Installing kuttl"
+echo "Installing chainsaw"
 
 current_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 source $current_dir/install-utils.sh
 
-PROGRAM="kubectl-kuttl"
+PROGRAM="chainsaw"
 
-url="https://github.com/kudobuilder/kuttl/releases/download/v$VERSION/kubectl-kuttl_${VERSION}_$(go env GOOS)_x86_64"
+url="https://github.com/kyverno/chainsaw/releases/download/v$VERSION/chainsaw_$(go env GOOS)_amd64"
 
 download $PROGRAM $VERSION $url
 
