@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	grafanav1 "github.com/grafana-operator/grafana-operator/v5/api/v1beta1"
+	grafanav1 "github.com/grafana/grafana-operator/v5/api/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"

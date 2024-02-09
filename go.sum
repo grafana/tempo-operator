@@ -54,8 +54,8 @@ github.com/google/pprof v0.0.0-20230510103437-eeec1cb781c3 h1:2XF1Vzq06X+inNqgJ9
 github.com/google/pprof v0.0.0-20230510103437-eeec1cb781c3/go.mod h1:79YE0hCXdHag9sBkw2o+N/YnZtTkXi0UT9Nnixa5eYk=
 github.com/google/uuid v1.3.1 h1:KjJaJ9iWZ3jOFZIf1Lqf4laDRCasjl0BCmnEGxkdLb4=
 github.com/google/uuid v1.3.1/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
-github.com/grafana-operator/grafana-operator/v5 v5.5.2 h1:jGjNn1VhxX96FK8NTaTuHfzpIENAwbY6iYCSDtYuxI8=
-github.com/grafana-operator/grafana-operator/v5 v5.5.2/go.mod h1:eO0pkUx77TofCzzYNVLNFvm04de123ox+gljuZzqS+4=
+github.com/grafana/grafana-operator/v5 v5.6.0 h1:B7i1kA82i59vdyG4s5RZY4Qo9nY+7F/SVGoGWa0TWeE=
+github.com/grafana/grafana-operator/v5 v5.6.0/go.mod h1:HCcL2coITTaefbixzafoeRU4URj/Z2EkBgFoyF3s9fs=
 github.com/imdario/mergo v0.3.16 h1:wwQJbIsHYGMUyLSPrEq1CT16AhnhNJQ51+4fdHUnCl4=
 github.com/imdario/mergo v0.3.16/go.mod h1:WBLT9ZmE3lPoWsEzCh9LPo3TiwVN+ZKEjmz+hD27ysY=
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	grafanav1 "github.com/grafana-operator/grafana-operator/v5/api/v1beta1"
+	grafanav1 "github.com/grafana/grafana-operator/v5/api/v1beta1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

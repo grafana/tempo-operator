@@ -7,7 +7,7 @@ import (
 // Name returns the manifest name of a component.
 // Example: tempo-simplest-compactor.
 func Name(component string, tempoStackName string) string {
-	if component == "" {
+	if component == "" || component == "tempo" {
 		return DNSName(fmt.Sprintf("tempo-%s", tempoStackName))
 	}
 	return DNSName(fmt.Sprintf("tempo-%s-%s", tempoStackName, component))

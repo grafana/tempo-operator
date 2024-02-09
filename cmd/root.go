@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	grafanav1 "github.com/grafana-operator/grafana-operator/v5/api/v1beta1"
+	grafanav1 "github.com/grafana/grafana-operator/v5/api/v1beta1"
 	configv1 "github.com/openshift/api/config/v1"
 	openshiftoperatorv1 "github.com/openshift/api/operator/v1"
 	routev1 "github.com/openshift/api/route/v1"

@@ -13,6 +13,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 )
 
 func TestBuildTempoIngress(t *testing.T) {
@@ -24,7 +25,7 @@ func TestBuildTempoIngress(t *testing.T) {
 			},
 		},
 	}
-	labels := Labels("sample")
+	labels := ComponentLabels(manifestutils.TempoMonolithComponentName, "sample")
 
 	tests := []struct {
 		name        string
