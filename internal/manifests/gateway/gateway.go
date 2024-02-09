@@ -121,6 +121,13 @@ func httpScheme(tls bool) string {
 
 const containerNameTempoGateway = "tempo-gateway"
 
+func resources(tempo v1alpha1.TempoStack) corev1.ResourceRequirements {
+	if tempo.Spec.Template.Gateway.Resources == nil {
+		return manifestutils.Resources(tempo, manifestutils.GatewayComponentName, nil)
+	}
+	return *tempo.Spec.Template.Gateway.Resources
+}
+
 func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash string) *appsv1.Deployment {
 	tempo := params.Tempo
 	labels := manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name)
@@ -240,7 +247,7 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 									SubPath:   manifestutils.GatewayTenantFileName,
 								},
 							},
-							Resources:       manifestutils.Resources(tempo, manifestutils.GatewayComponentName, nil),
+							Resources:       resources(tempo),
 							SecurityContext: manifestutils.TempoContainerSecurityContext(),
 						},
 					},

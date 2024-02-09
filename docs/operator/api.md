@@ -4419,6 +4419,33 @@ map[string]string
 </td>
 </tr>
 
+<tr>
+
+<td>
+
+<code>total</code><br/>
+
+<em>
+
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#resourcerequirements-v1-core">
+
+Kubernetes core/v1.ResourceRequirements
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>Resources defines resources for this component, this will override the calculated resources derived from total</p>
+
+</td>
+</tr>
+
 </tbody>
 </table>
 

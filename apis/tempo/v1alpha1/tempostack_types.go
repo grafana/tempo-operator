@@ -524,6 +524,12 @@ type TempoComponentSpec struct {
 	// +listType=atomic
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tolerations"
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
+
+	// Resources defines resources for this component, this will override the calculated resources derived from total
+	//
+	// +optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Resources"
+	Resources *corev1.ResourceRequirements `json:"total,omitempty"`
 }
 
 // TempoGatewaySpec extends TempoComponentSpec with gateway parameters.
