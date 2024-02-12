@@ -44,6 +44,13 @@ func BuildQuerier(params manifestutils.Params) ([]client.Object, error) {
 	return []client.Object{d, service(tempo)}, nil
 }
 
+func resources(tempo v1alpha1.TempoStack) corev1.ResourceRequirements {
+	if tempo.Spec.Template.Querier.Resources == nil {
+		return manifestutils.Resources(tempo, manifestutils.QuerierComponentName, tempo.Spec.Template.Querier.Replicas)
+	}
+	return *tempo.Spec.Template.Querier.Resources
+}
+
 func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 	tempo := params.Tempo
 	labels := manifestutils.ComponentLabels(manifestutils.QuerierComponentName, tempo.Name)
@@ -112,7 +119,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 									MountPath: manifestutils.TmpStoragePath,
 								},
 							},
-							Resources:       manifestutils.Resources(tempo, manifestutils.QuerierComponentName, tempo.Spec.Template.Querier.Replicas),
+							Resources:       resources(tempo),
 							SecurityContext: manifestutils.TempoContainerSecurityContext(),
 						},
 					},

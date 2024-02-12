@@ -14,6 +14,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -765,4 +766,74 @@ func TestRoute(t *testing.T) {
 			WildcardPolicy: routev1.WildcardPolicyNone,
 		},
 	}, objects[3].(*routev1.Route))
+}
+
+func TestOverrideResources(t *testing.T) {
+	overrideResources := corev1.ResourceRequirements{
+		Limits: corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse("500m"),
+			corev1.ResourceMemory: resource.MustParse("2Gi"),
+		},
+	}
+
+	tempo := v1alpha1.TempoStack{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "simplest",
+			Namespace: "observability",
+		},
+		Spec: v1alpha1.TempoStackSpec{
+			Template: v1alpha1.TempoTemplateSpec{
+				Gateway: v1alpha1.TempoGatewaySpec{
+					TempoComponentSpec: v1alpha1.TempoComponentSpec{
+						Resources: &overrideResources,
+					},
+					Enabled: true,
+					Ingress: v1alpha1.IngressSpec{
+						Type: v1alpha1.IngressTypeRoute,
+						Route: v1alpha1.RouteSpec{
+							Termination: v1alpha1.TLSRouteTerminationTypePassthrough,
+						},
+					},
+				},
+			},
+			Tenants: &v1alpha1.TenantsSpec{
+				Mode: v1alpha1.ModeOpenShift,
+				Authentication: []v1alpha1.AuthenticationSpec{
+					{
+						TenantName: "dev",
+						TenantID:   "abcd1",
+					},
+				},
+			},
+			Resources: v1alpha1.Resources{
+				Total: &corev1.ResourceRequirements{
+					Limits: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("1000m"),
+						corev1.ResourceMemory: resource.MustParse("2Gi"),
+					},
+				},
+			},
+		},
+	}
+
+	objects, err := BuildGateway(manifestutils.Params{
+		Tempo: tempo,
+		CtrlConfig: configv1alpha1.ProjectConfig{
+			Gates: configv1alpha1.FeatureGates{
+				OpenShift: configv1alpha1.OpenShiftFeatureGates{
+					ServingCertsService: true,
+					OpenShiftRoute:      true,
+					BaseDomain:          "domain",
+				},
+			},
+		},
+	})
+
+	require.NoError(t, err)
+	obj := getObjectByTypeAndName(objects, "tempo-simplest-gateway", reflect.TypeOf(&appsv1.Deployment{}))
+	require.NotNil(t, obj)
+	dep, ok := obj.(*appsv1.Deployment)
+	require.True(t, ok)
+	assert.Equal(t, dep.Spec.Template.Spec.Containers[0].Resources, overrideResources)
+
 }

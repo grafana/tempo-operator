@@ -630,3 +630,50 @@ func TestBuildQueryFrontendWithJaegerMonitorTab(t *testing.T) {
 		})
 	}
 }
+
+func TestOverrideResources(t *testing.T) {
+	overrideResources := corev1.ResourceRequirements{
+		Limits: corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse("500m"),
+			corev1.ResourceMemory: resource.MustParse("2Gi"),
+		},
+	}
+
+	objects, err := BuildQueryFrontend(manifestutils.Params{Tempo: v1alpha1.TempoStack{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test",
+			Namespace: "project1",
+		},
+		Spec: v1alpha1.TempoStackSpec{
+			Images: configv1alpha1.ImagesSpec{
+				Tempo:      "docker.io/grafana/tempo:1.5.0",
+				TempoQuery: "docker.io/grafana/tempo-query:1.5.0",
+			},
+			ServiceAccount: "tempo-test-serviceaccount",
+			Template: v1alpha1.TempoTemplateSpec{
+				QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+					TempoComponentSpec: v1alpha1.TempoComponentSpec{
+						Replicas:  ptr.To(int32(1)),
+						Resources: &overrideResources,
+					},
+					JaegerQuery: v1alpha1.JaegerQuerySpec{
+						Enabled: true,
+					},
+				},
+			},
+			Resources: v1alpha1.Resources{
+				Total: &corev1.ResourceRequirements{
+					Limits: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("1000m"),
+						corev1.ResourceMemory: resource.MustParse("2Gi"),
+					},
+				},
+			},
+		},
+	}})
+
+	require.NoError(t, err)
+	deployment, ok := objects[0].(*v1.Deployment)
+	require.True(t, ok)
+	assert.Equal(t, deployment.Spec.Template.Spec.Containers[0].Resources, overrideResources)
+}

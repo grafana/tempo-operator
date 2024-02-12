@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.8.0
-    createdAt: "2024-02-08T13:27:01Z"
+    createdAt: "2024-02-12T14:43:26Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -652,6 +652,10 @@ spec:
           component.
         displayName: Component Replicas
         path: template.compactor.replicas
+      - description: Resources defines resources for this component, this will override
+          the calculated resources derived from total
+        displayName: Resources
+        path: template.compactor.resources
       - description: Tolerations defines component-specific pod tolerations.
         displayName: Tolerations
         path: template.compactor.tolerations
@@ -665,6 +669,10 @@ spec:
           component.
         displayName: Component Replicas
         path: template.distributor.replicas
+      - description: Resources defines resources for this component, this will override
+          the calculated resources derived from total
+        displayName: Resources
+        path: template.distributor.resources
       - description: TLS defines TLS configuration for distributor receivers
         displayName: TLS
         path: template.distributor.tls
@@ -725,6 +733,10 @@ spec:
           component.
         displayName: Component Replicas
         path: template.gateway.replicas
+      - description: Resources defines resources for this component, this will override
+          the calculated resources derived from total
+        displayName: Resources
+        path: template.gateway.resources
       - description: Tolerations defines component-specific pod tolerations.
         displayName: Tolerations
         path: template.gateway.tolerations
@@ -738,6 +750,10 @@ spec:
           component.
         displayName: Component Replicas
         path: template.ingester.replicas
+      - description: Resources defines resources for this component, this will override
+          the calculated resources derived from total
+        displayName: Resources
+        path: template.ingester.resources
       - description: Tolerations defines component-specific pod tolerations.
         displayName: Tolerations
         path: template.ingester.tolerations
@@ -751,6 +767,10 @@ spec:
           component.
         displayName: Component Replicas
         path: template.querier.replicas
+      - description: Resources defines resources for this component, this will override
+          the calculated resources derived from total
+        displayName: Resources
+        path: template.querier.resources
       - description: Tolerations defines component-specific pod tolerations.
         displayName: Tolerations
         path: template.querier.tolerations
@@ -805,6 +825,10 @@ spec:
           component.
         displayName: Component Replicas
         path: template.queryFrontend.replicas
+      - description: Resources defines resources for this component, this will override
+          the calculated resources derived from total
+        displayName: Resources
+        path: template.queryFrontend.resources
       - description: Tolerations defines component-specific pod tolerations.
         displayName: Tolerations
         path: template.queryFrontend.tolerations
