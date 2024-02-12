@@ -10,8 +10,8 @@ import (
 
 const (
 	messageReady   = "All components are operational"
-	messageFailed  = "Some TempoStack components failed"
-	messagePending = "Some TempoStack components are pending on dependencies"
+	messageFailed  = "Some Tempo components failed"
+	messagePending = "Some Tempo components are pending on dependencies"
 )
 
 // ConfigurationError contains information about why the managed TempoStack has an invalid configuration.

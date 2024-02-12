@@ -102,7 +102,7 @@ func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, log logr.Logg
 		return err
 	}
 
-	err = reconcileManagedObjects(ctx, log, r.Client, &tempo, r.Scheme, managedObjects, ownedObjects)
+	err = reconcileManagedObjects(ctx, r.Client, &tempo, r.Scheme, managedObjects, ownedObjects)
 	if err != nil {
 		return err
 	}

@@ -216,9 +216,6 @@ type GrafanaConfigSpec struct {
 	InstanceSelector metav1.LabelSelector `json:"instanceSelector,omitempty"`
 }
 
-// PodStatusMap defines the type for mapping pod status to pod name.
-type PodStatusMap map[corev1.PodPhase][]string
-
 // ComponentStatus defines the status of each component.
 type ComponentStatus struct {
 	// Compactor is a map to the pod status of the compactor pod.
@@ -260,7 +257,7 @@ type ComponentStatus struct {
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=status,xDescriptors="urn:alm:descriptor:com.tectonic.ui:podStatuses",displayName="Query Frontend",order=4
+	// +operator-sdk:csv:customresourcedefinitions:type=status,xDescriptors="urn:alm:descriptor:com.tectonic.ui:podStatuses",displayName="Gateway",order=6
 	Gateway PodStatusMap `json:"gateway"`
 }
 

@@ -3,21 +3,8 @@ package status
 import (
 	"context"
 
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/metrics"
-
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/version"
-)
-
-var (
-	metricTempoStackStatusCondition = promauto.With(metrics.Registry).NewGaugeVec(prometheus.GaugeOpts{
-		Namespace: "tempostack",
-		Name:      "status_condition",
-		Help:      "The status condition of a TempoStack instance.",
-	}, []string{"stack_namespace", "stack_name", "condition"})
 )
 
 // Refresh updates the status field with the Tempo versions and updates the tempostack_status_condition metric.
@@ -35,22 +22,7 @@ func Refresh(ctx context.Context, k StatusClient, tempo v1alpha1.TempoStack, sta
 		changed.Status.TempoVersion = version.Get().TempoVersion
 	}
 
-	// Update all status condition metrics.
-	// In some cases not all status conditions are present in the status.Conditions list, for example:
-	// A TempoStack CR gets created with an invalid storage secret (creating an ConfigurationError status condition).
-	// Later this CR is deleted, a storage secret is created and a new TempoStack instance is created.
-	// Then this TempoStack instance doesn't have the ConfigurationError condition in the status.Conditions list.
-	activeConditions := map[string]float64{}
-	for _, cond := range status.Conditions {
-		if cond.Status == metav1.ConditionTrue {
-			activeConditions[cond.Type] = 1
-		}
-	}
-	for _, cond := range v1alpha1.AllStatusConditions {
-		condStr := string(cond)
-		isActive := activeConditions[condStr] // isActive will be 0 if the condition is not found in the map
-		metricTempoStackStatusCondition.WithLabelValues(tempo.Namespace, tempo.Name, condStr).Set(isActive)
-	}
+	updateMetrics(metricTempoStackStatusCondition, status.Conditions, tempo.Namespace, tempo.Name)
 
 	err := k.PatchStatus(ctx, changed, &tempo)
 	if err != nil {

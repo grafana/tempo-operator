@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.8.0
-    createdAt: "2024-02-02T17:31:33Z"
+    createdAt: "2024-02-08T13:26:59Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -321,6 +321,17 @@ spec:
         path: storage.traces.size
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:text
+      statusDescriptors:
+      - description: Tempo is a map of the pod status of the Tempo pods.
+        displayName: Tempo
+        path: components.tempo
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:podStatuses
+      - description: Conditions of the Tempo deployment health.
+        displayName: Conditions
+        path: conditions
+        x-descriptors:
+        - urn:alm:descriptor:io.kubernetes.conditions
       version: v1alpha1
     - description: TempoStack manages a Tempo deployment in microservices mode.
       displayName: TempoStack
@@ -864,12 +875,6 @@ spec:
         path: components.querier
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:podStatuses
-      - description: Gateway is a map to the per pod status of the query frontend
-          deployment
-        displayName: Query Frontend
-        path: components.gateway
-        x-descriptors:
-        - urn:alm:descriptor:com.tectonic.ui:podStatuses
       - description: QueryFrontend is a map to the per pod status of the query frontend
           deployment
         displayName: Query Frontend
@@ -879,6 +884,12 @@ spec:
       - description: Compactor is a map to the pod status of the compactor pod.
         displayName: Compactor
         path: components.compactor
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:podStatuses
+      - description: Gateway is a map to the per pod status of the query frontend
+          deployment
+        displayName: Gateway
+        path: components.gateway
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:podStatuses
       - description: Conditions of the Tempo deployment health.
