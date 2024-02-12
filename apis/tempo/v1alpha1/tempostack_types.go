@@ -529,7 +529,7 @@ type TempoComponentSpec struct {
 	//
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Resources"
-	Resources *corev1.ResourceRequirements `json:"total,omitempty"`
+	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 }
 
 // TempoGatewaySpec extends TempoComponentSpec with gateway parameters.
