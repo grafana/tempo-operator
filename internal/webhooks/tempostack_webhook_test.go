@@ -1498,8 +1498,7 @@ func TestValidateName(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			v := &validator{ctrlConfig: configv1alpha1.ProjectConfig{}, client: &k8sFake{}}
-			assert.Equal(t, tc.expected, v.validateStackName(tc.input))
+			assert.Equal(t, tc.expected, validateName(tc.input.Name))
 		})
 	}
 }
