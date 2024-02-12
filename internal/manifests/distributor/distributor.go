@@ -48,6 +48,13 @@ func BuildDistributor(params manifestutils.Params) ([]client.Object, error) {
 	return []client.Object{dep, service(tempo)}, nil
 }
 
+func resources(tempo v1alpha1.TempoStack) corev1.ResourceRequirements {
+	if tempo.Spec.Template.Distributor.Resources == nil {
+		return manifestutils.Resources(tempo, manifestutils.DistributorComponentName, tempo.Spec.Template.Distributor.Replicas)
+	}
+	return *tempo.Spec.Template.Distributor.Resources
+}
+
 func configureReceiversTLS(dep *v1.Deployment, tempo v1alpha1.TempoStack) error {
 	caSecretName := tempo.Spec.Template.Distributor.TLS.CA
 	certSecretName := tempo.Spec.Template.Distributor.TLS.Cert
@@ -232,7 +239,7 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 									MountPath: manifestutils.TmpStoragePath,
 								},
 							},
-							Resources:       manifestutils.Resources(tempo, manifestutils.DistributorComponentName, tempo.Spec.Template.Distributor.Replicas),
+							Resources:       resources(tempo),
 							SecurityContext: manifestutils.TempoContainerSecurityContext(),
 						},
 					},

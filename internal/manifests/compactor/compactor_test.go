@@ -188,3 +188,49 @@ func TestBuildCompactor(t *testing.T) {
 		},
 	}, objects[0])
 }
+
+func TestOverrideResources(t *testing.T) {
+	overrideResources := corev1.ResourceRequirements{
+		Limits: corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse("500m"),
+			corev1.ResourceMemory: resource.MustParse("2Gi"),
+		},
+	}
+
+	objects, err := BuildCompactor(manifestutils.Params{Tempo: v1alpha1.TempoStack{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test",
+			Namespace: "project1",
+		},
+		Spec: v1alpha1.TempoStackSpec{
+			Images: configv1alpha1.ImagesSpec{
+				Tempo: "docker.io/grafana/tempo:1.5.0",
+			},
+			ServiceAccount: "tempo-test-serviceaccount",
+			Template: v1alpha1.TempoTemplateSpec{
+				Compactor: v1alpha1.TempoComponentSpec{
+					Replicas:     ptr.To(int32(2)),
+					NodeSelector: map[string]string{"a": "b"},
+					Tolerations: []corev1.Toleration{
+						{
+							Key: "c",
+						},
+					},
+					Resources: &overrideResources,
+				},
+			},
+			Resources: v1alpha1.Resources{
+				Total: &corev1.ResourceRequirements{
+					Limits: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("10000m"),
+						corev1.ResourceMemory: resource.MustParse("4Gi"),
+					},
+				},
+			},
+		},
+	}})
+	require.NoError(t, err)
+	dep, ok := objects[0].(*v1.Deployment)
+	require.True(t, ok)
+	assert.Equal(t, dep.Spec.Template.Spec.Containers[0].Resources, overrideResources)
+}

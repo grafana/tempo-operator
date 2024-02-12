@@ -23,7 +23,7 @@ var (
 // BuildTempoStatefulset creates the Tempo statefulset for a monolithic deployment.
 func BuildTempoStatefulset(opts Options) (*appsv1.StatefulSet, error) {
 	tempo := opts.Tempo
-	labels := Labels(tempo.Name)
+	labels := ComponentLabels(manifestutils.TempoMonolithComponentName, tempo.Name)
 	annotations := manifestutils.CommonAnnotations(opts.ConfigChecksum)
 
 	sts := &appsv1.StatefulSet{
@@ -32,7 +32,7 @@ func BuildTempoStatefulset(opts Options) (*appsv1.StatefulSet, error) {
 			Kind:       "StatefulSet",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      naming.Name("", tempo.Name),
+			Name:      naming.Name(manifestutils.TempoMonolithComponentName, tempo.Name),
 			Namespace: tempo.Namespace,
 			Labels:    labels,
 		},
@@ -84,7 +84,7 @@ func BuildTempoStatefulset(opts Options) (*appsv1.StatefulSet, error) {
 							VolumeSource: corev1.VolumeSource{
 								ConfigMap: &corev1.ConfigMapVolumeSource{
 									LocalObjectReference: corev1.LocalObjectReference{
-										Name: naming.Name("", tempo.Name),
+										Name: naming.Name(manifestutils.TempoMonolithComponentName, tempo.Name),
 									},
 								},
 							},

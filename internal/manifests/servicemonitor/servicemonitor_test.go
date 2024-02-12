@@ -23,9 +23,13 @@ func TestBuildServiceMonitors(t *testing.T) {
 		Spec: v1alpha1.TempoStackSpec{},
 	}})
 
-	labels := manifestutils.CommonLabels("test")
+	labels := manifestutils.ComponentLabels(manifestutils.CompactorComponentName, "test")
 	assert.Len(t, objects, 5)
 	assert.Equal(t, &monitoringv1.ServiceMonitor{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "monitoring.coreos.com/v1",
+			Kind:       "ServiceMonitor",
+		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "tempo-test-compactor",
 			Namespace: "project1",
@@ -52,7 +56,7 @@ func TestBuildServiceMonitors(t *testing.T) {
 				MatchNames: []string{"project1"},
 			},
 			Selector: metav1.LabelSelector{
-				MatchLabels: manifestutils.ComponentLabels(manifestutils.CompactorComponentName, "test"),
+				MatchLabels: labels,
 			},
 		},
 	}, objects[0])
@@ -74,9 +78,13 @@ func TestBuildServiceMonitorsTLS(t *testing.T) {
 		},
 	})
 
-	labels := manifestutils.CommonLabels("test")
+	labels := manifestutils.ComponentLabels(manifestutils.CompactorComponentName, "test")
 	assert.Len(t, objects, 5)
 	assert.Equal(t, &monitoringv1.ServiceMonitor{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "monitoring.coreos.com/v1",
+			Kind:       "ServiceMonitor",
+		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "tempo-test-compactor",
 			Namespace: "project1",
@@ -130,7 +138,7 @@ func TestBuildServiceMonitorsTLS(t *testing.T) {
 				MatchNames: []string{"project1"},
 			},
 			Selector: metav1.LabelSelector{
-				MatchLabels: manifestutils.ComponentLabels(manifestutils.CompactorComponentName, "test"),
+				MatchLabels: labels,
 			},
 		},
 	}, objects[0])
@@ -151,9 +159,13 @@ func TestBuildGatewayServiceMonitor(t *testing.T) {
 		},
 	}})
 
-	labels := manifestutils.CommonLabels("test")
+	labels := manifestutils.ComponentLabels(manifestutils.GatewayComponentName, "test")
 	assert.Len(t, objects, 6)
 	assert.Equal(t, &monitoringv1.ServiceMonitor{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "monitoring.coreos.com/v1",
+			Kind:       "ServiceMonitor",
+		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "tempo-test-gateway",
 			Namespace: "project1",
@@ -180,7 +192,7 @@ func TestBuildGatewayServiceMonitor(t *testing.T) {
 				MatchNames: []string{"project1"},
 			},
 			Selector: metav1.LabelSelector{
-				MatchLabels: manifestutils.ComponentLabels(manifestutils.GatewayComponentName, "test"),
+				MatchLabels: labels,
 			},
 		},
 	}, objects[5])
@@ -211,9 +223,13 @@ func TestBuildGatewayServiceMonitorsTLS(t *testing.T) {
 		},
 	})
 
-	labels := manifestutils.CommonLabels("test")
+	labels := manifestutils.ComponentLabels(manifestutils.GatewayComponentName, "test")
 	assert.Len(t, objects, 6)
 	assert.Equal(t, &monitoringv1.ServiceMonitor{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "monitoring.coreos.com/v1",
+			Kind:       "ServiceMonitor",
+		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "tempo-test-gateway",
 			Namespace: "project1",
@@ -267,7 +283,7 @@ func TestBuildGatewayServiceMonitorsTLS(t *testing.T) {
 				MatchNames: []string{"project1"},
 			},
 			Selector: metav1.LabelSelector{
-				MatchLabels: manifestutils.ComponentLabels(manifestutils.GatewayComponentName, "test"),
+				MatchLabels: labels,
 			},
 		},
 	}, objects[5])

@@ -124,7 +124,7 @@ func statefulSet(params manifestutils.Params) (*v1.StatefulSet, error) {
 								},
 							},
 							ReadinessProbe:  manifestutils.TempoReadinessProbe(params.CtrlConfig.Gates.HTTPEncryption),
-							Resources:       manifestutils.Resources(tempo, manifestutils.IngesterComponentName, tempo.Spec.Template.Ingester.Replicas),
+							Resources:       resources(tempo),
 							SecurityContext: manifestutils.TempoContainerSecurityContext(),
 						},
 					},
@@ -173,6 +173,13 @@ func statefulSet(params manifestutils.Params) (*v1.StatefulSet, error) {
 	}
 
 	return ss, nil
+}
+
+func resources(tempo v1alpha1.TempoStack) corev1.ResourceRequirements {
+	if tempo.Spec.Template.Ingester.Resources == nil {
+		return manifestutils.Resources(tempo, manifestutils.IngesterComponentName, tempo.Spec.Template.Ingester.Replicas)
+	}
+	return *tempo.Spec.Template.Ingester.Resources
 }
 
 func service(tempo v1alpha1.TempoStack) *corev1.Service {

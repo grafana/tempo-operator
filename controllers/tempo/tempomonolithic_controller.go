@@ -2,10 +2,9 @@ package controllers
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
-	grafanav1 "github.com/grafana-operator/grafana-operator/v5/api/v1beta1"
+	grafanav1 "github.com/grafana/grafana-operator/v5/api/v1beta1"
 	routev1 "github.com/openshift/api/route/v1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
@@ -17,12 +16,12 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/handlers/storage"
 	"github.com/grafana/tempo-operator/internal/manifests/monolithic"
+	"github.com/grafana/tempo-operator/internal/status"
 )
 
 // TempoMonolithicReconciler reconciles a TempoMonolithic object.
@@ -39,7 +38,8 @@ type TempoMonolithicReconciler struct {
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
 func (r *TempoMonolithicReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	log := log.FromContext(ctx).WithName("tempomonolithic-reconcile")
+	log := ctrl.LoggerFrom(ctx).WithName("tempomonolithic-reconcile")
+	ctx = ctrl.LoggerInto(ctx, log)
 
 	log.V(1).Info("starting reconcile loop")
 	defer log.V(1).Info("finished reconcile loop")
@@ -65,9 +65,24 @@ func (r *TempoMonolithicReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return ctrl.Result{}, nil
 	}
 
+	err := r.createOrUpdate(ctx, tempo)
+	if err != nil {
+		return ctrl.Result{}, status.HandleTempoMonolithicStatus(ctx, r.Client, tempo, err)
+	}
+
+	// Note: controller-runtime will always requeue a reconcile if Reconcile() returns any error except TerminalError.
+	// Result.Requeue and Result.RequeueAfter are only respected if err == nil
+	// https://github.com/kubernetes-sigs/controller-runtime/blob/v0.15.0/pkg/internal/controller/controller.go#L315-L341
+	return ctrl.Result{}, status.HandleTempoMonolithicStatus(ctx, r.Client, tempo, nil)
+}
+
+func (r *TempoMonolithicReconciler) createOrUpdate(ctx context.Context, tempo v1alpha1.TempoMonolithic) error {
 	storageParams, errs := storage.GetStorageParamsForTempoMonolithic(ctx, r.Client, tempo)
 	if len(errs) > 0 {
-		return ctrl.Result{}, errors.New(listFieldErrors(errs))
+		return &status.ConfigurationError{
+			Reason:  v1alpha1.ReasonInvalidStorageConfig,
+			Message: listFieldErrors(errs),
+		}
 	}
 
 	managedObjects, err := monolithic.BuildAll(monolithic.Options{
@@ -76,27 +91,22 @@ func (r *TempoMonolithicReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		StorageParams: storageParams,
 	})
 	if err != nil {
-		return ctrl.Result{}, fmt.Errorf("error building manifests: %w", err)
+		return fmt.Errorf("error building manifests: %w", err)
 	}
 
 	ownedObjects, err := r.getOwnedObjects(ctx, tempo)
 	if err != nil {
-		return ctrl.Result{}, err
+		return err
 	}
 
-	err = reconcileManagedObjects(ctx, log, r.Client, &tempo, r.Scheme, managedObjects, ownedObjects)
-	if err != nil {
-		return ctrl.Result{}, err
-	}
-
-	return ctrl.Result{}, nil
+	return reconcileManagedObjects(ctx, r.Client, &tempo, r.Scheme, managedObjects, ownedObjects)
 }
 
 func (r *TempoMonolithicReconciler) getOwnedObjects(ctx context.Context, tempo v1alpha1.TempoMonolithic) (map[types.UID]client.Object, error) {
 	ownedObjects := map[types.UID]client.Object{}
 	listOps := &client.ListOptions{
 		Namespace:     tempo.GetNamespace(),
-		LabelSelector: labels.SelectorFromSet(monolithic.Labels(tempo.Name)),
+		LabelSelector: labels.SelectorFromSet(monolithic.CommonLabels(tempo.Name)),
 	}
 
 	// Add all resources where the operator can conditionally create an object.

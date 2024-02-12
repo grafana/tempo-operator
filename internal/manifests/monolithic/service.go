@@ -13,7 +13,7 @@ import (
 // BuildTempoService creates the service for a monolithic deployment.
 func BuildTempoService(opts Options) *corev1.Service {
 	tempo := opts.Tempo
-	labels := Labels(tempo.Name)
+	labels := ComponentLabels(manifestutils.TempoMonolithComponentName, tempo.Name)
 	ports := []corev1.ServicePort{
 		{
 			Name:       manifestutils.HttpPortName,
@@ -69,7 +69,7 @@ func BuildTempoService(opts Options) *corev1.Service {
 			Kind:       "Service",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      naming.Name("", tempo.Name),
+			Name:      naming.Name(manifestutils.TempoMonolithComponentName, tempo.Name),
 			Namespace: tempo.Namespace,
 			Labels:    labels,
 		},

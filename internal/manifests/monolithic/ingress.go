@@ -38,7 +38,7 @@ func BuildTempoIngress(opts Options) ([]client.Object, error) {
 
 func buildJaegerUIIngress(opts Options) *networkingv1.Ingress {
 	tempo := opts.Tempo
-	labels := Labels(tempo.Name)
+	labels := ComponentLabels(manifestutils.TempoMonolithComponentName, tempo.Name)
 	ingress := &networkingv1.Ingress{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: networkingv1.SchemeGroupVersion.String(),
@@ -57,7 +57,7 @@ func buildJaegerUIIngress(opts Options) *networkingv1.Ingress {
 
 	backend := networkingv1.IngressBackend{
 		Service: &networkingv1.IngressServiceBackend{
-			Name: naming.Name("", tempo.Name),
+			Name: naming.Name(manifestutils.TempoMonolithComponentName, tempo.Name),
 			Port: networkingv1.ServiceBackendPort{
 				Name: manifestutils.JaegerUIPortName,
 			},
@@ -90,7 +90,7 @@ func buildJaegerUIIngress(opts Options) *networkingv1.Ingress {
 
 func buildJaegerUIRoute(opts Options) (*routev1.Route, error) {
 	tempo := opts.Tempo
-	labels := Labels(tempo.Name)
+	labels := ComponentLabels(manifestutils.TempoMonolithComponentName, tempo.Name)
 
 	var tlsCfg *routev1.TLSConfig
 	switch tempo.Spec.JaegerUI.Route.Termination {
@@ -121,7 +121,7 @@ func buildJaegerUIRoute(opts Options) (*routev1.Route, error) {
 			Host: tempo.Spec.JaegerUI.Route.Host,
 			To: routev1.RouteTargetReference{
 				Kind: "Service",
-				Name: naming.Name("", tempo.Name),
+				Name: naming.Name(manifestutils.TempoMonolithComponentName, tempo.Name),
 			},
 			Port: &routev1.RoutePort{
 				TargetPort: intstr.FromString(manifestutils.JaegerUIPortName),

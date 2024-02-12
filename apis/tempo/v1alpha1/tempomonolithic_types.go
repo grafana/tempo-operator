@@ -277,10 +277,28 @@ type MonolithicJaegerUIRouteSpec struct {
 	Termination TLSRouteTerminationType `json:"termination,omitempty"`
 }
 
+// MonolithicComponentStatus defines the status of each component.
+type MonolithicComponentStatus struct {
+	// Tempo is a map of the pod status of the Tempo pods.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=status,displayName="Tempo",xDescriptors="urn:alm:descriptor:com.tectonic.ui:podStatuses"
+	Tempo PodStatusMap `json:"tempo"`
+}
+
 // TempoMonolithicStatus defines the observed state of TempoMonolithic.
 type TempoMonolithicStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	// Components provides summary of all Tempo pod status, grouped per component.
+	//
+	// +kubebuilder:validation:Optional
+	Components MonolithicComponentStatus `json:"components,omitempty"`
+
+	// Conditions of the Tempo deployment health.
+	//
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=status,xDescriptors="urn:alm:descriptor:io.kubernetes.conditions"
+	Conditions []metav1.Condition `json:"conditions,omitempty"`
 }
 
 //+kubebuilder:object:root=true

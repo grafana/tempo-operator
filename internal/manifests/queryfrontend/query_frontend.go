@@ -87,6 +87,13 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 	return manifests, nil
 }
 
+func resources(tempo v1alpha1.TempoStack) corev1.ResourceRequirements {
+	if tempo.Spec.Template.QueryFrontend.Resources == nil {
+		return manifestutils.Resources(tempo, manifestutils.QueryFrontendComponentName, tempo.Spec.Template.QueryFrontend.Replicas)
+	}
+	return *tempo.Spec.Template.QueryFrontend.Resources
+}
+
 func deployment(params manifestutils.Params) (*appsv1.Deployment, error) {
 	tempo := params.Tempo
 	labels := manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, tempo.Name)
@@ -160,7 +167,7 @@ func deployment(params manifestutils.Params) (*appsv1.Deployment, error) {
 									MountPath: manifestutils.TmpStoragePath,
 								},
 							},
-							Resources:       manifestutils.Resources(tempo, manifestutils.QueryFrontendComponentName, tempo.Spec.Template.QueryFrontend.Replicas),
+							Resources:       resources(tempo),
 							SecurityContext: manifestutils.TempoContainerSecurityContext(),
 						},
 					},

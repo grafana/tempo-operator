@@ -1,5 +1,10 @@
 package v1alpha1
 
+import corev1 "k8s.io/api/core/v1"
+
+// PodStatusMap defines the type for mapping pod status to pod name.
+type PodStatusMap map[corev1.PodPhase][]string
+
 // TLSSpec is the TLS configuration.
 type TLSSpec struct {
 	// Enabled defines if TLS is enabled.
