@@ -15,6 +15,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/manifests/monolithic"
 )
 
@@ -27,11 +28,11 @@ func isPodReady(pod corev1.Pod) bool {
 	return true
 }
 
-func getStatefulSetStatus(ctx context.Context, c client.Client, namespace string, name string) (v1alpha1.PodStatusMap, error) {
+func getStatefulSetStatus(ctx context.Context, c client.Client, namespace string, name string, component string) (v1alpha1.PodStatusMap, error) {
 	psm := v1alpha1.PodStatusMap{}
 
 	opts := []client.ListOption{
-		client.MatchingLabels(monolithic.Labels(name)),
+		client.MatchingLabels(monolithic.ComponentLabels(component, name)),
 		client.InNamespace(namespace),
 	}
 
@@ -76,7 +77,7 @@ func getComponentsStatus(ctx context.Context, client client.Client, tempo v1alph
 	var err error
 	components := v1alpha1.MonolithicComponentStatus{}
 
-	components.Tempo, err = getStatefulSetStatus(ctx, client, tempo.Namespace, tempo.Name)
+	components.Tempo, err = getStatefulSetStatus(ctx, client, tempo.Namespace, tempo.Name, manifestutils.TempoMonolithComponentName)
 	if err != nil {
 		return v1alpha1.MonolithicComponentStatus{}, fmt.Errorf("cannot get pod status: %w", err)
 	}
