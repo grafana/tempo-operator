@@ -467,50 +467,7 @@ spec:
                           created for this component.
                         format: int32
                         type: integer
-                      tolerations:
-                        description: Tolerations defines component-specific pod tolerations.
-                        items:
-                          description: The pod this Toleration is attached to tolerates
-                            any taint that matches the triple <key,value,effect> using
-                            the matching operator <operator>.
-                          properties:
-                            effect:
-                              description: Effect indicates the taint effect to match.
-                                Empty means match all taint effects. When specified,
-                                allowed values are NoSchedule, PreferNoSchedule and
-                                NoExecute.
-                              type: string
-                            key:
-                              description: Key is the taint key that the toleration
-                                applies to. Empty means match all taint keys. If the
-                                key is empty, operator must be Exists; this combination
-                                means to match all values and all keys.
-                              type: string
-                            operator:
-                              description: Operator represents a key's relationship
-                                to the value. Valid operators are Exists and Equal.
-                                Defaults to Equal. Exists is equivalent to wildcard
-                                for value, so that a pod can tolerate all taints of
-                                a particular category.
-                              type: string
-                            tolerationSeconds:
-                              description: TolerationSeconds represents the period
-                                of time the toleration (which must be of effect NoExecute,
-                                otherwise this field is ignored) tolerates the taint.
-                                By default, it is not set, which means tolerate the
-                                taint forever (do not evict). Zero and negative values
-                                will be treated as 0 (evict immediately) by the system.
-                              format: int64
-                              type: integer
-                            value:
-                              description: Value is the taint value the toleration
-                                matches to. If the operator is Exists, the value should
-                                be empty, otherwise just a regular string.
-                              type: string
-                          type: object
-                        type: array
-                        x-kubernetes-list-type: atomic
-                      total:
+                      resources:
                         description: Resources defines resources for this component,
                           this will override the calculated resources derived from
                           total
@@ -561,6 +518,49 @@ spec:
                               Requests cannot exceed Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                             type: object
                         type: object
+                      tolerations:
+                        description: Tolerations defines component-specific pod tolerations.
+                        items:
+                          description: The pod this Toleration is attached to tolerates
+                            any taint that matches the triple <key,value,effect> using
+                            the matching operator <operator>.
+                          properties:
+                            effect:
+                              description: Effect indicates the taint effect to match.
+                                Empty means match all taint effects. When specified,
+                                allowed values are NoSchedule, PreferNoSchedule and
+                                NoExecute.
+                              type: string
+                            key:
+                              description: Key is the taint key that the toleration
+                                applies to. Empty means match all taint keys. If the
+                                key is empty, operator must be Exists; this combination
+                                means to match all values and all keys.
+                              type: string
+                            operator:
+                              description: Operator represents a key's relationship
+                                to the value. Valid operators are Exists and Equal.
+                                Defaults to Equal. Exists is equivalent to wildcard
+                                for value, so that a pod can tolerate all taints of
+                                a particular category.
+                              type: string
+                            tolerationSeconds:
+                              description: TolerationSeconds represents the period
+                                of time the toleration (which must be of effect NoExecute,
+                                otherwise this field is ignored) tolerates the taint.
+                                By default, it is not set, which means tolerate the
+                                taint forever (do not evict). Zero and negative values
+                                will be treated as 0 (evict immediately) by the system.
+                              format: int64
+                              type: integer
+                            value:
+                              description: Value is the taint value the toleration
+                                matches to. If the operator is Exists, the value should
+                                be empty, otherwise just a regular string.
+                              type: string
+                          type: object
+                        type: array
+                        x-kubernetes-list-type: atomic
                     type: object
                   distributor:
                     description: Distributor defines the distributor component spec.
@@ -581,53 +581,7 @@ spec:
                               be created for this component.
                             format: int32
                             type: integer
-                          tolerations:
-                            description: Tolerations defines component-specific pod
-                              tolerations.
-                            items:
-                              description: The pod this Toleration is attached to
-                                tolerates any taint that matches the triple <key,value,effect>
-                                using the matching operator <operator>.
-                              properties:
-                                effect:
-                                  description: Effect indicates the taint effect to
-                                    match. Empty means match all taint effects. When
-                                    specified, allowed values are NoSchedule, PreferNoSchedule
-                                    and NoExecute.
-                                  type: string
-                                key:
-                                  description: Key is the taint key that the toleration
-                                    applies to. Empty means match all taint keys.
-                                    If the key is empty, operator must be Exists;
-                                    this combination means to match all values and
-                                    all keys.
-                                  type: string
-                                operator:
-                                  description: Operator represents a key's relationship
-                                    to the value. Valid operators are Exists and Equal.
-                                    Defaults to Equal. Exists is equivalent to wildcard
-                                    for value, so that a pod can tolerate all taints
-                                    of a particular category.
-                                  type: string
-                                tolerationSeconds:
-                                  description: TolerationSeconds represents the period
-                                    of time the toleration (which must be of effect
-                                    NoExecute, otherwise this field is ignored) tolerates
-                                    the taint. By default, it is not set, which means
-                                    tolerate the taint forever (do not evict). Zero
-                                    and negative values will be treated as 0 (evict
-                                    immediately) by the system.
-                                  format: int64
-                                  type: integer
-                                value:
-                                  description: Value is the taint value the toleration
-                                    matches to. If the operator is Exists, the value
-                                    should be empty, otherwise just a regular string.
-                                  type: string
-                              type: object
-                            type: array
-                            x-kubernetes-list-type: atomic
-                          total:
+                          resources:
                             description: Resources defines resources for this component,
                               this will override the calculated resources derived
                               from total
@@ -681,6 +635,52 @@ spec:
                                   https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                                 type: object
                             type: object
+                          tolerations:
+                            description: Tolerations defines component-specific pod
+                              tolerations.
+                            items:
+                              description: The pod this Toleration is attached to
+                                tolerates any taint that matches the triple <key,value,effect>
+                                using the matching operator <operator>.
+                              properties:
+                                effect:
+                                  description: Effect indicates the taint effect to
+                                    match. Empty means match all taint effects. When
+                                    specified, allowed values are NoSchedule, PreferNoSchedule
+                                    and NoExecute.
+                                  type: string
+                                key:
+                                  description: Key is the taint key that the toleration
+                                    applies to. Empty means match all taint keys.
+                                    If the key is empty, operator must be Exists;
+                                    this combination means to match all values and
+                                    all keys.
+                                  type: string
+                                operator:
+                                  description: Operator represents a key's relationship
+                                    to the value. Valid operators are Exists and Equal.
+                                    Defaults to Equal. Exists is equivalent to wildcard
+                                    for value, so that a pod can tolerate all taints
+                                    of a particular category.
+                                  type: string
+                                tolerationSeconds:
+                                  description: TolerationSeconds represents the period
+                                    of time the toleration (which must be of effect
+                                    NoExecute, otherwise this field is ignored) tolerates
+                                    the taint. By default, it is not set, which means
+                                    tolerate the taint forever (do not evict). Zero
+                                    and negative values will be treated as 0 (evict
+                                    immediately) by the system.
+                                  format: int64
+                                  type: integer
+                                value:
+                                  description: Value is the taint value the toleration
+                                    matches to. If the operator is Exists, the value
+                                    should be empty, otherwise just a regular string.
+                                  type: string
+                              type: object
+                            type: array
+                            x-kubernetes-list-type: atomic
                         type: object
                       tls:
                         description: TLS defines TLS configuration for distributor
@@ -725,53 +725,7 @@ spec:
                               be created for this component.
                             format: int32
                             type: integer
-                          tolerations:
-                            description: Tolerations defines component-specific pod
-                              tolerations.
-                            items:
-                              description: The pod this Toleration is attached to
-                                tolerates any taint that matches the triple <key,value,effect>
-                                using the matching operator <operator>.
-                              properties:
-                                effect:
-                                  description: Effect indicates the taint effect to
-                                    match. Empty means match all taint effects. When
-                                    specified, allowed values are NoSchedule, PreferNoSchedule
-                                    and NoExecute.
-                                  type: string
-                                key:
-                                  description: Key is the taint key that the toleration
-                                    applies to. Empty means match all taint keys.
-                                    If the key is empty, operator must be Exists;
-                                    this combination means to match all values and
-                                    all keys.
-                                  type: string
-                                operator:
-                                  description: Operator represents a key's relationship
-                                    to the value. Valid operators are Exists and Equal.
-                                    Defaults to Equal. Exists is equivalent to wildcard
-                                    for value, so that a pod can tolerate all taints
-                                    of a particular category.
-                                  type: string
-                                tolerationSeconds:
-                                  description: TolerationSeconds represents the period
-                                    of time the toleration (which must be of effect
-                                    NoExecute, otherwise this field is ignored) tolerates
-                                    the taint. By default, it is not set, which means
-                                    tolerate the taint forever (do not evict). Zero
-                                    and negative values will be treated as 0 (evict
-                                    immediately) by the system.
-                                  format: int64
-                                  type: integer
-                                value:
-                                  description: Value is the taint value the toleration
-                                    matches to. If the operator is Exists, the value
-                                    should be empty, otherwise just a regular string.
-                                  type: string
-                              type: object
-                            type: array
-                            x-kubernetes-list-type: atomic
-                          total:
+                          resources:
                             description: Resources defines resources for this component,
                               this will override the calculated resources derived
                               from total
@@ -825,6 +779,52 @@ spec:
                                   https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                                 type: object
                             type: object
+                          tolerations:
+                            description: Tolerations defines component-specific pod
+                              tolerations.
+                            items:
+                              description: The pod this Toleration is attached to
+                                tolerates any taint that matches the triple <key,value,effect>
+                                using the matching operator <operator>.
+                              properties:
+                                effect:
+                                  description: Effect indicates the taint effect to
+                                    match. Empty means match all taint effects. When
+                                    specified, allowed values are NoSchedule, PreferNoSchedule
+                                    and NoExecute.
+                                  type: string
+                                key:
+                                  description: Key is the taint key that the toleration
+                                    applies to. Empty means match all taint keys.
+                                    If the key is empty, operator must be Exists;
+                                    this combination means to match all values and
+                                    all keys.
+                                  type: string
+                                operator:
+                                  description: Operator represents a key's relationship
+                                    to the value. Valid operators are Exists and Equal.
+                                    Defaults to Equal. Exists is equivalent to wildcard
+                                    for value, so that a pod can tolerate all taints
+                                    of a particular category.
+                                  type: string
+                                tolerationSeconds:
+                                  description: TolerationSeconds represents the period
+                                    of time the toleration (which must be of effect
+                                    NoExecute, otherwise this field is ignored) tolerates
+                                    the taint. By default, it is not set, which means
+                                    tolerate the taint forever (do not evict). Zero
+                                    and negative values will be treated as 0 (evict
+                                    immediately) by the system.
+                                  format: int64
+                                  type: integer
+                                value:
+                                  description: Value is the taint value the toleration
+                                    matches to. If the operator is Exists, the value
+                                    should be empty, otherwise just a regular string.
+                                  type: string
+                              type: object
+                            type: array
+                            x-kubernetes-list-type: atomic
                         type: object
                       enabled:
                         type: boolean
@@ -886,50 +886,7 @@ spec:
                           created for this component.
                         format: int32
                         type: integer
-                      tolerations:
-                        description: Tolerations defines component-specific pod tolerations.
-                        items:
-                          description: The pod this Toleration is attached to tolerates
-                            any taint that matches the triple <key,value,effect> using
-                            the matching operator <operator>.
-                          properties:
-                            effect:
-                              description: Effect indicates the taint effect to match.
-                                Empty means match all taint effects. When specified,
-                                allowed values are NoSchedule, PreferNoSchedule and
-                                NoExecute.
-                              type: string
-                            key:
-                              description: Key is the taint key that the toleration
-                                applies to. Empty means match all taint keys. If the
-                                key is empty, operator must be Exists; this combination
-                                means to match all values and all keys.
-                              type: string
-                            operator:
-                              description: Operator represents a key's relationship
-                                to the value. Valid operators are Exists and Equal.
-                                Defaults to Equal. Exists is equivalent to wildcard
-                                for value, so that a pod can tolerate all taints of
-                                a particular category.
-                              type: string
-                            tolerationSeconds:
-                              description: TolerationSeconds represents the period
-                                of time the toleration (which must be of effect NoExecute,
-                                otherwise this field is ignored) tolerates the taint.
-                                By default, it is not set, which means tolerate the
-                                taint forever (do not evict). Zero and negative values
-                                will be treated as 0 (evict immediately) by the system.
-                              format: int64
-                              type: integer
-                            value:
-                              description: Value is the taint value the toleration
-                                matches to. If the operator is Exists, the value should
-                                be empty, otherwise just a regular string.
-                              type: string
-                          type: object
-                        type: array
-                        x-kubernetes-list-type: atomic
-                      total:
+                      resources:
                         description: Resources defines resources for this component,
                           this will override the calculated resources derived from
                           total
@@ -980,6 +937,49 @@ spec:
                               Requests cannot exceed Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                             type: object
                         type: object
+                      tolerations:
+                        description: Tolerations defines component-specific pod tolerations.
+                        items:
+                          description: The pod this Toleration is attached to tolerates
+                            any taint that matches the triple <key,value,effect> using
+                            the matching operator <operator>.
+                          properties:
+                            effect:
+                              description: Effect indicates the taint effect to match.
+                                Empty means match all taint effects. When specified,
+                                allowed values are NoSchedule, PreferNoSchedule and
+                                NoExecute.
+                              type: string
+                            key:
+                              description: Key is the taint key that the toleration
+                                applies to. Empty means match all taint keys. If the
+                                key is empty, operator must be Exists; this combination
+                                means to match all values and all keys.
+                              type: string
+                            operator:
+                              description: Operator represents a key's relationship
+                                to the value. Valid operators are Exists and Equal.
+                                Defaults to Equal. Exists is equivalent to wildcard
+                                for value, so that a pod can tolerate all taints of
+                                a particular category.
+                              type: string
+                            tolerationSeconds:
+                              description: TolerationSeconds represents the period
+                                of time the toleration (which must be of effect NoExecute,
+                                otherwise this field is ignored) tolerates the taint.
+                                By default, it is not set, which means tolerate the
+                                taint forever (do not evict). Zero and negative values
+                                will be treated as 0 (evict immediately) by the system.
+                              format: int64
+                              type: integer
+                            value:
+                              description: Value is the taint value the toleration
+                                matches to. If the operator is Exists, the value should
+                                be empty, otherwise just a regular string.
+                              type: string
+                          type: object
+                        type: array
+                        x-kubernetes-list-type: atomic
                     type: object
                   querier:
                     description: Querier defines the querier component spec.
@@ -995,50 +995,7 @@ spec:
                           created for this component.
                         format: int32
                         type: integer
-                      tolerations:
-                        description: Tolerations defines component-specific pod tolerations.
-                        items:
-                          description: The pod this Toleration is attached to tolerates
-                            any taint that matches the triple <key,value,effect> using
-                            the matching operator <operator>.
-                          properties:
-                            effect:
-                              description: Effect indicates the taint effect to match.
-                                Empty means match all taint effects. When specified,
-                                allowed values are NoSchedule, PreferNoSchedule and
-                                NoExecute.
-                              type: string
-                            key:
-                              description: Key is the taint key that the toleration
-                                applies to. Empty means match all taint keys. If the
-                                key is empty, operator must be Exists; this combination
-                                means to match all values and all keys.
-                              type: string
-                            operator:
-                              description: Operator represents a key's relationship
-                                to the value. Valid operators are Exists and Equal.
-                                Defaults to Equal. Exists is equivalent to wildcard
-                                for value, so that a pod can tolerate all taints of
-                                a particular category.
-                              type: string
-                            tolerationSeconds:
-                              description: TolerationSeconds represents the period
-                                of time the toleration (which must be of effect NoExecute,
-                                otherwise this field is ignored) tolerates the taint.
-                                By default, it is not set, which means tolerate the
-                                taint forever (do not evict). Zero and negative values
-                                will be treated as 0 (evict immediately) by the system.
-                              format: int64
-                              type: integer
-                            value:
-                              description: Value is the taint value the toleration
-                                matches to. If the operator is Exists, the value should
-                                be empty, otherwise just a regular string.
-                              type: string
-                          type: object
-                        type: array
-                        x-kubernetes-list-type: atomic
-                      total:
+                      resources:
                         description: Resources defines resources for this component,
                           this will override the calculated resources derived from
                           total
@@ -1089,6 +1046,49 @@ spec:
                               Requests cannot exceed Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                             type: object
                         type: object
+                      tolerations:
+                        description: Tolerations defines component-specific pod tolerations.
+                        items:
+                          description: The pod this Toleration is attached to tolerates
+                            any taint that matches the triple <key,value,effect> using
+                            the matching operator <operator>.
+                          properties:
+                            effect:
+                              description: Effect indicates the taint effect to match.
+                                Empty means match all taint effects. When specified,
+                                allowed values are NoSchedule, PreferNoSchedule and
+                                NoExecute.
+                              type: string
+                            key:
+                              description: Key is the taint key that the toleration
+                                applies to. Empty means match all taint keys. If the
+                                key is empty, operator must be Exists; this combination
+                                means to match all values and all keys.
+                              type: string
+                            operator:
+                              description: Operator represents a key's relationship
+                                to the value. Valid operators are Exists and Equal.
+                                Defaults to Equal. Exists is equivalent to wildcard
+                                for value, so that a pod can tolerate all taints of
+                                a particular category.
+                              type: string
+                            tolerationSeconds:
+                              description: TolerationSeconds represents the period
+                                of time the toleration (which must be of effect NoExecute,
+                                otherwise this field is ignored) tolerates the taint.
+                                By default, it is not set, which means tolerate the
+                                taint forever (do not evict). Zero and negative values
+                                will be treated as 0 (evict immediately) by the system.
+                              format: int64
+                              type: integer
+                            value:
+                              description: Value is the taint value the toleration
+                                matches to. If the operator is Exists, the value should
+                                be empty, otherwise just a regular string.
+                              type: string
+                          type: object
+                        type: array
+                        x-kubernetes-list-type: atomic
                     type: object
                   queryFrontend:
                     description: TempoQueryFrontendSpec defines the query frontend
@@ -1110,53 +1110,7 @@ spec:
                               be created for this component.
                             format: int32
                             type: integer
-                          tolerations:
-                            description: Tolerations defines component-specific pod
-                              tolerations.
-                            items:
-                              description: The pod this Toleration is attached to
-                                tolerates any taint that matches the triple <key,value,effect>
-                                using the matching operator <operator>.
-                              properties:
-                                effect:
-                                  description: Effect indicates the taint effect to
-                                    match. Empty means match all taint effects. When
-                                    specified, allowed values are NoSchedule, PreferNoSchedule
-                                    and NoExecute.
-                                  type: string
-                                key:
-                                  description: Key is the taint key that the toleration
-                                    applies to. Empty means match all taint keys.
-                                    If the key is empty, operator must be Exists;
-                                    this combination means to match all values and
-                                    all keys.
-                                  type: string
-                                operator:
-                                  description: Operator represents a key's relationship
-                                    to the value. Valid operators are Exists and Equal.
-                                    Defaults to Equal. Exists is equivalent to wildcard
-                                    for value, so that a pod can tolerate all taints
-                                    of a particular category.
-                                  type: string
-                                tolerationSeconds:
-                                  description: TolerationSeconds represents the period
-                                    of time the toleration (which must be of effect
-                                    NoExecute, otherwise this field is ignored) tolerates
-                                    the taint. By default, it is not set, which means
-                                    tolerate the taint forever (do not evict). Zero
-                                    and negative values will be treated as 0 (evict
-                                    immediately) by the system.
-                                  format: int64
-                                  type: integer
-                                value:
-                                  description: Value is the taint value the toleration
-                                    matches to. If the operator is Exists, the value
-                                    should be empty, otherwise just a regular string.
-                                  type: string
-                              type: object
-                            type: array
-                            x-kubernetes-list-type: atomic
-                          total:
+                          resources:
                             description: Resources defines resources for this component,
                               this will override the calculated resources derived
                               from total
@@ -1210,6 +1164,52 @@ spec:
                                   https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                                 type: object
                             type: object
+                          tolerations:
+                            description: Tolerations defines component-specific pod
+                              tolerations.
+                            items:
+                              description: The pod this Toleration is attached to
+                                tolerates any taint that matches the triple <key,value,effect>
+                                using the matching operator <operator>.
+                              properties:
+                                effect:
+                                  description: Effect indicates the taint effect to
+                                    match. Empty means match all taint effects. When
+                                    specified, allowed values are NoSchedule, PreferNoSchedule
+                                    and NoExecute.
+                                  type: string
+                                key:
+                                  description: Key is the taint key that the toleration
+                                    applies to. Empty means match all taint keys.
+                                    If the key is empty, operator must be Exists;
+                                    this combination means to match all values and
+                                    all keys.
+                                  type: string
+                                operator:
+                                  description: Operator represents a key's relationship
+                                    to the value. Valid operators are Exists and Equal.
+                                    Defaults to Equal. Exists is equivalent to wildcard
+                                    for value, so that a pod can tolerate all taints
+                                    of a particular category.
+                                  type: string
+                                tolerationSeconds:
+                                  description: TolerationSeconds represents the period
+                                    of time the toleration (which must be of effect
+                                    NoExecute, otherwise this field is ignored) tolerates
+                                    the taint. By default, it is not set, which means
+                                    tolerate the taint forever (do not evict). Zero
+                                    and negative values will be treated as 0 (evict
+                                    immediately) by the system.
+                                  format: int64
+                                  type: integer
+                                value:
+                                  description: Value is the taint value the toleration
+                                    matches to. If the operator is Exists, the value
+                                    should be empty, otherwise just a regular string.
+                                  type: string
+                              type: object
+                            type: array
+                            x-kubernetes-list-type: atomic
                         type: object
                       jaegerQuery:
                         description: JaegerQuery defines options specific to the Jaeger

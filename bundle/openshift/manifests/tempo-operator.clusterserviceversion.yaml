@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.8.0
-    createdAt: "2024-02-12T14:42:56Z"
+    createdAt: "2024-02-12T14:43:24Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -652,13 +652,13 @@ spec:
           component.
         displayName: Component Replicas
         path: template.compactor.replicas
-      - description: Tolerations defines component-specific pod tolerations.
-        displayName: Tolerations
-        path: template.compactor.tolerations
       - description: Resources defines resources for this component, this will override
           the calculated resources derived from total
         displayName: Resources
-        path: template.compactor.total
+        path: template.compactor.resources
+      - description: Tolerations defines component-specific pod tolerations.
+        displayName: Tolerations
+        path: template.compactor.tolerations
       - description: Distributor defines the distributor component spec.
         displayName: Distributor pods
         path: template.distributor
@@ -669,6 +669,10 @@ spec:
           component.
         displayName: Component Replicas
         path: template.distributor.replicas
+      - description: Resources defines resources for this component, this will override
+          the calculated resources derived from total
+        displayName: Resources
+        path: template.distributor.resources
       - description: TLS defines TLS configuration for distributor receivers
         displayName: TLS
         path: template.distributor.tls
@@ -696,10 +700,6 @@ spec:
       - description: Tolerations defines component-specific pod tolerations.
         displayName: Tolerations
         path: template.distributor.tolerations
-      - description: Resources defines resources for this component, this will override
-          the calculated resources derived from total
-        displayName: Resources
-        path: template.distributor.total
       - description: Gateway defines the tempo gateway spec.
         displayName: Gateway pods
         path: template.gateway
@@ -733,13 +733,13 @@ spec:
           component.
         displayName: Component Replicas
         path: template.gateway.replicas
-      - description: Tolerations defines component-specific pod tolerations.
-        displayName: Tolerations
-        path: template.gateway.tolerations
       - description: Resources defines resources for this component, this will override
           the calculated resources derived from total
         displayName: Resources
-        path: template.gateway.total
+        path: template.gateway.resources
+      - description: Tolerations defines component-specific pod tolerations.
+        displayName: Tolerations
+        path: template.gateway.tolerations
       - description: Ingester defines the ingester component spec.
         displayName: Ingester pods
         path: template.ingester
@@ -750,13 +750,13 @@ spec:
           component.
         displayName: Component Replicas
         path: template.ingester.replicas
-      - description: Tolerations defines component-specific pod tolerations.
-        displayName: Tolerations
-        path: template.ingester.tolerations
       - description: Resources defines resources for this component, this will override
           the calculated resources derived from total
         displayName: Resources
-        path: template.ingester.total
+        path: template.ingester.resources
+      - description: Tolerations defines component-specific pod tolerations.
+        displayName: Tolerations
+        path: template.ingester.tolerations
       - description: Querier defines the querier component spec.
         displayName: Querier pods
         path: template.querier
@@ -767,13 +767,13 @@ spec:
           component.
         displayName: Component Replicas
         path: template.querier.replicas
-      - description: Tolerations defines component-specific pod tolerations.
-        displayName: Tolerations
-        path: template.querier.tolerations
       - description: Resources defines resources for this component, this will override
           the calculated resources derived from total
         displayName: Resources
-        path: template.querier.total
+        path: template.querier.resources
+      - description: Tolerations defines component-specific pod tolerations.
+        displayName: Tolerations
+        path: template.querier.tolerations
       - description: TempoQueryFrontendSpec defines the query frontend spec.
         displayName: Query Frontend pods
         path: template.queryFrontend
@@ -825,13 +825,13 @@ spec:
           component.
         displayName: Component Replicas
         path: template.queryFrontend.replicas
-      - description: Tolerations defines component-specific pod tolerations.
-        displayName: Tolerations
-        path: template.queryFrontend.tolerations
       - description: Resources defines resources for this component, this will override
           the calculated resources derived from total
         displayName: Resources
-        path: template.queryFrontend.total
+        path: template.queryFrontend.resources
+      - description: Tolerations defines component-specific pod tolerations.
+        displayName: Tolerations
+        path: template.queryFrontend.tolerations
       - description: Tenants defines the per-tenant authentication and authorization
           spec.
         displayName: Tenants Configuration

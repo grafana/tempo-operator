@@ -4423,7 +4423,7 @@ map[string]string
 
 <td>
 
-<code>total</code><br/>
+<code>resources</code><br/>
 
 <em>
 
