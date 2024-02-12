@@ -146,7 +146,7 @@ func TestGetStatefulSetStatus(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			psm, err := getStatefulSetStatus(context.Background(), tc.client, "", "")
+			psm, err := getStatefulSetStatus(context.Background(), tc.client, "", "", "")
 			require.NoError(t, err)
 			require.Equal(t, tc.expected, psm)
 		})
