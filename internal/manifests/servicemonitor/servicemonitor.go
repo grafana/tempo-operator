@@ -34,6 +34,7 @@ func BuildServiceMonitors(params manifestutils.Params) []client.Object {
 
 func buildServiceMonitor(params manifestutils.Params, component string, port string) *monitoringv1.ServiceMonitor {
 	tempo := params.Tempo
+	labels := manifestutils.ComponentLabels(component, tempo.Name)
 	scheme := "http"
 	var tlsConfig *monitoringv1.TLSConfig
 
@@ -72,10 +73,14 @@ func buildServiceMonitor(params manifestutils.Params, component string, port str
 	}
 
 	return &monitoringv1.ServiceMonitor{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: monitoringv1.SchemeGroupVersion.String(),
+			Kind:       monitoringv1.ServiceMonitorsKind,
+		},
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: tempo.Namespace,
 			Name:      naming.Name(component, tempo.Name),
-			Labels:    manifestutils.CommonLabels(tempo.Name),
+			Labels:    labels,
 		},
 		Spec: monitoringv1.ServiceMonitorSpec{
 			Endpoints: []monitoringv1.Endpoint{{
@@ -101,7 +106,7 @@ func buildServiceMonitor(params manifestutils.Params, component string, port str
 				MatchNames: []string{tempo.Namespace},
 			},
 			Selector: metav1.LabelSelector{
-				MatchLabels: manifestutils.ComponentLabels(component, tempo.Name),
+				MatchLabels: labels,
 			},
 		},
 	}

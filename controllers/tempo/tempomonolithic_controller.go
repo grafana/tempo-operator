@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	grafanav1 "github.com/grafana-operator/grafana-operator/v5/api/v1beta1"
+	grafanav1 "github.com/grafana/grafana-operator/v5/api/v1beta1"
 	routev1 "github.com/openshift/api/route/v1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
@@ -106,7 +106,7 @@ func (r *TempoMonolithicReconciler) getOwnedObjects(ctx context.Context, tempo v
 	ownedObjects := map[types.UID]client.Object{}
 	listOps := &client.ListOptions{
 		Namespace:     tempo.GetNamespace(),
-		LabelSelector: labels.SelectorFromSet(monolithic.Labels(tempo.Name)),
+		LabelSelector: labels.SelectorFromSet(monolithic.CommonLabels(tempo.Name)),
 	}
 
 	// Add all resources where the operator can conditionally create an object.

@@ -9,6 +9,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 )
 
 func TestBuildTempoService(t *testing.T) {
@@ -123,7 +124,7 @@ func TestBuildTempoService(t *testing.T) {
 		},
 	}
 
-	labels := Labels("sample")
+	labels := ComponentLabels(manifestutils.TempoMonolithComponentName, "sample")
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			opts.Tempo.Spec = test.input

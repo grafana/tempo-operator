@@ -104,6 +104,10 @@ const (
 	IngesterComponentName = "ingester"
 	// GatewayComponentName declares the internal name of the gateway component.
 	GatewayComponentName = "gateway"
+
+	// TempoMonolithComponentName declares the internal name of the Tempo Monolith component.
+	TempoMonolithComponentName = "tempo"
+
 	// TenantHeader is the header name that contains tenant name.
 	TenantHeader = "x-scope-orgid"
 

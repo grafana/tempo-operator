@@ -57,7 +57,7 @@ func TestStatefulsetMemoryStorage(t *testing.T) {
 	sts, err := BuildTempoStatefulset(opts)
 	require.NoError(t, err)
 
-	labels := Labels("sample")
+	labels := ComponentLabels(manifestutils.TempoMonolithComponentName, "sample")
 	annotations := manifestutils.CommonAnnotations("")
 	require.Equal(t, &appsv1.StatefulSet{
 		TypeMeta: metav1.TypeMeta{
