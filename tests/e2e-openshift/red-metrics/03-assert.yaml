@@ -50,7 +50,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: tempo-redmetrics
-
+---
 apiVersion: kuttl.dev/v1beta1
 kind: TestAssert
 commands:
