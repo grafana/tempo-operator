@@ -4,6 +4,7 @@ import (
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/grafana/tempo-operator/internal/certrotation"
@@ -33,21 +34,32 @@ func BuildServiceMonitors(params manifestutils.Params) []client.Object {
 }
 
 func buildServiceMonitor(params manifestutils.Params, component string, port string) *monitoringv1.ServiceMonitor {
-	tempo := params.Tempo
-	labels := manifestutils.ComponentLabels(component, tempo.Name)
+	labels := manifestutils.ComponentLabels(component, params.Tempo.Name)
+	return NewServiceMonitor(params.Tempo.Namespace, params.Tempo.Name, labels, params.CtrlConfig.Gates.HTTPEncryption, component, port)
+}
+
+// NewServiceMonitor creates a ServiceMonitor.
+func NewServiceMonitor(
+	namespace string,
+	name string,
+	labels labels.Set,
+	tls bool,
+	component string,
+	port string,
+) *monitoringv1.ServiceMonitor {
 	scheme := "http"
 	var tlsConfig *monitoringv1.TLSConfig
 
-	if params.CtrlConfig.Gates.HTTPEncryption {
+	if tls {
 		scheme = "https"
-		serverName := naming.ServiceFqdn(tempo.Namespace, tempo.Name, component)
+		serverName := naming.ServiceFqdn(namespace, name, component)
 
 		tlsConfig = &monitoringv1.TLSConfig{
 			SafeTLSConfig: monitoringv1.SafeTLSConfig{
 				CA: monitoringv1.SecretOrConfigMap{
 					ConfigMap: &corev1.ConfigMapKeySelector{
 						LocalObjectReference: corev1.LocalObjectReference{
-							Name: naming.SigningCABundleName(tempo.Name),
+							Name: naming.SigningCABundleName(name),
 						},
 						Key: certrotation.CAFile,
 					},
@@ -55,14 +67,14 @@ func buildServiceMonitor(params manifestutils.Params, component string, port str
 				Cert: monitoringv1.SecretOrConfigMap{
 					Secret: &corev1.SecretKeySelector{
 						LocalObjectReference: corev1.LocalObjectReference{
-							Name: naming.TLSSecretName(component, tempo.Name),
+							Name: naming.TLSSecretName(component, name),
 						},
 						Key: corev1.TLSCertKey,
 					},
 				},
 				KeySecret: &corev1.SecretKeySelector{
 					LocalObjectReference: corev1.LocalObjectReference{
-						Name: naming.TLSSecretName(component, tempo.Name),
+						Name: naming.TLSSecretName(component, name),
 					},
 					Key: corev1.TLSPrivateKeyKey,
 				},
@@ -78,8 +90,8 @@ func buildServiceMonitor(params manifestutils.Params, component string, port str
 			Kind:       monitoringv1.ServiceMonitorsKind,
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Namespace: tempo.Namespace,
-			Name:      naming.Name(component, tempo.Name),
+			Namespace: namespace,
+			Name:      naming.Name(component, name),
 			Labels:    labels,
 		},
 		Spec: monitoringv1.ServiceMonitorSpec{
@@ -103,7 +115,7 @@ func buildServiceMonitor(params manifestutils.Params, component string, port str
 				},
 			}},
 			NamespaceSelector: monitoringv1.NamespaceSelector{
-				MatchNames: []string{tempo.Namespace},
+				MatchNames: []string{namespace},
 			},
 			Selector: metav1.LabelSelector{
 				MatchLabels: labels,

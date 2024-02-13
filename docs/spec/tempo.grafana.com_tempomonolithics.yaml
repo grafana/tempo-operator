@@ -45,6 +45,23 @@ spec:                                    # TempoMonolithicSpec defines the desir
       host: ""                           # Host defines the hostname of the Route object.
       termination: "edge"                # Termination specifies the termination type. Default: edge.
   management: ""                         # ManagementState defines whether this instance is managed by the operator or self-managed. Default: Managed.
+  observability:                         # Observability defines the observability configuration of the Tempo deployment.
+    grafana:                             # Grafana defines the Grafana configuration of the Tempo deployment.
+      dataSource:                        # DataSource defines the Grafana data source configuration.
+        enabled: false                   # Enabled defines if a Grafana data source should be created for this Tempo deployment.
+        instanceSelector:                # InstanceSelector defines the Grafana instance where the data source should be created.
+          matchExpressions:              # matchExpressions is a list of label selector requirements. The requirements are ANDed.
+          - key: ""                      # key is the label key that the selector applies to.
+            operator: ""                 # operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+            values:                      # values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+            - ""
+          matchLabels:                   # matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+            "key": ""
+    metrics:                             # Metrics defines the metric configuration of the Tempo deployment.
+      prometheusRules:                   # ServiceMonitors defines the PrometheusRule configuration.
+        enabled: false                   # Enabled defines if PrometheusRule objects should be created for this Tempo deployment.
+      serviceMonitors:                   # ServiceMonitors defines the ServiceMonitor configuration.
+        enabled: false                   # Enabled defines if ServiceMonitor objects should be created for this Tempo deployment.
   resources:                             # Resources defines the compute resource requirements of the Tempo container.
     claims:                              # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.   This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.   This field is immutable. It can only be set for containers.
     - name: ""                           # Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.

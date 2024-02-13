@@ -1,40 +1,58 @@
 package grafana
 
 import (
-	"encoding/json"
 	"fmt"
 
 	grafanav1 "github.com/grafana/grafana-operator/v5/api/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
 )
 
-// BuildGrafanaDatasource creates a Datasource for Grafana Tempo.
-func BuildGrafanaDatasource(params manifestutils.Params) (*grafanav1.GrafanaDatasource, error) {
-	var tlsSkipVerify = true
-	var component = manifestutils.QueryFrontendComponentName
+// BuildGrafanaDatasource creates a data source for Grafana Tempo.
+func BuildGrafanaDatasource(params manifestutils.Params) *grafanav1.GrafanaDatasource {
+	tempo := params.Tempo
+	labels := manifestutils.CommonLabels(tempo.Name)
+	var url string
 
-	if params.Tempo.Spec.Template.Gateway.Enabled {
-		component = manifestutils.GatewayComponentName
+	if tempo.Spec.Template.Gateway.Enabled {
+		url = fmt.Sprintf("http://%s:%d", naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.GatewayComponentName), manifestutils.PortHTTPServer)
+	} else {
+		url = fmt.Sprintf("http://%s:%d", naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.QueryFrontendComponentName), manifestutils.PortHTTPServer)
 	}
 
+	return NewGrafanaDatasource(tempo.Namespace, tempo.Name, labels, url, tempo.Spec.Observability.Grafana.InstanceSelector)
+}
+
+// NewGrafanaDatasource creates a data source for Grafana Tempo.
+func NewGrafanaDatasource(
+	namespace string,
+	name string,
+	labels labels.Set,
+	url string,
+	instanceSelector metav1.LabelSelector,
+) *grafanav1.GrafanaDatasource {
 	return &grafanav1.GrafanaDatasource{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: grafanav1.GroupVersion.String(),
+			Kind:       "GrafanaDatasource",
+		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      params.Tempo.Name,
-			Namespace: params.Tempo.Namespace,
-			Labels:    manifestutils.CommonLabels(params.Tempo.Name),
+			Namespace: namespace,
+			Name:      name,
+			Labels:    labels,
 		},
 		Spec: grafanav1.GrafanaDatasourceSpec{
 			Datasource: &grafanav1.GrafanaDatasourceInternal{
-				Access:   "proxy",
-				Name:     params.Tempo.Name,
-				Type:     "tempo",
-				URL:      fmt.Sprintf("http://%s:%d", naming.ServiceFqdn(params.Tempo.Namespace, params.Tempo.Name, component), manifestutils.PortHTTPServer),
-				JSONData: json.RawMessage(fmt.Sprintf(`{"tlsSkipVerify": %t}`, tlsSkipVerify)),
+				Name:   name,
+				Type:   "tempo",
+				Access: "proxy",
+				URL:    url,
 			},
-			InstanceSelector: &params.Tempo.Spec.Observability.Grafana.InstanceSelector,
+			// InstanceSelector is a required field in the spec
+			InstanceSelector: &instanceSelector,
 		},
-	}, nil
+	}
 }
