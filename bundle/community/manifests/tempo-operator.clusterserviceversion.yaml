@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.8.0
-    createdAt: "2024-02-12T19:30:29Z"
+    createdAt: "2024-02-13T12:25:00Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -110,6 +110,9 @@ spec:
         name: ""
         version: v1
       specDescriptors:
+      - description: Affinity defines the Affinity rules for scheduling pods.
+        displayName: Affinity
+        path: affinity
       - description: ExtraConfig defines any extra (overlay) configuration of components.
         displayName: Extra Configuration
         path: extraConfig
@@ -243,6 +246,10 @@ spec:
           the operator or self-managed. Default: Managed.'
         displayName: Management State
         path: management
+      - description: NodeSelector defines which labels are required by a node to schedule
+          the pod onto it.
+        displayName: Node Selector
+        path: nodeSelector
       - description: Observability defines the observability configuration of the
           Tempo deployment.
         displayName: Observability
@@ -362,6 +369,10 @@ spec:
         path: storage.traces.size
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:text
+      - description: Tolerations defines the tolerations of a node to schedule the
+          pod onto it.
+        displayName: Tolerations
+        path: tolerations
       statusDescriptors:
       - description: Tempo is a map of the pod status of the Tempo pods.
         displayName: Tempo

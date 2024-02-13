@@ -3,6 +3,119 @@ kind: TempoMonolithic                    # Kind is a string value representing t
 metadata:
   name: example
 spec:                                    # TempoMonolithicSpec defines the desired state of TempoMonolithic.
+  affinity:                              # Affinity defines the Affinity rules for scheduling pods.
+    nodeAffinity:                        # Describes node affinity scheduling rules for the pod.
+      preferredDuringSchedulingIgnoredDuringExecution: # The scheduler will prefer to schedule pods to nodes that satisfy the affinity expressions specified by this field, but it may choose a node that violates one or more of the expressions. The node that is most preferred is the one with the greatest sum of weights, i.e. for each node that meets all of the scheduling requirements (resource request, requiredDuringScheduling affinity expressions, etc.), compute a sum by iterating through the elements of this field and adding "weight" to the sum if the node matches the corresponding matchExpressions; the node(s) with the highest sum are the most preferred.
+      - preference:                      # A node selector term, associated with the corresponding weight.
+          matchExpressions:              # A list of node selector requirements by node's labels.
+          - key: ""                      # The label key that the selector applies to.
+            operator: ""                 # Represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
+            values:                      # An array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. If the operator is Gt or Lt, the values array must have a single element, which will be interpreted as an integer. This array is replaced during a strategic merge patch.
+            - ""
+          matchFields:                   # A list of node selector requirements by node's fields.
+          - key: ""                      # The label key that the selector applies to.
+            operator: ""                 # Represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
+            values:                      # An array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. If the operator is Gt or Lt, the values array must have a single element, which will be interpreted as an integer. This array is replaced during a strategic merge patch.
+            - ""
+        weight: 0                        # Weight associated with matching the corresponding nodeSelectorTerm, in the range 1-100.
+      requiredDuringSchedulingIgnoredDuringExecution: # If the affinity requirements specified by this field are not met at scheduling time, the pod will not be scheduled onto the node. If the affinity requirements specified by this field cease to be met at some point during pod execution (e.g. due to an update), the system may or may not try to eventually evict the pod from its node.
+        nodeSelectorTerms:               # Required. A list of node selector terms. The terms are ORed.
+        - matchExpressions:              # A list of node selector requirements by node's labels.
+          - key: ""                      # The label key that the selector applies to.
+            operator: ""                 # Represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
+            values:                      # An array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. If the operator is Gt or Lt, the values array must have a single element, which will be interpreted as an integer. This array is replaced during a strategic merge patch.
+            - ""
+          matchFields:                   # A list of node selector requirements by node's fields.
+          - key: ""                      # The label key that the selector applies to.
+            operator: ""                 # Represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
+            values:                      # An array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. If the operator is Gt or Lt, the values array must have a single element, which will be interpreted as an integer. This array is replaced during a strategic merge patch.
+            - ""
+    podAffinity:                         # Describes pod affinity scheduling rules (e.g. co-locate this pod in the same node, zone, etc. as some other pod(s)).
+      preferredDuringSchedulingIgnoredDuringExecution: # The scheduler will prefer to schedule pods to nodes that satisfy the affinity expressions specified by this field, but it may choose a node that violates one or more of the expressions. The node that is most preferred is the one with the greatest sum of weights, i.e. for each node that meets all of the scheduling requirements (resource request, requiredDuringScheduling affinity expressions, etc.), compute a sum by iterating through the elements of this field and adding "weight" to the sum if the node has pods which matches the corresponding podAffinityTerm; the node(s) with the highest sum are the most preferred.
+      - podAffinityTerm:                 # Required. A pod affinity term, associated with the corresponding weight.
+          labelSelector:                 # A label query over a set of resources, in this case pods.
+            matchExpressions:            # matchExpressions is a list of label selector requirements. The requirements are ANDed.
+            - key: ""                    # key is the label key that the selector applies to.
+              operator: ""               # operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+              values:                    # values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+              - ""
+            matchLabels:                 # matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+              "key": ""
+          namespaceSelector:             # A label query over the set of namespaces that the term applies to. The term is applied to the union of the namespaces selected by this field and the ones listed in the namespaces field. null selector and null or empty namespaces list means "this pod's namespace". An empty selector ({}) matches all namespaces.
+            matchExpressions:            # matchExpressions is a list of label selector requirements. The requirements are ANDed.
+            - key: ""                    # key is the label key that the selector applies to.
+              operator: ""               # operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+              values:                    # values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+              - ""
+            matchLabels:                 # matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+              "key": ""
+          namespaces:                    # namespaces specifies a static list of namespace names that the term applies to. The term is applied to the union of the namespaces listed in this field and the ones selected by namespaceSelector. null or empty namespaces list and null namespaceSelector means "this pod's namespace".
+          - ""
+          topologyKey: ""                # This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching the labelSelector in the specified namespaces, where co-located is defined as running on a node whose value of the label with key topologyKey matches that of any node on which any of the selected pods is running. Empty topologyKey is not allowed.
+        weight: 0                        # weight associated with matching the corresponding podAffinityTerm, in the range 1-100.
+      requiredDuringSchedulingIgnoredDuringExecution: # If the affinity requirements specified by this field are not met at scheduling time, the pod will not be scheduled onto the node. If the affinity requirements specified by this field cease to be met at some point during pod execution (e.g. due to a pod label update), the system may or may not try to eventually evict the pod from its node. When there are multiple elements, the lists of nodes corresponding to each podAffinityTerm are intersected, i.e. all terms must be satisfied.
+      - labelSelector:                   # A label query over a set of resources, in this case pods.
+          matchExpressions:              # matchExpressions is a list of label selector requirements. The requirements are ANDed.
+          - key: ""                      # key is the label key that the selector applies to.
+            operator: ""                 # operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+            values:                      # values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+            - ""
+          matchLabels:                   # matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+            "key": ""
+        namespaceSelector:               # A label query over the set of namespaces that the term applies to. The term is applied to the union of the namespaces selected by this field and the ones listed in the namespaces field. null selector and null or empty namespaces list means "this pod's namespace". An empty selector ({}) matches all namespaces.
+          matchExpressions:              # matchExpressions is a list of label selector requirements. The requirements are ANDed.
+          - key: ""                      # key is the label key that the selector applies to.
+            operator: ""                 # operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+            values:                      # values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+            - ""
+          matchLabels:                   # matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+            "key": ""
+        namespaces:                      # namespaces specifies a static list of namespace names that the term applies to. The term is applied to the union of the namespaces listed in this field and the ones selected by namespaceSelector. null or empty namespaces list and null namespaceSelector means "this pod's namespace".
+        - ""
+        topologyKey: ""                  # This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching the labelSelector in the specified namespaces, where co-located is defined as running on a node whose value of the label with key topologyKey matches that of any node on which any of the selected pods is running. Empty topologyKey is not allowed.
+    podAntiAffinity:                     # Describes pod anti-affinity scheduling rules (e.g. avoid putting this pod in the same node, zone, etc. as some other pod(s)).
+      preferredDuringSchedulingIgnoredDuringExecution: # The scheduler will prefer to schedule pods to nodes that satisfy the anti-affinity expressions specified by this field, but it may choose a node that violates one or more of the expressions. The node that is most preferred is the one with the greatest sum of weights, i.e. for each node that meets all of the scheduling requirements (resource request, requiredDuringScheduling anti-affinity expressions, etc.), compute a sum by iterating through the elements of this field and adding "weight" to the sum if the node has pods which matches the corresponding podAffinityTerm; the node(s) with the highest sum are the most preferred.
+      - podAffinityTerm:                 # Required. A pod affinity term, associated with the corresponding weight.
+          labelSelector:                 # A label query over a set of resources, in this case pods.
+            matchExpressions:            # matchExpressions is a list of label selector requirements. The requirements are ANDed.
+            - key: ""                    # key is the label key that the selector applies to.
+              operator: ""               # operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+              values:                    # values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+              - ""
+            matchLabels:                 # matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+              "key": ""
+          namespaceSelector:             # A label query over the set of namespaces that the term applies to. The term is applied to the union of the namespaces selected by this field and the ones listed in the namespaces field. null selector and null or empty namespaces list means "this pod's namespace". An empty selector ({}) matches all namespaces.
+            matchExpressions:            # matchExpressions is a list of label selector requirements. The requirements are ANDed.
+            - key: ""                    # key is the label key that the selector applies to.
+              operator: ""               # operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+              values:                    # values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+              - ""
+            matchLabels:                 # matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+              "key": ""
+          namespaces:                    # namespaces specifies a static list of namespace names that the term applies to. The term is applied to the union of the namespaces listed in this field and the ones selected by namespaceSelector. null or empty namespaces list and null namespaceSelector means "this pod's namespace".
+          - ""
+          topologyKey: ""                # This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching the labelSelector in the specified namespaces, where co-located is defined as running on a node whose value of the label with key topologyKey matches that of any node on which any of the selected pods is running. Empty topologyKey is not allowed.
+        weight: 0                        # weight associated with matching the corresponding podAffinityTerm, in the range 1-100.
+      requiredDuringSchedulingIgnoredDuringExecution: # If the anti-affinity requirements specified by this field are not met at scheduling time, the pod will not be scheduled onto the node. If the anti-affinity requirements specified by this field cease to be met at some point during pod execution (e.g. due to a pod label update), the system may or may not try to eventually evict the pod from its node. When there are multiple elements, the lists of nodes corresponding to each podAffinityTerm are intersected, i.e. all terms must be satisfied.
+      - labelSelector:                   # A label query over a set of resources, in this case pods.
+          matchExpressions:              # matchExpressions is a list of label selector requirements. The requirements are ANDed.
+          - key: ""                      # key is the label key that the selector applies to.
+            operator: ""                 # operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+            values:                      # values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+            - ""
+          matchLabels:                   # matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+            "key": ""
+        namespaceSelector:               # A label query over the set of namespaces that the term applies to. The term is applied to the union of the namespaces selected by this field and the ones listed in the namespaces field. null selector and null or empty namespaces list means "this pod's namespace". An empty selector ({}) matches all namespaces.
+          matchExpressions:              # matchExpressions is a list of label selector requirements. The requirements are ANDed.
+          - key: ""                      # key is the label key that the selector applies to.
+            operator: ""                 # operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+            values:                      # values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+            - ""
+          matchLabels:                   # matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+            "key": ""
+        namespaces:                      # namespaces specifies a static list of namespace names that the term applies to. The term is applied to the union of the namespaces listed in this field and the ones selected by namespaceSelector. null or empty namespaces list and null namespaceSelector means "this pod's namespace".
+        - ""
+        topologyKey: ""                  # This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching the labelSelector in the specified namespaces, where co-located is defined as running on a node whose value of the label with key topologyKey matches that of any node on which any of the selected pods is running. Empty topologyKey is not allowed.
   extraConfig:                           # ExtraConfig defines any extra (overlay) configuration of components.
     tempo: {}                            # Tempo defines any extra Tempo configuration, which will be merged with the operator's generated Tempo configuration
   ingestion:                             # Ingestion defines the trace ingestion configuration.
@@ -45,6 +158,8 @@ spec:                                    # TempoMonolithicSpec defines the desir
       host: ""                           # Host defines the hostname of the Route object.
       termination: "edge"                # Termination specifies the termination type. Default: edge.
   management: ""                         # ManagementState defines whether this instance is managed by the operator or self-managed. Default: Managed.
+  nodeSelector:                          # NodeSelector defines which labels are required by a node to schedule the pod onto it.
+    "key": ""
   observability:                         # Observability defines the observability configuration of the Tempo deployment.
     grafana:                             # Grafana defines the Grafana configuration of the Tempo deployment.
       dataSource:                        # DataSource defines the Grafana data source configuration.
@@ -86,6 +201,12 @@ spec:                                    # TempoMonolithicSpec defines the desir
           enabled: false                 # Enabled defines if TLS is enabled.
           minVersion: ""                 # MinVersion defines the minimum acceptable TLS version.
       size: "10Gi"                       # Size defines the size of the volume where traces are stored. For in-memory storage, this defines the size of the tmpfs volume. For persistent volume storage, this defines the size of the persistent volume. For object storage, this defines the size of the persistent volume containing the Write-Ahead Log (WAL) of Tempo. Default: 10Gi.
+  tolerations:                           # Tolerations defines the tolerations of a node to schedule the pod onto it.
+  - effect: ""                           # Effect indicates the taint effect to match. Empty means match all taint effects. When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute.
+    key: ""                              # Key is the taint key that the toleration applies to. Empty means match all taint keys. If the key is empty, operator must be Exists; this combination means to match all values and all keys.
+    operator: ""                         # Operator represents a key's relationship to the value. Valid operators are Exists and Equal. Defaults to Equal. Exists is equivalent to wildcard for value, so that a pod can tolerate all taints of a particular category.
+    tolerationSeconds: 0                 # TolerationSeconds represents the period of time the toleration (which must be of effect NoExecute, otherwise this field is ignored) tolerates the taint. By default, it is not set, which means tolerate the taint forever (do not evict). Zero and negative values will be treated as 0 (evict immediately) by the system.
+    value: ""                            # Value is the taint value the toleration matches to. If the operator is Exists, the value should be empty, otherwise just a regular string.
 status:                                  # TempoMonolithicStatus defines the observed state of TempoMonolithic.
   components:                            # Components provides summary of all Tempo pod status, grouped per component.
     tempo:                               # Tempo is a map of the pod status of the Tempo pods.
