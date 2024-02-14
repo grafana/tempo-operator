@@ -37,7 +37,6 @@ var (
 type TempoStackWebhook struct {
 }
 
-const maxLabelLength = 63
 const defaultRouteGatewayTLSTermination = v1alpha1.TLSRouteTerminationTypePassthrough
 const defaultUITLSTermination = v1alpha1.TLSRouteTerminationTypeEdge
 
@@ -356,20 +355,6 @@ func (v *validator) validateTenantConfigs(tempo v1alpha1.TempoStack) field.Error
 	return nil
 }
 
-func (v *validator) validateStackName(tempo v1alpha1.TempoStack) field.ErrorList {
-	// We need to check this because the name is used as a label value for app.kubernetes.io/instance
-	// Only validate the length, because the DNS rules are enforced by the functions in the `naming` package.
-	if len(tempo.Name) > maxLabelLength {
-		return field.ErrorList{
-			field.Invalid(
-				field.NewPath("metadata").Child("name"),
-				tempo.Name,
-				fmt.Sprintf("must be no more than %d characters", maxLabelLength),
-			)}
-	}
-	return nil
-}
-
 func (v *validator) validateDeprecatedFields(tempo v1alpha1.TempoStack) field.ErrorList {
 	if tempo.Spec.LimitSpec.Global.Query.MaxSearchBytesPerTrace != nil {
 		return field.ErrorList{
@@ -422,7 +407,7 @@ func (v *validator) validate(ctx context.Context, obj runtime.Object) (admission
 	var warnings admission.Warnings
 	var errors field.ErrorList
 
-	allErrors = append(allErrors, v.validateStackName(*tempo)...)
+	allErrors = append(allErrors, validateName(tempo.Name)...)
 	allErrors = append(allErrors, v.validateServiceAccount(ctx, *tempo)...)
 
 	warnings, errors = v.validateStorage(ctx, *tempo)

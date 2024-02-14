@@ -82,7 +82,7 @@ func start(c *cobra.Command, args []string) {
 			setupLog.Error(err, "unable to create webhook", "webhook", "TempoStack")
 			os.Exit(1)
 		}
-		if err = (&webhooks.TempoMonolithicWebhook{}).SetupWebhookWithManager(mgr); err != nil {
+		if err = (&webhooks.TempoMonolithicWebhook{}).SetupWebhookWithManager(mgr, ctrlConfig); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "TempoMonolithic")
 			os.Exit(1)
 		}
