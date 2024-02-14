@@ -8,7 +8,8 @@ jobs:
     name: Publish container images
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Unshallow
         run: git fetch --prune --unshallow
