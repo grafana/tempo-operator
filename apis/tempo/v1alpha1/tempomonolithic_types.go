@@ -50,6 +50,8 @@ type TempoMonolithicSpec struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Extra Configuration"
 	ExtraConfig *ExtraConfigSpec `json:"extraConfig,omitempty"`
+
+	Scheduler *MonolithicSchedulerSpec `json:",inline"`
 }
 
 // MonolithicStorageSpec defines the storage for the Tempo deployment.
@@ -281,6 +283,28 @@ type MonolithicJaegerUIRouteSpec struct {
 	// +kubebuilder:default=edge
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="TLS Termination"
 	Termination TLSRouteTerminationType `json:"termination,omitempty"`
+}
+
+// MonolithicSchedulerSpec defines schedule settings for Tempo.
+type MonolithicSchedulerSpec struct {
+	// NodeSelector defines which labels are required by a node to schedule the pod onto it.
+	//
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Node Selector"
+	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
+
+	// Tolerations defines the tolerations of a node to schedule the pod onto it.
+	//
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tolerations"
+	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
+
+	// Affinity defines the Affinity rules for scheduling pods.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Affinity"
+	Affinity *corev1.Affinity `json:"affinity,omitempty"`
 }
 
 // MonolithicObservabilitySpec defines the observability configuration of the Tempo deployment.
