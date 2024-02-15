@@ -2216,6 +2216,31 @@ bool
 
 <td>
 
+<code>resources</code><br/>
+
+<em>
+
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#resourcerequirements-v1-core">
+
+Kubernetes core/v1.ResourceRequirements
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<p>Resources defines the compute resource requirements of the Jaeger UI container.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
 <code>ingress</code><br/>
 
 <em>
@@ -2258,31 +2283,6 @@ MonolithicJaegerUIRouteSpec
 <td>
 
 <p>Route defines the OpenShift route configuration for the Jaeger UI.</p>
-
-</td>
-</tr>
-
-<tr>
-
-<td>
-
-<code>resources</code><br/>
-
-<em>
-
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#resourcerequirements-v1-core">
-
-Kubernetes core/v1.ResourceRequirements
-
-</a>
-
-</em>
-
-</td>
-
-<td>
-
-<p>Resources defines the compute resource requirements of the Jaeger UI container.</p>
 
 </td>
 </tr>
@@ -2694,6 +2694,112 @@ MonolithicObservabilityGrafanaSpec
 <td>
 
 <p>Grafana defines the Grafana configuration of the Tempo deployment.</p>
+
+</td>
+</tr>
+
+</tbody>
+</table>
+
+## MonolithicSchedulerSpec { #tempo-grafana-com-v1alpha1-MonolithicSchedulerSpec }
+
+<p>
+
+(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-TempoMonolithicSpec">TempoMonolithicSpec</a>)
+
+</p>
+
+<div>
+
+<p>MonolithicSchedulerSpec defines schedule settings for Tempo.</p>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Field</th>
+
+<th>Description</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td>
+
+<code>nodeSelector</code><br/>
+
+<em>
+
+map[string]string
+
+</em>
+
+</td>
+
+<td>
+
+<p>NodeSelector defines which labels are required by a node to schedule the pod onto it.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>tolerations</code><br/>
+
+<em>
+
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#toleration-v1-core">
+
+[]Kubernetes core/v1.Toleration
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<p>Tolerations defines the tolerations of a node to schedule the pod onto it.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>affinity</code><br/>
+
+<em>
+
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#affinity-v1-core">
+
+Kubernetes core/v1.Affinity
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>Affinity defines the Affinity rules for scheduling pods.</p>
 
 </td>
 </tr>
@@ -5294,6 +5400,31 @@ MonolithicObservabilitySpec
 
 <td>
 
+<code>resources</code><br/>
+
+<em>
+
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#resourcerequirements-v1-core">
+
+Kubernetes core/v1.ResourceRequirements
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<p>Resources defines the compute resource requirements of the Tempo container.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
 <code>management</code><br/>
 
 <em>
@@ -5312,31 +5443,6 @@ ManagementStateType
 
 <p>ManagementState defines whether this instance is managed by the operator or self-managed.
 Default: Managed.</p>
-
-</td>
-</tr>
-
-<tr>
-
-<td>
-
-<code>resources</code><br/>
-
-<em>
-
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#resourcerequirements-v1-core">
-
-Kubernetes core/v1.ResourceRequirements
-
-</a>
-
-</em>
-
-</td>
-
-<td>
-
-<p>Resources defines the compute resource requirements of the Tempo container.</p>
 
 </td>
 </tr>

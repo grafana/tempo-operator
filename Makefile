@@ -141,7 +141,7 @@ build: generate fmt ## Build manager binary.
 
 .PHONY: run
 run: manifests generate ## Run a controller from your host.
-	@echo -e "\033[33mRemoving tempo operator from the cluster. Use the normal deployment method to enable full operator functionality.\033[0m"
+	@echo -e "\033[33mRemoving tempo-operator from the cluster. Webhooks are disabled, use the normal deployment method to enable full operator functionality.\033[0m"
 	-kubectl delete ns $(OPERATOR_NAMESPACE)
 	-kubectl delete mutatingwebhookconfigurations.admissionregistration.k8s.io tempo-operator-mutating-webhook-configuration
 	-kubectl delete validatingwebhookconfigurations.admissionregistration.k8s.io tempo-operator-validating-webhook-configuration
@@ -203,10 +203,11 @@ $(LOCALBIN):
 KUSTOMIZE_VERSION ?= v4.5.5
 CONTROLLER_TOOLS_VERSION ?= v0.9.2
 GEN_CRD_VERSION ?= v0.0.5
-GEN_API_DOCS_VERSION ?= v0.0.4
+GEN_API_DOCS_VERSION ?= v0.4.0
 ENVTEST_VERSION ?= latest
 OPERATOR_SDK_VERSION ?= 1.27.0
 CERTMANAGER_VERSION ?= 1.9.1
+CHAINSAW_VERSION ?= v0.1.4
 
 ## Tool Binaries
 KUSTOMIZE ?= $(LOCALBIN)/kustomize-$(KUSTOMIZE_VERSION)
@@ -318,6 +319,10 @@ lint:
 	golangci-lint run
 
 
+.PHONY: chainsaw
+chainsaw: ## Download chainsaw locally if necessary.
+	test -s $(CHAINSAW) || $(call go-get-tool,$(CHAINSAW),github.com/kyverno/chainsaw,$(CHAINSAW_VERSION))
+
 .PHONY: gen-crd-api-reference-docs
 gen-crd-api-reference-docs: ## Download gen-crd-api-reference-docs locally if necessary.
 	test -s $(GEN_CRD) || $(call go-get-tool,$(GEN_CRD),github.com/ViaQ/gen-crd-api-reference-docs,$(GEN_CRD_VERSION))
@@ -409,10 +414,6 @@ mv "$$APP" "$$APP_NAME" ;\
 rm -rf $$TMP_DIR ;\
 }
 endef
-
-.PHONY: chainsaw
-chainsaw:
-	./hack/install/install-chainsaw.sh
 
 .PHONY: generate-all
 generate-all: generate bundle api-docs ## Update all generated files

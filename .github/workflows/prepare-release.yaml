@@ -10,12 +10,13 @@ jobs:
   prepare-release:
     runs-on: ubuntu-22.04
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: "1.20"
-
-      - uses: actions/checkout@v4
+          go-version-file: go.mod
 
       - name: Update makefile
         run: sed -i.bak "s/OPERATOR_VERSION ?= .*/OPERATOR_VERSION ?= $OPERATOR_VERSION/g" Makefile && rm Makefile.bak
