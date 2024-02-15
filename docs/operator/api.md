@@ -2216,6 +2216,31 @@ bool
 
 <td>
 
+<code>resources</code><br/>
+
+<em>
+
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#resourcerequirements-v1-core">
+
+Kubernetes core/v1.ResourceRequirements
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<p>Resources defines the compute resource requirements of the Jaeger UI container.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
 <code>ingress</code><br/>
 
 <em>
@@ -2258,31 +2283,6 @@ MonolithicJaegerUIRouteSpec
 <td>
 
 <p>Route defines the OpenShift route configuration for the Jaeger UI.</p>
-
-</td>
-</tr>
-
-<tr>
-
-<td>
-
-<code>resources</code><br/>
-
-<em>
-
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#resourcerequirements-v1-core">
-
-Kubernetes core/v1.ResourceRequirements
-
-</a>
-
-</em>
-
-</td>
-
-<td>
-
-<p>Resources defines the compute resource requirements of the Jaeger UI container.</p>
 
 </td>
 </tr>
@@ -5400,6 +5400,31 @@ MonolithicObservabilitySpec
 
 <td>
 
+<code>resources</code><br/>
+
+<em>
+
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#resourcerequirements-v1-core">
+
+Kubernetes core/v1.ResourceRequirements
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<p>Resources defines the compute resource requirements of the Tempo container.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
 <code>management</code><br/>
 
 <em>
@@ -5418,31 +5443,6 @@ ManagementStateType
 
 <p>ManagementState defines whether this instance is managed by the operator or self-managed.
 Default: Managed.</p>
-
-</td>
-</tr>
-
-<tr>
-
-<td>
-
-<code>resources</code><br/>
-
-<em>
-
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#resourcerequirements-v1-core">
-
-Kubernetes core/v1.ResourceRequirements
-
-</a>
-
-</em>
-
-</td>
-
-<td>
-
-<p>Resources defines the compute resource requirements of the Tempo container.</p>
 
 </td>
 </tr>

@@ -11,44 +11,44 @@ type TempoMonolithicSpec struct {
 	// Storage defines the storage configuration.
 	//
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Storage"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Storage",order=1
 	Storage *MonolithicStorageSpec `json:"storage,omitempty"`
 
 	// Ingestion defines the trace ingestion configuration.
 	//
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Ingestion"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Ingestion",order=2
 	Ingestion *MonolithicIngestionSpec `json:"ingestion,omitempty"`
 
 	// JaegerUI defines the Jaeger UI configuration.
 	//
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger UI"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger UI",order=3
 	JaegerUI *MonolithicJaegerUISpec `json:"jaegerui,omitempty"`
 
 	// Observability defines the observability configuration of the Tempo deployment.
 	//
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Observability"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Observability",order=4
 	Observability *MonolithicObservabilitySpec `json:"observability,omitempty"`
+
+	// Resources defines the compute resource requirements of the Tempo container.
+	//
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Resources",order=5,xDescriptors="urn:alm:descriptor:com.tectonic.ui:resourceRequirements"
+	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 
 	// ManagementState defines whether this instance is managed by the operator or self-managed.
 	// Default: Managed.
 	//
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Management State"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Management State",xDescriptors="urn:alm:descriptor:com.tectonic.ui:advanced"
 	Management ManagementStateType `json:"management,omitempty"`
-
-	// Resources defines the compute resource requirements of the Tempo container.
-	//
-	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Resources",xDescriptors="urn:alm:descriptor:com.tectonic.ui:resourceRequirements"
-	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 
 	// ExtraConfig defines any extra (overlay) configuration of components.
 	//
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Extra Configuration"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Extra Configuration",xDescriptors="urn:alm:descriptor:com.tectonic.ui:advanced"
 	ExtraConfig *ExtraConfigSpec `json:"extraConfig,omitempty"`
 
 	Scheduler *MonolithicSchedulerSpec `json:",inline"`
@@ -70,7 +70,7 @@ type MonolithicTracesStorageSpec struct {
 	//
 	// +kubebuilder:validation:Required
 	// +kubebuilder:default=memory
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Storage Backend"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Storage Backend",order=1
 	Backend MonolithicTracesStorageBackend `json:"backend"`
 
 	// Size defines the size of the volume where traces are stored.
@@ -81,7 +81,7 @@ type MonolithicTracesStorageSpec struct {
 	//
 	// +kubebuilder:validation:Optional
 	// +kubebuilder:default="10Gi"
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Size",xDescriptors="urn:alm:descriptor:com.tectonic.ui:text"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Size",order=2,xDescriptors="urn:alm:descriptor:com.tectonic.ui:text"
 	Size *resource.Quantity `json:"size,omitempty"`
 
 	// S3 defines the configuration for Amazon S3.
@@ -174,7 +174,7 @@ type MonolithicIngestionOTLPProtocolsGRPCSpec struct {
 	//
 	// +kubebuilder:validation:Required
 	// +kubebuilder:default=true
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enabled",xDescriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enabled",order=1,xDescriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
 	Enabled bool `json:"enabled"`
 
 	// TLS defines the TLS configuration for OTLP/gRPC ingestion.
@@ -191,7 +191,7 @@ type MonolithicIngestionOTLPProtocolsHTTPSpec struct {
 	//
 	// +kubebuilder:validation:Required
 	// +kubebuilder:default=true
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enabled",xDescriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enabled",order=1,xDescriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
 	Enabled bool `json:"enabled"`
 
 	// TLS defines the TLS configuration for OTLP/HTTP ingestion.
@@ -206,26 +206,26 @@ type MonolithicJaegerUISpec struct {
 	// Enabled defines if the Jaeger UI component should be created.
 	//
 	// +kubebuilder:validation:Required
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enabled",xDescriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enabled",order=1,xDescriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
 	Enabled bool `json:"enabled"`
+
+	// Resources defines the compute resource requirements of the Jaeger UI container.
+	//
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Resources",order=2,xDescriptors="urn:alm:descriptor:com.tectonic.ui:resourceRequirements"
+	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 
 	// Ingress defines the Ingress configuration for the Jaeger UI.
 	//
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Ingress"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Ingress",order=3
 	Ingress *MonolithicJaegerUIIngressSpec `json:"ingress,omitempty"`
 
 	// Route defines the OpenShift route configuration for the Jaeger UI.
 	//
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Route"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Route",order=4
 	Route *MonolithicJaegerUIRouteSpec `json:"route,omitempty"`
-
-	// Resources defines the compute resource requirements of the Jaeger UI container.
-	//
-	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Resources",xDescriptors="urn:alm:descriptor:com.tectonic.ui:resourceRequirements"
-	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 }
 
 // MonolithicJaegerUIIngressSpec defines the settings for the Jaeger UI ingress.
@@ -233,7 +233,7 @@ type MonolithicJaegerUIIngressSpec struct {
 	// Enabled defines if an Ingress object should be created for Jaeger UI.
 	//
 	// +kubebuilder:validation:Required
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enabled",xDescriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enabled",order=1,xDescriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
 	Enabled bool `json:"enabled"`
 
 	// Annotations defines the annotations of the Ingress object.
@@ -261,7 +261,7 @@ type MonolithicJaegerUIRouteSpec struct {
 	// Enabled defines if a Route object should be created for Jaeger UI.
 	//
 	// +kubebuilder:validation:Required
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enabled",xDescriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enabled",order=1,xDescriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
 	Enabled bool `json:"enabled"`
 
 	// Annotations defines the annotations of the Route object.
@@ -290,20 +290,20 @@ type MonolithicSchedulerSpec struct {
 	// NodeSelector defines which labels are required by a node to schedule the pod onto it.
 	//
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Node Selector"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Node Selector",xDescriptors="urn:alm:descriptor:com.tectonic.ui:advanced"
 	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
 
 	// Tolerations defines the tolerations of a node to schedule the pod onto it.
 	//
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tolerations"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tolerations",xDescriptors="urn:alm:descriptor:com.tectonic.ui:advanced"
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
 
 	// Affinity defines the Affinity rules for scheduling pods.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Affinity"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Affinity",xDescriptors="urn:alm:descriptor:com.tectonic.ui:advanced"
 	Affinity *corev1.Affinity `json:"affinity,omitempty"`
 }
 
@@ -342,7 +342,7 @@ type MonolithicObservabilityMetricsServiceMonitorsSpec struct {
 	// Enabled defines if ServiceMonitor objects should be created for this Tempo deployment.
 	//
 	// +kubebuilder:validation:Required
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enabled",xDescriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enabled",order=1,xDescriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
 	Enabled bool `json:"enabled"`
 }
 
@@ -351,7 +351,7 @@ type MonolithicObservabilityMetricsPrometheusRulesSpec struct {
 	// Enabled defines if PrometheusRule objects should be created for this Tempo deployment.
 	//
 	// +kubebuilder:validation:Required
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enabled",xDescriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enabled",order=1,xDescriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
 	Enabled bool `json:"enabled"`
 }
 
@@ -369,13 +369,13 @@ type MonolithicObservabilityGrafanaDataSourceSpec struct {
 	// Enabled defines if a Grafana data source should be created for this Tempo deployment.
 	//
 	// +kubebuilder:validation:Required
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enabled",xDescriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enabled",order=1,xDescriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
 	Enabled bool `json:"enabled"`
 
 	// InstanceSelector defines the Grafana instance where the data source should be created.
 	//
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Grafana Instance Selector"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Instance Selector",xDescriptors="urn:alm:descriptor:com.tectonic.ui:selector:grafana.integreatly.org:v1beta1:Grafana"
 	InstanceSelector *metav1.LabelSelector `json:"instanceSelector,omitempty"`
 }
 
@@ -385,7 +385,7 @@ type MonolithicComponentStatus struct {
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=status,displayName="Tempo",xDescriptors="urn:alm:descriptor:com.tectonic.ui:podStatuses"
+	// +operator-sdk:csv:customresourcedefinitions:type=status,displayName="Tempo",order=1,xDescriptors="urn:alm:descriptor:com.tectonic.ui:podStatuses"
 	Tempo PodStatusMap `json:"tempo"`
 }
 
