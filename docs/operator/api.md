@@ -59,8 +59,8 @@ string
 
 <td>
 
-<p>TenantName defines the name of the tenant.
-The value of this field should be sent in X-Scope-OrgID header to identify the tenant.</p>
+<p>TenantName defines a human readable, unique name of the tenant.
+The value of this field must be specified in the X-Scope-OrgID header and in the resources field of a ClusterRole to identify the tenant.</p>
 
 </td>
 </tr>
@@ -81,7 +81,9 @@ string
 
 <td>
 
-<p>TenantID defines the id of the tenant.</p>
+<p>TenantID defines a universally unique identifier of the tenant.
+Unlike the tenantName, which must be unique at a given time, the tenantId must be unique over the entire lifetime of the Tempo deployment.
+Tempo uses this ID to prefix objects in the object storage.</p>
 
 </td>
 </tr>
