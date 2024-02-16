@@ -115,7 +115,7 @@ type TenantSecretSpec struct {
 // AuthenticationSpec defines the oidc configuration per tenant for tempo Gateway component.
 type AuthenticationSpec struct {
 	// TenantName defines a human readable, unique name of the tenant.
-	// The value of this field must be sent in the X-Scope-OrgID header to identify the tenant.
+	// The value of this field must be specified in the X-Scope-OrgID header and in the resources field of a ClusterRole to identify the tenant.
 	//
 	// +required
 	// +kubebuilder:validation:Required

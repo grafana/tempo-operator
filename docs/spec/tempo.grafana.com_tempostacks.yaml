@@ -192,7 +192,7 @@ spec:                                    # TempoStackSpec defines the desired st
           name: ""                       # Name of a secret in the namespace configured for tenant secrets.
         usernameClaim: ""                # User claim field from ID Token
       tenantId: ""                       # TenantID defines a universally unique identifier of the tenant. Unlike the tenantName, which must be unique at a given time, the tenantId must be unique over the entire lifetime of the Tempo deployment. Tempo uses this ID to identify objects in the object storage.
-      tenantName: ""                     # TenantName defines a human readable, unique name of the tenant. The value of this field must be sent in the X-Scope-OrgID header to identify the tenant.
+      tenantName: ""                     # TenantName defines a human readable, unique name of the tenant. The value of this field must be specified in the X-Scope-OrgID header and in the resources field of a ClusterRole to identify the tenant.
     authorization:                       # Authorization defines the tempo-gateway component authorization configuration spec per tenant.
       roleBindings:                      # RoleBindings defines configuration to bind a set of roles to a set of subjects.
       - name: ""
