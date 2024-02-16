@@ -83,7 +83,7 @@ string
 
 <p>TenantID defines a universally unique identifier of the tenant.
 Unlike the tenantName, which must be unique at a given time, the tenantId must be unique over the entire lifetime of the Tempo deployment.
-Tempo uses this ID to identify objects in the object storage.</p>
+Tempo uses this ID to prefix objects in the object storage.</p>
 
 </td>
 </tr>

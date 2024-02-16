@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.8.0
-    createdAt: "2024-02-16T11:44:39Z"
+    createdAt: "2024-02-16T13:13:15Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -925,7 +925,7 @@ spec:
       - description: TenantID defines a universally unique identifier of the tenant.
           Unlike the tenantName, which must be unique at a given time, the tenantId
           must be unique over the entire lifetime of the Tempo deployment. Tempo uses
-          this ID to identify objects in the object storage.
+          this ID to prefix objects in the object storage.
         displayName: Tenant ID
         path: tenants.authentication[0].tenantId
       - description: TenantName defines a human readable, unique name of the tenant.

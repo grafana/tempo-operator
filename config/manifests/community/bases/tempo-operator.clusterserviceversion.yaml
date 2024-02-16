@@ -854,7 +854,7 @@ spec:
       - description: TenantID defines a universally unique identifier of the tenant.
           Unlike the tenantName, which must be unique at a given time, the tenantId
           must be unique over the entire lifetime of the Tempo deployment. Tempo uses
-          this ID to identify objects in the object storage.
+          this ID to prefix objects in the object storage.
         displayName: Tenant ID
         path: tenants.authentication[0].tenantId
       - description: TenantName defines a human readable, unique name of the tenant.
