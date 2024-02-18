@@ -1314,12 +1314,17 @@ spec:
                               type: string
                           type: object
                         tenantId:
-                          description: TenantID defines the id of the tenant.
+                          description: TenantID defines a universally unique identifier
+                            of the tenant. Unlike the tenantName, which must be unique
+                            at a given time, the tenantId must be unique over the
+                            entire lifetime of the Tempo deployment. Tempo uses this
+                            ID to prefix objects in the object storage.
                           type: string
                         tenantName:
-                          description: TenantName defines the name of the tenant.
-                            The value of this field should be sent in X-Scope-OrgID
-                            header to identify the tenant.
+                          description: TenantName defines a human readable, unique
+                            name of the tenant. The value of this field must be specified
+                            in the X-Scope-OrgID header and in the resources field
+                            of a ClusterRole to identify the tenant.
                           type: string
                       required:
                       - tenantId

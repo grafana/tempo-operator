@@ -14,14 +14,6 @@ spec:
     try:
     - command:
         args:
-        - apply
-        - -n
-        - $NAMESPACE
-        - -f
-        - generated.yaml
-        entrypoint: kubectl
-    - command:
-        args:
         - -c
         - RELATED_IMAGE_TEMPO=docker.io/grafana/tempo:2.2.1 RELATED_IMAGE_TEMPO_QUERY=docker.io/grafana/tempo-query:2.2.1
           RELATED_IMAGE_TEMPO_GATEWAY=quay.io/observatorium/api:main-2023-09-13-14e06c6
@@ -29,5 +21,13 @@ spec:
           ../../../bin/manager generate --config config.yaml --cr cr.yaml --output
           generated.yaml
         entrypoint: /bin/sh
+    - command:
+        args:
+        - apply
+        - -n
+        - $NAMESPACE
+        - -f
+        - generated.yaml
+        entrypoint: kubectl
     - assert:
         file: 01-assert.yaml

@@ -12,39 +12,27 @@ spec:
         file: 00-install-storage.yaml
     - assert:
         file: 00-assert.yaml
-  - catch:
-    - script:
-        content: ./tests/e2e-openshift/red-metrics/check_user_workload_monitoring.sh
-    name: step-01
+  - name: step-01
     try:
     - apply:
         file: 01-install-workload-monitoring.yaml
+    - script:
+        content: ./check_user_workload_monitoring.sh
   - name: step-02
     try:
     - apply:
         file: 02-install-otel-collector.yaml
     - assert:
         file: 02-assert.yaml
-  - catch:
-    - script:
-        content: /bin/sh -c "kubectl get --namespace $NAMESPACE tempo redmetrics -o
-          jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}' | grep True"
-    name: step-03
+  - name: step-03
     try:
     - apply:
         file: 03-install-tempo.yaml
     - assert:
-        file: chainsaw-step-03-assert-1-1.yaml
-    - assert:
-        file: chainsaw-step-03-assert-1-2.yaml
-    - assert:
-        file: chainsaw-step-03-assert-1-3.yaml
-    - assert:
-        file: chainsaw-step-03-assert-1-4.yaml
-    - assert:
-        file: chainsaw-step-03-assert-1-5.yaml
-    - assert:
-        file: chainsaw-step-03-assert-1-6.yaml
+        file: 03-assert.yaml
+    - script:
+        content: /bin/sh -c "kubectl get --namespace $NAMESPACE tempo redmetrics -o
+          jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}' | grep True"
   - name: step-04
     try:
     - apply:
@@ -57,17 +45,15 @@ spec:
         file: 05-install-generate-traces.yaml
     - assert:
         file: 05-assert.yaml
-  - catch:
-    - script:
-        content: ./tests/e2e-openshift/red-metrics/check_alert.sh
-    name: step-06
+  - name: step-06
     try:
     - apply:
-        file: 06-intall-assert-job.yaml
+        file: 06-install-assert-job.yaml
     - assert:
-        file: chainsaw-step-06-assert-1-1.yaml
-  - catch:
+        file: 06-assert.yaml
     - script:
-        content: ./tests/e2e-openshift/red-metrics/check_metrics.sh
-    name: step-07
-    try: null
+        content: ./check_alert.sh
+  - name: step-07
+    try:
+    - script:
+        content: ./check_metrics.sh

@@ -22,25 +22,23 @@ spec:
         file: 20-install-old-operator.yaml
     - assert:
         file: 20-assert.yaml
-  - catch:
+  - name: step-21
+    try:
     - script:
-        content: kubectl apply -f tests/e2e-upgrade/upgrade/tempostack.yaml
+        content: kubectl apply -f tempostack.yaml
     - script:
         content: kubectl delete tempo check-operator-ready
-    name: step-21
-    try: null
   - name: step-30
     try:
     - apply:
         file: 30-install-tempo.yaml
     - assert:
         file: 30-assert.yaml
-  - catch:
+  - name: step-31
+    try:
     - script:
         content: /bin/sh -c "kubectl get --namespace $NAMESPACE tempo simplest -o
           jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}' | grep True"
-    name: step-31
-    try: null
   - name: step-40
     try:
     - apply:
@@ -53,25 +51,22 @@ spec:
         file: 50-verify-traces.yaml
     - assert:
         file: 50-assert.yaml
-  - catch:
-    - script:
-        content: kubectl -n chainsaw-operator-upgrade get subscriptions.operators.coreos.com
-          tempo -o yaml
-    - podLogs:
-        namespace: chainsaw-operator-upgrade
-        selector: app.kubernetes.io/name=tempo-operator
-        tail: 100
-    name: step-60
+  - name: step-60
     try:
     - apply:
         file: 60-upgrade-operator.yaml
     - assert:
-        file: chainsaw-step-60-assert-1-1.yaml
-    - assert:
-        file: chainsaw-step-60-assert-1-2.yaml
-    - assert:
-        file: chainsaw-step-60-assert-1-3.yaml
-  - catch:
+        file: 60-assert.yaml
+    - script:
+        content: kubectl -n chainsaw-operator-upgrade get subscriptions.operators.coreos.com
+          tempo -o yaml
+    catch:
+    - podLogs:
+        namespace: chainsaw-operator-upgrade
+        selector: app.kubernetes.io/name=tempo-operator
+        tail: 100
+  - name: step-61
+    try:
     - script:
         content: /bin/sh -c "kubectl get --namespace $NAMESPACE tempo simplest -o
           jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}' | grep True"
@@ -79,8 +74,6 @@ spec:
         content: kubectl get --namespace $NAMESPACE deployment -o yaml
     - script:
         content: kubectl get --namespace $NAMESPACE statefulset -o yaml
-    name: step-61
-    try: null
   - name: step-70
     try:
     - apply:

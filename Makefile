@@ -217,7 +217,7 @@ GEN_CRD = $(LOCALBIN)/gen-crd-api-reference-docs-$(GEN_CRD_VERSION)
 GEN_API_DOCS = $(LOCALBIN)/gen-api-docs-$(GEN_API_DOCS_VERSION)
 OPERATOR_SDK ?= $(LOCALBIN)/operator-sdk-$(OPERATOR_SDK_VERSION)
 KIND ?= $(LOCALBIN)/kind
-CHAINSAW ?= $(LOCALBIN)/chainsaw
+CHAINSAW ?= $(LOCALBIN)/chainsaw-$(CHAINSAW_VERSION)
 
 # Options for KIND version to use
 export KUBE_VERSION ?= 1.27

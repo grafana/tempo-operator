@@ -1,6 +1,0 @@
-apiVersion: tempo.grafana.com/v1alpha1
-kind: TempoStack
-metadata:
-  name: simplest
-status:
-  operatorVersion: 100.0.0

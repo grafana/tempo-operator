@@ -18,6 +18,10 @@ spec:
         file: 01-install.yaml
     - assert:
         file: 01-assert.yaml
+  - name: step-02
+    try:
+    - script:
+        content: kubectl get --namespace $NAMESPACE tempo simplest -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' | grep True
   - name: step-03
     try:
     - apply:

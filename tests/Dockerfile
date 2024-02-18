@@ -11,7 +11,7 @@ WORKDIR /tmp
 RUN apt-get update && apt-get install -y jq vim libreadline-dev
 
 # Install chainsaw
-RUN go install github.com/kyverno/chainsaw@latest
+RUN go install github.com/kyverno/chainsaw@v0.1.4
 
 # Install kubectl and oc
 RUN curl -L -o oc.tar.gz https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest/openshift-client-linux.tar.gz \
