@@ -109,12 +109,12 @@ help: ## Display this help.
 
 .PHONY: manifests
 manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
-	sed -i '/RELATED_IMAGE_TEMPO$$/{n;s@value: .*@value: $(TEMPO_IMAGE)@}' config/manager/manager.yaml
-	sed -i '/RELATED_IMAGE_TEMPO_QUERY$$/{n;s@value: .*@value: $(TEMPO_QUERY_IMAGE)@}' config/manager/manager.yaml
-	sed -i '/RELATED_IMAGE_TEMPO_GATEWAY$$/{n;s@value: .*@value: $(TEMPO_GATEWAY_IMAGE)@}' config/manager/manager.yaml
-	sed -i '/RELATED_IMAGE_TEMPO_GATEWAY_OPA$$/{n;s@value: .*@value: $(TEMPO_GATEWAY_OPA_IMAGE)@}' config/manager/manager.yaml
-	sed -i 's@containerImage: .*@containerImage: $(IMG)@' config/manifests/community/bases/tempo-operator.clusterserviceversion.yaml
-	sed -i 's@containerImage: .*@containerImage: $(IMG)@' config/manifests/openshift/bases/tempo-operator.clusterserviceversion.yaml
+	# sed -i '/RELATED_IMAGE_TEMPO$$/{n;s@value: .*@value: $(TEMPO_IMAGE)@}' config/manager/manager.yaml
+	# sed -i '/RELATED_IMAGE_TEMPO_QUERY$$/{n;s@value: .*@value: $(TEMPO_QUERY_IMAGE)@}' config/manager/manager.yaml
+	# sed -i '/RELATED_IMAGE_TEMPO_GATEWAY$$/{n;s@value: .*@value: $(TEMPO_GATEWAY_IMAGE)@}' config/manager/manager.yaml
+	# sed -i '/RELATED_IMAGE_TEMPO_GATEWAY_OPA$$/{n;s@value: .*@value: $(TEMPO_GATEWAY_OPA_IMAGE)@}' config/manager/manager.yaml
+	# sed -i 's@containerImage: .*@containerImage: $(IMG)@' config/manifests/community/bases/tempo-operator.clusterserviceversion.yaml
+	# sed -i 's@containerImage: .*@containerImage: $(IMG)@' config/manifests/openshift/bases/tempo-operator.clusterserviceversion.yaml
 	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 
 .PHONY: generate
@@ -200,12 +200,12 @@ $(LOCALBIN):
 	mkdir -p $(LOCALBIN)
 
 ## Tool Versions
-KUSTOMIZE_VERSION ?= v4.5.5
-CONTROLLER_TOOLS_VERSION ?= v0.9.2
+KUSTOMIZE_VERSION ?= v5.0.3
+CONTROLLER_TOOLS_VERSION ?= v0.12.0
 GEN_CRD_VERSION ?= v0.0.5
 GEN_API_DOCS_VERSION ?= v0.4.0
 ENVTEST_VERSION ?= latest
-OPERATOR_SDK_VERSION ?= 1.27.0
+OPERATOR_SDK_VERSION ?= 1.32.0
 CERTMANAGER_VERSION ?= 1.9.1
 
 ## Tool Binaries
@@ -230,7 +230,8 @@ BUNDLE_BUILD_GEN_FLAGS ?= $(BUNDLE_GEN_FLAGS) --output-dir . --kustomize-dir ../
 
 .PHONY: controller-gen
 controller-gen: ## Download controller-gen locally if necessary.
-	test -s $(LOCALBIN)/controller-gen-$(CONTROLLER_TOOLS_VERSION) || $(call go-get-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen,$(CONTROLLER_TOOLS_VERSION))
+	test -s $(LOCALBIN)/controller-gen && $(LOCALBIN)/controller-gen --version | grep -q $(CONTROLLER_TOOLS_VERSION) || \
+  GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_TOOLS_VERSION)
 
 .PHONY: setup-envtest
 setup-envtest: ## Download envtest-setup locally if necessary.
@@ -328,7 +329,7 @@ gen-api-docs: ## Download gen-api-docs locally if necessary.
 
 .PHONY: kustomize
 kustomize: ## Download kustomize locally if necessary.
-		test -s $(LOCALBIN)/kustomize-$(KUSTOMIZE_VERSION) || $(call go-get-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v4,$(KUSTOMIZE_VERSION))
+		test -s $(LOCALBIN)/kustomize-$(KUSTOMIZE_VERSION) || $(call go-get-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v5,$(KUSTOMIZE_VERSION))
 
 .PHONY: kind
 kind: $(KIND)
