@@ -55,9 +55,10 @@ func BuildTempoStatefulset(opts Options) (*appsv1.StatefulSet, error) {
 					Annotations: annotations,
 				},
 				Spec: corev1.PodSpec{
-					NodeSelector: buildNodeSelector(tempo.Spec.Scheduler),
-					Tolerations:  buildTolerations(tempo.Spec.Scheduler),
-					Affinity:     buildAffinity(tempo.Spec.Scheduler, labels),
+					ServiceAccountName: naming.DefaultServiceAccountName(tempo.Name),
+					NodeSelector:       buildNodeSelector(tempo.Spec.Scheduler),
+					Tolerations:        buildTolerations(tempo.Spec.Scheduler),
+					Affinity:           buildAffinity(tempo.Spec.Scheduler, labels),
 					Containers: []corev1.Container{
 						{
 							Name:  "tempo",
