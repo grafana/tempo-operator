@@ -26,6 +26,12 @@ type TempoMonolithicSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger UI",order=3
 	JaegerUI *MonolithicJaegerUISpec `json:"jaegerui,omitempty"`
 
+	// Multitenancy defines the multi-tenancy configuration.
+	//
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Multi-Tenancy"
+	Multitenancy *MonolithicMultitenancySpec `json:"multitenancy,omitempty"`
+
 	// Observability defines the observability configuration of the Tempo deployment.
 	//
 	// +kubebuilder:validation:Optional
@@ -285,6 +291,30 @@ type MonolithicJaegerUIRouteSpec struct {
 	Termination TLSRouteTerminationType `json:"termination,omitempty"`
 }
 
+// MonolithicMultitenancySpec defines the multi-tenancy settings for Tempo.
+type MonolithicMultitenancySpec struct {
+	// Enabled defines if multi-tenancy is enabled.
+	//
+	// +kubebuilder:validation:Required
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enabled",xDescriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
+	Enabled bool `json:"enabled"`
+
+	TenantsSpec `json:",inline"`
+
+	// Resources defines the compute resource requirements of the gateway container.
+	//
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Resources",xDescriptors="urn:alm:descriptor:com.tectonic.ui:resourceRequirements"
+	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
+}
+
+// IsGatewayEnabled checks if the gateway component should be enabled.
+func (m *MonolithicMultitenancySpec) IsGatewayEnabled() bool {
+	// if multi-tenancy is enabled but no tenant is configured,
+	// enable multi-tenancy in Tempo but do not enable the gateway component
+	return m != nil && m.Enabled && len(m.Authentication) > 0
+}
+
 // MonolithicSchedulerSpec defines schedule settings for Tempo.
 type MonolithicSchedulerSpec struct {
 	// NodeSelector defines which labels are required by a node to schedule the pod onto it.
@@ -409,7 +439,7 @@ type TempoMonolithicStatus struct {
 
 // TempoMonolithic manages a Tempo deployment in monolithic mode.
 //
-// +operator-sdk:csv:customresourcedefinitions:displayName="TempoMonolithic",resources={{ConfigMap,v1},{Service,v1},{StatefulSet,v1},{Ingress,v1},{Route,v1}}
+// +operator-sdk:csv:customresourcedefinitions:displayName="TempoMonolithic",resources={{ConfigMap,v1},{ServiceAccount,v1},{Service,v1},{Secret,v1},{StatefulSet,v1},{Ingress,v1},{Route,v1}}
 //
 //nolint:godot
 type TempoMonolithic struct {

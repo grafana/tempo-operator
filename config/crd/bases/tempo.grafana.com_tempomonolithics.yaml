@@ -1075,6 +1075,200 @@ spec:
                 - Managed
                 - Unmanaged
                 type: string
+              multitenancy:
+                description: Multitenancy defines the multi-tenancy configuration.
+                properties:
+                  authentication:
+                    description: Authentication defines the tempo-gateway component
+                      authentication configuration spec per tenant.
+                    items:
+                      description: AuthenticationSpec defines the oidc configuration
+                        per tenant for tempo Gateway component.
+                      properties:
+                        oidc:
+                          description: OIDC defines the spec for the OIDC tenant's
+                            authentication.
+                          properties:
+                            groupClaim:
+                              description: Group claim field from ID Token
+                              type: string
+                            issuerURL:
+                              description: IssuerURL defines the URL for issuer.
+                              type: string
+                            redirectURL:
+                              description: RedirectURL defines the URL for redirect.
+                              type: string
+                            secret:
+                              description: Secret defines the spec for the clientID,
+                                clientSecret and issuerCAPath for tenant's authentication.
+                              properties:
+                                name:
+                                  description: Name of a secret in the namespace configured
+                                    for tenant secrets.
+                                  type: string
+                              type: object
+                            usernameClaim:
+                              description: User claim field from ID Token
+                              type: string
+                          type: object
+                        tenantId:
+                          description: TenantID defines a universally unique identifier
+                            of the tenant. Unlike the tenantName, which must be unique
+                            at a given time, the tenantId must be unique over the
+                            entire lifetime of the Tempo deployment. Tempo uses this
+                            ID to prefix objects in the object storage.
+                          type: string
+                        tenantName:
+                          description: TenantName defines a human readable, unique
+                            name of the tenant. The value of this field must be specified
+                            in the X-Scope-OrgID header and in the resources field
+                            of a ClusterRole to identify the tenant.
+                          type: string
+                      required:
+                      - tenantId
+                      - tenantName
+                      type: object
+                    type: array
+                  authorization:
+                    description: Authorization defines the tempo-gateway component
+                      authorization configuration spec per tenant.
+                    properties:
+                      roleBindings:
+                        description: RoleBindings defines configuration to bind a
+                          set of roles to a set of subjects.
+                        items:
+                          description: RoleBindingsSpec binds a set of roles to a
+                            set of subjects.
+                          properties:
+                            name:
+                              type: string
+                            roles:
+                              items:
+                                type: string
+                              type: array
+                            subjects:
+                              items:
+                                description: Subject represents a subject that has
+                                  been bound to a role.
+                                properties:
+                                  kind:
+                                    description: SubjectKind is a kind of Tempo Gateway
+                                      RBAC subject.
+                                    enum:
+                                    - user
+                                    - group
+                                    type: string
+                                  name:
+                                    type: string
+                                required:
+                                - kind
+                                - name
+                                type: object
+                              type: array
+                          required:
+                          - name
+                          - roles
+                          - subjects
+                          type: object
+                        type: array
+                      roles:
+                        description: Roles defines a set of permissions to interact
+                          with a tenant.
+                        items:
+                          description: RoleSpec describes a set of permissions to
+                            interact with a tenant.
+                          properties:
+                            name:
+                              type: string
+                            permissions:
+                              items:
+                                description: PermissionType is a Tempo Gateway RBAC
+                                  permission.
+                                enum:
+                                - read
+                                - write
+                                type: string
+                              type: array
+                            resources:
+                              items:
+                                type: string
+                              type: array
+                            tenants:
+                              items:
+                                type: string
+                              type: array
+                          required:
+                          - name
+                          - permissions
+                          - resources
+                          - tenants
+                          type: object
+                        type: array
+                    type: object
+                  enabled:
+                    description: Enabled defines if multi-tenancy is enabled.
+                    type: boolean
+                  mode:
+                    default: static
+                    description: Mode defines the multitenancy mode.
+                    enum:
+                    - static
+                    - openshift
+                    type: string
+                  resources:
+                    description: Resources defines the compute resource requirements
+                      of the gateway container.
+                    properties:
+                      claims:
+                        description: "Claims lists the names of resources, defined
+                          in spec.resourceClaims, that are used by this container.
+                          \n This is an alpha field and requires enabling the DynamicResourceAllocation
+                          feature gate. \n This field is immutable. It can only be
+                          set for containers."
+                        items:
+                          description: ResourceClaim references one entry in PodSpec.ResourceClaims.
+                          properties:
+                            name:
+                              description: Name must match the name of one entry in
+                                pod.spec.resourceClaims of the Pod where this field
+                                is used. It makes that resource available inside a
+                                container.
+                              type: string
+                          required:
+                          - name
+                          type: object
+                        type: array
+                        x-kubernetes-list-map-keys:
+                        - name
+                        x-kubernetes-list-type: map
+                      limits:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        description: 'Limits describes the maximum amount of compute
+                          resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                        type: object
+                      requests:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
+                        description: 'Requests describes the minimum amount of compute
+                          resources required. If Requests is omitted for a container,
+                          it defaults to Limits if that is explicitly specified, otherwise
+                          to an implementation-defined value. Requests cannot exceed
+                          Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                        type: object
+                    type: object
+                required:
+                - enabled
+                - mode
+                type: object
               nodeSelector:
                 additionalProperties:
                   type: string

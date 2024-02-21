@@ -2292,6 +2292,164 @@ MonolithicJaegerUIRouteSpec
 </tbody>
 </table>
 
+## MonolithicMultitenancySpec { #tempo-grafana-com-v1alpha1-MonolithicMultitenancySpec }
+
+<p>
+
+(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-TempoMonolithicSpec">TempoMonolithicSpec</a>)
+
+</p>
+
+<div>
+
+<p>MonolithicMultitenancySpec defines the multi-tenancy settings for Tempo.</p>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Field</th>
+
+<th>Description</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td>
+
+<code>enabled</code><br/>
+
+<em>
+
+bool
+
+</em>
+
+</td>
+
+<td>
+
+<p>Enabled defines if multi-tenancy is enabled.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>mode</code><br/>
+
+<em>
+
+<a href="#tempo-grafana-com-v1alpha1-ModeType">
+
+ModeType
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<p>Mode defines the multitenancy mode.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>authentication</code><br/>
+
+<em>
+
+<a href="#tempo-grafana-com-v1alpha1-AuthenticationSpec">
+
+[]AuthenticationSpec
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>Authentication defines the tempo-gateway component authentication configuration spec per tenant.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>authorization</code><br/>
+
+<em>
+
+<a href="#tempo-grafana-com-v1alpha1-AuthorizationSpec">
+
+AuthorizationSpec
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>Authorization defines the tempo-gateway component authorization configuration spec per tenant.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>resources</code><br/>
+
+<em>
+
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#resourcerequirements-v1-core">
+
+Kubernetes core/v1.ResourceRequirements
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<p>Resources defines the compute resource requirements of the gateway container.</p>
+
+</td>
+</tr>
+
+</tbody>
+</table>
+
 ## MonolithicObservabilityGrafanaDataSourceSpec { #tempo-grafana-com-v1alpha1-MonolithicObservabilityGrafanaDataSourceSpec }
 
 <p>
@@ -5377,6 +5535,31 @@ MonolithicJaegerUISpec
 
 <td>
 
+<code>multitenancy</code><br/>
+
+<em>
+
+<a href="#tempo-grafana-com-v1alpha1-MonolithicMultitenancySpec">
+
+MonolithicMultitenancySpec
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<p>Multitenancy defines the multi-tenancy configuration.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
 <code>observability</code><br/>
 
 <em>
@@ -6611,7 +6794,7 @@ string
 
 <p>
 
-(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-TempoStackSpec">TempoStackSpec</a>)
+(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-MonolithicMultitenancySpec">MonolithicMultitenancySpec</a>, <a href="#tempo-grafana-com-v1alpha1-TempoStackSpec">TempoStackSpec</a>)
 
 </p>
 

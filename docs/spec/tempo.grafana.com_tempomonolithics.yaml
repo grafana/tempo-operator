@@ -43,6 +43,44 @@ spec:                                    # TempoMonolithicSpec defines the desir
         cpu: "500m"
         memory: "1Gi"
   management: ""                         # ManagementState defines whether this instance is managed by the operator or self-managed. Default: Managed.
+  multitenancy:                          # Multitenancy defines the multi-tenancy configuration.
+    enabled: false                       # Enabled defines if multi-tenancy is enabled.
+    authentication:                      # Authentication defines the tempo-gateway component authentication configuration spec per tenant.
+    - oidc:                              # OIDC defines the spec for the OIDC tenant's authentication.
+        groupClaim: ""                   # Group claim field from ID Token
+        issuerURL: ""                    # IssuerURL defines the URL for issuer.
+        redirectURL: ""                  # RedirectURL defines the URL for redirect.
+        secret:                          # Secret defines the spec for the clientID, clientSecret and issuerCAPath for tenant's authentication.
+          name: ""                       # Name of a secret in the namespace configured for tenant secrets.
+        usernameClaim: ""                # User claim field from ID Token
+      tenantId: ""                       # TenantID defines a universally unique identifier of the tenant. Unlike the tenantName, which must be unique at a given time, the tenantId must be unique over the entire lifetime of the Tempo deployment. Tempo uses this ID to prefix objects in the object storage.
+      tenantName: ""                     # TenantName defines a human readable, unique name of the tenant. The value of this field must be specified in the X-Scope-OrgID header and in the resources field of a ClusterRole to identify the tenant.
+    authorization:                       # Authorization defines the tempo-gateway component authorization configuration spec per tenant.
+      roleBindings:                      # RoleBindings defines configuration to bind a set of roles to a set of subjects.
+      - name: ""
+        roles:
+        - ""
+        subjects:
+        - kind: ""                       # SubjectKind is a kind of Tempo Gateway RBAC subject.
+          name: ""
+      roles:                             # Roles defines a set of permissions to interact with a tenant.
+      - name: ""
+        permissions:
+        - ""                             # PermissionType is a Tempo Gateway RBAC permission.
+        tenants:
+        - ""
+        resources:
+        - ""
+    mode: "static"                       # Mode defines the multitenancy mode.
+    resources:                           # Resources defines the compute resource requirements of the gateway container.
+      claims:                            # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.   This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.   This field is immutable. It can only be set for containers.
+      - name: ""                         # Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.
+      limits:                            # Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+        cpu: "750m"
+        memory: "2Gi"
+      requests:                          # Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. Requests cannot exceed Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+        cpu: "500m"
+        memory: "1Gi"
   observability:                         # Observability defines the observability configuration of the Tempo deployment.
     grafana:                             # Grafana defines the Grafana configuration of the Tempo deployment.
       dataSource:                        # DataSource defines the Grafana data source configuration.

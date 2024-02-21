@@ -40,7 +40,8 @@ func (r *TempoMonolithic) Default() {
 			Enabled: true,
 		}
 	}
-	if r.Spec.Ingestion.OTLP.HTTP == nil {
+	// the gateway only supports OTLP/gRPC
+	if r.Spec.Ingestion.OTLP.HTTP == nil && !r.Spec.Multitenancy.IsGatewayEnabled() {
 		r.Spec.Ingestion.OTLP.HTTP = &MonolithicIngestionOTLPProtocolsHTTPSpec{
 			Enabled: true,
 		}
