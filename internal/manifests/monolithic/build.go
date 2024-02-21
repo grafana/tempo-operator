@@ -16,6 +16,8 @@ func BuildAll(opts Options) ([]client.Object, error) {
 	manifests = append(manifests, configMap)
 	opts.ConfigChecksum = configChecksum
 
+	manifests = append(manifests, BuildServiceAccount(opts))
+
 	statefulSet, err := BuildTempoStatefulset(opts)
 	if err != nil {
 		return nil, err
