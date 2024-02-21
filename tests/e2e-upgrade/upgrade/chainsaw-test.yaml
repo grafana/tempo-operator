@@ -24,10 +24,13 @@ spec:
         file: 20-assert.yaml
   - name: step-21
     try:
-    - script:
-        content: kubectl apply -f tempostack.yaml
-    - script:
-        content: kubectl delete tempo check-operator-ready
+    - apply:
+        file: tempostack.yaml
+    - delete:
+        ref:
+          apiVersion: tempo.grafana.com/v1alpha1
+          kind: TempoStack
+          name: check-operator-ready
   - name: step-30
     try:
     - apply:
@@ -36,9 +39,15 @@ spec:
         file: 30-assert.yaml
   - name: step-31
     try:
-    - script:
-        content: /bin/sh -c "kubectl get --namespace $NAMESPACE tempo simplest -o
-          jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}' | grep True"
+    - assert:
+        resource:
+          apiVersion: tempo.grafana.com/v1alpha1
+          kind: TempoStack
+          metadata:
+            name: simplest
+          status:
+            (conditions[?type == 'Ready']):
+            - status: 'True'
   - name: step-40
     try:
     - apply:
@@ -57,23 +66,35 @@ spec:
         file: 60-upgrade-operator.yaml
     - assert:
         file: 60-assert.yaml
-    - script:
-        content: kubectl -n chainsaw-operator-upgrade get subscriptions.operators.coreos.com
-          tempo -o yaml
     catch:
     - podLogs:
         namespace: chainsaw-operator-upgrade
         selector: app.kubernetes.io/name=tempo-operator
         tail: 100
+    finally:
+    - get:
+        resource: subscriptions.operators.coreos.com
+        namespace: chainsaw-operator-upgrade
+        name: tempo
+        format: yaml
   - name: step-61
     try:
-    - script:
-        content: /bin/sh -c "kubectl get --namespace $NAMESPACE tempo simplest -o
-          jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}' | grep True"
-    - script:
-        content: kubectl get --namespace $NAMESPACE deployment -o yaml
-    - script:
-        content: kubectl get --namespace $NAMESPACE statefulset -o yaml
+    - assert:
+        resource:
+          apiVersion: tempo.grafana.com/v1alpha1
+          kind: TempoStack
+          metadata:
+            name: simplest
+          status:
+            (conditions[?type == 'Ready']):
+            - status: 'True'
+    finally:
+    - get:
+        resource: deployment
+        format: yaml
+    - get:
+        resource: statefulset
+        format: yaml
   - name: step-70
     try:
     - apply:
