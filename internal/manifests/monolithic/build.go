@@ -16,20 +16,28 @@ func BuildAll(opts Options) ([]client.Object, error) {
 	manifests = append(manifests, configMap)
 	opts.ConfigChecksum = configChecksum
 
+	manifests = append(manifests, BuildServiceAccount(opts))
+
 	statefulSet, err := BuildTempoStatefulset(opts)
 	if err != nil {
 		return nil, err
 	}
 	manifests = append(manifests, statefulSet)
 
-	service := BuildTempoService(opts)
-	manifests = append(manifests, service)
+	manifests = append(manifests, BuildTempoService(opts))
 
-	ingresses, err := BuildTempoIngress(opts)
-	if err != nil {
-		return nil, err
+	if tempo.Spec.JaegerUI != nil && tempo.Spec.JaegerUI.Enabled {
+		if tempo.Spec.JaegerUI.Ingress != nil && tempo.Spec.JaegerUI.Ingress.Enabled {
+			manifests = append(manifests, BuildJaegerUIIngress(opts))
+		}
+		if tempo.Spec.JaegerUI.Route != nil && tempo.Spec.JaegerUI.Route.Enabled {
+			route, err := BuildJaegerUIRoute(opts)
+			if err != nil {
+				return nil, err
+			}
+			manifests = append(manifests, route)
+		}
 	}
-	manifests = append(manifests, ingresses...)
 
 	if tempo.Spec.Observability != nil {
 		if tempo.Spec.Observability.Metrics != nil {

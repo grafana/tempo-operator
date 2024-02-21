@@ -16,7 +16,7 @@ import (
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 )
 
-func TestBuildTempoIngress(t *testing.T) {
+func TestBuildJaegerUIIngress(t *testing.T) {
 	opts := Options{
 		Tempo: v1alpha1.TempoMonolithic{
 			ObjectMeta: metav1.ObjectMeta{
@@ -30,7 +30,7 @@ func TestBuildTempoIngress(t *testing.T) {
 	tests := []struct {
 		name        string
 		input       v1alpha1.TempoMonolithicSpec
-		expected    []client.Object
+		expected    client.Object
 		expectedErr error
 	}{
 		{
@@ -57,24 +57,22 @@ func TestBuildTempoIngress(t *testing.T) {
 					},
 				},
 			},
-			expected: []client.Object{
-				&networkingv1.Ingress{
-					TypeMeta: metav1.TypeMeta{
-						APIVersion: "networking.k8s.io/v1",
-						Kind:       "Ingress",
-					},
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "tempo-sample-jaegerui",
-						Namespace: "default",
-						Labels:    labels,
-					},
-					Spec: networkingv1.IngressSpec{
-						DefaultBackend: &networkingv1.IngressBackend{
-							Service: &networkingv1.IngressServiceBackend{
-								Name: "tempo-sample",
-								Port: networkingv1.ServiceBackendPort{
-									Name: "jaeger-ui",
-								},
+			expected: &networkingv1.Ingress{
+				TypeMeta: metav1.TypeMeta{
+					APIVersion: "networking.k8s.io/v1",
+					Kind:       "Ingress",
+				},
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "tempo-sample-jaegerui",
+					Namespace: "default",
+					Labels:    labels,
+				},
+				Spec: networkingv1.IngressSpec{
+					DefaultBackend: &networkingv1.IngressBackend{
+						Service: &networkingv1.IngressServiceBackend{
+							Name: "tempo-sample",
+							Port: networkingv1.ServiceBackendPort{
+								Name: "jaeger-ui",
 							},
 						},
 					},
@@ -92,33 +90,31 @@ func TestBuildTempoIngress(t *testing.T) {
 					},
 				},
 			},
-			expected: []client.Object{
-				&networkingv1.Ingress{
-					TypeMeta: metav1.TypeMeta{
-						APIVersion: "networking.k8s.io/v1",
-						Kind:       "Ingress",
-					},
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "tempo-sample-jaegerui",
-						Namespace: "default",
-						Labels:    labels,
-					},
-					Spec: networkingv1.IngressSpec{
-						Rules: []networkingv1.IngressRule{
-							{
-								Host: "abc",
-								IngressRuleValue: networkingv1.IngressRuleValue{
-									HTTP: &networkingv1.HTTPIngressRuleValue{
-										Paths: []networkingv1.HTTPIngressPath{
-											{
-												Path:     "/",
-												PathType: ptr.To(networkingv1.PathTypePrefix),
-												Backend: networkingv1.IngressBackend{
-													Service: &networkingv1.IngressServiceBackend{
-														Name: "tempo-sample",
-														Port: networkingv1.ServiceBackendPort{
-															Name: "jaeger-ui",
-														},
+			expected: &networkingv1.Ingress{
+				TypeMeta: metav1.TypeMeta{
+					APIVersion: "networking.k8s.io/v1",
+					Kind:       "Ingress",
+				},
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "tempo-sample-jaegerui",
+					Namespace: "default",
+					Labels:    labels,
+				},
+				Spec: networkingv1.IngressSpec{
+					Rules: []networkingv1.IngressRule{
+						{
+							Host: "abc",
+							IngressRuleValue: networkingv1.IngressRuleValue{
+								HTTP: &networkingv1.HTTPIngressRuleValue{
+									Paths: []networkingv1.HTTPIngressPath{
+										{
+											Path:     "/",
+											PathType: ptr.To(networkingv1.PathTypePrefix),
+											Backend: networkingv1.IngressBackend{
+												Service: &networkingv1.IngressServiceBackend{
+													Name: "tempo-sample",
+													Port: networkingv1.ServiceBackendPort{
+														Name: "jaeger-ui",
 													},
 												},
 											},
@@ -142,28 +138,26 @@ func TestBuildTempoIngress(t *testing.T) {
 					},
 				},
 			},
-			expected: []client.Object{
-				&routev1.Route{
-					TypeMeta: metav1.TypeMeta{
-						APIVersion: networkingv1.SchemeGroupVersion.String(),
-						Kind:       "Ingress",
+			expected: &routev1.Route{
+				TypeMeta: metav1.TypeMeta{
+					APIVersion: networkingv1.SchemeGroupVersion.String(),
+					Kind:       "Ingress",
+				},
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "tempo-sample-jaegerui",
+					Namespace: "default",
+					Labels:    labels,
+				},
+				Spec: routev1.RouteSpec{
+					Host: "",
+					To: routev1.RouteTargetReference{
+						Kind: "Service",
+						Name: "tempo-sample",
 					},
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "tempo-sample-jaegerui",
-						Namespace: "default",
-						Labels:    labels,
+					Port: &routev1.RoutePort{
+						TargetPort: intstr.FromString("jaeger-ui"),
 					},
-					Spec: routev1.RouteSpec{
-						Host: "",
-						To: routev1.RouteTargetReference{
-							Kind: "Service",
-							Name: "tempo-sample",
-						},
-						Port: &routev1.RoutePort{
-							TargetPort: intstr.FromString("jaeger-ui"),
-						},
-						TLS: &routev1.TLSConfig{Termination: routev1.TLSTerminationEdge},
-					},
+					TLS: &routev1.TLSConfig{Termination: routev1.TLSTerminationEdge},
 				},
 			},
 		},
@@ -186,9 +180,22 @@ func TestBuildTempoIngress(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			opts.Tempo.Spec = test.input
-			ingresses, err := BuildTempoIngress(opts)
+			opts.Tempo.Default()
+
+			objs, err := BuildAll(opts)
 			require.Equal(t, test.expectedErr, err)
-			require.Equal(t, test.expected, ingresses)
+
+			for _, obj := range objs {
+				switch obj.(type) {
+				case *networkingv1.Ingress, *routev1.Route:
+					require.Equal(t, test.expected, obj)
+					return
+				}
+			}
+
+			if test.expected != nil {
+				require.Fail(t, "cannot find ingress/route")
+			}
 		})
 	}
 }

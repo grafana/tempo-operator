@@ -4,29 +4,29 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 )
 
-func TestBuildAll(t *testing.T) {
+func TestBuildServiceAccount(t *testing.T) {
 	opts := Options{
 		Tempo: v1alpha1.TempoMonolithic{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "sample",
 				Namespace: "default",
 			},
-			Spec: v1alpha1.TempoMonolithicSpec{
-				Storage: &v1alpha1.MonolithicStorageSpec{
-					Traces: v1alpha1.MonolithicTracesStorageSpec{
-						Backend: "memory",
-					},
-				},
-			},
 		},
 	}
+	sa := BuildServiceAccount(opts)
 
-	objects, err := BuildAll(opts)
-	require.NoError(t, err)
-	require.Len(t, objects, 4)
+	labels := ComponentLabels("serviceaccount", "sample")
+	require.Equal(t, &corev1.ServiceAccount{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "tempo-sample",
+			Namespace: "default",
+			Labels:    labels,
+		},
+	}, sa)
 }
