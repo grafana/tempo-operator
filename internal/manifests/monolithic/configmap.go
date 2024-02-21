@@ -48,6 +48,8 @@ type tempoGCSConfig struct {
 }
 
 type tempoConfig struct {
+	MultitenancyEnabled bool `yaml:"multitenancy_enabled,omitempty"`
+
 	Server struct {
 		HTTPListenAddress string `yaml:"http_listen_address,omitempty"`
 		HttpListenPort    int    `yaml:"http_listen_port,omitempty"`
@@ -152,7 +154,19 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 	tempo := opts.Tempo
 
 	config := tempoConfig{}
+	config.MultitenancyEnabled = tempo.Spec.Multitenancy != nil && tempo.Spec.Multitenancy.Enabled
 	config.Server.HttpListenPort = manifestutils.PortHTTPServer
+	if tempo.Spec.Multitenancy.IsGatewayEnabled() {
+		// all connections to tempo must go via gateway
+		config.Server.HTTPListenAddress = "localhost"
+		config.Server.GRPCListenAddress = "localhost"
+	}
+
+	// The internal server is required because if the gateway is enabled,
+	// the Tempo API will listen on localhost only,
+	// and then Kubernetes cannot reach the health check endpoint.
+	config.InternalServer.Enable = true
+	config.InternalServer.HTTPListenAddress = "0.0.0.0"
 
 	// The internal server is required because if the gateway is enabled,
 	// the Tempo API will listen on localhost only,
@@ -207,7 +221,12 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 				config.Distributor.Receivers.OTLP.Protocols.GRPC = &tempoReceiverConfig{
 					TLS: configureReceiverTLS(tempo.Spec.Ingestion.OTLP.GRPC.TLS),
 				}
+				if tempo.Spec.Multitenancy.IsGatewayEnabled() {
+					// all connections to tempo must go via gateway
+					config.Distributor.Receivers.OTLP.Protocols.GRPC.Endpoint = fmt.Sprintf("localhost:%d", manifestutils.PortOtlpGrpcServer)
+				}
 			}
+
 			if tempo.Spec.Ingestion.OTLP.HTTP != nil && tempo.Spec.Ingestion.OTLP.HTTP.Enabled {
 				config.Distributor.Receivers.OTLP.Protocols.HTTP = &tempoReceiverConfig{
 					TLS: configureReceiverTLS(tempo.Spec.Ingestion.OTLP.HTTP.TLS),

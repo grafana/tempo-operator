@@ -211,6 +211,71 @@ func TestBuildServices(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "enable gateway, OTLP/gRPC, and JaegerUI",
+			input: v1alpha1.TempoMonolithicSpec{
+				Ingestion: &v1alpha1.MonolithicIngestionSpec{
+					OTLP: &v1alpha1.MonolithicIngestionOTLPSpec{
+						GRPC: &v1alpha1.MonolithicIngestionOTLPProtocolsGRPCSpec{
+							Enabled: true,
+						},
+					},
+				},
+				JaegerUI: &v1alpha1.MonolithicJaegerUISpec{
+					Enabled: true,
+				},
+				Multitenancy: &v1alpha1.MonolithicMultitenancySpec{
+					Enabled: true,
+					TenantsSpec: v1alpha1.TenantsSpec{
+						Authentication: []v1alpha1.AuthenticationSpec{
+							{
+								TenantName: "dev",
+								TenantID:   "dev",
+							},
+						},
+					},
+				},
+			},
+			expected: []client.Object{
+				&corev1.Service{
+					TypeMeta: metav1.TypeMeta{
+						APIVersion: "apps/v1",
+						Kind:       "Service",
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "tempo-sample-gateway",
+						Namespace: "default",
+						Labels:    ComponentLabels("gateway", "sample"),
+						Annotations: map[string]string{
+							"service.beta.openshift.io/serving-cert-secret-name": "tempo-sample-gateway-serving-cert",
+						},
+					},
+					Spec: corev1.ServiceSpec{
+						Ports: []corev1.ServicePort{
+							{
+								Name:       "public",
+								Protocol:   corev1.ProtocolTCP,
+								Port:       8080,
+								TargetPort: intstr.FromString("public"),
+							},
+							{
+								Name:       "internal",
+								Protocol:   corev1.ProtocolTCP,
+								Port:       8081,
+								TargetPort: intstr.FromString("internal"),
+							},
+							{
+								Name:       "otlp-grpc",
+								Protocol:   corev1.ProtocolTCP,
+								Port:       4317,
+								TargetPort: intstr.FromString("grpc-public"),
+							},
+						},
+						Selector: ComponentLabels("tempo", "sample"),
+					},
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {

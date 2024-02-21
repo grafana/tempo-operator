@@ -132,17 +132,6 @@ func route(tempo v1alpha1.TempoStack) (*routev1.Route, error) {
 	}, nil
 }
 
-func configMapCABundle(tempo v1alpha1.TempoStack) *corev1.ConfigMap {
-	return &corev1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:        naming.Name("gateway-cabundle", tempo.Name),
-			Namespace:   tempo.Namespace,
-			Labels:      manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name),
-			Annotations: map[string]string{"service.beta.openshift.io/inject-cabundle": "true"},
-		},
-	}
-}
-
 func patchOCPServingCerts(tempo v1alpha1.TempoStack, dep *v1.Deployment) (*v1.Deployment, error) {
 	container := corev1.Container{
 		VolumeMounts: []corev1.VolumeMount{
@@ -207,7 +196,7 @@ func patchOCPServiceAccount(tempo v1alpha1.TempoStack, dep *v1.Deployment) *v1.D
 
 func patchOCPOPAContainer(params manifestutils.Params, dep *v1.Deployment) (*v1.Deployment, error) {
 	pod := corev1.PodSpec{
-		Containers: []corev1.Container{NewOpaContainer(params.CtrlConfig, *params.Tempo.Spec.Tenants, "tempostack")},
+		Containers: []corev1.Container{NewOpaContainer(params.CtrlConfig, *params.Tempo.Spec.Tenants, "tempostack", corev1.ResourceRequirements{})},
 	}
 	err := mergo.Merge(&dep.Spec.Template.Spec, pod, mergo.WithAppendSlice)
 	if err != nil {
@@ -217,7 +206,7 @@ func patchOCPOPAContainer(params manifestutils.Params, dep *v1.Deployment) (*v1.
 }
 
 // NewOpaContainer creates an OPA (https://github.com/observatorium/opa-openshift) container.
-func NewOpaContainer(ctrlConfig configv1alpha1.ProjectConfig, tenants v1alpha1.TenantsSpec, opaPackage string) corev1.Container {
+func NewOpaContainer(ctrlConfig configv1alpha1.ProjectConfig, tenants v1alpha1.TenantsSpec, opaPackage string, resources corev1.ResourceRequirements) corev1.Container {
 	var args = []string{
 		"--log.level=warn",
 		"--opa.admin-groups=system:cluster-admins,cluster-admin,dedicated-admin",
@@ -227,7 +216,7 @@ func NewOpaContainer(ctrlConfig configv1alpha1.ProjectConfig, tenants v1alpha1.T
 		fmt.Sprintf("--opa.package=%s", opaPackage),
 	}
 	for _, t := range tenants.Authentication {
-		args = append(args, fmt.Sprintf(`--openshift.mappings=%s=%s`, t.TenantName, "tempo.grafana.com"))
+		args = append(args, fmt.Sprintf("--openshift.mappings=%s=%s", t.TenantName, "tempo.grafana.com"))
 	}
 
 	return corev1.Container{
@@ -270,5 +259,6 @@ func NewOpaContainer(ctrlConfig configv1alpha1.ProjectConfig, tenants v1alpha1.T
 			PeriodSeconds:    5,
 			FailureThreshold: 12,
 		},
+		Resources: resources,
 	}
 }

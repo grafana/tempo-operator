@@ -8,8 +8,9 @@ import (
 
 // Options defines calculated options required to generate all manifests.
 type Options struct {
-	CtrlConfig     configv1alpha1.ProjectConfig
-	Tempo          v1alpha1.TempoMonolithic
-	ConfigChecksum string
-	StorageParams  manifestutils.StorageParams
+	CtrlConfig          configv1alpha1.ProjectConfig
+	Tempo               v1alpha1.TempoMonolithic
+	StorageParams       manifestutils.StorageParams
+	GatewayTenantSecret []*manifestutils.GatewayTenantOIDCSecret
+	GatewayTenantsData  []*manifestutils.GatewayTenantsData
 }
