@@ -15,6 +15,7 @@ jobs:
     name: End-to-end tests
     runs-on: ubuntu-22.04
     strategy:
+      fail-fast: false
       matrix:
        # The e2e tests are run on the lowest and highest supported k8s version.
        # All Kubernetes version in between expose the same APIs, hence the operator
