@@ -17,7 +17,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
+	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
+	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/internal/handlers/gateway"
 	"github.com/grafana/tempo-operator/internal/manifests"
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
+	"github.com/grafana/tempo-operator/internal/status"
+	"github.com/grafana/tempo-operator/internal/webhooks"
 )
 
 func isNamespaceScoped(obj client.Object) bool {
@@ -117,4 +123,57 @@ func listFieldErrors(fieldErrs field.ErrorList) string {
 		msgs[i] = fieldErr.Detail
 	}
 	return strings.Join(msgs, ", ")
+}
+
+func getTenantParams(
+	ctx context.Context,
+	k8sclient client.Client,
+	ctrlConfig *configv1alpha1.ProjectConfig,
+	namespace string,
+	name string,
+	tenants v1alpha1.TenantsSpec,
+	gatewayEnabled bool,
+) ([]*manifestutils.GatewayTenantOIDCSecret, []*manifestutils.GatewayTenantsData, error) {
+	log := log.FromContext(ctx)
+
+	err := webhooks.ValidateTenantConfigs(&tenants, gatewayEnabled)
+	if err != nil {
+		err = &status.ConfigurationError{
+			Message: fmt.Sprintf("Invalid tenants configuration: %s", err),
+			Reason:  v1alpha1.ReasonInvalidTenantsConfiguration,
+		}
+		return nil, nil, err
+	}
+
+	switch tenants.Mode {
+	case v1alpha1.ModeStatic:
+		tenantsSecrets, err := gateway.GetOIDCTenantSecrets(ctx, k8sclient, namespace, tenants)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		return tenantsSecrets, nil, nil
+
+	case v1alpha1.ModeOpenShift:
+		if ctrlConfig.Gates.OpenShift.BaseDomain == "" {
+			domain, err := gateway.GetOpenShiftBaseDomain(ctx, k8sclient)
+			if err != nil {
+				return nil, nil, err
+			}
+
+			log.Info("OpenShift base domain set", "openshift-base-domain", domain)
+			ctrlConfig.Gates.OpenShift.BaseDomain = domain
+		}
+
+		tenantsData, err := gateway.GetGatewayTenantsData(ctx, k8sclient, namespace, name)
+		if err != nil {
+			// just log the error the secret is not created if the loop for an instance runs for the first time.
+			log.Info("Failed to get gateway secret and/or tenants.yaml", "error", err)
+		}
+
+		return nil, tenantsData, nil
+
+	default:
+		return nil, nil, nil
+	}
 }

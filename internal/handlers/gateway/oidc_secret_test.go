@@ -115,7 +115,7 @@ func TestGetTenantSecrets(t *testing.T) {
 				}
 				_ = createSecret(t, nsn, data)
 			}
-			got, err := GetOIDCTenantSecrets(context.Background(), k8sClient, tc.tempo)
+			got, err := GetOIDCTenantSecrets(context.Background(), k8sClient, tc.tempo.Namespace, *tc.tempo.Spec.Tenants)
 			assert.Equal(t, tc.expectedErr, err)
 			assert.Equal(t, tc.expected, got)
 		})

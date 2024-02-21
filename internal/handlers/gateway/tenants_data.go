@@ -9,7 +9,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 
-	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
 )
@@ -18,10 +17,11 @@ import (
 func GetGatewayTenantsData(
 	ctx context.Context,
 	k8sClient client.Client,
-	tempo v1alpha1.TempoStack,
+	namespace string,
+	name string,
 ) ([]*manifestutils.GatewayTenantsData, error) {
 	secret := &corev1.Secret{}
-	key := client.ObjectKey{Name: naming.Name(manifestutils.GatewayComponentName, tempo.Name), Namespace: tempo.Namespace}
+	key := client.ObjectKey{Name: naming.Name(manifestutils.GatewayComponentName, name), Namespace: namespace}
 	err := k8sClient.Get(ctx, key, secret)
 	if err != nil {
 		return nil, err

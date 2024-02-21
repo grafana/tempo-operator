@@ -344,7 +344,7 @@ func (v *validator) validateObservability(tempo v1alpha1.TempoStack) field.Error
 }
 
 func (v *validator) validateTenantConfigs(tempo v1alpha1.TempoStack) field.ErrorList {
-	if err := ValidateTenantConfigs(tempo); err != nil {
+	if err := ValidateTenantConfigs(tempo.Spec.Tenants, tempo.Spec.Template.Gateway.Enabled); err != nil {
 		return field.ErrorList{
 			field.Invalid(
 				field.NewPath("spec").Child("template").Child("tenants"),
@@ -445,16 +445,15 @@ func validateTenantsOICD(spec *v1alpha1.TenantsSpec) error {
 }
 
 // ValidateTenantConfigs validates the tenants mode specification.
-func ValidateTenantConfigs(tempo v1alpha1.TempoStack) error {
-	if tempo.Spec.Tenants == nil {
+func ValidateTenantConfigs(tenants *v1alpha1.TenantsSpec, gatewayEnabled bool) error {
+	if tenants == nil {
 		return nil
 	}
 
-	tenants := tempo.Spec.Tenants
 	if tenants.Mode == v1alpha1.ModeStatic {
 		// If the static mode is combined with the gateway, we will need the following fields
 		// otherwise this will just enable tempo multitenancy without the gateway
-		if tempo.Spec.Template.Gateway.Enabled {
+		if gatewayEnabled {
 			if tenants.Authentication == nil {
 				return fmt.Errorf("spec.tenants.authentication is required in static mode")
 			}
@@ -473,7 +472,7 @@ func ValidateTenantConfigs(tempo v1alpha1.TempoStack) error {
 			return validateTenantsOICD(tenants)
 		}
 	} else if tenants.Mode == v1alpha1.ModeOpenShift {
-		if !tempo.Spec.Template.Gateway.Enabled {
+		if !gatewayEnabled {
 			return fmt.Errorf("openshift mode requires gateway enabled")
 		}
 		if tenants.Authorization != nil {

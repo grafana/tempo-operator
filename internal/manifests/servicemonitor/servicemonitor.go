@@ -8,7 +8,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/grafana/tempo-operator/internal/certrotation"
-	"github.com/grafana/tempo-operator/internal/manifests/gateway"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
 )
@@ -27,7 +26,7 @@ func BuildServiceMonitors(params manifestutils.Params) []client.Object {
 	}
 
 	if params.Tempo.Spec.Template.Gateway.Enabled {
-		monitors = append(monitors, buildServiceMonitor(params, manifestutils.GatewayComponentName, gateway.InternalPortName))
+		monitors = append(monitors, buildServiceMonitor(params, manifestutils.GatewayComponentName, manifestutils.GatewayInternalHttpPortName))
 	}
 
 	return monitors

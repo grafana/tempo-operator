@@ -10,6 +10,8 @@ const (
 	// ConfigVolumeName declares the name of the volume containing the tempo configuration.
 	ConfigVolumeName = "tempo-conf"
 
+	// GatewayRBACFileName the name of the RBAC config file in the ConfigMap.
+	GatewayRBACFileName = "rbac.yaml"
 	// GatewayTenantFileName the name of the tenant config file in the secret.
 	GatewayTenantFileName = "tenants.yaml"
 
@@ -51,6 +53,21 @@ const (
 	JaegerMetricsPortName = "jaeger-metrics"
 	// PortJaegerMetrics declares the port number of the Jaeger UI metrics port.
 	PortJaegerMetrics = 16687
+
+	// GatewayHttpPortName declares the name of the Gateway HTTP port (e.g. proxying the Jaeger UI).
+	GatewayHttpPortName = "public"
+	// GatewayPortHTTPServer declares the port number of the Gateway HTTP port.
+	GatewayPortHTTPServer = 8080
+
+	// GatewayInternalHttpPortName declares the name of the Gateway Internal HTTP port (e.g. used for health checks).
+	GatewayInternalHttpPortName = "internal"
+	// GatewayPortInternalHTTPServer declares the port number of the Gateway Internal HTTP port.
+	GatewayPortInternalHTTPServer = 8081
+
+	// GatewayGrpcPortName declares the name of the Gateway public gRPC port.
+	GatewayGrpcPortName = "grpc-public"
+	// GatewayPortGRPCServer declares the port number of the Gateway public gRPC port.
+	GatewayPortGRPCServer = 8090
 
 	// OtlpGrpcPortName declares the name of the OpenTelemetry Collector gRPC receiver port.
 	OtlpGrpcPortName = "otlp-grpc"
@@ -107,6 +124,8 @@ const (
 
 	// TempoMonolithComponentName declares the internal name of the Tempo Monolith component.
 	TempoMonolithComponentName = "tempo"
+	// TempoConfigName declares the name of the Tempo ConfigMap (tempo-$name-config).
+	TempoConfigName = "config"
 
 	// TenantHeader is the header name that contains tenant name.
 	TenantHeader = "x-scope-orgid"
