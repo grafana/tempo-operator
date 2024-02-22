@@ -32,7 +32,7 @@ spec:                                    # TempoMonolithicSpec defines the desir
       enabled: false                     # Enabled defines if a Route object should be created for Jaeger UI.
       annotations: {}                    # Annotations defines the annotations of the Route object.
       host: ""                           # Host defines the hostname of the Route object.
-      termination: "edge"                # Termination specifies the termination type. Default: edge.
+      termination: ""                    # Termination specifies the termination type.
     resources:                           # Resources defines the compute resource requirements of the Jaeger UI container.
       claims:                            # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.   This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.   This field is immutable. It can only be set for containers.
       - name: ""                         # Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.

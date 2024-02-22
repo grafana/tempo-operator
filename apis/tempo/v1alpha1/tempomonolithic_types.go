@@ -283,10 +283,8 @@ type MonolithicJaegerUIRouteSpec struct {
 	Host string `json:"host,omitempty"`
 
 	// Termination specifies the termination type.
-	// Default: edge.
 	//
 	// +kubebuilder:validation:Optional
-	// +kubebuilder:default=edge
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="TLS Termination"
 	Termination TLSRouteTerminationType `json:"termination,omitempty"`
 }

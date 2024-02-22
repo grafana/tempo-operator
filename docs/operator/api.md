@@ -2154,8 +2154,7 @@ TLSRouteTerminationType
 
 <td>
 
-<p>Termination specifies the termination type.
-Default: edge.</p>
+<p>Termination specifies the termination type.</p>
 
 </td>
 </tr>

@@ -1056,9 +1056,7 @@ spec:
                         description: Host defines the hostname of the Route object.
                         type: string
                       termination:
-                        default: edge
-                        description: 'Termination specifies the termination type.
-                          Default: edge.'
+                        description: Termination specifies the termination type.
                         enum:
                         - insecure
                         - edge

@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.8.0
-    createdAt: "2024-02-21T18:06:27Z"
+    createdAt: "2024-02-22T16:47:52Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -297,7 +297,7 @@ spec:
       - description: Host defines the hostname of the Route object.
         displayName: Hostname
         path: jaegerui.route.host
-      - description: 'Termination specifies the termination type. Default: edge.'
+      - description: Termination specifies the termination type.
         displayName: TLS Termination
         path: jaegerui.route.termination
       - description: 'ManagementState defines whether this instance is managed by

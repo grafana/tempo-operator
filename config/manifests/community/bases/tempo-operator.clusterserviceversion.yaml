@@ -226,7 +226,7 @@ spec:
       - description: Host defines the hostname of the Route object.
         displayName: Hostname
         path: jaegerui.route.host
-      - description: 'Termination specifies the termination type. Default: edge.'
+      - description: Termination specifies the termination type.
         displayName: TLS Termination
         path: jaegerui.route.termination
       - description: 'ManagementState defines whether this instance is managed by
