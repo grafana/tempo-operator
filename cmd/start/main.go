@@ -3,6 +3,7 @@ package start
 import (
 	"context"
 	"fmt"
+	"github.com/grafana/tempo-operator/internal/crdmetrics"
 	"os"
 	"runtime"
 
@@ -116,6 +117,8 @@ func start(c *cobra.Command, args []string) {
 		"go-arch", runtime.GOARCH,
 		"go-os", runtime.GOOS,
 	)
+
+	err = crdmetrics.Bootstrap(mgr.GetClient())
 
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")
