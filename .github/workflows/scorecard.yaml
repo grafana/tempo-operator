@@ -29,8 +29,10 @@ jobs:
         with:
           go-version-file: go.mod
 
-      - name: "install kuttl"
-        run: ./hack/install/install-kuttl.sh
+      - name: Install chainsaw
+        run: |
+          set -e
+          make chainsaw
 
       - name: "start kind"
         env:

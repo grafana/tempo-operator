@@ -207,6 +207,7 @@ GEN_API_DOCS_VERSION ?= v0.4.0
 ENVTEST_VERSION ?= latest
 OPERATOR_SDK_VERSION ?= 1.27.0
 CERTMANAGER_VERSION ?= 1.9.1
+CHAINSAW_VERSION ?= v0.1.6
 
 ## Tool Binaries
 KUSTOMIZE ?= $(LOCALBIN)/kustomize-$(KUSTOMIZE_VERSION)
@@ -216,7 +217,7 @@ GEN_CRD = $(LOCALBIN)/gen-crd-api-reference-docs-$(GEN_CRD_VERSION)
 GEN_API_DOCS = $(LOCALBIN)/gen-api-docs-$(GEN_API_DOCS_VERSION)
 OPERATOR_SDK ?= $(LOCALBIN)/operator-sdk-$(OPERATOR_SDK_VERSION)
 KIND ?= $(LOCALBIN)/kind
-KUTTL ?= $(LOCALBIN)/kubectl-kuttl
+CHAINSAW ?= $(LOCALBIN)/chainsaw-$(CHAINSAW_VERSION)
 
 # Options for KIND version to use
 export KUBE_VERSION ?= 1.27
@@ -318,6 +319,10 @@ lint:
 	golangci-lint run
 
 
+.PHONY: chainsaw
+chainsaw: ## Download chainsaw locally if necessary.
+	test -s $(CHAINSAW) || $(call go-get-tool,$(CHAINSAW),github.com/kyverno/chainsaw,$(CHAINSAW_VERSION))
+
 .PHONY: gen-crd-api-reference-docs
 gen-crd-api-reference-docs: ## Download gen-crd-api-reference-docs locally if necessary.
 	test -s $(GEN_CRD) || $(call go-get-tool,$(GEN_CRD),github.com/ViaQ/gen-crd-api-reference-docs,$(GEN_CRD_VERSION))
@@ -351,20 +356,20 @@ deploy-minio:
 
 # generic end-to-tests
 .PHONY: prepare-e2e
-prepare-e2e: kuttl start-kind cert-manager set-test-image-vars build docker-build load-image-operator deploy
+prepare-e2e: chainsaw start-kind cert-manager set-test-image-vars build docker-build load-image-operator deploy
 
 .PHONY: e2e
 e2e:
-	$(KUTTL) test
+	$(CHAINSAW) test --test-dir ./tests/e2e
 
 # OpenShift end-to-tests
 .PHONY: e2e-openshift
 e2e-openshift:
-	$(KUTTL) test --config kuttl-test-openshift.yaml
+	$(CHAINSAW) test --test-dir ./tests/e2e-openshift --config .chainsaw-openshift.yaml
 
 # upgrade tests
 e2e-upgrade:
-	$(KUTTL) test --config kuttl-test-upgrade.yaml
+	$(CHAINSAW) test --test-dir ./tests/e2e-upgrade --config .chainsaw-upgrade.yaml
 
 .PHONY: scorecard-tests
 scorecard-tests: operator-sdk
@@ -409,10 +414,6 @@ mv "$$APP" "$$APP_NAME" ;\
 rm -rf $$TMP_DIR ;\
 }
 endef
-
-.PHONY: kuttl
-kuttl:
-	./hack/install/install-kuttl.sh
 
 .PHONY: generate-all
 generate-all: generate bundle api-docs ## Update all generated files
