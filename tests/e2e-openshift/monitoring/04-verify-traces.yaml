@@ -4,7 +4,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: chainsaw-cluster-monitoring-view
+  name: chainsaw-tempo-monitoring-view
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
