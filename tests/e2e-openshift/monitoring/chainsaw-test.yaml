@@ -16,8 +16,8 @@ spec:
     try:
     - apply:
         file: 01-workload-monitoring.yaml
-    - script:
-        content: ./check_user_workload_monitoring.sh
+    - assert:
+        file: 01-assert.yaml
   - name: step-02
     try:
     - apply:
