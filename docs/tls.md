@@ -35,8 +35,8 @@ Port  | Service               | TLS Enabled                     | TLS Certificat
 8081  | internal (HTTP)       | `featureGates.httpEncryption`   | internal            | no
 
 ## TLS Clients
-Client | TLS Enabled        | TLS Certificate | Notes
+Client | TLS Settings       | TLS Certificate | Notes
 ------ | ------------------ | --------------- | -----
 S3     | `spec.storage.tls` | custom          | only custom CA is supported
-Azure  | no                 | -               |
-GCP    | no                 | -               |
+Azure  | -                  | -               | custom TLS settings are not supported
+GCP    | -                  | -               | custom TLS settings are not supported
