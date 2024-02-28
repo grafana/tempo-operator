@@ -10,6 +10,11 @@ WORKDIR /tmp
 # Install dependencies required by test cases and debugging
 RUN apt-get update && apt-get install -y jq vim libreadline-dev
 
+# Install kuttl
+RUN curl -LO https://github.com/kudobuilder/kuttl/releases/download/v0.15.0/kubectl-kuttl_0.15.0_linux_x86_64 \
+    && chmod +x kubectl-kuttl_0.15.0_linux_x86_64 \
+    && mv kubectl-kuttl_0.15.0_linux_x86_64 /usr/local/bin/kuttl
+
 # Install chainsaw
 RUN go install github.com/kyverno/chainsaw@v0.1.6
 
