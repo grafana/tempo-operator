@@ -5,6 +5,8 @@ metadata:
   creationTimestamp: null
   name: red-metrics
 spec:
+  # Avoid running this test case in parallel to prevent the deletion of shared resources used by multiple tests, specifically in the context of OpenShift user workload monitoring.
+  concurrent: false
   steps:
   - name: step-00
     try:
@@ -16,7 +18,7 @@ spec:
     try:
     - apply:
         file: 01-install-workload-monitoring.yaml
-    - apply:
+    - assert:
         file: 01-assert.yaml
   - name: step-02
     try:
@@ -31,6 +33,7 @@ spec:
     - assert:
         file: 03-assert.yaml
     - script:
+        timeout: 5m
         content: /bin/sh -c "kubectl get --namespace $NAMESPACE tempo redmetrics -o
           jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}' | grep True"
   - name: step-04
@@ -52,8 +55,10 @@ spec:
     - assert:
         file: 06-assert.yaml
     - script:
+        timeout: 5m
         content: ./check_alert.sh
   - name: step-07
     try:
     - script:
+        timeout: 5m
         content: ./check_metrics.sh

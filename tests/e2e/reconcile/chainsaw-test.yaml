@@ -21,6 +21,7 @@ spec:
   - name: step-02
     try:
     - command:
+        timeout: 60s
         args:
         - delete
         - service
@@ -39,6 +40,7 @@ spec:
   - name: step-04
     try:
     - command:
+        timeout: 60s
         args:
         - -c
         - 'kubectl get --namespace $NAMESPACE configmap tempo-simplest -o jsonpath="{.data.tempo\\.yaml}"
@@ -53,6 +55,7 @@ spec:
   - name: step-06
     try:
     - command:
+        timeout: 60s
         args:
         - -c
         - '! kubectl get --namespace $NAMESPACE configmap tempo-simplest -o jsonpath=''{.data.tempo\.yaml}''
