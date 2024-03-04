@@ -15,8 +15,8 @@ require (
 	github.com/onsi/gomega v1.31.1
 	github.com/openshift/library-go v0.0.0-20220622115547-84d884f4c9f6
 	github.com/operator-framework/operator-lib v0.12.0
-	github.com/prometheus/client_golang v1.18.0
-	github.com/prometheus/common v0.47.0
+	github.com/prometheus/client_golang v1.19.0
+	github.com/prometheus/common v0.48.0
 	github.com/spf13/cobra v1.8.0
 	go.uber.org/zap v1.27.0
 	gopkg.in/yaml.v2 v2.4.0
