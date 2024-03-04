@@ -33,7 +33,7 @@ require (
 require (
 	github.com/openshift/api v3.9.0+incompatible // release-4.14
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.71.2
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/utils v0.0.0-20231127182322-b307cd553661
 )
@@ -69,7 +69,7 @@ require (
 	github.com/prometheus/client_model v0.5.0 // indirect
 	github.com/prometheus/procfs v0.12.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/stretchr/objx v0.5.0 // indirect
+	github.com/stretchr/objx v0.5.2 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e // indirect
 	golang.org/x/net v0.20.0 // indirect
