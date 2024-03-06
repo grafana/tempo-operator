@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.8.0
-    createdAt: "2024-03-04T14:15:13Z"
+    createdAt: "2024-03-05T16:17:16Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -1373,6 +1373,7 @@ spec:
   - email: iblancas@redhat.com
     name: Israel Blancas Alvarez
   maturity: alpha
+  minKubeVersion: 1.25.0
   provider:
     name: Grafana Tempo Operator SIG
   relatedImages:

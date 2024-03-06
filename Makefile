@@ -5,6 +5,9 @@ TEMPO_QUERY_VERSION ?= 2.3.1
 TEMPO_GATEWAY_VERSION ?= main-2024-01-16-162bfad
 TEMPO_GATEWAY_OPA_VERSION ?= main-2023-11-15-8ed318e
 
+MIN_KUBERNETES_VERSION ?= 1.25.0
+MIN_OPENSHIFT_VERSION ?= 4.12
+
 TEMPO_IMAGE ?= docker.io/grafana/tempo:$(TEMPO_VERSION)
 TEMPO_QUERY_IMAGE ?= docker.io/grafana/tempo-query:$(TEMPO_QUERY_VERSION)
 TEMPO_GATEWAY_IMAGE ?= quay.io/observatorium/api:$(TEMPO_GATEWAY_VERSION)
@@ -113,8 +116,6 @@ manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and Cust
 	sed -i '/RELATED_IMAGE_TEMPO_QUERY$$/{n;s@value: .*@value: $(TEMPO_QUERY_IMAGE)@}' config/manager/manager.yaml
 	sed -i '/RELATED_IMAGE_TEMPO_GATEWAY$$/{n;s@value: .*@value: $(TEMPO_GATEWAY_IMAGE)@}' config/manager/manager.yaml
 	sed -i '/RELATED_IMAGE_TEMPO_GATEWAY_OPA$$/{n;s@value: .*@value: $(TEMPO_GATEWAY_OPA_IMAGE)@}' config/manager/manager.yaml
-	sed -i 's@containerImage: .*@containerImage: $(IMG)@' config/manifests/community/bases/tempo-operator.clusterserviceversion.yaml
-	sed -i 's@containerImage: .*@containerImage: $(IMG)@' config/manifests/openshift/bases/tempo-operator.clusterserviceversion.yaml
 	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 
 .PHONY: generate
@@ -239,14 +240,22 @@ setup-envtest: ## Download envtest-setup locally if necessary.
 
 .PHONY: generate-bundle
 generate-bundle: operator-sdk manifests kustomize ## Generate bundle manifests and metadata, then validate generated files.
+	sed -i 's@containerImage: .*@containerImage: $(IMG)@' config/manifests/$(BUNDLE_VARIANT)/bases/tempo-operator.clusterserviceversion.yaml
+	sed -i 's/minKubeVersion: .*/minKubeVersion: $(MIN_KUBERNETES_VERSION)/' config/manifests/$(BUNDLE_VARIANT)/bases/tempo-operator.clusterserviceversion.yaml
+
 	$(OPERATOR_SDK) generate kustomize manifests -q --input-dir $(MANIFESTS_DIR) --output-dir $(MANIFESTS_DIR)
 	cd config/manager && $(KUSTOMIZE) edit set image controller=$(IMG)
 	cd $(BUNDLE_DIR) && cp ../../PROJECT . && $(KUSTOMIZE) build ../../$(MANIFESTS_DIR) | $(OPERATOR_SDK) generate bundle $(BUNDLE_BUILD_GEN_FLAGS) && rm PROJECT
+
+	# Workaround for https://github.com/operator-framework/operator-sdk/issues/4992
+	echo -e "\nLABEL com.redhat.openshift.versions=v$(MIN_OPENSHIFT_VERSION)" >> bundle/$(BUNDLE_VARIANT)/bundle.Dockerfile
+	echo -e "\n  com.redhat.openshift.versions: v$(MIN_OPENSHIFT_VERSION)" >> bundle/$(BUNDLE_VARIANT)/metadata/annotations.yaml
+
 	$(OPERATOR_SDK) bundle validate $(BUNDLE_DIR)
 	./hack/ignore-createdAt-bundle.sh
 
 .PHONY: bundle
-bundle: 
+bundle:
 	BUNDLE_VARIANT=openshift $(MAKE) generate-bundle
 	BUNDLE_VARIANT=community $(MAKE) generate-bundle
 

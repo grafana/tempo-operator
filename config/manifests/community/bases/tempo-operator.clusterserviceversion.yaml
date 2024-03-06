@@ -980,6 +980,7 @@ spec:
   - email: iblancas@redhat.com
     name: Israel Blancas Alvarez
   maturity: alpha
+  minKubeVersion: 1.25.0
   provider:
     name: Grafana Tempo Operator SIG
   version: 0.0.0
