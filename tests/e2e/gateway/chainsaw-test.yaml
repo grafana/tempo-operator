@@ -5,6 +5,8 @@ metadata:
   creationTimestamp: null
   name: gateway
 spec:
+  timeouts:
+    cleanup: 5m
   steps:
   - name: step-00
     try:
