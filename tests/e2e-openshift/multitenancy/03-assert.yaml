@@ -2,7 +2,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: generate-traces
-  namespace: kuttl-multitenancy
+  namespace: chainsaw-multitenancy
 status:
   conditions:
     - status: "True"

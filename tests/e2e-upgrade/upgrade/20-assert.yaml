@@ -2,7 +2,7 @@ apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
   name: tempo
-  namespace: kuttl-operator-upgrade
+  namespace: chainsaw-operator-upgrade
 status:
   state: AtLatestKnown
 ---
@@ -10,14 +10,14 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tempo-operator-controller
-  namespace: kuttl-operator-upgrade
+  namespace: chainsaw-operator-upgrade
 status:
   readyReplicas: 1
 ---
 apiVersion: v1
 kind: Pod
 metadata:
-  namespace: kuttl-operator-upgrade
+  namespace: chainsaw-operator-upgrade
   labels:
     app.kubernetes.io/name: tempo-operator
     control-plane: controller-manager

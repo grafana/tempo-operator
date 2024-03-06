@@ -1,9 +1,0 @@
-apiVersion: kuttl.dev/v1beta1
-kind: TestAssert
-commands:
-# kuttl will retry this command until a timeout is reached, and it won't stop retrying if the webhook is not reachable.
-# This makes sure that the operator is ready and accepting new TempoStack CRs.
-- command: kubectl apply -f tests/e2e-upgrade/upgrade/tempostack.yaml
-  namespaced: true
-- command: kubectl delete tempo check-operator-ready
-  namespaced: true

@@ -94,6 +94,13 @@ func resources(tempo v1alpha1.TempoStack) corev1.ResourceRequirements {
 	return *tempo.Spec.Template.QueryFrontend.Resources
 }
 
+func tempoQueryResources(tempo v1alpha1.TempoStack) corev1.ResourceRequirements {
+	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Resources == nil {
+		return manifestutils.Resources(tempo, manifestutils.QueryFrontendComponentName, tempo.Spec.Template.QueryFrontend.Replicas)
+	}
+	return *tempo.Spec.Template.QueryFrontend.JaegerQuery.Resources
+}
+
 func deployment(params manifestutils.Params) (*appsv1.Deployment, error) {
 	tempo := params.Tempo
 	labels := manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, tempo.Name)
@@ -232,7 +239,7 @@ func deployment(params manifestutils.Params) (*appsv1.Deployment, error) {
 					MountPath: manifestutils.TmpStoragePath,
 				},
 			},
-			Resources: manifestutils.Resources(tempo, manifestutils.QueryFrontendComponentName, tempo.Spec.Template.QueryFrontend.Replicas),
+			Resources: tempoQueryResources(tempo),
 		}
 		jaegerQueryVolume := corev1.Volume{
 			Name: manifestutils.TmpStorageVolumeName + "-query",

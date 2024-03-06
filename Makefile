@@ -5,6 +5,9 @@ TEMPO_QUERY_VERSION ?= 2.3.1
 TEMPO_GATEWAY_VERSION ?= main-2024-01-16-162bfad
 TEMPO_GATEWAY_OPA_VERSION ?= main-2023-11-15-8ed318e
 
+MIN_KUBERNETES_VERSION ?= 1.25.0
+MIN_OPENSHIFT_VERSION ?= 4.12
+
 TEMPO_IMAGE ?= docker.io/grafana/tempo:$(TEMPO_VERSION)
 TEMPO_QUERY_IMAGE ?= docker.io/grafana/tempo-query:$(TEMPO_QUERY_VERSION)
 TEMPO_GATEWAY_IMAGE ?= quay.io/observatorium/api:$(TEMPO_GATEWAY_VERSION)
@@ -113,8 +116,6 @@ manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and Cust
 	sed -i '/RELATED_IMAGE_TEMPO_QUERY$$/{n;s@value: .*@value: $(TEMPO_QUERY_IMAGE)@}' config/manager/manager.yaml
 	sed -i '/RELATED_IMAGE_TEMPO_GATEWAY$$/{n;s@value: .*@value: $(TEMPO_GATEWAY_IMAGE)@}' config/manager/manager.yaml
 	sed -i '/RELATED_IMAGE_TEMPO_GATEWAY_OPA$$/{n;s@value: .*@value: $(TEMPO_GATEWAY_OPA_IMAGE)@}' config/manager/manager.yaml
-	sed -i 's@containerImage: .*@containerImage: $(IMG)@' config/manifests/community/bases/tempo-operator.clusterserviceversion.yaml
-	sed -i 's@containerImage: .*@containerImage: $(IMG)@' config/manifests/openshift/bases/tempo-operator.clusterserviceversion.yaml
 	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 
 .PHONY: generate
@@ -207,6 +208,7 @@ GEN_API_DOCS_VERSION ?= v0.4.0
 ENVTEST_VERSION ?= latest
 OPERATOR_SDK_VERSION ?= 1.27.0
 CERTMANAGER_VERSION ?= 1.9.1
+CHAINSAW_VERSION ?= v0.1.7
 
 ## Tool Binaries
 KUSTOMIZE ?= $(LOCALBIN)/kustomize-$(KUSTOMIZE_VERSION)
@@ -216,7 +218,7 @@ GEN_CRD = $(LOCALBIN)/gen-crd-api-reference-docs-$(GEN_CRD_VERSION)
 GEN_API_DOCS = $(LOCALBIN)/gen-api-docs-$(GEN_API_DOCS_VERSION)
 OPERATOR_SDK ?= $(LOCALBIN)/operator-sdk-$(OPERATOR_SDK_VERSION)
 KIND ?= $(LOCALBIN)/kind
-KUTTL ?= $(LOCALBIN)/kubectl-kuttl
+CHAINSAW ?= $(LOCALBIN)/chainsaw-$(CHAINSAW_VERSION)
 
 # Options for KIND version to use
 export KUBE_VERSION ?= 1.27
@@ -238,14 +240,22 @@ setup-envtest: ## Download envtest-setup locally if necessary.
 
 .PHONY: generate-bundle
 generate-bundle: operator-sdk manifests kustomize ## Generate bundle manifests and metadata, then validate generated files.
+	sed -i 's@containerImage: .*@containerImage: $(IMG)@' config/manifests/$(BUNDLE_VARIANT)/bases/tempo-operator.clusterserviceversion.yaml
+	sed -i 's/minKubeVersion: .*/minKubeVersion: $(MIN_KUBERNETES_VERSION)/' config/manifests/$(BUNDLE_VARIANT)/bases/tempo-operator.clusterserviceversion.yaml
+
 	$(OPERATOR_SDK) generate kustomize manifests -q --input-dir $(MANIFESTS_DIR) --output-dir $(MANIFESTS_DIR)
 	cd config/manager && $(KUSTOMIZE) edit set image controller=$(IMG)
 	cd $(BUNDLE_DIR) && cp ../../PROJECT . && $(KUSTOMIZE) build ../../$(MANIFESTS_DIR) | $(OPERATOR_SDK) generate bundle $(BUNDLE_BUILD_GEN_FLAGS) && rm PROJECT
+
+	# Workaround for https://github.com/operator-framework/operator-sdk/issues/4992
+	echo -e "\nLABEL com.redhat.openshift.versions=v$(MIN_OPENSHIFT_VERSION)" >> bundle/$(BUNDLE_VARIANT)/bundle.Dockerfile
+	echo -e "\n  com.redhat.openshift.versions: v$(MIN_OPENSHIFT_VERSION)" >> bundle/$(BUNDLE_VARIANT)/metadata/annotations.yaml
+
 	$(OPERATOR_SDK) bundle validate $(BUNDLE_DIR)
 	./hack/ignore-createdAt-bundle.sh
 
 .PHONY: bundle
-bundle: 
+bundle:
 	BUNDLE_VARIANT=openshift $(MAKE) generate-bundle
 	BUNDLE_VARIANT=community $(MAKE) generate-bundle
 
@@ -318,6 +328,10 @@ lint:
 	golangci-lint run
 
 
+.PHONY: chainsaw
+chainsaw: ## Download chainsaw locally if necessary.
+	test -s $(CHAINSAW) || $(call go-get-tool,$(CHAINSAW),github.com/kyverno/chainsaw,$(CHAINSAW_VERSION))
+
 .PHONY: gen-crd-api-reference-docs
 gen-crd-api-reference-docs: ## Download gen-crd-api-reference-docs locally if necessary.
 	test -s $(GEN_CRD) || $(call go-get-tool,$(GEN_CRD),github.com/ViaQ/gen-crd-api-reference-docs,$(GEN_CRD_VERSION))
@@ -351,20 +365,20 @@ deploy-minio:
 
 # generic end-to-tests
 .PHONY: prepare-e2e
-prepare-e2e: kuttl start-kind cert-manager set-test-image-vars build docker-build load-image-operator deploy
+prepare-e2e: chainsaw start-kind cert-manager set-test-image-vars build docker-build load-image-operator deploy
 
 .PHONY: e2e
 e2e:
-	$(KUTTL) test
+	$(CHAINSAW) test --test-dir ./tests/e2e
 
 # OpenShift end-to-tests
 .PHONY: e2e-openshift
 e2e-openshift:
-	$(KUTTL) test --config kuttl-test-openshift.yaml
+	$(CHAINSAW) test --test-dir ./tests/e2e-openshift --config .chainsaw-openshift.yaml
 
 # upgrade tests
 e2e-upgrade:
-	$(KUTTL) test --config kuttl-test-upgrade.yaml
+	$(CHAINSAW) test --test-dir ./tests/e2e-upgrade --config .chainsaw-upgrade.yaml
 
 .PHONY: scorecard-tests
 scorecard-tests: operator-sdk
@@ -409,10 +423,6 @@ mv "$$APP" "$$APP_NAME" ;\
 rm -rf $$TMP_DIR ;\
 }
 endef
-
-.PHONY: kuttl
-kuttl:
-	./hack/install/install-kuttl.sh
 
 .PHONY: generate-all
 generate-all: generate bundle api-docs ## Update all generated files

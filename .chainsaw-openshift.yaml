@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/kyverno/chainsaw/main/.schemas/json/configuration-chainsaw-v1alpha1.json
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Configuration
+metadata:
+  name: configuration
+spec:
+  timeouts:
+    assert: 5m00s
+    cleanup: 5m00s
+    delete: 5m00s
+    error: 5m00s
+    exec: 5m00s
+    apply: 10s
