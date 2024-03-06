@@ -16,7 +16,7 @@ Note: The e2e tests require [opentelemetry-operator](https://github.com/open-tel
 
 ```
 kubectl create namespace tempo-operator-system
-IMG_PREFIX=docker.io/your_username OPERATOR_VERSION=x.y.z BUNDLE_VARIANT=openshift OPERATOR_NAMESPACE=tempo-operator-system make bundle docker-build docker-push bundle-build bundle-push olm-deploy
+IMG_PREFIX=docker.io/your_username OPERATOR_VERSION=x.y.z BUNDLE_VARIANT=openshift make bundle docker-build docker-push bundle-build bundle-push olm-deploy
 make e2e e2e-openshift
 ```
 
