@@ -55,7 +55,7 @@ func BuildTempoStatefulset(opts Options) (*appsv1.StatefulSet, error) {
 					Annotations: annotations,
 				},
 				Spec: corev1.PodSpec{
-					ServiceAccountName: naming.DefaultServiceAccountName(tempo.Name),
+					ServiceAccountName: serviceAccountName(tempo),
 					NodeSelector:       buildNodeSelector(tempo.Spec.Scheduler),
 					Tolerations:        buildTolerations(tempo.Spec.Scheduler),
 					Affinity:           buildAffinity(tempo.Spec.Scheduler, labels),
@@ -133,6 +133,13 @@ func BuildTempoStatefulset(opts Options) (*appsv1.StatefulSet, error) {
 	}
 
 	return sts, nil
+}
+
+func serviceAccountName(tempo v1alpha1.TempoMonolithic) string {
+	if tempo.Spec.ServiceAccount != "" {
+		return tempo.Spec.ServiceAccount
+	}
+	return naming.DefaultServiceAccountName(tempo.Name)
 }
 
 func buildNodeSelector(scheduler *v1alpha1.MonolithicSchedulerSpec) map[string]string {

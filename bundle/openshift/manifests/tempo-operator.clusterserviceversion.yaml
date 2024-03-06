@@ -398,6 +398,12 @@ spec:
       - description: ServiceMonitors defines the ServiceMonitor configuration.
         displayName: Service Monitors
         path: observability.metrics.serviceMonitors
+      - description: ServiceAccount defines the Service Account to use for all Tempo
+          components.
+        displayName: Service Account
+        path: serviceAccount
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:advanced
       - description: Traces defines the storage configuration for traces.
         displayName: Traces
         path: storage.traces
