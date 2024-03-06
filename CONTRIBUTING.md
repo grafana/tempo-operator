@@ -82,7 +82,7 @@ The `manifests` target will update the image locations and versions of files in 
 ### Using OLM
 Install latest released version:
 ```
-IMG_PREFIX=ghcr.io/grafana/tempo-operator OPERATOR_VERSION=old_xyz OPERATOR_NAMESPACE=tempo-operator-system make olm-deploy
+IMG_PREFIX=ghcr.io/grafana/tempo-operator OPERATOR_VERSION=old_xyz make olm-deploy
 ```
 
 Build and push operator and bundle image to a container registry:
@@ -92,7 +92,7 @@ IMG_PREFIX=docker.io/your_username OPERATOR_VERSION=x.y.z BUNDLE_VARIANT=openshi
 
 Upgrade to new version:
 ```
-IMG_PREFIX=docker.io/your_username OPERATOR_VERSION=x.y.z OPERATOR_NAMESPACE=tempo-operator-system make olm-upgrade
+IMG_PREFIX=docker.io/your_username OPERATOR_VERSION=x.y.z make olm-upgrade
 ```
 
 ### Using Manifests

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"runtime"
 
+	versioncollector "github.com/prometheus/client_golang/prometheus/collectors/version"
 	promversion "github.com/prometheus/common/version"
 	"sigs.k8s.io/controller-runtime/pkg/metrics"
 )
@@ -32,7 +33,7 @@ func init() {
 	promversion.Version = operatorVersion
 	promversion.BuildDate = buildDate
 	promversion.Revision = revision
-	metrics.Registry.MustRegister(promversion.NewCollector("tempooperator"))
+	metrics.Registry.MustRegister(versioncollector.NewCollector("tempooperator"))
 }
 
 // Get returns the Version object with the relevant information.

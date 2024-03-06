@@ -1,6 +1,0 @@
-apiVersion: kuttl.dev/v1beta1
-kind: TestStep
-commands:
-  # workaround for asserting parts of the configmap
-  # can be removed once https://github.com/kudobuilder/kuttl/issues/262 is implemented
-  - command: "/bin/sh -c 'kubectl get --namespace $NAMESPACE configmap tempo-simplest -o jsonpath=\"{.data.tempo\\\\.yaml}\" | grep \"bucket: tempo2\"'"

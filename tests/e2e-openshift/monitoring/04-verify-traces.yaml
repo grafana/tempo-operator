@@ -4,7 +4,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: kuttl-cluster-monitoring-view
+  name: chainsaw-tempo-monitoring-view
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -31,7 +31,7 @@ spec:
         - -c
         args:
         - |
-          curl -v -G http://tempo-tempostack-query-frontend.kuttl-monitoring.svc:16686/api/services | tee /tmp/out.log
+          curl -v -G http://tempo-tempostack-query-frontend.chainsaw-monitoring.svc:16686/api/services | tee /tmp/out.log
           if ! grep -q telemetrygen /tmp/out.log; then
             echo && echo "No traces found"
             exit 1

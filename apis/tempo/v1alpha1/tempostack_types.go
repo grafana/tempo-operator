@@ -583,6 +583,12 @@ type JaegerQuerySpec struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger Query UI Monitor Tab Settings"
 	MonitorTab JaegerQueryMonitor `json:"monitorTab"`
+
+	// Resources defines resources for this component, this will override the calculated resources derived from total
+	//
+	// +optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Resources"
+	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 }
 
 // JaegerQueryMonitor defines configuration for the service monitoring tab in the Jaeger console.

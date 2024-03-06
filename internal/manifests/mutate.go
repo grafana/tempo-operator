@@ -157,6 +157,16 @@ func mutateSecret(existing, desired *corev1.Secret) {
 }
 
 func mutateConfigMap(existing, desired *corev1.ConfigMap) {
+	existing.Annotations = desired.Annotations
+	existing.Labels = desired.Labels
+
+	if _, ok := desired.Annotations["service.beta.openshift.io/inject-cabundle"]; ok {
+		// The OpenShift service-ca operator will inject a service-ca.key into the ConfigMap.
+		// Skip mutating this ConfigMap, otherwise the service-ca.key will be deleted by this operator
+		// and re-added by the service-ca-operator in a loop.
+		return
+	}
+
 	existing.BinaryData = desired.BinaryData
 	existing.Data = desired.Data
 }

@@ -952,6 +952,10 @@ spec:
           on OpenShift this is set to https://thanos-querier.openshift-monitoring.svc.cluster.local:9091
         displayName: Prometheus endpoint
         path: template.queryFrontend.jaegerQuery.monitorTab.prometheusEndpoint
+      - description: Resources defines resources for this component, this will override
+          the calculated resources derived from total
+        displayName: Resources
+        path: template.queryFrontend.jaegerQuery.resources
       - description: NodeSelector defines the simple form of the node-selection constraint.
         displayName: Node Selector
         path: template.queryFrontend.nodeSelector
@@ -1439,6 +1443,7 @@ spec:
   - email: iblancas@redhat.com
     name: Israel Blancas Alvarez
   maturity: alpha
+  minKubeVersion: 1.25.0
   provider:
     name: Grafana Tempo Operator SIG
   relatedImages:
