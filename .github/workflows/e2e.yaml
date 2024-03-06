@@ -21,7 +21,7 @@ jobs:
        # should be compatible with them.
        kube-version:
        - "1.25"
-       - "1.28"
+       - "1.29"
 
     steps:
     - name: Checkout
@@ -48,7 +48,7 @@ jobs:
     strategy:
       matrix:
         kube-version:
-          - "1.28"
+          - "1.29"
 
     steps:
     - name: Checkout
