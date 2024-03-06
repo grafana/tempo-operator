@@ -2,9 +2,9 @@ apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
   name: tempo
-  namespace: kuttl-operator-upgrade
+  namespace: chainsaw-operator-upgrade
 spec:
   channel: alpha
   name: tempo-operator
   source: old-catalog
-  sourceNamespace: kuttl-operator-upgrade
+  sourceNamespace: chainsaw-operator-upgrade

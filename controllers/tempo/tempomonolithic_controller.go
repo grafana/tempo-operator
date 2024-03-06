@@ -179,5 +179,14 @@ func (r *TempoMonolithicReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		builder = builder.Owns(&routev1.Route{})
 	}
 
+	if r.CtrlConfig.Gates.PrometheusOperator {
+		builder = builder.Owns(&monitoringv1.ServiceMonitor{})
+		builder = builder.Owns(&monitoringv1.PrometheusRule{})
+	}
+
+	if r.CtrlConfig.Gates.GrafanaOperator {
+		builder = builder.Owns(&grafanav1.GrafanaDatasource{})
+	}
+
 	return builder.Complete(r)
 }

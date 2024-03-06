@@ -8,35 +8,14 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/utils/ptr"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
 )
 
-// BuildTempoIngress creates the ingress for a monolithic deployment.
-func BuildTempoIngress(opts Options) ([]client.Object, error) {
-	var manifests []client.Object
-	tempo := opts.Tempo
-
-	if tempo.Spec.JaegerUI != nil && tempo.Spec.JaegerUI.Enabled {
-		if tempo.Spec.JaegerUI.Ingress != nil && tempo.Spec.JaegerUI.Ingress.Enabled {
-			manifests = append(manifests, buildJaegerUIIngress(opts))
-		}
-		if tempo.Spec.JaegerUI.Route != nil && tempo.Spec.JaegerUI.Route.Enabled {
-			route, err := buildJaegerUIRoute(opts)
-			if err != nil {
-				return nil, err
-			}
-			manifests = append(manifests, route)
-		}
-	}
-
-	return manifests, nil
-}
-
-func buildJaegerUIIngress(opts Options) *networkingv1.Ingress {
+// BuildJaegerUIIngress creates a Ingress object for Jaeger UI.
+func BuildJaegerUIIngress(opts Options) *networkingv1.Ingress {
 	tempo := opts.Tempo
 	labels := ComponentLabels(manifestutils.TempoMonolithComponentName, tempo.Name)
 	ingress := &networkingv1.Ingress{
@@ -88,7 +67,8 @@ func buildJaegerUIIngress(opts Options) *networkingv1.Ingress {
 	return ingress
 }
 
-func buildJaegerUIRoute(opts Options) (*routev1.Route, error) {
+// BuildJaegerUIRoute creates a Route object for Jaeger UI.
+func BuildJaegerUIRoute(opts Options) (*routev1.Route, error) {
 	tempo := opts.Tempo
 	labels := ComponentLabels(manifestutils.TempoMonolithComponentName, tempo.Name)
 

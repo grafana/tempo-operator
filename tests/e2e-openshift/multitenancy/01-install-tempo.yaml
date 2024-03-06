@@ -3,7 +3,7 @@ apiVersion: tempo.grafana.com/v1alpha1
 kind:  TempoStack
 metadata:
   name: simplest
-  namespace: kuttl-multitenancy
+  namespace: chainsaw-multitenancy
 spec:
   storage:
     secret:
@@ -56,13 +56,13 @@ subjects:
     apiGroup: rbac.authorization.k8s.io
     name: system:authenticated
 ---
-# grant the default serviceaccount in the kuttl-multitenancy namespace
-# access to view resource in kuttl-multitenancy namespace
+# grant the default serviceaccount in the chainsaw-multitenancy namespace
+# access to view resource in chainsaw-multitenancy namespace
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: view
-  namespace: kuttl-multitenancy
+  namespace: chainsaw-multitenancy
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -70,4 +70,4 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: default
-  namespace: kuttl-multitenancy
+  namespace: chainsaw-multitenancy

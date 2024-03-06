@@ -10,7 +10,7 @@ type TLSSpec struct {
 	// Enabled defines if TLS is enabled.
 	//
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enabled",xDescriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enabled",order=1,xDescriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
 	Enabled bool `json:"enabled"`
 
 	// CA is the name of a ConfigMap containing a CA certificate (service-ca.crt).

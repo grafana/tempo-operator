@@ -9,6 +9,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/utils/ptr"
 
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
@@ -54,7 +55,10 @@ func BuildTempoStatefulset(opts Options) (*appsv1.StatefulSet, error) {
 					Annotations: annotations,
 				},
 				Spec: corev1.PodSpec{
-					Affinity: manifestutils.DefaultAffinity(labels),
+					ServiceAccountName: naming.DefaultServiceAccountName(tempo.Name),
+					NodeSelector:       buildNodeSelector(tempo.Spec.Scheduler),
+					Tolerations:        buildTolerations(tempo.Spec.Scheduler),
+					Affinity:           buildAffinity(tempo.Spec.Scheduler, labels),
 					Containers: []corev1.Container{
 						{
 							Name:  "tempo",
@@ -122,6 +126,27 @@ func BuildTempoStatefulset(opts Options) (*appsv1.StatefulSet, error) {
 	}
 
 	return sts, nil
+}
+
+func buildNodeSelector(scheduler *v1alpha1.MonolithicSchedulerSpec) map[string]string {
+	if scheduler != nil {
+		return scheduler.NodeSelector
+	}
+	return nil
+}
+
+func buildTolerations(scheduler *v1alpha1.MonolithicSchedulerSpec) []corev1.Toleration {
+	if scheduler != nil {
+		return scheduler.Tolerations
+	}
+	return nil
+}
+
+func buildAffinity(scheduler *v1alpha1.MonolithicSchedulerSpec, labels labels.Set) *corev1.Affinity {
+	if scheduler != nil && scheduler.Affinity != nil {
+		return scheduler.Affinity
+	}
+	return manifestutils.DefaultAffinity(labels)
 }
 
 func buildTempoPorts(opts Options) []corev1.ContainerPort {

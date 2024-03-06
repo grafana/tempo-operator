@@ -45,8 +45,7 @@ spec:                                    # TempoStackSpec defines the desired st
           operator: ""                   # operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
           values:                        # values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
           - ""
-        matchLabels:                     # matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
-          "key": ""
+        matchLabels: {}                  # matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
     metrics:                             # Metrics defines the metrics configuration for operands.
       createPrometheusRules: false       # CreatePrometheusRules specifies if Prometheus rules for alerts should be created for Tempo components.
       createServiceMonitors: false       # CreateServiceMonitors specifies if ServiceMonitors should be created for Tempo components.
@@ -54,16 +53,6 @@ spec:                                    # TempoStackSpec defines the desired st
       jaeger_agent_endpoint: "localhost:6831" # JaegerAgentEndpoint defines the jaeger endpoint data gets send to.
       sampling_fraction: ""              # SamplingFraction defines the sampling ratio. Valid values are 0 to 1.
   replicationFactor: 0                   # ReplicationFactor is used to define how many component replicas should exist.
-  resources:                             # Resources defines resources configuration.
-    total:                               # The total amount of resources for Tempo instance. The operator autonomously splits resources between deployed Tempo components. Only limits are supported, the operator calculates requests automatically. See http://github.com/grafana/tempo/issues/1540.
-      claims:                            # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.   This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.   This field is immutable. It can only be set for containers.
-      - name: ""                         # Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.
-      limits:                            # Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
-        cpu: "750m"
-        memory: "2Gi"
-      requests:                          # Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. Requests cannot exceed Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
-        cpu: "500m"
-        memory: "1Gi"
   retention:                             # NOTE: currently this field is not considered. Retention period defined by dataset. User can specify how long data should be stored.
     global:                              # Global is used to configure global retention.
       traces: ""                         # Traces defines retention period. Supported parameter suffixes are "s", "m" and "h". example: 336h default: value is 48h.
@@ -80,17 +69,16 @@ spec:                                    # TempoStackSpec defines the desired st
       name: ""                           # Name of a secret in the namespace configured for object storage secrets.
       type: ""                           # Type of object storage that should be used
     tls:                                 # TLS configuration for reaching the object storage endpoint.
+      enabled: false                     # Enabled defines if TLS is enabled.
       caName: ""                         # CA is the name of a ConfigMap containing a CA certificate (service-ca.crt). It needs to be in the same namespace as the Tempo custom resource.
       certName: ""                       # Cert is the name of a Secret containing a certificate (tls.crt) and private key (tls.key). It needs to be in the same namespace as the Tempo custom resource.
-      enabled: false                     # Enabled defines if TLS is enabled.
       minVersion: ""                     # MinVersion defines the minimum acceptable TLS version.
   storageClassName: ""                   # StorageClassName for PVCs used by ingester. Defaults to nil (default storage class in the cluster).
   storageSize: "10Gi"                    # StorageSize for PVCs used by ingester. Defaults to 10Gi.
   template:                              # Template defines requirements for a set of tempo components.
     compactor:                           # Compactor defines the tempo compactor component spec.
-      nodeSelector:                      # NodeSelector defines the simple form of the node-selection constraint.
-        "key": ""
       replicas: 0                        # Replicas defines the number of replicas to be created for this component.
+      nodeSelector: {}                   # NodeSelector defines the simple form of the node-selection constraint.
       resources:                         # Resources defines resources for this component, this will override the calculated resources derived from total
         claims:                          # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.   This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.   This field is immutable. It can only be set for containers.
         - name: ""                       # Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.
@@ -100,17 +88,11 @@ spec:                                    # TempoStackSpec defines the desired st
         requests:                        # Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. Requests cannot exceed Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
           cpu: "500m"
           memory: "1Gi"
-      tolerations:                       # Tolerations defines component-specific pod tolerations.
-      - effect: ""                       # Effect indicates the taint effect to match. Empty means match all taint effects. When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute.
-        key: ""                          # Key is the taint key that the toleration applies to. Empty means match all taint keys. If the key is empty, operator must be Exists; this combination means to match all values and all keys.
-        operator: ""                     # Operator represents a key's relationship to the value. Valid operators are Exists and Equal. Defaults to Equal. Exists is equivalent to wildcard for value, so that a pod can tolerate all taints of a particular category.
-        tolerationSeconds: 0             # TolerationSeconds represents the period of time the toleration (which must be of effect NoExecute, otherwise this field is ignored) tolerates the taint. By default, it is not set, which means tolerate the taint forever (do not evict). Zero and negative values will be treated as 0 (evict immediately) by the system.
-        value: ""                        # Value is the taint value the toleration matches to. If the operator is Exists, the value should be empty, otherwise just a regular string.
+      tolerations: {}                    # Tolerations defines component-specific pod tolerations.
     distributor:                         # Distributor defines the distributor component spec.
       component:                         # TempoComponentSpec is embedded to extend this definition with further options.   Currently, there is no way to inline this field. See: https://github.com/golang/go/issues/6213
-        nodeSelector:                    # NodeSelector defines the simple form of the node-selection constraint.
-          "key": ""
         replicas: 0                      # Replicas defines the number of replicas to be created for this component.
+        nodeSelector: {}                 # NodeSelector defines the simple form of the node-selection constraint.
         resources:                       # Resources defines resources for this component, this will override the calculated resources derived from total
           claims:                        # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.   This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.   This field is immutable. It can only be set for containers.
           - name: ""                     # Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.
@@ -120,22 +102,17 @@ spec:                                    # TempoStackSpec defines the desired st
           requests:                      # Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. Requests cannot exceed Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
             cpu: "500m"
             memory: "1Gi"
-        tolerations:                     # Tolerations defines component-specific pod tolerations.
-        - effect: ""                     # Effect indicates the taint effect to match. Empty means match all taint effects. When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute.
-          key: ""                        # Key is the taint key that the toleration applies to. Empty means match all taint keys. If the key is empty, operator must be Exists; this combination means to match all values and all keys.
-          operator: ""                   # Operator represents a key's relationship to the value. Valid operators are Exists and Equal. Defaults to Equal. Exists is equivalent to wildcard for value, so that a pod can tolerate all taints of a particular category.
-          tolerationSeconds: 0           # TolerationSeconds represents the period of time the toleration (which must be of effect NoExecute, otherwise this field is ignored) tolerates the taint. By default, it is not set, which means tolerate the taint forever (do not evict). Zero and negative values will be treated as 0 (evict immediately) by the system.
-          value: ""                      # Value is the taint value the toleration matches to. If the operator is Exists, the value should be empty, otherwise just a regular string.
+        tolerations: {}                  # Tolerations defines component-specific pod tolerations.
       tls:                               # TLS defines TLS configuration for distributor receivers
+        enabled: false                   # Enabled defines if TLS is enabled.
         caName: ""                       # CA is the name of a ConfigMap containing a CA certificate (service-ca.crt). It needs to be in the same namespace as the Tempo custom resource.
         certName: ""                     # Cert is the name of a Secret containing a certificate (tls.crt) and private key (tls.key). It needs to be in the same namespace as the Tempo custom resource.
-        enabled: false                   # Enabled defines if TLS is enabled.
         minVersion: ""                   # MinVersion defines the minimum acceptable TLS version.
     gateway:                             # Gateway defines the tempo gateway spec.
+      enabled: false
       component:                         # TempoComponentSpec is embedded to extend this definition with further options.   Currently there is no way to inline this field. See: https://github.com/golang/go/issues/6213
-        nodeSelector:                    # NodeSelector defines the simple form of the node-selection constraint.
-          "key": ""
         replicas: 0                      # Replicas defines the number of replicas to be created for this component.
+        nodeSelector: {}                 # NodeSelector defines the simple form of the node-selection constraint.
         resources:                       # Resources defines resources for this component, this will override the calculated resources derived from total
           claims:                        # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.   This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.   This field is immutable. It can only be set for containers.
           - name: ""                     # Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.
@@ -145,25 +122,17 @@ spec:                                    # TempoStackSpec defines the desired st
           requests:                      # Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. Requests cannot exceed Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
             cpu: "500m"
             memory: "1Gi"
-        tolerations:                     # Tolerations defines component-specific pod tolerations.
-        - effect: ""                     # Effect indicates the taint effect to match. Empty means match all taint effects. When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute.
-          key: ""                        # Key is the taint key that the toleration applies to. Empty means match all taint keys. If the key is empty, operator must be Exists; this combination means to match all values and all keys.
-          operator: ""                   # Operator represents a key's relationship to the value. Valid operators are Exists and Equal. Defaults to Equal. Exists is equivalent to wildcard for value, so that a pod can tolerate all taints of a particular category.
-          tolerationSeconds: 0           # TolerationSeconds represents the period of time the toleration (which must be of effect NoExecute, otherwise this field is ignored) tolerates the taint. By default, it is not set, which means tolerate the taint forever (do not evict). Zero and negative values will be treated as 0 (evict immediately) by the system.
-          value: ""                      # Value is the taint value the toleration matches to. If the operator is Exists, the value should be empty, otherwise just a regular string.
-      enabled: false
+        tolerations: {}                  # Tolerations defines component-specific pod tolerations.
       ingress:                           # Ingress defines gateway Ingress options.
-        annotations:                     # Annotations defines the annotations of the Ingress object.
-          "key": ""
+        annotations: {}                  # Annotations defines the annotations of the Ingress object.
         host: ""                         # Host defines the hostname of the Ingress object.
         ingressClassName: ""             # IngressClassName defines the name of an IngressClass cluster resource. Defines which ingress controller serves this ingress resource.
         route:                           # Route defines the options for the OpenShift route.
           termination: ""                # Termination defines the termination type. The default is "edge".
         type: ""                         # Type defines the type of Ingress for the Jaeger Query UI. Currently ingress, route and none are supported.
     ingester:                            # Ingester defines the ingester component spec.
-      nodeSelector:                      # NodeSelector defines the simple form of the node-selection constraint.
-        "key": ""
       replicas: 0                        # Replicas defines the number of replicas to be created for this component.
+      nodeSelector: {}                   # NodeSelector defines the simple form of the node-selection constraint.
       resources:                         # Resources defines resources for this component, this will override the calculated resources derived from total
         claims:                          # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.   This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.   This field is immutable. It can only be set for containers.
         - name: ""                       # Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.
@@ -173,16 +142,10 @@ spec:                                    # TempoStackSpec defines the desired st
         requests:                        # Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. Requests cannot exceed Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
           cpu: "500m"
           memory: "1Gi"
-      tolerations:                       # Tolerations defines component-specific pod tolerations.
-      - effect: ""                       # Effect indicates the taint effect to match. Empty means match all taint effects. When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute.
-        key: ""                          # Key is the taint key that the toleration applies to. Empty means match all taint keys. If the key is empty, operator must be Exists; this combination means to match all values and all keys.
-        operator: ""                     # Operator represents a key's relationship to the value. Valid operators are Exists and Equal. Defaults to Equal. Exists is equivalent to wildcard for value, so that a pod can tolerate all taints of a particular category.
-        tolerationSeconds: 0             # TolerationSeconds represents the period of time the toleration (which must be of effect NoExecute, otherwise this field is ignored) tolerates the taint. By default, it is not set, which means tolerate the taint forever (do not evict). Zero and negative values will be treated as 0 (evict immediately) by the system.
-        value: ""                        # Value is the taint value the toleration matches to. If the operator is Exists, the value should be empty, otherwise just a regular string.
+      tolerations: {}                    # Tolerations defines component-specific pod tolerations.
     querier:                             # Querier defines the querier component spec.
-      nodeSelector:                      # NodeSelector defines the simple form of the node-selection constraint.
-        "key": ""
       replicas: 0                        # Replicas defines the number of replicas to be created for this component.
+      nodeSelector: {}                   # NodeSelector defines the simple form of the node-selection constraint.
       resources:                         # Resources defines resources for this component, this will override the calculated resources derived from total
         claims:                          # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.   This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.   This field is immutable. It can only be set for containers.
         - name: ""                       # Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.
@@ -192,17 +155,11 @@ spec:                                    # TempoStackSpec defines the desired st
         requests:                        # Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. Requests cannot exceed Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
           cpu: "500m"
           memory: "1Gi"
-      tolerations:                       # Tolerations defines component-specific pod tolerations.
-      - effect: ""                       # Effect indicates the taint effect to match. Empty means match all taint effects. When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute.
-        key: ""                          # Key is the taint key that the toleration applies to. Empty means match all taint keys. If the key is empty, operator must be Exists; this combination means to match all values and all keys.
-        operator: ""                     # Operator represents a key's relationship to the value. Valid operators are Exists and Equal. Defaults to Equal. Exists is equivalent to wildcard for value, so that a pod can tolerate all taints of a particular category.
-        tolerationSeconds: 0             # TolerationSeconds represents the period of time the toleration (which must be of effect NoExecute, otherwise this field is ignored) tolerates the taint. By default, it is not set, which means tolerate the taint forever (do not evict). Zero and negative values will be treated as 0 (evict immediately) by the system.
-        value: ""                        # Value is the taint value the toleration matches to. If the operator is Exists, the value should be empty, otherwise just a regular string.
+      tolerations: {}                    # Tolerations defines component-specific pod tolerations.
     queryFrontend:                       # TempoQueryFrontendSpec defines the query frontend spec.
       component:                         # TempoComponentSpec is embedded to extend this definition with further options.   Currently there is no way to inline this field. See: https://github.com/golang/go/issues/6213
-        nodeSelector:                    # NodeSelector defines the simple form of the node-selection constraint.
-          "key": ""
         replicas: 0                      # Replicas defines the number of replicas to be created for this component.
+        nodeSelector: {}                 # NodeSelector defines the simple form of the node-selection constraint.
         resources:                       # Resources defines resources for this component, this will override the calculated resources derived from total
           claims:                        # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.   This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.   This field is immutable. It can only be set for containers.
           - name: ""                     # Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.
@@ -212,17 +169,11 @@ spec:                                    # TempoStackSpec defines the desired st
           requests:                      # Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. Requests cannot exceed Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
             cpu: "500m"
             memory: "1Gi"
-        tolerations:                     # Tolerations defines component-specific pod tolerations.
-        - effect: ""                     # Effect indicates the taint effect to match. Empty means match all taint effects. When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute.
-          key: ""                        # Key is the taint key that the toleration applies to. Empty means match all taint keys. If the key is empty, operator must be Exists; this combination means to match all values and all keys.
-          operator: ""                   # Operator represents a key's relationship to the value. Valid operators are Exists and Equal. Defaults to Equal. Exists is equivalent to wildcard for value, so that a pod can tolerate all taints of a particular category.
-          tolerationSeconds: 0           # TolerationSeconds represents the period of time the toleration (which must be of effect NoExecute, otherwise this field is ignored) tolerates the taint. By default, it is not set, which means tolerate the taint forever (do not evict). Zero and negative values will be treated as 0 (evict immediately) by the system.
-          value: ""                      # Value is the taint value the toleration matches to. If the operator is Exists, the value should be empty, otherwise just a regular string.
+        tolerations: {}                  # Tolerations defines component-specific pod tolerations.
       jaegerQuery:                       # JaegerQuery defines options specific to the Jaeger Query component.
         enabled: false                   # Enabled defines if the Jaeger Query component should be created.
         ingress:                         # Ingress defines the options for the Jaeger Query ingress.
-          annotations:                   # Annotations defines the annotations of the Ingress object.
-            "key": ""
+          annotations: {}                # Annotations defines the annotations of the Ingress object.
           host: ""                       # Host defines the hostname of the Ingress object.
           ingressClassName: ""           # IngressClassName defines the name of an IngressClass cluster resource. Defines which ingress controller serves this ingress resource.
           route:                         # Route defines the options for the OpenShift route.
@@ -231,6 +182,15 @@ spec:                                    # TempoStackSpec defines the desired st
         monitorTab:                      # MonitorTab defines the monitor tab configuration.
           enabled: false                 # Enabled enables the monitor tab in the Jaeger console. The PrometheusEndpoint must be configured to enable this feature.
           prometheusEndpoint: ""         # PrometheusEndpoint defines the endpoint to the Prometheus instance that contains the span rate, error, and duration (RED) metrics. For instance on OpenShift this is set to https://thanos-querier.openshift-monitoring.svc.cluster.local:9091
+        resources:                       # Resources defines resources for this component, this will override the calculated resources derived from total
+          claims:                        # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.   This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.   This field is immutable. It can only be set for containers.
+          - name: ""                     # Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.
+          limits:                        # Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+            cpu: "750m"
+            memory: "2Gi"
+          requests:                      # Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. Requests cannot exceed Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+            cpu: "500m"
+            memory: "1Gi"
   tenants:                               # Tenants defines the per-tenant authentication and authorization spec.
     authentication:                      # Authentication defines the tempo-gateway component authentication configuration spec per tenant.
     - oidc:                              # OIDC defines the spec for the OIDC tenant's authentication.
@@ -240,8 +200,8 @@ spec:                                    # TempoStackSpec defines the desired st
         secret:                          # Secret defines the spec for the clientID, clientSecret and issuerCAPath for tenant's authentication.
           name: ""                       # Name of a secret in the namespace configured for tenant secrets.
         usernameClaim: ""                # User claim field from ID Token
-      tenantId: ""                       # TenantID defines the id of the tenant.
-      tenantName: ""                     # TenantName defines the name of the tenant. The value of this field should be sent in X-Scope-OrgID header to identify the tenant.
+      tenantId: ""                       # TenantID defines a universally unique identifier of the tenant. Unlike the tenantName, which must be unique at a given time, the tenantId must be unique over the entire lifetime of the Tempo deployment. Tempo uses this ID to prefix objects in the object storage.
+      tenantName: ""                     # TenantName defines a human readable, unique name of the tenant. The value of this field must be specified in the X-Scope-OrgID header and in the resources field of a ClusterRole to identify the tenant.
     authorization:                       # Authorization defines the tempo-gateway component authorization configuration spec per tenant.
       roleBindings:                      # RoleBindings defines configuration to bind a set of roles to a set of subjects.
       - name: ""
@@ -254,11 +214,21 @@ spec:                                    # TempoStackSpec defines the desired st
       - name: ""
         permissions:
         - ""                             # PermissionType is a Tempo Gateway RBAC permission.
-        resources:
-        - ""
         tenants:
         - ""
+        resources:
+        - ""
     mode: "static"                       # Mode defines the multitenancy mode.
+  resources:                             # Resources defines resources configuration.
+    total:                               # The total amount of resources for Tempo instance. The operator autonomously splits resources between deployed Tempo components. Only limits are supported, the operator calculates requests automatically. See http://github.com/grafana/tempo/issues/1540.
+      claims:                            # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.   This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.   This field is immutable. It can only be set for containers.
+      - name: ""                         # Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.
+      limits:                            # Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+        cpu: "750m"
+        memory: "2Gi"
+      requests:                          # Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. Requests cannot exceed Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+        cpu: "500m"
+        memory: "1Gi"
 status:                                  # TempoStackStatus defines the observed state of TempoStack.
   components:                            # Components provides summary of all Tempo pod status grouped per component.
     compactor:                           # Compactor is a map to the pod status of the compactor pod.

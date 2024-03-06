@@ -80,7 +80,8 @@ func TestStatefulsetMemoryStorage(t *testing.T) {
 					Annotations: annotations,
 				},
 				Spec: corev1.PodSpec{
-					Affinity: manifestutils.DefaultAffinity(labels),
+					ServiceAccountName: "tempo-sample",
+					Affinity:           manifestutils.DefaultAffinity(labels),
 					Containers: []corev1.Container{
 						{
 							Name:  "tempo",
@@ -551,4 +552,82 @@ func TestStatefulsetPorts(t *testing.T) {
 			require.Equal(t, test.expected, sts.Spec.Template.Spec.Containers[0].Ports)
 		})
 	}
+}
+
+func TestStatefulsetSchedulingRules(t *testing.T) {
+	opts := Options{
+		CtrlConfig: configv1alpha1.ProjectConfig{
+			DefaultImages: configv1alpha1.ImagesSpec{
+				Tempo: "docker.io/grafana/tempo:x.y.z",
+			},
+		},
+		Tempo: v1alpha1.TempoMonolithic{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "sample",
+				Namespace: "default",
+			},
+			Spec: v1alpha1.TempoMonolithicSpec{
+				Storage: &v1alpha1.MonolithicStorageSpec{
+					Traces: v1alpha1.MonolithicTracesStorageSpec{
+						Backend: "memory",
+					},
+				},
+				Scheduler: &v1alpha1.MonolithicSchedulerSpec{
+					NodeSelector: map[string]string{
+						"key1": "value1",
+					},
+					Tolerations: []corev1.Toleration{{
+						Key:      "example",
+						Operator: corev1.TolerationOpExists,
+						Effect:   corev1.TaintEffectNoSchedule,
+					}},
+					Affinity: &corev1.Affinity{
+						NodeAffinity: &corev1.NodeAffinity{
+							RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{
+								NodeSelectorTerms: []corev1.NodeSelectorTerm{{
+									MatchExpressions: []corev1.NodeSelectorRequirement{{
+										Key:      "topology.kubernetes.io/zone",
+										Operator: corev1.NodeSelectorOpIn,
+										Values: []string{
+											"eu-west-1",
+											"eu-west-2",
+										},
+									}},
+								}},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	sts, err := BuildTempoStatefulset(opts)
+	require.NoError(t, err)
+
+	require.Equal(t, map[string]string{
+		"key1": "value1",
+	}, sts.Spec.Template.Spec.NodeSelector)
+
+	require.Equal(t, []corev1.Toleration{{
+		Key:      "example",
+		Operator: corev1.TolerationOpExists,
+		Effect:   corev1.TaintEffectNoSchedule,
+	}}, sts.Spec.Template.Spec.Tolerations)
+
+	require.Equal(t, &corev1.Affinity{
+		NodeAffinity: &corev1.NodeAffinity{
+			RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{
+				NodeSelectorTerms: []corev1.NodeSelectorTerm{{
+					MatchExpressions: []corev1.NodeSelectorRequirement{{
+						Key:      "topology.kubernetes.io/zone",
+						Operator: corev1.NodeSelectorOpIn,
+						Values: []string{
+							"eu-west-1",
+							"eu-west-2",
+						},
+					}},
+				}},
+			},
+		},
+	}, sts.Spec.Template.Spec.Affinity)
 }

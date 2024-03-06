@@ -2,7 +2,7 @@ apiVersion: tempo.grafana.com/v1alpha1
 kind: TempoStack
 metadata:
   name: tempostack
-  namespace: kuttl-monitoring
+  namespace: chainsaw-monitoring
 spec:
   observability:
     metrics:

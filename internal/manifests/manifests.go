@@ -84,11 +84,7 @@ func BuildAll(params manifestutils.Params) ([]client.Object, error) {
 	}
 
 	if params.Tempo.Spec.Observability.Grafana.CreateDatasource {
-		grafanaDatasource, err := grafana.BuildGrafanaDatasource(params)
-		if err != nil {
-			return nil, err
-		}
-		manifests = append(manifests, grafanaDatasource)
+		manifests = append(manifests, grafana.BuildGrafanaDatasource(params))
 	}
 
 	return manifests, nil
