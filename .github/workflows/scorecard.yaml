@@ -48,4 +48,21 @@ jobs:
       - name: "run OpenShift scorecard tests"
         run: for i in {1..5}; do make scorecard-tests && break || sleep 10; done
         env:
+
+  scorecard-tests-check:
+    runs-on: ubuntu-22.04
+    if: always()
+    needs: [scorecard-tests]
+    steps:
+      - name: Print result
+        run: echo ${{ needs.scorecard-tests.result }}
+      - name: Interpret result
+        run: |
+          if [[ success == ${{ needs.scorecard-tests.result }} ]]
+          then
+            echo "All matrix jobs passed!"
+          else
+            echo "One or more matrix jobs failed."
+            false
+          fi
           BUNDLE_VARIANT: openshift
