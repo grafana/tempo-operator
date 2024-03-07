@@ -99,7 +99,7 @@ func TestValueObservedMetrics(t *testing.T) {
 	// Add jaeger to schema
 	s.AddKnownTypes(v1alpha1.GroupVersion, &v1alpha1.TempoStack{}, &v1alpha1.TempoStackList{})
 
-	// Create jaeger instances
+	// Create tempo instances
 	tempoGCS := newTempoStackInstance(types.NamespacedName{
 		Name:      "my-tempo-gcs",
 		Namespace: "test",
