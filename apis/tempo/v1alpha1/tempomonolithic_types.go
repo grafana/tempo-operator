@@ -83,10 +83,9 @@ type MonolithicTracesStorageSpec struct {
 	// For in-memory storage, this defines the size of the tmpfs volume.
 	// For persistent volume storage, this defines the size of the persistent volume.
 	// For object storage, this defines the size of the persistent volume containing the Write-Ahead Log (WAL) of Tempo.
-	// Default: 10Gi.
+	// Default: 2Gi for memory, 10Gi for all other backends.
 	//
 	// +kubebuilder:validation:Optional
-	// +kubebuilder:default="10Gi"
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Size",order=2,xDescriptors="urn:alm:descriptor:com.tectonic.ui:text"
 	Size *resource.Quantity `json:"size,omitempty"`
 

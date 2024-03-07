@@ -27,6 +27,39 @@ func TestMonolithicDefault(t *testing.T) {
 					Storage: &MonolithicStorageSpec{
 						Traces: MonolithicTracesStorageSpec{
 							Backend: "memory",
+							Size:    &twoGBQuantity,
+						},
+					},
+					Ingestion: &MonolithicIngestionSpec{
+						OTLP: &MonolithicIngestionOTLPSpec{
+							GRPC: &MonolithicIngestionOTLPProtocolsGRPCSpec{
+								Enabled: true,
+							},
+							HTTP: &MonolithicIngestionOTLPProtocolsHTTPSpec{
+								Enabled: true,
+							},
+						},
+					},
+					Management: "Managed",
+				},
+			},
+		},
+		{
+			name: "pv backend, set 10Gi default pv size",
+			input: &TempoMonolithic{
+				Spec: TempoMonolithicSpec{
+					Storage: &MonolithicStorageSpec{
+						Traces: MonolithicTracesStorageSpec{
+							Backend: "pv",
+						},
+					},
+				},
+			},
+			expected: &TempoMonolithic{
+				Spec: TempoMonolithicSpec{
+					Storage: &MonolithicStorageSpec{
+						Traces: MonolithicTracesStorageSpec{
+							Backend: "pv",
 							Size:    &tenGBQuantity,
 						},
 					},

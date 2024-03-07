@@ -111,7 +111,7 @@ spec:                                    # TempoMonolithicSpec defines the desir
           caName: ""                     # CA is the name of a ConfigMap containing a CA certificate (service-ca.crt). It needs to be in the same namespace as the Tempo custom resource.
           certName: ""                   # Cert is the name of a Secret containing a certificate (tls.crt) and private key (tls.key). It needs to be in the same namespace as the Tempo custom resource.
           minVersion: ""                 # MinVersion defines the minimum acceptable TLS version.
-      size: "10Gi"                       # Size defines the size of the volume where traces are stored. For in-memory storage, this defines the size of the tmpfs volume. For persistent volume storage, this defines the size of the persistent volume. For object storage, this defines the size of the persistent volume containing the Write-Ahead Log (WAL) of Tempo. Default: 10Gi.
+      size: 0Gi                          # Size defines the size of the volume where traces are stored. For in-memory storage, this defines the size of the tmpfs volume. For persistent volume storage, this defines the size of the persistent volume. For object storage, this defines the size of the persistent volume containing the Write-Ahead Log (WAL) of Tempo. Default: 2Gi for memory, 10Gi for all other backends.
   affinity:                              # Affinity defines the Affinity rules for scheduling pods.
     nodeAffinity: {}                     # Describes node affinity scheduling rules for the pod.
     podAffinity: {}                      # Describes pod affinity scheduling rules (e.g. co-locate this pod in the same node, zone, etc. as some other pod(s)).

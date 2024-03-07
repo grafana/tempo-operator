@@ -6,6 +6,7 @@ import (
 )
 
 var (
+	twoGBQuantity = resource.MustParse("2Gi")
 	tenGBQuantity = resource.MustParse("10Gi")
 )
 
@@ -26,7 +27,13 @@ func (r *TempoMonolithic) Default() {
 	}
 
 	if r.Spec.Storage.Traces.Size == nil {
-		r.Spec.Storage.Traces.Size = ptr.To(tenGBQuantity)
+		//exhaustive:ignore
+		switch r.Spec.Storage.Traces.Backend {
+		case MonolithicTracesStorageBackendMemory:
+			r.Spec.Storage.Traces.Size = ptr.To(twoGBQuantity)
+		default:
+			r.Spec.Storage.Traces.Size = ptr.To(tenGBQuantity)
+		}
 	}
 
 	if r.Spec.Ingestion == nil {

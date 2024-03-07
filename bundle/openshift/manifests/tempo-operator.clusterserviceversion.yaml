@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.8.0
-    createdAt: "2024-02-22T16:47:50Z"
+    createdAt: "2024-03-07T10:55:11Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -195,7 +195,7 @@ spec:
           For in-memory storage, this defines the size of the tmpfs volume. For persistent
           volume storage, this defines the size of the persistent volume. For object
           storage, this defines the size of the persistent volume containing the Write-Ahead
-          Log (WAL) of Tempo. Default: 10Gi.'
+          Log (WAL) of Tempo. Default: 2Gi for memory, 10Gi for all other backends.'
         displayName: Size
         path: storage.traces.size
         x-descriptors:

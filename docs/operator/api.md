@@ -3320,7 +3320,7 @@ k8s.io/apimachinery/pkg/api/resource.Quantity
 For in-memory storage, this defines the size of the tmpfs volume.
 For persistent volume storage, this defines the size of the persistent volume.
 For object storage, this defines the size of the persistent volume containing the Write-Ahead Log (WAL) of Tempo.
-Default: 10Gi.</p>
+Default: 2Gi for memory, 10Gi for all other backends.</p>
 
 </td>
 </tr>
