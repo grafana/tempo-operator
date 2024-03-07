@@ -22,7 +22,6 @@ require (
 	go.opentelemetry.io/otel/exporters/prometheus v0.45.2
 	go.opentelemetry.io/otel/metric v1.23.1
 	go.opentelemetry.io/otel/sdk/metric v1.23.1
-	go.uber.org/zap v1.26.0
 	go.uber.org/zap v1.27.0
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.28.5
@@ -76,10 +75,9 @@ require (
 	github.com/prometheus/client_model v0.6.0 // indirect
 	github.com/prometheus/procfs v0.12.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/stretchr/objx v0.5.0 // indirect
+	github.com/stretchr/objx v0.5.2 // indirect
 	go.opentelemetry.io/otel/sdk v1.23.1 // indirect
 	go.opentelemetry.io/otel/trace v1.23.1 // indirect
-	github.com/stretchr/objx v0.5.2 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e // indirect
 	golang.org/x/net v0.21.0 // indirect
