@@ -80,7 +80,8 @@ func TestStatefulsetMemoryStorage(t *testing.T) {
 					Annotations: annotations,
 				},
 				Spec: corev1.PodSpec{
-					Affinity: manifestutils.DefaultAffinity(labels),
+					ServiceAccountName: "tempo-sample",
+					Affinity:           manifestutils.DefaultAffinity(labels),
 					Containers: []corev1.Container{
 						{
 							Name:  "tempo",

@@ -28,5 +28,5 @@ func TestBuildAll(t *testing.T) {
 
 	objects, err := BuildAll(opts)
 	require.NoError(t, err)
-	require.Len(t, objects, 3)
+	require.Len(t, objects, 4)
 }

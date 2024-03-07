@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: minio
-  namespace: kuttl-monitoring
+  namespace: chainsaw-monitoring
 status:
   availableReplicas: 1
   readyReplicas: 1
@@ -13,7 +13,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: minio
-  namespace: kuttl-monitoring
+  namespace: chainsaw-monitoring
 spec:
   ports:
   - port: 9000
@@ -28,5 +28,5 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: minio-secret
-  namespace: kuttl-monitoring
+  namespace: chainsaw-monitoring
 type: Opaque

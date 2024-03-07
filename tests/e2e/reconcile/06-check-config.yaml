@@ -1,5 +1,0 @@
-apiVersion: kuttl.dev/v1beta1
-kind: TestStep
-commands:
-# check for trailing whitespaces in generated ConfigMap
-- command: /bin/sh -c "! kubectl get --namespace $NAMESPACE configmap tempo-simplest -o jsonpath='{.data.tempo\\.yaml}' | grep '[[:blank:]]$'"
