@@ -15,14 +15,7 @@ import (
 func BuildGrafanaDatasource(params manifestutils.Params) *grafanav1.GrafanaDatasource {
 	tempo := params.Tempo
 	labels := manifestutils.CommonLabels(tempo.Name)
-	var url string
-
-	if tempo.Spec.Template.Gateway.Enabled {
-		url = fmt.Sprintf("http://%s:%d", naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.GatewayComponentName), manifestutils.PortHTTPServer)
-	} else {
-		url = fmt.Sprintf("http://%s:%d", naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.QueryFrontendComponentName), manifestutils.PortHTTPServer)
-	}
-
+	url := fmt.Sprintf("http://%s:%d", naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.QueryFrontendComponentName), manifestutils.PortHTTPServer)
 	return NewGrafanaDatasource(tempo.Namespace, tempo.Name, labels, url, tempo.Spec.Observability.Grafana.InstanceSelector)
 }
 
