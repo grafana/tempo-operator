@@ -3,6 +3,23 @@ Changes by Version
 
 <!-- next version -->
 
+## 0.9.0
+
+### 💡 Enhancements 💡
+
+- `operator`: Kubernetes 1.29 enablement (#735)
+- `operator`: Allow resource limits/requests override per component (#726)
+- `operator`: Support creating ServiceMonitors, PrometheusRules and Grafana Data Sources in TempoMonolithic CR (#793)
+- `operator`: Support scheduling rules (nodeSelector, tolerations and affinity) in TempoMonolithic CR (#782)
+- `operator`: Expose operand status in TempoMonolithic CR (#787)
+
+### 🧰 Bug fixes 🧰
+
+- `operator`: Fix infinite reconciliation of serving CA Bundle ConfigMap (#818)
+
+### Components
+- Tempo: [v2.3.1](https://github.com/grafana/tempo/releases/tag/v2.3.1)
+
 ## 0.8.0
 
 ### 💡 Enhancements 💡
