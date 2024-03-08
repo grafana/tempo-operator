@@ -16,9 +16,11 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        kube-version:
-          - "1.25"
-          - "1.29"
+        include:
+          - name: min
+            kube-version: 1.25
+          - name: max
+            kube-version: 1.29
 
     steps:
       - name: Checkout
@@ -36,7 +38,7 @@ jobs:
 
       - name: "start kind"
         env:
-          KUBE_VERSION: ${{ matrix.kube-version }}
+          KUBE_VERSION: ${{ matrix.include.kube-version }}
         run: |
           make start-kind
 
