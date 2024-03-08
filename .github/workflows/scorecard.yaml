@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   scorecard-tests:
-    name: Scorecard test
+    name: Scorecard test ${{ matrix.name }}
     runs-on: ubuntu-22.04
     strategy:
       matrix:
