@@ -3,10 +3,12 @@ package crdmetrics
 import (
 	"context"
 	"fmt"
-	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 )
 
 type tempoStackMetrics struct {

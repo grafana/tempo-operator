@@ -6,15 +6,15 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-type CountFn func(instance client.Object) (string, bool)
+type countFn func(instance client.Object) (string, bool)
 
-// This structure contains the labels associated with the instances and a counter of the number of instances
+// This structure contains the labels associated with the instances and a counter of the number of instances.
 type instancesView struct {
 	Name  string
 	Label string
 	Count map[string]int
 	Gauge metric.Int64ObservableGauge
-	KeyFn CountFn
+	KeyFn countFn
 }
 
 func (i *instancesView) reset() {
@@ -39,7 +39,7 @@ func (i *instancesView) Report(observer metric.Observer) {
 	}
 }
 
-func newObservation(meter metric.Meter, name, desc, label string, keyFn CountFn) (instancesView, error) {
+func newObservation(meter metric.Meter, name, desc, label string, keyFn countFn) (instancesView, error) {
 	observation := instancesView{
 		Name:  name,
 		Count: make(map[string]int),

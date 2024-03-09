@@ -3,7 +3,6 @@ package start
 import (
 	"context"
 	"fmt"
-	"github.com/grafana/tempo-operator/internal/crdmetrics"
 	"os"
 	"runtime"
 
@@ -20,6 +19,7 @@ import (
 	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
 	"github.com/grafana/tempo-operator/cmd"
 	controllers "github.com/grafana/tempo-operator/controllers/tempo"
+	"github.com/grafana/tempo-operator/internal/crdmetrics"
 	"github.com/grafana/tempo-operator/internal/upgrade"
 	"github.com/grafana/tempo-operator/internal/version"
 	"github.com/grafana/tempo-operator/internal/webhooks"
@@ -118,7 +118,10 @@ func start(c *cobra.Command, args []string) {
 		"go-os", runtime.GOOS,
 	)
 
-	err = crdmetrics.Bootstrap(mgr.GetClient())
+	if err := crdmetrics.Bootstrap(mgr.GetClient()); err != nil {
+		setupLog.Error(err, "problem init crd metrics")
+		os.Exit(1)
+	}
 
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")

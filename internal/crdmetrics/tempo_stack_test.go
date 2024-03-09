@@ -2,7 +2,6 @@ package crdmetrics
 
 import (
 	"context"
-	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -16,6 +15,8 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
+
+	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 )
 
 const (
@@ -163,7 +164,8 @@ func TestValueObservedMetrics(t *testing.T) {
 	require.NoError(t, err)
 
 	// Reset measurement batches
-	provider.ForceFlush(context.Background())
+	err = provider.ForceFlush(context.Background())
+	require.NoError(t, err)
 	metrics = metricdata.ResourceMetrics{}
 	err = reader.Collect(context.Background(), &metrics)
 	require.NoError(t, err)
