@@ -9,7 +9,12 @@ import (
 )
 
 // ConfigureAzureStorage mounts the Azure Storage credentials in a pod.
-func ConfigureAzureStorage(pod *corev1.PodSpec, containerIdx int, storageSecretName string, tlsSpec *v1alpha1.TLSSpec) error {
+func ConfigureAzureStorage(pod *corev1.PodSpec, containerName string, storageSecretName string, tlsSpec *v1alpha1.TLSSpec) error {
+	containerIdx, err := findContainerIndex(pod, containerName)
+	if err != nil {
+		return err
+	}
+
 	pod.Containers[containerIdx].Env = append(pod.Containers[containerIdx].Env, []corev1.EnvVar{
 		{
 			Name: "AZURE_ACCOUNT_NAME",
@@ -42,10 +47,15 @@ func ConfigureAzureStorage(pod *corev1.PodSpec, containerIdx int, storageSecretN
 }
 
 // ConfigureGCS mounts the Google Cloud Storage credentials in a pod.
-func ConfigureGCS(pod *corev1.PodSpec, containerIdx int, storageSecretName string, tlsSpec *v1alpha1.TLSSpec) error {
+func ConfigureGCS(pod *corev1.PodSpec, containerName string, storageSecretName string, tlsSpec *v1alpha1.TLSSpec) error {
 	secretVolumeName := "storage-gcs-key"      // nolint #nosec
 	secretDirectory := "/etc/storage/secrets/" // nolint #nosec
 	secretFile := path.Join(secretDirectory, "key.json")
+
+	containerIdx, err := findContainerIndex(pod, containerName)
+	if err != nil {
+		return err
+	}
 
 	pod.Containers[containerIdx].Env = append(pod.Containers[containerIdx].Env, []corev1.EnvVar{
 		{
@@ -71,7 +81,12 @@ func ConfigureGCS(pod *corev1.PodSpec, containerIdx int, storageSecretName strin
 }
 
 // ConfigureS3Storage mounts the Amazon S3 credentials and TLS certs in a pod.
-func ConfigureS3Storage(pod *corev1.PodSpec, containerIdx int, storageSecretName string, tlsSpec *v1alpha1.TLSSpec) error {
+func ConfigureS3Storage(pod *corev1.PodSpec, containerName string, storageSecretName string, tlsSpec *v1alpha1.TLSSpec) error {
+	containerIdx, err := findContainerIndex(pod, containerName)
+	if err != nil {
+		return err
+	}
+
 	pod.Containers[containerIdx].Env = append(pod.Containers[containerIdx].Env, []corev1.EnvVar{
 		{
 			Name: "S3_SECRET_KEY",
@@ -102,18 +117,18 @@ func ConfigureS3Storage(pod *corev1.PodSpec, containerIdx int, storageSecretName
 	}...)
 
 	if tlsSpec != nil && tlsSpec.Enabled {
-		ConfigureTLSVolumes(
-			pod, containerIdx, *tlsSpec,
-			StorageTLSCADir, StorageTLSCertDir, "storage",
-		)
+		err := MountTLSSpecVolumes(pod, containerName, *tlsSpec, StorageTLSCADir, StorageTLSCertDir)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
 // ConfigureStorage configures storage.
-func ConfigureStorage(tempo v1alpha1.TempoStack, pod *corev1.PodSpec) error {
+func ConfigureStorage(tempo v1alpha1.TempoStack, pod *corev1.PodSpec, containerName string) error {
 	if tempo.Spec.Storage.Secret.Name != "" {
-		var configure func(pod *corev1.PodSpec, containerIdx int, storageSecretName string, tlsSpec *v1alpha1.TLSSpec) error
+		var configure func(pod *corev1.PodSpec, containerName string, storageSecretName string, tlsSpec *v1alpha1.TLSSpec) error
 		switch tempo.Spec.Storage.Secret.Type {
 		case v1alpha1.ObjectStorageSecretAzure:
 			configure = ConfigureAzureStorage
@@ -123,7 +138,7 @@ func ConfigureStorage(tempo v1alpha1.TempoStack, pod *corev1.PodSpec) error {
 			configure = ConfigureS3Storage
 		}
 
-		return configure(pod, 0, tempo.Spec.Storage.Secret.Name, &tempo.Spec.Storage.TLS)
+		return configure(pod, containerName, tempo.Spec.Storage.Secret.Name, &tempo.Spec.Storage.TLS)
 	}
 	return nil
 }

@@ -41,7 +41,7 @@ spec:
         - mountPath: /var/tempo
           name: data
         - mountPath: /var/run/tls/storage/ca
-          name: storage-ca
+          name: custom-ca
           readOnly: true
         - mountPath: /var/run/ca
           name: tempo-simplest-ca-bundle
@@ -55,7 +55,7 @@ spec:
       - configMap:
           defaultMode: 420
           name: custom-ca
-        name: storage-ca
+        name: custom-ca
       - configMap:
           defaultMode: 420
           name: tempo-simplest-ca-bundle

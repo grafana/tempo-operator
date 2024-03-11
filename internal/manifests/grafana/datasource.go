@@ -6,6 +6,7 @@ import (
 	grafanav1 "github.com/grafana/grafana-operator/v5/api/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/utils/ptr"
 
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
@@ -51,8 +52,12 @@ func NewGrafanaDatasource(
 				Access: "proxy",
 				URL:    url,
 			},
+
 			// InstanceSelector is a required field in the spec
 			InstanceSelector: &instanceSelector,
+
+			// Allow using this datasource from Grafana instances in other namespaces
+			AllowCrossNamespaceImport: ptr.To(true),
 		},
 	}
 }

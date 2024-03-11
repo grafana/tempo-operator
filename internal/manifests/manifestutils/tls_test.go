@@ -25,16 +25,17 @@ func TestConfigureTLSVolumes(t *testing.T) {
 		},
 	}
 
-	ConfigureTLSVolumes(&pod, 0, tlsSpec, "/var/ca", "/var/cert", "prefix")
+	err := MountTLSSpecVolumes(&pod, "tempo", tlsSpec, "/var/ca", "/var/cert")
+	require.NoError(t, err)
 
 	require.Equal(t, []corev1.VolumeMount{
 		{
-			Name:      "prefix-ca",
+			Name:      "custom-ca",
 			MountPath: "/var/ca",
 			ReadOnly:  true,
 		},
 		{
-			Name:      "prefix-cert",
+			Name:      "custom-cert",
 			MountPath: "/var/cert",
 			ReadOnly:  true,
 		},
@@ -42,7 +43,7 @@ func TestConfigureTLSVolumes(t *testing.T) {
 
 	require.Equal(t, []corev1.Volume{
 		{
-			Name: "prefix-ca",
+			Name: "custom-ca",
 			VolumeSource: corev1.VolumeSource{
 				ConfigMap: &corev1.ConfigMapVolumeSource{
 					LocalObjectReference: corev1.LocalObjectReference{
@@ -52,7 +53,7 @@ func TestConfigureTLSVolumes(t *testing.T) {
 			},
 		},
 		{
-			Name: "prefix-cert",
+			Name: "custom-cert",
 			VolumeSource: corev1.VolumeSource{
 				Secret: &corev1.SecretVolumeSource{
 					SecretName: "custom-cert",

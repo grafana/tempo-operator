@@ -12,13 +12,15 @@ concurrency:
 
 jobs:
   scorecard-tests:
-    name: Scorecard test
+    name: Scorecard test ${{ matrix.name }}
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        kube-version:
-          - "1.21"
-          - "1.28"
+        include:
+          - name: min
+            kube-version: 1.25
+          - name: max
+            kube-version: 1.29
 
     steps:
       - name: Checkout
