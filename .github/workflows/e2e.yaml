@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   e2e-tests:
-    name: End-to-end tests
+    name: End-to-end tests ${{ matrix.name }}
     runs-on: ubuntu-22.04
     strategy:
       matrix:
@@ -45,7 +45,7 @@ jobs:
       run: make prepare-e2e e2e KUBE_VERSION=$KUBE_VERSION
 
   upgrade-tests:
-    name: Upgrade tests
+    name: Upgrade tests ${{ matrix.name }}
     runs-on: ubuntu-22.04
     strategy:
       matrix:
