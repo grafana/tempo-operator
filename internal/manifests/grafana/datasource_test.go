@@ -6,6 +6,7 @@ import (
 	grafanav1 "github.com/grafana/grafana-operator/v5/api/v1beta1"
 	"github.com/stretchr/testify/require"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/ptr"
 
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
@@ -39,7 +40,8 @@ func TestBuildGrafanaDatasource(t *testing.T) {
 				Type:   "tempo",
 				URL:    "http://tempo-test-query-frontend.tempo.svc.cluster.local:3200",
 			},
-			InstanceSelector: &metav1.LabelSelector{},
+			InstanceSelector:          &metav1.LabelSelector{},
+			AllowCrossNamespaceImport: ptr.To(true),
 		},
 	}, datasource)
 }
