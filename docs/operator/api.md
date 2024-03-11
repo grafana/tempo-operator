@@ -2468,7 +2468,8 @@ Kubernetes core/v1.ResourceRequirements
 
 <td>
 
-<p>Resources defines the compute resource requirements of the gateway container.</p>
+<p>Resources defines the compute resource requirements of the gateway container.
+The gateway performs authentication and authorization of incoming requests when multi-tenancy is enabled.</p>
 
 </td>
 </tr>

@@ -1218,7 +1218,9 @@ spec:
                     type: string
                   resources:
                     description: Resources defines the compute resource requirements
-                      of the gateway container.
+                      of the gateway container. The gateway performs authentication
+                      and authorization of incoming requests when multi-tenancy is
+                      enabled.
                     properties:
                       claims:
                         description: "Claims lists the names of resources, defined

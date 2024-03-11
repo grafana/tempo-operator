@@ -72,7 +72,7 @@ spec:                                    # TempoMonolithicSpec defines the desir
         resources:
         - ""
     mode: "static"                       # Mode defines the multitenancy mode.
-    resources:                           # Resources defines the compute resource requirements of the gateway container.
+    resources:                           # Resources defines the compute resource requirements of the gateway container. The gateway performs authentication and authorization of incoming requests when multi-tenancy is enabled.
       claims:                            # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.   This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.   This field is immutable. It can only be set for containers.
       - name: ""                         # Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.
       limits:                            # Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/

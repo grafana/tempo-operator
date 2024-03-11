@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.9.0
-    createdAt: "2024-03-08T17:54:08Z"
+    createdAt: "2024-03-11T16:43:35Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -365,7 +365,8 @@ spec:
         - urn:alm:descriptor:com.tectonic.ui:select:static
         - urn:alm:descriptor:com.tectonic.ui:select:openshift
       - description: Resources defines the compute resource requirements of the gateway
-          container.
+          container. The gateway performs authentication and authorization of incoming
+          requests when multi-tenancy is enabled.
         displayName: Resources
         path: multitenancy.resources
         x-descriptors:
