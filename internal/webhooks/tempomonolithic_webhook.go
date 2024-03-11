@@ -72,7 +72,7 @@ func (v *monolithicValidator) validate(ctx context.Context, obj runtime.Object) 
 func (v *monolithicValidator) validateTempoMonolithic(ctx context.Context, tempo tempov1alpha1.TempoMonolithic) (admission.Warnings, field.ErrorList) {
 	// We do not modify the Kubernetes object in the defaulter webhook,
 	// but still apply some default values in-memory.
-	tempo.Default()
+	tempo.Default(v.ctrlConfig)
 
 	warnings := admission.Warnings{}
 	errors := field.ErrorList{}

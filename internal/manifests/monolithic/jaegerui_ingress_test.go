@@ -12,6 +12,7 @@ import (
 	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 )
@@ -180,7 +181,7 @@ func TestBuildJaegerUIIngress(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			opts.Tempo.Spec = test.input
-			opts.Tempo.Default()
+			opts.Tempo.Default(configv1alpha1.ProjectConfig{})
 
 			objs, err := BuildAll(opts)
 			require.Equal(t, test.expectedErr, err)

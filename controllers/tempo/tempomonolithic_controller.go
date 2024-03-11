@@ -58,7 +58,7 @@ func (r *TempoMonolithicReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	}
 
 	// apply defaults
-	tempo.Default()
+	tempo.Default(r.CtrlConfig)
 
 	if tempo.Spec.Management == v1alpha1.ManagementStateUnmanaged {
 		log.Info("Skipping reconciliation for unmanaged TempoMonolithic resource", "name", req.String())

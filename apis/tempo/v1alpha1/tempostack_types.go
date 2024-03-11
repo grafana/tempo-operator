@@ -2,7 +2,6 @@ package v1alpha1
 
 import (
 	corev1 "k8s.io/api/core/v1"
-	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -128,16 +127,6 @@ type TempoStackSpec struct {
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Extra Configurations"
 	ExtraConfig *ExtraConfigSpec `json:"extraConfig,omitempty"`
-}
-
-// ExtraConfigSpec defines extra configurations for tempo that will be merged with the operator generated, configurations defined here
-// has precedence and could override generated config.
-type ExtraConfigSpec struct {
-	// Tempo defines any extra Tempo configuration, which will be merged with the operator's generated Tempo configuration
-	//
-	// +optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tempo Extra Configurations"
-	Tempo apiextensionsv1.JSON `json:"tempo,omitempty"`
 }
 
 // ObservabilitySpec defines how telemetry data gets handled.
