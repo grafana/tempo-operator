@@ -5,6 +5,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/api/resource"
+
+	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
 )
 
 var (
@@ -13,9 +15,10 @@ var (
 
 func TestMonolithicDefault(t *testing.T) {
 	tests := []struct {
-		name     string
-		input    *TempoMonolithic
-		expected *TempoMonolithic
+		name       string
+		ctrlConfig configv1alpha1.ProjectConfig
+		input      *TempoMonolithic
+		expected   *TempoMonolithic
 	}{
 		{
 			name: "empty spec, set memory backend and enable OTLP/gRPC and OTLP/HTTP",
@@ -127,7 +130,7 @@ func TestMonolithicDefault(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			test.input.Default()
+			test.input.Default(test.ctrlConfig)
 			assert.Equal(t, test.expected, test.input)
 		})
 	}

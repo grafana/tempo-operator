@@ -3,6 +3,8 @@ package v1alpha1
 import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/utils/ptr"
+
+	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
 )
 
 var (
@@ -13,7 +15,7 @@ var (
 // Default sets all default values in a central place, instead of setting it at every place where the value is accessed.
 // NOTE: This function is called inside the Reconcile loop, NOT in the webhook.
 // We want to keep the CR as minimal as the user configures it, and not modify it in any way (except for upgrades).
-func (r *TempoMonolithic) Default() {
+func (r *TempoMonolithic) Default(ctrlConfig configv1alpha1.ProjectConfig) {
 	if r.Spec.Management == "" {
 		r.Spec.Management = ManagementStateManaged
 	}
@@ -21,11 +23,9 @@ func (r *TempoMonolithic) Default() {
 	if r.Spec.Storage == nil {
 		r.Spec.Storage = &MonolithicStorageSpec{}
 	}
-
 	if r.Spec.Storage.Traces.Backend == "" {
 		r.Spec.Storage.Traces.Backend = MonolithicTracesStorageBackendMemory
 	}
-
 	if r.Spec.Storage.Traces.Size == nil {
 		//exhaustive:ignore
 		switch r.Spec.Storage.Traces.Backend {
@@ -57,6 +57,11 @@ func (r *TempoMonolithic) Default() {
 	if r.Spec.JaegerUI != nil && r.Spec.JaegerUI.Enabled &&
 		r.Spec.JaegerUI.Route != nil && r.Spec.JaegerUI.Route.Enabled &&
 		r.Spec.JaegerUI.Route.Termination == "" {
-		r.Spec.JaegerUI.Route.Termination = "edge"
+		if r.Spec.Multitenancy.IsGatewayEnabled() && ctrlConfig.Gates.OpenShift.ServingCertsService {
+			// gateway uses TLS
+			r.Spec.JaegerUI.Route.Termination = TLSRouteTerminationTypePassthrough
+		} else {
+			r.Spec.JaegerUI.Route.Termination = TLSRouteTerminationTypeEdge
+		}
 	}
 }
