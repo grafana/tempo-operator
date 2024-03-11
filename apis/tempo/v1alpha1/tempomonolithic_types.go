@@ -299,6 +299,7 @@ type MonolithicMultitenancySpec struct {
 	TenantsSpec `json:",inline"`
 
 	// Resources defines the compute resource requirements of the gateway container.
+	// The gateway performs authentication and authorization of incoming requests when multi-tenancy is enabled.
 	//
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Resources",xDescriptors="urn:alm:descriptor:com.tectonic.ui:resourceRequirements"
