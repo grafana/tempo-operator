@@ -269,12 +269,12 @@ func TestStatefulsetS3TLSStorage(t *testing.T) {
 			MountPath: "/var/tempo",
 		},
 		{
-			Name:      "storage-ca",
+			Name:      "custom-ca",
 			MountPath: "/var/run/tls/storage/ca",
 			ReadOnly:  true,
 		},
 		{
-			Name:      "storage-cert",
+			Name:      "custom-cert",
 			MountPath: "/var/run/tls/storage/cert",
 			ReadOnly:  true,
 		},
@@ -325,7 +325,7 @@ func TestStatefulsetS3TLSStorage(t *testing.T) {
 			},
 		},
 		{
-			Name: "storage-ca",
+			Name: "custom-ca",
 			VolumeSource: corev1.VolumeSource{
 				ConfigMap: &corev1.ConfigMapVolumeSource{
 					LocalObjectReference: corev1.LocalObjectReference{
@@ -335,7 +335,7 @@ func TestStatefulsetS3TLSStorage(t *testing.T) {
 			},
 		},
 		{
-			Name: "storage-cert",
+			Name: "custom-cert",
 			VolumeSource: corev1.VolumeSource{
 				Secret: &corev1.SecretVolumeSource{
 					SecretName: "custom-cert",
@@ -409,12 +409,12 @@ func TestStatefulsetReceiverTLS(t *testing.T) {
 			MountPath: "/var/tempo",
 		},
 		{
-			Name:      "receiver-tls-grpc-ca",
+			Name:      "custom-ca",
 			MountPath: "/var/run/ca-receiver",
 			ReadOnly:  true,
 		},
 		{
-			Name:      "receiver-tls-grpc-cert",
+			Name:      "custom-cert",
 			MountPath: "/var/run/tls/receiver",
 			ReadOnly:  true,
 		},
@@ -440,7 +440,7 @@ func TestStatefulsetReceiverTLS(t *testing.T) {
 			},
 		},
 		{
-			Name: "receiver-tls-grpc-ca",
+			Name: "custom-ca",
 			VolumeSource: corev1.VolumeSource{
 				ConfigMap: &corev1.ConfigMapVolumeSource{
 					LocalObjectReference: corev1.LocalObjectReference{
@@ -450,7 +450,7 @@ func TestStatefulsetReceiverTLS(t *testing.T) {
 			},
 		},
 		{
-			Name: "receiver-tls-grpc-cert",
+			Name: "custom-cert",
 			VolumeSource: corev1.VolumeSource{
 				Secret: &corev1.SecretVolumeSource{
 					SecretName: "custom-cert",

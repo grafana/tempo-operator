@@ -162,7 +162,7 @@ func statefulSet(params manifestutils.Params) (*v1.StatefulSet, error) {
 		},
 	}
 
-	err := manifestutils.ConfigureStorage(tempo, &ss.Spec.Template.Spec)
+	err := manifestutils.ConfigureStorage(tempo, &ss.Spec.Template.Spec, "tempo")
 	if err != nil {
 		return nil, err
 	}
