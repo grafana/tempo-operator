@@ -1,6 +1,9 @@
 package v1alpha1
 
-import corev1 "k8s.io/api/core/v1"
+import (
+	corev1 "k8s.io/api/core/v1"
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+)
 
 // PodStatusMap defines the type for mapping pod status to pod name.
 type PodStatusMap map[corev1.PodPhase][]string
@@ -32,4 +35,14 @@ type TLSSpec struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Min TLS Version"
 	MinVersion string `json:"minVersion,omitempty"`
+}
+
+// ExtraConfigSpec defines extra configurations for tempo that will be merged with the operator generated, configurations defined here
+// has precedence and could override generated config.
+type ExtraConfigSpec struct {
+	// Tempo defines any extra Tempo configuration, which will be merged with the operator's generated Tempo configuration
+	//
+	// +optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tempo Extra Configurations"
+	Tempo apiextensionsv1.JSON `json:"tempo,omitempty"`
 }

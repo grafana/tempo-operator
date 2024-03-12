@@ -73,8 +73,8 @@ metadata:
       ]
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
-    containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.8.0
-    createdAt: "2024-03-05T16:17:14Z"
+    containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.9.0
+    createdAt: "2024-03-11T16:43:35Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -83,7 +83,7 @@ metadata:
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     repository: https://github.com/grafana/tempo-operator
     support: Grafana Tempo Operator SIG
-  name: tempo-operator.v0.8.0
+  name: tempo-operator.v0.9.0
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -103,7 +103,13 @@ spec:
       - kind: Route
         name: ""
         version: v1
+      - kind: Secret
+        name: ""
+        version: v1
       - kind: Service
+        name: ""
+        version: v1
+      - kind: ServiceAccount
         name: ""
         version: v1
       - kind: StatefulSet
@@ -189,7 +195,7 @@ spec:
           For in-memory storage, this defines the size of the tmpfs volume. For persistent
           volume storage, this defines the size of the persistent volume. For object
           storage, this defines the size of the persistent volume containing the Write-Ahead
-          Log (WAL) of Tempo. Default: 10Gi.'
+          Log (WAL) of Tempo. Default: 2Gi for memory, 10Gi for all other backends.'
         displayName: Size
         path: storage.traces.size
         x-descriptors:
@@ -291,7 +297,7 @@ spec:
       - description: Host defines the hostname of the Route object.
         displayName: Hostname
         path: jaegerui.route.host
-      - description: 'Termination specifies the termination type. Default: edge.'
+      - description: Termination specifies the termination type.
         displayName: TLS Termination
         path: jaegerui.route.termination
       - description: 'ManagementState defines whether this instance is managed by
@@ -300,6 +306,71 @@ spec:
         path: management
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:advanced
+      - description: Multitenancy defines the multi-tenancy configuration.
+        displayName: Multi-Tenancy
+        path: multitenancy
+      - description: Authentication defines the tempo-gateway component authentication
+          configuration spec per tenant.
+        displayName: Authentication
+        path: multitenancy.authentication
+      - description: OIDC defines the spec for the OIDC tenant's authentication.
+        displayName: OIDC Configuration
+        path: multitenancy.authentication[0].oidc
+      - description: IssuerURL defines the URL for issuer.
+        displayName: Issuer URL
+        path: multitenancy.authentication[0].oidc.issuerURL
+      - description: RedirectURL defines the URL for redirect.
+        displayName: Redirect URL
+        path: multitenancy.authentication[0].oidc.redirectURL
+      - description: Secret defines the spec for the clientID, clientSecret and issuerCAPath
+          for tenant's authentication.
+        displayName: Tenant Secret
+        path: multitenancy.authentication[0].oidc.secret
+      - description: Name of a secret in the namespace configured for tenant secrets.
+        displayName: Tenant Secret Name
+        path: multitenancy.authentication[0].oidc.secret.name
+        x-descriptors:
+        - urn:alm:descriptor:io.kubernetes:Secret
+      - description: TenantID defines a universally unique identifier of the tenant.
+          Unlike the tenantName, which must be unique at a given time, the tenantId
+          must be unique over the entire lifetime of the Tempo deployment. Tempo uses
+          this ID to prefix objects in the object storage.
+        displayName: Tenant ID
+        path: multitenancy.authentication[0].tenantId
+      - description: TenantName defines a human readable, unique name of the tenant.
+          The value of this field must be specified in the X-Scope-OrgID header and
+          in the resources field of a ClusterRole to identify the tenant.
+        displayName: Tenant Name
+        path: multitenancy.authentication[0].tenantName
+      - description: Authorization defines the tempo-gateway component authorization
+          configuration spec per tenant.
+        displayName: Authorization
+        path: multitenancy.authorization
+      - description: RoleBindings defines configuration to bind a set of roles to
+          a set of subjects.
+        displayName: Static Role Bindings
+        path: multitenancy.authorization.roleBindings
+      - description: Roles defines a set of permissions to interact with a tenant.
+        displayName: Static Roles
+        path: multitenancy.authorization.roles
+      - description: Enabled defines if multi-tenancy is enabled.
+        displayName: Enabled
+        path: multitenancy.enabled
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
+      - description: Mode defines the multitenancy mode.
+        displayName: Mode
+        path: multitenancy.mode
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:select:static
+        - urn:alm:descriptor:com.tectonic.ui:select:openshift
+      - description: Resources defines the compute resource requirements of the gateway
+          container. The gateway performs authentication and authorization of incoming
+          requests when multi-tenancy is enabled.
+        displayName: Resources
+        path: multitenancy.resources
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:resourceRequirements
       - description: NodeSelector defines which labels are required by a node to schedule
           the pod onto it.
         displayName: Node Selector
@@ -1249,7 +1320,7 @@ spec:
                   value: quay.io/observatorium/api:main-2024-01-16-162bfad
                 - name: RELATED_IMAGE_TEMPO_GATEWAY_OPA
                   value: quay.io/observatorium/opa-openshift:main-2023-11-15-8ed318e
-                image: ghcr.io/grafana/tempo-operator/tempo-operator:v0.8.0
+                image: ghcr.io/grafana/tempo-operator/tempo-operator:v0.9.0
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -1406,7 +1477,7 @@ spec:
     name: tempo-gateway
   - image: quay.io/observatorium/opa-openshift:main-2023-11-15-8ed318e
     name: tempo-gateway-opa
-  version: 0.8.0
+  version: 0.9.0
   webhookdefinitions:
   - admissionReviewVersions:
     - v1
