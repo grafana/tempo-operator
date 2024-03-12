@@ -23,6 +23,11 @@ func ServiceFqdn(namespace string, tempoStackName string, component string) stri
 	return fmt.Sprintf("%s.%s.svc.cluster.local", Name(component, tempoStackName), namespace)
 }
 
+// RouteFqdn returns the fully qualified domain name of an ingress.
+func RouteFqdn(namespace string, tempoStackName string, component string, baseDomain string) string {
+	return fmt.Sprintf("%s-%s.%s", Name(component, tempoStackName), namespace, baseDomain)
+}
+
 // DefaultServiceAccountName returns the name of the default tempo service account to use.
 func DefaultServiceAccountName(name string) string {
 	return Name("", name)

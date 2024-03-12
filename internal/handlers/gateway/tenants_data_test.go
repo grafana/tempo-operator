@@ -47,7 +47,7 @@ func TestGetGatewayTenantsData(t *testing.T) {
 			Namespace: namespace.Name,
 		},
 	}
-	tenantsData, err := GetGatewayTenantsData(context.Background(), k8sClient, tempo)
+	tenantsData, err := GetGatewayTenantsData(context.Background(), k8sClient, tempo.Namespace, tempo.Name)
 	require.NoError(t, err)
 	require.Equal(t, 2, len(tenantsData))
 	assert.Equal(t, &manifestutils.GatewayTenantsData{

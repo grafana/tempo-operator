@@ -1159,7 +1159,7 @@ func TestValidateTenantConfigs(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			err := ValidateTenantConfigs(tc.input)
+			err := ValidateTenantConfigs(tc.input.Spec.Tenants, tc.input.Spec.Template.Gateway.Enabled)
 			assert.Equal(t, tc.wantErr, err)
 		})
 	}

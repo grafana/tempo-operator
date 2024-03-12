@@ -631,3 +631,52 @@ func TestStatefulsetSchedulingRules(t *testing.T) {
 		},
 	}, sts.Spec.Template.Spec.Affinity)
 }
+
+func TestStatefulsetCustomServiceAccount(t *testing.T) {
+	opts := Options{
+		CtrlConfig: configv1alpha1.ProjectConfig{
+			DefaultImages: configv1alpha1.ImagesSpec{
+				Tempo: "docker.io/grafana/tempo:x.y.z",
+			},
+		},
+		Tempo: v1alpha1.TempoMonolithic{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "sample",
+				Namespace: "default",
+			},
+			Spec: v1alpha1.TempoMonolithicSpec{
+				Storage: &v1alpha1.MonolithicStorageSpec{
+					Traces: v1alpha1.MonolithicTracesStorageSpec{
+						Backend: "memory",
+					},
+				},
+			},
+		},
+	}
+
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{
+			name:     "no custom serviceaccount",
+			input:    "",
+			expected: "tempo-sample",
+		},
+		{
+			name:     "custom serviceaccount",
+			input:    "custom-sa",
+			expected: "custom-sa",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			opts.Tempo.Spec.ServiceAccount = test.input
+			sts, err := BuildTempoStatefulset(opts)
+			require.NoError(t, err)
+			require.Equal(t, test.expected, sts.Spec.Template.Spec.ServiceAccountName)
+		})
+	}
+}

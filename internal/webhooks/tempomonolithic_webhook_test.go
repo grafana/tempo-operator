@@ -238,6 +238,31 @@ func TestMonolithicValidate(t *testing.T) {
 			errors:   field.ErrorList{},
 		},
 
+		// service account
+		{
+			name: "custom service account set, however multi-tenancy is enabled with OpenShift mode",
+			tempo: v1alpha1.TempoMonolithic{
+				Spec: v1alpha1.TempoMonolithicSpec{
+					ServiceAccount: "abc",
+					Multitenancy: &v1alpha1.MonolithicMultitenancySpec{
+						Enabled: true,
+						TenantsSpec: v1alpha1.TenantsSpec{
+							Mode: v1alpha1.ModeOpenShift,
+							Authentication: []v1alpha1.AuthenticationSpec{{
+								TenantName: "abc",
+							}},
+						},
+					},
+				},
+			},
+			warnings: admission.Warnings{},
+			errors: field.ErrorList{field.Invalid(
+				field.NewPath("spec", "serviceAccount"),
+				"abc",
+				"custom ServiceAccount is not supported if multi-tenancy with OpenShift mode is enabled",
+			)},
+		},
+
 		// extra config
 		{
 			name: "extra config warning",

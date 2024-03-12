@@ -11,20 +11,25 @@ import (
 	networkingv1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
-	"github.com/grafana/tempo-operator/internal/handlers/gateway"
 	"github.com/grafana/tempo-operator/internal/handlers/storage"
 	"github.com/grafana/tempo-operator/internal/manifests"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/status"
 	"github.com/grafana/tempo-operator/internal/tlsprofile"
-	"github.com/grafana/tempo-operator/internal/webhooks"
 )
 
 func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, log logr.Logger, tempo v1alpha1.TempoStack) error {
-	storageConfig, errs := storage.GetStorageParamsForTempoStack(ctx, r.Client, tempo)
+	params := manifestutils.Params{
+		Tempo:      tempo,
+		CtrlConfig: r.CtrlConfig,
+	}
+
+	var errs field.ErrorList
+	params.StorageParams, errs = storage.GetStorageParamsForTempoStack(ctx, r.Client, tempo)
 	if len(errs) > 0 {
 		return &status.ConfigurationError{
 			Reason:  v1alpha1.ReasonInvalidStorageConfig,
@@ -32,23 +37,16 @@ func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, log logr.Logg
 		}
 	}
 
-	if err := webhooks.ValidateTenantConfigs(tempo); err != nil {
-		return &status.ConfigurationError{
-			Message: fmt.Sprintf("Invalid tenants configuration: %s", err),
-			Reason:  v1alpha1.ReasonInvalidTenantsConfiguration,
-		}
-	}
-
-	if tempo.Spec.Tenants != nil && tempo.Spec.Tenants.Mode == v1alpha1.ModeOpenShift && r.CtrlConfig.Gates.OpenShift.BaseDomain == "" {
-		domain, err := gateway.GetOpenShiftBaseDomain(ctx, r.Client)
+	if tempo.Spec.Tenants != nil {
+		var err error
+		params.GatewayTenantSecret, params.GatewayTenantsData, err = getTenantParams(ctx, r.Client, &r.CtrlConfig, tempo.Namespace, tempo.Name, *tempo.Spec.Tenants, tempo.Spec.Template.Gateway.Enabled)
 		if err != nil {
 			return err
 		}
-		log.Info("OpenShift base domain set", "openshift-base-domain", domain)
-		r.CtrlConfig.Gates.OpenShift.BaseDomain = domain
 	}
 
-	tlsProfile, err := tlsprofile.Get(ctx, r.CtrlConfig.Gates, r.Client, log)
+	var err error
+	params.TLSProfile, err = tlsprofile.Get(ctx, r.CtrlConfig.Gates, r.Client, log)
 	if err != nil {
 		switch err {
 		case tlsprofile.ErrGetProfileFromCluster:
@@ -63,31 +61,7 @@ func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, log logr.Logg
 
 	}
 
-	var tenantSecrets []*manifestutils.GatewayTenantOIDCSecret
-	if tempo.Spec.Tenants != nil && tempo.Spec.Tenants.Mode == v1alpha1.ModeStatic {
-		tenantSecrets, err = gateway.GetOIDCTenantSecrets(ctx, r.Client, tempo)
-		if err != nil {
-			return err
-		}
-	}
-
-	var gatewayTenantsData []*manifestutils.GatewayTenantsData
-	if tempo.Spec.Tenants != nil && tempo.Spec.Tenants.Mode == v1alpha1.ModeOpenShift {
-		gatewayTenantsData, err = gateway.GetGatewayTenantsData(ctx, r.Client, tempo)
-		if err != nil {
-			// just log the error the secret is not created if the loop for an instance runs for the first time.
-			log.Info("Failed to get gateway secret and/or tenants.yaml", "error", err)
-		}
-	}
-
-	managedObjects, err := manifests.BuildAll(manifestutils.Params{
-		Tempo:               tempo,
-		StorageParams:       storageConfig,
-		CtrlConfig:          r.CtrlConfig,
-		TLSProfile:          tlsProfile,
-		GatewayTenantSecret: tenantSecrets,
-		GatewayTenantsData:  gatewayTenantsData,
-	})
+	managedObjects, err := manifests.BuildAll(params)
 	// TODO (pavolloffay) check error type and change return appropriately
 	if err != nil {
 		return fmt.Errorf("error building manifests: %w", err)
