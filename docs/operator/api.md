@@ -5637,6 +5637,27 @@ Kubernetes core/v1.ResourceRequirements
 
 <td>
 
+<code>serviceAccount</code><br/>
+
+<em>
+
+string
+
+</em>
+
+</td>
+
+<td>
+
+<p>ServiceAccount defines the Service Account to use for all Tempo components.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
 <code>management</code><br/>
 
 <em>

@@ -5,14 +5,17 @@ import (
 	"fmt"
 	"strings"
 
+	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 
 	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
+	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	tempov1alpha1 "github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/handlers/storage"
 )
@@ -85,6 +88,7 @@ func (v *monolithicValidator) validateTempoMonolithic(ctx context.Context, tempo
 	addValidationResults(v.validateStorage(ctx, tempo))
 	errors = append(errors, v.validateJaegerUI(tempo)...)
 	errors = append(errors, v.validateObservability(tempo)...)
+	errors = append(errors, v.validateServiceAccount(ctx, tempo)...)
 	warnings = append(warnings, v.validateExtraConfig(tempo)...)
 
 	return warnings, errors
@@ -181,6 +185,32 @@ func (v *monolithicValidator) validateObservability(tempo tempov1alpha1.TempoMon
 				"the grafanaOperator feature gate must be enabled to create a data source for Tempo",
 			)}
 		}
+	}
+
+	return nil
+}
+
+func (v *monolithicValidator) validateServiceAccount(ctx context.Context, tempo tempov1alpha1.TempoMonolithic) field.ErrorList {
+	if tempo.Spec.ServiceAccount == "" {
+		return nil
+	}
+
+	if tempo.Spec.Multitenancy.IsGatewayEnabled() && tempo.Spec.Multitenancy.Mode == v1alpha1.ModeOpenShift {
+		return field.ErrorList{field.Invalid(
+			field.NewPath("spec").Child("serviceAccount"),
+			tempo.Spec.ServiceAccount,
+			"custom ServiceAccount is not supported if multi-tenancy with OpenShift mode is enabled",
+		)}
+	}
+
+	serviceAccount := &corev1.ServiceAccount{}
+	err := v.client.Get(ctx, types.NamespacedName{Namespace: tempo.Namespace, Name: tempo.Spec.ServiceAccount}, serviceAccount)
+	if err != nil {
+		return field.ErrorList{field.Invalid(
+			field.NewPath("spec").Child("serviceAccount"),
+			tempo.Spec.ServiceAccount,
+			err.Error(),
+		)}
 	}
 
 	return nil

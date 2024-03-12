@@ -172,6 +172,7 @@ func (r *TempoMonolithicReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		For(&v1alpha1.TempoMonolithic{}).
 		Owns(&corev1.ConfigMap{}).
 		Owns(&corev1.Service{}).
+		Owns(&corev1.ServiceAccount{}).
 		Owns(&appsv1.StatefulSet{}).
 		Owns(&networkingv1.Ingress{})
 

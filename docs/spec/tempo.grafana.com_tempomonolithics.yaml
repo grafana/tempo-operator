@@ -97,6 +97,7 @@ spec:                                    # TempoMonolithicSpec defines the desir
         enabled: false                   # Enabled defines if PrometheusRule objects should be created for this Tempo deployment.
       serviceMonitors:                   # ServiceMonitors defines the ServiceMonitor configuration.
         enabled: false                   # Enabled defines if ServiceMonitor objects should be created for this Tempo deployment.
+  serviceAccount: ""                     # ServiceAccount defines the Service Account to use for all Tempo components.
   storage:                               # Storage defines the storage configuration.
     traces:                              # Traces defines the storage configuration for traces.
       azure:                             # Azure defines the configuration for Azure Storage.

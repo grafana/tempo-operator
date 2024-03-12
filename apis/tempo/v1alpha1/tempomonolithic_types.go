@@ -44,6 +44,12 @@ type TempoMonolithicSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Resources",order=5,xDescriptors="urn:alm:descriptor:com.tectonic.ui:resourceRequirements"
 	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 
+	// ServiceAccount defines the Service Account to use for all Tempo components.
+	//
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Service Account",xDescriptors="urn:alm:descriptor:com.tectonic.ui:advanced"
+	ServiceAccount string `json:"serviceAccount,omitempty"`
+
 	// ManagementState defines whether this instance is managed by the operator or self-managed.
 	// Default: Managed.
 	//
