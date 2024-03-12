@@ -25,7 +25,9 @@ const (
 	HttpPortName = "http"
 	// PortHTTPServer declares the port number of the tempo http port.
 	PortHTTPServer = 3200
-	// PortInternalHTTPServer declares the port number of the tempo http port.
+	// TempoInternalServerPortName declares the name of the internal Tempo HTTP Server (for healthchecks).
+	TempoInternalServerPortName = "tempo-internal"
+	// PortInternalHTTPServer declares the port number of the internal tempo http port.
 	PortInternalHTTPServer = 3101
 	// PortJaegerQuery declares the port number of the jaeger query UI port.
 	PortJaegerQuery = 16686

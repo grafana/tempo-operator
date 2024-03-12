@@ -10,6 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/utils/ptr"
 
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
@@ -76,8 +77,18 @@ func BuildTempoStatefulset(opts Options) (*appsv1.StatefulSet, error) {
 									ReadOnly:  true,
 								},
 							},
-							Ports:           buildTempoPorts(opts),
-							ReadinessProbe:  manifestutils.TempoReadinessProbe(false),
+							Ports: buildTempoContainerPorts(opts),
+							ReadinessProbe: &corev1.Probe{
+								ProbeHandler: corev1.ProbeHandler{
+									HTTPGet: &corev1.HTTPGetAction{
+										Scheme: corev1.URISchemeHTTP,
+										Path:   manifestutils.TempoReadinessPath,
+										Port:   intstr.FromString(manifestutils.TempoInternalServerPortName),
+									},
+								},
+								InitialDelaySeconds: 15,
+								TimeoutSeconds:      1,
+							},
 							SecurityContext: manifestutils.TempoContainerSecurityContext(),
 							Resources:       ptr.Deref(tempo.Spec.Resources, corev1.ResourceRequirements{}),
 						},
@@ -163,12 +174,17 @@ func buildAffinity(scheduler *v1alpha1.MonolithicSchedulerSpec, labels labels.Se
 	return manifestutils.DefaultAffinity(labels)
 }
 
-func buildTempoPorts(opts Options) []corev1.ContainerPort {
+func buildTempoContainerPorts(opts Options) []corev1.ContainerPort {
 	tempo := opts.Tempo
 	ports := []corev1.ContainerPort{
 		{
 			Name:          manifestutils.HttpPortName,
 			ContainerPort: manifestutils.PortHTTPServer,
+			Protocol:      corev1.ProtocolTCP,
+		},
+		{
+			Name:          manifestutils.TempoInternalServerPortName,
+			ContainerPort: manifestutils.PortInternalHTTPServer,
 			Protocol:      corev1.ProtocolTCP,
 		},
 	}

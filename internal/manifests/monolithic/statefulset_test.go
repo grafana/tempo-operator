@@ -9,6 +9,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/utils/ptr"
 
 	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
@@ -110,12 +111,27 @@ func TestStatefulsetMemoryStorage(t *testing.T) {
 									Protocol:      corev1.ProtocolTCP,
 								},
 								{
+									Name:          "tempo-internal",
+									ContainerPort: 3101,
+									Protocol:      corev1.ProtocolTCP,
+								},
+								{
 									Name:          "otlp-grpc",
 									ContainerPort: 4317,
 									Protocol:      corev1.ProtocolTCP,
 								},
 							},
-							ReadinessProbe:  manifestutils.TempoReadinessProbe(false),
+							ReadinessProbe: &corev1.Probe{
+								ProbeHandler: corev1.ProbeHandler{
+									HTTPGet: &corev1.HTTPGetAction{
+										Scheme: corev1.URISchemeHTTP,
+										Path:   "/ready",
+										Port:   intstr.FromString("tempo-internal"),
+									},
+								},
+								InitialDelaySeconds: 15,
+								TimeoutSeconds:      1,
+							},
 							SecurityContext: manifestutils.TempoContainerSecurityContext(),
 							Resources: corev1.ResourceRequirements{
 								Requests: corev1.ResourceList{
@@ -496,6 +512,11 @@ func TestStatefulsetPorts(t *testing.T) {
 					ContainerPort: 3200,
 					Protocol:      corev1.ProtocolTCP,
 				},
+				{
+					Name:          "tempo-internal",
+					ContainerPort: 3101,
+					Protocol:      corev1.ProtocolTCP,
+				},
 			},
 		},
 		{
@@ -511,6 +532,11 @@ func TestStatefulsetPorts(t *testing.T) {
 				{
 					Name:          "http",
 					ContainerPort: 3200,
+					Protocol:      corev1.ProtocolTCP,
+				},
+				{
+					Name:          "tempo-internal",
+					ContainerPort: 3101,
 					Protocol:      corev1.ProtocolTCP,
 				},
 				{
@@ -533,6 +559,11 @@ func TestStatefulsetPorts(t *testing.T) {
 				{
 					Name:          "http",
 					ContainerPort: 3200,
+					Protocol:      corev1.ProtocolTCP,
+				},
+				{
+					Name:          "tempo-internal",
+					ContainerPort: 3101,
 					Protocol:      corev1.ProtocolTCP,
 				},
 				{
