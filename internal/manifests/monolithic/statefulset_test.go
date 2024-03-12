@@ -54,11 +54,10 @@ func TestStatefulsetMemoryStorage(t *testing.T) {
 			},
 		},
 	}
-	sts, err := BuildTempoStatefulset(opts)
+	sts, err := BuildTempoStatefulset(opts, map[string]string{"tempo.grafana.com/tempoConfig.hash": "abc"})
 	require.NoError(t, err)
 
 	labels := ComponentLabels(manifestutils.TempoMonolithComponentName, "sample")
-	annotations := manifestutils.CommonAnnotations("")
 	require.Equal(t, &appsv1.StatefulSet{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "apps/v1",
@@ -76,8 +75,10 @@ func TestStatefulsetMemoryStorage(t *testing.T) {
 			PodManagementPolicy: appsv1.ParallelPodManagement,
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      labels,
-					Annotations: annotations,
+					Labels: labels,
+					Annotations: map[string]string{
+						"tempo.grafana.com/tempoConfig.hash": "abc",
+					},
 				},
 				Spec: corev1.PodSpec{
 					ServiceAccountName: "tempo-sample",
@@ -135,7 +136,7 @@ func TestStatefulsetMemoryStorage(t *testing.T) {
 							VolumeSource: corev1.VolumeSource{
 								ConfigMap: &corev1.ConfigMapVolumeSource{
 									LocalObjectReference: corev1.LocalObjectReference{
-										Name: "tempo-sample",
+										Name: "tempo-sample-config",
 									},
 								},
 							},
@@ -177,7 +178,7 @@ func TestStatefulsetPVStorage(t *testing.T) {
 			},
 		},
 	}
-	sts, err := BuildTempoStatefulset(opts)
+	sts, err := BuildTempoStatefulset(opts, map[string]string{})
 	require.NoError(t, err)
 
 	require.Equal(t, []corev1.VolumeMount{
@@ -198,7 +199,7 @@ func TestStatefulsetPVStorage(t *testing.T) {
 			VolumeSource: corev1.VolumeSource{
 				ConfigMap: &corev1.ConfigMapVolumeSource{
 					LocalObjectReference: corev1.LocalObjectReference{
-						Name: "tempo-sample",
+						Name: "tempo-sample-config",
 					},
 				},
 			},
@@ -255,7 +256,7 @@ func TestStatefulsetS3TLSStorage(t *testing.T) {
 			},
 		},
 	}
-	sts, err := BuildTempoStatefulset(opts)
+	sts, err := BuildTempoStatefulset(opts, map[string]string{})
 	require.NoError(t, err)
 
 	require.Equal(t, []corev1.VolumeMount{
@@ -319,7 +320,7 @@ func TestStatefulsetS3TLSStorage(t *testing.T) {
 			VolumeSource: corev1.VolumeSource{
 				ConfigMap: &corev1.ConfigMapVolumeSource{
 					LocalObjectReference: corev1.LocalObjectReference{
-						Name: "tempo-sample",
+						Name: "tempo-sample-config",
 					},
 				},
 			},
@@ -395,7 +396,7 @@ func TestStatefulsetReceiverTLS(t *testing.T) {
 			},
 		},
 	}
-	sts, err := BuildTempoStatefulset(opts)
+	sts, err := BuildTempoStatefulset(opts, map[string]string{})
 	require.NoError(t, err)
 
 	require.Equal(t, []corev1.VolumeMount{
@@ -426,7 +427,7 @@ func TestStatefulsetReceiverTLS(t *testing.T) {
 			VolumeSource: corev1.VolumeSource{
 				ConfigMap: &corev1.ConfigMapVolumeSource{
 					LocalObjectReference: corev1.LocalObjectReference{
-						Name: "tempo-sample",
+						Name: "tempo-sample-config",
 					},
 				},
 			},
@@ -547,7 +548,7 @@ func TestStatefulsetPorts(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			opts.Tempo.Spec.Ingestion = test.input
-			sts, err := BuildTempoStatefulset(opts)
+			sts, err := BuildTempoStatefulset(opts, map[string]string{})
 			require.NoError(t, err)
 			require.Equal(t, test.expected, sts.Spec.Template.Spec.Containers[0].Ports)
 		})
@@ -601,7 +602,7 @@ func TestStatefulsetSchedulingRules(t *testing.T) {
 			},
 		},
 	}
-	sts, err := BuildTempoStatefulset(opts)
+	sts, err := BuildTempoStatefulset(opts, map[string]string{})
 	require.NoError(t, err)
 
 	require.Equal(t, map[string]string{
@@ -674,7 +675,7 @@ func TestStatefulsetCustomServiceAccount(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			opts.Tempo.Spec.ServiceAccount = test.input
-			sts, err := BuildTempoStatefulset(opts)
+			sts, err := BuildTempoStatefulset(opts, map[string]string{})
 			require.NoError(t, err)
 			require.Equal(t, test.expected, sts.Spec.Template.Spec.ServiceAccountName)
 		})
