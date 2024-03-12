@@ -10,8 +10,10 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
+	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
@@ -22,15 +24,21 @@ const (
 	gatewayOPAInternalPort = 8083
 )
 
+// BuildServiceAccountAnnotations returns the annotations to use a ServiceAccount as an OAuth client.
+func BuildServiceAccountAnnotations(tenants v1alpha1.TenantsSpec, routeName string) map[string]string {
+	annotations := map[string]string{}
+	for _, tenantAuth := range tenants.Authentication {
+		key := fmt.Sprintf("serviceaccounts.openshift.io/oauth-redirectreference.%s", tenantAuth.TenantName)
+		val := fmt.Sprintf(`{"kind":"OAuthRedirectReference","apiVersion":"v1","reference":{"kind":"Route","name":"%s"}}`, routeName)
+		annotations[key] = val
+	}
+	return annotations
+}
+
 func serviceAccount(tempo v1alpha1.TempoStack) *corev1.ServiceAccount {
 	tt := true
 	labels := manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name)
-	annotations := map[string]string{}
-	for _, tenantAuth := range tempo.Spec.Tenants.Authentication {
-		key := fmt.Sprintf("serviceaccounts.openshift.io/oauth-redirectreference.%s", tenantAuth.TenantName)
-		val := fmt.Sprintf(`{"kind":"OAuthRedirectReference","apiVersion":"v1","reference":{"kind":"Route","name":"%s"}}`, naming.Name(manifestutils.GatewayComponentName, tempo.Name))
-		annotations[key] = val
-	}
+	annotations := BuildServiceAccountAnnotations(*tempo.Spec.Tenants, naming.Name(manifestutils.GatewayComponentName, tempo.Name))
 	return &corev1.ServiceAccount{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        naming.Name(manifestutils.GatewayComponentName, tempo.Name),
@@ -42,11 +50,12 @@ func serviceAccount(tempo v1alpha1.TempoStack) *corev1.ServiceAccount {
 	}
 }
 
-func clusterRole(tempo v1alpha1.TempoStack) *rbacv1.ClusterRole {
+// NewAccessReviewClusterRole creates a ClusterRole for tokenreviews and subjectaccessreviews.
+func NewAccessReviewClusterRole(name string, labels labels.Set) *rbacv1.ClusterRole {
 	return &rbacv1.ClusterRole{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:   naming.Name(manifestutils.GatewayComponentName, tempo.Name),
-			Labels: manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name),
+			Name:   name,
+			Labels: labels,
 		},
 		Rules: []rbacv1.PolicyRule{
 			{
@@ -63,22 +72,23 @@ func clusterRole(tempo v1alpha1.TempoStack) *rbacv1.ClusterRole {
 	}
 }
 
-func clusterRoleBinding(tempo v1alpha1.TempoStack) *rbacv1.ClusterRoleBinding {
+// NewAccessReviewClusterRoleBinding creates a ClusterRoleBinding for the ClusterRole created by NewAccessReviewClusterRole().
+func NewAccessReviewClusterRoleBinding(name string, labels labels.Set, saNamespace string, saName string) *rbacv1.ClusterRoleBinding {
 	return &rbacv1.ClusterRoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:   naming.Name(manifestutils.GatewayComponentName, tempo.Name),
-			Labels: manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name),
+			Name:   name,
+			Labels: labels,
 		},
 		Subjects: []rbacv1.Subject{
 			{
-				Name:      naming.Name(manifestutils.GatewayComponentName, tempo.Name),
+				Name:      saName,
 				Kind:      "ServiceAccount",
-				Namespace: tempo.Namespace,
+				Namespace: saNamespace,
 			},
 		},
 		RoleRef: rbacv1.RoleRef{
 			Kind:     "ClusterRole",
-			Name:     naming.Name(manifestutils.GatewayComponentName, tempo.Name),
+			Name:     name,
 			APIGroup: "rbac.authorization.k8s.io",
 		},
 	}
@@ -197,7 +207,7 @@ func patchOCPServiceAccount(tempo v1alpha1.TempoStack, dep *v1.Deployment) *v1.D
 
 func patchOCPOPAContainer(params manifestutils.Params, dep *v1.Deployment) (*v1.Deployment, error) {
 	pod := corev1.PodSpec{
-		Containers: []corev1.Container{opaContainer(params)},
+		Containers: []corev1.Container{NewOpaContainer(params.CtrlConfig, *params.Tempo.Spec.Tenants, "tempostack")},
 	}
 	err := mergo.Merge(&dep.Spec.Template.Spec, pod, mergo.WithAppendSlice)
 	if err != nil {
@@ -206,27 +216,23 @@ func patchOCPOPAContainer(params manifestutils.Params, dep *v1.Deployment) (*v1.
 	return dep, err
 }
 
-func opaContainer(params manifestutils.Params) corev1.Container {
-	image := params.Tempo.Spec.Images.TempoGatewayOpa
-	if image == "" {
-		image = params.CtrlConfig.DefaultImages.TempoGatewayOpa
-	}
-
+// NewOpaContainer creates an OPA (https://github.com/observatorium/opa-openshift) container.
+func NewOpaContainer(ctrlConfig configv1alpha1.ProjectConfig, tenants v1alpha1.TenantsSpec, opaPackage string) corev1.Container {
 	var args = []string{
 		"--log.level=warn",
 		"--opa.admin-groups=system:cluster-admins,cluster-admin,dedicated-admin",
 		fmt.Sprintf("--web.listen=:%d", gatewayOPAHTTPPort),
 		fmt.Sprintf("--web.internal.listen=:%d", gatewayOPAInternalPort),
 		fmt.Sprintf("--web.healthchecks.url=http://localhost:%d", gatewayOPAHTTPPort),
-		fmt.Sprintf("--opa.package=%s", "tempostack"),
+		fmt.Sprintf("--opa.package=%s", opaPackage),
 	}
-	for _, t := range params.Tempo.Spec.Tenants.Authentication {
+	for _, t := range tenants.Authentication {
 		args = append(args, fmt.Sprintf(`--openshift.mappings=%s=%s`, t.TenantName, "tempo.grafana.com"))
 	}
 
 	return corev1.Container{
-		Name:  "opa",
-		Image: image,
+		Name:  fmt.Sprintf("%s-opa", containerNameTempoGateway),
+		Image: ctrlConfig.DefaultImages.TempoGatewayOpa,
 		Args:  args,
 		Ports: []corev1.ContainerPort{
 			{

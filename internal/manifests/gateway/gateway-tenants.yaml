@@ -6,11 +6,11 @@ tenants:
   id: {{ $spec.TenantID }}
 {{- if eq $opt.Tenants.Mode "openshift" }}
   openshift:
-    serviceAccount: tempo-{{ $opt.Name }}-gateway
-    redirectURL: https://tempo-{{ $opt.Name}}-gateway-{{ $opt.Namespace }}.{{ $opt.BaseDomain }}/openshift/{{ $spec.TenantName }}/callback
+    serviceAccount: {{ $opt.ServiceAccount }}
+    redirectURL: {{ $spec.RedirectURL }}
     cookieSecret: {{ $spec.OpenShiftCookieSecret }}
   opa:
-    url: http://localhost:8082/v1/data/tempostack/allow
+    url: {{ $opt.OPAUrl }}
     withAccessToken: true
 {{- end -}}
 {{- if $spec.OIDC }}
