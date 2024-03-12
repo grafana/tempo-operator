@@ -26,7 +26,7 @@ func BuildAll(opts Options) ([]client.Object, error) {
 	}
 	manifests = append(manifests, statefulSet)
 
-	manifests = append(manifests, BuildTempoService(opts))
+	manifests = append(manifests, BuildServices(opts)...)
 
 	if tempo.Spec.JaegerUI != nil && tempo.Spec.JaegerUI.Enabled {
 		if tempo.Spec.JaegerUI.Ingress != nil && tempo.Spec.JaegerUI.Ingress.Enabled {
