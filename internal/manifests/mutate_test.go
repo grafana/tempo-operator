@@ -81,6 +81,35 @@ func TestGetMutateFunc_MutateConfigMap(t *testing.T) {
 	require.Equal(t, got.Data, want.Data)
 }
 
+func TestGetMutateFunc_MutateConfigMapServingCABundle(t *testing.T) {
+	existing := &corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Annotations: map[string]string{
+				"service.beta.openshift.io/inject-cabundle": "true",
+			},
+		},
+		Data: map[string]string{"service-ca.crt": "abc"},
+	}
+
+	desired := &corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Annotations: map[string]string{
+				"service.beta.openshift.io/inject-cabundle": "true",
+			},
+		},
+		Data: map[string]string{},
+	}
+
+	f := manifests.MutateFuncFor(existing, desired)
+	err := f()
+	require.NoError(t, err)
+
+	// Ensure service-ca.crt did not get removed
+	require.Equal(t, existing.Labels, desired.Labels)
+	require.Equal(t, existing.Annotations, desired.Annotations)
+	require.Contains(t, existing.Data, "service-ca.crt")
+}
+
 func TestGetMutateFunc_MutateSecert(t *testing.T) {
 	got := &corev1.Secret{
 		Data: map[string][]byte{},

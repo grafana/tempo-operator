@@ -269,12 +269,12 @@ func TestStatefulsetS3TLSStorage(t *testing.T) {
 			MountPath: "/var/tempo",
 		},
 		{
-			Name:      "storage-ca",
+			Name:      "custom-ca",
 			MountPath: "/var/run/tls/storage/ca",
 			ReadOnly:  true,
 		},
 		{
-			Name:      "storage-cert",
+			Name:      "custom-cert",
 			MountPath: "/var/run/tls/storage/cert",
 			ReadOnly:  true,
 		},
@@ -325,7 +325,7 @@ func TestStatefulsetS3TLSStorage(t *testing.T) {
 			},
 		},
 		{
-			Name: "storage-ca",
+			Name: "custom-ca",
 			VolumeSource: corev1.VolumeSource{
 				ConfigMap: &corev1.ConfigMapVolumeSource{
 					LocalObjectReference: corev1.LocalObjectReference{
@@ -335,7 +335,7 @@ func TestStatefulsetS3TLSStorage(t *testing.T) {
 			},
 		},
 		{
-			Name: "storage-cert",
+			Name: "custom-cert",
 			VolumeSource: corev1.VolumeSource{
 				Secret: &corev1.SecretVolumeSource{
 					SecretName: "custom-cert",
@@ -409,12 +409,12 @@ func TestStatefulsetReceiverTLS(t *testing.T) {
 			MountPath: "/var/tempo",
 		},
 		{
-			Name:      "receiver-tls-grpc-ca",
+			Name:      "custom-ca",
 			MountPath: "/var/run/ca-receiver",
 			ReadOnly:  true,
 		},
 		{
-			Name:      "receiver-tls-grpc-cert",
+			Name:      "custom-cert",
 			MountPath: "/var/run/tls/receiver",
 			ReadOnly:  true,
 		},
@@ -440,7 +440,7 @@ func TestStatefulsetReceiverTLS(t *testing.T) {
 			},
 		},
 		{
-			Name: "receiver-tls-grpc-ca",
+			Name: "custom-ca",
 			VolumeSource: corev1.VolumeSource{
 				ConfigMap: &corev1.ConfigMapVolumeSource{
 					LocalObjectReference: corev1.LocalObjectReference{
@@ -450,7 +450,7 @@ func TestStatefulsetReceiverTLS(t *testing.T) {
 			},
 		},
 		{
-			Name: "receiver-tls-grpc-cert",
+			Name: "custom-cert",
 			VolumeSource: corev1.VolumeSource{
 				Secret: &corev1.SecretVolumeSource{
 					SecretName: "custom-cert",
@@ -630,4 +630,53 @@ func TestStatefulsetSchedulingRules(t *testing.T) {
 			},
 		},
 	}, sts.Spec.Template.Spec.Affinity)
+}
+
+func TestStatefulsetCustomServiceAccount(t *testing.T) {
+	opts := Options{
+		CtrlConfig: configv1alpha1.ProjectConfig{
+			DefaultImages: configv1alpha1.ImagesSpec{
+				Tempo: "docker.io/grafana/tempo:x.y.z",
+			},
+		},
+		Tempo: v1alpha1.TempoMonolithic{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "sample",
+				Namespace: "default",
+			},
+			Spec: v1alpha1.TempoMonolithicSpec{
+				Storage: &v1alpha1.MonolithicStorageSpec{
+					Traces: v1alpha1.MonolithicTracesStorageSpec{
+						Backend: "memory",
+					},
+				},
+			},
+		},
+	}
+
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{
+			name:     "no custom serviceaccount",
+			input:    "",
+			expected: "tempo-sample",
+		},
+		{
+			name:     "custom serviceaccount",
+			input:    "custom-sa",
+			expected: "custom-sa",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			opts.Tempo.Spec.ServiceAccount = test.input
+			sts, err := BuildTempoStatefulset(opts)
+			require.NoError(t, err)
+			require.Equal(t, test.expected, sts.Spec.Template.Spec.ServiceAccountName)
+		})
+	}
 }

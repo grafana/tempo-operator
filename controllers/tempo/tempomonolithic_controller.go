@@ -58,7 +58,7 @@ func (r *TempoMonolithicReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	}
 
 	// apply defaults
-	tempo.Default()
+	tempo.Default(r.CtrlConfig)
 
 	if tempo.Spec.Management == v1alpha1.ManagementStateUnmanaged {
 		log.Info("Skipping reconciliation for unmanaged TempoMonolithic resource", "name", req.String())
@@ -172,6 +172,7 @@ func (r *TempoMonolithicReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		For(&v1alpha1.TempoMonolithic{}).
 		Owns(&corev1.ConfigMap{}).
 		Owns(&corev1.Service{}).
+		Owns(&corev1.ServiceAccount{}).
 		Owns(&appsv1.StatefulSet{}).
 		Owns(&networkingv1.Ingress{})
 

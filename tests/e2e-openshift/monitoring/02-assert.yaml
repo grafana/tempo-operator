@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tempo-tempostack-compactor
-  namespace: kuttl-monitoring
+  namespace: chainsaw-monitoring
 status:
   availableReplicas: 1
   readyReplicas: 1
@@ -13,7 +13,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tempo-tempostack-distributor
-  namespace: kuttl-monitoring
+  namespace: chainsaw-monitoring
 status:
   availableReplicas: 1
   readyReplicas: 1
@@ -24,7 +24,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tempo-tempostack-querier
-  namespace: kuttl-monitoring
+  namespace: chainsaw-monitoring
 status:
   availableReplicas: 1
   readyReplicas: 1
@@ -35,7 +35,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tempo-tempostack-query-frontend
-  namespace: kuttl-monitoring
+  namespace: chainsaw-monitoring
 status:
   availableReplicas: 1
   readyReplicas: 1
@@ -46,7 +46,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: tempo-tempostack-ingester
-  namespace: kuttl-monitoring
+  namespace: chainsaw-monitoring
 status:
   availableReplicas: 1
   currentReplicas: 1
@@ -63,7 +63,7 @@ metadata:
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-tempostack-query-frontend
-  namespace: kuttl-monitoring
+  namespace: chainsaw-monitoring
 spec:
   internalTrafficPolicy: Cluster
   ports:
@@ -105,7 +105,7 @@ metadata:
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-tempostack-query-frontend
-  namespace: kuttl-monitoring
+  namespace: chainsaw-monitoring
 spec:
   port:
     targetPort: jaeger-ui
@@ -125,7 +125,7 @@ metadata:
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-tempostack-compactor
-  namespace: kuttl-monitoring
+  namespace: chainsaw-monitoring
 spec:
   endpoints:
   - path: /metrics
@@ -152,10 +152,10 @@ spec:
       keySecret:
         key: tls.key
         name: tempo-tempostack-compactor-mtls
-      serverName: tempo-tempostack-compactor.kuttl-monitoring.svc.cluster.local
+      serverName: tempo-tempostack-compactor.chainsaw-monitoring.svc.cluster.local
   namespaceSelector:
     matchNames:
-    - kuttl-monitoring
+    - chainsaw-monitoring
   selector:
     matchLabels:
       app.kubernetes.io/component: compactor
@@ -172,7 +172,7 @@ metadata:
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-tempostack-distributor
-  namespace: kuttl-monitoring
+  namespace: chainsaw-monitoring
 spec:
   endpoints:
   - path: /metrics
@@ -199,10 +199,10 @@ spec:
       keySecret:
         key: tls.key
         name: tempo-tempostack-distributor-mtls
-      serverName: tempo-tempostack-distributor.kuttl-monitoring.svc.cluster.local
+      serverName: tempo-tempostack-distributor.chainsaw-monitoring.svc.cluster.local
   namespaceSelector:
     matchNames:
-    - kuttl-monitoring
+    - chainsaw-monitoring
   selector:
     matchLabels:
       app.kubernetes.io/component: distributor
@@ -219,7 +219,7 @@ metadata:
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-tempostack-ingester
-  namespace: kuttl-monitoring
+  namespace: chainsaw-monitoring
 spec:
   endpoints:
   - path: /metrics
@@ -246,10 +246,10 @@ spec:
       keySecret:
         key: tls.key
         name: tempo-tempostack-ingester-mtls
-      serverName: tempo-tempostack-ingester.kuttl-monitoring.svc.cluster.local
+      serverName: tempo-tempostack-ingester.chainsaw-monitoring.svc.cluster.local
   namespaceSelector:
     matchNames:
-    - kuttl-monitoring
+    - chainsaw-monitoring
   selector:
     matchLabels:
       app.kubernetes.io/component: ingester
@@ -266,7 +266,7 @@ metadata:
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-tempostack-querier
-  namespace: kuttl-monitoring
+  namespace: chainsaw-monitoring
 spec:
   endpoints:
   - path: /metrics
@@ -293,10 +293,10 @@ spec:
       keySecret:
         key: tls.key
         name: tempo-tempostack-querier-mtls
-      serverName: tempo-tempostack-querier.kuttl-monitoring.svc.cluster.local
+      serverName: tempo-tempostack-querier.chainsaw-monitoring.svc.cluster.local
   namespaceSelector:
     matchNames:
-    - kuttl-monitoring
+    - chainsaw-monitoring
   selector:
     matchLabels:
       app.kubernetes.io/component: querier
@@ -313,7 +313,7 @@ metadata:
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-tempostack-query-frontend
-  namespace: kuttl-monitoring
+  namespace: chainsaw-monitoring
 spec:
   endpoints:
   - path: /metrics
@@ -340,10 +340,10 @@ spec:
       keySecret:
         key: tls.key
         name: tempo-tempostack-query-frontend-mtls
-      serverName: tempo-tempostack-query-frontend.kuttl-monitoring.svc.cluster.local
+      serverName: tempo-tempostack-query-frontend.chainsaw-monitoring.svc.cluster.local
   namespaceSelector:
     matchNames:
-    - kuttl-monitoring
+    - chainsaw-monitoring
   selector:
     matchLabels:
       app.kubernetes.io/component: query-frontend
@@ -358,10 +358,10 @@ metadata:
   labels:
     openshift.io/prometheus-rule-evaluation-scope: leaf-prometheus
   name: tempostack-prometheus-rule
-  namespace: kuttl-monitoring
+  namespace: chainsaw-monitoring
 spec:
   groups:
-  - name: tempo_alerts_tempostack_kuttl-monitoring
+  - name: tempo_alerts_tempostack_chainsaw-monitoring
     rules:
     - alert: TempoRequestLatency
       annotations:
@@ -369,7 +369,7 @@ spec:
           {{ $labels.job }} {{ $labels.route }} is experiencing {{ printf "%.2f" $value }}s 99th percentile latency.
         runbook_url: https://github.com/grafana/tempo/tree/main/operations/tempo-mixin/runbook.md#TempoRequestLatency
       expr: |
-        cluster_namespace_job_route:tempo_request_duration_seconds:99quantile{cluster="tempostack", namespace="kuttl-monitoring", route!~"metrics|/frontend.Frontend/Process|debug_pprof"} > 3
+        cluster_namespace_job_route:tempo_request_duration_seconds:99quantile{cluster="tempostack", namespace="chainsaw-monitoring", route!~"metrics|/frontend.Frontend/Process|debug_pprof"} > 3
       for: 15m
       labels:
         severity: critical
@@ -378,7 +378,7 @@ spec:
         message: There are {{ printf "%f" $value }} unhealthy compactor(s).
         runbook_url: https://github.com/grafana/tempo/tree/main/operations/tempo-mixin/runbook.md#TempoCompactorUnhealthy
       expr: |
-        max by (cluster, namespace) (tempo_ring_members{cluster="tempostack", namespace="kuttl-monitoring", state="Unhealthy", name="compactor"}) > 0
+        max by (cluster, namespace) (tempo_ring_members{cluster="tempostack", namespace="chainsaw-monitoring", state="Unhealthy", name="compactor"}) > 0
       for: 15m
       labels:
         severity: critical
@@ -387,7 +387,7 @@ spec:
         message: There are {{ printf "%f" $value }} unhealthy distributor(s).
         runbook_url: https://github.com/grafana/tempo/tree/main/operations/tempo-mixin/runbook.md#TempoDistributorUnhealthy
       expr: |
-        max by (cluster, namespace) (tempo_ring_members{cluster="tempostack", namespace="kuttl-monitoring", state="Unhealthy", name="distributor"}) > 0
+        max by (cluster, namespace) (tempo_ring_members{cluster="tempostack", namespace="chainsaw-monitoring", state="Unhealthy", name="distributor"}) > 0
       for: 15m
       labels:
         severity: warning
@@ -396,8 +396,8 @@ spec:
         message: Greater than 2 compactions have failed in the past hour.
         runbook_url: https://github.com/grafana/tempo/tree/main/operations/tempo-mixin/runbook.md#TempoCompactionsFailing
       expr: |
-        sum by (cluster, namespace) (increase(tempodb_compaction_errors_total{cluster="tempostack", namespace="kuttl-monitoring"}[1h])) > 2 and
-        sum by (cluster, namespace) (increase(tempodb_compaction_errors_total{cluster="tempostack", namespace="kuttl-monitoring"}[5m])) > 0
+        sum by (cluster, namespace) (increase(tempodb_compaction_errors_total{cluster="tempostack", namespace="chainsaw-monitoring"}[1h])) > 2 and
+        sum by (cluster, namespace) (increase(tempodb_compaction_errors_total{cluster="tempostack", namespace="chainsaw-monitoring"}[5m])) > 0
       for: 5m
       labels:
         severity: critical
@@ -406,8 +406,8 @@ spec:
         message: Greater than 2 flush retries have occurred in the past hour.
         runbook_url: https://github.com/grafana/tempo/tree/main/operations/tempo-mixin/runbook.md#TempoIngesterFlushesFailing
       expr: |
-        sum by (cluster, namespace) (increase(tempo_ingester_failed_flushes_total{cluster="tempostack", namespace="kuttl-monitoring"}[1h])) > 2 and
-        sum by (cluster, namespace) (increase(tempo_ingester_failed_flushes_total{cluster="tempostack", namespace="kuttl-monitoring"}[5m])) > 0
+        sum by (cluster, namespace) (increase(tempo_ingester_failed_flushes_total{cluster="tempostack", namespace="chainsaw-monitoring"}[1h])) > 2 and
+        sum by (cluster, namespace) (increase(tempo_ingester_failed_flushes_total{cluster="tempostack", namespace="chainsaw-monitoring"}[5m])) > 0
       for: 5m
       labels:
         severity: warning
@@ -416,8 +416,8 @@ spec:
         message: Greater than 2 flush retries have failed in the past hour.
         runbook_url: https://github.com/grafana/tempo/tree/main/operations/tempo-mixin/runbook.md#TempoIngesterFlushesFailing
       expr: |
-        sum by (cluster, namespace) (increase(tempo_ingester_flush_failed_retries_total{cluster="tempostack", namespace="kuttl-monitoring"}[1h])) > 2 and
-        sum by (cluster, namespace) (increase(tempo_ingester_flush_failed_retries_total{cluster="tempostack", namespace="kuttl-monitoring"}[5m])) > 0
+        sum by (cluster, namespace) (increase(tempo_ingester_flush_failed_retries_total{cluster="tempostack", namespace="chainsaw-monitoring"}[1h])) > 2 and
+        sum by (cluster, namespace) (increase(tempo_ingester_flush_failed_retries_total{cluster="tempostack", namespace="chainsaw-monitoring"}[5m])) > 0
       for: 5m
       labels:
         severity: critical
@@ -426,8 +426,8 @@ spec:
         message: Greater than 2 polls have failed in the past hour.
         runbook_url: https://github.com/grafana/tempo/tree/main/operations/tempo-mixin/runbook.md#TempoPollsFailing
       expr: |
-        sum by (cluster, namespace) (increase(tempodb_blocklist_poll_errors_total{cluster="tempostack", namespace="kuttl-monitoring"}[1h])) > 2 and
-        sum by (cluster, namespace) (increase(tempodb_blocklist_poll_errors_total{cluster="tempostack", namespace="kuttl-monitoring"}[5m])) > 0
+        sum by (cluster, namespace) (increase(tempodb_blocklist_poll_errors_total{cluster="tempostack", namespace="chainsaw-monitoring"}[1h])) > 2 and
+        sum by (cluster, namespace) (increase(tempodb_blocklist_poll_errors_total{cluster="tempostack", namespace="chainsaw-monitoring"}[5m])) > 0
       labels:
         severity: critical
     - alert: TempoTenantIndexFailures
@@ -435,8 +435,8 @@ spec:
         message: Greater than 2 tenant index failures in the past hour.
         runbook_url: https://github.com/grafana/tempo/tree/main/operations/tempo-mixin/runbook.md#TempoTenantIndexFailures
       expr: |
-        sum by (cluster, namespace) (increase(tempodb_blocklist_tenant_index_errors_total{cluster="tempostack", namespace="kuttl-monitoring"}[1h])) > 2 and
-        sum by (cluster, namespace) (increase(tempodb_blocklist_tenant_index_errors_total{cluster="tempostack", namespace="kuttl-monitoring"}[5m])) > 0
+        sum by (cluster, namespace) (increase(tempodb_blocklist_tenant_index_errors_total{cluster="tempostack", namespace="chainsaw-monitoring"}[1h])) > 2 and
+        sum by (cluster, namespace) (increase(tempodb_blocklist_tenant_index_errors_total{cluster="tempostack", namespace="chainsaw-monitoring"}[5m])) > 0
       labels:
         severity: critical
     - alert: TempoNoTenantIndexBuilders
@@ -445,8 +445,8 @@ spec:
           index will quickly become stale.
         runbook_url: https://github.com/grafana/tempo/tree/main/operations/tempo-mixin/runbook.md#TempoNoTenantIndexBuilders
       expr: |
-        sum by (cluster, namespace, tenant) (tempodb_blocklist_tenant_index_builder{cluster="tempostack", namespace="kuttl-monitoring"}) == 0 and
-        max by (cluster, namespace) (tempodb_blocklist_length{cluster="tempostack", namespace="kuttl-monitoring"}) > 0
+        sum by (cluster, namespace, tenant) (tempodb_blocklist_tenant_index_builder{cluster="tempostack", namespace="chainsaw-monitoring"}) == 0 and
+        max by (cluster, namespace) (tempodb_blocklist_length{cluster="tempostack", namespace="chainsaw-monitoring"}) > 0
       for: 5m
       labels:
         severity: critical
@@ -456,7 +456,7 @@ spec:
           }}.
         runbook_url: https://github.com/grafana/tempo/tree/main/operations/tempo-mixin/runbook.md#TempoTenantIndexTooOld
       expr: |
-        max by (cluster, namespace, tenant) (tempodb_blocklist_tenant_index_age_seconds{cluster="tempostack", namespace="kuttl-monitoring"}) > 600
+        max by (cluster, namespace, tenant) (tempodb_blocklist_tenant_index_age_seconds{cluster="tempostack", namespace="chainsaw-monitoring"}) > 600
       for: 5m
       labels:
         severity: critical
@@ -465,7 +465,7 @@ spec:
         message: '{{ $labels.job }} failed to reload overrides.'
         runbook_url: https://github.com/grafana/tempo/tree/main/operations/tempo-mixin/runbook.md#TempoBadOverrides
       expr: |
-        sum(tempo_runtime_config_last_reload_successful{cluster="tempostack", namespace="kuttl-monitoring"} == 0) by (cluster, namespace, job)
+        sum(tempo_runtime_config_last_reload_successful{cluster="tempostack", namespace="chainsaw-monitoring"} == 0) by (cluster, namespace, job)
       for: 15m
       labels:
         severity: warning
@@ -475,7 +475,7 @@ spec:
           more data/second than desired, add more ingesters.
         runbook_url: https://github.com/grafana/tempo/tree/main/operations/tempo-mixin/runbook.md#TempoProvisioningTooManyWrites
       expr: |
-        avg by (cluster, namespace) (rate(tempo_ingester_bytes_received_total{cluster="tempostack", namespace="kuttl-monitoring", job=~".+/ingester"}[1m])) / 1024 / 1024 > 30
+        avg by (cluster, namespace) (rate(tempo_ingester_bytes_received_total{cluster="tempostack", namespace="chainsaw-monitoring", job=~".+/ingester"}[1m])) / 1024 / 1024 > 30
       for: 15m
       labels:
         severity: warning
@@ -486,7 +486,7 @@ spec:
           CPU or add more compactors.
         runbook_url: https://github.com/grafana/tempo/tree/main/operations/tempo-mixin/runbook.md#TempoCompactorsTooManyOutstandingBlocks
       expr: |
-        sum by (cluster, namespace, tenant) (tempodb_compaction_outstanding_blocks{cluster="tempostack", namespace="kuttl-monitoring", container="compactor"}) / ignoring(tenant) group_left count(tempo_build_info{container="compactor", namespace=~".*"}) by (cluster, namespace) > 100
+        sum by (cluster, namespace, tenant) (tempodb_compaction_outstanding_blocks{cluster="tempostack", namespace="chainsaw-monitoring", container="compactor"}) / ignoring(tenant) group_left count(tempo_build_info{container="compactor", namespace=~".*"}) by (cluster, namespace) > 100
       for: 6h
       labels:
         severity: warning
@@ -497,28 +497,28 @@ spec:
           }}
         runbook_url: https://github.com/grafana/tempo/tree/main/operations/tempo-mixin/runbook.md#TempoIngesterReplayErrors
       expr: |
-        sum by (cluster, namespace, tenant) (increase(tempo_ingester_replay_errors_total{cluster="tempostack", namespace="kuttl-monitoring"}[5m])) > 0
+        sum by (cluster, namespace, tenant) (increase(tempo_ingester_replay_errors_total{cluster="tempostack", namespace="chainsaw-monitoring"}[5m])) > 0
       for: 5m
       labels:
         severity: critical
-  - name: tempo_rules_tempostack_kuttl-monitoring
+  - name: tempo_rules_tempostack_chainsaw-monitoring
     rules:
-    - expr: histogram_quantile(0.99, sum(rate(tempo_request_duration_seconds_bucket{cluster="tempostack", namespace="kuttl-monitoring"}[1m]))
+    - expr: histogram_quantile(0.99, sum(rate(tempo_request_duration_seconds_bucket{cluster="tempostack", namespace="chainsaw-monitoring"}[1m]))
         by (le, cluster, namespace, job, route))
       record: cluster_namespace_job_route:tempo_request_duration_seconds:99quantile
-    - expr: histogram_quantile(0.50, sum(rate(tempo_request_duration_seconds_bucket{cluster="tempostack", namespace="kuttl-monitoring"}[1m]))
+    - expr: histogram_quantile(0.50, sum(rate(tempo_request_duration_seconds_bucket{cluster="tempostack", namespace="chainsaw-monitoring"}[1m]))
         by (le, cluster, namespace, job, route))
       record: cluster_namespace_job_route:tempo_request_duration_seconds:50quantile
-    - expr: sum(rate(tempo_request_duration_seconds_sum{cluster="tempostack", namespace="kuttl-monitoring"}[1m])) by (cluster, namespace,
-        job, route) / sum(rate(tempo_request_duration_seconds_count{cluster="tempostack", namespace="kuttl-monitoring"}[1m])) by (cluster,
+    - expr: sum(rate(tempo_request_duration_seconds_sum{cluster="tempostack", namespace="chainsaw-monitoring"}[1m])) by (cluster, namespace,
+        job, route) / sum(rate(tempo_request_duration_seconds_count{cluster="tempostack", namespace="chainsaw-monitoring"}[1m])) by (cluster,
         namespace, job, route)
       record: cluster_namespace_job_route:tempo_request_duration_seconds:avg
-    - expr: sum(rate(tempo_request_duration_seconds_bucket{cluster="tempostack", namespace="kuttl-monitoring"}[1m])) by (le, cluster,
+    - expr: sum(rate(tempo_request_duration_seconds_bucket{cluster="tempostack", namespace="chainsaw-monitoring"}[1m])) by (le, cluster,
         namespace, job, route)
       record: cluster_namespace_job_route:tempo_request_duration_seconds_bucket:sum_rate
-    - expr: sum(rate(tempo_request_duration_seconds_sum{cluster="tempostack", namespace="kuttl-monitoring"}[1m])) by (cluster, namespace,
+    - expr: sum(rate(tempo_request_duration_seconds_sum{cluster="tempostack", namespace="chainsaw-monitoring"}[1m])) by (cluster, namespace,
         job, route)
       record: cluster_namespace_job_route:tempo_request_duration_seconds_sum:sum_rate
-    - expr: sum(rate(tempo_request_duration_seconds_count{cluster="tempostack", namespace="kuttl-monitoring"}[1m])) by (cluster, namespace,
+    - expr: sum(rate(tempo_request_duration_seconds_count{cluster="tempostack", namespace="chainsaw-monitoring"}[1m])) by (cluster, namespace,
         job, route)
       record: cluster_namespace_job_route:tempo_request_duration_seconds_count:sum_rate

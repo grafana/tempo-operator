@@ -12,13 +12,15 @@ concurrency:
 
 jobs:
   scorecard-tests:
-    name: Scorecard test
+    name: Scorecard test ${{ matrix.name }}
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        kube-version:
-          - "1.21"
-          - "1.28"
+        include:
+          - name: min
+            kube-version: 1.25
+          - name: max
+            kube-version: 1.29
 
     steps:
       - name: Checkout
@@ -29,23 +31,16 @@ jobs:
         with:
           go-version-file: go.mod
 
-      - name: "install kuttl"
-        run: ./hack/install/install-kuttl.sh
+      - name: Install chainsaw
+        run: |
+          set -e
+          make chainsaw
 
       - name: "start kind"
         env:
           KUBE_VERSION: ${{ matrix.kube-version }}
         run: |
-          # fix for https://bugs.launchpad.net/ubuntu/+source/libpod/+bug/2024394
-          wget http://archive.ubuntu.com/ubuntu/pool/universe/g/golang-github-containernetworking-plugins/containernetworking-plugins_1.1.1+ds1-3_amd64.deb
-          sudo dpkg -i containernetworking-plugins_1.1.1+ds1-3_amd64.deb
-
-          # attempt to fix https://github.com/grafana/tempo-operator/issues/380 by using podman instead of docker
-          sudo KIND_EXPERIMENTAL_PROVIDER=podman kind create cluster --config kind-$KUBE_VERSION.yaml --wait 5m
-
-          mkdir ~/.kube
-          sudo cp /root/.kube/config ~/.kube/config
-          sudo chown $(id -u):$(id -g) ~/.kube/config
+          make start-kind
 
       - name: "run community scorecard tests"
         run: for i in {1..5}; do make scorecard-tests && break || sleep 10; done

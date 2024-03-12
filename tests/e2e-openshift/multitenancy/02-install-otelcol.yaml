@@ -4,7 +4,7 @@ apiVersion: opentelemetry.io/v1alpha1
 kind: OpenTelemetryCollector
 metadata:
   name: dev
-  namespace: kuttl-multitenancy
+  namespace: chainsaw-multitenancy
 spec:
   config: |
     extensions:
@@ -27,7 +27,7 @@ spec:
 
     exporters:
       otlp:
-        endpoint: tempo-simplest-gateway.kuttl-multitenancy.svc.cluster.local:8090
+        endpoint: tempo-simplest-gateway.chainsaw-multitenancy.svc.cluster.local:8090
         tls:
           insecure: false
           ca_file: "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt"
@@ -75,4 +75,4 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: dev-collector
-    namespace: kuttl-multitenancy
+    namespace: chainsaw-multitenancy

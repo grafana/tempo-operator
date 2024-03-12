@@ -2,7 +2,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: verify-traces
-  namespace: kuttl-multitenancy
+  namespace: chainsaw-multitenancy
 spec:
   template:
     spec:
@@ -20,7 +20,7 @@ spec:
             -v -G \
             --header "Authorization: Bearer $token" \
             --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
-            https://tempo-simplest-gateway.kuttl-multitenancy.svc:8080/api/traces/v1/dev/api/traces \
+            https://tempo-simplest-gateway.chainsaw-multitenancy.svc:8080/api/traces/v1/dev/api/traces \
             --data-urlencode "service=telemetrygen" \
             | tee /tmp/jaeger.out
 
@@ -35,7 +35,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: verify-traces-traceql
-  namespace: kuttl-multitenancy
+  namespace: chainsaw-multitenancy
 spec:
   template:
     spec:
@@ -53,7 +53,7 @@ spec:
                 -v -G \
                 --header "Authorization: Bearer $token" \
                 --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
-                https://tempo-simplest-gateway.kuttl-multitenancy.svc:8080/api/traces/v1/dev/tempo/api/search \
+                https://tempo-simplest-gateway.chainsaw-multitenancy.svc:8080/api/traces/v1/dev/tempo/api/search \
                 --data-urlencode 'q={ resource.service.name="telemetrygen" }' \
                 | tee /tmp/jaeger.out
               num_traces=$(jq ".traces | length" /tmp/jaeger.out)

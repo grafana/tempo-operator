@@ -340,6 +340,14 @@ func (v *validator) validateObservability(tempo v1alpha1.TempoStack) field.Error
 			)}
 	}
 
+	if tempo.Spec.Observability.Grafana.CreateDatasource && tempo.Spec.Template.Gateway.Enabled {
+		return field.ErrorList{field.Invalid(
+			grafanaBase.Child("createDatasource"),
+			tempo.Spec.Observability.Grafana.CreateDatasource,
+			"creating a data source for Tempo is not support if the gateway is enabled",
+		)}
+	}
+
 	return nil
 }
 

@@ -198,7 +198,7 @@ usage_report:
 					Spec: test.spec,
 				},
 			}
-			opts.Tempo.Default()
+			opts.Tempo.Default(opts.CtrlConfig)
 
 			cfg, err := buildTempoConfig(opts)
 			require.NoError(t, err)

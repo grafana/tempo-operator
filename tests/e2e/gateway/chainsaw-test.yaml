@@ -1,0 +1,45 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/kyverno/chainsaw/main/.schemas/json/test-chainsaw-v1alpha1.json
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  creationTimestamp: null
+  name: gateway
+spec:
+  timeouts:
+    cleanup: 5m
+  steps:
+  - name: step-00
+    try:
+    - apply:
+        file: 00-install.yaml
+    - assert:
+        file: 00-assert.yaml
+  - name: step-01
+    try:
+    - apply:
+        file: 01-install.yaml
+    - assert:
+        file: 01-assert.yaml
+  - name: step-02
+    try:
+    - apply:
+        file: 02-install.yaml
+    - assert:
+        file: 02-assert.yaml
+  - name: step-03
+    try:
+    - apply:
+        file: 03-install-disable-jaeger-query.yaml
+    - script:
+        timeout: 5m
+        content: |
+          while true
+          do
+            if kubectl get deployment/tempo-foo-query-frontend -n $NAMESPACE -o=jsonpath='{.spec.template.spec.containers[*].name}' | grep -q tempo-query; then
+              echo tempo-query container still exists. Retrying...
+            else
+              echo tempo-query container no longer exists. Test passed.
+              exit 0
+            fi
+            sleep 5
+          done
