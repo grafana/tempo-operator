@@ -19,11 +19,6 @@ import (
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 )
 
-const (
-	AgentSideCar   = "Sidecar"
-	AgentDaemonSet = "Daemonset"
-)
-
 type expectedMetric struct {
 	name   string
 	labels []attribute.KeyValue
