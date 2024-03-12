@@ -17,14 +17,16 @@ import (
 // BuildJaegerUIIngress creates a Ingress object for Jaeger UI.
 func BuildJaegerUIIngress(opts Options) *networkingv1.Ingress {
 	tempo := opts.Tempo
-	labels := ComponentLabels(manifestutils.TempoMonolithComponentName, tempo.Name)
+	labels := ComponentLabels(manifestutils.JaegerUIComponentName, tempo.Name)
+	targetService, targetPort := jaegerUIServiceAndPort(tempo)
+
 	ingress := &networkingv1.Ingress{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: networkingv1.SchemeGroupVersion.String(),
 			Kind:       "Ingress",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        naming.Name("jaegerui", tempo.Name),
+			Name:        naming.Name(manifestutils.JaegerUIComponentName, tempo.Name),
 			Namespace:   tempo.Namespace,
 			Labels:      labels,
 			Annotations: tempo.Spec.JaegerUI.Ingress.Annotations,
@@ -36,9 +38,9 @@ func BuildJaegerUIIngress(opts Options) *networkingv1.Ingress {
 
 	backend := networkingv1.IngressBackend{
 		Service: &networkingv1.IngressServiceBackend{
-			Name: naming.Name(manifestutils.TempoMonolithComponentName, tempo.Name),
+			Name: targetService,
 			Port: networkingv1.ServiceBackendPort{
-				Name: manifestutils.JaegerUIPortName,
+				Name: targetPort,
 			},
 		},
 	}
@@ -70,7 +72,8 @@ func BuildJaegerUIIngress(opts Options) *networkingv1.Ingress {
 // BuildJaegerUIRoute creates a Route object for Jaeger UI.
 func BuildJaegerUIRoute(opts Options) (*routev1.Route, error) {
 	tempo := opts.Tempo
-	labels := ComponentLabels(manifestutils.TempoMonolithComponentName, tempo.Name)
+	labels := ComponentLabels(manifestutils.JaegerUIComponentName, tempo.Name)
+	targetService, targetPort := jaegerUIServiceAndPort(tempo)
 
 	var tlsCfg *routev1.TLSConfig
 	switch tempo.Spec.JaegerUI.Route.Termination {
@@ -92,7 +95,7 @@ func BuildJaegerUIRoute(opts Options) (*routev1.Route, error) {
 			Kind:       "Ingress",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        naming.Name("jaegerui", tempo.Name),
+			Name:        naming.Name(manifestutils.JaegerUIComponentName, tempo.Name),
 			Namespace:   tempo.Namespace,
 			Labels:      labels,
 			Annotations: tempo.Spec.JaegerUI.Route.Annotations,
@@ -101,12 +104,20 @@ func BuildJaegerUIRoute(opts Options) (*routev1.Route, error) {
 			Host: tempo.Spec.JaegerUI.Route.Host,
 			To: routev1.RouteTargetReference{
 				Kind: "Service",
-				Name: naming.Name(manifestutils.TempoMonolithComponentName, tempo.Name),
+				Name: targetService,
 			},
 			Port: &routev1.RoutePort{
-				TargetPort: intstr.FromString(manifestutils.JaegerUIPortName),
+				TargetPort: intstr.FromString(targetPort),
 			},
 			TLS: tlsCfg,
 		},
 	}, nil
+}
+
+func jaegerUIServiceAndPort(tempo v1alpha1.TempoMonolithic) (string, string) {
+	if tempo.Spec.Multitenancy.IsGatewayEnabled() {
+		return naming.Name(manifestutils.GatewayComponentName, tempo.Name), manifestutils.GatewayHttpPortName
+	} else {
+		return naming.Name(manifestutils.JaegerUIComponentName, tempo.Name), manifestutils.JaegerUIPortName
+	}
 }

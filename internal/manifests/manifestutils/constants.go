@@ -126,6 +126,8 @@ const (
 	TempoMonolithComponentName = "tempo"
 	// TempoConfigName declares the name of the Tempo ConfigMap (tempo-$name-config).
 	TempoConfigName = "config"
+	// JaegerUIComponentName declares the name of the Jaeger UI component.
+	JaegerUIComponentName = "jaegerui"
 
 	// TenantHeader is the header name that contains tenant name.
 	TenantHeader = "x-scope-orgid"
