@@ -43,11 +43,13 @@ func TestBuildConfigMap(t *testing.T) {
 		},
 	}
 
-	cm, checksum, err := BuildConfigMap(opts)
+	cm, annotations, err := BuildConfigMap(opts)
 	require.NoError(t, err)
 	require.NotNil(t, cm.Data)
 	require.NotNil(t, cm.Data["tempo.yaml"])
-	require.Equal(t, fmt.Sprintf("%x", sha256.Sum256([]byte(cm.Data["tempo.yaml"]))), checksum)
+	require.Equal(t, map[string]string{
+		"tempo.grafana.com/tempoConfig.hash": fmt.Sprintf("%x", sha256.Sum256([]byte(cm.Data["tempo.yaml"]))),
+	}, annotations)
 }
 
 func TestBuildConfig(t *testing.T) {

@@ -22,10 +22,9 @@ var (
 )
 
 // BuildTempoStatefulset creates the Tempo statefulset for a monolithic deployment.
-func BuildTempoStatefulset(opts Options) (*appsv1.StatefulSet, error) {
+func BuildTempoStatefulset(opts Options, extraAnnotations map[string]string) (*appsv1.StatefulSet, error) {
 	tempo := opts.Tempo
 	labels := ComponentLabels(manifestutils.TempoMonolithComponentName, tempo.Name)
-	annotations := manifestutils.CommonAnnotations(opts.ConfigChecksum)
 
 	sts := &appsv1.StatefulSet{
 		TypeMeta: metav1.TypeMeta{
@@ -52,7 +51,7 @@ func BuildTempoStatefulset(opts Options) (*appsv1.StatefulSet, error) {
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels:      labels,
-					Annotations: annotations,
+					Annotations: extraAnnotations,
 				},
 				Spec: corev1.PodSpec{
 					ServiceAccountName: serviceAccountName(tempo),
@@ -88,7 +87,7 @@ func BuildTempoStatefulset(opts Options) (*appsv1.StatefulSet, error) {
 							VolumeSource: corev1.VolumeSource{
 								ConfigMap: &corev1.ConfigMapVolumeSource{
 									LocalObjectReference: corev1.LocalObjectReference{
-										Name: naming.Name(manifestutils.TempoMonolithComponentName, tempo.Name),
+										Name: naming.Name(manifestutils.TempoConfigName, tempo.Name),
 									},
 								},
 							},
