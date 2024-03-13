@@ -64,6 +64,9 @@ func TestBuildConfig(t *testing.T) {
 			expected: `
 server:
   http_listen_port: 3200
+internal_server:
+  enable: true
+  http_listen_address: 0.0.0.0
 storage:
   trace:
     backend: local
@@ -93,6 +96,9 @@ usage_report:
 			expected: `
 server:
   http_listen_port: 3200
+internal_server:
+  enable: true
+  http_listen_address: 0.0.0.0
 storage:
   trace:
     backend: local
@@ -133,6 +139,9 @@ usage_report:
 			expected: `
 server:
   http_listen_port: 3200
+internal_server:
+  enable: true
+  http_listen_address: 0.0.0.0
 storage:
   trace:
     backend: local
@@ -164,6 +173,9 @@ usage_report:
 			expected: `
 server:
   http_listen_port: 3200
+internal_server:
+  enable: true
+  http_listen_address: 0.0.0.0
 storage:
   trace:
     backend: local

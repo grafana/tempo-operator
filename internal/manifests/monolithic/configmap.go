@@ -24,7 +24,8 @@ type tempoReceiverTLSConfig struct {
 }
 
 type tempoReceiverConfig struct {
-	TLS tempoReceiverTLSConfig `yaml:"tls,omitempty"`
+	TLS      tempoReceiverTLSConfig `yaml:"tls,omitempty"`
+	Endpoint string                 `yaml:"endpoint,omitempty"`
 }
 
 type tempoLocalConfig struct {
@@ -48,8 +49,15 @@ type tempoGCSConfig struct {
 
 type tempoConfig struct {
 	Server struct {
-		HttpListenPort int `yaml:"http_listen_port"`
+		HTTPListenAddress string `yaml:"http_listen_address,omitempty"`
+		HttpListenPort    int    `yaml:"http_listen_port,omitempty"`
+		GRPCListenAddress string `yaml:"grpc_listen_address,omitempty"`
 	} `yaml:"server"`
+
+	InternalServer struct {
+		Enable            bool   `yaml:"enable,omitempty"`
+		HTTPListenAddress string `yaml:"http_listen_address,omitempty"`
+	} `yaml:"internal_server"`
 
 	Storage struct {
 		Trace struct {
@@ -145,6 +153,12 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 
 	config := tempoConfig{}
 	config.Server.HttpListenPort = manifestutils.PortHTTPServer
+
+	// The internal server is required because if the gateway is enabled,
+	// the Tempo API will listen on localhost only,
+	// and then Kubernetes cannot reach the health check endpoint.
+	config.InternalServer.Enable = true
+	config.InternalServer.HTTPListenAddress = "0.0.0.0"
 
 	if tempo.Spec.Storage != nil {
 		config.Storage.Trace.WAL.Path = "/var/tempo/wal"
