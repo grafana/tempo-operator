@@ -49,12 +49,12 @@ func createTempoCR(t *testing.T, nsn types.NamespacedName, version string, manag
 	return tempo
 }
 
-func TestUpgradeToLatest(t *testing.T) {
+func TestUpgradeTempoStackToLatest(t *testing.T) {
 	nsn := types.NamespacedName{Name: "upgrade-to-latest-test", Namespace: "default"}
 	createTempoCR(t, nsn, "0.0.1", v1alpha1.ManagementStateManaged)
 
 	currentV := version.Get()
-	currentV.OperatorVersion = "0.1.0"
+	currentV.OperatorVersion = "100.0.0"
 	currentV.TempoVersion = "1.2.3"
 
 	upgrade := &Upgrade{
@@ -71,10 +71,51 @@ func TestUpgradeToLatest(t *testing.T) {
 		Version: currentV,
 		Log:     logger,
 	}
-	err := upgrade.TempoStacks(context.Background())
+	err := upgrade.ManagedInstances(context.Background())
 	require.NoError(t, err)
 
 	upgradedTempo := v1alpha1.TempoStack{}
+	err = k8sClient.Get(context.Background(), nsn, &upgradedTempo)
+	assert.NoError(t, err)
+
+	// assert versions were updated
+	assert.Equal(t, currentV.OperatorVersion, upgradedTempo.Status.OperatorVersion)
+	assert.Equal(t, currentV.TempoVersion, upgradedTempo.Status.TempoVersion)
+}
+
+func TestUpgradeTempoMonolithicToLatest(t *testing.T) {
+	nsn := types.NamespacedName{Name: "upgrade-to-latest-test", Namespace: "default"}
+	ctrlConfig := configv1alpha1.ProjectConfig{
+		DefaultImages: configv1alpha1.ImagesSpec{
+			Tempo: "docker.io/grafana/tempo:x.y.z",
+		},
+	}
+	tempo := &v1alpha1.TempoMonolithic{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      nsn.Name,
+			Namespace: nsn.Namespace,
+		},
+		Spec: v1alpha1.TempoMonolithicSpec{},
+	}
+
+	err := k8sClient.Create(context.Background(), tempo)
+	require.NoError(t, err)
+
+	currentV := version.Get()
+	currentV.OperatorVersion = "100.0.0"
+	currentV.TempoVersion = "1.2.3"
+
+	upgrade := &Upgrade{
+		Client:     k8sClient,
+		Recorder:   record.NewFakeRecorder(1),
+		CtrlConfig: ctrlConfig,
+		Version:    currentV,
+		Log:        logger,
+	}
+	err = upgrade.ManagedInstances(context.Background())
+	require.NoError(t, err)
+
+	upgradedTempo := v1alpha1.TempoMonolithic{}
 	err = k8sClient.Get(context.Background(), nsn, &upgradedTempo)
 	assert.NoError(t, err)
 
@@ -126,7 +167,7 @@ func TestSkipUpgrade(t *testing.T) {
 				Version: currentV,
 				Log:     logger,
 			}
-			err := upgrade.TempoStacks(context.Background())
+			err := upgrade.ManagedInstances(context.Background())
 			require.NoError(t, err)
 
 			upgradedTempo := v1alpha1.TempoStack{}

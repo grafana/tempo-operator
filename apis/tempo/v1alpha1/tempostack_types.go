@@ -809,3 +809,28 @@ type TempoStackList struct {
 func init() {
 	SchemeBuilder.Register(&TempoStack{}, &TempoStackList{})
 }
+
+// GetOperatorVersion returns the operator version from the status field.
+func (tempo *TempoStack) GetOperatorVersion() string {
+	return tempo.Status.OperatorVersion
+}
+
+// SetOperatorVersion sets the operator version in the status field.
+func (tempo *TempoStack) SetOperatorVersion(v string) {
+	tempo.Status.OperatorVersion = v
+}
+
+// SetTempoVersion sets the Tempo version in the status field.
+func (tempo *TempoStack) SetTempoVersion(v string) {
+	tempo.Status.TempoVersion = v
+}
+
+// GetStatus returns the CR status.
+func (tempo *TempoStack) GetStatus() any {
+	return tempo.Status
+}
+
+// SetStatus sets the CR status.
+func (tempo *TempoStack) SetStatus(s any) {
+	tempo.Status = s.(TempoStackStatus)
+}

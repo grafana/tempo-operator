@@ -92,20 +92,18 @@ func (r *TempoStackReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	// Apply upgrades in case a TempoStack is switched back from Unmanaged to Managed state.
 	// In all other cases, the upgrade process at operator startup will upgrade the TempoStack instance.
-	//
-	// New CRs with empty OperatorVersion are ignored, as they're already up-to-date. The operator version
-	// will be set when the status field is refreshed.
-	if tempo.Status.OperatorVersion != "" && tempo.Status.OperatorVersion != r.Version.OperatorVersion {
-		err := upgrade.Upgrade{
+	if tempo.Status.OperatorVersion != r.Version.OperatorVersion {
+		upgraded, err := upgrade.Upgrade{
 			Client:     r.Client,
 			Recorder:   r.Recorder,
 			CtrlConfig: r.CtrlConfig,
 			Version:    r.Version,
-			Log:        ctrl.LoggerFrom(ctx).WithName("tempostack-reconcile-upgrade"),
-		}.TempoStack(ctx, tempo)
+			Log:        log.WithName("upgrade"),
+		}.Upgrade(ctx, &tempo)
 		if err != nil {
 			return r.handleReconcileStatus(ctx, log, tempo, err)
 		}
+		tempo = *upgraded.(*v1alpha1.TempoStack)
 	}
 
 	if r.CtrlConfig.Gates.BuiltInCertManagement.Enabled {

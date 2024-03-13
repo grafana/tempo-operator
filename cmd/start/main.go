@@ -70,7 +70,9 @@ func start(c *cobra.Command, args []string) {
 	if err = (&controllers.TempoMonolithicReconciler{
 		Client:     mgr.GetClient(),
 		Scheme:     mgr.GetScheme(),
+		Recorder:   mgr.GetEventRecorderFor("tempomonolithic-controller"),
 		CtrlConfig: ctrlConfig,
+		Version:    version,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "TempoMonolithic")
 		os.Exit(1)
@@ -132,7 +134,7 @@ func addDependencies(mgr ctrl.Manager, ctrlConfig configv1alpha1.ProjectConfig, 
 			Version:    version,
 			Log:        ctrl.LoggerFrom(ctx).WithName("upgrade"),
 		}
-		return upgrade.TempoStacks(ctx)
+		return upgrade.ManagedInstances(ctx)
 	}))
 	if err != nil {
 		return fmt.Errorf("failed to setup upgrade process: %w", err)
