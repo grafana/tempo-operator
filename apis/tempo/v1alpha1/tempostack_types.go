@@ -318,6 +318,8 @@ const (
 	ReasonInvalidTenantsConfiguration ConditionReason = "InvalidTenantsConfiguration"
 	// ReasonFailedReconciliation when the operator failed to reconcile.
 	ReasonFailedReconciliation ConditionReason = "FailedReconciliation"
+	// ReasonFailedUpgrade when the operator failed to upgrade an instance.
+	ReasonFailedUpgrade ConditionReason = "FailedUpgrade"
 )
 
 // Resources defines resources configuration.

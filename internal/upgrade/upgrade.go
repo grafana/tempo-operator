@@ -5,6 +5,7 @@ package upgrade
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 
 	"github.com/Masterminds/semver/v3"
@@ -18,6 +19,7 @@ import (
 
 	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/internal/status"
 	"github.com/grafana/tempo-operator/internal/version"
 )
 
@@ -71,7 +73,10 @@ func (u Upgrade) Upgrade(ctx context.Context, original UpgradeableCR) (Upgradeab
 		itemLogger.Info(msg)
 		u.Recorder.Event(original, corev1.EventTypeWarning, "FailedUpgrade", msg)
 		metricUpgrades.WithLabelValues(kind, metricUpgradesStateFailed).Inc()
-		return original, err
+		return original, &status.ConfigurationError{
+			Message: fmt.Sprintf("error during upgrade: %s", err),
+			Reason:  v1alpha1.ReasonFailedUpgrade,
+		}
 	}
 
 	// only save if there were changes to the CR
