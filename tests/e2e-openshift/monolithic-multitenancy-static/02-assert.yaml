@@ -1,7 +1,6 @@
----
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
-  name: dev-collector
+  name: tempo-sample
 status:
   readyReplicas: 1

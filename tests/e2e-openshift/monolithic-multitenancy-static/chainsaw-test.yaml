@@ -1,0 +1,50 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/kyverno/chainsaw/main/.schemas/json/test-chainsaw-v1alpha1.json
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: monolithic-multitenancy-static
+spec:
+  # this test must use a known namespace because of the CN field of the TLS certificate
+  namespace: chainsaw-monolithic-multitenancy-static
+  steps:
+  - name: install-hydra
+    try:
+    - apply:
+        file: 00-install-hydra.yaml
+    - assert:
+        file: 00-assert.yaml
+
+  - name: setup-hydra
+    try:
+    - apply:
+        file: 01-setup-hydra.yaml
+    - assert:
+        file: 01-assert.yaml
+        
+  - name: install-tempo
+    try:
+    - apply:
+        file: 02-install-tempo.yaml
+    - assert:
+        file: 02-assert.yaml
+
+  - name: install-otel
+    try:
+    - apply:
+        file: 03-install-otel.yaml
+    - assert:
+        file: 03-assert.yaml
+
+  - name: generate-traces
+    try:
+    - apply:
+        file: 04-generate-traces.yaml
+    - assert:
+        file: 04-assert.yaml
+
+  - name: verify-traces
+    try:
+    - apply:
+        file: 05-verify-traces.yaml
+    - assert:
+        file: 05-assert.yaml

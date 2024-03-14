@@ -2,7 +2,6 @@ apiVersion: opentelemetry.io/v1alpha1
 kind: OpenTelemetryCollector
 metadata:
   name: dev
-  namespace: chainsaw-monolithic-multitenancy
 spec:
   config: |
     extensions:

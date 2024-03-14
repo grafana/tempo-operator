@@ -1,13 +1,7 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: chainsaw-monolithic-multitenancy  # this test must use a known namespace because of the CN field of the TLS certificate
----
 apiVersion: tempo.grafana.com/v1alpha1
 kind: TempoMonolithic
 metadata:
   name: simplest
-  namespace: chainsaw-monolithic-multitenancy
 spec:
   jaegerui:
     enabled: true
@@ -77,7 +71,6 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: view
-  namespace: chainsaw-monolithic-multitenancy
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole

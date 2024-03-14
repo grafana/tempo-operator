@@ -4,6 +4,8 @@ kind: Test
 metadata:
   name: monolithic-multitenancy-openshift
 spec:
+  # this test must use a known namespace because of the CN field of the TLS certificate and the ClusterRoleBinding
+  namespace: chainsaw-monolithic-multitenancy
   steps:
   - name: step-01
     try:

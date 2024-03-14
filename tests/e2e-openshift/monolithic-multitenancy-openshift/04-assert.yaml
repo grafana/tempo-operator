@@ -2,7 +2,6 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: verify-traces-jaegerui
-  namespace: chainsaw-monolithic-multitenancy
 status:
   conditions:
   - status: "True"
@@ -12,7 +11,6 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: verify-traces-traceql
-  namespace: chainsaw-monolithic-multitenancy
 status:
   conditions:
   - status: "True"

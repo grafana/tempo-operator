@@ -1,7 +1,6 @@
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: dev-collector
+  name: hydra
 status:
   readyReplicas: 1
