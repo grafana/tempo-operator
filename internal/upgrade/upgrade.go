@@ -25,7 +25,6 @@ import (
 
 const (
 	metricUpgradesStateUpgraded = "upgraded"
-	metricUpgradesStateUpToDate = "up-to-date"
 	metricUpgradesStateFailed   = "failed"
 )
 
@@ -33,7 +32,7 @@ var (
 	metricUpgrades = promauto.With(metrics.Registry).NewCounterVec(prometheus.CounterOpts{
 		Namespace: "tempooperator",
 		Name:      "upgrades_total",
-		Help:      "The number of up-to-date, upgraded and failed upgrades of TempoStack instances.",
+		Help:      "The number of upgraded and failed upgrades of TempoStack instances.",
 	}, []string{"kind", "state"})
 )
 
@@ -100,8 +99,6 @@ func (u Upgrade) Upgrade(ctx context.Context, original UpgradeableCR) (Upgradeab
 
 		itemLogger.Info("upgraded instance")
 		metricUpgrades.WithLabelValues(kind, metricUpgradesStateUpgraded).Inc()
-	} else {
-		metricUpgrades.WithLabelValues(kind, metricUpgradesStateUpToDate).Inc()
 	}
 
 	return upgraded, nil

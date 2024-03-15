@@ -19,7 +19,6 @@ import (
 	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
 	"github.com/grafana/tempo-operator/cmd"
 	controllers "github.com/grafana/tempo-operator/controllers/tempo"
-	"github.com/grafana/tempo-operator/internal/upgrade"
 	"github.com/grafana/tempo-operator/internal/version"
 	"github.com/grafana/tempo-operator/internal/webhooks"
 	//+kubebuilder:scaffold:imports
@@ -39,7 +38,7 @@ func start(c *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	err = addDependencies(mgr, ctrlConfig, version)
+	err = addDependencies(mgr, ctrlConfig)
 	if err != nil {
 		setupLog.Error(err, "failed to upgrade TempoStack instances")
 		os.Exit(1)
@@ -125,22 +124,8 @@ func start(c *cobra.Command, args []string) {
 	}
 }
 
-func addDependencies(mgr ctrl.Manager, ctrlConfig configv1alpha1.ProjectConfig, version version.Version) error {
+func addDependencies(mgr ctrl.Manager, ctrlConfig configv1alpha1.ProjectConfig) error {
 	err := mgr.Add(manager.RunnableFunc(func(ctx context.Context) error {
-		upgrade := &upgrade.Upgrade{
-			Client:     mgr.GetClient(),
-			Recorder:   mgr.GetEventRecorderFor("tempo-upgrade"),
-			CtrlConfig: ctrlConfig,
-			Version:    version,
-			Log:        ctrl.LoggerFrom(ctx).WithName("upgrade"),
-		}
-		return upgrade.ManagedInstances(ctx)
-	}))
-	if err != nil {
-		return fmt.Errorf("failed to setup upgrade process: %w", err)
-	}
-
-	err = mgr.Add(manager.RunnableFunc(func(ctx context.Context) error {
 		reconciler := &controllers.OperatorReconciler{
 			Client: mgr.GetClient(),
 			Scheme: mgr.GetScheme(),
