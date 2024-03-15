@@ -12,7 +12,9 @@ spec:
         args:
         - |
           # create OAuth2 client
+          client_id=tenant1-oidc-client
+          client_secret=ZXhhbXBsZS1hcHAtc2VjcmV0 # notsecret
           curl -v \
-            --data '{"audience": ["tenant1-oidc-client"], "client_id": "tenant1-oidc-client", "client_secret": "ZXhhbXBsZS1hcHAtc2VjcmV0", "grant_types": ["client_credentials"], "token_endpoint_auth_method": "client_secret_basic"}' \
+            --data '{"audience": ["'$client_id'"], "client_id": "'$client_id'", "client_secret": "'$client_secret'", "grant_types": ["client_credentials"], "token_endpoint_auth_method": "client_secret_basic"}' \
             http://hydra:4445/admin/clients
       restartPolicy: Never
