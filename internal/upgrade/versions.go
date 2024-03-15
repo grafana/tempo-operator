@@ -8,36 +8,42 @@ import (
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 )
 
-type upgradeFunc func(ctx context.Context, u Upgrade, tempo *v1alpha1.TempoStack) (*v1alpha1.TempoStack, error)
+type upgradeTempoStackFn func(ctx context.Context, u Upgrade, tempo *v1alpha1.TempoStack) error
+type upgradeTempoMonolithicFn func(ctx context.Context, u Upgrade, tempo *v1alpha1.TempoMonolithic) error
 
 type versionUpgrade struct {
 	version semver.Version
-	upgrade upgradeFunc
+
+	// Optional upgrade function for TempoStack
+	upgradeTempoStack upgradeTempoStackFn
+
+	// Optional upgrade function for TempoMonolithic
+	upgradeTempoMonolithic upgradeTempoMonolithicFn
 }
 
 var (
 	// List of all operator versions requiring "manual" upgrade steps
-	// This list needs to be sorted by the version ascending.
+	// This list must be sorted by version ascending.
 	upgrades = []versionUpgrade{
 		{
-			version: *semver.MustParse("0.1.0"),
-			upgrade: upgrade0_1_0,
+			version:           *semver.MustParse("0.1.0"),
+			upgradeTempoStack: upgrade0_1_0,
 		},
 		{
-			version: *semver.MustParse("0.3.0"),
-			upgrade: upgrade0_3_0,
+			version:           *semver.MustParse("0.3.0"),
+			upgradeTempoStack: upgrade0_3_0,
 		},
 		{
-			version: *semver.MustParse("0.5.0"),
-			upgrade: upgrade0_5_0,
+			version:           *semver.MustParse("0.5.0"),
+			upgradeTempoStack: upgrade0_5_0,
 		},
 		{
-			version: *semver.MustParse("0.6.0"),
-			upgrade: upgrade0_6_0,
+			version:           *semver.MustParse("0.6.0"),
+			upgradeTempoStack: upgrade0_6_0,
 		},
 		{
-			version: *semver.MustParse("0.8.0"),
-			upgrade: upgrade0_8_0,
+			version:           *semver.MustParse("0.8.0"),
+			upgradeTempoStack: upgrade0_8_0,
 		},
 	}
 )

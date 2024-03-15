@@ -151,7 +151,7 @@ run: manifests generate ## Run a controller from your host.
 	RELATED_IMAGE_TEMPO_QUERY=$(TEMPO_QUERY_IMAGE) \
 	RELATED_IMAGE_TEMPO_GATEWAY=$(TEMPO_GATEWAY_IMAGE) \
 	RELATED_IMAGE_TEMPO_GATEWAY_OPA=$(TEMPO_GATEWAY_OPA_IMAGE) \
-	go run ./main.go --zap-log-level=info start
+	go run -ldflags ${LD_FLAGS} ./main.go --zap-log-level=info start
 
 .PHONY: docker-build
 docker-build: ## Build docker image with the manager.

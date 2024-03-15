@@ -425,6 +425,14 @@ type MonolithicComponentStatus struct {
 
 // TempoMonolithicStatus defines the observed state of TempoMonolithic.
 type TempoMonolithicStatus struct {
+	// Version of the Tempo Operator.
+	// +optional
+	OperatorVersion string `json:"operatorVersion,omitempty"`
+
+	// Version of the managed Tempo instance.
+	// +optional
+	TempoVersion string `json:"tempoVersion,omitempty"`
+
 	// Components provides summary of all Tempo pod status, grouped per component.
 	//
 	// +kubebuilder:validation:Optional
@@ -440,6 +448,7 @@ type TempoMonolithicStatus struct {
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 //+kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
+//+kubebuilder:printcolumn:name="Tempo Version",type="string",JSONPath=".status.tempoVersion",description="Tempo Version"
 
 // TempoMonolithic manages a Tempo deployment in monolithic mode.
 //
@@ -465,4 +474,29 @@ type TempoMonolithicList struct {
 
 func init() {
 	SchemeBuilder.Register(&TempoMonolithic{}, &TempoMonolithicList{})
+}
+
+// GetOperatorVersion returns the operator version from the status field.
+func (tempo *TempoMonolithic) GetOperatorVersion() string {
+	return tempo.Status.OperatorVersion
+}
+
+// SetOperatorVersion sets the operator version in the status field.
+func (tempo *TempoMonolithic) SetOperatorVersion(v string) {
+	tempo.Status.OperatorVersion = v
+}
+
+// SetTempoVersion sets the Tempo version in the status field.
+func (tempo *TempoMonolithic) SetTempoVersion(v string) {
+	tempo.Status.TempoVersion = v
+}
+
+// GetStatus returns the CR status.
+func (tempo *TempoMonolithic) GetStatus() any {
+	return tempo.Status
+}
+
+// SetStatus sets the CR status.
+func (tempo *TempoMonolithic) SetStatus(s any) {
+	tempo.Status = s.(TempoMonolithicStatus)
 }

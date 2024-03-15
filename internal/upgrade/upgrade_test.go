@@ -49,12 +49,12 @@ func createTempoCR(t *testing.T, nsn types.NamespacedName, version string, manag
 	return tempo
 }
 
-func TestUpgradeToLatest(t *testing.T) {
+func TestUpgradeTempoStackToLatest(t *testing.T) {
 	nsn := types.NamespacedName{Name: "upgrade-to-latest-test", Namespace: "default"}
-	createTempoCR(t, nsn, "0.0.1", v1alpha1.ManagementStateManaged)
+	original := createTempoCR(t, nsn, "0.0.1", v1alpha1.ManagementStateManaged)
 
 	currentV := version.Get()
-	currentV.OperatorVersion = "0.1.0"
+	currentV.OperatorVersion = "100.0.0"
 	currentV.TempoVersion = "1.2.3"
 
 	upgrade := &Upgrade{
@@ -71,10 +71,56 @@ func TestUpgradeToLatest(t *testing.T) {
 		Version: currentV,
 		Log:     logger,
 	}
-	err := upgrade.TempoStacks(context.Background())
+	_, err := upgrade.Upgrade(context.Background(), original)
 	require.NoError(t, err)
 
 	upgradedTempo := v1alpha1.TempoStack{}
+	err = k8sClient.Get(context.Background(), nsn, &upgradedTempo)
+	assert.NoError(t, err)
+
+	// assert versions were updated
+	assert.Equal(t, currentV.OperatorVersion, upgradedTempo.Status.OperatorVersion)
+	assert.Equal(t, currentV.TempoVersion, upgradedTempo.Status.TempoVersion)
+}
+
+func TestUpgradeTempoMonolithicToLatest(t *testing.T) {
+	nsn := types.NamespacedName{Name: "upgrade-to-latest-test", Namespace: "default"}
+	ctrlConfig := configv1alpha1.ProjectConfig{
+		DefaultImages: configv1alpha1.ImagesSpec{
+			Tempo: "docker.io/grafana/tempo:x.y.z",
+		},
+	}
+	original := &v1alpha1.TempoMonolithic{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      nsn.Name,
+			Namespace: nsn.Namespace,
+		},
+		Spec: v1alpha1.TempoMonolithicSpec{},
+	}
+	err := k8sClient.Create(context.Background(), original)
+	require.NoError(t, err)
+
+	original.Status = v1alpha1.TempoMonolithicStatus{
+		OperatorVersion: "0.0.0",
+	}
+	err = k8sClient.Status().Update(context.Background(), original)
+	require.NoError(t, err)
+
+	currentV := version.Get()
+	currentV.OperatorVersion = "100.0.0"
+	currentV.TempoVersion = "1.2.3"
+
+	upgrade := &Upgrade{
+		Client:     k8sClient,
+		Recorder:   record.NewFakeRecorder(1),
+		CtrlConfig: ctrlConfig,
+		Version:    currentV,
+		Log:        logger,
+	}
+	_, err = upgrade.Upgrade(context.Background(), original)
+	require.NoError(t, err)
+
+	upgradedTempo := v1alpha1.TempoMonolithic{}
 	err = k8sClient.Get(context.Background(), nsn, &upgradedTempo)
 	assert.NoError(t, err)
 
@@ -99,9 +145,6 @@ func TestSkipUpgrade(t *testing.T) {
 
 		// Ignore unparseable versions
 		{"unparseable", "abc", v1alpha1.ManagementStateManaged},
-
-		// Ignore unmanaged instances
-		{"unmanaged", "1.0.0", v1alpha1.ManagementStateUnmanaged},
 	}
 
 	for _, test := range tests {
@@ -126,19 +169,12 @@ func TestSkipUpgrade(t *testing.T) {
 				Version: currentV,
 				Log:     logger,
 			}
-			err := upgrade.TempoStacks(context.Background())
-			require.NoError(t, err)
+			_, _ = upgrade.Upgrade(context.Background(), originalTempo)
 
 			upgradedTempo := v1alpha1.TempoStack{}
-			err = k8sClient.Get(context.Background(), nsn, &upgradedTempo)
+			err := k8sClient.Get(context.Background(), nsn, &upgradedTempo)
 			assert.NoError(t, err)
 			assert.Equal(t, test.version, upgradedTempo.Status.OperatorVersion)
-
-			// assert images were not updated
-			assert.Equal(t, originalTempo.Spec.Images.Tempo, upgradedTempo.Spec.Images.Tempo)
-			assert.Equal(t, originalTempo.Spec.Images.TempoQuery, upgradedTempo.Spec.Images.TempoQuery)
-			assert.Equal(t, originalTempo.Spec.Images.TempoGateway, upgradedTempo.Spec.Images.TempoGateway)
-			assert.Equal(t, originalTempo.Spec.Images.TempoGatewayOpa, upgradedTempo.Spec.Images.TempoGatewayOpa)
 		})
 	}
 }

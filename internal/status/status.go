@@ -12,9 +12,7 @@ func Refresh(ctx context.Context, k StatusClient, tempo v1alpha1.TempoStack, sta
 	changed := tempo.DeepCopy()
 	changed.Status = *status
 
-	// The .status.version field is empty for new CRs and cannot be set in the Defaulter webhook.
-	// The upgrade procedure only runs once at operator startup, therefore we need to set
-	// the initial status field versions here.
+	// The version fields in the status are empty for new CRs
 	if status.OperatorVersion == "" {
 		changed.Status.OperatorVersion = version.Get().OperatorVersion
 	}
