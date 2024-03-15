@@ -69,7 +69,10 @@ func (r *TempoMonolithicReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 
 	// Apply upgrades in case TempoMonolithic is switched back from Unmanaged to Managed state.
 	// In all other cases, the upgrade process at operator startup will upgrade the TempoMonolithic instance.
-	if tempo.Status.OperatorVersion != r.Version.OperatorVersion {
+	//
+	// New CRs with empty OperatorVersion are ignored, as they're already up-to-date. The operator version
+	// will be set when the status field is refreshed.
+	if tempo.Status.OperatorVersion != "" && tempo.Status.OperatorVersion != r.Version.OperatorVersion {
 		upgraded, err := upgrade.Upgrade{
 			Client:     r.Client,
 			Recorder:   r.Recorder,

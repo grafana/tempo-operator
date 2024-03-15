@@ -117,13 +117,6 @@ func (u Upgrade) upgradeSpec(ctx context.Context, original UpgradeableCR) (Upgra
 	// do not mutate the CR in place, otherwise a broken upgrade step can result in an inconsistent state
 	upgraded := original.DeepCopyObject().(UpgradeableCR)
 
-	if original.GetOperatorVersion() == "" {
-		// new and already up-to-date CR, set versions
-		upgraded.SetOperatorVersion(u.Version.OperatorVersion)
-		upgraded.SetTempoVersion(u.Version.TempoVersion)
-		return upgraded, nil
-	}
-
 	if original.GetOperatorVersion() == u.Version.OperatorVersion {
 		log.Info("instance is already up-to-date", "version", original.GetOperatorVersion())
 		return original, nil
