@@ -91,10 +91,15 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 				gatewayObjectName,
 			),
 			serviceAccount(params.Tempo),
-			configMapCABundle(params.Tempo),
 		}...)
 
 		if params.CtrlConfig.Gates.OpenShift.ServingCertsService {
+			objs = append(objs, manifestutils.NewConfigMapCABundle(
+				tempo.Namespace,
+				naming.Name("gateway-cabundle", tempo.Name),
+				manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name),
+			))
+
 			dep, err = patchOCPServingCerts(params.Tempo, dep)
 			if err != nil {
 				return nil, err

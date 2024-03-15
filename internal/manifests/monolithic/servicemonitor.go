@@ -7,9 +7,14 @@ import (
 	"github.com/grafana/tempo-operator/internal/manifests/servicemonitor"
 )
 
-// BuildServiceMonitor create a ServiceMonitor.
+// BuildServiceMonitor creates a ServiceMonitor.
 func BuildServiceMonitor(opts Options) *monitoringv1.ServiceMonitor {
 	tempo := opts.Tempo
-	labels := ComponentLabels(manifestutils.TempoMonolithComponentName, tempo.Name)
-	return servicemonitor.NewServiceMonitor(tempo.Namespace, tempo.Name, labels, false, manifestutils.TempoMonolithComponentName, manifestutils.HttpPortName)
+	if tempo.Spec.Multitenancy.IsGatewayEnabled() {
+		labels := ComponentLabels(manifestutils.GatewayComponentName, tempo.Name)
+		return servicemonitor.NewServiceMonitor(tempo.Namespace, tempo.Name, labels, false, manifestutils.GatewayComponentName, manifestutils.GatewayInternalHttpPortName)
+	} else {
+		labels := ComponentLabels(manifestutils.TempoMonolithComponentName, tempo.Name)
+		return servicemonitor.NewServiceMonitor(tempo.Namespace, tempo.Name, labels, false, manifestutils.TempoMonolithComponentName, manifestutils.HttpPortName)
+	}
 }

@@ -87,6 +87,7 @@ func (v *monolithicValidator) validateTempoMonolithic(ctx context.Context, tempo
 	errors = append(errors, validateName(tempo.Name)...)
 	addValidationResults(v.validateStorage(ctx, tempo))
 	errors = append(errors, v.validateJaegerUI(tempo)...)
+	errors = append(errors, v.validateMultitenancy(tempo)...)
 	errors = append(errors, v.validateObservability(tempo)...)
 	errors = append(errors, v.validateServiceAccount(ctx, tempo)...)
 	warnings = append(warnings, v.validateExtraConfig(tempo)...)
@@ -132,6 +133,29 @@ func (v *monolithicValidator) validateJaegerUI(tempo tempov1alpha1.TempoMonolith
 			tempo.Spec.JaegerUI.Route.Enabled,
 			"the openshiftRoute feature gate must be enabled to create a route for Jaeger UI",
 		)}
+	}
+
+	return nil
+}
+
+func (v *monolithicValidator) validateMultitenancy(tempo tempov1alpha1.TempoMonolithic) field.ErrorList {
+	if !tempo.Spec.Multitenancy.IsGatewayEnabled() {
+		return nil
+	}
+
+	multitenancyBase := field.NewPath("spec", "multitenancy")
+	if tempo.Spec.Ingestion != nil && tempo.Spec.Ingestion.OTLP != nil &&
+		tempo.Spec.Ingestion.OTLP.HTTP != nil && tempo.Spec.Ingestion.OTLP.HTTP.Enabled {
+		return field.ErrorList{field.Invalid(
+			multitenancyBase.Child("enabled"),
+			tempo.Spec.Multitenancy.Enabled,
+			"OTLP/HTTP ingestion must be disabled to enable multi-tenancy",
+		)}
+	}
+
+	err := ValidateTenantConfigs(&tempo.Spec.Multitenancy.TenantsSpec, tempo.Spec.Multitenancy.IsGatewayEnabled())
+	if err != nil {
+		return field.ErrorList{field.Invalid(multitenancyBase.Child("enabled"), tempo.Spec.Multitenancy.Enabled, err.Error())}
 	}
 
 	return nil
@@ -183,6 +207,15 @@ func (v *monolithicValidator) validateObservability(tempo tempov1alpha1.TempoMon
 				grafanaBase.Child("dataSource", "enabled"),
 				tempo.Spec.Observability.Grafana.DataSource.Enabled,
 				"the grafanaOperator feature gate must be enabled to create a data source for Tempo",
+			)}
+		}
+
+		if tempo.Spec.Observability.Grafana.DataSource != nil && tempo.Spec.Observability.Grafana.DataSource.Enabled &&
+			tempo.Spec.Multitenancy.IsGatewayEnabled() {
+			return field.ErrorList{field.Invalid(
+				grafanaBase.Child("dataSource", "enabled"),
+				tempo.Spec.Observability.Grafana.DataSource.Enabled,
+				"creating a data source for Tempo is not support if the gateway is enabled",
 			)}
 		}
 	}

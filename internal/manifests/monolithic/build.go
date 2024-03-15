@@ -4,6 +4,9 @@ import (
 	"maps"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
+	"github.com/grafana/tempo-operator/internal/manifests/naming"
 )
 
 // BuildAll generates all manifests.
@@ -16,11 +19,22 @@ func BuildAll(opts Options) ([]client.Object, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	manifests = append(manifests, configMap)
 	maps.Copy(extraStsAnnotations, annotations)
 
 	if tempo.Spec.ServiceAccount == "" {
 		manifests = append(manifests, BuildServiceAccount(opts))
+	}
+
+	if tempo.Spec.Multitenancy.IsGatewayEnabled() {
+		objs, annotations, err := BuildGatewayObjects(opts)
+		if err != nil {
+			return nil, err
+		}
+
+		manifests = append(manifests, objs...)
+		maps.Copy(extraStsAnnotations, annotations)
 	}
 
 	statefulSet, err := BuildTempoStatefulset(opts, extraStsAnnotations)
@@ -29,8 +43,15 @@ func BuildAll(opts Options) ([]client.Object, error) {
 	}
 
 	manifests = append(manifests, statefulSet)
-
 	manifests = append(manifests, BuildServices(opts)...)
+
+	if opts.CtrlConfig.Gates.OpenShift.ServingCertsService {
+		manifests = append(manifests, manifestutils.NewConfigMapCABundle(
+			tempo.Namespace,
+			naming.ServingCABundleName(tempo.Name),
+			CommonLabels(tempo.Name),
+		))
+	}
 
 	if tempo.Spec.JaegerUI != nil && tempo.Spec.JaegerUI.Enabled {
 		if tempo.Spec.JaegerUI.Ingress != nil && tempo.Spec.JaegerUI.Ingress.Enabled {
