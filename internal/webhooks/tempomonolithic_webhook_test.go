@@ -121,6 +121,59 @@ func TestMonolithicValidate(t *testing.T) {
 			errors:   field.ErrorList{},
 		},
 
+		// multitenancy
+		{
+			name: "OTLP/HTTP enabled and multi-tenancy enabled",
+			tempo: v1alpha1.TempoMonolithic{
+				Spec: v1alpha1.TempoMonolithicSpec{
+					Ingestion: &v1alpha1.MonolithicIngestionSpec{
+						OTLP: &v1alpha1.MonolithicIngestionOTLPSpec{
+							HTTP: &v1alpha1.MonolithicIngestionOTLPProtocolsHTTPSpec{
+								Enabled: true,
+							},
+						},
+					},
+					Multitenancy: &v1alpha1.MonolithicMultitenancySpec{
+						Enabled: true,
+						TenantsSpec: v1alpha1.TenantsSpec{
+							Authentication: []v1alpha1.AuthenticationSpec{{
+								TenantName: "abc",
+							}},
+						},
+					},
+				},
+			},
+			warnings: admission.Warnings{},
+			errors: field.ErrorList{field.Invalid(
+				field.NewPath("spec", "multitenancy", "enabled"),
+				true,
+				"OTLP/HTTP ingestion must be disabled to enable multi-tenancy",
+			)},
+		},
+		{
+			name: "multi-tenancy enabled, OpenShift mode, authorization set",
+			tempo: v1alpha1.TempoMonolithic{
+				Spec: v1alpha1.TempoMonolithicSpec{
+					Multitenancy: &v1alpha1.MonolithicMultitenancySpec{
+						Enabled: true,
+						TenantsSpec: v1alpha1.TenantsSpec{
+							Mode: v1alpha1.ModeOpenShift,
+							Authentication: []v1alpha1.AuthenticationSpec{{
+								TenantName: "abc",
+							}},
+							Authorization: &v1alpha1.AuthorizationSpec{},
+						},
+					},
+				},
+			},
+			warnings: admission.Warnings{},
+			errors: field.ErrorList{field.Invalid(
+				field.NewPath("spec", "multitenancy", "enabled"),
+				true,
+				"spec.tenants.authorization should not be defined in openshift mode",
+			)},
+		},
+
 		// observability
 		{
 			name: "serviceMonitors enabled but prometheusOperator feature gate not set",
@@ -205,6 +258,39 @@ func TestMonolithicValidate(t *testing.T) {
 				field.NewPath("spec", "observability", "grafana", "dataSource", "enabled"),
 				true,
 				"the grafanaOperator feature gate must be enabled to create a data source for Tempo",
+			)},
+		},
+		{
+			name: "dataSource enabled, grafanaOperator feature gate set, and gateway enabled",
+			ctrlConfig: configv1alpha1.ProjectConfig{
+				Gates: configv1alpha1.FeatureGates{
+					GrafanaOperator: true,
+				},
+			},
+			tempo: v1alpha1.TempoMonolithic{
+				Spec: v1alpha1.TempoMonolithicSpec{
+					Observability: &v1alpha1.MonolithicObservabilitySpec{
+						Grafana: &v1alpha1.MonolithicObservabilityGrafanaSpec{
+							DataSource: &v1alpha1.MonolithicObservabilityGrafanaDataSourceSpec{
+								Enabled: true,
+							},
+						},
+					},
+					Multitenancy: &v1alpha1.MonolithicMultitenancySpec{
+						Enabled: true,
+						TenantsSpec: v1alpha1.TenantsSpec{
+							Authentication: []v1alpha1.AuthenticationSpec{{
+								TenantName: "",
+							}},
+						},
+					},
+				},
+			},
+			warnings: admission.Warnings{},
+			errors: field.ErrorList{field.Invalid(
+				field.NewPath("spec", "observability", "grafana", "dataSource", "enabled"),
+				true,
+				"creating a data source for Tempo is not support if the gateway is enabled",
 			)},
 		},
 		{

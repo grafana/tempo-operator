@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 )
@@ -91,6 +93,19 @@ func MountTLSSpecVolumes(
 	}
 
 	return nil
+}
+
+// NewConfigMapCABundle creates a new ConfigMap with an annotation that triggers the
+// service-ca-operator to inject the cluster CA bundle in this ConfigMap (service-ca.crt key).
+func NewConfigMapCABundle(namespace string, name string, labels labels.Set) *corev1.ConfigMap {
+	return &corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        name,
+			Namespace:   namespace,
+			Labels:      labels,
+			Annotations: map[string]string{"service.beta.openshift.io/inject-cabundle": "true"},
+		},
+	}
 }
 
 func findContainerIndex(pod *corev1.PodSpec, containerName string) (int, error) {

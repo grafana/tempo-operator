@@ -1,0 +1,32 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: verify-traces-traceql
+spec:
+  template:
+    spec:
+      containers:
+      - name: verify-traces
+        image: ghcr.io/grafana/tempo-operator/test-utils:main
+        command: ["/bin/bash", "-eux", "-c"]
+        args:
+        - |
+          curl -sS \
+            --user tenant1-oidc-client:ZXhhbXBsZS1hcHAtc2VjcmV0 \
+            --data grant_type=client_credentials \
+            --data audience=tenant1-oidc-client \
+            http://hydra:4444/oauth2/token \
+            | tee /tmp/token.out
+
+          token=$(jq -r .access_token /tmp/token.out)
+
+          curl -sS -G \
+            --header "Authorization: Bearer $token" \
+            --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
+            https://tempo-sample-gateway.chainsaw-monolithic-multitenancy-static.svc:8080/api/traces/v1/tenant1/tempo/api/search \
+            --data-urlencode 'q={ resource.service.name="telemetrygen" }' \
+            | tee /tmp/tempo.out
+
+          num_traces=$(jq ".traces | length" /tmp/tempo.out)
+          [ "$num_traces" -eq "10" ] || exit 1
+      restartPolicy: Never

@@ -42,6 +42,21 @@ spec:
     port: 4318
     protocol: TCP
     targetPort: otlp-http
+  selector:
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo-monolithic
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo-monolithic
+  name: tempo-simplest-jaegerui
+spec:
+  ports:
   - name: jaeger-grpc
     port: 16685
     protocol: TCP

@@ -26,28 +26,13 @@ func TestBuildJaegerUIIngress(t *testing.T) {
 			},
 		},
 	}
-	labels := ComponentLabels(manifestutils.TempoMonolithComponentName, "sample")
+	labels := ComponentLabels(manifestutils.JaegerUIComponentName, "sample")
 
 	tests := []struct {
-		name        string
-		input       v1alpha1.TempoMonolithicSpec
-		expected    client.Object
-		expectedErr error
+		name     string
+		input    v1alpha1.TempoMonolithicSpec
+		expected client.Object
 	}{
-		{
-			name:     "no jaeger ui",
-			input:    v1alpha1.TempoMonolithicSpec{},
-			expected: nil,
-		},
-		{
-			name: "jaeger ui, but no ingress",
-			input: v1alpha1.TempoMonolithicSpec{
-				JaegerUI: &v1alpha1.MonolithicJaegerUISpec{
-					Enabled: true,
-				},
-			},
-			expected: nil,
-		},
 		{
 			name: "ingress",
 			input: v1alpha1.TempoMonolithicSpec{
@@ -71,7 +56,7 @@ func TestBuildJaegerUIIngress(t *testing.T) {
 				Spec: networkingv1.IngressSpec{
 					DefaultBackend: &networkingv1.IngressBackend{
 						Service: &networkingv1.IngressServiceBackend{
-							Name: "tempo-sample",
+							Name: "tempo-sample-jaegerui",
 							Port: networkingv1.ServiceBackendPort{
 								Name: "jaeger-ui",
 							},
@@ -113,7 +98,7 @@ func TestBuildJaegerUIIngress(t *testing.T) {
 											PathType: ptr.To(networkingv1.PathTypePrefix),
 											Backend: networkingv1.IngressBackend{
 												Service: &networkingv1.IngressServiceBackend{
-													Name: "tempo-sample",
+													Name: "tempo-sample-jaegerui",
 													Port: networkingv1.ServiceBackendPort{
 														Name: "jaeger-ui",
 													},
@@ -128,6 +113,36 @@ func TestBuildJaegerUIIngress(t *testing.T) {
 				},
 			},
 		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			opts.Tempo.Spec = test.input
+			opts.Tempo.Default(configv1alpha1.ProjectConfig{})
+
+			obj := BuildJaegerUIIngress(opts)
+			require.Equal(t, test.expected, obj)
+		})
+	}
+}
+
+func TestBuildJaegerUIRoute(t *testing.T) {
+	opts := Options{
+		Tempo: v1alpha1.TempoMonolithic{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "sample",
+				Namespace: "default",
+			},
+		},
+	}
+	labels := ComponentLabels(manifestutils.JaegerUIComponentName, "sample")
+
+	tests := []struct {
+		name        string
+		input       v1alpha1.TempoMonolithicSpec
+		expected    *routev1.Route
+		expectedErr error
+	}{
 		{
 			name: "route",
 			input: v1alpha1.TempoMonolithicSpec{
@@ -153,7 +168,7 @@ func TestBuildJaegerUIIngress(t *testing.T) {
 					Host: "",
 					To: routev1.RouteTargetReference{
 						Kind: "Service",
-						Name: "tempo-sample",
+						Name: "tempo-sample-jaegerui",
 					},
 					Port: &routev1.RoutePort{
 						TargetPort: intstr.FromString("jaeger-ui"),
@@ -176,6 +191,50 @@ func TestBuildJaegerUIIngress(t *testing.T) {
 			expected:    nil,
 			expectedErr: errors.New("unsupported tls termination 'invalid' specified for route"),
 		},
+		{
+			name: "route with gateway",
+			input: v1alpha1.TempoMonolithicSpec{
+				Multitenancy: &v1alpha1.MonolithicMultitenancySpec{
+					Enabled: true,
+					TenantsSpec: v1alpha1.TenantsSpec{
+						Authentication: []v1alpha1.AuthenticationSpec{
+							{
+								TenantName: "dev",
+								TenantID:   "dev",
+							},
+						},
+					},
+				},
+				JaegerUI: &v1alpha1.MonolithicJaegerUISpec{
+					Enabled: true,
+					Route: &v1alpha1.MonolithicJaegerUIRouteSpec{
+						Enabled: true,
+					},
+				},
+			},
+			expected: &routev1.Route{
+				TypeMeta: metav1.TypeMeta{
+					APIVersion: networkingv1.SchemeGroupVersion.String(),
+					Kind:       "Ingress",
+				},
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "tempo-sample-jaegerui",
+					Namespace: "default",
+					Labels:    labels,
+				},
+				Spec: routev1.RouteSpec{
+					Host: "",
+					To: routev1.RouteTargetReference{
+						Kind: "Service",
+						Name: "tempo-sample-gateway",
+					},
+					Port: &routev1.RoutePort{
+						TargetPort: intstr.FromString("public"),
+					},
+					TLS: &routev1.TLSConfig{Termination: routev1.TLSTerminationEdge},
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -183,20 +242,9 @@ func TestBuildJaegerUIIngress(t *testing.T) {
 			opts.Tempo.Spec = test.input
 			opts.Tempo.Default(configv1alpha1.ProjectConfig{})
 
-			objs, err := BuildAll(opts)
+			obj, err := BuildJaegerUIRoute(opts)
 			require.Equal(t, test.expectedErr, err)
-
-			for _, obj := range objs {
-				switch obj.(type) {
-				case *networkingv1.Ingress, *routev1.Route:
-					require.Equal(t, test.expected, obj)
-					return
-				}
-			}
-
-			if test.expected != nil {
-				require.Fail(t, "cannot find ingress/route")
-			}
+			require.Equal(t, test.expected, obj)
 		})
 	}
 }

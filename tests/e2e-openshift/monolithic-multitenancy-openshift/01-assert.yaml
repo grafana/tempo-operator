@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: tempo-simplest
+status:
+  readyReplicas: 1
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tempo-simplest-gateway
+spec:
+  ports:
+  - name: public
+    port: 8080
+    protocol: TCP
+    targetPort: public
+  - name: internal
+    port: 8081
+    protocol: TCP
+    targetPort: internal
+  - name: otlp-grpc
+    port: 4317
+    protocol: TCP
+    targetPort: grpc-public

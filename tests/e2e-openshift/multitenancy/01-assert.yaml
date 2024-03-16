@@ -175,7 +175,7 @@ spec:
           failureThreshold: 10
           httpGet:
             path: /live
-            port: 8081
+            port: internal
             scheme: HTTPS
           periodSeconds: 30
           successThreshold: 1
@@ -195,7 +195,7 @@ spec:
           failureThreshold: 12
           httpGet:
             path: /ready
-            port: 8081
+            port: internal
             scheme: HTTPS
           periodSeconds: 5
           successThreshold: 1
@@ -252,7 +252,7 @@ spec:
           periodSeconds: 30
           successThreshold: 1
           timeoutSeconds: 2
-        name: opa
+        name: tempo-gateway-opa
         ports:
         - containerPort: 8082
           name: public
@@ -357,18 +357,18 @@ metadata:
       name: simplest
 spec:
   ports:
-    - name: grpc-public
-      port: 8090
-      protocol: TCP
-      targetPort: 8090
-    - name: internal
-      port: 8081
-      protocol: TCP
-      targetPort: 8081
-    - name: public
-      port: 8080
-      protocol: TCP
-      targetPort: 8080
+  - name: grpc-public
+    port: 8090
+    protocol: TCP
+    targetPort: grpc-public
+  - name: internal
+    port: 8081
+    protocol: TCP
+    targetPort: internal
+  - name: public
+    port: 8080
+    protocol: TCP
+    targetPort: public
   selector:
     app.kubernetes.io/component: gateway
     app.kubernetes.io/instance: simplest

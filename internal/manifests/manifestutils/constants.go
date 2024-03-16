@@ -25,7 +25,9 @@ const (
 	HttpPortName = "http"
 	// PortHTTPServer declares the port number of the tempo http port.
 	PortHTTPServer = 3200
-	// PortInternalHTTPServer declares the port number of the tempo http port.
+	// TempoInternalServerPortName declares the name of the internal Tempo HTTP Server (for healthchecks).
+	TempoInternalServerPortName = "tempo-internal"
+	// PortInternalHTTPServer declares the port number of the internal tempo http port.
 	PortInternalHTTPServer = 3101
 	// PortJaegerQuery declares the port number of the jaeger query UI port.
 	PortJaegerQuery = 16686
@@ -126,6 +128,8 @@ const (
 	TempoMonolithComponentName = "tempo"
 	// TempoConfigName declares the name of the Tempo ConfigMap (tempo-$name-config).
 	TempoConfigName = "config"
+	// JaegerUIComponentName declares the name of the Jaeger UI component.
+	JaegerUIComponentName = "jaegerui"
 
 	// TenantHeader is the header name that contains tenant name.
 	TenantHeader = "x-scope-orgid"
