@@ -3,6 +3,7 @@ package crdmetrics
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
@@ -49,6 +50,35 @@ func (i *tempoStackMetrics) Setup() error {
 		func(instance client.Object) (string, bool) {
 			tempoStack := instance.(*v1alpha1.TempoStack)
 			return string(tempoStack.Spec.ManagementState), true
+		})
+	if err != nil {
+		return err
+	}
+	i.observations = append(i.observations, obs)
+
+	obs, err = newObservation(meter,
+		jaegerUIUsage,
+		"Instances with jaeger UI enabled/disabled",
+		"enabled",
+		func(instance client.Object) (string, bool) {
+			tempoStack := instance.(*v1alpha1.TempoStack)
+			return strconv.FormatBool(tempoStack.Spec.Template.QueryFrontend.JaegerQuery.Enabled), true
+		})
+	if err != nil {
+		return err
+	}
+	i.observations = append(i.observations, obs)
+
+	obs, err = newObservation(meter,
+		multitenancy,
+		"Instances with multi-tenancy mode static/openshift/disabled",
+		"type",
+		func(instance client.Object) (string, bool) {
+			tempoStack := instance.(*v1alpha1.TempoStack)
+			if tempoStack.Spec.Tenants != nil && tempoStack.Spec.Tenants.Mode != "" {
+				return string(tempoStack.Spec.Tenants.Mode), true
+			}
+			return "disabled", true
 		})
 	if err != nil {
 		return err

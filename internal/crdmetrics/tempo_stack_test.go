@@ -62,7 +62,7 @@ func assertLabelAndValues(t *testing.T, name string, metrics metricdata.Resource
 }
 
 func newTempoStackInstance(nsn types.NamespacedName, managedState v1alpha1.ManagementStateType,
-	storage v1alpha1.ObjectStorageSecretType) v1alpha1.TempoStack {
+	storage v1alpha1.ObjectStorageSecretType, jaegerUI bool) v1alpha1.TempoStack {
 	return v1alpha1.TempoStack{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      nsn.Name,
@@ -74,6 +74,37 @@ func newTempoStackInstance(nsn types.NamespacedName, managedState v1alpha1.Manag
 				Secret: v1alpha1.ObjectStorageSecretSpec{
 					Type: storage,
 				},
+			},
+			Template: v1alpha1.TempoTemplateSpec{
+				QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+					JaegerQuery: v1alpha1.JaegerQuerySpec{
+						Enabled: jaegerUI,
+					},
+				},
+			},
+		},
+	}
+}
+
+func newTempoStackInstanceWithTenant(nsn types.NamespacedName,
+	managedState v1alpha1.ManagementStateType,
+	storage v1alpha1.ObjectStorageSecretType,
+	tenantMode v1alpha1.ModeType,
+) v1alpha1.TempoStack {
+	return v1alpha1.TempoStack{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      nsn.Name,
+			Namespace: nsn.Namespace,
+		},
+		Spec: v1alpha1.TempoStackSpec{
+			ManagementState: managedState,
+			Storage: v1alpha1.ObjectStorageSpec{
+				Secret: v1alpha1.ObjectStorageSecretSpec{
+					Type: storage,
+				},
+			},
+			Tenants: &v1alpha1.TenantsSpec{
+				Mode: tenantMode,
 			},
 		},
 	}
@@ -99,27 +130,37 @@ func TestValueObservedMetrics(t *testing.T) {
 	tempoGCS := newTempoStackInstance(types.NamespacedName{
 		Name:      "my-tempo-gcs",
 		Namespace: "test",
-	}, v1alpha1.ManagementStateManaged, v1alpha1.ObjectStorageSecretGCS)
+	}, v1alpha1.ManagementStateManaged, v1alpha1.ObjectStorageSecretGCS, true)
 
 	tempoS3 := newTempoStackInstance(types.NamespacedName{
 		Name:      "my-jaeger-s3",
 		Namespace: "test",
-	}, v1alpha1.ManagementStateManaged, v1alpha1.ObjectStorageSecretS3)
+	}, v1alpha1.ManagementStateManaged, v1alpha1.ObjectStorageSecretS3, false)
 
 	tempoOtherS3 := newTempoStackInstance(types.NamespacedName{
 		Name:      "my-jaeger-other-s3",
 		Namespace: "test",
-	}, v1alpha1.ManagementStateManaged, v1alpha1.ObjectStorageSecretS3)
+	}, v1alpha1.ManagementStateManaged, v1alpha1.ObjectStorageSecretS3, false)
 
 	tempoUnmanaged := newTempoStackInstance(types.NamespacedName{
 		Name:      "my-jaeger-azure-unmanaged",
 		Namespace: "test",
-	}, v1alpha1.ManagementStateUnmanaged, v1alpha1.ObjectStorageSecretAzure)
+	}, v1alpha1.ManagementStateUnmanaged, v1alpha1.ObjectStorageSecretAzure, false)
 
 	tempoUnmanaged2 := newTempoStackInstance(types.NamespacedName{
 		Name:      "my-jaeger-azure-unmanaged-2",
 		Namespace: "test",
-	}, v1alpha1.ManagementStateUnmanaged, v1alpha1.ObjectStorageSecretAzure)
+	}, v1alpha1.ManagementStateUnmanaged, v1alpha1.ObjectStorageSecretAzure, false)
+
+	tempoTenantOpenshift := newTempoStackInstanceWithTenant(types.NamespacedName{
+		Name:      "my-jaeger-tenant-op",
+		Namespace: "test",
+	}, v1alpha1.ManagementStateManaged, v1alpha1.ObjectStorageSecretS3, v1alpha1.ModeOpenShift)
+
+	tempoTenantStatic := newTempoStackInstanceWithTenant(types.NamespacedName{
+		Name:      "my-jaeger-tenant-static",
+		Namespace: "test",
+	}, v1alpha1.ManagementStateManaged, v1alpha1.ObjectStorageSecretS3, v1alpha1.ModeStatic)
 
 	objs := []runtime.Object{
 		&tempoGCS,
@@ -127,13 +168,20 @@ func TestValueObservedMetrics(t *testing.T) {
 		&tempoOtherS3,
 		&tempoUnmanaged,
 		&tempoUnmanaged2,
+		&tempoTenantOpenshift,
+		&tempoTenantStatic,
 	}
 	expected := []expectedMetric{
-		newExpectedMetric(managedMetric, attribute.String("state", string(v1alpha1.ManagementStateManaged)), 3),
+		newExpectedMetric(managedMetric, attribute.String("state", string(v1alpha1.ManagementStateManaged)), 5),
 		newExpectedMetric(managedMetric, attribute.String("state", string(v1alpha1.ManagementStateUnmanaged)), 2),
 		newExpectedMetric(storageBackendMetric, attribute.String("type", string(v1alpha1.ObjectStorageSecretGCS)), 1),
-		newExpectedMetric(storageBackendMetric, attribute.String("type", string(v1alpha1.ObjectStorageSecretS3)), 2),
+		newExpectedMetric(storageBackendMetric, attribute.String("type", string(v1alpha1.ObjectStorageSecretS3)), 4),
 		newExpectedMetric(storageBackendMetric, attribute.String("type", string(v1alpha1.ObjectStorageSecretAzure)), 2),
+		newExpectedMetric(multitenancy, attribute.String("type", "disabled"), 5),
+		newExpectedMetric(multitenancy, attribute.String("type", string(v1alpha1.ModeOpenShift)), 1),
+		newExpectedMetric(multitenancy, attribute.String("type", string(v1alpha1.ModeStatic)), 1),
+		newExpectedMetric(jaegerUIUsage, attribute.String("enabled", "true"), 1),
+		newExpectedMetric(jaegerUIUsage, attribute.String("enabled", "false"), 6),
 	}
 
 	cl := fake.NewClientBuilder().WithScheme(s).WithRuntimeObjects(objs...).Build()
@@ -167,11 +215,15 @@ func TestValueObservedMetrics(t *testing.T) {
 
 	// Set new numbers
 	expected = []expectedMetric{
-		newExpectedMetric(managedMetric, attribute.String("state", string(v1alpha1.ManagementStateManaged)), 2),
+		newExpectedMetric(managedMetric, attribute.String("state", string(v1alpha1.ManagementStateManaged)), 4),
 		newExpectedMetric(managedMetric, attribute.String("state", string(v1alpha1.ManagementStateUnmanaged)), 2),
 		newExpectedMetric(storageBackendMetric, attribute.String("type", string(v1alpha1.ObjectStorageSecretGCS)), 0),
-		newExpectedMetric(storageBackendMetric, attribute.String("type", string(v1alpha1.ObjectStorageSecretS3)), 2),
+		newExpectedMetric(storageBackendMetric, attribute.String("type", string(v1alpha1.ObjectStorageSecretS3)), 4),
 		newExpectedMetric(storageBackendMetric, attribute.String("type", string(v1alpha1.ObjectStorageSecretAzure)), 2),
+		newExpectedMetric(multitenancy, attribute.String("type", string(v1alpha1.ModeOpenShift)), 1),
+		newExpectedMetric(multitenancy, attribute.String("type", string(v1alpha1.ModeStatic)), 1),
+		newExpectedMetric(jaegerUIUsage, attribute.String("enabled", "true"), 0),
+		newExpectedMetric(jaegerUIUsage, attribute.String("enabled", "false"), 6),
 	}
 	for _, e := range expected {
 		assertLabelAndValues(t, e.name, metrics, e.labels, e.value)
