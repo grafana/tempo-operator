@@ -6,7 +6,6 @@ import (
 	"path"
 
 	"gopkg.in/yaml.v2"
-	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -108,7 +107,7 @@ func BuildConfigMap(opts Options) (*corev1.ConfigMap, map[string]string, error) 
 
 	configMap := &corev1.ConfigMap{
 		TypeMeta: metav1.TypeMeta{
-			APIVersion: appsv1.SchemeGroupVersion.String(),
+			APIVersion: corev1.SchemeGroupVersion.String(),
 			Kind:       "ConfigMap",
 		},
 		ObjectMeta: metav1.ObjectMeta{
