@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-logr/logr"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
@@ -889,7 +888,7 @@ func TestReconcileManifestsValidateModes(t *testing.T) {
 			err := k8sClient.Update(context.Background(), tempo)
 			require.NoError(t, err)
 			reconciler := TempoStackReconciler{Client: k8sClient, Scheme: testScheme}
-			err = reconciler.createOrUpdate(context.Background(), logr.Discard(), *tempo)
+			err = reconciler.createOrUpdate(context.Background(), *tempo)
 			tc.validate(t, err)
 		})
 	}
