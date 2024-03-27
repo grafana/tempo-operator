@@ -23,6 +23,7 @@ import (
 	"github.com/grafana/tempo-operator/internal/handlers/storage"
 	"github.com/grafana/tempo-operator/internal/manifests/monolithic"
 	"github.com/grafana/tempo-operator/internal/status"
+	"github.com/grafana/tempo-operator/internal/tlsprofile"
 )
 
 // TempoMonolithicReconciler reconciles a TempoMonolithic object.
@@ -96,6 +97,20 @@ func (r *TempoMonolithicReconciler) createOrUpdate(ctx context.Context, tempo v1
 		var err error
 		opts.GatewayTenantSecret, opts.GatewayTenantsData, err = getTenantParams(ctx, r.Client, &r.CtrlConfig, tempo.Namespace, tempo.Name, tempo.Spec.Multitenancy.TenantsSpec, true)
 		if err != nil {
+			return err
+		}
+	}
+
+	var err error
+	opts.TLSProfile, err = tlsprofile.Get(ctx, r.CtrlConfig.Gates, r.Client)
+	if err != nil {
+		switch err {
+		case tlsprofile.ErrGetProfileFromCluster, tlsprofile.ErrGetInvalidProfile:
+			return &status.ConfigurationError{
+				Message: err.Error(),
+				Reason:  v1alpha1.ReasonCouldNotGetOpenShiftTLSPolicy,
+			}
+		default:
 			return err
 		}
 	}

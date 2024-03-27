@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/go-logr/logr"
 	grafanav1 "github.com/grafana/grafana-operator/v5/api/v1beta1"
 	routev1 "github.com/openshift/api/route/v1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
@@ -22,7 +21,7 @@ import (
 	"github.com/grafana/tempo-operator/internal/tlsprofile"
 )
 
-func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, log logr.Logger, tempo v1alpha1.TempoStack) error {
+func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, tempo v1alpha1.TempoStack) error {
 	params := manifestutils.Params{
 		Tempo:      tempo,
 		CtrlConfig: r.CtrlConfig,
@@ -46,7 +45,7 @@ func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, log logr.Logg
 	}
 
 	var err error
-	params.TLSProfile, err = tlsprofile.Get(ctx, r.CtrlConfig.Gates, r.Client, log)
+	params.TLSProfile, err = tlsprofile.Get(ctx, r.CtrlConfig.Gates, r.Client)
 	if err != nil {
 		switch err {
 		case tlsprofile.ErrGetProfileFromCluster:

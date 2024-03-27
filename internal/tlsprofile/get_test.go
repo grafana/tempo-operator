@@ -10,7 +10,6 @@ import (
 	"github.com/stretchr/testify/require"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
 )
@@ -20,11 +19,10 @@ func TestGetInvalidOrEmptyTLSProfile(t *testing.T) {
 	fg := configv1alpha1.FeatureGates{
 		TLSProfile: "",
 	}
-	l := log.FromContext(ctx)
 
 	cl := &clientStub{}
 
-	options, err := Get(ctx, fg, cl, l)
+	options, err := Get(ctx, fg, cl)
 	assert.Equal(t, err, ErrGetInvalidProfile)
 	assert.Equal(t, TLSProfileOptions{}, options)
 }
@@ -34,7 +32,6 @@ func TestGetSpecificProfile(t *testing.T) {
 	fg := configv1alpha1.FeatureGates{
 		TLSProfile: string(configv1alpha1.TLSProfileOldType),
 	}
-	l := log.FromContext(ctx)
 
 	cl := &clientStub{}
 
@@ -43,7 +40,7 @@ func TestGetSpecificProfile(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	options, err := Get(ctx, fg, cl, l)
+	options, err := Get(ctx, fg, cl)
 	assert.NoError(t, err)
 	assert.Equal(t, oldSettings, options)
 }
@@ -56,13 +53,12 @@ func TestGetWithClusterError(t *testing.T) {
 			ClusterTLSPolicy: true,
 		},
 	}
-	l := log.FromContext(ctx)
 	cl := &clientStub{}
 
 	returnErr := apierrors.NewNotFound(schema.GroupResource{}, "something wasn't found")
 	cl.On("Get", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(returnErr)
 
-	options, err := Get(ctx, fg, cl, l)
+	options, err := Get(ctx, fg, cl)
 	cl.AssertExpectations(t)
 	cl.AssertNumberOfCalls(t, "Get", 1)
 
@@ -78,7 +74,6 @@ func TestGetWithClusterPolicy(t *testing.T) {
 			ClusterTLSPolicy: true,
 		},
 	}
-	l := log.FromContext(ctx)
 	cl := &clientStub{}
 	cl.On("Get", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Run(func(args mock.Arguments) {
 		v := args.Get(2).(*openshiftconfigv1.APIServer)
@@ -92,7 +87,7 @@ func TestGetWithClusterPolicy(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	options, err := Get(ctx, fg, cl, l)
+	options, err := Get(ctx, fg, cl)
 
 	cl.AssertExpectations(t)
 	cl.AssertNumberOfCalls(t, "Get", 1)
@@ -109,7 +104,6 @@ func TestGetWithInvalidClusterPolicy(t *testing.T) {
 			ClusterTLSPolicy: true,
 		},
 	}
-	l := log.FromContext(ctx)
 	cl := &clientStub{}
 	cl.On("Get", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Run(func(args mock.Arguments) {
 		v := args.Get(2).(*openshiftconfigv1.APIServer)
@@ -118,7 +112,7 @@ func TestGetWithInvalidClusterPolicy(t *testing.T) {
 		}
 	})
 
-	_, err := Get(ctx, fg, cl, l)
+	_, err := Get(ctx, fg, cl)
 
 	cl.AssertExpectations(t)
 	cl.AssertNumberOfCalls(t, "Get", 1)

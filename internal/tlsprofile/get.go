@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 
-	"github.com/go-logr/logr"
 	openshiftconfigv1 "github.com/openshift/api/config/v1"
 
 	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
@@ -14,12 +13,12 @@ import (
 var ErrGetProfileFromCluster = errors.New("failed to get profile from cluster, using default TLS profile")
 
 // ErrGetInvalidProfile happens when the profile is invalid or unknow.
-var ErrGetInvalidProfile = errors.New("failed to get profile from cluster, using default TLS profile")
+var ErrGetInvalidProfile = errors.New("got invalid TLS profile from cluster, using default TLS profile")
 
 // Get the profile according to the features configuration, if the policy is invalid or is not specified (empty string) this
 // should return an error, if openshift.ClusterTLSPolicy is enabled, it should get the profile
 // from the cluster, if the cluster return a unknow profile this should return an error.
-func Get(ctx context.Context, fg configv1alpha1.FeatureGates, c k8getter, log logr.Logger) (TLSProfileOptions, error) {
+func Get(ctx context.Context, fg configv1alpha1.FeatureGates, c k8getter) (TLSProfileOptions, error) {
 	var tlsProfileType openshiftconfigv1.TLSSecurityProfile
 	var err error
 	var returnedErr error
