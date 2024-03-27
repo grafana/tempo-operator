@@ -216,6 +216,7 @@ func init() {
 	SchemeBuilder.Register(&ProjectConfig{})
 }
 
+// DefaultProjectConfig returns the default operator config.
 func DefaultProjectConfig() ProjectConfig {
 	return ProjectConfig{
 		DefaultImages: ImagesSpec{
