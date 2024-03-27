@@ -4,7 +4,6 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"path"
-	"strings"
 
 	"gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
@@ -138,7 +137,7 @@ func BuildConfigMap(opts Options) (*corev1.ConfigMap, map[string]string, error) 
 	return configMap, extraAnnotations, nil
 }
 
-func configureReceiverTLS(tlsSpec *v1alpha1.TLSSpec, tlsProfile tlsprofile.TLSProfileOptions) tempoReceiverTLSConfig {
+func configureReceiverTLS(tlsSpec *v1alpha1.TLSSpec, tlsProfile tlsprofile.TLSProfileOptions) (tempoReceiverTLSConfig, error) {
 	tlsCfg := tempoReceiverTLSConfig{}
 	if tlsSpec != nil && tlsSpec.Enabled {
 		if tlsSpec.Cert != "" {
@@ -151,11 +150,15 @@ func configureReceiverTLS(tlsSpec *v1alpha1.TLSSpec, tlsProfile tlsprofile.TLSPr
 		if tlsSpec.MinVersion != "" {
 			tlsCfg.MinVersion = tlsSpec.MinVersion
 		} else if tlsProfile.MinTLSVersion != "" {
-			tlsCfg.MinVersion = tlsProfile.MinTLSVersion
+			var err error
+			tlsCfg.MinVersion, err = tlsProfile.MinVersionShort()
+			if err != nil {
+				return tempoReceiverTLSConfig{}, err
+			}
 		}
 		tlsCfg.CipherSuites = tlsProfile.Ciphers
 	}
-	return tlsCfg
+	return tlsCfg, nil
 }
 
 func buildTempoConfig(opts Options) ([]byte, error) {
@@ -204,7 +207,7 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 				} else if opts.TLSProfile.MinTLSVersion != "" {
 					config.Storage.Trace.S3.TLSMinVersion = opts.TLSProfile.MinTLSVersion
 				}
-				config.Storage.Trace.S3.TLSCipherSuites = strings.Join(opts.TLSProfile.Ciphers, ",")
+				config.Storage.Trace.S3.TLSCipherSuites = opts.TLSProfile.TLSCipherSuites()
 			}
 
 		case v1alpha1.MonolithicTracesStorageBackendAzure:
@@ -225,9 +228,15 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 	if tempo.Spec.Ingestion != nil {
 		if tempo.Spec.Ingestion.OTLP != nil {
 			if tempo.Spec.Ingestion.OTLP.GRPC != nil && tempo.Spec.Ingestion.OTLP.GRPC.Enabled {
-				config.Distributor.Receivers.OTLP.Protocols.GRPC = &tempoReceiverConfig{
-					TLS: configureReceiverTLS(tempo.Spec.Ingestion.OTLP.GRPC.TLS, opts.TLSProfile),
+				receiverTLS, err := configureReceiverTLS(tempo.Spec.Ingestion.OTLP.GRPC.TLS, opts.TLSProfile)
+				if err != nil {
+					return nil, err
 				}
+
+				config.Distributor.Receivers.OTLP.Protocols.GRPC = &tempoReceiverConfig{
+					TLS: receiverTLS,
+				}
+
 				if tempo.Spec.Multitenancy.IsGatewayEnabled() {
 					// all connections to tempo must go via gateway
 					config.Distributor.Receivers.OTLP.Protocols.GRPC.Endpoint = fmt.Sprintf("localhost:%d", manifestutils.PortOtlpGrpcServer)
@@ -235,8 +244,13 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 			}
 
 			if tempo.Spec.Ingestion.OTLP.HTTP != nil && tempo.Spec.Ingestion.OTLP.HTTP.Enabled {
+				receiverTLS, err := configureReceiverTLS(tempo.Spec.Ingestion.OTLP.HTTP.TLS, opts.TLSProfile)
+				if err != nil {
+					return nil, err
+				}
+
 				config.Distributor.Receivers.OTLP.Protocols.HTTP = &tempoReceiverConfig{
-					TLS: configureReceiverTLS(tempo.Spec.Ingestion.OTLP.HTTP.TLS, opts.TLSProfile),
+					TLS: receiverTLS,
 				}
 			}
 		}

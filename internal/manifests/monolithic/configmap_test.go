@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"testing"
 
-	openshiftconfigv1 "github.com/openshift/api/config/v1"
 	"github.com/stretchr/testify/require"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -130,7 +129,7 @@ usage_report:
 								Enabled:    true,
 								CA:         "ca",
 								Cert:       "cert",
-								MinVersion: string(openshiftconfigv1.VersionTLS13),
+								MinVersion: "1.3",
 							},
 						},
 						HTTP: &v1alpha1.MonolithicIngestionOTLPProtocolsHTTPSpec{
@@ -161,7 +160,7 @@ distributor:
             client_ca_file: /var/run/ca-receiver/service-ca.crt
             cert_file: /var/run/tls/receiver/tls.crt
             key_file: /var/run/tls/receiver/tls.key
-            min_version: VersionTLS13
+            min_version: "1.3"
 usage_report:
   reporting_enabled: false
 `,
@@ -213,7 +212,7 @@ distributor:
             client_ca_file: /var/run/ca-receiver/service-ca.crt
             cert_file: /var/run/tls/receiver/tls.crt
             key_file: /var/run/tls/receiver/tls.key
-            min_version: VersionTLS12
+            min_version: "1.2"
             cipher_suites: [abc]
 usage_report:
   reporting_enabled: false
