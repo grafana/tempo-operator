@@ -262,6 +262,7 @@ func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 					corev1.ResourceMemory: *resource.NewQuantity(32212256, resource.BinarySI),
 				},
 			},
+			SecurityContext: manifestutils.TempoContainerSecurityContext(),
 		}
 		jaegerQueryVolume := corev1.Volume{
 			Name: manifestutils.TmpStorageVolumeName + "-query",
