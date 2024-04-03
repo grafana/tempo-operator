@@ -171,7 +171,7 @@ func deployment(params manifestutils.Params) (*appsv1.Deployment, error) {
 								},
 								{
 									Name:      manifestutils.TmpStorageVolumeName,
-									MountPath: manifestutils.TmpStoragePath,
+									MountPath: manifestutils.TmpTempoStoragePath,
 								},
 							},
 							Resources:       resources(tempo),
@@ -239,7 +239,8 @@ func deployment(params manifestutils.Params) (*appsv1.Deployment, error) {
 					MountPath: manifestutils.TmpStoragePath,
 				},
 			},
-			Resources: tempoQueryResources(tempo),
+			Resources:       tempoQueryResources(tempo),
+			SecurityContext: manifestutils.TempoContainerSecurityContext(),
 		}
 		jaegerQueryVolume := corev1.Volume{
 			Name: manifestutils.TmpStorageVolumeName + "-query",
