@@ -112,7 +112,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 								},
 								{
 									Name:      manifestutils.TmpStorageVolumeName,
-									MountPath: manifestutils.TmpStoragePath,
+									MountPath: manifestutils.TmpTempoStoragePath,
 								},
 							},
 							Resources:       resources(tempo),

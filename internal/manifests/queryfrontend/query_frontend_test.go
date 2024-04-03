@@ -175,7 +175,7 @@ func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 								},
 								{
 									Name:      manifestutils.TmpStorageVolumeName,
-									MountPath: manifestutils.TmpStoragePath,
+									MountPath: manifestutils.TmpTempoStoragePath,
 								},
 							},
 							Resources: corev1.ResourceRequirements{
