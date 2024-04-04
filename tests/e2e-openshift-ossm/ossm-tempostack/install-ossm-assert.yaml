@@ -1,0 +1,73 @@
+apiVersion: project.openshift.io/v1
+kind: Project
+metadata:
+  name: istio-system
+spec:
+  finalizers:
+  - kubernetes
+status:
+  phase: Active
+
+---
+apiVersion: project.openshift.io/v1
+kind: Project
+metadata:
+  name: tracing-system
+spec:
+  finalizers:
+  - kubernetes
+status:
+  phase: Active
+
+---
+apiVersion: maistra.io/v2
+kind: ServiceMeshControlPlane
+metadata:
+  name: istio-system
+  namespace: istio-system
+status:
+  readiness:
+    components:
+      pending: []
+      ready:
+      - grafana
+      - istio-discovery
+      - istio-egress
+      - istio-ingress
+      - kiali
+      - mesh-config
+      - prometheus
+      - telemetry-common
+      unready: []
+
+---
+kind: ServiceMeshMemberRoll
+apiVersion: maistra.io/v1
+metadata:
+  name: default
+  namespace: istio-system
+spec:
+  members:
+    - tracing-system
+    - bookinfo
+status:
+  members:
+  - bookinfo
+  - tracing-system
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: kiali
+    app.kubernetes.io/instance: kiali
+    app.kubernetes.io/name: kiali
+    app.kubernetes.io/part-of: kiali
+  namespace: istio-system
+status:
+  containerStatuses:
+  - name: kiali
+    ready: true
+    started: true
+  phase: Running
