@@ -11,3 +11,7 @@ on:
 jobs:
   publish-images:
     uses: ./.github/workflows/reusable-publish-images.yaml
+    with:
+      publish_bundle: false
+      version_tag: ${{ github.ref }}
+      push: ${{ github.event_name != 'pull_request' }}
