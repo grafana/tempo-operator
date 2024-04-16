@@ -5,13 +5,31 @@ on:
       version:
         description: version of the operator to release
         required: true
+env:
+  OPERATOR_BOT_USER: tempooperatorbot
 
 jobs:
   prepare-release:
     runs-on: ubuntu-22.04
     steps:
+
+      - name: Sync fork
+        env:
+          GH_TOKEN: ${{ secrets.TEMPOOPERATORBOT_GITHUB_TOKEN }}
+        run: |
+          # synchronizing the fork is fast, and avoids the need to fetch the full upstream repo
+          # (fetching the upstream repo with "--depth 1" would lead to "shallow update not allowed"
+          #  error when pushing back to the origin repo)
+          gh repo sync $OPERATOR_BOT_USER/${{ github.event.repository.name }} \
+              --source ${{ github.repository }} \
+              --force
+
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          repository: ${{ env.OPERATOR_BOT_USER }}/${{ github.event.repository.name }}
+          token: ${{ secrets.TEMPOOPERATORBOT_GITHUB_TOKEN }}
+
 
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -37,12 +55,16 @@ jobs:
       # Commit all changed files back to the repository
       - name: Commit the changes to the repository and create PR
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "$OPERATOR_BOT_USER"
+          git config user.email "41898282+$OPERATOR_BOT_USER@users.noreply.github.com"
           git checkout -b releases/${{ inputs.version }}
           git add -A
           git commit -m "Prepare Release ${{inputs.version}}" --author="${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>"
           git push -f --set-upstream origin releases/${{ inputs.version }}
-          gh pr create --title='Prepare release v${{ inputs.version }}' --assignee=${{ github.actor }} --reviewer=${{ github.actor }} --body='v${{ inputs.version }}'
+          gh pr create \
+              --title='Prepare release v${{ inputs.version }}' \
+              --body='v${{ inputs.version }}'\
+              --repo ${{ github.repository }}
+
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.TEMPOOPERATORBOT_GITHUB_TOKEN }}
