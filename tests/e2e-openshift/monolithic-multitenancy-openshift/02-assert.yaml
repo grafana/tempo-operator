@@ -5,3 +5,16 @@ metadata:
   name: dev-collector
 status:
   readyReplicas: 1
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dev-collector
+spec:
+  ports:
+  - appProtocol: grpc
+    name: otlp-grpc
+    port: 4317
+    protocol: TCP
+    targetPort: 4317
