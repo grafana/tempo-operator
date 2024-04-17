@@ -604,7 +604,7 @@ func TestStatefulsetSchedulingRules(t *testing.T) {
 						Backend: "memory",
 					},
 				},
-				Scheduler: &v1alpha1.MonolithicSchedulerSpec{
+				MonolithicSchedulerSpec: v1alpha1.MonolithicSchedulerSpec{
 					NodeSelector: map[string]string{
 						"key1": "value1",
 					},
