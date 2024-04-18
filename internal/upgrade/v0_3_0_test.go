@@ -30,6 +30,9 @@ func TestRemoveDeprecatedFields(t *testing.T) {
 				},
 			},
 		},
+		Status: v1alpha1.TempoStackStatus{
+			OperatorVersion: "0.1.0",
+		},
 	}
 
 	version := version.Get()
@@ -41,8 +44,9 @@ func TestRemoveDeprecatedFields(t *testing.T) {
 		Log:      logger,
 	}
 
-	upgraded, err := upgrade.updateTempoStackCR(context.Background(), tempo)
+	u, err := upgrade.upgradeSpec(context.Background(), &tempo)
 	require.NoError(t, err)
+	upgraded := u.(*v1alpha1.TempoStack)
 	require.Nil(t, upgraded.Spec.LimitSpec.Global.Query.MaxSearchBytesPerTrace)
 	require.Nil(t, upgraded.Spec.LimitSpec.PerTenant["tenant1"].Query.MaxSearchBytesPerTrace)
 }

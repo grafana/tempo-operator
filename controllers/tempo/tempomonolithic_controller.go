@@ -15,6 +15,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/validation/field"
+	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -24,13 +25,17 @@ import (
 	"github.com/grafana/tempo-operator/internal/manifests/monolithic"
 	"github.com/grafana/tempo-operator/internal/status"
 	"github.com/grafana/tempo-operator/internal/tlsprofile"
+	"github.com/grafana/tempo-operator/internal/upgrade"
+	"github.com/grafana/tempo-operator/internal/version"
 )
 
 // TempoMonolithicReconciler reconciles a TempoMonolithic object.
 type TempoMonolithicReconciler struct {
 	client.Client
 	Scheme     *runtime.Scheme
+	Recorder   record.EventRecorder
 	CtrlConfig configv1alpha1.ProjectConfig
+	Version    version.Version
 }
 
 //+kubebuilder:rbac:groups=tempo.grafana.com,resources=tempomonolithics,verbs=get;list;watch;create;update;patch;delete
@@ -59,13 +64,30 @@ func (r *TempoMonolithicReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return ctrl.Result{}, nil
 	}
 
-	// apply defaults
-	tempo.Default(r.CtrlConfig)
-
 	if tempo.Spec.Management == v1alpha1.ManagementStateUnmanaged {
 		log.Info("Skipping reconciliation for unmanaged TempoMonolithic resource", "name", req.String())
 		return ctrl.Result{}, nil
 	}
+
+	// New CRs with empty OperatorVersion are ignored, as they're already up-to-date.
+	// The versions will be set when the status field is refreshed.
+	if tempo.Status.OperatorVersion != "" && tempo.Status.OperatorVersion != r.Version.OperatorVersion {
+		upgraded, err := upgrade.Upgrade{
+			Client:     r.Client,
+			Recorder:   r.Recorder,
+			CtrlConfig: r.CtrlConfig,
+			Version:    r.Version,
+			Log:        log.WithName("upgrade"),
+		}.Upgrade(ctx, &tempo)
+		if err != nil {
+			return ctrl.Result{}, status.HandleTempoMonolithicStatus(ctx, r.Client, tempo, err)
+		}
+		tempo = *upgraded.(*v1alpha1.TempoMonolithic)
+	}
+
+	// Apply ephemeral defaults after upgrade.
+	// The ephemeral defaults should not be written back to the cluster.
+	tempo.Default(r.CtrlConfig)
 
 	err := r.createOrUpdate(ctx, tempo)
 	if err != nil {

@@ -19,6 +19,10 @@ spec:
     - jsonPath: .metadata.creationTimestamp
       name: Age
       type: date
+    - description: Tempo Version
+      jsonPath: .status.tempoVersion
+      name: Tempo Version
+      type: string
     name: v1alpha1
     schema:
       openAPIV3Schema:
@@ -1799,6 +1803,12 @@ spec:
                   - type
                   type: object
                 type: array
+              operatorVersion:
+                description: Version of the Tempo Operator.
+                type: string
+              tempoVersion:
+                description: Version of the managed Tempo instance.
+                type: string
             type: object
         type: object
     served: true

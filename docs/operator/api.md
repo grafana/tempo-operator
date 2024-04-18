@@ -445,6 +445,11 @@ PodStatusMap
 <td><p>ReasonFailedReconciliation when the operator failed to reconcile.</p>
 </td>
 
+</tr><tr><td><p>&#34;FailedUpgrade&#34;</p></td>
+
+<td><p>ReasonFailedUpgrade when the operator failed to upgrade an instance.</p>
+</td>
+
 </tr><tr><td><p>&#34;InvalidStorageConfig&#34;</p></td>
 
 <td><p>ReasonInvalidStorageConfig defines that the object storage configuration is invalid (missing or incomplete storage secret).</p>
@@ -5810,6 +5815,52 @@ Kubernetes core/v1.Affinity
 </thead>
 
 <tbody>
+
+<tr>
+
+<td>
+
+<code>operatorVersion</code><br/>
+
+<em>
+
+string
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>Version of the Tempo Operator.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>tempoVersion</code><br/>
+
+<em>
+
+string
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>Version of the managed Tempo instance.</p>
+
+</td>
+</tr>
 
 <tr>
 

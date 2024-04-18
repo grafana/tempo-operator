@@ -7,7 +7,7 @@ import (
 )
 
 // This upgrade sets the deprecated MaxSearchBytesPerTrace field to nil.
-func upgrade0_3_0(ctx context.Context, u Upgrade, tempo *v1alpha1.TempoStack) (*v1alpha1.TempoStack, error) {
+func upgrade0_3_0(ctx context.Context, u Upgrade, tempo *v1alpha1.TempoStack) error {
 	if tempo.Spec.LimitSpec.Global.Query.MaxSearchBytesPerTrace != nil {
 		tempo.Spec.LimitSpec.Global.Query.MaxSearchBytesPerTrace = nil
 	}
@@ -17,5 +17,5 @@ func upgrade0_3_0(ctx context.Context, u Upgrade, tempo *v1alpha1.TempoStack) (*
 			tempo.Spec.LimitSpec.PerTenant[tenant] = limits
 		}
 	}
-	return tempo, nil
+	return nil
 }
