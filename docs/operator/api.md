@@ -5705,6 +5705,79 @@ ExtraConfigSpec
 </td>
 </tr>
 
+<tr>
+
+<td>
+
+<code>nodeSelector</code><br/>
+
+<em>
+
+map[string]string
+
+</em>
+
+</td>
+
+<td>
+
+<p>NodeSelector defines which labels are required by a node to schedule the pod onto it.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>tolerations</code><br/>
+
+<em>
+
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#toleration-v1-core">
+
+[]Kubernetes core/v1.Toleration
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<p>Tolerations defines the tolerations of a node to schedule the pod onto it.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>affinity</code><br/>
+
+<em>
+
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#affinity-v1-core">
+
+Kubernetes core/v1.Affinity
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>Affinity defines the Affinity rules for scheduling pods.</p>
+
+</td>
+</tr>
+
 </tbody>
 </table>
 
