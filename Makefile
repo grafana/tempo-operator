@@ -202,7 +202,7 @@ $(LOCALBIN):
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v5.0.3
-CONTROLLER_TOOLS_VERSION ?= v0.12.0
+CONTROLLER_GEN_VERSION ?= v0.12.0
 GEN_CRD_VERSION ?= v0.0.5
 GEN_API_DOCS_VERSION ?= v0.4.0
 ENVTEST_VERSION ?= latest
@@ -212,7 +212,7 @@ CHAINSAW_VERSION ?= v0.1.7
 
 ## Tool Binaries
 KUSTOMIZE ?= $(LOCALBIN)/kustomize-$(KUSTOMIZE_VERSION)
-CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen-$(CONTROLLER_TOOLS_VERSION)
+CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen-$(CONTROLLER_GEN_VERSION)
 ENVTEST ?= $(LOCALBIN)/setup-envtest-$(ENVTEST_VERSION)
 GEN_CRD = $(LOCALBIN)/gen-crd-api-reference-docs-$(GEN_CRD_VERSION)
 GEN_API_DOCS = $(LOCALBIN)/gen-api-docs-$(GEN_API_DOCS_VERSION)
@@ -232,12 +232,11 @@ BUNDLE_BUILD_GEN_FLAGS ?= $(BUNDLE_GEN_FLAGS) --output-dir . --kustomize-dir ../
 
 .PHONY: controller-gen
 controller-gen: ## Download controller-gen locally if necessary.
-	test -s $(LOCALBIN)/controller-gen && $(LOCALBIN)/controller-gen --version | grep -q $(CONTROLLER_TOOLS_VERSION) || \
-  GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_TOOLS_VERSION)
+	test -s $(CONTROLLER_GEN) || $(call go-get-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen,$(CONTROLLER_GEN_VERSION))
 
 .PHONY: setup-envtest
 setup-envtest: ## Download envtest-setup locally if necessary.
-	test -s $(LOCALBIN)/setup-envtest-$(ENVTEST_VERSION) || $(call go-get-tool,$(ENVTEST),sigs.k8s.io/controller-runtime/tools/setup-envtest,$(ENVTEST_VERSION))
+	test -s $(ENVTEST) || $(call go-get-tool,$(ENVTEST),sigs.k8s.io/controller-runtime/tools/setup-envtest,$(ENVTEST_VERSION))
 
 .PHONY: generate-bundle
 generate-bundle: operator-sdk manifests kustomize ## Generate bundle manifests and metadata, then validate generated files.
@@ -343,7 +342,7 @@ gen-api-docs: ## Download gen-api-docs locally if necessary.
 
 .PHONY: kustomize
 kustomize: ## Download kustomize locally if necessary.
-		test -s $(LOCALBIN)/kustomize-$(KUSTOMIZE_VERSION) || $(call go-get-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v5,$(KUSTOMIZE_VERSION))
+	test -s $(KUSTOMIZE) || $(call go-get-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v5,$(KUSTOMIZE_VERSION))
 
 .PHONY: kind
 kind: $(KIND)
