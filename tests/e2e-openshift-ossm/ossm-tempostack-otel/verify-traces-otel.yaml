@@ -1,0 +1,33 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: verify-traces-otel
+  namespace: otlp-app
+spec:
+  template:
+    spec:
+      containers:
+      - name: verify-traces-otel
+        image: ghcr.io/grafana/tempo-operator/test-utils:main
+        command:
+        - /bin/bash
+        - -eux
+        - -c
+        args:
+        - |
+          # Check for service telemetrygen-http
+          curl -v -G http://tempo-simplest-query-frontend.tracing-system.svc.cluster.local:16686/api/traces --data-urlencode "service=telemetrygen-http" | tee /tmp/jaeger-http.out
+          num_traces_http=$(jq ".data | length" /tmp/jaeger-http.out)
+          if [[ "$num_traces_http" -ne 10 ]]; then
+            echo && echo "The TempoQuery API for telemetrygen-http returned $num_traces_http instead of 10 traces."
+            exit 1
+          fi
+
+          # Check for service telemetrygen-grpc
+          curl -v -G http://tempo-simplest-query-frontend.tracing-system.svc.cluster.local:16686/api/traces --data-urlencode "service=telemetrygen-grpc" | tee /tmp/jaeger-grpc.out
+          num_traces_grpc=$(jq ".data | length" /tmp/jaeger-grpc.out)
+          if [[ "$num_traces_grpc" -ne 10 ]]; then
+            echo && echo "The TempoQuery API for telemetrygen-grpc returned $num_traces_grpc instead of 10 traces."
+            exit 1
+          fi
+      restartPolicy: Never

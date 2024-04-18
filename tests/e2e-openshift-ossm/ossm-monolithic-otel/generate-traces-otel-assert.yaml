@@ -1,0 +1,16 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: generate-traces-grpc
+  namespace: otlp-app
+status:
+  succeeded: 1
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: generate-traces-http
+  namespace: otlp-app
+status:
+  succeeded: 1
