@@ -7,7 +7,7 @@ import (
 )
 
 // This is a template for future versions.
-func upgrade0_1_0(ctx context.Context, u Upgrade, tempo *v1alpha1.TempoStack) (*v1alpha1.TempoStack, error) {
+func upgrade0_1_0(ctx context.Context, u Upgrade, tempo *v1alpha1.TempoStack) error {
 	// no-op because 0.1.0 is the first released tempo-operator version
-	return tempo, nil
+	return nil
 }

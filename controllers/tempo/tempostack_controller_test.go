@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-logr/logr"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
@@ -889,7 +888,7 @@ func TestReconcileManifestsValidateModes(t *testing.T) {
 			err := k8sClient.Update(context.Background(), tempo)
 			require.NoError(t, err)
 			reconciler := TempoStackReconciler{Client: k8sClient, Scheme: testScheme}
-			err = reconciler.createOrUpdate(context.Background(), logr.Discard(), *tempo)
+			err = reconciler.createOrUpdate(context.Background(), *tempo)
 			tc.validate(t, err)
 		})
 	}
@@ -907,6 +906,9 @@ func TestUpgrade(t *testing.T) {
 		Scheme:   testScheme,
 		Recorder: record.NewFakeRecorder(1),
 		CtrlConfig: configv1alpha1.ProjectConfig{
+			DefaultImages: configv1alpha1.ImagesSpec{
+				Tempo: "docker.io/grafana/tempo:1.5.0",
+			},
 			Gates: configv1alpha1.FeatureGates{
 				TLSProfile: string(configv1alpha1.TLSProfileIntermediateType),
 			},
@@ -920,17 +922,24 @@ func TestUpgrade(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, false, reconcile.Requeue)
 
-	// Bump operator version
-	reconciler.Version.OperatorVersion = "0.0.1"
+	// Upgrade process of first reconcile detected an empty operator version in the status field of the CR
+	// and updated the version to the current operator version (0.0.0)
+	updatedTempo := v1alpha1.TempoStack{}
+	err = k8sClient.Get(context.Background(), nsn, &updatedTempo)
+	require.NoError(t, err)
+	assert.Equal(t, "0.0.0", reconciler.Version.OperatorVersion)
+	assert.Equal(t, reconciler.Version.OperatorVersion, updatedTempo.Status.OperatorVersion)
 
-	// Reconcile should perform upgrade now
+	// Bump operator version
+	reconciler.Version.OperatorVersion = "100.0.0"
+
+	// Reconcile should perform all upgrade steps until latest version
 	reconcile, err = reconciler.Reconcile(context.Background(), req)
 	require.NoError(t, err)
 	assert.Equal(t, false, reconcile.Requeue)
 
-	// Verify new version
-	updatedTempo := v1alpha1.TempoStack{}
+	// Verify CR is at latest version
 	err = k8sClient.Get(context.Background(), nsn, &updatedTempo)
 	require.NoError(t, err)
-	assert.Equal(t, "0.0.1", updatedTempo.Status.OperatorVersion)
+	assert.Equal(t, "100.0.0", updatedTempo.Status.OperatorVersion)
 }

@@ -1,0 +1,27 @@
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: mesh-default
+  namespace: istio-system
+spec:
+  tracing:
+  - providers:
+    - name: tempo
+    randomSamplingPercentage: 100
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: kiali
+    app.kubernetes.io/instance: kiali
+    app.kubernetes.io/name: kiali
+    app.kubernetes.io/part-of: kiali
+  namespace: istio-system
+status:
+  containerStatuses:
+  - name: kiali
+    ready: true
+    started: true
+  phase: Running

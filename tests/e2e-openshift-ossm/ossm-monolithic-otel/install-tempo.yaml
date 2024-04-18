@@ -1,0 +1,8 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoMonolithic
+metadata:
+  name: simplest
+  namespace: tracing-system
+spec:
+  jaegerui:
+    enabled: true

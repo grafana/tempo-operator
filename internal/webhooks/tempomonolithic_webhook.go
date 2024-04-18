@@ -90,6 +90,8 @@ func (v *monolithicValidator) validateTempoMonolithic(ctx context.Context, tempo
 	errors = append(errors, v.validateMultitenancy(tempo)...)
 	errors = append(errors, v.validateObservability(tempo)...)
 	errors = append(errors, v.validateServiceAccount(ctx, tempo)...)
+	errors = append(errors, v.validateConflictWithTempoStack(ctx, tempo)...)
+
 	warnings = append(warnings, v.validateExtraConfig(tempo)...)
 
 	return warnings, errors
@@ -254,4 +256,13 @@ func (v *monolithicValidator) validateExtraConfig(tempo tempov1alpha1.TempoMonol
 		return admission.Warnings{"overriding Tempo configuration could potentially break the deployment, use it carefully"}
 	}
 	return nil
+}
+
+func (v *monolithicValidator) validateConflictWithTempoStack(ctx context.Context, tempo v1alpha1.TempoMonolithic) field.ErrorList {
+	return validateTempoNameConflict(func() error {
+		stack := &v1alpha1.TempoStack{}
+		return v.client.Get(ctx, types.NamespacedName{Namespace: tempo.Namespace, Name: tempo.Name}, stack)
+	},
+		tempo.Name, "TempoMonolithic", "TempoStack",
+	)
 }

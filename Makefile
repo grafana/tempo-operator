@@ -2,7 +2,7 @@
 OPERATOR_VERSION ?= 0.9.0
 TEMPO_VERSION ?= 2.3.1
 TEMPO_QUERY_VERSION ?= 2.3.1
-TEMPO_GATEWAY_VERSION ?= main-2024-01-16-162bfad
+TEMPO_GATEWAY_VERSION ?= main-2024-04-02-39a47fd
 TEMPO_GATEWAY_OPA_VERSION ?= main-2023-11-15-8ed318e
 
 MIN_KUBERNETES_VERSION ?= 1.25.0
@@ -151,7 +151,7 @@ run: manifests generate ## Run a controller from your host.
 	RELATED_IMAGE_TEMPO_QUERY=$(TEMPO_QUERY_IMAGE) \
 	RELATED_IMAGE_TEMPO_GATEWAY=$(TEMPO_GATEWAY_IMAGE) \
 	RELATED_IMAGE_TEMPO_GATEWAY_OPA=$(TEMPO_GATEWAY_OPA_IMAGE) \
-	go run ./main.go --zap-log-level=info start
+	go run -ldflags ${LD_FLAGS} ./main.go --zap-log-level=info start
 
 .PHONY: docker-build
 docker-build: ## Build docker image with the manager.

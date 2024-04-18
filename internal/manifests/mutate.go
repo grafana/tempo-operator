@@ -150,6 +150,15 @@ func mergeWithOverride(dst, src interface{}) error {
 	return nil
 }
 
+// Override non empty dst attributes with empty src attributes values.
+func mergeWithOverrideEmptyValue(dst, src interface{}) error {
+	err := mergo.Merge(dst, src, mergo.WithOverwriteWithEmptyValue)
+	if err != nil {
+		return kverrors.Wrap(err, "unable to mergeWithOverrideEmptyValue", "dst", dst, "src", src)
+	}
+	return nil
+}
+
 func mutateSecret(existing, desired *corev1.Secret) {
 	existing.Labels = desired.Labels
 	existing.Annotations = desired.Annotations
@@ -289,7 +298,7 @@ func mutateStatefulSet(existing, desired *appsv1.StatefulSet) error {
 		existing.Spec.VolumeClaimTemplates[i].ObjectMeta = desired.Spec.VolumeClaimTemplates[i].ObjectMeta
 		existing.Spec.VolumeClaimTemplates[i].Spec = desired.Spec.VolumeClaimTemplates[i].Spec
 	}
-	if err := mergeWithOverride(&existing.Spec.Template, desired.Spec.Template); err != nil {
+	if err := mergeWithOverrideEmptyValue(&existing.Spec.Template, desired.Spec.Template); err != nil {
 		return err
 	}
 	return nil
