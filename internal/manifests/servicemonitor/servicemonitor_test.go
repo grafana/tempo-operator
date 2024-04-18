@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/ptr"
 
 	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
@@ -47,7 +48,7 @@ func TestBuildServiceMonitors(t *testing.T) {
 					},
 					{
 						SourceLabels: []monitoringv1.LabelName{"__meta_kubernetes_namespace", "__meta_kubernetes_service_label_app_kubernetes_io_component"},
-						Separator:    "/",
+						Separator:    ptr.To("/"),
 						TargetLabel:  "job",
 					},
 				},
@@ -129,7 +130,7 @@ func TestBuildServiceMonitorsTLS(t *testing.T) {
 					},
 					{
 						SourceLabels: []monitoringv1.LabelName{"__meta_kubernetes_namespace", "__meta_kubernetes_service_label_app_kubernetes_io_component"},
-						Separator:    "/",
+						Separator:    ptr.To("/"),
 						TargetLabel:  "job",
 					},
 				},
@@ -183,7 +184,7 @@ func TestBuildGatewayServiceMonitor(t *testing.T) {
 					},
 					{
 						SourceLabels: []monitoringv1.LabelName{"__meta_kubernetes_namespace", "__meta_kubernetes_service_label_app_kubernetes_io_component"},
-						Separator:    "/",
+						Separator:    ptr.To("/"),
 						TargetLabel:  "job",
 					},
 				},
@@ -274,7 +275,7 @@ func TestBuildGatewayServiceMonitorsTLS(t *testing.T) {
 					},
 					{
 						SourceLabels: []monitoringv1.LabelName{"__meta_kubernetes_namespace", "__meta_kubernetes_service_label_app_kubernetes_io_component"},
-						Separator:    "/",
+						Separator:    ptr.To("/"),
 						TargetLabel:  "job",
 					},
 				},
