@@ -12,16 +12,18 @@ concurrency:
 
 jobs:
   e2e-tests:
-    name: End-to-end tests
+    name: End-to-end tests ${{ matrix.name }}
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-       # The e2e tests are run on the lowest and highest supported k8s version.
-       # All Kubernetes version in between expose the same APIs, hence the operator
-       # should be compatible with them.
-       kube-version:
-       - "1.21"
-       - "1.28"
+        # The e2e tests are run on the lowest and highest supported k8s version.
+        # All Kubernetes version in between expose the same APIs, hence the operator
+        # should be compatible with them.
+        include:
+          - name: min
+            kube-version: 1.25
+          - name: max
+            kube-version: 1.29
 
     steps:
     - name: Checkout
@@ -32,8 +34,10 @@ jobs:
       with:
         go-version-file: go.mod
 
-    - name: "install kuttl"
-      run: ./hack/install/install-kuttl.sh
+    - name: Install chainsaw
+      run: |
+        set -e
+        make chainsaw
 
     - name: "run tests"
       env:
@@ -41,12 +45,13 @@ jobs:
       run: make prepare-e2e e2e KUBE_VERSION=$KUBE_VERSION
 
   upgrade-tests:
-    name: Upgrade tests
+    name: Upgrade tests ${{ matrix.name }}
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        kube-version:
-          - "1.28"
+        include:
+          - name: max
+            kube-version: 1.29
 
     steps:
     - name: Checkout
@@ -95,15 +100,16 @@ jobs:
           -p 5000:5000 \
           registry:2
 
-    - name: Install kuttl, OLM and minio
+    - name: Install chainsaw, OLM and minio
       run: |
-        ./hack/install/install-kuttl.sh
-        make olm-install
+        set -e
+        make chainsaw olm-install
 
     - name: Build and push operator and bundle image to local container registry
       run: |
-        export LATEST_TAG=$(git describe --tags --abbrev=0)
-        export BUNDLE_IMGS=ghcr.io/grafana/tempo-operator/tempo-operator-bundle:${LATEST_TAG},${IMG_PREFIX}/tempo-operator-bundle:v${OPERATOR_VERSION}
+        make opm
+        export LATEST_VERSION=$(bin/opm render quay.io/operatorhubio/catalog:latest | grep tempo-operator:v | tail -1 | grep -oP 'v.*(?=")')
+        export BUNDLE_IMGS=ghcr.io/grafana/tempo-operator/tempo-operator-bundle:${LATEST_VERSION},${IMG_PREFIX}/tempo-operator-bundle:v${OPERATOR_VERSION}
         make bundle docker-build docker-push bundle-build bundle-push catalog-build catalog-push
       env:
         IMG_PREFIX: localregistry:5000

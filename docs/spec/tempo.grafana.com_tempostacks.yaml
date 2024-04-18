@@ -182,6 +182,15 @@ spec:                                    # TempoStackSpec defines the desired st
         monitorTab:                      # MonitorTab defines the monitor tab configuration.
           enabled: false                 # Enabled enables the monitor tab in the Jaeger console. The PrometheusEndpoint must be configured to enable this feature.
           prometheusEndpoint: ""         # PrometheusEndpoint defines the endpoint to the Prometheus instance that contains the span rate, error, and duration (RED) metrics. For instance on OpenShift this is set to https://thanos-querier.openshift-monitoring.svc.cluster.local:9091
+        resources:                       # Resources defines resources for this component, this will override the calculated resources derived from total
+          claims:                        # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.   This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.   This field is immutable. It can only be set for containers.
+          - name: ""                     # Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.
+          limits:                        # Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+            cpu: "750m"
+            memory: "2Gi"
+          requests:                      # Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. Requests cannot exceed Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+            cpu: "500m"
+            memory: "1Gi"
   tenants:                               # Tenants defines the per-tenant authentication and authorization spec.
     authentication:                      # Authentication defines the tempo-gateway component authentication configuration spec per tenant.
     - oidc:                              # OIDC defines the spec for the OIDC tenant's authentication.

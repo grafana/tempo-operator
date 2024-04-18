@@ -1,6 +1,8 @@
 package v1alpha1
 
 import (
+	"os"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	cfg "sigs.k8s.io/controller-runtime/pkg/config/v1alpha1"
 )
@@ -212,4 +214,19 @@ type ProjectConfig struct {
 
 func init() {
 	SchemeBuilder.Register(&ProjectConfig{})
+}
+
+// DefaultProjectConfig returns the default operator config.
+func DefaultProjectConfig() ProjectConfig {
+	return ProjectConfig{
+		DefaultImages: ImagesSpec{
+			Tempo:           os.Getenv(EnvRelatedImageTempo),
+			TempoQuery:      os.Getenv(EnvRelatedImageTempoQuery),
+			TempoGateway:    os.Getenv(EnvRelatedImageTempoGateway),
+			TempoGatewayOpa: os.Getenv(EnvRelatedImageTempoGatewayOpa),
+		},
+		Gates: FeatureGates{
+			TLSProfile: string(TLSProfileModernType),
+		},
+	}
 }

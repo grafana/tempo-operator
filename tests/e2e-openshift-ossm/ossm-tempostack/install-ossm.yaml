@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: istio-system
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tracing-system
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: bookinfo
+
+---
+apiVersion: maistra.io/v2
+kind: ServiceMeshControlPlane
+metadata:
+  name: istio-system
+  namespace: istio-system
+spec:
+  version: v2.5
+  tracing:
+    type: None
+    sampling: 10000
+  meshConfig:
+    extensionProviders:
+      - name: tempo
+        zipkin:
+          service: tempo-simplest-distributor.tracing-system.svc.cluster.local
+          port: 9411
+  addons:
+    kiali:
+      enabled: true
+      name: kiali
+    grafana:
+      enabled: true
+
+---
+kind: ServiceMeshMemberRoll
+apiVersion: maistra.io/v1
+metadata:
+  name: default
+  namespace: istio-system
+spec:
+  members:
+    - tracing-system
+    - bookinfo

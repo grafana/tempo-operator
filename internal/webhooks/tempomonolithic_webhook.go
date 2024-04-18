@@ -5,14 +5,17 @@ import (
 	"fmt"
 	"strings"
 
+	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 
 	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
+	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	tempov1alpha1 "github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/handlers/storage"
 )
@@ -72,7 +75,7 @@ func (v *monolithicValidator) validate(ctx context.Context, obj runtime.Object) 
 func (v *monolithicValidator) validateTempoMonolithic(ctx context.Context, tempo tempov1alpha1.TempoMonolithic) (admission.Warnings, field.ErrorList) {
 	// We do not modify the Kubernetes object in the defaulter webhook,
 	// but still apply some default values in-memory.
-	tempo.Default()
+	tempo.Default(v.ctrlConfig)
 
 	warnings := admission.Warnings{}
 	errors := field.ErrorList{}
@@ -84,7 +87,11 @@ func (v *monolithicValidator) validateTempoMonolithic(ctx context.Context, tempo
 	errors = append(errors, validateName(tempo.Name)...)
 	addValidationResults(v.validateStorage(ctx, tempo))
 	errors = append(errors, v.validateJaegerUI(tempo)...)
+	errors = append(errors, v.validateMultitenancy(tempo)...)
 	errors = append(errors, v.validateObservability(tempo)...)
+	errors = append(errors, v.validateServiceAccount(ctx, tempo)...)
+	errors = append(errors, v.validateConflictWithTempoStack(ctx, tempo)...)
+
 	warnings = append(warnings, v.validateExtraConfig(tempo)...)
 
 	return warnings, errors
@@ -128,6 +135,29 @@ func (v *monolithicValidator) validateJaegerUI(tempo tempov1alpha1.TempoMonolith
 			tempo.Spec.JaegerUI.Route.Enabled,
 			"the openshiftRoute feature gate must be enabled to create a route for Jaeger UI",
 		)}
+	}
+
+	return nil
+}
+
+func (v *monolithicValidator) validateMultitenancy(tempo tempov1alpha1.TempoMonolithic) field.ErrorList {
+	if !tempo.Spec.Multitenancy.IsGatewayEnabled() {
+		return nil
+	}
+
+	multitenancyBase := field.NewPath("spec", "multitenancy")
+	if tempo.Spec.Ingestion != nil && tempo.Spec.Ingestion.OTLP != nil &&
+		tempo.Spec.Ingestion.OTLP.HTTP != nil && tempo.Spec.Ingestion.OTLP.HTTP.Enabled {
+		return field.ErrorList{field.Invalid(
+			multitenancyBase.Child("enabled"),
+			tempo.Spec.Multitenancy.Enabled,
+			"OTLP/HTTP ingestion must be disabled to enable multi-tenancy",
+		)}
+	}
+
+	err := ValidateTenantConfigs(&tempo.Spec.Multitenancy.TenantsSpec, tempo.Spec.Multitenancy.IsGatewayEnabled())
+	if err != nil {
+		return field.ErrorList{field.Invalid(multitenancyBase.Child("enabled"), tempo.Spec.Multitenancy.Enabled, err.Error())}
 	}
 
 	return nil
@@ -181,6 +211,41 @@ func (v *monolithicValidator) validateObservability(tempo tempov1alpha1.TempoMon
 				"the grafanaOperator feature gate must be enabled to create a data source for Tempo",
 			)}
 		}
+
+		if tempo.Spec.Observability.Grafana.DataSource != nil && tempo.Spec.Observability.Grafana.DataSource.Enabled &&
+			tempo.Spec.Multitenancy.IsGatewayEnabled() {
+			return field.ErrorList{field.Invalid(
+				grafanaBase.Child("dataSource", "enabled"),
+				tempo.Spec.Observability.Grafana.DataSource.Enabled,
+				"creating a data source for Tempo is not support if the gateway is enabled",
+			)}
+		}
+	}
+
+	return nil
+}
+
+func (v *monolithicValidator) validateServiceAccount(ctx context.Context, tempo tempov1alpha1.TempoMonolithic) field.ErrorList {
+	if tempo.Spec.ServiceAccount == "" {
+		return nil
+	}
+
+	if tempo.Spec.Multitenancy.IsGatewayEnabled() && tempo.Spec.Multitenancy.Mode == v1alpha1.ModeOpenShift {
+		return field.ErrorList{field.Invalid(
+			field.NewPath("spec").Child("serviceAccount"),
+			tempo.Spec.ServiceAccount,
+			"custom ServiceAccount is not supported if multi-tenancy with OpenShift mode is enabled",
+		)}
+	}
+
+	serviceAccount := &corev1.ServiceAccount{}
+	err := v.client.Get(ctx, types.NamespacedName{Namespace: tempo.Namespace, Name: tempo.Spec.ServiceAccount}, serviceAccount)
+	if err != nil {
+		return field.ErrorList{field.Invalid(
+			field.NewPath("spec").Child("serviceAccount"),
+			tempo.Spec.ServiceAccount,
+			err.Error(),
+		)}
 	}
 
 	return nil
@@ -191,4 +256,13 @@ func (v *monolithicValidator) validateExtraConfig(tempo tempov1alpha1.TempoMonol
 		return admission.Warnings{"overriding Tempo configuration could potentially break the deployment, use it carefully"}
 	}
 	return nil
+}
+
+func (v *monolithicValidator) validateConflictWithTempoStack(ctx context.Context, tempo v1alpha1.TempoMonolithic) field.ErrorList {
+	return validateTempoNameConflict(func() error {
+		stack := &v1alpha1.TempoStack{}
+		return v.client.Get(ctx, types.NamespacedName{Namespace: tempo.Namespace, Name: tempo.Name}, stack)
+	},
+		tempo.Name, "TempoMonolithic", "TempoStack",
+	)
 }

@@ -13,6 +13,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -22,30 +23,35 @@ import (
 )
 
 const (
-	// tempoGatewayRbacFileName is the name of the rbac config file in the configmap.
-	tempoGatewayRbacFileName = "rbac.yaml"
-
 	// tempoGatewayMountDir is the path that is mounted from the configmap.
 	tempoGatewayMountDir = "/etc/tempo-gateway"
-
-	portGRPC = 8090
-
-	// InternalPortName is the name of the gateway's internal port.
-	InternalPortName = "internal"
-	portInternal     = 8081
-
-	portPublic = 8080
 )
 
 // BuildGateway creates gateway objects.
 func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
-	rbacCfg, tenantsCfg, err := buildConfigFiles(newOptions(params.Tempo, params.CtrlConfig.Gates.OpenShift.BaseDomain, params.GatewayTenantSecret, params.GatewayTenantsData))
+	tempo := params.Tempo
+	labels := manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name)
+	gatewayObjectName := naming.Name(manifestutils.GatewayComponentName, tempo.Name)
+	cfgOpts := NewConfigOptions(
+		tempo.Namespace,
+		tempo.Name,
+		gatewayObjectName,
+		naming.RouteFqdn(tempo.Namespace, tempo.Name, manifestutils.GatewayComponentName, params.CtrlConfig.Gates.OpenShift.BaseDomain),
+		"tempostack",
+		*tempo.Spec.Tenants,
+		params.GatewayTenantSecret,
+		params.GatewayTenantsData,
+	)
+
+	rbacConfigMap, rbacCfgHash, err := NewRBACConfigMap(cfgOpts, tempo.Namespace, gatewayObjectName, labels)
 	if err != nil {
 		return nil, err
 	}
 
-	rbacConfigMap, rbacCfgHash := rbacConfig(params.Tempo, rbacCfg)
-	tenantsSecret, tenantsCfgHash := tenantsConfig(params.Tempo, tenantsCfg)
+	tenantsSecret, tenantsCfgHash, err := NewTenantsSecret(cfgOpts, tempo.Namespace, gatewayObjectName, labels)
+	if err != nil {
+		return nil, err
+	}
 
 	objs := []client.Object{
 		rbacConfigMap,
@@ -74,13 +80,26 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 		}
 
 		objs = append(objs, []client.Object{
-			clusterRole(params.Tempo),
-			clusterRoleBinding(params.Tempo),
+			NewAccessReviewClusterRole(
+				gatewayObjectName,
+				manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name),
+			),
+			NewAccessReviewClusterRoleBinding(
+				gatewayObjectName,
+				manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name),
+				tempo.Namespace,
+				gatewayObjectName,
+			),
 			serviceAccount(params.Tempo),
-			configMapCABundle(params.Tempo),
 		}...)
 
 		if params.CtrlConfig.Gates.OpenShift.ServingCertsService {
+			objs = append(objs, manifestutils.NewConfigMapCABundle(
+				tempo.Namespace,
+				naming.Name("gateway-cabundle", tempo.Name),
+				manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name),
+			))
+
 			dep, err = patchOCPServingCerts(params.Tempo, dep)
 			if err != nil {
 				return nil, err
@@ -128,6 +147,48 @@ func resources(tempo v1alpha1.TempoStack) corev1.ResourceRequirements {
 	return *tempo.Spec.Template.Gateway.Resources
 }
 
+// LivenessProbe returns the liveness probe spec for the gateway.
+func LivenessProbe(tls bool) *corev1.Probe {
+	scheme := corev1.URISchemeHTTP
+	if tls {
+		scheme = corev1.URISchemeHTTPS
+	}
+
+	return &corev1.Probe{
+		ProbeHandler: corev1.ProbeHandler{
+			HTTPGet: &corev1.HTTPGetAction{
+				Path:   "/live",
+				Port:   intstr.FromString(manifestutils.GatewayInternalHttpPortName),
+				Scheme: scheme,
+			},
+		},
+		TimeoutSeconds:   2,
+		PeriodSeconds:    30,
+		FailureThreshold: 10,
+	}
+}
+
+// ReadinessProbe returns the readiness probe for the gateway.
+func ReadinessProbe(tls bool) *corev1.Probe {
+	scheme := corev1.URISchemeHTTP
+	if tls {
+		scheme = corev1.URISchemeHTTPS
+	}
+
+	return &corev1.Probe{
+		ProbeHandler: corev1.ProbeHandler{
+			HTTPGet: &corev1.HTTPGetAction{
+				Path:   "/ready",
+				Port:   intstr.FromString(manifestutils.GatewayInternalHttpPortName),
+				Scheme: scheme,
+			},
+		},
+		TimeoutSeconds:   1,
+		PeriodSeconds:    5,
+		FailureThreshold: 12,
+	}
+}
+
 func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash string) *appsv1.Deployment {
 	tempo := params.Tempo
 	labels := manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name)
@@ -136,7 +197,6 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 	annotations["tempo.grafana.com/tenantsConfig.hash"] = tenantsCfgHash
 
 	cfg := tempo.Spec.Template.Gateway
-	internalServerScheme := corev1.URISchemeHTTP
 	tlsArgs := []string{}
 	image := tempo.Spec.Images.TempoGateway
 	if image == "" {
@@ -144,7 +204,6 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 	}
 
 	if params.CtrlConfig.Gates.HTTPEncryption {
-		internalServerScheme = corev1.URISchemeHTTPS
 		tlsArgs = []string{
 			fmt.Sprintf("--tls.internal.server.key-file=%s", path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSKeyFilename)),
 			fmt.Sprintf("--tls.internal.server.cert-file=%s", path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSCertFilename)),
@@ -183,57 +242,35 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 							Env:   proxy.ReadProxyVarsFromEnv(),
 							Args: append([]string{
 								fmt.Sprintf("--traces.tenant-header=%s", manifestutils.TenantHeader),
-								fmt.Sprintf("--web.listen=0.0.0.0:%d", portPublic),
-								fmt.Sprintf("--web.internal.listen=0.0.0.0:%d", portInternal),
-								fmt.Sprintf("--traces.write.endpoint=%s:%d", naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.DistributorComponentName), manifestutils.PortOtlpGrpcServer),
+								fmt.Sprintf("--web.listen=0.0.0.0:%d", manifestutils.GatewayPortHTTPServer),                                                                                             // proxies Tempo API and optionally Jaeger UI
+								fmt.Sprintf("--web.internal.listen=0.0.0.0:%d", manifestutils.GatewayPortInternalHTTPServer),                                                                            // serves health checks
+								fmt.Sprintf("--traces.write.endpoint=%s:%d", naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.DistributorComponentName), manifestutils.PortOtlpGrpcServer), // Tempo Distributor gRPC upstream
 								fmt.Sprintf("--traces.tempo.endpoint=%s://%s:%d", httpScheme(params.CtrlConfig.Gates.HTTPEncryption),
-									naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.QueryFrontendComponentName), manifestutils.PortHTTPServer),
-								fmt.Sprintf("--grpc.listen=0.0.0.0:%d", portGRPC),
-								fmt.Sprintf("--rbac.config=%s", path.Join(tempoGatewayMountDir, "cm", tempoGatewayRbacFileName)),
+									naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.QueryFrontendComponentName), manifestutils.PortHTTPServer), // Tempo API upstream
+								fmt.Sprintf("--grpc.listen=0.0.0.0:%d", manifestutils.GatewayPortGRPCServer), // proxies Tempo Distributor gRPC
+								fmt.Sprintf("--rbac.config=%s", path.Join(tempoGatewayMountDir, "cm", manifestutils.GatewayRBACFileName)),
 								fmt.Sprintf("--tenants.config=%s", path.Join(tempoGatewayMountDir, "secret", manifestutils.GatewayTenantFileName)),
 								"--log.level=info",
 							}, tlsArgs...),
 							Ports: []corev1.ContainerPort{
 								{
-									Name:          "grpc-public",
-									ContainerPort: portGRPC,
+									Name:          manifestutils.GatewayGrpcPortName,
+									ContainerPort: manifestutils.GatewayPortGRPCServer,
 									Protocol:      corev1.ProtocolTCP,
 								},
 								{
-									Name:          "internal",
-									ContainerPort: portInternal,
+									Name:          manifestutils.GatewayInternalHttpPortName,
+									ContainerPort: manifestutils.GatewayPortInternalHTTPServer,
 									Protocol:      corev1.ProtocolTCP,
 								},
 								{
-									Name:          "public",
-									ContainerPort: portPublic,
+									Name:          manifestutils.GatewayHttpPortName,
+									ContainerPort: manifestutils.GatewayPortHTTPServer,
 									Protocol:      corev1.ProtocolTCP,
 								},
 							},
-							LivenessProbe: &corev1.Probe{
-								ProbeHandler: corev1.ProbeHandler{
-									HTTPGet: &corev1.HTTPGetAction{
-										Path:   "/live",
-										Port:   intstr.FromInt(portInternal),
-										Scheme: internalServerScheme,
-									},
-								},
-								TimeoutSeconds:   2,
-								PeriodSeconds:    30,
-								FailureThreshold: 10,
-							},
-							ReadinessProbe: &corev1.Probe{
-								ProbeHandler: corev1.ProbeHandler{
-									HTTPGet: &corev1.HTTPGetAction{
-										Path:   "/ready",
-										Port:   intstr.FromInt(portInternal),
-										Scheme: internalServerScheme,
-									},
-								},
-								TimeoutSeconds:   1,
-								PeriodSeconds:    5,
-								FailureThreshold: 12,
-							},
+							LivenessProbe:  LivenessProbe(params.CtrlConfig.Gates.HTTPEncryption),
+							ReadinessProbe: ReadinessProbe(params.CtrlConfig.Gates.HTTPEncryption),
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      "rbac",
@@ -261,8 +298,8 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 									},
 									Items: []corev1.KeyToPath{
 										{
-											Key:  tempoGatewayRbacFileName,
-											Path: tempoGatewayRbacFileName,
+											Key:  manifestutils.GatewayRBACFileName,
+											Path: manifestutils.GatewayRBACFileName,
 										},
 									},
 								},
@@ -299,7 +336,7 @@ func patchTraceReadEndpoint(params manifestutils.Params, pod corev1.PodTemplateS
 	container := corev1.Container{
 		Args: []string{
 			fmt.Sprintf("--traces.read.endpoint=%s://%s:%d", httpScheme(params.CtrlConfig.Gates.HTTPEncryption),
-				naming.ServiceFqdn(params.Tempo.Namespace, params.Tempo.Name, manifestutils.QueryFrontendComponentName), manifestutils.PortJaegerQuery),
+				naming.ServiceFqdn(params.Tempo.Namespace, params.Tempo.Name, manifestutils.QueryFrontendComponentName), manifestutils.PortJaegerQuery), // Jaeger UI upstream
 		},
 	}
 
@@ -360,22 +397,22 @@ func service(tempo v1alpha1.TempoStack, ocpServingCerts bool) *corev1.Service {
 		Spec: corev1.ServiceSpec{
 			Ports: []corev1.ServicePort{
 				{
-					Name:       "grpc-public",
-					Port:       portGRPC,
+					Name:       manifestutils.GatewayGrpcPortName,
+					Port:       manifestutils.GatewayPortGRPCServer,
 					Protocol:   corev1.ProtocolTCP,
-					TargetPort: intstr.FromInt(portGRPC),
+					TargetPort: intstr.FromString(manifestutils.GatewayGrpcPortName),
 				},
 				{
-					Name:       InternalPortName,
-					Port:       portInternal,
+					Name:       manifestutils.GatewayInternalHttpPortName,
+					Port:       manifestutils.GatewayPortInternalHTTPServer,
 					Protocol:   corev1.ProtocolTCP,
-					TargetPort: intstr.FromInt(portInternal),
+					TargetPort: intstr.FromString(manifestutils.GatewayInternalHttpPortName),
 				},
 				{
-					Name:       "public",
-					Port:       portPublic,
+					Name:       manifestutils.GatewayHttpPortName,
+					Port:       manifestutils.GatewayPortHTTPServer,
 					Protocol:   corev1.ProtocolTCP,
-					TargetPort: intstr.FromInt(portPublic),
+					TargetPort: intstr.FromString(manifestutils.GatewayHttpPortName),
 				},
 			},
 			Selector: labels,
@@ -383,17 +420,21 @@ func service(tempo v1alpha1.TempoStack, ocpServingCerts bool) *corev1.Service {
 	}
 }
 
-func rbacConfig(tempo v1alpha1.TempoStack, rbacCfg string) (*corev1.ConfigMap, string) {
-	labels := manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name)
+// NewRBACConfigMap creates a ConfigMap containing the RBAC configuration file.
+func NewRBACConfigMap(cfgOpts options, namespace string, name string, labels labels.Set) (*corev1.ConfigMap, string, error) {
+	rbacCfg, err := buildRBACConfig(cfgOpts)
+	if err != nil {
+		return nil, "", err
+	}
 
 	config := corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      naming.Name(manifestutils.GatewayComponentName, tempo.Name),
+			Name:      name,
 			Labels:    labels,
-			Namespace: tempo.Namespace,
+			Namespace: namespace,
 		},
 		Data: map[string]string{
-			tempoGatewayRbacFileName: rbacCfg,
+			manifestutils.GatewayRBACFileName: rbacCfg,
 		},
 	}
 
@@ -401,16 +442,21 @@ func rbacConfig(tempo v1alpha1.TempoStack, rbacCfg string) (*corev1.ConfigMap, s
 	h.Write([]byte(rbacCfg))
 	checksum := hex.EncodeToString(h.Sum(nil))
 
-	return &config, checksum
+	return &config, checksum, nil
 }
 
-func tenantsConfig(tempo v1alpha1.TempoStack, tenantsCfg string) (*corev1.Secret, string) {
-	labels := manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name)
+// NewTenantsSecret creates a Secret containing the tenants configuration file.
+func NewTenantsSecret(cfgOpts options, namespace string, name string, labels labels.Set) (*corev1.Secret, string, error) {
+	tenantsCfg, err := buildTenantsConfig(cfgOpts)
+	if err != nil {
+		return nil, "", err
+	}
+
 	secret := &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      naming.Name(manifestutils.GatewayComponentName, tempo.Name),
+			Name:      name,
 			Labels:    labels,
-			Namespace: tempo.Namespace,
+			Namespace: namespace,
 		},
 		Data: map[string][]byte{
 			manifestutils.GatewayTenantFileName: []byte(tenantsCfg),
@@ -421,7 +467,7 @@ func tenantsConfig(tempo v1alpha1.TempoStack, tenantsCfg string) (*corev1.Secret
 	h.Write([]byte(tenantsCfg))
 	checksum := hex.EncodeToString(h.Sum(nil))
 
-	return secret, checksum
+	return secret, checksum, nil
 }
 
 func ingress(tempo v1alpha1.TempoStack) *networkingv1.Ingress {

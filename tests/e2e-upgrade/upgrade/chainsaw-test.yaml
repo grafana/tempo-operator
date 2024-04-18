@@ -1,0 +1,103 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/kyverno/chainsaw/main/.schemas/json/test-chainsaw-v1alpha1.json
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  creationTimestamp: null
+  name: upgrade
+spec:
+  steps:
+  - name: step-00
+    try:
+    - apply:
+        file: 00-install-storage.yaml
+    - assert:
+        file: 00-assert.yaml
+  - name: step-10
+    try:
+    - apply:
+        file: 10-setup-olm.yaml
+  - name: step-20
+    try:
+    - apply:
+        file: 20-install-old-operator.yaml
+    - assert:
+        file: 20-assert.yaml
+  - name: step-21
+    try:
+    - apply:
+        file: tempostack.yaml
+    - delete:
+        ref:
+          apiVersion: tempo.grafana.com/v1alpha1
+          kind: TempoStack
+          name: check-operator-ready
+  - name: step-30
+    try:
+    - apply:
+        file: 30-install-tempo.yaml
+    - assert:
+        file: 30-assert.yaml
+  - name: step-31
+    try:
+    - assert:
+        resource:
+          apiVersion: tempo.grafana.com/v1alpha1
+          kind: TempoStack
+          metadata:
+            name: simplest
+          status:
+            (conditions[?type == 'Ready']):
+            - status: 'True'
+  - name: step-40
+    try:
+    - apply:
+        file: 40-generate-traces.yaml
+    - assert:
+        file: 40-assert.yaml
+  - name: step-50
+    try:
+    - apply:
+        file: 50-verify-traces.yaml
+    - assert:
+        file: 50-assert.yaml
+  - name: step-60
+    try:
+    - apply:
+        file: 60-upgrade-operator.yaml
+    - assert:
+        file: 60-assert.yaml
+    catch:
+    - podLogs:
+        namespace: chainsaw-operator-upgrade
+        selector: app.kubernetes.io/name=tempo-operator
+        tail: 100
+    finally:
+    - get:
+        resource: subscriptions.operators.coreos.com
+        namespace: chainsaw-operator-upgrade
+        name: tempo
+        format: yaml
+  - name: step-61
+    try:
+    - assert:
+        resource:
+          apiVersion: tempo.grafana.com/v1alpha1
+          kind: TempoStack
+          metadata:
+            name: simplest
+          status:
+            (conditions[?type == 'Ready']):
+            - status: 'True'
+    finally:
+    - get:
+        resource: deployment
+        format: yaml
+    - get:
+        resource: statefulset
+        format: yaml
+  - name: step-70
+    try:
+    - apply:
+        file: 70-verify-traces-after-upgrade.yaml
+    - assert:
+        file: 70-assert.yaml

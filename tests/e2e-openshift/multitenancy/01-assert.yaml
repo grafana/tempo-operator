@@ -10,7 +10,7 @@ metadata:
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-simplest-gateway
-  namespace: kuttl-multitenancy
+  namespace: chainsaw-multitenancy
   ownerReferences:
     - apiVersion: tempo.grafana.com/v1alpha1
       blockOwnerDeletion: true
@@ -30,7 +30,7 @@ metadata:
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-simplest-gateway
-  namespace: kuttl-multitenancy
+  namespace: chainsaw-multitenancy
   ownerReferences:
     - apiVersion: tempo.grafana.com/v1alpha1
       blockOwnerDeletion: true
@@ -49,7 +49,7 @@ metadata:
   annotations:
     service.beta.openshift.io/inject-cabundle: "true"
   name: tempo-simplest-gateway-cabundle
-  namespace: kuttl-multitenancy
+  namespace: chainsaw-multitenancy
   ownerReferences:
     - apiVersion: tempo.grafana.com/v1alpha1
       blockOwnerDeletion: true
@@ -70,7 +70,7 @@ metadata:
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-simplest-gateway
-  namespace: kuttl-multitenancy
+  namespace: chainsaw-multitenancy
   ownerReferences:
     - apiVersion: tempo.grafana.com/v1alpha1
       blockOwnerDeletion: true
@@ -127,7 +127,7 @@ metadata:
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-simplest-gateway
-  namespace: kuttl-multitenancy
+  namespace: chainsaw-multitenancy
   ownerReferences:
   - apiVersion: tempo.grafana.com/v1alpha1
     blockOwnerDeletion: true
@@ -154,8 +154,8 @@ spec:
         - --traces.tenant-header=x-scope-orgid
         - --web.listen=0.0.0.0:8080
         - --web.internal.listen=0.0.0.0:8081
-        - --traces.write.endpoint=tempo-simplest-distributor.kuttl-multitenancy.svc.cluster.local:4317
-        - --traces.tempo.endpoint=https://tempo-simplest-query-frontend.kuttl-multitenancy.svc.cluster.local:3200
+        - --traces.write.endpoint=tempo-simplest-distributor.chainsaw-multitenancy.svc.cluster.local:4317
+        - --traces.tempo.endpoint=https://tempo-simplest-query-frontend.chainsaw-multitenancy.svc.cluster.local:3200
         - --grpc.listen=0.0.0.0:8090
         - --rbac.config=/etc/tempo-gateway/cm/rbac.yaml
         - --tenants.config=/etc/tempo-gateway/secret/tenants.yaml
@@ -168,14 +168,14 @@ spec:
         - --tls.server.cert-file=/etc/tempo-gateway/serving-certs/tls.crt
         - --tls.server.key-file=/etc/tempo-gateway/serving-certs/tls.key
         - --tls.healthchecks.server-ca-file=/etc/tempo-gateway/cabundle/service-ca.crt
-        - --tls.healthchecks.server-name=tempo-simplest-gateway.kuttl-multitenancy.svc.cluster.local
+        - --tls.healthchecks.server-name=tempo-simplest-gateway.chainsaw-multitenancy.svc.cluster.local
         - --web.healthchecks.url=https://localhost:8080
-        - --traces.read.endpoint=https://tempo-simplest-query-frontend.kuttl-multitenancy.svc.cluster.local:16686
+        - --traces.read.endpoint=https://tempo-simplest-query-frontend.chainsaw-multitenancy.svc.cluster.local:16686
         livenessProbe:
           failureThreshold: 10
           httpGet:
             path: /live
-            port: 8081
+            port: internal
             scheme: HTTPS
           periodSeconds: 30
           successThreshold: 1
@@ -195,7 +195,7 @@ spec:
           failureThreshold: 12
           httpGet:
             path: /ready
-            port: 8081
+            port: internal
             scheme: HTTPS
           periodSeconds: 5
           successThreshold: 1
@@ -252,7 +252,7 @@ spec:
           periodSeconds: 30
           successThreshold: 1
           timeoutSeconds: 2
-        name: opa
+        name: tempo-gateway-opa
         ports:
         - containerPort: 8082
           name: public
@@ -319,7 +319,7 @@ metadata:
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-simplest-gateway
-  namespace: kuttl-multitenancy
+  namespace: chainsaw-multitenancy
   ownerReferences:
     - apiVersion: tempo.grafana.com/v1alpha1
       blockOwnerDeletion: true
@@ -348,7 +348,7 @@ metadata:
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-simplest-gateway
-  namespace: kuttl-multitenancy
+  namespace: chainsaw-multitenancy
   ownerReferences:
     - apiVersion: tempo.grafana.com/v1alpha1
       blockOwnerDeletion: true
@@ -357,18 +357,18 @@ metadata:
       name: simplest
 spec:
   ports:
-    - name: grpc-public
-      port: 8090
-      protocol: TCP
-      targetPort: 8090
-    - name: internal
-      port: 8081
-      protocol: TCP
-      targetPort: 8081
-    - name: public
-      port: 8080
-      protocol: TCP
-      targetPort: 8080
+  - name: grpc-public
+    port: 8090
+    protocol: TCP
+    targetPort: grpc-public
+  - name: internal
+    port: 8081
+    protocol: TCP
+    targetPort: internal
+  - name: public
+    port: 8080
+    protocol: TCP
+    targetPort: public
   selector:
     app.kubernetes.io/component: gateway
     app.kubernetes.io/instance: simplest
@@ -380,7 +380,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tempo-simplest-compactor
-  namespace: kuttl-multitenancy
+  namespace: chainsaw-multitenancy
 status:
   readyReplicas: 1
 ---
@@ -388,7 +388,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tempo-simplest-distributor
-  namespace: kuttl-multitenancy
+  namespace: chainsaw-multitenancy
 status:
   readyReplicas: 1
 ---
@@ -396,7 +396,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tempo-simplest-querier
-  namespace: kuttl-multitenancy
+  namespace: chainsaw-multitenancy
 status:
   readyReplicas: 1
 ---
@@ -404,7 +404,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tempo-simplest-query-frontend
-  namespace: kuttl-multitenancy
+  namespace: chainsaw-multitenancy
 status:
   readyReplicas: 1
 ---
@@ -412,6 +412,6 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: tempo-simplest-ingester
-  namespace: kuttl-multitenancy
+  namespace: chainsaw-multitenancy
 status:
   readyReplicas: 1

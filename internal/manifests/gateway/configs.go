@@ -23,28 +23,43 @@ var (
 	tenantsTemplate = template.Must(template.ParseFS(tempoGatewayTenantsYAMLTmplFile, "gateway-tenants.yaml"))
 )
 
-// generate gateway configuration files.
-func buildConfigFiles(opts options) (rbacCfg string, tenantsCfg string, err error) {
+// generate gateway RBAC configuration file.
+func buildRBACConfig(opts options) (rbacCfg string, err error) {
 	// Build tempo gateway rbac yaml
 	byteBuffer := &bytes.Buffer{}
 	err = rbacTemplate.Execute(byteBuffer, opts)
 	if err != nil {
-		return "", "", fmt.Errorf("failed to create tempo gateway rbac configuration, err: %w", err)
+		return "", fmt.Errorf("failed to create tempo gateway rbac configuration, err: %w", err)
 	}
 	rbacCfg = byteBuffer.String()
-	// Build tempo gateway tenants yaml
-	byteBuffer.Reset()
-	err = tenantsTemplate.Execute(byteBuffer, opts)
-	if err != nil {
-		return "", "", fmt.Errorf("failed to create tempo gateway tenants configuration, err: %w", err)
-	}
-	tenantsCfg = byteBuffer.String()
-	return rbacCfg, tenantsCfg, nil
+	return rbacCfg, nil
 }
 
-func newOptions(tempo v1alpha1.TempoStack, baseDomain string, oidcSecrets []*manifestutils.GatewayTenantOIDCSecret, tenantsData []*manifestutils.GatewayTenantsData) options {
+// generate gateway tenants configuration file.
+func buildTenantsConfig(opts options) (tenantsCfg string, err error) {
+	// Build tempo gateway tenants yaml
+	byteBuffer := &bytes.Buffer{}
+	err = tenantsTemplate.Execute(byteBuffer, opts)
+	if err != nil {
+		return "", fmt.Errorf("failed to create tempo gateway tenants configuration, err: %w", err)
+	}
+	tenantsCfg = byteBuffer.String()
+	return tenantsCfg, nil
+}
+
+// NewConfigOptions initializes options required to build the configuration files for multitenancy.
+func NewConfigOptions(
+	namespace string,
+	name string,
+	saName string,
+	routeHost string,
+	opaPackage string,
+	tenantsSpec v1alpha1.TenantsSpec,
+	oidcSecrets []*manifestutils.GatewayTenantOIDCSecret,
+	tenantsData []*manifestutils.GatewayTenantsData,
+) options {
 	var auths []authentication
-	for _, tenantAuth := range tempo.Spec.Tenants.Authentication {
+	for _, tenantAuth := range tenantsSpec.Authentication {
 		cookieSecret := ""
 		tenantData := getTenantData(tenantAuth.TenantName, tenantsData)
 		if tenantData != nil && tenantData.OpenShiftCookieSecret != "" {
@@ -58,6 +73,7 @@ func newOptions(tempo v1alpha1.TempoStack, baseDomain string, oidcSecrets []*man
 			TenantID:              tenantAuth.TenantID,
 			OpenShiftCookieSecret: cookieSecret,
 			OIDC:                  tenantAuth.OIDC,
+			RedirectURL:           fmt.Sprintf("https://%s/openshift/%s/callback", routeHost, tenantAuth.TenantName),
 		}
 
 		oidcTenantSecret := getOIDCSecret(tenantAuth.TenantName, oidcSecrets)
@@ -73,13 +89,14 @@ func newOptions(tempo v1alpha1.TempoStack, baseDomain string, oidcSecrets []*man
 	}
 
 	return options{
-		Namespace:  tempo.Namespace,
-		Name:       tempo.Name,
-		BaseDomain: baseDomain,
+		Namespace:      namespace,
+		Name:           name,
+		ServiceAccount: saName,
+		OPAUrl:         fmt.Sprintf("http://localhost:%d/v1/data/%s/allow", gatewayOPAHTTPPort, opaPackage),
 		Tenants: &tenants{
-			Mode:           tempo.Spec.Tenants.Mode,
+			Mode:           tenantsSpec.Mode,
 			Authentication: auths,
-			Authorization:  tempo.Spec.Tenants.Authorization,
+			Authorization:  tenantsSpec.Authorization,
 		},
 	}
 }
@@ -104,10 +121,12 @@ func getOIDCSecret(tenantName string, OIDCSecrets []*manifestutils.GatewayTenant
 
 // options is used to render the rbac.yaml and tenants.yaml file template.
 type options struct {
-	Name       string
-	Namespace  string
-	BaseDomain string
-	Tenants    *tenants
+	Name      string
+	Namespace string
+	Tenants   *tenants
+
+	ServiceAccount string
+	OPAUrl         string
 }
 
 type tenants struct {
@@ -121,6 +140,7 @@ type authentication struct {
 	TenantName string
 	TenantID   string
 
+	RedirectURL string
 	// OpenShiftCookieSecret is used for encrypting the auth token when put into the browser session.
 	OpenShiftCookieSecret string
 	OIDC                  *v1alpha1.OIDCSpec

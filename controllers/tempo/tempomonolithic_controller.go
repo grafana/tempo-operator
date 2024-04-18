@@ -14,6 +14,8 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/validation/field"
+	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -22,13 +24,18 @@ import (
 	"github.com/grafana/tempo-operator/internal/handlers/storage"
 	"github.com/grafana/tempo-operator/internal/manifests/monolithic"
 	"github.com/grafana/tempo-operator/internal/status"
+	"github.com/grafana/tempo-operator/internal/tlsprofile"
+	"github.com/grafana/tempo-operator/internal/upgrade"
+	"github.com/grafana/tempo-operator/internal/version"
 )
 
 // TempoMonolithicReconciler reconciles a TempoMonolithic object.
 type TempoMonolithicReconciler struct {
 	client.Client
 	Scheme     *runtime.Scheme
+	Recorder   record.EventRecorder
 	CtrlConfig configv1alpha1.ProjectConfig
+	Version    version.Version
 }
 
 //+kubebuilder:rbac:groups=tempo.grafana.com,resources=tempomonolithics,verbs=get;list;watch;create;update;patch;delete
@@ -57,13 +64,30 @@ func (r *TempoMonolithicReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return ctrl.Result{}, nil
 	}
 
-	// apply defaults
-	tempo.Default()
-
 	if tempo.Spec.Management == v1alpha1.ManagementStateUnmanaged {
 		log.Info("Skipping reconciliation for unmanaged TempoMonolithic resource", "name", req.String())
 		return ctrl.Result{}, nil
 	}
+
+	// New CRs with empty OperatorVersion are ignored, as they're already up-to-date.
+	// The versions will be set when the status field is refreshed.
+	if tempo.Status.OperatorVersion != "" && tempo.Status.OperatorVersion != r.Version.OperatorVersion {
+		upgraded, err := upgrade.Upgrade{
+			Client:     r.Client,
+			Recorder:   r.Recorder,
+			CtrlConfig: r.CtrlConfig,
+			Version:    r.Version,
+			Log:        log.WithName("upgrade"),
+		}.Upgrade(ctx, &tempo)
+		if err != nil {
+			return ctrl.Result{}, status.HandleTempoMonolithicStatus(ctx, r.Client, tempo, err)
+		}
+		tempo = *upgraded.(*v1alpha1.TempoMonolithic)
+	}
+
+	// Apply ephemeral defaults after upgrade.
+	// The ephemeral defaults should not be written back to the cluster.
+	tempo.Default(r.CtrlConfig)
 
 	err := r.createOrUpdate(ctx, tempo)
 	if err != nil {
@@ -77,7 +101,13 @@ func (r *TempoMonolithicReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 }
 
 func (r *TempoMonolithicReconciler) createOrUpdate(ctx context.Context, tempo v1alpha1.TempoMonolithic) error {
-	storageParams, errs := storage.GetStorageParamsForTempoMonolithic(ctx, r.Client, tempo)
+	opts := monolithic.Options{
+		CtrlConfig: r.CtrlConfig,
+		Tempo:      tempo,
+	}
+
+	var errs field.ErrorList
+	opts.StorageParams, errs = storage.GetStorageParamsForTempoMonolithic(ctx, r.Client, tempo)
 	if len(errs) > 0 {
 		return &status.ConfigurationError{
 			Reason:  v1alpha1.ReasonInvalidStorageConfig,
@@ -85,11 +115,29 @@ func (r *TempoMonolithicReconciler) createOrUpdate(ctx context.Context, tempo v1
 		}
 	}
 
-	managedObjects, err := monolithic.BuildAll(monolithic.Options{
-		CtrlConfig:    r.CtrlConfig,
-		Tempo:         tempo,
-		StorageParams: storageParams,
-	})
+	if tempo.Spec.Multitenancy.IsGatewayEnabled() {
+		var err error
+		opts.GatewayTenantSecret, opts.GatewayTenantsData, err = getTenantParams(ctx, r.Client, &r.CtrlConfig, tempo.Namespace, tempo.Name, tempo.Spec.Multitenancy.TenantsSpec, true)
+		if err != nil {
+			return err
+		}
+	}
+
+	var err error
+	opts.TLSProfile, err = tlsprofile.Get(ctx, r.CtrlConfig.Gates, r.Client)
+	if err != nil {
+		switch err {
+		case tlsprofile.ErrGetProfileFromCluster, tlsprofile.ErrGetInvalidProfile:
+			return &status.ConfigurationError{
+				Message: err.Error(),
+				Reason:  v1alpha1.ReasonCouldNotGetOpenShiftTLSPolicy,
+			}
+		default:
+			return err
+		}
+	}
+
+	managedObjects, err := monolithic.BuildAll(opts)
 	if err != nil {
 		return fmt.Errorf("error building manifests: %w", err)
 	}
@@ -112,8 +160,17 @@ func (r *TempoMonolithicReconciler) getOwnedObjects(ctx context.Context, tempo v
 	// Add all resources where the operator can conditionally create an object.
 	// For example, Ingress and Route can be enabled or disabled in the CR.
 
+	servicesList := &corev1.ServiceList{}
+	err := r.List(ctx, servicesList, listOps)
+	if err != nil {
+		return nil, fmt.Errorf("error listing services: %w", err)
+	}
+	for i := range servicesList.Items {
+		ownedObjects[servicesList.Items[i].GetUID()] = &servicesList.Items[i]
+	}
+
 	ingressList := &networkingv1.IngressList{}
-	err := r.List(ctx, ingressList, listOps)
+	err = r.List(ctx, ingressList, listOps)
 	if err != nil {
 		return nil, fmt.Errorf("error listing ingress: %w", err)
 	}
@@ -171,7 +228,9 @@ func (r *TempoMonolithicReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	builder := ctrl.NewControllerManagedBy(mgr).
 		For(&v1alpha1.TempoMonolithic{}).
 		Owns(&corev1.ConfigMap{}).
+		Owns(&corev1.Secret{}).
 		Owns(&corev1.Service{}).
+		Owns(&corev1.ServiceAccount{}).
 		Owns(&appsv1.StatefulSet{}).
 		Owns(&networkingv1.Ingress{})
 

@@ -68,11 +68,18 @@ func TestRbacConfig(t *testing.T) {
 		GatewayTenantSecret: []*manifestutils.GatewayTenantOIDCSecret{},
 	}
 
-	cfgOpts := newOptions(params.Tempo, params.CtrlConfig.Gates.OpenShift.BaseDomain, params.GatewayTenantSecret, params.GatewayTenantsData)
-	tenantsCfg, _, err := buildConfigFiles(cfgOpts)
+	cfgOpts := NewConfigOptions(
+		params.Tempo.Namespace,
+		params.Tempo.Name,
+		"",
+		"",
+		"tempostack",
+		*params.Tempo.Spec.Tenants,
+		params.GatewayTenantSecret,
+		params.GatewayTenantsData,
+	)
+	secret, hash, err := NewRBACConfigMap(cfgOpts, "", "", map[string]string{})
 	assert.NoError(t, err)
-
-	secret, hash := rbacConfig(tempo, tenantsCfg)
 	assert.Equal(t, "f7945d87b710f8df423b9d926d771951b0307fc8cb050f7dbc8773fff3febaa8", hash)
 	assert.NotEmpty(t, secret.Data["rbac.yaml"])
 }
@@ -119,11 +126,18 @@ func TestTenantsConfig(t *testing.T) {
 		GatewayTenantSecret: []*manifestutils.GatewayTenantOIDCSecret{},
 	}
 
-	cfgOpts := newOptions(params.Tempo, params.CtrlConfig.Gates.OpenShift.BaseDomain, params.GatewayTenantSecret, params.GatewayTenantsData)
-	_, tenantsCfg, err := buildConfigFiles(cfgOpts)
+	cfgOpts := NewConfigOptions(
+		params.Tempo.Namespace,
+		params.Tempo.Name,
+		"",
+		"",
+		"tempostack",
+		*params.Tempo.Spec.Tenants,
+		params.GatewayTenantSecret,
+		params.GatewayTenantsData,
+	)
+	secret, hash, err := NewTenantsSecret(cfgOpts, "", "", map[string]string{})
 	assert.NoError(t, err)
-
-	secret, hash := tenantsConfig(tempo, tenantsCfg)
 	assert.Equal(t, "80a845b34523484bf2ca89eaf19fa9fefbaacac1f1c12d5c3fbac7a2614b4c76", hash)
 	assert.NotEmpty(t, secret.Data["tenants.yaml"])
 }
@@ -176,13 +190,13 @@ func TestBuildGateway_openshift(t *testing.T) {
 	dep, ok := obj.(*appsv1.Deployment)
 	require.True(t, ok)
 	assert.Equal(t, 2, len(dep.Spec.Template.Spec.Containers))
-	assert.Equal(t, "opa", dep.Spec.Template.Spec.Containers[1].Name)
+	assert.Equal(t, "tempo-gateway-opa", dep.Spec.Template.Spec.Containers[1].Name)
 	assert.Equal(t, "tempo-simplest-gateway", dep.Spec.Template.Spec.ServiceAccountName)
 	assert.Equal(t, &corev1.Probe{
 		ProbeHandler: corev1.ProbeHandler{
 			HTTPGet: &corev1.HTTPGetAction{
 				Path:   "/ready",
-				Port:   intstr.FromInt(portInternal),
+				Port:   intstr.FromString(manifestutils.GatewayInternalHttpPortName),
 				Scheme: corev1.URISchemeHTTP,
 			},
 		},
@@ -194,7 +208,7 @@ func TestBuildGateway_openshift(t *testing.T) {
 		ProbeHandler: corev1.ProbeHandler{
 			HTTPGet: &corev1.HTTPGetAction{
 				Path:   "/live",
-				Port:   intstr.FromInt(portInternal),
+				Port:   intstr.FromString(manifestutils.GatewayInternalHttpPortName),
 				Scheme: corev1.URISchemeHTTP,
 			},
 		},

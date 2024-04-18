@@ -445,6 +445,11 @@ PodStatusMap
 <td><p>ReasonFailedReconciliation when the operator failed to reconcile.</p>
 </td>
 
+</tr><tr><td><p>&#34;FailedUpgrade&#34;</p></td>
+
+<td><p>ReasonFailedUpgrade when the operator failed to upgrade an instance.</p>
+</td>
+
 </tr><tr><td><p>&#34;InvalidStorageConfig&#34;</p></td>
 
 <td><p>ReasonInvalidStorageConfig defines that the object storage configuration is invalid (missing or incomplete storage secret).</p>
@@ -1243,6 +1248,33 @@ JaegerQueryMonitor
 <em>(Optional)</em>
 
 <p>MonitorTab defines the monitor tab configuration.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>resources</code><br/>
+
+<em>
+
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#resourcerequirements-v1-core">
+
+Kubernetes core/v1.ResourceRequirements
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>Resources defines resources for this component, this will override the calculated resources derived from total</p>
 
 </td>
 </tr>
@@ -2154,8 +2186,7 @@ TLSRouteTerminationType
 
 <td>
 
-<p>Termination specifies the termination type.
-Default: edge.</p>
+<p>Termination specifies the termination type.</p>
 
 </td>
 </tr>
@@ -2285,6 +2316,165 @@ MonolithicJaegerUIRouteSpec
 <td>
 
 <p>Route defines the OpenShift route configuration for the Jaeger UI.</p>
+
+</td>
+</tr>
+
+</tbody>
+</table>
+
+## MonolithicMultitenancySpec { #tempo-grafana-com-v1alpha1-MonolithicMultitenancySpec }
+
+<p>
+
+(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-TempoMonolithicSpec">TempoMonolithicSpec</a>)
+
+</p>
+
+<div>
+
+<p>MonolithicMultitenancySpec defines the multi-tenancy settings for Tempo.</p>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Field</th>
+
+<th>Description</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td>
+
+<code>enabled</code><br/>
+
+<em>
+
+bool
+
+</em>
+
+</td>
+
+<td>
+
+<p>Enabled defines if multi-tenancy is enabled.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>mode</code><br/>
+
+<em>
+
+<a href="#tempo-grafana-com-v1alpha1-ModeType">
+
+ModeType
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<p>Mode defines the multitenancy mode.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>authentication</code><br/>
+
+<em>
+
+<a href="#tempo-grafana-com-v1alpha1-AuthenticationSpec">
+
+[]AuthenticationSpec
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>Authentication defines the tempo-gateway component authentication configuration spec per tenant.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>authorization</code><br/>
+
+<em>
+
+<a href="#tempo-grafana-com-v1alpha1-AuthorizationSpec">
+
+AuthorizationSpec
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>Authorization defines the tempo-gateway component authorization configuration spec per tenant.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>resources</code><br/>
+
+<em>
+
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#resourcerequirements-v1-core">
+
+Kubernetes core/v1.ResourceRequirements
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<p>Resources defines the compute resource requirements of the gateway container.
+The gateway performs authentication and authorization of incoming requests when multi-tenancy is enabled.</p>
 
 </td>
 </tr>
@@ -3136,7 +3326,7 @@ k8s.io/apimachinery/pkg/api/resource.Quantity
 For in-memory storage, this defines the size of the tmpfs volume.
 For persistent volume storage, this defines the size of the persistent volume.
 For object storage, this defines the size of the persistent volume containing the Write-Ahead Log (WAL) of Tempo.
-Default: 10Gi.</p>
+Default: 2Gi for memory, 10Gi for all other backends.</p>
 
 </td>
 </tr>
@@ -5377,6 +5567,31 @@ MonolithicJaegerUISpec
 
 <td>
 
+<code>multitenancy</code><br/>
+
+<em>
+
+<a href="#tempo-grafana-com-v1alpha1-MonolithicMultitenancySpec">
+
+MonolithicMultitenancySpec
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<p>Multitenancy defines the multi-tenancy configuration.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
 <code>observability</code><br/>
 
 <em>
@@ -5419,6 +5634,27 @@ Kubernetes core/v1.ResourceRequirements
 <td>
 
 <p>Resources defines the compute resource requirements of the Tempo container.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>serviceAccount</code><br/>
+
+<em>
+
+string
+
+</em>
+
+</td>
+
+<td>
+
+<p>ServiceAccount defines the Service Account to use for all Tempo components.</p>
 
 </td>
 </tr>
@@ -5474,6 +5710,79 @@ ExtraConfigSpec
 </td>
 </tr>
 
+<tr>
+
+<td>
+
+<code>nodeSelector</code><br/>
+
+<em>
+
+map[string]string
+
+</em>
+
+</td>
+
+<td>
+
+<p>NodeSelector defines which labels are required by a node to schedule the pod onto it.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>tolerations</code><br/>
+
+<em>
+
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#toleration-v1-core">
+
+[]Kubernetes core/v1.Toleration
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<p>Tolerations defines the tolerations of a node to schedule the pod onto it.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>affinity</code><br/>
+
+<em>
+
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#affinity-v1-core">
+
+Kubernetes core/v1.Affinity
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>Affinity defines the Affinity rules for scheduling pods.</p>
+
+</td>
+</tr>
+
 </tbody>
 </table>
 
@@ -5506,6 +5815,52 @@ ExtraConfigSpec
 </thead>
 
 <tbody>
+
+<tr>
+
+<td>
+
+<code>operatorVersion</code><br/>
+
+<em>
+
+string
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>Version of the Tempo Operator.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>tempoVersion</code><br/>
+
+<em>
+
+string
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>Version of the managed Tempo instance.</p>
+
+</td>
+</tr>
 
 <tr>
 
@@ -6611,7 +6966,7 @@ string
 
 <p>
 
-(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-TempoStackSpec">TempoStackSpec</a>)
+(<em>Appears on:</em><a href="#tempo-grafana-com-v1alpha1-MonolithicMultitenancySpec">MonolithicMultitenancySpec</a>, <a href="#tempo-grafana-com-v1alpha1-TempoStackSpec">TempoStackSpec</a>)
 
 </p>
 

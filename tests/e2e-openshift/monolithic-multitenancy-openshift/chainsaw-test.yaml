@@ -1,0 +1,43 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/kyverno/chainsaw/main/.schemas/json/test-chainsaw-v1alpha1.json
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: monolithic-multitenancy-openshift
+spec:
+  # this test must use a known namespace because of the CN field of the TLS certificate and the ClusterRoleBinding
+  namespace: chainsaw-monolithic-multitenancy
+  steps:
+  - name: step-01
+    try:
+    - apply:
+        file: 01-install-tempo.yaml
+    - assert:
+        file: 01-assert.yaml
+  - name: step-02
+    try:
+    - apply:
+        file: 02-install-otelcol.yaml
+    - assert:
+        file: 02-assert.yaml
+  - name: step-03
+    try:
+    - apply:
+        file: 03-generate-traces.yaml
+    - assert:
+        file: 03-assert.yaml
+  - name: step-04
+    try:
+    - apply:
+        file: 04-verify-traces.yaml
+    - assert:
+        file: 04-assert.yaml
+    catch:
+    - events: {}
+    - podLogs:
+        selector: job-name=verify-traces-jaegerui
+        tail: 50
+    - podLogs:
+        selector: job-name=verify-traces-traceql
+        tail: 50
+    - podLogs:
+        selector: app.kubernetes.io/name=tempo-monolithic

@@ -2,7 +2,6 @@ package v1alpha1
 
 import (
 	corev1 "k8s.io/api/core/v1"
-	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -128,16 +127,6 @@ type TempoStackSpec struct {
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Extra Configurations"
 	ExtraConfig *ExtraConfigSpec `json:"extraConfig,omitempty"`
-}
-
-// ExtraConfigSpec defines extra configurations for tempo that will be merged with the operator generated, configurations defined here
-// has precedence and could override generated config.
-type ExtraConfigSpec struct {
-	// Tempo defines any extra Tempo configuration, which will be merged with the operator's generated Tempo configuration
-	//
-	// +optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tempo Extra Configurations"
-	Tempo apiextensionsv1.JSON `json:"tempo,omitempty"`
 }
 
 // ObservabilitySpec defines how telemetry data gets handled.
@@ -329,6 +318,8 @@ const (
 	ReasonInvalidTenantsConfiguration ConditionReason = "InvalidTenantsConfiguration"
 	// ReasonFailedReconciliation when the operator failed to reconcile.
 	ReasonFailedReconciliation ConditionReason = "FailedReconciliation"
+	// ReasonFailedUpgrade when the operator failed to upgrade an instance.
+	ReasonFailedUpgrade ConditionReason = "FailedUpgrade"
 )
 
 // Resources defines resources configuration.
@@ -594,6 +585,12 @@ type JaegerQuerySpec struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger Query UI Monitor Tab Settings"
 	MonitorTab JaegerQueryMonitor `json:"monitorTab"`
+
+	// Resources defines resources for this component, this will override the calculated resources derived from total
+	//
+	// +optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Resources"
+	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 }
 
 // JaegerQueryMonitor defines configuration for the service monitoring tab in the Jaeger console.
@@ -813,4 +810,29 @@ type TempoStackList struct {
 
 func init() {
 	SchemeBuilder.Register(&TempoStack{}, &TempoStackList{})
+}
+
+// GetOperatorVersion returns the operator version from the status field.
+func (tempo *TempoStack) GetOperatorVersion() string {
+	return tempo.Status.OperatorVersion
+}
+
+// SetOperatorVersion sets the operator version in the status field.
+func (tempo *TempoStack) SetOperatorVersion(v string) {
+	tempo.Status.OperatorVersion = v
+}
+
+// SetTempoVersion sets the Tempo version in the status field.
+func (tempo *TempoStack) SetTempoVersion(v string) {
+	tempo.Status.TempoVersion = v
+}
+
+// GetStatus returns the CR status.
+func (tempo *TempoStack) GetStatus() any {
+	return tempo.Status
+}
+
+// SetStatus sets the CR status.
+func (tempo *TempoStack) SetStatus(s any) {
+	tempo.Status = s.(TempoStackStatus)
 }

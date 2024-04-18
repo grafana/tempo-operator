@@ -31,7 +31,7 @@ func TestReconcileMonolithic(t *testing.T) {
 	reconciler := TempoMonolithicReconciler{
 		Client:     k8sClient,
 		Scheme:     testScheme,
-		CtrlConfig: configv1alpha1.ProjectConfig{},
+		CtrlConfig: configv1alpha1.DefaultProjectConfig(),
 	}
 	reconcile, err := reconciler.Reconcile(context.Background(), ctrl.Request{NamespacedName: nsn})
 	require.NoError(t, err)

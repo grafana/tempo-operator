@@ -166,7 +166,7 @@ func TestBuildDistributor(t *testing.T) {
 				},
 				{
 					Name:      manifestutils.TmpStorageVolumeName,
-					MountPath: manifestutils.TmpStoragePath,
+					MountPath: manifestutils.TmpTempoStoragePath,
 				},
 			},
 		},
@@ -325,7 +325,7 @@ func TestBuildDistributor(t *testing.T) {
 				},
 				{
 					Name:      manifestutils.TmpStorageVolumeName,
-					MountPath: manifestutils.TmpStoragePath,
+					MountPath: manifestutils.TmpTempoStoragePath,
 				},
 				{
 					Name:      "ca-custom",
@@ -409,7 +409,7 @@ func TestBuildDistributor(t *testing.T) {
 				},
 				{
 					Name:      manifestutils.TmpStorageVolumeName,
-					MountPath: manifestutils.TmpStoragePath,
+					MountPath: manifestutils.TmpTempoStoragePath,
 				},
 			},
 		},

@@ -14,7 +14,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -340,11 +339,19 @@ func (v *validator) validateObservability(tempo v1alpha1.TempoStack) field.Error
 			)}
 	}
 
+	if tempo.Spec.Observability.Grafana.CreateDatasource && tempo.Spec.Template.Gateway.Enabled {
+		return field.ErrorList{field.Invalid(
+			grafanaBase.Child("createDatasource"),
+			tempo.Spec.Observability.Grafana.CreateDatasource,
+			"creating a data source for Tempo is not support if the gateway is enabled",
+		)}
+	}
+
 	return nil
 }
 
 func (v *validator) validateTenantConfigs(tempo v1alpha1.TempoStack) field.ErrorList {
-	if err := ValidateTenantConfigs(tempo); err != nil {
+	if err := ValidateTenantConfigs(tempo.Spec.Tenants, tempo.Spec.Template.Gateway.Enabled); err != nil {
 		return field.ErrorList{
 			field.Invalid(
 				field.NewPath("spec").Child("template").Child("tenants"),
@@ -393,6 +400,16 @@ func (v *validator) validateReceiverTLS(tempo v1alpha1.TempoStack) field.ErrorLi
 	return nil
 }
 
+func (v *validator) validateConflictWithMonolithic(ctx context.Context, tempo *v1alpha1.TempoStack) field.ErrorList {
+	return validateTempoNameConflict(func() error {
+		monolithic := &v1alpha1.TempoMonolithic{}
+		return v.client.Get(ctx, types.NamespacedName{Namespace: tempo.Namespace, Name: tempo.Name}, monolithic)
+	},
+		tempo.Name,
+		"TempoStack", "TempoMonolithic",
+	)
+}
+
 func (v *validator) validate(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
 	tempo, ok := obj.(*v1alpha1.TempoStack)
 	if !ok {
@@ -428,6 +445,7 @@ func (v *validator) validate(ctx context.Context, obj runtime.Object) (admission
 	allErrors = append(allErrors, v.validateObservability(*tempo)...)
 	allErrors = append(allErrors, v.validateDeprecatedFields(*tempo)...)
 	allErrors = append(allErrors, v.validateReceiverTLS(*tempo)...)
+	allErrors = append(allErrors, v.validateConflictWithMonolithic(ctx, tempo)...)
 
 	if len(allErrors) == 0 {
 		return allWarnings, nil
@@ -445,16 +463,15 @@ func validateTenantsOICD(spec *v1alpha1.TenantsSpec) error {
 }
 
 // ValidateTenantConfigs validates the tenants mode specification.
-func ValidateTenantConfigs(tempo v1alpha1.TempoStack) error {
-	if tempo.Spec.Tenants == nil {
+func ValidateTenantConfigs(tenants *v1alpha1.TenantsSpec, gatewayEnabled bool) error {
+	if tenants == nil {
 		return nil
 	}
 
-	tenants := tempo.Spec.Tenants
 	if tenants.Mode == v1alpha1.ModeStatic {
 		// If the static mode is combined with the gateway, we will need the following fields
 		// otherwise this will just enable tempo multitenancy without the gateway
-		if tempo.Spec.Template.Gateway.Enabled {
+		if gatewayEnabled {
 			if tenants.Authentication == nil {
 				return fmt.Errorf("spec.tenants.authentication is required in static mode")
 			}
@@ -473,7 +490,7 @@ func ValidateTenantConfigs(tempo v1alpha1.TempoStack) error {
 			return validateTenantsOICD(tenants)
 		}
 	} else if tenants.Mode == v1alpha1.ModeOpenShift {
-		if !tempo.Spec.Template.Gateway.Enabled {
+		if !gatewayEnabled {
 			return fmt.Errorf("openshift mode requires gateway enabled")
 		}
 		if tenants.Authorization != nil {

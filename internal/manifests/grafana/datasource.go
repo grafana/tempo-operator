@@ -6,6 +6,7 @@ import (
 	grafanav1 "github.com/grafana/grafana-operator/v5/api/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/utils/ptr"
 
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
@@ -15,14 +16,7 @@ import (
 func BuildGrafanaDatasource(params manifestutils.Params) *grafanav1.GrafanaDatasource {
 	tempo := params.Tempo
 	labels := manifestutils.CommonLabels(tempo.Name)
-	var url string
-
-	if tempo.Spec.Template.Gateway.Enabled {
-		url = fmt.Sprintf("http://%s:%d", naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.GatewayComponentName), manifestutils.PortHTTPServer)
-	} else {
-		url = fmt.Sprintf("http://%s:%d", naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.QueryFrontendComponentName), manifestutils.PortHTTPServer)
-	}
-
+	url := fmt.Sprintf("http://%s:%d", naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.QueryFrontendComponentName), manifestutils.PortHTTPServer)
 	return NewGrafanaDatasource(tempo.Namespace, tempo.Name, labels, url, tempo.Spec.Observability.Grafana.InstanceSelector)
 }
 
@@ -51,8 +45,12 @@ func NewGrafanaDatasource(
 				Access: "proxy",
 				URL:    url,
 			},
+
 			// InstanceSelector is a required field in the spec
 			InstanceSelector: &instanceSelector,
+
+			// Allow using this datasource from Grafana instances in other namespaces
+			AllowCrossNamespaceImport: ptr.To(true),
 		},
 	}
 }

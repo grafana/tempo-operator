@@ -3,7 +3,6 @@ package webhooks
 import (
 	"context"
 	"fmt"
-
 	"testing"
 	"time"
 
@@ -14,6 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -1159,7 +1159,7 @@ func TestValidateTenantConfigs(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			err := ValidateTenantConfigs(tc.input)
+			err := ValidateTenantConfigs(tc.input.Spec.Tenants, tc.input.Spec.Template.Gateway.Enabled)
 			assert.Equal(t, tc.wantErr, err)
 		})
 	}
@@ -1398,6 +1398,35 @@ func TestValidatorObservabilityGrafana(t *testing.T) {
 				},
 			},
 			expected: nil,
+		},
+		{
+			name: "datasource enabled, feature gate set, gateway enabled",
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Observability: v1alpha1.ObservabilitySpec{
+						Grafana: v1alpha1.GrafanaConfigSpec{
+							CreateDatasource: true,
+						},
+					},
+					Template: v1alpha1.TempoTemplateSpec{
+						Gateway: v1alpha1.TempoGatewaySpec{
+							Enabled: true,
+						},
+					},
+				},
+			},
+			ctrlConfig: configv1alpha1.ProjectConfig{
+				Gates: configv1alpha1.FeatureGates{
+					GrafanaOperator: true,
+				},
+			},
+			expected: field.ErrorList{
+				field.Invalid(
+					field.NewPath("spec").Child("observability").Child("grafana").Child("createDatasource"),
+					true,
+					"creating a data source for Tempo is not support if the gateway is enabled",
+				),
+			},
 		},
 	}
 
@@ -1819,8 +1848,10 @@ func TestWarning(t *testing.T) {
 }
 
 type k8sFake struct {
-	secret    *corev1.Secret
-	configmap *corev1.ConfigMap
+	secret          *corev1.Secret
+	configmap       *corev1.ConfigMap
+	tempoStack      *v1alpha1.TempoStack
+	tempoMonolithic *v1alpha1.TempoMonolithic
 	client.Client
 }
 
@@ -1836,6 +1867,70 @@ func (k *k8sFake) Get(ctx context.Context, key client.ObjectKey, obj client.Obje
 			k.configmap.DeepCopyInto(typed)
 			return nil
 		}
+	case *v1alpha1.TempoStack:
+		if k.tempoStack != nil {
+			k.tempoStack.DeepCopyInto(typed)
+			return nil
+		} else {
+			return apierrors.NewNotFound(schema.GroupResource{Group: "tempo.grafana.com",
+				Resource: "TempoStack"}, "TempoStack")
+		}
+	case *v1alpha1.TempoMonolithic:
+		if k.tempoMonolithic != nil {
+			k.tempoMonolithic.DeepCopyInto(typed)
+			return nil
+		} else {
+			return apierrors.NewNotFound(schema.GroupResource{Group: "tempo.grafana.com",
+				Resource: "TempoStack"}, "TempoStack")
+		}
 	}
 	return fmt.Errorf("mock: fails always")
+}
+
+func TestConflictMonolithicValidation(t *testing.T) {
+	tempoStack := &v1alpha1.TempoStack{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test-obj",
+			Namespace: "abc",
+		},
+	}
+
+	tests := []struct {
+		name     string
+		input    runtime.Object
+		expected field.ErrorList
+		client   client.Client
+	}{
+		{
+			name:  "should fail when monolithic exits",
+			input: tempoStack,
+			expected: field.ErrorList{
+				field.Invalid(
+					field.NewPath("metadata").Child("name"),
+					"test-obj",
+					"Cannot create a TempoStack with the same name as a TempoMonolithic instance in the same namespace",
+				)},
+			client: &k8sFake{
+				tempoMonolithic: &v1alpha1.TempoMonolithic{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "test-obj",
+						Namespace: "abc",
+					},
+				},
+			},
+		},
+		{
+			name:   "should not fail",
+			input:  tempoStack,
+			client: &k8sFake{},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			v := &validator{ctrlConfig: configv1alpha1.ProjectConfig{}, client: test.client}
+			err := v.validateConflictWithMonolithic(ctx, tempoStack)
+			assert.Equal(t, test.expected, err)
+		})
+	}
 }

@@ -19,15 +19,16 @@ import (
 func GetOIDCTenantSecrets(
 	ctx context.Context,
 	k8sClient client.Client,
-	tempo v1alpha1.TempoStack,
+	namespace string,
+	tenants v1alpha1.TenantsSpec,
 ) ([]*manifestutils.GatewayTenantOIDCSecret, error) {
 	var (
 		tenantSecrets []*manifestutils.GatewayTenantOIDCSecret
 		gatewaySecret corev1.Secret
 	)
 
-	for _, tenant := range tempo.Spec.Tenants.Authentication {
-		key := client.ObjectKey{Name: tenant.OIDC.Secret.Name, Namespace: tempo.Namespace}
+	for _, tenant := range tenants.Authentication {
+		key := client.ObjectKey{Name: tenant.OIDC.Secret.Name, Namespace: namespace}
 		if err := k8sClient.Get(ctx, key, &gatewaySecret); err != nil {
 			if apierrors.IsNotFound(err) {
 				return nil, &status.ConfigurationError{

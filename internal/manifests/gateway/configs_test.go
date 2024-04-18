@@ -215,20 +215,23 @@ func TestTenantsTemplate(t *testing.T) {
 		{
 			name: "openshift",
 			opts: options{
-				Namespace:  "default",
-				Name:       "foo",
-				BaseDomain: "apps-crc.testing",
+				Namespace:      "default",
+				Name:           "foo",
+				ServiceAccount: "tempo-foo-gateway",
+				OPAUrl:         "http://localhost:8082/v1/data/tempostack/allow",
 				Tenants: &tenants{
 					Mode: v1alpha1.ModeOpenShift,
 					Authentication: []authentication{
 						{
 							TenantName:            "dev",
 							TenantID:              "abcd1",
+							RedirectURL:           "https://tempo-foo-gateway-default.apps-crc.testing/openshift/dev/callback",
 							OpenShiftCookieSecret: "random",
 						},
 						{
 							TenantName:            "prod",
 							TenantID:              "abcd2",
+							RedirectURL:           "https://tempo-foo-gateway-default.apps-crc.testing/openshift/prod/callback",
 							OpenShiftCookieSecret: "random2",
 						},
 					},
@@ -288,9 +291,13 @@ func TestNewOptions(t *testing.T) {
 			},
 		},
 	}
-	opts := newOptions(
-		tempo,
-		"aws",
+	opts := NewConfigOptions(
+		tempo.Namespace,
+		tempo.Name,
+		"serviceaccount",
+		"route",
+		"tempostack",
+		*tempo.Spec.Tenants,
 		[]*manifestutils.GatewayTenantOIDCSecret{
 			{
 				TenantName: "dev",
@@ -305,15 +312,17 @@ func TestNewOptions(t *testing.T) {
 		},
 	)
 	assert.Equal(t, options{
-		Name:       "simplest",
-		Namespace:  "observability",
-		BaseDomain: "aws",
+		Name:           "simplest",
+		Namespace:      "observability",
+		ServiceAccount: "serviceaccount",
+		OPAUrl:         "http://localhost:8082/v1/data/tempostack/allow",
 		Tenants: &tenants{
 			Mode: "openshift",
 			Authentication: []authentication{
 				{
 					TenantName:            "dev",
 					TenantID:              "abcd1",
+					RedirectURL:           "https://route/openshift/dev/callback",
 					OpenShiftCookieSecret: "cookiesecret",
 					OIDC: &v1alpha1.OIDCSpec{
 						RedirectURL: "redirect",

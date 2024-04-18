@@ -1,0 +1,63 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/kyverno/chainsaw/main/.schemas/json/test-chainsaw-v1alpha1.json
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  creationTimestamp: null
+  name: reconcile
+spec:
+  steps:
+  - name: step-00
+    try:
+    - apply:
+        file: 00-install-storage.yaml
+    - assert:
+        file: 00-assert.yaml
+  - name: step-01
+    try:
+    - apply:
+        file: 01-install-tempo.yaml
+    - assert:
+        file: 01-assert.yaml
+  - name: step-02
+    try:
+    - command:
+        timeout: 60s
+        args:
+        - delete
+        - service
+        - -n
+        - $NAMESPACE
+        - tempo-simplest-querier
+        entrypoint: kubectl
+    - assert:
+        file: 02-assert.yaml
+  - name: step-03
+    try:
+    - apply:
+        file: 03-update-storage-secret.yaml
+    - assert:
+        file: 03-assert.yaml
+  - name: step-04
+    try:
+    - command:
+        timeout: 60s
+        args:
+        - -c
+        - 'kubectl get --namespace $NAMESPACE configmap tempo-simplest -o jsonpath="{.data.tempo\\.yaml}"
+          | grep "bucket: tempo2"'
+        entrypoint: /bin/sh
+  - name: step-05
+    try:
+    - apply:
+        file: 05-disable-reconciliation.yaml
+    - assert:
+        file: 05-assert.yaml
+  - name: step-06
+    try:
+    - command:
+        timeout: 60s
+        args:
+        - -c
+        - '! kubectl get --namespace $NAMESPACE configmap tempo-simplest -o jsonpath=''{.data.tempo\.yaml}''
+          | grep ''[[:blank:]]$'''
+        entrypoint: /bin/sh
