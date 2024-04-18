@@ -1,32 +1,26 @@
 name: "Release"
 on:
-  pull_request:
+  push:
     branches:
-      - main
-    types:
-      - closed
+      - 'main'
     paths:
       - CHANGELOG.md
+
 jobs:
   release:
-    if: |
-        github.event.pull_request.merged == true && github.event.pull_request.head.repo.full_name == github.repository
-        && github.event.pull_request.user.login == 'github-actions[bot]' && github.event.pull_request.user.type == 'Bot'
-        && startsWith(github.event.pull_request.head.ref, 'releases/')
     runs-on: ubuntu-22.04
     outputs:
       operator_version: ${{ steps.operator-version.outputs.version }}
     steps:
-    - name: Determine operator version to release
-      id: operator-version
-      run: echo "version=${BRANCH#"releases/"}" >> "$GITHUB_OUTPUT"
-      env:
-        BRANCH: ${{ github.event.pull_request.head.ref }}
-
     - name: Checkout
       uses: actions/checkout@v4
       with:
         ref: main
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Determine operator version to release
+      id: operator-version
+      run: echo "version=$(grep -Eo '## [0-9]+\.[0-9]+\.[0-9]+' CHANGELOG.md | head -n 1 | awk '{print $2}')" >> "$GITHUB_OUTPUT"
 
     - name: Set up Go
       uses: actions/setup-go@v5
