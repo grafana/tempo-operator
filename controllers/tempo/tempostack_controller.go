@@ -114,7 +114,7 @@ func (r *TempoStackReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		}
 	}
 
-	err := r.createOrUpdate(ctx, log, tempo)
+	err := r.createOrUpdate(ctx, tempo)
 	if err != nil {
 		return r.handleReconcileStatus(ctx, log, tempo, err)
 	}

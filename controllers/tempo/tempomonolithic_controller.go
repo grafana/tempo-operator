@@ -14,6 +14,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -23,6 +24,7 @@ import (
 	"github.com/grafana/tempo-operator/internal/handlers/storage"
 	"github.com/grafana/tempo-operator/internal/manifests/monolithic"
 	"github.com/grafana/tempo-operator/internal/status"
+	"github.com/grafana/tempo-operator/internal/tlsprofile"
 	"github.com/grafana/tempo-operator/internal/upgrade"
 	"github.com/grafana/tempo-operator/internal/version"
 )
@@ -99,7 +101,13 @@ func (r *TempoMonolithicReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 }
 
 func (r *TempoMonolithicReconciler) createOrUpdate(ctx context.Context, tempo v1alpha1.TempoMonolithic) error {
-	storageParams, errs := storage.GetStorageParamsForTempoMonolithic(ctx, r.Client, tempo)
+	opts := monolithic.Options{
+		CtrlConfig: r.CtrlConfig,
+		Tempo:      tempo,
+	}
+
+	var errs field.ErrorList
+	opts.StorageParams, errs = storage.GetStorageParamsForTempoMonolithic(ctx, r.Client, tempo)
 	if len(errs) > 0 {
 		return &status.ConfigurationError{
 			Reason:  v1alpha1.ReasonInvalidStorageConfig,
@@ -107,11 +115,29 @@ func (r *TempoMonolithicReconciler) createOrUpdate(ctx context.Context, tempo v1
 		}
 	}
 
-	managedObjects, err := monolithic.BuildAll(monolithic.Options{
-		CtrlConfig:    r.CtrlConfig,
-		Tempo:         tempo,
-		StorageParams: storageParams,
-	})
+	if tempo.Spec.Multitenancy.IsGatewayEnabled() {
+		var err error
+		opts.GatewayTenantSecret, opts.GatewayTenantsData, err = getTenantParams(ctx, r.Client, &r.CtrlConfig, tempo.Namespace, tempo.Name, tempo.Spec.Multitenancy.TenantsSpec, true)
+		if err != nil {
+			return err
+		}
+	}
+
+	var err error
+	opts.TLSProfile, err = tlsprofile.Get(ctx, r.CtrlConfig.Gates, r.Client)
+	if err != nil {
+		switch err {
+		case tlsprofile.ErrGetProfileFromCluster, tlsprofile.ErrGetInvalidProfile:
+			return &status.ConfigurationError{
+				Message: err.Error(),
+				Reason:  v1alpha1.ReasonCouldNotGetOpenShiftTLSPolicy,
+			}
+		default:
+			return err
+		}
+	}
+
+	managedObjects, err := monolithic.BuildAll(opts)
 	if err != nil {
 		return fmt.Errorf("error building manifests: %w", err)
 	}
@@ -202,6 +228,7 @@ func (r *TempoMonolithicReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	builder := ctrl.NewControllerManagedBy(mgr).
 		For(&v1alpha1.TempoMonolithic{}).
 		Owns(&corev1.ConfigMap{}).
+		Owns(&corev1.Secret{}).
 		Owns(&corev1.Service{}).
 		Owns(&corev1.ServiceAccount{}).
 		Owns(&appsv1.StatefulSet{}).

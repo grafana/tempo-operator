@@ -14,11 +14,16 @@ import (
 // BuildServices creates all services for a monolithic deployment.
 func BuildServices(opts Options) []client.Object {
 	tempo := opts.Tempo
-	objs := []client.Object{buildTempoService(opts)}
-	if tempo.Spec.JaegerUI != nil && tempo.Spec.JaegerUI.Enabled {
-		objs = append(objs, buildJaegerUIService(opts))
+
+	if tempo.Spec.Multitenancy.IsGatewayEnabled() {
+		return []client.Object{buildGatewayService(opts)}
+	} else {
+		objs := []client.Object{buildTempoService(opts)}
+		if tempo.Spec.JaegerUI != nil && tempo.Spec.JaegerUI.Enabled {
+			objs = append(objs, buildJaegerUIService(opts))
+		}
+		return objs
 	}
-	return objs
 }
 
 // buildTempoService creates the service for a monolithic deployment.
@@ -101,6 +106,61 @@ func buildJaegerUIService(opts Options) *corev1.Service {
 			Name:      naming.Name(manifestutils.JaegerUIComponentName, tempo.Name),
 			Namespace: tempo.Namespace,
 			Labels:    ComponentLabels(manifestutils.JaegerUIComponentName, tempo.Name),
+		},
+		Spec: corev1.ServiceSpec{
+			Ports:    ports,
+			Selector: ComponentLabels(manifestutils.TempoMonolithComponentName, tempo.Name),
+		},
+	}
+}
+
+// buildGatewayService creates the service for a monolithic deployment if the gateway is enabled.
+// Unfortunately the gateway is not a "100% drop-in service", because the paths for Jaeger UI and Tempo API are different
+// when accessed via gateway, and the gateway exposes a different set of metrics.
+func buildGatewayService(opts Options) *corev1.Service {
+	tempo := opts.Tempo
+	annotations := map[string]string{}
+
+	if opts.CtrlConfig.Gates.OpenShift.ServingCertsService {
+		annotations["service.beta.openshift.io/serving-cert-secret-name"] = naming.ServingCertName(manifestutils.GatewayComponentName, tempo.Name)
+	}
+
+	ports := []corev1.ServicePort{
+		{
+			Name:     manifestutils.GatewayHttpPortName,
+			Protocol: corev1.ProtocolTCP,
+			Port:     manifestutils.GatewayPortHTTPServer,
+			// proxies Tempo API and optionally Jaeger UI
+			TargetPort: intstr.FromString(manifestutils.GatewayHttpPortName),
+		},
+		{
+			Name:       manifestutils.GatewayInternalHttpPortName,
+			Protocol:   corev1.ProtocolTCP,
+			Port:       manifestutils.GatewayPortInternalHTTPServer,
+			TargetPort: intstr.FromString(manifestutils.GatewayInternalHttpPortName),
+		},
+	}
+
+	if tempo.Spec.Ingestion != nil && tempo.Spec.Ingestion.OTLP != nil &&
+		tempo.Spec.Ingestion.OTLP.GRPC != nil && tempo.Spec.Ingestion.OTLP.GRPC.Enabled {
+		ports = append(ports, corev1.ServicePort{
+			Name:       manifestutils.OtlpGrpcPortName,
+			Protocol:   corev1.ProtocolTCP,
+			Port:       manifestutils.PortOtlpGrpcServer,
+			TargetPort: intstr.FromString(manifestutils.GatewayGrpcPortName),
+		})
+	}
+
+	return &corev1.Service{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: appsv1.SchemeGroupVersion.String(),
+			Kind:       "Service",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        naming.Name(manifestutils.GatewayComponentName, tempo.Name),
+			Namespace:   tempo.Namespace,
+			Labels:      ComponentLabels(manifestutils.GatewayComponentName, tempo.Name),
+			Annotations: annotations,
 		},
 		Spec: corev1.ServiceSpec{
 			Ports:    ports,

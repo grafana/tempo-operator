@@ -3,6 +3,7 @@ package webhooks
 import (
 	"fmt"
 
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 )
 
@@ -19,4 +20,25 @@ func validateName(name string) field.ErrorList {
 		)}
 	}
 	return nil
+}
+
+func validateTempoNameConflict(getFn func() error, instanceName string, to string, from string) field.ErrorList {
+	var allErrs field.ErrorList
+	err := getFn()
+	if err != nil {
+		if !apierrors.IsNotFound(err) {
+			allErrs = append(allErrs, field.Invalid(
+				field.NewPath("spec").Child("name"),
+				instanceName,
+				err.Error(),
+			))
+		}
+	} else {
+		allErrs = append(allErrs, field.Invalid(
+			field.NewPath("metadata").Child("name"),
+			instanceName,
+			fmt.Sprintf("Cannot create a %s with the same name as a %s instance in the same namespace", to, from),
+		))
+	}
+	return allErrs
 }

@@ -63,7 +63,7 @@ type TempoMonolithicSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Extra Configuration",xDescriptors="urn:alm:descriptor:com.tectonic.ui:advanced"
 	ExtraConfig *ExtraConfigSpec `json:"extraConfig,omitempty"`
 
-	Scheduler *MonolithicSchedulerSpec `json:",inline"`
+	MonolithicSchedulerSpec `json:",inline"`
 }
 
 // MonolithicStorageSpec defines the storage for the Tempo deployment.

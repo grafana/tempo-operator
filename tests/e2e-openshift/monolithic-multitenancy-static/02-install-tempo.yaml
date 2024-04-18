@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Secret
+metadata:
+   name: tenant1-oidc-secret
+stringData:
+  clientID: tenant1-oidc-client
+type: Opaque
+---
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoMonolithic
+metadata:
+  name: sample
+spec:
+  jaegerui:
+    enabled: true
+    route:
+      enabled: true
+  multitenancy:
+    enabled: true
+    mode: static
+    authentication:
+    - tenantName: tenant1
+      tenantId: tenant1
+      oidc:
+        issuerURL: http://hydra:4444
+        secret:
+          name: tenant1-oidc-secret
+    authorization:
+      roles:
+      - name: allow-rw-tenant1
+        permissions:
+        - read
+        - write
+        resources:
+        - traces
+        tenants:
+        - tenant1
+      roleBindings:
+      - name: assign-allow-rw-tenant1
+        roles:
+        - allow-rw-tenant1
+        subjects:
+        - kind: user
+          name: tenant1-oidc-client

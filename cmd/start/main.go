@@ -19,6 +19,7 @@ import (
 	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
 	"github.com/grafana/tempo-operator/cmd"
 	controllers "github.com/grafana/tempo-operator/controllers/tempo"
+	"github.com/grafana/tempo-operator/internal/crdmetrics"
 	"github.com/grafana/tempo-operator/internal/version"
 	"github.com/grafana/tempo-operator/internal/webhooks"
 	//+kubebuilder:scaffold:imports
@@ -117,6 +118,11 @@ func start(c *cobra.Command, args []string) {
 		"go-arch", runtime.GOARCH,
 		"go-os", runtime.GOOS,
 	)
+
+	if err := crdmetrics.Bootstrap(mgr.GetClient()); err != nil {
+		setupLog.Error(err, "problem init crd metrics")
+		os.Exit(1)
+	}
 
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")

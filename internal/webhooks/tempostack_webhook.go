@@ -14,7 +14,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -401,6 +400,16 @@ func (v *validator) validateReceiverTLS(tempo v1alpha1.TempoStack) field.ErrorLi
 	return nil
 }
 
+func (v *validator) validateConflictWithMonolithic(ctx context.Context, tempo *v1alpha1.TempoStack) field.ErrorList {
+	return validateTempoNameConflict(func() error {
+		monolithic := &v1alpha1.TempoMonolithic{}
+		return v.client.Get(ctx, types.NamespacedName{Namespace: tempo.Namespace, Name: tempo.Name}, monolithic)
+	},
+		tempo.Name,
+		"TempoStack", "TempoMonolithic",
+	)
+}
+
 func (v *validator) validate(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
 	tempo, ok := obj.(*v1alpha1.TempoStack)
 	if !ok {
@@ -436,6 +445,7 @@ func (v *validator) validate(ctx context.Context, obj runtime.Object) (admission
 	allErrors = append(allErrors, v.validateObservability(*tempo)...)
 	allErrors = append(allErrors, v.validateDeprecatedFields(*tempo)...)
 	allErrors = append(allErrors, v.validateReceiverTLS(*tempo)...)
+	allErrors = append(allErrors, v.validateConflictWithMonolithic(ctx, tempo)...)
 
 	if len(allErrors) == 0 {
 		return allWarnings, nil

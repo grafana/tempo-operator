@@ -2,7 +2,16 @@ name: Reusable - Publish Operator Images
 
 on:
   workflow_call:
-
+    inputs:
+      publish_bundle:
+        type: boolean
+        required: true
+      version_tag:
+        type: string
+        required: true
+      push:
+        type: boolean
+        required: true
 jobs:
   publish:
     name: Publish container images
@@ -23,9 +32,9 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository }}/tempo-operator
           tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{raw}}
+            type=semver,pattern={{version}},value=${{ inputs.version_tag }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ inputs.version_tag }}
+            type=semver,pattern={{raw}},value=${{ inputs.version_tag }}
             type=ref,event=branch
 
       - name: Set up QEMU
@@ -55,7 +64,7 @@ jobs:
           context: .
           file: ./Dockerfile
           platforms: linux/amd64,linux/arm64
-          push: ${{ github.event_name != 'pull_request' }}
+          push: ${{ inputs.push }}
           tags: ${{ steps.docker_meta.outputs.tags }}
           labels: ${{ steps.docker_meta.outputs.labels }}
           cache-from: type=local,src=/tmp/.buildx-cache
@@ -71,7 +80,7 @@ jobs:
         shell: bash
 
       - name: Publish operator bundle and catalog
-        if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+        if: ${{ inputs.publish_bundle }}
         run: make bundle bundle-build bundle-push catalog-build catalog-push
         env:
           IMG_PREFIX: ghcr.io/${{ github.repository }}

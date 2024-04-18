@@ -18,8 +18,10 @@ const (
 	// TmpStorageVolumeName declares the name of the volume containing temporary storage for tempo.
 	TmpStorageVolumeName = "tempo-tmp-storage"
 
-	// TmpStoragePath declares the path of temporary storage for tempo.
-	TmpStoragePath = "/var/tempo"
+	// TmpTempoStoragePath declares the path of temporary storage for tempo.
+	TmpTempoStoragePath = "/var/tempo"
+	// TmpStoragePath   declares generic default /tmp storage path.
+	TmpStoragePath = "/tmp"
 
 	// HttpPortName declares the name of the tempo http port.
 	HttpPortName = "http"

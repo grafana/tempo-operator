@@ -1,0 +1,30 @@
+apiVersion: kiali.io/v1alpha1
+kind: Kiali
+metadata:
+  name: kiali
+  namespace: istio-system
+spec:
+  external_services:
+    tracing:
+      query_timeout: 30
+      enabled: true
+      in_cluster_url: 'http://tempo-simplest-query-frontend.tracing-system.svc.cluster.local:16686'
+      url: '[Tempo query frontend Route url]'
+      use_grpc: false
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: kiali
+    app.kubernetes.io/instance: kiali
+    app.kubernetes.io/name: kiali
+    app.kubernetes.io/part-of: kiali
+  namespace: istio-system
+status:
+  containerStatuses:
+  - name: kiali
+    ready: true
+    started: true
+  phase: Running

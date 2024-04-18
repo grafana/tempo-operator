@@ -133,7 +133,7 @@ func TestBuildQuerier(t *testing.T) {
 								},
 								{
 									Name:      manifestutils.TmpStorageVolumeName,
-									MountPath: manifestutils.TmpStoragePath,
+									MountPath: manifestutils.TmpTempoStoragePath,
 								},
 							},
 							Ports: []corev1.ContainerPort{

@@ -1,0 +1,28 @@
+apiVersion: opentelemetry.io/v1alpha1
+kind: OpenTelemetryCollector
+metadata:
+  name: simplest
+  namespace: tracing-system
+spec:
+  config: |
+    receivers:
+      zipkin:
+      otlp:
+        protocols:
+          grpc:
+          http:
+      
+    processors:
+
+    exporters:
+        otlp:
+          endpoint: tempo-simplest-distributor.tracing-system.svc.cluster.local:4317
+          tls:
+            insecure: true
+
+    service:
+      pipelines:
+        traces:
+          receivers: [zipkin, otlp]
+          processors: []
+          exporters: [otlp]

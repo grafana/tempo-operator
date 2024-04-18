@@ -1,0 +1,25 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: verify-traces
+  namespace: istio-system
+spec:
+  template:
+    spec:
+      serviceAccountName: kiali-service-account
+      containers:
+      - name: verify-traces
+        image: ghcr.io/grafana/tempo-operator/test-utils:main
+        command: ["/bin/bash", "-eux", "-c"]
+        args:
+        - |
+            TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+            KIALI_URL=https://kiali.istio-system.svc.cluster.local:20001
+            START_MICROS=1712566368978000
+            OUTPUT=$(curl -k -H "Authorization: Bearer $TOKEN" "$KIALI_URL/api/namespaces/bookinfo/services/productpage/traces?startMicros=$START_MICROS&tags=&limit=100")
+            if echo "$OUTPUT" | grep -q '"serviceName":"productpage.bookinfo"'; then
+              exit 0
+            else
+              exit 1
+            fi
+      restartPolicy: Never
