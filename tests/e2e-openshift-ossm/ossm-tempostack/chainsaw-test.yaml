@@ -1,0 +1,65 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  creationTimestamp: null
+  name: ossm-tempostack
+spec:
+  # Avoid running this test case in parallel as it uses high resources and uses static namespaces. 
+  concurrent: false
+  steps:
+  - name: Install OSSM
+    try:
+    - apply:
+        file: install-ossm.yaml
+    - assert:
+        file: install-ossm-assert.yaml
+  - name: Install Minio object store
+    try:
+    - apply:
+        file: install-minio.yaml
+    - assert:
+        file: install-minio-assert.yaml
+  - name: Install TempoStack
+    try:
+    - apply:
+        file: install-tempo.yaml
+    - assert:
+        file: install-tempo-assert.yaml
+  - name: Update Kiali config
+    try:
+    - patch:
+        file: update-kiali.yaml
+    - sleep:
+        duration: 10s
+    - assert:
+        file: update-kiali-assert.yaml
+  - name: Enable OSSM Tempo provider
+    try:
+    - apply:
+        file: apply-telemetry-cr.yaml
+    - sleep:
+        duration: 10s
+    - assert:
+        file: apply-telemetry-cr-assert.yaml
+  - name: Install Bookinfo app
+    try:
+    - apply:
+        file: install-bookinfo.yaml
+    - assert:
+        file: install-bookinfo-assert.yaml
+  - name: Generate traces from the bookinfo app
+    try:
+    - script:
+        content: |
+            for i in {1..20}
+            do
+                curl http://$(oc -n istio-system get route istio-ingressgateway -o jsonpath='{.spec.host}')/productpage
+                sleep 1
+            done
+  - name: Check traces in Kiali
+    try:
+    - apply:
+        file: verify-traces.yaml
+    - assert:
+        file: verify-traces-assert.yaml
+

@@ -5,6 +5,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/grafana/tempo-operator/internal/certrotation"
@@ -108,7 +109,7 @@ func NewServiceMonitor(
 					},
 					{
 						SourceLabels: []monitoringv1.LabelName{"__meta_kubernetes_namespace", "__meta_kubernetes_service_label_app_kubernetes_io_component"},
-						Separator:    "/",
+						Separator:    ptr.To("/"),
 						TargetLabel:  "job",
 					},
 				},

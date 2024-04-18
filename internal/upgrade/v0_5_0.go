@@ -13,14 +13,14 @@ import (
 
 // This upgrade modifies the immutable field PodManagementPolicy of the ingester StatefulSet,
 // therefore we delete the ingester StatefulSet, which will be recreated in the reconcile loop.
-func upgrade0_5_0(ctx context.Context, u Upgrade, tempo *v1alpha1.TempoStack) (*v1alpha1.TempoStack, error) {
+func upgrade0_5_0(ctx context.Context, u Upgrade, tempo *v1alpha1.TempoStack) error {
 	listOps := []client.ListOption{
 		client.MatchingLabels(manifestutils.ComponentLabels(manifestutils.IngesterComponentName, tempo.Name)),
 	}
 	ingesterList := &v1.StatefulSetList{}
 	err := u.Client.List(ctx, ingesterList, listOps...)
 	if err != nil {
-		return tempo, fmt.Errorf("failed to list ingester stateful sets: %w", err)
+		return fmt.Errorf("failed to list ingester stateful sets: %w", err)
 	}
 
 	for _, ingester := range ingesterList.Items {
@@ -28,9 +28,9 @@ func upgrade0_5_0(ctx context.Context, u Upgrade, tempo *v1alpha1.TempoStack) (*
 		u.Log.Info("deleting ingester (will be re-created)", "ingester", ingester.Name)
 		err := u.Client.Delete(ctx, &ingester)
 		if err != nil {
-			return tempo, fmt.Errorf("failed to delete ingester %s: %w", ingester.Name, err)
+			return fmt.Errorf("failed to delete ingester %s: %w", ingester.Name, err)
 		}
 	}
 
-	return tempo, nil
+	return nil
 }

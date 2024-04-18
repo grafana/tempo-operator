@@ -445,6 +445,11 @@ PodStatusMap
 <td><p>ReasonFailedReconciliation when the operator failed to reconcile.</p>
 </td>
 
+</tr><tr><td><p>&#34;FailedUpgrade&#34;</p></td>
+
+<td><p>ReasonFailedUpgrade when the operator failed to upgrade an instance.</p>
+</td>
+
 </tr><tr><td><p>&#34;InvalidStorageConfig&#34;</p></td>
 
 <td><p>ReasonInvalidStorageConfig defines that the object storage configuration is invalid (missing or incomplete storage secret).</p>
@@ -5705,6 +5710,79 @@ ExtraConfigSpec
 </td>
 </tr>
 
+<tr>
+
+<td>
+
+<code>nodeSelector</code><br/>
+
+<em>
+
+map[string]string
+
+</em>
+
+</td>
+
+<td>
+
+<p>NodeSelector defines which labels are required by a node to schedule the pod onto it.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>tolerations</code><br/>
+
+<em>
+
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#toleration-v1-core">
+
+[]Kubernetes core/v1.Toleration
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<p>Tolerations defines the tolerations of a node to schedule the pod onto it.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>affinity</code><br/>
+
+<em>
+
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#affinity-v1-core">
+
+Kubernetes core/v1.Affinity
+
+</a>
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>Affinity defines the Affinity rules for scheduling pods.</p>
+
+</td>
+</tr>
+
 </tbody>
 </table>
 
@@ -5737,6 +5815,52 @@ ExtraConfigSpec
 </thead>
 
 <tbody>
+
+<tr>
+
+<td>
+
+<code>operatorVersion</code><br/>
+
+<em>
+
+string
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>Version of the Tempo Operator.</p>
+
+</td>
+</tr>
+
+<tr>
+
+<td>
+
+<code>tempoVersion</code><br/>
+
+<em>
+
+string
+
+</em>
+
+</td>
+
+<td>
+
+<em>(Optional)</em>
+
+<p>Version of the managed Tempo instance.</p>
+
+</td>
+</tr>
 
 <tr>
 

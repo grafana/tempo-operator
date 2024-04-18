@@ -13,13 +13,15 @@ import (
 	tempoStackConfig "github.com/grafana/tempo-operator/internal/manifests/config"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
+	"github.com/grafana/tempo-operator/internal/tlsprofile"
 )
 
 type tempoReceiverTLSConfig struct {
-	CAFile     string `yaml:"client_ca_file,omitempty"`
-	CertFile   string `yaml:"cert_file,omitempty"`
-	KeyFile    string `yaml:"key_file,omitempty"`
-	MinVersion string `yaml:"min_version,omitempty"`
+	CAFile       string   `yaml:"client_ca_file,omitempty"`
+	CertFile     string   `yaml:"cert_file,omitempty"`
+	KeyFile      string   `yaml:"key_file,omitempty"`
+	MinVersion   string   `yaml:"min_version,omitempty"`
+	CipherSuites []string `yaml:"cipher_suites,omitempty"`
 }
 
 type tempoReceiverConfig struct {
@@ -31,13 +33,14 @@ type tempoLocalConfig struct {
 	Path string `yaml:"path"`
 }
 type tempoS3Config struct {
-	Endpoint      string `yaml:"endpoint"`
-	Insecure      bool   `yaml:"insecure"`
-	Bucket        string `yaml:"bucket"`
-	TLSCAPath     string `yaml:"tls_ca_path,omitempty"`
-	TLSCertPath   string `yaml:"tls_cert_path,omitempty"`
-	TLSKeyPath    string `yaml:"tls_key_path,omitempty"`
-	TLSMinVersion string `yaml:"tls_min_version,omitempty"`
+	Endpoint        string `yaml:"endpoint"`
+	Insecure        bool   `yaml:"insecure"`
+	Bucket          string `yaml:"bucket"`
+	TLSCAPath       string `yaml:"tls_ca_path,omitempty"`
+	TLSCertPath     string `yaml:"tls_cert_path,omitempty"`
+	TLSKeyPath      string `yaml:"tls_key_path,omitempty"`
+	TLSMinVersion   string `yaml:"tls_min_version,omitempty"`
+	TLSCipherSuites string `yaml:"tls_cipher_suites,omitempty"`
 }
 type tempoAzureConfig struct {
 	ContainerName string `yaml:"container_name"`
@@ -134,7 +137,7 @@ func BuildConfigMap(opts Options) (*corev1.ConfigMap, map[string]string, error) 
 	return configMap, extraAnnotations, nil
 }
 
-func configureReceiverTLS(tlsSpec *v1alpha1.TLSSpec) tempoReceiverTLSConfig {
+func configureReceiverTLS(tlsSpec *v1alpha1.TLSSpec, tlsProfile tlsprofile.TLSProfileOptions) (tempoReceiverTLSConfig, error) {
 	tlsCfg := tempoReceiverTLSConfig{}
 	if tlsSpec != nil && tlsSpec.Enabled {
 		if tlsSpec.Cert != "" {
@@ -144,9 +147,18 @@ func configureReceiverTLS(tlsSpec *v1alpha1.TLSSpec) tempoReceiverTLSConfig {
 		if tlsSpec.CA != "" {
 			tlsCfg.CAFile = path.Join(manifestutils.ReceiverTLSCADir, manifestutils.TLSCAFilename)
 		}
-		tlsCfg.MinVersion = tlsSpec.MinVersion
+		if tlsSpec.MinVersion != "" {
+			tlsCfg.MinVersion = tlsSpec.MinVersion
+		} else if tlsProfile.MinTLSVersion != "" {
+			var err error
+			tlsCfg.MinVersion, err = tlsProfile.MinVersionShort()
+			if err != nil {
+				return tempoReceiverTLSConfig{}, err
+			}
+		}
+		tlsCfg.CipherSuites = tlsProfile.Ciphers
 	}
-	return tlsCfg
+	return tlsCfg, nil
 }
 
 func buildTempoConfig(opts Options) ([]byte, error) {
@@ -160,12 +172,6 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 		config.Server.HTTPListenAddress = "localhost"
 		config.Server.GRPCListenAddress = "localhost"
 	}
-
-	// The internal server is required because if the gateway is enabled,
-	// the Tempo API will listen on localhost only,
-	// and then Kubernetes cannot reach the health check endpoint.
-	config.InternalServer.Enable = true
-	config.InternalServer.HTTPListenAddress = "0.0.0.0"
 
 	// The internal server is required because if the gateway is enabled,
 	// the Tempo API will listen on localhost only,
@@ -196,7 +202,12 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 					config.Storage.Trace.S3.TLSCertPath = path.Join(manifestutils.StorageTLSCertDir, manifestutils.TLSCertFilename)
 					config.Storage.Trace.S3.TLSKeyPath = path.Join(manifestutils.StorageTLSCertDir, manifestutils.TLSKeyFilename)
 				}
-				config.Storage.Trace.S3.TLSMinVersion = tempo.Spec.Storage.Traces.S3.TLS.MinVersion
+				if tempo.Spec.Storage.Traces.S3.TLS.MinVersion != "" {
+					config.Storage.Trace.S3.TLSMinVersion = tempo.Spec.Storage.Traces.S3.TLS.MinVersion
+				} else if opts.TLSProfile.MinTLSVersion != "" {
+					config.Storage.Trace.S3.TLSMinVersion = opts.TLSProfile.MinTLSVersion
+				}
+				config.Storage.Trace.S3.TLSCipherSuites = opts.TLSProfile.TLSCipherSuites()
 			}
 
 		case v1alpha1.MonolithicTracesStorageBackendAzure:
@@ -217,9 +228,15 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 	if tempo.Spec.Ingestion != nil {
 		if tempo.Spec.Ingestion.OTLP != nil {
 			if tempo.Spec.Ingestion.OTLP.GRPC != nil && tempo.Spec.Ingestion.OTLP.GRPC.Enabled {
-				config.Distributor.Receivers.OTLP.Protocols.GRPC = &tempoReceiverConfig{
-					TLS: configureReceiverTLS(tempo.Spec.Ingestion.OTLP.GRPC.TLS),
+				receiverTLS, err := configureReceiverTLS(tempo.Spec.Ingestion.OTLP.GRPC.TLS, opts.TLSProfile)
+				if err != nil {
+					return nil, err
 				}
+
+				config.Distributor.Receivers.OTLP.Protocols.GRPC = &tempoReceiverConfig{
+					TLS: receiverTLS,
+				}
+
 				if tempo.Spec.Multitenancy.IsGatewayEnabled() {
 					// all connections to tempo must go via gateway
 					config.Distributor.Receivers.OTLP.Protocols.GRPC.Endpoint = fmt.Sprintf("localhost:%d", manifestutils.PortOtlpGrpcServer)
@@ -227,8 +244,13 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 			}
 
 			if tempo.Spec.Ingestion.OTLP.HTTP != nil && tempo.Spec.Ingestion.OTLP.HTTP.Enabled {
+				receiverTLS, err := configureReceiverTLS(tempo.Spec.Ingestion.OTLP.HTTP.TLS, opts.TLSProfile)
+				if err != nil {
+					return nil, err
+				}
+
 				config.Distributor.Receivers.OTLP.Protocols.HTTP = &tempoReceiverConfig{
-					TLS: configureReceiverTLS(tempo.Spec.Ingestion.OTLP.HTTP.TLS),
+					TLS: receiverTLS,
 				}
 			}
 		}

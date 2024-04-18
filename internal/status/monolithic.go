@@ -17,6 +17,7 @@ import (
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/manifests/monolithic"
+	"github.com/grafana/tempo-operator/internal/version"
 )
 
 func isPodReady(pod corev1.Pod) bool {
@@ -193,6 +194,14 @@ func HandleTempoMonolithicStatus(ctx context.Context, client client.Client, temp
 	var err error
 	log := ctrl.LoggerFrom(ctx)
 	status := *tempo.Status.DeepCopy()
+
+	// The version fields in the status are empty for new CRs
+	if status.OperatorVersion == "" {
+		status.OperatorVersion = version.Get().OperatorVersion
+	}
+	if status.TempoVersion == "" {
+		status.TempoVersion = version.Get().TempoVersion
+	}
 
 	status.Components, err = getComponentsStatus(ctx, client, tempo)
 	if err != nil {

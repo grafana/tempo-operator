@@ -1,0 +1,7 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: verify-traces
+  namespace: istio-system
+status:
+  succeeded: 1

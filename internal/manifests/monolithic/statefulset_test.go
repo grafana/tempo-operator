@@ -229,7 +229,7 @@ func TestStatefulsetPVStorage(t *testing.T) {
 			},
 			Spec: corev1.PersistentVolumeClaimSpec{
 				AccessModes: []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
-				Resources: corev1.ResourceRequirements{
+				Resources: corev1.VolumeResourceRequirements{
 					Requests: corev1.ResourceList{
 						corev1.ResourceStorage: tenGBQuantity,
 					},
@@ -368,7 +368,7 @@ func TestStatefulsetS3TLSStorage(t *testing.T) {
 			},
 			Spec: corev1.PersistentVolumeClaimSpec{
 				AccessModes: []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
-				Resources: corev1.ResourceRequirements{
+				Resources: corev1.VolumeResourceRequirements{
 					Requests: corev1.ResourceList{
 						corev1.ResourceStorage: tenGBQuantity,
 					},
@@ -604,7 +604,7 @@ func TestStatefulsetSchedulingRules(t *testing.T) {
 						Backend: "memory",
 					},
 				},
-				Scheduler: &v1alpha1.MonolithicSchedulerSpec{
+				MonolithicSchedulerSpec: v1alpha1.MonolithicSchedulerSpec{
 					NodeSelector: map[string]string{
 						"key1": "value1",
 					},

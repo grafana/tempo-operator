@@ -58,9 +58,9 @@ func BuildTempoStatefulset(opts Options, extraAnnotations map[string]string) (*a
 				},
 				Spec: corev1.PodSpec{
 					ServiceAccountName: serviceAccountName(tempo),
-					NodeSelector:       buildNodeSelector(tempo.Spec.Scheduler),
-					Tolerations:        buildTolerations(tempo.Spec.Scheduler),
-					Affinity:           buildAffinity(tempo.Spec.Scheduler, labels),
+					NodeSelector:       tempo.Spec.MonolithicSchedulerSpec.NodeSelector,
+					Tolerations:        tempo.Spec.MonolithicSchedulerSpec.Tolerations,
+					Affinity:           buildAffinity(tempo.Spec.MonolithicSchedulerSpec, labels),
 					Containers: []corev1.Container{
 						{
 							Name:  "tempo",
@@ -161,22 +161,8 @@ func serviceAccountName(tempo v1alpha1.TempoMonolithic) string {
 	return naming.DefaultServiceAccountName(tempo.Name)
 }
 
-func buildNodeSelector(scheduler *v1alpha1.MonolithicSchedulerSpec) map[string]string {
-	if scheduler != nil {
-		return scheduler.NodeSelector
-	}
-	return nil
-}
-
-func buildTolerations(scheduler *v1alpha1.MonolithicSchedulerSpec) []corev1.Toleration {
-	if scheduler != nil {
-		return scheduler.Tolerations
-	}
-	return nil
-}
-
-func buildAffinity(scheduler *v1alpha1.MonolithicSchedulerSpec, labels labels.Set) *corev1.Affinity {
-	if scheduler != nil && scheduler.Affinity != nil {
+func buildAffinity(scheduler v1alpha1.MonolithicSchedulerSpec, labels labels.Set) *corev1.Affinity {
+	if scheduler.Affinity != nil {
 		return scheduler.Affinity
 	}
 	return manifestutils.DefaultAffinity(labels)
@@ -252,7 +238,7 @@ func configureStorage(opts Options, sts *appsv1.StatefulSet) error {
 			},
 			Spec: corev1.PersistentVolumeClaimSpec{
 				AccessModes: []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
-				Resources: corev1.ResourceRequirements{
+				Resources: corev1.VolumeResourceRequirements{
 					Requests: corev1.ResourceList{
 						corev1.ResourceStorage: ptr.Deref(tempo.Spec.Storage.Traces.Size, tenGBQuantity),
 					},
