@@ -204,7 +204,7 @@ $(LOCALBIN):
 KUSTOMIZE_VERSION ?= v5.0.3
 CONTROLLER_GEN_VERSION ?= v0.12.0
 GEN_CRD_VERSION ?= v0.0.5
-GEN_API_DOCS_VERSION ?= v0.4.0
+GEN_API_DOCS_VERSION ?= v0.6.0
 ENVTEST_VERSION ?= latest
 OPERATOR_SDK_VERSION ?= 1.32.0
 CERTMANAGER_VERSION ?= 1.9.1
@@ -462,7 +462,7 @@ cmctl:
 	}
 
 .PHONY: api-docs
-api-docs: docs/operator/api.md docs/operator/feature-gates.md docs/spec/tempo.grafana.com_tempostacks.yaml docs/spec/tempo.grafana.com_tempomonolithics.yaml
+api-docs: docs/operator/api.md docs/operator/feature-gates.md docs/operator/config.yaml docs/spec/tempo.grafana.com_tempostacks.yaml docs/spec/tempo.grafana.com_tempomonolithics.yaml
 
 TYPES_TARGET := $(shell find apis/tempo -type f -iname "*_types.go")
 docs/operator/api.md: $(TYPES_TARGET) gen-crd-api-reference-docs
@@ -480,6 +480,9 @@ docs/operator/feature-gates.md: $(FEATURE_GATES_TARGET) gen-crd-api-reference-do
 
 docs/spec/%: bundle/community/manifests/% | gen-api-docs
 	$(GEN_API_DOCS) < $^ > $@
+
+docs/operator/config.yaml: gen-api-docs
+	$(GEN_API_DOCS) -pkg github.com/grafana/tempo-operator/apis/config/v1alpha1 -type ProjectConfig -format multiline > $@
 
 ##@ Release
 CHLOGGEN_VERSION=v0.11.0

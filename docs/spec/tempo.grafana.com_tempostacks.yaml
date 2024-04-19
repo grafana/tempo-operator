@@ -25,7 +25,7 @@ spec:                                    # TempoStackSpec defines the desired st
         maxSearchBytesPerTrace: 0        # DEPRECATED. MaxSearchBytesPerTrace defines the maximum size of search data for a single trace in bytes. default: `0` to disable.
         maxSearchDuration: ""            # MaxSearchDuration defines the maximum allowed time range for a search. If this value is not set, then spec.search.maxDuration is used.
     perTenant:                           # PerTenant is used to define rate limits per tenant.
-      "key":
+      "key":                             # RateLimitSpec defines rate limits for Ingestion and Query components.
         ingestion:                       # Ingestion is used to define ingestion rate limits.
           ingestionBurstSizeBytes: 0     # IngestionBurstSizeBytes defines the burst size (bytes) used in ingestion.
           ingestionRateLimitBytes: 0     # IngestionRateLimitBytes defines the Per-user ingestion rate limit (bytes) used in ingestion.
@@ -57,7 +57,7 @@ spec:                                    # TempoStackSpec defines the desired st
     global:                              # Global is used to configure global retention.
       traces: ""                         # Traces defines retention period. Supported parameter suffixes are "s", "m" and "h". example: 336h default: value is 48h.
     perTenant:                           # PerTenant is used to configure retention per tenant.
-      "key":
+      "key":                             # RetentionConfig defines how long data should be provided.
         traces: ""                       # Traces defines retention period. Supported parameter suffixes are "s", "m" and "h". example: 336h default: value is 48h.
   search:                                # SearchSpec control the configuration for the search capabilities.
     defaultResultLimit: 0                # Limit used for search requests if none is set by the caller (default: 20)
@@ -250,7 +250,7 @@ status:                                  # TempoStackStatus defines the observed
       "key":
       - ""
   conditions:                            # Conditions of the Tempo deployment health.
-  - lastTransitionTime: ""               # lastTransitionTime is the last time the condition transitioned from one status to another. This should be when the underlying condition changed.  If that is not known, then using the time when the API field changed is acceptable.
+  - lastTransitionTime: "2006-01-02T15:04:05Z" # lastTransitionTime is the last time the condition transitioned from one status to another. This should be when the underlying condition changed.  If that is not known, then using the time when the API field changed is acceptable.
     message: ""                          # message is a human readable message indicating details about the transition. This may be an empty string.
     observedGeneration: 0                # observedGeneration represents the .metadata.generation that the condition was set based upon. For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date with respect to the current state of the instance.
     reason: ""                           # reason contains a programmatic identifier indicating the reason for the condition's last transition. Producers of specific condition types may define expected values and meanings for this field, and whether the values are considered a guaranteed API. The value should be a CamelCase string. This field may not be empty.
