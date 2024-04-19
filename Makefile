@@ -203,7 +203,6 @@ $(LOCALBIN):
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v5.0.3
 CONTROLLER_GEN_VERSION ?= v0.12.0
-GEN_CRD_VERSION ?= v0.0.5
 GEN_API_DOCS_VERSION ?= v0.6.0
 ENVTEST_VERSION ?= latest
 OPERATOR_SDK_VERSION ?= 1.32.0
@@ -214,7 +213,6 @@ CHAINSAW_VERSION ?= v0.1.7
 KUSTOMIZE ?= $(LOCALBIN)/kustomize-$(KUSTOMIZE_VERSION)
 CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen-$(CONTROLLER_GEN_VERSION)
 ENVTEST ?= $(LOCALBIN)/setup-envtest-$(ENVTEST_VERSION)
-GEN_CRD = $(LOCALBIN)/gen-crd-api-reference-docs-$(GEN_CRD_VERSION)
 GEN_API_DOCS = $(LOCALBIN)/gen-api-docs-$(GEN_API_DOCS_VERSION)
 OPERATOR_SDK ?= $(LOCALBIN)/operator-sdk-$(OPERATOR_SDK_VERSION)
 KIND ?= $(LOCALBIN)/kind
@@ -331,10 +329,6 @@ lint:
 .PHONY: chainsaw
 chainsaw: ## Download chainsaw locally if necessary.
 	test -s $(CHAINSAW) || $(call go-get-tool,$(CHAINSAW),github.com/kyverno/chainsaw,$(CHAINSAW_VERSION))
-
-.PHONY: gen-crd-api-reference-docs
-gen-crd-api-reference-docs: ## Download gen-crd-api-reference-docs locally if necessary.
-	test -s $(GEN_CRD) || $(call go-get-tool,$(GEN_CRD),github.com/ViaQ/gen-crd-api-reference-docs,$(GEN_CRD_VERSION))
 
 .PHONY: gen-api-docs
 gen-api-docs: ## Download gen-api-docs locally if necessary.
@@ -462,21 +456,7 @@ cmctl:
 	}
 
 .PHONY: api-docs
-api-docs: docs/operator/api.md docs/operator/feature-gates.md docs/operator/config.yaml docs/spec/tempo.grafana.com_tempostacks.yaml docs/spec/tempo.grafana.com_tempomonolithics.yaml
-
-TYPES_TARGET := $(shell find apis/tempo -type f -iname "*_types.go")
-docs/operator/api.md: $(TYPES_TARGET) gen-crd-api-reference-docs
-	$(GEN_CRD) -api-dir "github.com/grafana/tempo-operator/apis/tempo/" -config "$(PWD)/config/docs/config.json" -template-dir "$(PWD)/config/docs/templates" -out-file "$(PWD)/$@"
-
-
-FEATURE_GATES_TARGET := $(shell find apis/config -type f -iname "*_types.go")
-docs/operator/feature-gates.md: $(FEATURE_GATES_TARGET) gen-crd-api-reference-docs
-	$(GEN_CRD) -api-dir "github.com/grafana/tempo-operator/apis/config/v1alpha1/" -config "$(PWD)/config/docs/config.json" -template-dir "$(PWD)/config/docs/templates" -out-file "$(PWD)/$@"
-	sed -i 's/title: "API"/title: "Feature Gates"/' $@
-	sed -i 's/+docs:/  docs:/' $@
-	sed -i 's/+parent:/    parent:/' $@
-	sed -i 's/##/\n##/' $@
-	sed -i 's/+newline/\n/' $@
+api-docs: docs/operator/config.yaml docs/spec/tempo.grafana.com_tempostacks.yaml docs/spec/tempo.grafana.com_tempomonolithics.yaml
 
 docs/spec/%: bundle/community/manifests/% | gen-api-docs
 	$(GEN_API_DOCS) < $^ > $@
