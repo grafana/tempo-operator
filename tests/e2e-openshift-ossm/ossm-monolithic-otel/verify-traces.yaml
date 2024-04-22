@@ -15,7 +15,7 @@ spec:
         - |
             TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
             KIALI_URL=https://kiali.istio-system.svc.cluster.local:20001
-            START_MICROS=1712566368978000
+            START_MICROS=$(awk "BEGIN {print int($(date +%s) - 60*60)*1000000}")
             OUTPUT=$(curl -k -H "Authorization: Bearer $TOKEN" "$KIALI_URL/api/namespaces/bookinfo/services/productpage/traces?startMicros=$START_MICROS&tags=&limit=100")
             if echo "$OUTPUT" | grep -q '"serviceName":"productpage.bookinfo"'; then
               exit 0
