@@ -36,7 +36,7 @@ require (
 
 require (
 	github.com/openshift/api v3.9.0+incompatible // release-4.14
-	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.73.1
+	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.73.2
 	github.com/stretchr/testify v1.9.0
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/utils v0.0.0-20240310230437-4693a0247e57
