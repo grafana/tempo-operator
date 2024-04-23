@@ -24,6 +24,7 @@ featureGates:
   openshift:
     openshiftRoute: true
     servingCertsService: true
+    singleTenantGateway: true
   prometheusOperator: true
   grafanaOperator: false
   httpEncryption: true

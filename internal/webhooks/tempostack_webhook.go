@@ -38,6 +38,7 @@ type TempoStackWebhook struct {
 
 const defaultRouteGatewayTLSTermination = v1alpha1.TLSRouteTerminationTypePassthrough
 const defaultUITLSTermination = v1alpha1.TLSRouteTerminationTypeEdge
+const singleTenantName = "single-tenant"
 
 // SetupWebhookWithManager initializes the webhook.
 func (w *TempoStackWebhook) SetupWebhookWithManager(mgr ctrl.Manager, ctrlConfig configv1alpha1.ProjectConfig) error {
@@ -60,6 +61,28 @@ func NewDefaulter(ctrlConfig configv1alpha1.ProjectConfig) *Defaulter {
 // Defaulter implements the CustomDefaulter interface.
 type Defaulter struct {
 	ctrlConfig configv1alpha1.ProjectConfig
+}
+
+func (d *Defaulter) EnableGatewayOnSingleTenancy(tempo *v1alpha1.TempoStack) {
+	println("EnableGatewayOnSingleTenancy")
+
+	if !tempo.Spec.Template.Gateway.Enabled && tempo.Spec.Tenants == nil {
+		println("EnableGatewayOnSingleTenancy ON")
+
+		tempo.Spec.Template.Gateway.Enabled = true
+		// Disable ingress, we will use the gateway.
+		tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type = v1alpha1.IngressTypeNone
+		// This feature enable always the gateway on openshift mode.
+		tempo.Spec.Tenants = &v1alpha1.TenantsSpec{
+			Mode: v1alpha1.ModeOpenShift,
+			Authentication: []v1alpha1.AuthenticationSpec{
+				{
+					TenantID:   singleTenantName,
+					TenantName: singleTenantName,
+				},
+			},
+		}
+	}
 }
 
 // Default applies default values to a Kubernetes object.
@@ -120,6 +143,11 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 	// Default replication factor if not specified.
 	if r.Spec.ReplicationFactor == 0 {
 		r.Spec.ReplicationFactor = defaultReplicationFactor
+	}
+
+	if d.ctrlConfig.Gates.OpenShift.SingleTenantGateway {
+		println("ACTIVO ESTOOOOO!")
+		d.EnableGatewayOnSingleTenancy(r)
 	}
 
 	// if tenant mode is Openshift, ingress type should be route by default.

@@ -822,6 +822,25 @@ More details: <a href="https://docs.openshift.com/container-platform/4.11/securi
 </td>
 </tr>
 
+<tr>
+
+<td>
+
+<code>singleTenantGateway</code><br/>
+
+<em>
+
+bool
+
+</em>
+
+</td>
+
+<td>
+
+</td>
+</tr>
+
 </tbody>
 </table>
 

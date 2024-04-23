@@ -84,6 +84,8 @@ type OpenShiftFeatureGates struct {
 	// ClusterTLSPolicy enables usage of TLS policies set in the API Server.
 	// More details: https://docs.openshift.com/container-platform/4.11/security/tls-security-profiles.html
 	ClusterTLSPolicy bool
+
+	SingleTenantGateway bool `json:"singleTenantGateway,omitempty"`
 }
 
 // TLSProfileType is a TLS security profile based on the Mozilla definitions:
