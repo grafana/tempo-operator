@@ -64,11 +64,8 @@ type Defaulter struct {
 }
 
 func (d *Defaulter) EnableGatewayOnSingleTenancy(tempo *v1alpha1.TempoStack) {
-	println("EnableGatewayOnSingleTenancy")
 
 	if !tempo.Spec.Template.Gateway.Enabled && tempo.Spec.Tenants == nil {
-		println("EnableGatewayOnSingleTenancy ON")
-
 		tempo.Spec.Template.Gateway.Enabled = true
 		// Disable ingress, we will use the gateway.
 		tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type = v1alpha1.IngressTypeNone
@@ -146,7 +143,6 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 	}
 
 	if d.ctrlConfig.Gates.OpenShift.SingleTenantGateway {
-		println("ACTIVO ESTOOOOO!")
 		d.EnableGatewayOnSingleTenancy(r)
 	}
 
