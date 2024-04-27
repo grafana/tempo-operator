@@ -40,7 +40,7 @@ spec:
         - --leader-elect
         env:
         - name: RELATED_IMAGE_TEMPO
-          value: docker.io/grafana/tempo:2.3.1
+          value: docker.io/grafana/tempo:2.4.1
         - name: RELATED_IMAGE_TEMPO_QUERY
           value: docker.io/grafana/tempo-query:2.3.1
         - name: RELATED_IMAGE_TEMPO_GATEWAY
