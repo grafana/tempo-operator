@@ -22,11 +22,12 @@ type options struct {
 }
 
 type tempoQueryOptions struct {
-	Gates        featureGates
-	TLS          tlsOptions
-	HTTPPort     int
-	TenantHeader string
-	Gateway      bool
+	Gates                 featureGates
+	TLS                   tlsOptions
+	HTTPPort              int
+	TenantHeader          string
+	Gateway               bool
+	ServicesQueryDuration string
 }
 
 type featureGates struct {

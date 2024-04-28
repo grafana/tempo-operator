@@ -3,6 +3,7 @@ package webhooks
 import (
 	"context"
 	"fmt"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"math"
 	"net"
 	"strconv"
@@ -28,8 +29,9 @@ import (
 )
 
 var (
-	zeroQuantity  = resource.MustParse("0Gi")
-	tenGBQuantity = resource.MustParse("10Gi")
+	zeroQuantity            = resource.MustParse("0Gi")
+	tenGBQuantity           = resource.MustParse("10Gi")
+	defaultServicesDuration = metav1.Duration{Duration: time.Hour * 24 * 3}
 )
 
 // TempoStackWebhook provides webhooks for TempoStack CR.
@@ -141,6 +143,10 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 		if autodetect.DetectIPv6Only([]string{"eth0", "en0"}) {
 			r.Spec.HashRing.MemberList.EnableIPv6 = ptr.To(true)
 		}
+	}
+
+	if r.Spec.Template.QueryFrontend.JaegerQuery.ServicesQueryDuration == nil {
+		r.Spec.Template.QueryFrontend.JaegerQuery.ServicesQueryDuration = &defaultServicesDuration
 	}
 
 	return nil

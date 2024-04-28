@@ -591,6 +591,12 @@ type JaegerQuerySpec struct {
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Resources"
 	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
+
+	// ServicesQueryDuration defines how long the services will be available in the services list
+	//
+	// +optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="ServicesQueryDuration"
+	ServicesQueryDuration *metav1.Duration `json:"servicesQueryDuration,omitempty"`
 }
 
 // JaegerQueryMonitor defines configuration for the service monitoring tab in the Jaeger console.

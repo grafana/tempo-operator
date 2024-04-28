@@ -963,6 +963,10 @@ spec:
           the calculated resources derived from total
         displayName: Resources
         path: template.queryFrontend.jaegerQuery.resources
+      - description: ServicesQueryDuration defines how long the services will be available
+          in the services list
+        displayName: ServicesQueryDuration
+        path: template.queryFrontend.jaegerQuery.servicesQueryDuration
       - description: NodeSelector defines the simple form of the node-selection constraint.
         displayName: Node Selector
         path: template.queryFrontend.nodeSelector
