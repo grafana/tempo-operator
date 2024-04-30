@@ -33,6 +33,7 @@ func TestDefault(t *testing.T) {
 				TempoQuery:      "docker.io/grafana/tempo-query:x.y.z",
 				TempoGateway:    "docker.io/observatorium/gateway:1.2.3",
 				TempoGatewayOpa: "docker.io/observatorium/opa-openshift:1.2.3",
+				OauthProxy:      "docker.io/observatorium/oauth-proxy:1.2.3",
 			},
 			Distribution: "upstream",
 		},
@@ -57,6 +58,7 @@ func TestDefault(t *testing.T) {
 						TempoQuery:      "docker.io/grafana/tempo-query:1.2.3",
 						TempoGateway:    "docker.io/observatorium/gateway:1.2.3",
 						TempoGatewayOpa: "docker.io/observatorium/opa-openshift:1.2.4",
+						OauthProxy:      "docker.io/observatorium/oauth-proxy:1.2.3",
 					},
 					ServiceAccount: "tempo-test",
 					Retention: v1alpha1.RetentionSpec{
@@ -89,6 +91,7 @@ func TestDefault(t *testing.T) {
 						TempoQuery:      "docker.io/grafana/tempo-query:1.2.3",
 						TempoGateway:    "docker.io/observatorium/gateway:1.2.3",
 						TempoGatewayOpa: "docker.io/observatorium/opa-openshift:1.2.4",
+						OauthProxy:      "docker.io/observatorium/oauth-proxy:1.2.3",
 					},
 					ServiceAccount: "tempo-test",
 					Retention: v1alpha1.RetentionSpec{

@@ -9,6 +9,7 @@ spec:                                    # TempoStackSpec defines the desired st
     memberlist:                          # MemberList configuration spec
       enableIPv6: false                  # EnableIPv6 enables IPv6 support for the memberlist based hash ring.
   images:                                # Images defines the image for each container.
+    oauthProxy: ""                       # OauthProxy defines the oauth proxy image used to protect the jaegerUI on single tenant.
     tempo: ""                            # Tempo defines the tempo container image.
     tempoGateway: ""                     # TempoGateway defines the tempo-gateway container image.
     tempoGatewayOpa: ""                  # TempoGatewayOpa defines the OPA sidecar container for TempoGateway.
@@ -129,6 +130,9 @@ spec:                                    # TempoStackSpec defines the desired st
         ingressClassName: ""             # IngressClassName defines the name of an IngressClass cluster resource. Defines which ingress controller serves this ingress resource.
         route:                           # Route defines the options for the OpenShift route.
           termination: ""                # Termination defines the termination type. The default is "edge".
+        security:                        # Security defines the options for the ingress security in single tenant mode.
+          sar: ""                        # SAR defines the SAR to be used in the oauth-proxy
+          type: ""                       # Type defines the security type applied to the ingress
         type: ""                         # Type defines the type of Ingress for the Jaeger Query UI. Currently ingress, route and none are supported.
     ingester:                            # Ingester defines the ingester component spec.
       replicas: 0                        # Replicas defines the number of replicas to be created for this component.
@@ -178,6 +182,9 @@ spec:                                    # TempoStackSpec defines the desired st
           ingressClassName: ""           # IngressClassName defines the name of an IngressClass cluster resource. Defines which ingress controller serves this ingress resource.
           route:                         # Route defines the options for the OpenShift route.
             termination: ""              # Termination defines the termination type. The default is "edge".
+          security:                      # Security defines the options for the ingress security in single tenant mode.
+            sar: ""                      # SAR defines the SAR to be used in the oauth-proxy
+            type: ""                     # Type defines the security type applied to the ingress
           type: ""                       # Type defines the type of Ingress for the Jaeger Query UI. Currently ingress, route and none are supported.
         monitorTab:                      # MonitorTab defines the monitor tab configuration.
           enabled: false                 # Enabled enables the monitor tab in the Jaeger console. The PrometheusEndpoint must be configured to enable this feature.

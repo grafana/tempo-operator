@@ -13,6 +13,9 @@ import (
 // +kubebuilder:validation:Enum=Managed;Unmanaged
 type ManagementStateType string
 
+// IngressSecurityType defines the type of security for the ingress/route.
+type IngressSecurityType string
+
 const (
 	// ManagementStateManaged when the TempoStack custom resource should be
 	// reconciled by the operator.
@@ -21,6 +24,12 @@ const (
 	// ManagementStateUnmanaged when the TempoStack custom resource should not be
 	// reconciled by the operator.
 	ManagementStateUnmanaged ManagementStateType = "Unmanaged"
+
+	// IngressSecurityNone security type that means no security in front of the ingress.
+	IngressSecurityNone IngressSecurityType = "none"
+
+	// IngressSecurityOAuthProxy represents an OAuth Proxy as security type.
+	IngressSecurityOAuthProxy IngressSecurityType = "oauth-proxy"
 )
 
 // TempoStackSpec defines the desired state of TempoStack.
@@ -655,6 +664,13 @@ type IngressSpec struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Route Configuration"
 	Route RouteSpec `json:"route,omitempty"`
+
+	// Security defines the options for the ingress security in single tenant mode.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Ingress Security Configuration"
+	Security IngressSecuritySpec `json:"security,omitempty"`
 }
 
 // RouteSpec defines OpenShift Route specific options.
@@ -666,6 +682,23 @@ type RouteSpec struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="TLS Termination Policy"
 	Termination TLSRouteTerminationType `json:"termination,omitempty"`
+}
+
+// IngressSecuritySpec defines ingress security options.
+type IngressSecuritySpec struct {
+	// Type defines the security type applied to the ingress
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Type"
+	Type IngressSecurityType `json:"type,omitempty"`
+
+	// SAR defines the SAR to be used in the oauth-proxy
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="SAR"
+	SAR string `json:"sar,omitempty"`
 }
 
 // LimitSpec defines Global and PerTenant rate limits.

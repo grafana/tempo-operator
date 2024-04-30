@@ -57,9 +57,19 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 		}
 	}
 
+	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Security.Type == v1alpha1.IngressSecurityOAuthProxy {
+		patchDeploymentForOauthProxy(params, d)
+
+		secret, err := oauthCookieSessionSecret(tempo)
+		if err != nil {
+			return nil, err
+		}
+		manifests = append(manifests, oauthServiceAccount(tempo), oauthProxyService(tempo), secret)
+	}
+
 	manifests = append(manifests, d)
 
-	svcs := services(tempo)
+	svcs := services(params)
 	for _, s := range svcs {
 		manifests = append(manifests, s)
 	}
@@ -356,7 +366,8 @@ func openShiftMonitoringClusterRoleBinding(tempo v1alpha1.TempoStack) rbacv1.Clu
 	}
 }
 
-func services(tempo v1alpha1.TempoStack) []*corev1.Service {
+func services(params manifestutils.Params) []*corev1.Service {
+	tempo := params.Tempo
 	labels := manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, tempo.Name)
 	frontEndService := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -421,6 +432,7 @@ func services(tempo v1alpha1.TempoStack) []*corev1.Service {
 	}
 
 	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled {
+
 		jaegerPorts := []corev1.ServicePort{
 			{
 				Name:       manifestutils.JaegerGRPCQuery,
@@ -429,7 +441,7 @@ func services(tempo v1alpha1.TempoStack) []*corev1.Service {
 			},
 			{
 				Name:       manifestutils.JaegerUIPortName,
-				Port:       manifestutils.PortJaegerUI,
+				Port:       int32(manifestutils.PortJaegerUI),
 				TargetPort: intstr.FromString(manifestutils.JaegerUIPortName),
 			},
 			{
@@ -441,6 +453,10 @@ func services(tempo v1alpha1.TempoStack) []*corev1.Service {
 
 		frontEndService.Spec.Ports = append(frontEndService.Spec.Ports, jaegerPorts...)
 		frontEndDiscoveryService.Spec.Ports = append(frontEndDiscoveryService.Spec.Ports, jaegerPorts...)
+
+		serviceObjects := []*corev1.Service{frontEndService, frontEndDiscoveryService}
+
+		return serviceObjects
 	}
 
 	return []*corev1.Service{frontEndService, frontEndDiscoveryService}
@@ -514,6 +530,15 @@ func route(tempo v1alpha1.TempoStack) (*routev1.Route, error) {
 		return nil, fmt.Errorf("unsupported tls termination specified for route")
 	}
 
+	serviceName := naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name)
+
+	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Security.Type == v1alpha1.IngressSecurityOAuthProxy {
+		// oauth proxy needs re-encryption
+		tlsCfg = &routev1.TLSConfig{Termination: routev1.TLSTerminationReencrypt}
+		// point route to the oauth proxy
+		serviceName = naming.Name(manifestutils.QueryFrontendOauthProxyComponentName, tempo.Name)
+	}
+
 	return &routev1.Route{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        queryFrontendName,
@@ -525,7 +550,7 @@ func route(tempo v1alpha1.TempoStack) (*routev1.Route, error) {
 			Host: tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Host,
 			To: routev1.RouteTargetReference{
 				Kind: "Service",
-				Name: queryFrontendName,
+				Name: serviceName,
 			},
 			Port: &routev1.RoutePort{
 				TargetPort: intstr.FromString(manifestutils.JaegerUIPortName),

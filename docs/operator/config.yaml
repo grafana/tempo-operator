@@ -143,6 +143,9 @@ featureGates:
     # If empty the operator automatically derives the domain from the cluster.
     baseDomain: ""
 
+    # OAuthProxyEnabled is used internally for enable by default the oauth proxy for the UI in single tenant mode
+    oAuthProxyEnabled: false
+
     # OpenShiftRoute enables creating OpenShift Route objects.
     # More details: https://docs.openshift.com/container-platform/latest/networking/understanding-networking.html
     openshiftRoute: false

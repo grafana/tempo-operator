@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.10.0
-    createdAt: "2024-05-07T14:22:11Z"
+    createdAt: "2024-05-08T05:28:02Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -863,6 +863,16 @@ spec:
       - description: Termination defines the termination type. The default is "edge".
         displayName: TLS Termination Policy
         path: template.gateway.ingress.route.termination
+      - description: Security defines the options for the ingress security in single
+          tenant mode.
+        displayName: Ingress Security Configuration
+        path: template.gateway.ingress.security
+      - description: SAR defines the SAR to be used in the oauth-proxy
+        displayName: SAR
+        path: template.gateway.ingress.security.sar
+      - description: Type defines the security type applied to the ingress
+        displayName: Type
+        path: template.gateway.ingress.security.type
       - description: Type defines the type of Ingress for the Jaeger Query UI. Currently
           ingress, route and none are supported.
         displayName: Type
@@ -941,6 +951,16 @@ spec:
       - description: Termination defines the termination type. The default is "edge".
         displayName: TLS Termination Policy
         path: template.queryFrontend.jaegerQuery.ingress.route.termination
+      - description: Security defines the options for the ingress security in single
+          tenant mode.
+        displayName: Ingress Security Configuration
+        path: template.queryFrontend.jaegerQuery.ingress.security
+      - description: SAR defines the SAR to be used in the oauth-proxy
+        displayName: SAR
+        path: template.queryFrontend.jaegerQuery.ingress.security.sar
+      - description: Type defines the security type applied to the ingress
+        displayName: Type
+        path: template.queryFrontend.jaegerQuery.ingress.security.type
       - description: Type defines the type of Ingress for the Jaeger Query UI. Currently
           ingress, route and none are supported.
         displayName: Type
@@ -1337,6 +1357,8 @@ spec:
                   value: quay.io/observatorium/api:main-2024-05-02-61d4cd9
                 - name: RELATED_IMAGE_TEMPO_GATEWAY_OPA
                   value: quay.io/observatorium/opa-openshift:main-2024-04-29-914c13f
+                - name: RELATED_IMAGE_OAUTH_PROXY
+                  value: quay.io/openshift/origin-oauth-proxy:4.12
                 image: ghcr.io/grafana/tempo-operator/tempo-operator:v0.10.0
                 livenessProbe:
                   httpGet:
@@ -1494,6 +1516,8 @@ spec:
     name: tempo-gateway
   - image: quay.io/observatorium/opa-openshift:main-2024-04-29-914c13f
     name: tempo-gateway-opa
+  - image: quay.io/openshift/origin-oauth-proxy:4.12
+    name: oauth-proxy
   version: 0.10.0
   webhookdefinitions:
   - admissionReviewVersions:

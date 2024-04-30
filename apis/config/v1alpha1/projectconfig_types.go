@@ -19,6 +19,9 @@ const (
 
 	// EnvRelatedImageTempoGatewayOpa contains the name of the environment variable where the tempoGatewayOpa image location is stored.
 	EnvRelatedImageTempoGatewayOpa = "RELATED_IMAGE_TEMPO_GATEWAY_OPA"
+
+	// EnvRelatedImageOauthProxy contains the name of the environment variable where the oauth-proxy image location is stored.
+	EnvRelatedImageOauthProxy = "RELATED_IMAGE_OAUTH_PROXY"
 )
 
 // ImagesSpec defines the image for each container.
@@ -42,6 +45,11 @@ type ImagesSpec struct {
 	//
 	// +optional
 	TempoGatewayOpa string `json:"tempoGatewayOpa,omitempty"`
+
+	// OauthProxy defines the oauth proxy image used to protect the jaegerUI on single tenant.
+	//
+	// +optional
+	OauthProxy string `json:"oauthProxy,omitempty"`
 }
 
 // BuiltInCertManagement is the configuration for the built-in facility to generate and rotate
@@ -84,6 +92,9 @@ type OpenShiftFeatureGates struct {
 	// ClusterTLSPolicy enables usage of TLS policies set in the API Server.
 	// More details: https://docs.openshift.com/container-platform/4.11/security/tls-security-profiles.html
 	ClusterTLSPolicy bool
+
+	// OAuthProxyEnabled is used internally for enable by default the oauth proxy for the UI in single tenant mode
+	OAuthProxyEnabled bool `json:"oAuthProxyEnabled,omitempty"`
 }
 
 // TLSProfileType is a TLS security profile based on the Mozilla definitions:
@@ -224,6 +235,7 @@ func DefaultProjectConfig() ProjectConfig {
 			TempoQuery:      os.Getenv(EnvRelatedImageTempoQuery),
 			TempoGateway:    os.Getenv(EnvRelatedImageTempoGateway),
 			TempoGatewayOpa: os.Getenv(EnvRelatedImageTempoGatewayOpa),
+			OauthProxy:      os.Getenv(EnvRelatedImageOauthProxy),
 		},
 		Gates: FeatureGates{
 			TLSProfile: string(TLSProfileModernType),

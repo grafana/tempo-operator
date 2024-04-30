@@ -79,6 +79,10 @@ spec:
               images:
                 description: Images defines the image for each container.
                 properties:
+                  oauthProxy:
+                    description: OauthProxy defines the oauth proxy image used to
+                      protect the jaegerUI on single tenant.
+                    type: string
                   tempo:
                     description: Tempo defines the tempo container image.
                     type: string
@@ -860,6 +864,19 @@ spec:
                                 - reencrypt
                                 type: string
                             type: object
+                          security:
+                            description: Security defines the options for the ingress
+                              security in single tenant mode.
+                            properties:
+                              sar:
+                                description: SAR defines the SAR to be used in the
+                                  oauth-proxy
+                                type: string
+                              type:
+                                description: Type defines the security type applied
+                                  to the ingress
+                                type: string
+                            type: object
                           type:
                             description: Type defines the type of Ingress for the
                               Jaeger Query UI. Currently ingress, route and none are
@@ -1250,6 +1267,19 @@ spec:
                                     - edge
                                     - passthrough
                                     - reencrypt
+                                    type: string
+                                type: object
+                              security:
+                                description: Security defines the options for the
+                                  ingress security in single tenant mode.
+                                properties:
+                                  sar:
+                                    description: SAR defines the SAR to be used in
+                                      the oauth-proxy
+                                    type: string
+                                  type:
+                                    description: Type defines the security type applied
+                                      to the ingress
                                     type: string
                                 type: object
                               type:
