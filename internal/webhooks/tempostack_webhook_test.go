@@ -128,6 +128,9 @@ func TestDefault(t *testing.T) {
 							TempoComponentSpec: v1alpha1.TempoComponentSpec{
 								Replicas: ptr.To(int32(1)),
 							},
+							JaegerQuery: v1alpha1.JaegerQuerySpec{
+								ServicesQueryDuration: &defaultServicesDuration,
+							},
 						},
 					},
 				},
@@ -188,6 +191,9 @@ func TestDefault(t *testing.T) {
 						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
 							TempoComponentSpec: v1alpha1.TempoComponentSpec{
 								Replicas: ptr.To(int32(1)),
+							},
+							JaegerQuery: v1alpha1.JaegerQuerySpec{
+								ServicesQueryDuration: &defaultServicesDuration,
 							},
 						},
 					},
@@ -263,6 +269,7 @@ func TestDefault(t *testing.T) {
 										Termination: "edge",
 									},
 								},
+								ServicesQueryDuration: &defaultServicesDuration,
 							},
 						},
 					},
