@@ -629,7 +629,8 @@ func TestPruneIngress(t *testing.T) {
 			Template: v1alpha1.TempoTemplateSpec{
 				QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
 					JaegerQuery: v1alpha1.JaegerQuerySpec{
-						Enabled: true,
+						ServicesQueryDuration: &metav1.Duration{Duration: time.Hour},
+						Enabled:               true,
 						Ingress: v1alpha1.IngressSpec{
 							Type: v1alpha1.IngressTypeIngress,
 						},
@@ -702,7 +703,8 @@ func TestK8SGatewaySecret(t *testing.T) {
 				},
 				QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
 					JaegerQuery: v1alpha1.JaegerQuerySpec{
-						Enabled: true,
+						ServicesQueryDuration: &metav1.Duration{Duration: time.Hour},
+						Enabled:               true,
 					},
 				},
 			},
@@ -830,7 +832,8 @@ func TestReconcileManifestsValidateModes(t *testing.T) {
 				},
 				QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
 					JaegerQuery: v1alpha1.JaegerQuerySpec{
-						Enabled: true,
+						ServicesQueryDuration: &metav1.Duration{Duration: time.Hour},
+						Enabled:               true,
 					},
 				},
 			},

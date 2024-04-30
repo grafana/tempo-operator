@@ -1326,6 +1326,10 @@ spec:
                                   https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                                 type: object
                             type: object
+                          servicesQueryDuration:
+                            description: ServicesQueryDuration defines how long the
+                              services will be available in the services list
+                            type: string
                         type: object
                     type: object
                 type: object
