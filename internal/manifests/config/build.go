@@ -177,7 +177,7 @@ func buildTempoQueryConfig(params manifestutils.Params) ([]byte, error) {
 		},
 		TenantHeader:          manifestutils.TenantHeader,
 		Gateway:               params.Tempo.Spec.Template.Gateway.Enabled,
-		ServicesQueryDuration: params.Tempo.Spec.Template.QueryFrontend.JaegerQuery.ServicesQueryDuration.String(),
+		ServicesQueryDuration: params.Tempo.Spec.Template.QueryFrontend.JaegerQuery.ServicesQueryDuration.Duration.String(),
 	})
 }
 
