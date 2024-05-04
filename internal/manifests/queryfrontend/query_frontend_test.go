@@ -678,3 +678,76 @@ func TestOverrideResources(t *testing.T) {
 	require.True(t, ok)
 	assert.Equal(t, deployment.Spec.Template.Spec.Containers[0].Resources, overrideResources)
 }
+
+func TestQueryFrontendJaegerRouteSecured(t *testing.T) {
+	objects, err := BuildQueryFrontend(manifestutils.Params{Tempo: v1alpha1.TempoStack{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test",
+			Namespace: "project1",
+		},
+		Spec: v1alpha1.TempoStackSpec{
+			Template: v1alpha1.TempoTemplateSpec{
+				QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+					JaegerQuery: v1alpha1.JaegerQuerySpec{
+						Enabled: true,
+						Ingress: v1alpha1.IngressSpec{
+							Type: v1alpha1.IngressTypeRoute,
+							Route: v1alpha1.RouteSpec{
+								Termination: v1alpha1.TLSRouteTerminationTypeEdge,
+							},
+							Security: v1alpha1.IngressSecuritySpec{
+								Type: v1alpha1.IngressSecurityOAuthProxy,
+							},
+						},
+					},
+				},
+			},
+		},
+	}})
+
+	require.NoError(t, err)
+	require.Equal(t, 7, len(objects))
+
+	assert.Equal(t, "tempo-test-query-frontend", objects[0].(*corev1.ServiceAccount).Name)
+	assert.Equal(t, &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      naming.Name(manifestutils.QueryFrontendOauthProxyComponentName, "test"),
+			Namespace: "project1",
+			Labels:    manifestutils.ComponentLabels("query-frontend", "test"),
+			Annotations: map[string]string{
+				"service.beta.openshift.io/serving-cert-secret-name": "test-ui-oauth-proxy-tls",
+			},
+		},
+		Spec: corev1.ServiceSpec{
+			Ports: []corev1.ServicePort{
+				{
+					Name:       manifestutils.JaegerUIPortName,
+					Port:       manifestutils.OAuthProxyPort,
+					TargetPort: intstr.FromString(manifestutils.OAuthProxyPortName),
+				},
+			},
+			Selector: manifestutils.ComponentLabels("query-frontend", "test"),
+		},
+	}, objects[1].(*corev1.Service))
+	assert.Equal(t, "tempo-test-cookie-proxy", objects[2].(*corev1.Secret).Name)
+
+	assert.Equal(t, &routev1.Route{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      naming.Name(manifestutils.QueryFrontendComponentName, "test"),
+			Namespace: "project1",
+			Labels:    manifestutils.ComponentLabels("query-frontend", "test"),
+		},
+		Spec: routev1.RouteSpec{
+			To: routev1.RouteTargetReference{
+				Kind: "Service",
+				Name: naming.Name(manifestutils.QueryFrontendOauthProxyComponentName, "test"),
+			},
+			Port: &routev1.RoutePort{
+				TargetPort: intstr.FromString(manifestutils.JaegerUIPortName),
+			},
+			TLS: &routev1.TLSConfig{
+				Termination: routev1.TLSTerminationReencrypt,
+			},
+		},
+	}, objects[6].(*routev1.Route))
+}

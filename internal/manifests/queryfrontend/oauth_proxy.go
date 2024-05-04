@@ -81,7 +81,7 @@ func oauthCookieSessionSecret(tempo v1alpha1.TempoStack) (*corev1.Secret, error)
 }
 
 func cookieSecretName(tempo v1alpha1.TempoStack) string {
-	return fmt.Sprintf("%s-cookie-proxy", tempo.Name)
+	return fmt.Sprintf("tempo-%s-cookie-proxy", tempo.Name)
 }
 
 func proxyInitArguments(tempo v1alpha1.TempoStack) []string {
@@ -148,7 +148,7 @@ func oAuthProxyContainer(params manifestutils.Params) corev1.Container {
 
 			{
 				MountPath: oauthProxySecretMountPath,
-				Name:      fmt.Sprintf("%s-session-proxy", tempo.Name),
+				Name:      cookieSecretName(tempo),
 			},
 		},
 		Resources: resources(tempo),
