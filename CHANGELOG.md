@@ -3,6 +3,37 @@ Changes by Version
 
 <!-- next version -->
 
+## 0.10.0
+
+### 🛑 Breaking changes 🛑
+
+- `operator`: TempoMonolithic: Split `tempo-<name>` service into `tempo-<name>` and `tempo-<name>-jaegerui` (#846)
+
+### 💡 Enhancements 💡
+
+- `operator`: Add the ability to configure an expiration time for jaeger UI services (#904)
+- `operator`: Prevent creation of TempoStack and TempoMonolithic with same name (#879)
+- `operator`: Bump tempo version to 2.4.1 (#901)
+- `operator`: Add storage and managed operands gauge metric to the operator metrics. (#838)
+- `operator`: Support Grafana instances in a different namespace (#840)
+- `operator`: Support custom ServiceAccount in TempoMonolithic CR (#836)
+- `operator`: Enable internal server for health checks in TempoMonolithic CR (#847)
+- `operator`: Support multi-tenancy in TempoMonolithic CR (#816)
+- `operator`: Support TLS Profile in TempoMonolithic CR (#862)
+- `operator`: Support upgrading TempoMonolithic CR (#850)
+  The metric series `tempooperator_upgrades_total{state="up-to-date"}` was removed.
+  A new label `kind` (`TempoStack` or `TempoMonolithic`) was added to `tempooperator_upgrades_total{}`.
+  
+- `operator`: Updating Operator-sdk to 1.32 (#717)
+- `operator`: Add security context to tempo-query container (#864)
+
+### 🧰 Bug fixes 🧰
+
+- `operator`: Fix parsing of `nodeSelector`, `tolerations` and `affinity` in TempoMonolithic CR (#867)
+
+### Components
+- Tempo: [v2.4.1](https://github.com/grafana/tempo/releases/tag/v2.4.1)
+
 ## 0.9.0
 
 ### 💡 Enhancements 💡

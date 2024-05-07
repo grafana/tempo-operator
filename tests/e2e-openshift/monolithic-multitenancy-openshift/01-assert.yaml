@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: tempo-simplest
+  name: tempo-monolithic-multitenancy-openshift
 status:
   readyReplicas: 1
 
@@ -9,7 +9,7 @@ status:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: tempo-simplest-0
+  name: tempo-monolithic-multitenancy-openshift-0
 status:
   containerStatuses:
   - name: tempo
@@ -30,7 +30,7 @@ status:
 apiVersion: v1
 kind: Service
 metadata:
-  name: tempo-simplest-gateway
+  name: tempo-monolithic-multitenancy-openshift-gateway
 spec:
   ports:
   - name: public
