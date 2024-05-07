@@ -154,6 +154,15 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 			r.Spec.Template.QueryFrontend.JaegerQuery.Oauth.Enabled = true
 		}
 	}
+
+	if r.Spec.Template.QueryFrontend.JaegerQuery.Oauth.Enabled {
+		if len(strings.TrimSpace(r.Spec.Template.QueryFrontend.JaegerQuery.Oauth.SAR)) == 0 {
+			defaultSAR := fmt.Sprintf("{\"namespace\": \"%s\", \"resource\": \"pods\", \"verb\": \"get\"}", r.Namespace)
+			r.Spec.Template.QueryFrontend.JaegerQuery.Oauth.SAR = defaultSAR
+
+		}
+
+	}
 	return nil
 }
 
