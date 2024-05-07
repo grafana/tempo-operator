@@ -1,10 +1,6 @@
 name: "Publish to operatorHUB"
 on:
   workflow_dispatch:
-    inputs:
-      version:
-        description: version of the operator to publish
-        required: true
 
 jobs:
   operator-hub-prod-release:
