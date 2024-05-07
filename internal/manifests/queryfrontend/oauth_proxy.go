@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	routev1 "github.com/openshift/api/route/v1"
 	"github.com/operator-framework/operator-lib/proxy"
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -60,6 +61,14 @@ func getTLSSecretNameForFrontendService(tempo v1alpha1.TempoStack) string {
 	return fmt.Sprintf("%s-ui-oauth-proxy-tls", tempo.Name)
 }
 
+func patchRoute(tempoName string, route *routev1.Route) *routev1.Route { // point route to the oauth proxy
+	route.Spec.TLS = &routev1.TLSConfig{Termination: routev1.TLSTerminationReencrypt}
+	route.Spec.To = routev1.RouteTargetReference{
+		Kind: "Service",
+		Name: naming.Name(manifestutils.QueryFrontendOauthProxyComponentName, tempoName),
+	}
+	return route
+}
 func oauthCookieSessionSecret(tempo v1alpha1.TempoStack) (*corev1.Secret, error) {
 	sessionSecret, err := generateProxySecret()
 
@@ -123,8 +132,8 @@ func oAuthProxyContainer(params manifestutils.Params) corev1.Container {
 	tempo := params.Tempo
 	args := proxyInitArguments(tempo)
 
-	if len(strings.TrimSpace(tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Security.SAR)) > 0 {
-		args = append(args, fmt.Sprintf("--openshift-sar=%s", tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Security.SAR))
+	if len(strings.TrimSpace(tempo.Spec.Template.QueryFrontend.JaegerQuery.Oauth.SAR)) > 0 {
+		args = append(args, fmt.Sprintf("--openshift-sar=%s", tempo.Spec.Template.QueryFrontend.JaegerQuery.Oauth.SAR))
 	}
 
 	oauthProxyImage := tempo.Spec.Images.OauthProxy

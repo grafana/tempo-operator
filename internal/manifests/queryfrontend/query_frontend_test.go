@@ -313,14 +313,14 @@ func TestBuildQueryFrontend(t *testing.T) {
 	require.Equal(t, 3, len(objects))
 
 	// Test the services
-	frontendService := objects[1].(*corev1.Service)
+	frontendService := objects[0].(*corev1.Service)
 	expectedFrontEndService := getExpectedFrontEndService(false)
-	frontEndDiscoveryService := objects[2].(*corev1.Service)
+	frontEndDiscoveryService := objects[1].(*corev1.Service)
 	expectedFrontendDiscoveryService := getExpectedFrontendDiscoveryService(false)
 	assert.Equal(t, expectedFrontendDiscoveryService, frontEndDiscoveryService)
 	assert.Equal(t, expectedFrontEndService, frontendService)
 
-	deployment := objects[0].(*v1.Deployment)
+	deployment := objects[2].(*v1.Deployment)
 	expectedDeployment := getExpectedDeployment(false)
 	assert.Equal(t, expectedDeployment, deployment)
 }
@@ -369,16 +369,16 @@ func TestBuildQueryFrontendWithJaeger(t *testing.T) {
 	require.Equal(t, 3, len(objects))
 
 	// Test the services
-	frontendService := objects[1].(*corev1.Service)
+	frontendService := objects[0].(*corev1.Service)
 
 	expectedFrontEndService := getExpectedFrontEndService(withJaeger)
 	assert.Equal(t, expectedFrontEndService, frontendService)
 
-	frontEndDiscoveryService := objects[2].(*corev1.Service)
+	frontEndDiscoveryService := objects[1].(*corev1.Service)
 	expectedFrontendDiscoveryService := getExpectedFrontendDiscoveryService(withJaeger)
 	assert.Equal(t, expectedFrontendDiscoveryService, frontEndDiscoveryService)
 
-	deployment := objects[0].(*v1.Deployment)
+	deployment := objects[2].(*v1.Deployment)
 	expectedDeployment := getExpectedDeployment(withJaeger)
 	assert.Equal(t, expectedDeployment, deployment)
 }
@@ -444,7 +444,7 @@ func TestQueryFrontendJaegerIngress(t *testing.T) {
 				},
 			},
 		},
-	}, objects[3].(*networkingv1.Ingress))
+	}, objects[2].(*networkingv1.Ingress))
 }
 
 func TestQueryFrontendJaegerRoute(t *testing.T) {
@@ -490,7 +490,7 @@ func TestQueryFrontendJaegerRoute(t *testing.T) {
 				Termination: routev1.TLSTerminationEdge,
 			},
 		},
-	}, objects[3].(*routev1.Route))
+	}, objects[2].(*routev1.Route))
 }
 
 func TestQueryFrontendJaegerTLS(t *testing.T) {
@@ -522,7 +522,7 @@ func TestQueryFrontendJaegerTLS(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Equal(t, 3, len(objects))
-	deployment := objects[0].(*v1.Deployment)
+	deployment := objects[2].(*v1.Deployment)
 	require.Len(t, deployment.Spec.Template.Spec.Containers, 2)
 	jaegerContainer := deployment.Spec.Template.Spec.Containers[1]
 	args := jaegerContainer.Args
@@ -674,7 +674,7 @@ func TestOverrideResources(t *testing.T) {
 	}})
 
 	require.NoError(t, err)
-	deployment, ok := objects[0].(*v1.Deployment)
+	deployment, ok := objects[2].(*v1.Deployment)
 	require.True(t, ok)
 	assert.Equal(t, deployment.Spec.Template.Spec.Containers[0].Resources, overrideResources)
 }
@@ -690,13 +690,13 @@ func TestQueryFrontendJaegerRouteSecured(t *testing.T) {
 				QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
 					JaegerQuery: v1alpha1.JaegerQuerySpec{
 						Enabled: true,
+						Oauth: v1alpha1.OauthSpec{
+							Enabled: true,
+						},
 						Ingress: v1alpha1.IngressSpec{
 							Type: v1alpha1.IngressTypeRoute,
 							Route: v1alpha1.RouteSpec{
 								Termination: v1alpha1.TLSRouteTerminationTypeEdge,
-							},
-							Security: v1alpha1.IngressSecuritySpec{
-								Type: v1alpha1.IngressSecurityOAuthProxy,
 							},
 						},
 					},
@@ -708,7 +708,7 @@ func TestQueryFrontendJaegerRouteSecured(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, 7, len(objects))
 
-	assert.Equal(t, "tempo-test-query-frontend", objects[0].(*corev1.ServiceAccount).Name)
+	assert.Equal(t, "tempo-test-query-frontend", objects[2].(*corev1.ServiceAccount).Name)
 	assert.Equal(t, &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      naming.Name(manifestutils.QueryFrontendOauthProxyComponentName, "test"),
@@ -728,8 +728,8 @@ func TestQueryFrontendJaegerRouteSecured(t *testing.T) {
 			},
 			Selector: manifestutils.ComponentLabels("query-frontend", "test"),
 		},
-	}, objects[1].(*corev1.Service))
-	assert.Equal(t, "tempo-test-cookie-proxy", objects[2].(*corev1.Secret).Name)
+	}, objects[3].(*corev1.Service))
+	assert.Equal(t, "tempo-test-cookie-proxy", objects[4].(*corev1.Secret).Name)
 
 	assert.Equal(t, &routev1.Route{
 		ObjectMeta: metav1.ObjectMeta{
@@ -749,5 +749,5 @@ func TestQueryFrontendJaegerRouteSecured(t *testing.T) {
 				Termination: routev1.TLSTerminationReencrypt,
 			},
 		},
-	}, objects[6].(*routev1.Route))
+	}, objects[5].(*routev1.Route))
 }

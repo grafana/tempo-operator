@@ -73,10 +73,9 @@ func TestOauthProxyContainer(t *testing.T) {
 					Template: v1alpha1.TempoTemplateSpec{
 						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
 							JaegerQuery: v1alpha1.JaegerQuerySpec{
-								Ingress: v1alpha1.IngressSpec{
-									Security: v1alpha1.IngressSecuritySpec{
-										SAR: "{\"namespace\":\"app-dev\",\"resource\":\"services\",\"resourceName\":\"proxy\",\"verb\":\"get\"}",
-									},
+								Oauth: v1alpha1.OauthSpec{
+									Enabled: true,
+									SAR:     "{\"namespace\":\"app-dev\",\"resource\":\"services\",\"resourceName\":\"proxy\",\"verb\":\"get\"}",
 								},
 							},
 						},

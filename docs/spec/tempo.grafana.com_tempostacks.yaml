@@ -130,9 +130,6 @@ spec:                                    # TempoStackSpec defines the desired st
         ingressClassName: ""             # IngressClassName defines the name of an IngressClass cluster resource. Defines which ingress controller serves this ingress resource.
         route:                           # Route defines the options for the OpenShift route.
           termination: ""                # Termination defines the termination type. The default is "edge".
-        security:                        # Security defines the options for the ingress security in single tenant mode.
-          sar: ""                        # SAR defines the SAR to be used in the oauth-proxy
-          type: ""                       # Type defines the security type applied to the ingress
         type: ""                         # Type defines the type of Ingress for the Jaeger Query UI. Currently ingress, route and none are supported.
     ingester:                            # Ingester defines the ingester component spec.
       replicas: 0                        # Replicas defines the number of replicas to be created for this component.
@@ -182,13 +179,13 @@ spec:                                    # TempoStackSpec defines the desired st
           ingressClassName: ""           # IngressClassName defines the name of an IngressClass cluster resource. Defines which ingress controller serves this ingress resource.
           route:                         # Route defines the options for the OpenShift route.
             termination: ""              # Termination defines the termination type. The default is "edge".
-          security:                      # Security defines the options for the ingress security in single tenant mode.
-            sar: ""                      # SAR defines the SAR to be used in the oauth-proxy
-            type: ""                     # Type defines the security type applied to the ingress
           type: ""                       # Type defines the type of Ingress for the Jaeger Query UI. Currently ingress, route and none are supported.
         monitorTab:                      # MonitorTab defines the monitor tab configuration.
           enabled: false                 # Enabled enables the monitor tab in the Jaeger console. The PrometheusEndpoint must be configured to enable this feature.
           prometheusEndpoint: ""         # PrometheusEndpoint defines the endpoint to the Prometheus instance that contains the span rate, error, and duration (RED) metrics. For instance on OpenShift this is set to https://thanos-querier.openshift-monitoring.svc.cluster.local:9091
+        security:                        # Oauth defines the options for the oauth proxy used to protect jaeger UI
+          enabled: false                 # Type defines the security type applied to the ingress
+          sar: ""                        # SAR defines the SAR to be used in the oauth-proxy
         servicesQueryDuration: ""        # ServicesQueryDuration defines how long the services will be available in the services list
         resources:                       # Resources defines resources for this component, this will override the calculated resources derived from total
           claims:                        # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.   This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.   This field is immutable. It can only be set for containers.

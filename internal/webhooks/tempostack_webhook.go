@@ -151,7 +151,7 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 
 	if d.ctrlConfig.Gates.OpenShift.OAuthProxyEnabled {
 		if r.Spec.Template.QueryFrontend.JaegerQuery.Enabled && r.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type == v1alpha1.IngressTypeRoute {
-			r.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Security.Type = v1alpha1.IngressSecurityOAuthProxy
+			r.Spec.Template.QueryFrontend.JaegerQuery.Oauth.Enabled = true
 		}
 	}
 	return nil

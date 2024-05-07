@@ -57,18 +57,6 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 		}
 	}
 
-	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Security.Type == v1alpha1.IngressSecurityOAuthProxy {
-		patchDeploymentForOauthProxy(params, d)
-
-		secret, err := oauthCookieSessionSecret(tempo)
-		if err != nil {
-			return nil, err
-		}
-		manifests = append(manifests, oauthServiceAccount(tempo), oauthProxyService(tempo), secret)
-	}
-
-	manifests = append(manifests, d)
-
 	svcs := services(params)
 	for _, s := range svcs {
 		manifests = append(manifests, s)
@@ -84,9 +72,20 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 			if err != nil {
 				return nil, err
 			}
+			if tempo.Spec.Template.QueryFrontend.JaegerQuery.Oauth.Enabled {
+				patchDeploymentForOauthProxy(params, d)
+				secret, err := oauthCookieSessionSecret(tempo)
+				if err != nil {
+					return nil, err
+				}
+				manifests = append(manifests, oauthServiceAccount(tempo), oauthProxyService(tempo), secret)
+				routeObj = patchRoute(tempo.Name, routeObj)
+			}
 			manifests = append(manifests, routeObj)
 		}
 	}
+
+	manifests = append(manifests, d)
 
 	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled && tempo.Spec.Template.QueryFrontend.JaegerQuery.MonitorTab.Enabled &&
 		tempo.Spec.Template.QueryFrontend.JaegerQuery.MonitorTab.PrometheusEndpoint == thanosQuerierOpenShiftMonitoring {
@@ -432,7 +431,6 @@ func services(params manifestutils.Params) []*corev1.Service {
 	}
 
 	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled {
-
 		jaegerPorts := []corev1.ServicePort{
 			{
 				Name:       manifestutils.JaegerGRPCQuery,
@@ -453,10 +451,6 @@ func services(params manifestutils.Params) []*corev1.Service {
 
 		frontEndService.Spec.Ports = append(frontEndService.Spec.Ports, jaegerPorts...)
 		frontEndDiscoveryService.Spec.Ports = append(frontEndDiscoveryService.Spec.Ports, jaegerPorts...)
-
-		serviceObjects := []*corev1.Service{frontEndService, frontEndDiscoveryService}
-
-		return serviceObjects
 	}
 
 	return []*corev1.Service{frontEndService, frontEndDiscoveryService}
@@ -531,13 +525,6 @@ func route(tempo v1alpha1.TempoStack) (*routev1.Route, error) {
 	}
 
 	serviceName := naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name)
-
-	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Security.Type == v1alpha1.IngressSecurityOAuthProxy {
-		// oauth proxy needs re-encryption
-		tlsCfg = &routev1.TLSConfig{Termination: routev1.TLSTerminationReencrypt}
-		// point route to the oauth proxy
-		serviceName = naming.Name(manifestutils.QueryFrontendOauthProxyComponentName, tempo.Name)
-	}
 
 	return &routev1.Route{
 		ObjectMeta: metav1.ObjectMeta{

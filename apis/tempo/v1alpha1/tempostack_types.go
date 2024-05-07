@@ -24,12 +24,6 @@ const (
 	// ManagementStateUnmanaged when the TempoStack custom resource should not be
 	// reconciled by the operator.
 	ManagementStateUnmanaged ManagementStateType = "Unmanaged"
-
-	// IngressSecurityNone security type that means no security in front of the ingress.
-	IngressSecurityNone IngressSecurityType = "none"
-
-	// IngressSecurityOAuthProxy represents an OAuth Proxy as security type.
-	IngressSecurityOAuthProxy IngressSecurityType = "oauth-proxy"
 )
 
 // TempoStackSpec defines the desired state of TempoStack.
@@ -606,6 +600,13 @@ type JaegerQuerySpec struct {
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="ServicesQueryDuration"
 	ServicesQueryDuration *metav1.Duration `json:"servicesQueryDuration,omitempty"`
+
+	// Oauth defines the options for the oauth proxy used to protect jaeger UI
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Ingress Security Configuration"
+	Oauth OauthSpec `json:"security,omitempty"`
 }
 
 // JaegerQueryMonitor defines configuration for the service monitoring tab in the Jaeger console.
@@ -664,13 +665,6 @@ type IngressSpec struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Route Configuration"
 	Route RouteSpec `json:"route,omitempty"`
-
-	// Security defines the options for the ingress security in single tenant mode.
-	//
-	// +optional
-	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Ingress Security Configuration"
-	Security IngressSecuritySpec `json:"security,omitempty"`
 }
 
 // RouteSpec defines OpenShift Route specific options.
@@ -684,14 +678,14 @@ type RouteSpec struct {
 	Termination TLSRouteTerminationType `json:"termination,omitempty"`
 }
 
-// IngressSecuritySpec defines ingress security options.
-type IngressSecuritySpec struct {
+// OauthSpec defines ingress security options.
+type OauthSpec struct {
 	// Type defines the security type applied to the ingress
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Type"
-	Type IngressSecurityType `json:"type,omitempty"`
+	Enabled bool `json:"enabled,omitempty"`
 
 	// SAR defines the SAR to be used in the oauth-proxy
 	//

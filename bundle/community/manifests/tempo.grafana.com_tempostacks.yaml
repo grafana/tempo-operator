@@ -864,19 +864,6 @@ spec:
                                 - reencrypt
                                 type: string
                             type: object
-                          security:
-                            description: Security defines the options for the ingress
-                              security in single tenant mode.
-                            properties:
-                              sar:
-                                description: SAR defines the SAR to be used in the
-                                  oauth-proxy
-                                type: string
-                              type:
-                                description: Type defines the security type applied
-                                  to the ingress
-                                type: string
-                            type: object
                           type:
                             description: Type defines the type of Ingress for the
                               Jaeger Query UI. Currently ingress, route and none are
@@ -1269,19 +1256,6 @@ spec:
                                     - reencrypt
                                     type: string
                                 type: object
-                              security:
-                                description: Security defines the options for the
-                                  ingress security in single tenant mode.
-                                properties:
-                                  sar:
-                                    description: SAR defines the SAR to be used in
-                                      the oauth-proxy
-                                    type: string
-                                  type:
-                                    description: Type defines the security type applied
-                                      to the ingress
-                                    type: string
-                                type: object
                               type:
                                 description: Type defines the type of Ingress for
                                   the Jaeger Query UI. Currently ingress, route and
@@ -1359,6 +1333,19 @@ spec:
                                   value. Requests cannot exceed Limits. More info:
                                   https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                                 type: object
+                            type: object
+                          security:
+                            description: Oauth defines the options for the oauth proxy
+                              used to protect jaeger UI
+                            properties:
+                              enabled:
+                                description: Type defines the security type applied
+                                  to the ingress
+                                type: boolean
+                              sar:
+                                description: SAR defines the SAR to be used in the
+                                  oauth-proxy
+                                type: string
                             type: object
                           servicesQueryDuration:
                             description: ServicesQueryDuration defines how long the
