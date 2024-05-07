@@ -154,7 +154,7 @@ run: manifests generate ## Run a controller from your host.
 	RELATED_IMAGE_TEMPO_QUERY=$(TEMPO_QUERY_IMAGE) \
 	RELATED_IMAGE_TEMPO_GATEWAY=$(TEMPO_GATEWAY_IMAGE) \
 	RELATED_IMAGE_TEMPO_GATEWAY_OPA=$(TEMPO_GATEWAY_OPA_IMAGE) \
-	OAUTH_PROXY_IMAGE=$(OAUTH_PROXY_IMAGE) \
+	RELATED_IMAGE_OAUTH_PROXY=$(OAUTH_PROXY_IMAGE) \
 	go run -ldflags ${LD_FLAGS} ./main.go --zap-log-level=info start
 
 .PHONY: docker-build
