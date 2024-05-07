@@ -14,7 +14,7 @@ spec:
           curl -vG \
             --header "Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" \
             --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
-            https://tempo-simplest-gateway.chainsaw-monolithic-multitenancy.svc:8080/api/traces/v1/dev/api/traces \
+            https://tempo-monolithic-multitenancy-openshift-gateway.chainsaw-monolithic-multitenancy.svc:8080/api/traces/v1/dev/api/traces \
             --data-urlencode "service=telemetrygen" \
             | tee /tmp/jaeger.out
 
@@ -42,7 +42,7 @@ spec:
             --header "Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" \
             --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
             --data-urlencode 'q={ resource.service.name="telemetrygen" }' \
-            https://tempo-simplest-gateway.chainsaw-monolithic-multitenancy.svc:8080/api/traces/v1/dev/tempo/api/search \
+            https://tempo-monolithic-multitenancy-openshift-gateway.chainsaw-monolithic-multitenancy.svc:8080/api/traces/v1/dev/tempo/api/search \
             | tee /tmp/tempo.out
 
           num_traces=$(jq ".traces | length" /tmp/tempo.out)
