@@ -207,7 +207,7 @@ GEN_API_DOCS_VERSION ?= v0.6.0
 ENVTEST_VERSION ?= latest
 OPERATOR_SDK_VERSION ?= 1.32.0
 CERTMANAGER_VERSION ?= 1.9.1
-CHAINSAW_VERSION ?= v0.1.7
+CHAINSAW_VERSION ?= v0.2.0
 
 ## Tool Binaries
 KUSTOMIZE ?= $(LOCALBIN)/kustomize-$(KUSTOMIZE_VERSION)
@@ -259,7 +259,7 @@ bundle:
 
 .PHONY: bundle-build
 bundle-build: ## Build the bundle image.
-	docker build -f $(BUNDLE_DIR)/bundle.Dockerfile -t $(BUNDLE_IMG) $(BUNDLE_DIR)
+	docker buildx build --load --platform linux/${ARCH} -f $(BUNDLE_DIR)/bundle.Dockerfile -t $(BUNDLE_IMG) $(BUNDLE_DIR)
 
 .PHONY: bundle-push
 bundle-push: ## Push the bundle image.
