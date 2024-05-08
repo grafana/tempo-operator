@@ -24,9 +24,9 @@ make e2e e2e-openshift
 We plan to release the operator monthly, **at the end of each month**.
 
 | Release Date | Version | Release Manager                                          |
-| ------------ | ------- | -------------------------------------------------------- |
-| Jan 2024     | 0.8.0   | [Andreas Gerstmayr](https://github.com/andreasgerstmayr) |
-| Feb 2024     | 0.9.0   | [Benedikt Bongartz](https://github.com/frzifus)          |
-| Mar 2024     | 0.10.0  | [Israel Blancas](https://github.com/iblancasa)           |
-| Apr 2024     | 0.11.0  | [Ruben Vargas](https://github.com/rubenvp8510)           |
-| May 2024     | 0.12.0  | [Pavol Loffay](https://github.com/pavolloffay)           |
+|--------------|---------| -------------------------------------------------------- |
+| May 2024     | 0.10.0  | [Ruben Vargas](https://github.com/rubenvp8510)           |
+| Jun 2024     | 0.11.0  | [Pavol Loffay](https://github.com/pavolloffay)           |
+| Jul 2024     | 0.12.0  | [Andreas Gerstmayr](https://github.com/andreasgerstmayr) |
+| Aug 2024     | 0.13.0  | [Benedikt Bongartz](https://github.com/frzifus)          |
+| Sep 2024     | 0.14.0  | [Israel Blancas](https://github.com/iblancasa)           |
