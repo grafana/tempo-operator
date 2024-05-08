@@ -18,10 +18,14 @@ import (
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
 )
 
-const tlsProxyPath = "/etc/tls/private"
-const healthPath = "/oauth/healthz"
-const sessionSecretKey = "session_secret"
-const oauthProxySecretMountPath = "/etc/proxy/cookie/"
+const (
+	tlsProxyPath                           = "/etc/tls/private"
+	healthPath                             = "/oauth/healthz"
+	sessionSecretKey                       = "session_secret"
+	oauthProxySecretMountPath              = "/etc/proxy/cookie/"
+	oauthReadinessProbeInitialDelaySeconds = 10
+	oauthReadinessProbeTimeoutSeconds      = 5
+)
 
 func generateProxySecret() (string, error) {
 	randomBytes := make([]byte, 16)
@@ -170,9 +174,10 @@ func oAuthProxyContainer(params manifestutils.Params) corev1.Container {
 					Port:   intstr.FromString(manifestutils.OAuthProxyPortName),
 				},
 			},
-			InitialDelaySeconds: 15,
-			TimeoutSeconds:      5,
+			InitialDelaySeconds: oauthReadinessProbeInitialDelaySeconds,
+			TimeoutSeconds:      oauthReadinessProbeTimeoutSeconds,
 		},
+		SecurityContext: manifestutils.TempoContainerSecurityContext(),
 	}
 }
 

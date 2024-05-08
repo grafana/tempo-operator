@@ -1215,6 +1215,20 @@ spec:
                         description: JaegerQuery defines options specific to the Jaeger
                           Query component.
                         properties:
+                          authentication:
+                            description: Oauth defines the options for the oauth proxy
+                              used to protect jaeger UI
+                            properties:
+                              enabled:
+                                description: Defines if the authentication will be
+                                  enabled for jaeger UI.
+                                type: boolean
+                              sar:
+                                description: 'SAR defines the SAR to be used in the
+                                  oauth-proxy default is "{"namespace": "<tempo_stack_namespace>",
+                                  "resource": "pods", "verb": "get"}'
+                                type: string
+                            type: object
                           enabled:
                             description: Enabled defines if the Jaeger Query component
                               should be created.
@@ -1329,19 +1343,6 @@ spec:
                                   value. Requests cannot exceed Limits. More info:
                                   https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                                 type: object
-                            type: object
-                          security:
-                            description: Oauth defines the options for the oauth proxy
-                              used to protect jaeger UI
-                            properties:
-                              enabled:
-                                description: Type defines the security type applied
-                                  to the ingress
-                                type: boolean
-                              sar:
-                                description: SAR defines the SAR to be used in the
-                                  oauth-proxy
-                                type: string
                             type: object
                           servicesQueryDuration:
                             description: ServicesQueryDuration defines how long the

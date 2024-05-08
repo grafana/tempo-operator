@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.10.0
-    createdAt: "2024-05-08T05:28:24Z"
+    createdAt: "2024-05-08T05:28:40Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -921,6 +921,17 @@ spec:
       - description: JaegerQuery defines options specific to the Jaeger Query component.
         displayName: Jaeger Query Settings
         path: template.queryFrontend.jaegerQuery
+      - description: Oauth defines the options for the oauth proxy used to protect
+          jaeger UI
+        displayName: Jaeger UI authentication configuration
+        path: template.queryFrontend.jaegerQuery.authentication
+      - description: Defines if the authentication will be enabled for jaeger UI.
+        displayName: Type
+        path: template.queryFrontend.jaegerQuery.authentication.enabled
+      - description: 'SAR defines the SAR to be used in the oauth-proxy default is
+          "{"namespace": "<tempo_stack_namespace>", "resource": "pods", "verb": "get"}'
+        displayName: SAR
+        path: template.queryFrontend.jaegerQuery.authentication.sar
       - description: Enabled defines if the Jaeger Query component should be created.
         displayName: Enable Jaeger Query UI
         path: template.queryFrontend.jaegerQuery.enabled
@@ -963,16 +974,6 @@ spec:
           the calculated resources derived from total
         displayName: Resources
         path: template.queryFrontend.jaegerQuery.resources
-      - description: Oauth defines the options for the oauth proxy used to protect
-          jaeger UI
-        displayName: Ingress Security Configuration
-        path: template.queryFrontend.jaegerQuery.security
-      - description: Type defines the security type applied to the ingress
-        displayName: Type
-        path: template.queryFrontend.jaegerQuery.security.enabled
-      - description: SAR defines the SAR to be used in the oauth-proxy
-        displayName: SAR
-        path: template.queryFrontend.jaegerQuery.security.sar
       - description: ServicesQueryDuration defines how long the services will be available
           in the services list
         displayName: ServicesQueryDuration

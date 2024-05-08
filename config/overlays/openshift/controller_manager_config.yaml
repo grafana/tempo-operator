@@ -24,7 +24,8 @@ featureGates:
   openshift:
     openshiftRoute: true
     servingCertsService: true
-    oAuthProxyEnabled: true
+    oAuthProxy:
+      defaultEnabled: false
   prometheusOperator: true
   grafanaOperator: false
   httpEncryption: true

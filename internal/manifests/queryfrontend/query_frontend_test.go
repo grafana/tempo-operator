@@ -690,7 +690,7 @@ func TestQueryFrontendJaegerRouteSecured(t *testing.T) {
 				QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
 					JaegerQuery: v1alpha1.JaegerQuerySpec{
 						Enabled: true,
-						Oauth: v1alpha1.OauthSpec{
+						Oauth: v1alpha1.JaegerQueryAuthenticationSpec{
 							Enabled: true,
 						},
 						Ingress: v1alpha1.IngressSpec{

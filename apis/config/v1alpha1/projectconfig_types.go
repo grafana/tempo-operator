@@ -93,8 +93,8 @@ type OpenShiftFeatureGates struct {
 	// More details: https://docs.openshift.com/container-platform/4.11/security/tls-security-profiles.html
 	ClusterTLSPolicy bool
 
-	// OAuthProxyEnabled is used internally for enable by default the oauth proxy for the UI in single tenant mode
-	OAuthProxyEnabled bool `json:"oAuthProxyEnabled,omitempty"`
+	// OauthProxy define options for the oauth proxy feature.
+	OauthProxy OauthProxyFeatureGates `json:"oAuthProxy,omitempty"`
 }
 
 // TLSProfileType is a TLS security profile based on the Mozilla definitions:
@@ -128,6 +128,12 @@ type MetricsFeatureGates struct {
 type ObservabilityFeatureGates struct {
 	// Metrics configures metrics of the operator.
 	Metrics MetricsFeatureGates `json:"metrics,omitempty"`
+}
+
+// OauthProxyFeatureGates configures oauth proxy options.
+type OauthProxyFeatureGates struct {
+	// OAuthProxyEnabled is used internally for enable by default the oauth proxy for the UI when multi-tenancy is disabled.
+	DefaultEnabled bool `json:"defaultEnabled,omitempty"`
 }
 
 // FeatureGates is the supported set of all operator feature gates.

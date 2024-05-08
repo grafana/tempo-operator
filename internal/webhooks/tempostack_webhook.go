@@ -149,7 +149,7 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 		r.Spec.Template.QueryFrontend.JaegerQuery.ServicesQueryDuration = &defaultServicesDuration
 	}
 
-	if d.ctrlConfig.Gates.OpenShift.OAuthProxyEnabled {
+	if d.ctrlConfig.Gates.OpenShift.OauthProxy.DefaultEnabled {
 		if r.Spec.Template.QueryFrontend.JaegerQuery.Enabled && r.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type == v1alpha1.IngressTypeRoute {
 			r.Spec.Template.QueryFrontend.JaegerQuery.Oauth.Enabled = true
 		}

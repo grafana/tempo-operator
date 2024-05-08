@@ -173,6 +173,9 @@ spec:                                    # TempoStackSpec defines the desired st
         tolerations: {}                  # Tolerations defines component-specific pod tolerations.
       jaegerQuery:                       # JaegerQuery defines options specific to the Jaeger Query component.
         enabled: false                   # Enabled defines if the Jaeger Query component should be created.
+        authentication:                  # Oauth defines the options for the oauth proxy used to protect jaeger UI
+          enabled: false                 # Defines if the authentication will be enabled for jaeger UI.
+          sar: ""                        # SAR defines the SAR to be used in the oauth-proxy default is "{"namespace": "<tempo_stack_namespace>", "resource": "pods", "verb": "get"}
         ingress:                         # Ingress defines the options for the Jaeger Query ingress.
           annotations: {}                # Annotations defines the annotations of the Ingress object.
           host: ""                       # Host defines the hostname of the Ingress object.
@@ -183,9 +186,6 @@ spec:                                    # TempoStackSpec defines the desired st
         monitorTab:                      # MonitorTab defines the monitor tab configuration.
           enabled: false                 # Enabled enables the monitor tab in the Jaeger console. The PrometheusEndpoint must be configured to enable this feature.
           prometheusEndpoint: ""         # PrometheusEndpoint defines the endpoint to the Prometheus instance that contains the span rate, error, and duration (RED) metrics. For instance on OpenShift this is set to https://thanos-querier.openshift-monitoring.svc.cluster.local:9091
-        security:                        # Oauth defines the options for the oauth proxy used to protect jaeger UI
-          enabled: false                 # Type defines the security type applied to the ingress
-          sar: ""                        # SAR defines the SAR to be used in the oauth-proxy
         servicesQueryDuration: ""        # ServicesQueryDuration defines how long the services will be available in the services list
         resources:                       # Resources defines resources for this component, this will override the calculated resources derived from total
           claims:                        # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.   This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.   This field is immutable. It can only be set for containers.

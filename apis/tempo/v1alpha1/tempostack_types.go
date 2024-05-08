@@ -13,9 +13,6 @@ import (
 // +kubebuilder:validation:Enum=Managed;Unmanaged
 type ManagementStateType string
 
-// IngressSecurityType defines the type of security for the ingress/route.
-type IngressSecurityType string
-
 const (
 	// ManagementStateManaged when the TempoStack custom resource should be
 	// reconciled by the operator.
@@ -605,8 +602,8 @@ type JaegerQuerySpec struct {
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Ingress Security Configuration"
-	Oauth OauthSpec `json:"security,omitempty"`
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger UI authentication configuration"
+	Oauth JaegerQueryAuthenticationSpec `json:"authentication,omitempty"`
 }
 
 // JaegerQueryMonitor defines configuration for the service monitoring tab in the Jaeger console.
@@ -678,9 +675,9 @@ type RouteSpec struct {
 	Termination TLSRouteTerminationType `json:"termination,omitempty"`
 }
 
-// OauthSpec defines ingress security options.
-type OauthSpec struct {
-	// Type defines the security type applied to the ingress
+// JaegerQueryAuthenticationSpec defines options applied to proxy sidecar that controls the authentication of the jaeger UI.
+type JaegerQueryAuthenticationSpec struct {
+	// Defines if the authentication will be enabled for jaeger UI.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
@@ -688,6 +685,7 @@ type OauthSpec struct {
 	Enabled bool `json:"enabled,omitempty"`
 
 	// SAR defines the SAR to be used in the oauth-proxy
+	// default is "{"namespace": "<tempo_stack_namespace>", "resource": "pods", "verb": "get"}
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
