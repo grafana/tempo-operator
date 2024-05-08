@@ -80,7 +80,7 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 					return nil, err
 				}
 				manifests = append(manifests, oauthServiceAccount(tempo), secret)
-				routeObj = patchRoute(routeObj)
+				routeObj = patchRouteForOauthProxy(routeObj)
 			}
 			manifests = append(manifests, routeObj)
 		}

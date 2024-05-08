@@ -65,7 +65,7 @@ func getTLSSecretNameForFrontendService(tempoName string) string {
 	return fmt.Sprintf("%s-ui-oauth-proxy-tls", tempoName)
 }
 
-func patchRoute(route *routev1.Route) *routev1.Route { // point route to the oauth proxy
+func patchRouteForOauthProxy(route *routev1.Route) *routev1.Route { // point route to the oauth proxy
 	route.Spec.TLS = &routev1.TLSConfig{Termination: routev1.TLSTerminationReencrypt}
 	route.Spec.Port.TargetPort = intstr.FromString(manifestutils.OAuthProxyPortName)
 	return route
