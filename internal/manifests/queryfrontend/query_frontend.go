@@ -72,7 +72,9 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 			if err != nil {
 				return nil, err
 			}
-			if tempo.Spec.Template.QueryFrontend.JaegerQuery.Oauth.Enabled {
+
+			oauthEnabled := tempo.Spec.Template.QueryFrontend.JaegerQuery.Oauth.Enabled
+			if oauthEnabled != nil && *oauthEnabled {
 				patchDeploymentForOauthProxy(params, d)
 				patchQueryFrontEndService(svcs, tempo)
 				secret, err := oauthCookieSessionSecret(tempo)

@@ -74,7 +74,7 @@ func TestOauthProxyContainer(t *testing.T) {
 						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
 							JaegerQuery: v1alpha1.JaegerQuerySpec{
 								Oauth: v1alpha1.JaegerQueryAuthenticationSpec{
-									Enabled: true,
+									Enabled: ptr.To(true),
 									SAR:     "{\"namespace\":\"app-dev\",\"resource\":\"services\",\"resourceName\":\"proxy\",\"verb\":\"get\"}",
 								},
 							},
