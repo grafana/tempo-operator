@@ -706,30 +706,57 @@ func TestQueryFrontendJaegerRouteSecured(t *testing.T) {
 	}})
 
 	require.NoError(t, err)
-	require.Equal(t, 7, len(objects))
-
-	assert.Equal(t, "tempo-test-query-frontend", objects[2].(*corev1.ServiceAccount).Name)
+	require.Equal(t, 6, len(objects))
 	assert.Equal(t, &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      naming.Name(manifestutils.QueryFrontendOauthProxyComponentName, "test"),
+			Name:      naming.Name(manifestutils.QueryFrontendComponentName, "test"),
 			Namespace: "project1",
-			Labels:    manifestutils.ComponentLabels("query-frontend", "test"),
+			Labels:    manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, "test"),
 			Annotations: map[string]string{
-				"service.beta.openshift.io/serving-cert-secret-name": "test-ui-oauth-proxy-tls",
+				"service.beta.openshift.io/serving-cert-secret-name": getTLSSecretNameForFrontendService("test"),
 			},
 		},
 		Spec: corev1.ServiceSpec{
 			Ports: []corev1.ServicePort{
 				{
+					Name:       manifestutils.HttpPortName,
+					Port:       manifestutils.PortHTTPServer,
+					TargetPort: intstr.FromString(manifestutils.HttpPortName),
+				},
+				{
+					Name:       manifestutils.GrpcPortName,
+					Protocol:   corev1.ProtocolTCP,
+					Port:       manifestutils.PortGRPCServer,
+					TargetPort: intstr.FromString(manifestutils.GrpcPortName),
+				},
+				{
+					Name:       manifestutils.JaegerGRPCQuery,
+					Port:       manifestutils.PortJaegerGRPCQuery,
+					TargetPort: intstr.FromString(manifestutils.JaegerGRPCQuery),
+				},
+				{
 					Name:       manifestutils.JaegerUIPortName,
+					Port:       int32(manifestutils.PortJaegerUI),
+					TargetPort: intstr.FromString(manifestutils.JaegerUIPortName),
+				},
+				{
+					Name:       manifestutils.JaegerMetricsPortName,
+					Port:       manifestutils.PortJaegerMetrics,
+					TargetPort: intstr.FromString(manifestutils.JaegerMetricsPortName),
+				},
+				{
+					Name:       manifestutils.OAuthProxyPortName,
 					Port:       manifestutils.OAuthProxyPort,
 					TargetPort: intstr.FromString(manifestutils.OAuthProxyPortName),
 				},
 			},
-			Selector: manifestutils.ComponentLabels("query-frontend", "test"),
+			Selector: manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, "test"),
 		},
-	}, objects[3].(*corev1.Service))
-	assert.Equal(t, "tempo-test-cookie-proxy", objects[4].(*corev1.Secret).Name)
+	}, objects[0].(*corev1.Service))
+
+	assert.Equal(t, "tempo-test-query-frontend", objects[2].(*corev1.ServiceAccount).Name)
+
+	assert.Equal(t, "tempo-test-cookie-proxy", objects[3].(*corev1.Secret).Name)
 
 	assert.Equal(t, &routev1.Route{
 		ObjectMeta: metav1.ObjectMeta{
@@ -740,14 +767,14 @@ func TestQueryFrontendJaegerRouteSecured(t *testing.T) {
 		Spec: routev1.RouteSpec{
 			To: routev1.RouteTargetReference{
 				Kind: "Service",
-				Name: naming.Name(manifestutils.QueryFrontendOauthProxyComponentName, "test"),
+				Name: naming.Name(manifestutils.QueryFrontendComponentName, "test"),
 			},
 			Port: &routev1.RoutePort{
-				TargetPort: intstr.FromString(manifestutils.JaegerUIPortName),
+				TargetPort: intstr.FromString(manifestutils.OAuthProxyPortName),
 			},
 			TLS: &routev1.TLSConfig{
 				Termination: routev1.TLSTerminationReencrypt,
 			},
 		},
-	}, objects[5].(*routev1.Route))
+	}, objects[4].(*routev1.Route))
 }

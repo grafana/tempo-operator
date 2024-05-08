@@ -61,16 +61,13 @@ func oauthServiceAccount(tempo v1alpha1.TempoStack) *corev1.ServiceAccount {
 	}
 }
 
-func getTLSSecretNameForFrontendService(tempo v1alpha1.TempoStack) string {
-	return fmt.Sprintf("%s-ui-oauth-proxy-tls", tempo.Name)
+func getTLSSecretNameForFrontendService(tempoName string) string {
+	return fmt.Sprintf("%s-ui-oauth-proxy-tls", tempoName)
 }
 
-func patchRoute(tempoName string, route *routev1.Route) *routev1.Route { // point route to the oauth proxy
+func patchRoute(route *routev1.Route) *routev1.Route { // point route to the oauth proxy
 	route.Spec.TLS = &routev1.TLSConfig{Termination: routev1.TLSTerminationReencrypt}
-	route.Spec.To = routev1.RouteTargetReference{
-		Kind: "Service",
-		Name: naming.Name(manifestutils.QueryFrontendOauthProxyComponentName, tempoName),
-	}
+	route.Spec.Port.TargetPort = intstr.FromString(manifestutils.OAuthProxyPortName)
 	return route
 }
 func oauthCookieSessionSecret(tempo v1alpha1.TempoStack) (*corev1.Secret, error) {
@@ -113,10 +110,10 @@ func proxyInitArguments(tempo v1alpha1.TempoStack) []string {
 func patchDeploymentForOauthProxy(params manifestutils.Params, dep *v1.Deployment) {
 	tempo := params.Tempo
 	dep.Spec.Template.Spec.Volumes = append(dep.Spec.Template.Spec.Volumes, corev1.Volume{
-		Name: getTLSSecretNameForFrontendService(tempo),
+		Name: getTLSSecretNameForFrontendService(tempo.Name),
 		VolumeSource: corev1.VolumeSource{
 			Secret: &corev1.SecretVolumeSource{
-				SecretName: getTLSSecretNameForFrontendService(tempo),
+				SecretName: getTLSSecretNameForFrontendService(tempo.Name),
 			},
 		},
 	})
@@ -156,7 +153,7 @@ func oAuthProxyContainer(params manifestutils.Params) corev1.Container {
 		},
 		VolumeMounts: []corev1.VolumeMount{{
 			MountPath: tlsProxyPath,
-			Name:      getTLSSecretNameForFrontendService(tempo),
+			Name:      getTLSSecretNameForFrontendService(tempo.Name),
 		},
 
 			{
@@ -181,27 +178,30 @@ func oAuthProxyContainer(params manifestutils.Params) corev1.Container {
 	}
 }
 
-func oauthProxyService(tempo v1alpha1.TempoStack) *corev1.Service {
-	labels := manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, tempo.Name)
+func patchQueryFrontEndService(services []*corev1.Service, tempo v1alpha1.TempoStack) {
 
-	return &corev1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      naming.Name(manifestutils.QueryFrontendOauthProxyComponentName, tempo.Name),
-			Namespace: tempo.Namespace,
-			Labels:    labels,
-			Annotations: map[string]string{
-				"service.beta.openshift.io/serving-cert-secret-name": getTLSSecretNameForFrontendService(tempo),
-			},
-		},
-		Spec: corev1.ServiceSpec{
-			Ports: []corev1.ServicePort{
-				{
-					Name:       manifestutils.JaegerUIPortName,
-					Port:       manifestutils.OAuthProxyPort,
-					TargetPort: intstr.FromString(manifestutils.OAuthProxyPortName),
-				},
-			},
-			Selector: labels,
-		},
+	var service *corev1.Service
+	serviceName := naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name)
+	for _, svc := range services {
+		if svc.Name == serviceName {
+			service = svc
+			break
+		}
 	}
+
+	if service == nil {
+		return
+	}
+
+	if service.Annotations == nil {
+		service.Annotations = make(map[string]string)
+	}
+
+	service.Annotations["service.beta.openshift.io/serving-cert-secret-name"] = getTLSSecretNameForFrontendService(tempo.Name)
+
+	service.Spec.Ports = append(service.Spec.Ports, corev1.ServicePort{
+		Name:       manifestutils.OAuthProxyPortName,
+		Port:       manifestutils.OAuthProxyPort,
+		TargetPort: intstr.FromString(manifestutils.OAuthProxyPortName),
+	})
 }

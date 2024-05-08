@@ -133,7 +133,7 @@ func TestOauthProxyContainer(t *testing.T) {
 				},
 				VolumeMounts: []corev1.VolumeMount{{
 					MountPath: tlsProxyPath,
-					Name:      getTLSSecretNameForFrontendService(test.tempo),
+					Name:      getTLSSecretNameForFrontendService(test.tempo.Name),
 				},
 
 					{
@@ -151,32 +151,14 @@ func TestOauthProxyContainer(t *testing.T) {
 							Port:   intstr.FromString(manifestutils.OAuthProxyPortName),
 						},
 					},
-					InitialDelaySeconds: 15,
-					TimeoutSeconds:      5,
+					InitialDelaySeconds: oauthReadinessProbeInitialDelaySeconds,
+					TimeoutSeconds:      oauthReadinessProbeTimeoutSeconds,
 				},
+				SecurityContext: manifestutils.TempoContainerSecurityContext(),
 			}
 			assert.Equal(t, expected, container)
 		})
 	}
-}
-
-func TestOAuthProxyService(t *testing.T) {
-	tempo := v1alpha1.TempoStack{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "testoauthsecret",
-			Namespace: "project1",
-		},
-	}
-
-	service := oauthProxyService(tempo)
-
-	assert.Equal(t,
-		naming.Name(manifestutils.QueryFrontendOauthProxyComponentName, "testoauthsecret"), service.Name)
-
-	assert.Equal(t,
-		map[string]string{
-			"service.beta.openshift.io/serving-cert-secret-name": getTLSSecretNameForFrontendService(tempo),
-		}, service.Annotations)
 }
 
 func TestOAuthProxyServiceAccount(t *testing.T) {

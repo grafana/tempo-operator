@@ -74,12 +74,13 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 			}
 			if tempo.Spec.Template.QueryFrontend.JaegerQuery.Oauth.Enabled {
 				patchDeploymentForOauthProxy(params, d)
+				patchQueryFrontEndService(svcs, tempo)
 				secret, err := oauthCookieSessionSecret(tempo)
 				if err != nil {
 					return nil, err
 				}
-				manifests = append(manifests, oauthServiceAccount(tempo), oauthProxyService(tempo), secret)
-				routeObj = patchRoute(tempo.Name, routeObj)
+				manifests = append(manifests, oauthServiceAccount(tempo), secret)
+				routeObj = patchRoute(routeObj)
 			}
 			manifests = append(manifests, routeObj)
 		}
