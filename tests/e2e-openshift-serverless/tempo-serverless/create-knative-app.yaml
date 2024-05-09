@@ -1,0 +1,23 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: serverless-app
+  namespace: chainsaw-tempo-serverless
+spec:
+  template:
+    metadata:
+      labels:
+        app: helloworld-go
+      annotations:
+        autoscaling.knative.dev/minScale: "1"
+        autoscaling.knative.dev/target: "1"
+    spec:
+      containers:
+      - image: quay.io/openshift-knative/helloworld:v1.2
+        imagePullPolicy: Always
+        resources:
+          requests:
+            cpu: "200m"
+        env:
+        - name: TARGET
+          value: "Go Sample v1"

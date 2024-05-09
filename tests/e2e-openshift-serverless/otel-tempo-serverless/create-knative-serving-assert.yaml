@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: activator
+  namespace: knative-serving
+status:
+  availableReplicas: 2
+  readyReplicas: 2
+  replicas: 2
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: autoscaler
+  namespace: knative-serving
+status:
+  availableReplicas: 2
+  readyReplicas: 2
+  replicas: 2
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: autoscaler-hpa
+  namespace: knative-serving
+status:
+  availableReplicas: 2
+  readyReplicas: 2
+  replicas: 2
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: controller
+  namespace: knative-serving
+status:
+  availableReplicas: 2
+  readyReplicas: 2
+  replicas: 2
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webhook
+  namespace: knative-serving
+status:
+  availableReplicas: 2
+  readyReplicas: 2
+  replicas: 2
+
+---
+apiVersion: operator.knative.dev/v1beta1
+kind: KnativeServing
+metadata:
+  name: serverless
+  namespace: knative-serving
+status:
+  conditions:
+  - status: "True"
+    type: DependenciesInstalled
+  - status: "True"
+    type: DeploymentsAvailable
+  - status: "True"
+    type: InstallSucceeded
+  - status: "True"
+    type: Ready
+  - status: "True"
+    type: VersionMigrationEligible
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  labels:
+    app: storage-version-migration-serving
+    app.kubernetes.io/component: storage-version-migration-job
+    app.kubernetes.io/name: knative-serving
+  namespace: knative-serving
+status:
+  succeeded: 1

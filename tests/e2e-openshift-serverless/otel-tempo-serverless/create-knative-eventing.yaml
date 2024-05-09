@@ -1,0 +1,19 @@
+apiVersion: project.openshift.io/v1
+kind: Project
+metadata:
+  name: knative-eventing
+spec: {}
+
+---
+apiVersion: operator.knative.dev/v1beta1
+kind: KnativeEventing
+metadata:
+    name: serverless
+    namespace: knative-eventing
+spec:
+  config:
+    tracing:
+      backend: "zipkin"
+      zipkin-endpoint: "http://serverless-collector-headless.chainsaw-otel-tempo-serverless.svc:9411/api/v2/spans"
+      debug: "false"
+      sample-rate: "0.1" 
