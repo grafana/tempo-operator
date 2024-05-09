@@ -4,6 +4,7 @@ TEMPO_VERSION ?= 2.4.1
 TEMPO_QUERY_VERSION ?= 2.4.1
 TEMPO_GATEWAY_VERSION ?= main-2024-05-02-61d4cd9
 TEMPO_GATEWAY_OPA_VERSION ?= main-2024-04-29-914c13f
+OAUTH_PROXY_VERSION=4.12
 
 MIN_KUBERNETES_VERSION ?= 1.25.0
 MIN_OPENSHIFT_VERSION ?= 4.12
@@ -12,6 +13,7 @@ TEMPO_IMAGE ?= docker.io/grafana/tempo:$(TEMPO_VERSION)
 TEMPO_QUERY_IMAGE ?= docker.io/grafana/tempo-query:$(TEMPO_QUERY_VERSION)
 TEMPO_GATEWAY_IMAGE ?= quay.io/observatorium/api:$(TEMPO_GATEWAY_VERSION)
 TEMPO_GATEWAY_OPA_IMAGE ?= quay.io/observatorium/opa-openshift:$(TEMPO_GATEWAY_OPA_VERSION)
+OAUTH_PROXY_IMAGE ?= quay.io/openshift/origin-oauth-proxy:$(OAUTH_PROXY_VERSION)
 
 VERSION_PKG ?= github.com/grafana/tempo-operator/internal/version
 VERSION_DATE ?= $(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
@@ -116,6 +118,7 @@ manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and Cust
 	sed -i '/RELATED_IMAGE_TEMPO_QUERY$$/{n;s@value: .*@value: $(TEMPO_QUERY_IMAGE)@}' config/manager/manager.yaml
 	sed -i '/RELATED_IMAGE_TEMPO_GATEWAY$$/{n;s@value: .*@value: $(TEMPO_GATEWAY_IMAGE)@}' config/manager/manager.yaml
 	sed -i '/RELATED_IMAGE_TEMPO_GATEWAY_OPA$$/{n;s@value: .*@value: $(TEMPO_GATEWAY_OPA_IMAGE)@}' config/manager/manager.yaml
+	sed -i '/RELATED_IMAGE_OAUTH_PROXY$$/{n;s@value: .*@value: $(OAUTH_PROXY_IMAGE)@}' config/manager/manager.yaml
 	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 
 .PHONY: generate
@@ -151,6 +154,7 @@ run: manifests generate ## Run a controller from your host.
 	RELATED_IMAGE_TEMPO_QUERY=$(TEMPO_QUERY_IMAGE) \
 	RELATED_IMAGE_TEMPO_GATEWAY=$(TEMPO_GATEWAY_IMAGE) \
 	RELATED_IMAGE_TEMPO_GATEWAY_OPA=$(TEMPO_GATEWAY_OPA_IMAGE) \
+	RELATED_IMAGE_OAUTH_PROXY=$(OAUTH_PROXY_IMAGE) \
 	go run -ldflags ${LD_FLAGS} ./main.go --zap-log-level=info start
 
 .PHONY: docker-build

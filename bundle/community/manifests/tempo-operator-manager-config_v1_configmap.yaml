@@ -27,6 +27,8 @@ data:
       openshift:
         openshiftRoute: false
         servingCertsService: false
+        oAuthProxy:
+          defaultEnabled: false
       prometheusOperator: false
       grafanaOperator: false
       httpEncryption: true

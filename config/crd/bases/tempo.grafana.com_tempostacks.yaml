@@ -75,6 +75,10 @@ spec:
               images:
                 description: Images defines the image for each container.
                 properties:
+                  oauthProxy:
+                    description: OauthProxy defines the oauth proxy image used to
+                      protect the jaegerUI on single tenant.
+                    type: string
                   tempo:
                     description: Tempo defines the tempo container image.
                     type: string
@@ -1211,6 +1215,20 @@ spec:
                         description: JaegerQuery defines options specific to the Jaeger
                           Query component.
                         properties:
+                          authentication:
+                            description: Oauth defines the options for the oauth proxy
+                              used to protect jaeger UI
+                            properties:
+                              enabled:
+                                description: Defines if the authentication will be
+                                  enabled for jaeger UI.
+                                type: boolean
+                              sar:
+                                description: 'SAR defines the SAR to be used in the
+                                  oauth-proxy default is "{"namespace": "<tempo_stack_namespace>",
+                                  "resource": "pods", "verb": "get"}'
+                                type: string
+                            type: object
                           enabled:
                             description: Enabled defines if the Jaeger Query component
                               should be created.

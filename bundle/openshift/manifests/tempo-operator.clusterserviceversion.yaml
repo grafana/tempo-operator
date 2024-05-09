@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.10.0
-    createdAt: "2024-05-07T14:22:11Z"
+    createdAt: "2024-05-08T05:42:24Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -921,6 +921,17 @@ spec:
       - description: JaegerQuery defines options specific to the Jaeger Query component.
         displayName: Jaeger Query Settings
         path: template.queryFrontend.jaegerQuery
+      - description: Oauth defines the options for the oauth proxy used to protect
+          jaeger UI
+        displayName: Jaeger UI authentication configuration
+        path: template.queryFrontend.jaegerQuery.authentication
+      - description: Defines if the authentication will be enabled for jaeger UI.
+        displayName: Type
+        path: template.queryFrontend.jaegerQuery.authentication.enabled
+      - description: 'SAR defines the SAR to be used in the oauth-proxy default is
+          "{"namespace": "<tempo_stack_namespace>", "resource": "pods", "verb": "get"}'
+        displayName: SAR
+        path: template.queryFrontend.jaegerQuery.authentication.sar
       - description: Enabled defines if the Jaeger Query component should be created.
         displayName: Enable Jaeger Query UI
         path: template.queryFrontend.jaegerQuery.enabled
@@ -1337,6 +1348,8 @@ spec:
                   value: quay.io/observatorium/api:main-2024-05-02-61d4cd9
                 - name: RELATED_IMAGE_TEMPO_GATEWAY_OPA
                   value: quay.io/observatorium/opa-openshift:main-2024-04-29-914c13f
+                - name: RELATED_IMAGE_OAUTH_PROXY
+                  value: quay.io/openshift/origin-oauth-proxy:4.12
                 image: ghcr.io/grafana/tempo-operator/tempo-operator:v0.10.0
                 livenessProbe:
                   httpGet:
@@ -1494,6 +1507,8 @@ spec:
     name: tempo-gateway
   - image: quay.io/observatorium/opa-openshift:main-2024-04-29-914c13f
     name: tempo-gateway-opa
+  - image: quay.io/openshift/origin-oauth-proxy:4.12
+    name: oauth-proxy
   version: 0.10.0
   webhookdefinitions:
   - admissionReviewVersions:

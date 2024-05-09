@@ -48,6 +48,11 @@ const (
 	// PortJaegerUI declares the port number of the Jaeger UI HTTP port.
 	PortJaegerUI = 16686
 
+	// OAuthProxyPortName declares the name of the Jaeger UI oauth proxy HTTP port.
+	OAuthProxyPortName = "oauth-proxy"
+	// OAuthProxyPort declares the port number of the Jaeger UI oauth proxy HTTP port.
+	OAuthProxyPort = 8443
+
 	// JaegerGRPCQuery declares the name of the Jaeger UI gPRC port.
 	JaegerGRPCQuery = "jaeger-grpc"
 	// PortJaegerGRPCQuery declares the port number of the Jaeger UI gPRC port.
@@ -121,6 +126,10 @@ const (
 	DistributorComponentName = "distributor"
 	// QueryFrontendComponentName declares the internal name of the query-frontend component.
 	QueryFrontendComponentName = "query-frontend"
+
+	// QueryFrontendOauthProxyComponentName declares the internal name of the query-frontend-proxy component.
+	QueryFrontendOauthProxyComponentName = "query-frontend-proxy"
+
 	// IngesterComponentName declares the internal name of the ingester component.
 	IngesterComponentName = "ingester"
 	// GatewayComponentName declares the internal name of the gateway component.

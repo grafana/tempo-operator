@@ -9,6 +9,7 @@ spec:                                    # TempoStackSpec defines the desired st
     memberlist:                          # MemberList configuration spec
       enableIPv6: false                  # EnableIPv6 enables IPv6 support for the memberlist based hash ring.
   images:                                # Images defines the image for each container.
+    oauthProxy: ""                       # OauthProxy defines the oauth proxy image used to protect the jaegerUI on single tenant.
     tempo: ""                            # Tempo defines the tempo container image.
     tempoGateway: ""                     # TempoGateway defines the tempo-gateway container image.
     tempoGatewayOpa: ""                  # TempoGatewayOpa defines the OPA sidecar container for TempoGateway.
@@ -172,6 +173,9 @@ spec:                                    # TempoStackSpec defines the desired st
         tolerations: {}                  # Tolerations defines component-specific pod tolerations.
       jaegerQuery:                       # JaegerQuery defines options specific to the Jaeger Query component.
         enabled: false                   # Enabled defines if the Jaeger Query component should be created.
+        authentication:                  # Oauth defines the options for the oauth proxy used to protect jaeger UI
+          enabled: false                 # Defines if the authentication will be enabled for jaeger UI.
+          sar: ""                        # SAR defines the SAR to be used in the oauth-proxy default is "{"namespace": "<tempo_stack_namespace>", "resource": "pods", "verb": "get"}
         ingress:                         # Ingress defines the options for the Jaeger Query ingress.
           annotations: {}                # Annotations defines the annotations of the Ingress object.
           host: ""                       # Host defines the hostname of the Ingress object.

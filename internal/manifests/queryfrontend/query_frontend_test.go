@@ -313,14 +313,14 @@ func TestBuildQueryFrontend(t *testing.T) {
 	require.Equal(t, 3, len(objects))
 
 	// Test the services
-	frontendService := objects[1].(*corev1.Service)
+	frontendService := objects[0].(*corev1.Service)
 	expectedFrontEndService := getExpectedFrontEndService(false)
-	frontEndDiscoveryService := objects[2].(*corev1.Service)
+	frontEndDiscoveryService := objects[1].(*corev1.Service)
 	expectedFrontendDiscoveryService := getExpectedFrontendDiscoveryService(false)
 	assert.Equal(t, expectedFrontendDiscoveryService, frontEndDiscoveryService)
 	assert.Equal(t, expectedFrontEndService, frontendService)
 
-	deployment := objects[0].(*v1.Deployment)
+	deployment := objects[2].(*v1.Deployment)
 	expectedDeployment := getExpectedDeployment(false)
 	assert.Equal(t, expectedDeployment, deployment)
 }
@@ -369,16 +369,16 @@ func TestBuildQueryFrontendWithJaeger(t *testing.T) {
 	require.Equal(t, 3, len(objects))
 
 	// Test the services
-	frontendService := objects[1].(*corev1.Service)
+	frontendService := objects[0].(*corev1.Service)
 
 	expectedFrontEndService := getExpectedFrontEndService(withJaeger)
 	assert.Equal(t, expectedFrontEndService, frontendService)
 
-	frontEndDiscoveryService := objects[2].(*corev1.Service)
+	frontEndDiscoveryService := objects[1].(*corev1.Service)
 	expectedFrontendDiscoveryService := getExpectedFrontendDiscoveryService(withJaeger)
 	assert.Equal(t, expectedFrontendDiscoveryService, frontEndDiscoveryService)
 
-	deployment := objects[0].(*v1.Deployment)
+	deployment := objects[2].(*v1.Deployment)
 	expectedDeployment := getExpectedDeployment(withJaeger)
 	assert.Equal(t, expectedDeployment, deployment)
 }
@@ -444,7 +444,7 @@ func TestQueryFrontendJaegerIngress(t *testing.T) {
 				},
 			},
 		},
-	}, objects[3].(*networkingv1.Ingress))
+	}, objects[2].(*networkingv1.Ingress))
 }
 
 func TestQueryFrontendJaegerRoute(t *testing.T) {
@@ -490,7 +490,7 @@ func TestQueryFrontendJaegerRoute(t *testing.T) {
 				Termination: routev1.TLSTerminationEdge,
 			},
 		},
-	}, objects[3].(*routev1.Route))
+	}, objects[2].(*routev1.Route))
 }
 
 func TestQueryFrontendJaegerTLS(t *testing.T) {
@@ -522,7 +522,7 @@ func TestQueryFrontendJaegerTLS(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Equal(t, 3, len(objects))
-	deployment := objects[0].(*v1.Deployment)
+	deployment := objects[2].(*v1.Deployment)
 	require.Len(t, deployment.Spec.Template.Spec.Containers, 2)
 	jaegerContainer := deployment.Spec.Template.Spec.Containers[1]
 	args := jaegerContainer.Args
@@ -674,7 +674,107 @@ func TestOverrideResources(t *testing.T) {
 	}})
 
 	require.NoError(t, err)
-	deployment, ok := objects[0].(*v1.Deployment)
+	deployment, ok := objects[2].(*v1.Deployment)
 	require.True(t, ok)
 	assert.Equal(t, deployment.Spec.Template.Spec.Containers[0].Resources, overrideResources)
+}
+
+func TestQueryFrontendJaegerRouteSecured(t *testing.T) {
+	objects, err := BuildQueryFrontend(manifestutils.Params{Tempo: v1alpha1.TempoStack{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test",
+			Namespace: "project1",
+		},
+		Spec: v1alpha1.TempoStackSpec{
+			Template: v1alpha1.TempoTemplateSpec{
+				QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+					JaegerQuery: v1alpha1.JaegerQuerySpec{
+						Enabled: true,
+						Oauth: v1alpha1.JaegerQueryAuthenticationSpec{
+							Enabled: ptr.To(true),
+						},
+						Ingress: v1alpha1.IngressSpec{
+							Type: v1alpha1.IngressTypeRoute,
+							Route: v1alpha1.RouteSpec{
+								Termination: v1alpha1.TLSRouteTerminationTypeEdge,
+							},
+						},
+					},
+				},
+			},
+		},
+	}})
+
+	require.NoError(t, err)
+	require.Equal(t, 6, len(objects))
+	assert.Equal(t, &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      naming.Name(manifestutils.QueryFrontendComponentName, "test"),
+			Namespace: "project1",
+			Labels:    manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, "test"),
+			Annotations: map[string]string{
+				"service.beta.openshift.io/serving-cert-secret-name": getTLSSecretNameForFrontendService("test"),
+			},
+		},
+		Spec: corev1.ServiceSpec{
+			Ports: []corev1.ServicePort{
+				{
+					Name:       manifestutils.HttpPortName,
+					Port:       manifestutils.PortHTTPServer,
+					TargetPort: intstr.FromString(manifestutils.HttpPortName),
+				},
+				{
+					Name:       manifestutils.GrpcPortName,
+					Protocol:   corev1.ProtocolTCP,
+					Port:       manifestutils.PortGRPCServer,
+					TargetPort: intstr.FromString(manifestutils.GrpcPortName),
+				},
+				{
+					Name:       manifestutils.JaegerGRPCQuery,
+					Port:       manifestutils.PortJaegerGRPCQuery,
+					TargetPort: intstr.FromString(manifestutils.JaegerGRPCQuery),
+				},
+				{
+					Name:       manifestutils.JaegerUIPortName,
+					Port:       int32(manifestutils.PortJaegerUI),
+					TargetPort: intstr.FromString(manifestutils.JaegerUIPortName),
+				},
+				{
+					Name:       manifestutils.JaegerMetricsPortName,
+					Port:       manifestutils.PortJaegerMetrics,
+					TargetPort: intstr.FromString(manifestutils.JaegerMetricsPortName),
+				},
+				{
+					Name:       manifestutils.OAuthProxyPortName,
+					Port:       manifestutils.OAuthProxyPort,
+					TargetPort: intstr.FromString(manifestutils.OAuthProxyPortName),
+				},
+			},
+			Selector: manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, "test"),
+		},
+	}, objects[0].(*corev1.Service))
+
+	assert.Equal(t, "tempo-test-query-frontend", objects[2].(*corev1.ServiceAccount).Name)
+
+	assert.Equal(t, "tempo-test-cookie-proxy", objects[3].(*corev1.Secret).Name)
+
+	assert.Equal(t, &routev1.Route{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      naming.Name(manifestutils.QueryFrontendComponentName, "test"),
+			Namespace: "project1",
+			Labels:    manifestutils.ComponentLabels("query-frontend", "test"),
+		},
+		Spec: routev1.RouteSpec{
+			To: routev1.RouteTargetReference{
+				Kind: "Service",
+				Name: naming.Name(manifestutils.QueryFrontendComponentName, "test"),
+			},
+			Port: &routev1.RoutePort{
+				TargetPort: intstr.FromString(manifestutils.OAuthProxyPortName),
+			},
+			TLS: &routev1.TLSConfig{
+				Termination: routev1.TLSTerminationReencrypt,
+			},
+		},
+	}, objects[4].(*routev1.Route))
 }
