@@ -690,7 +690,7 @@ func TestQueryFrontendJaegerRouteSecured(t *testing.T) {
 				QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
 					JaegerQuery: v1alpha1.JaegerQuerySpec{
 						Enabled: true,
-						Oauth: v1alpha1.JaegerQueryAuthenticationSpec{
+						Authentication: v1alpha1.JaegerQueryAuthenticationSpec{
 							Enabled: ptr.To(true),
 						},
 						Ingress: v1alpha1.IngressSpec{
@@ -713,7 +713,7 @@ func TestQueryFrontendJaegerRouteSecured(t *testing.T) {
 			Namespace: "project1",
 			Labels:    manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, "test"),
 			Annotations: map[string]string{
-				"service.beta.openshift.io/serving-cert-secret-name": getTLSSecretNameForFrontendService("test"),
+				"service.beta.openshift.io/serving-cert-secret-name": "test-ui-oauth-proxy-tls",
 			},
 		},
 		Spec: corev1.ServiceSpec{

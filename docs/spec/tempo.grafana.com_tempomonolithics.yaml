@@ -23,6 +23,9 @@ spec:                                    # TempoMonolithicSpec defines the desir
           minVersion: ""                 # MinVersion defines the minimum acceptable TLS version.
   jaegerui:                              # JaegerUI defines the Jaeger UI configuration.
     enabled: false                       # Enabled defines if the Jaeger UI component should be created.
+    authentication:                      # Authentication defines the options for the oauth proxy used to protect jaeger UI
+      enabled: false                     # Defines if the authentication will be enabled for jaeger UI.
+      sar: ""                            # SAR defines the SAR to be used in the oauth-proxy default is "{"namespace": "<tempo_stack_namespace>", "resource": "pods", "verb": "get"}
     ingress:                             # Ingress defines the Ingress configuration for the Jaeger UI.
       enabled: false                     # Enabled defines if an Ingress object should be created for Jaeger UI.
       annotations: {}                    # Annotations defines the annotations of the Ingress object.

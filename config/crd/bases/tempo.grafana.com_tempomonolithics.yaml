@@ -1113,6 +1113,20 @@ spec:
               jaegerui:
                 description: JaegerUI defines the Jaeger UI configuration.
                 properties:
+                  authentication:
+                    description: Authentication defines the options for the oauth
+                      proxy used to protect jaeger UI
+                    properties:
+                      enabled:
+                        description: Defines if the authentication will be enabled
+                          for jaeger UI.
+                        type: boolean
+                      sar:
+                        description: 'SAR defines the SAR to be used in the oauth-proxy
+                          default is "{"namespace": "<tempo_stack_namespace>", "resource":
+                          "pods", "verb": "get"}'
+                        type: string
+                    type: object
                   enabled:
                     description: Enabled defines if the Jaeger UI component should
                       be created.

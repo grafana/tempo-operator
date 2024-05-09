@@ -1,4 +1,4 @@
-package queryfrontend
+package oauthproxy
 
 import (
 	"fmt"
@@ -23,7 +23,6 @@ import (
 
 func TestOauthProxyContainer(t *testing.T) {
 
-	defaultImage := "myrepo/oauth_proxy:1.1"
 	customImage := "custom_image/special_oauth_proxy:99"
 
 	tests := []struct {
@@ -33,8 +32,8 @@ func TestOauthProxyContainer(t *testing.T) {
 		tempo         v1alpha1.TempoStack
 	}{
 		{
-			name:          "default image, no SAR",
-			expectedImage: defaultImage,
+			name:          " no SAR",
+			expectedImage: customImage,
 			expectedArgs: []string{
 				fmt.Sprintf("--cookie-secret-file=%s/%s", oauthProxySecretMountPath, sessionSecretKey),
 				fmt.Sprintf("--https-address=:%d", manifestutils.OAuthProxyPort),
@@ -52,8 +51,8 @@ func TestOauthProxyContainer(t *testing.T) {
 			},
 		},
 		{
-			name:          "default image, SAR defined",
-			expectedImage: defaultImage,
+			name:          "SAR defined",
+			expectedImage: customImage,
 			expectedArgs: []string{
 				fmt.Sprintf("--cookie-secret-file=%s/%s", oauthProxySecretMountPath, sessionSecretKey),
 				fmt.Sprintf("--https-address=:%d", manifestutils.OAuthProxyPort),
@@ -73,37 +72,12 @@ func TestOauthProxyContainer(t *testing.T) {
 					Template: v1alpha1.TempoTemplateSpec{
 						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
 							JaegerQuery: v1alpha1.JaegerQuerySpec{
-								Oauth: v1alpha1.JaegerQueryAuthenticationSpec{
+								Authentication: v1alpha1.JaegerQueryAuthenticationSpec{
 									Enabled: ptr.To(true),
 									SAR:     "{\"namespace\":\"app-dev\",\"resource\":\"services\",\"resourceName\":\"proxy\",\"verb\":\"get\"}",
 								},
 							},
 						},
-					},
-				},
-			},
-		},
-
-		{
-			name:          "set custom image",
-			expectedImage: customImage,
-			expectedArgs: []string{
-				fmt.Sprintf("--cookie-secret-file=%s/%s", oauthProxySecretMountPath, sessionSecretKey),
-				fmt.Sprintf("--https-address=:%d", manifestutils.OAuthProxyPort),
-				fmt.Sprintf("--openshift-service-account=%s", naming.Name(manifestutils.QueryFrontendComponentName, "test3")),
-				"--provider=openshift",
-				fmt.Sprintf("--tls-cert=%s/tls.crt", tlsProxyPath),
-				fmt.Sprintf("--tls-key=%s/tls.key", tlsProxyPath),
-				fmt.Sprintf("--upstream=http://localhost:%d", manifestutils.PortJaegerUI),
-			},
-			tempo: v1alpha1.TempoStack{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test3",
-					Namespace: "project1",
-				},
-				Spec: v1alpha1.TempoStackSpec{
-					Images: configv1alpha1.ImagesSpec{
-						OauthProxy: customImage,
 					},
 				},
 			},
@@ -115,12 +89,18 @@ func TestOauthProxyContainer(t *testing.T) {
 			params := manifestutils.Params{
 				CtrlConfig: configv1alpha1.ProjectConfig{
 					DefaultImages: configv1alpha1.ImagesSpec{
-						OauthProxy: defaultImage,
+						OauthProxy: customImage,
 					},
 				},
 			}
 			params.Tempo = test.tempo
-			container := oAuthProxyContainer(params)
+			replicas := int32(1)
+			container := oAuthProxyContainer(params.Tempo.Name,
+				naming.Name(manifestutils.QueryFrontendComponentName, params.Tempo.Name),
+				params.Tempo.Spec.Template.QueryFrontend.JaegerQuery.Authentication,
+				customImage,
+				manifestutils.Resources(test.tempo, manifestutils.QueryFrontendComponentName, &replicas),
+			)
 			expected := corev1.Container{
 				Image: test.expectedImage,
 				Name:  "oauth-proxy",
@@ -138,10 +118,10 @@ func TestOauthProxyContainer(t *testing.T) {
 
 					{
 						MountPath: oauthProxySecretMountPath,
-						Name:      cookieSecretName(test.tempo),
+						Name:      cookieSecretName(test.tempo.Name),
 					},
 				},
-				Resources: resources(test.tempo),
+				Resources: manifestutils.Resources(test.tempo, manifestutils.QueryFrontendComponentName, &replicas),
 				Env:       proxy.ReadProxyVarsFromEnv(),
 				ReadinessProbe: &corev1.Probe{
 					ProbeHandler: corev1.ProbeHandler{
@@ -169,7 +149,7 @@ func TestOAuthProxyServiceAccount(t *testing.T) {
 		},
 	}
 
-	service := oauthServiceAccount(tempo)
+	service := OAuthServiceAccount(tempo.ObjectMeta)
 
 	assert.Equal(t,
 		naming.Name(manifestutils.QueryFrontendComponentName, "testoauthsecret"), service.Name)
@@ -190,7 +170,7 @@ func TestPatchDeploymentForOauthProxy(t *testing.T) {
 			APIVersion: v1.SchemeGroupVersion.String(),
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      naming.Name(manifestutils.QueryFrontendComponentName, "test"),
+			Name:      naming.Name(manifestutils.QueryFrontendComponentName, "tempoi"),
 			Namespace: "project1",
 			Labels:    labels,
 		},
@@ -295,7 +275,15 @@ func TestPatchDeploymentForOauthProxy(t *testing.T) {
 		Tempo: tempo,
 	}
 
-	patchDeploymentForOauthProxy(params, dep)
+	replicas := int32(1)
+
+	PatchDeploymentForOauthProxy(
+		params.Tempo.ObjectMeta,
+		params.CtrlConfig,
+		params.Tempo.Spec.Template.QueryFrontend.JaegerQuery.Authentication,
+		params.Tempo.Spec.Images,
+		manifestutils.Resources(params.Tempo, manifestutils.QueryFrontendComponentName, &replicas),
+		dep)
 
 	assert.Equal(t, 2, len(dep.Spec.Template.Spec.Containers))
 	assert.Equal(t, "oauth-proxy", dep.Spec.Template.Spec.Containers[1].Name)

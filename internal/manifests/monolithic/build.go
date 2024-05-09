@@ -3,11 +3,27 @@ package monolithic
 import (
 	"maps"
 
+	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
+	"github.com/grafana/tempo-operator/internal/manifests/oauthproxy"
 )
+
+func getJaegerUIService(services []client.Object, tempo v1alpha1.TempoMonolithic) *corev1.Service {
+	serviceName := naming.Name(manifestutils.JaegerUIComponentName, tempo.Name)
+	for _, clientObject := range services {
+		svc, ok := clientObject.(*corev1.Service)
+		if ok {
+			if svc.Name == serviceName {
+				return svc
+			}
+		}
+	}
+	return nil
+}
 
 // BuildAll generates all manifests.
 func BuildAll(opts Options) ([]client.Object, error) {
@@ -23,8 +39,12 @@ func BuildAll(opts Options) ([]client.Object, error) {
 	manifests = append(manifests, configMap)
 	maps.Copy(extraStsAnnotations, annotations)
 
+	serviceAccountName := tempo.Spec.ServiceAccount
+	var serviceAccount *corev1.ServiceAccount
 	if tempo.Spec.ServiceAccount == "" {
-		manifests = append(manifests, BuildServiceAccount(opts))
+		serviceAccount = BuildServiceAccount(opts)
+		serviceAccountName = serviceAccount.Name
+		manifests = append(manifests, serviceAccount)
 	}
 
 	if tempo.Spec.Multitenancy.IsGatewayEnabled() {
@@ -43,7 +63,8 @@ func BuildAll(opts Options) ([]client.Object, error) {
 	}
 
 	manifests = append(manifests, statefulSet)
-	manifests = append(manifests, BuildServices(opts)...)
+	services := BuildServices(opts)
+	manifests = append(manifests, services...)
 
 	if opts.CtrlConfig.Gates.OpenShift.ServingCertsService {
 		manifests = append(manifests, manifestutils.NewConfigMapCABundle(
@@ -64,6 +85,24 @@ func BuildAll(opts Options) ([]client.Object, error) {
 				return nil, err
 			}
 			manifests = append(manifests, route)
+			if tempo.Spec.JaegerUI.Authentication.Enabled != nil && *tempo.Spec.JaegerUI.Authentication.Enabled {
+				oauthproxy.PatchStatefulSetForOauthProxy(
+					tempo.ObjectMeta,
+					serviceAccountName,
+					tempo.Spec.JaegerUI.Authentication,
+					opts.CtrlConfig,
+					statefulSet)
+				oauthproxy.PatchQueryFrontEndService(getJaegerUIService(services, tempo), tempo.Name)
+				if serviceAccount != nil {
+					oauthproxy.AddServiceAccountAnnotations(serviceAccount, route.Name)
+				}
+				secret, err := oauthproxy.OAuthCookieSessionSecret(tempo.ObjectMeta)
+				oauthproxy.PatchRouteForOauthProxy(route)
+				if err != nil {
+					return nil, err
+				}
+				manifests = append(manifests, secret)
+			}
 		}
 	}
 

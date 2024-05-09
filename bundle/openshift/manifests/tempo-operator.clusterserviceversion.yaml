@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.10.0
-    createdAt: "2024-05-08T05:42:24Z"
+    createdAt: "2024-05-09T06:41:05Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -281,6 +281,17 @@ spec:
       - description: MinVersion defines the minimum acceptable TLS version.
         displayName: Min TLS Version
         path: ingestion.otlp.http.tls.minVersion
+      - description: Authentication defines the options for the oauth proxy used to
+          protect jaeger UI
+        displayName: Jaeger UI authentication configuration
+        path: jaegerui.authentication
+      - description: Defines if the authentication will be enabled for jaeger UI.
+        displayName: Type
+        path: jaegerui.authentication.enabled
+      - description: 'SAR defines the SAR to be used in the oauth-proxy default is
+          "{"namespace": "<tempo_stack_namespace>", "resource": "pods", "verb": "get"}'
+        displayName: SAR
+        path: jaegerui.authentication.sar
       - description: Annotations defines the annotations of the Ingress object.
         displayName: Annotations
         path: jaegerui.ingress.annotations
@@ -921,8 +932,8 @@ spec:
       - description: JaegerQuery defines options specific to the Jaeger Query component.
         displayName: Jaeger Query Settings
         path: template.queryFrontend.jaegerQuery
-      - description: Oauth defines the options for the oauth proxy used to protect
-          jaeger UI
+      - description: Authentication defines the options for the oauth proxy used to
+          protect jaeger UI
         displayName: Jaeger UI authentication configuration
         path: template.queryFrontend.jaegerQuery.authentication
       - description: Defines if the authentication will be enabled for jaeger UI.

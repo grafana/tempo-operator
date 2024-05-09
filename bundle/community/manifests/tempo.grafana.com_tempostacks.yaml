@@ -1220,8 +1220,8 @@ spec:
                           Query component.
                         properties:
                           authentication:
-                            description: Oauth defines the options for the oauth proxy
-                              used to protect jaeger UI
+                            description: Authentication defines the options for the
+                              oauth proxy used to protect jaeger UI
                             properties:
                               enabled:
                                 description: Defines if the authentication will be

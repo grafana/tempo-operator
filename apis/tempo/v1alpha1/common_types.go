@@ -46,3 +46,21 @@ type ExtraConfigSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tempo Extra Configurations"
 	Tempo apiextensionsv1.JSON `json:"tempo,omitempty"`
 }
+
+// JaegerQueryAuthenticationSpec defines options applied to proxy sidecar that controls the authentication of the jaeger UI.
+type JaegerQueryAuthenticationSpec struct {
+	// Defines if the authentication will be enabled for jaeger UI.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Type"
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// SAR defines the SAR to be used in the oauth-proxy
+	// default is "{"namespace": "<tempo_stack_namespace>", "resource": "pods", "verb": "get"}
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="SAR"
+	SAR string `json:"sar,omitempty"`
+}

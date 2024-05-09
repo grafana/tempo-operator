@@ -173,7 +173,7 @@ spec:                                    # TempoStackSpec defines the desired st
         tolerations: {}                  # Tolerations defines component-specific pod tolerations.
       jaegerQuery:                       # JaegerQuery defines options specific to the Jaeger Query component.
         enabled: false                   # Enabled defines if the Jaeger Query component should be created.
-        authentication:                  # Oauth defines the options for the oauth proxy used to protect jaeger UI
+        authentication:                  # Authentication defines the options for the oauth proxy used to protect jaeger UI
           enabled: false                 # Defines if the authentication will be enabled for jaeger UI.
           sar: ""                        # SAR defines the SAR to be used in the oauth-proxy default is "{"namespace": "<tempo_stack_namespace>", "resource": "pods", "verb": "get"}
         ingress:                         # Ingress defines the options for the Jaeger Query ingress.
