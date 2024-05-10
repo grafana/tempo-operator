@@ -243,7 +243,7 @@ type MonolithicJaegerUISpec struct {
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger UI authentication configuration",order=5
-	Authentication JaegerQueryAuthenticationSpec `json:"authentication,omitempty"`
+	Authentication *JaegerQueryAuthenticationSpec `json:"authentication,omitempty"`
 }
 
 // MonolithicJaegerUIIngressSpec defines the settings for the Jaeger UI ingress.
