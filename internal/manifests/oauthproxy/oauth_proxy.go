@@ -105,9 +105,8 @@ func PatchStatefulSetForOauthProxy(tempo metav1.ObjectMeta, serviceAccountName s
 		},
 	})
 
-	// TODO: Set the resources for the proxy
 	statefulSet.Spec.Template.Spec.Containers = append(statefulSet.Spec.Template.Spec.Containers,
-		oAuthProxyContainer(tempo.Name, serviceAccountName, authSpec, config.DefaultImages.OauthProxy, corev1.ResourceRequirements{}))
+		oAuthProxyContainer(tempo.Name, serviceAccountName, authSpec, config.DefaultImages.OauthProxy))
 }
 
 // PatchDeploymentForOauthProxy returns a modified deployment with the oauth sidecar container and the right service account.
@@ -116,7 +115,6 @@ func PatchDeploymentForOauthProxy(
 	config configv1alpha1.ProjectConfig,
 	authSpec v1alpha1.JaegerQueryAuthenticationSpec,
 	imageSpec configv1alpha1.ImagesSpec,
-	resources corev1.ResourceRequirements,
 	dep *v1.Deployment) {
 	dep.Spec.Template.Spec.Volumes = append(dep.Spec.Template.Spec.Volumes, corev1.Volume{
 		Name: getTLSSecretNameForFrontendService(tempo.Name),
@@ -136,7 +134,7 @@ func PatchDeploymentForOauthProxy(
 
 	dep.Spec.Template.Spec.Containers = append(dep.Spec.Template.Spec.Containers,
 		oAuthProxyContainer(tempo.Name, naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name),
-			&authSpec, oauthProxyImage, resources))
+			&authSpec, oauthProxyImage))
 
 	dep.Spec.Template.Spec.Volumes = append(dep.Spec.Template.Spec.Volumes, corev1.Volume{
 		Name: cookieSecretName(tempo.Name),
@@ -173,12 +171,16 @@ func oAuthProxyContainer(
 	serviceAccountName string,
 	authSpec *v1alpha1.JaegerQueryAuthenticationSpec,
 	oauthProxyImage string,
-	resources corev1.ResourceRequirements,
 ) corev1.Container {
 	args := proxyInitArguments(serviceAccountName)
 
 	if len(strings.TrimSpace(authSpec.SAR)) > 0 {
 		args = append(args, fmt.Sprintf("--openshift-sar=%s", authSpec.SAR))
+	}
+
+	resources := authSpec.Resources
+	if resources == nil {
+		resources = &corev1.ResourceRequirements{}
 	}
 
 	return corev1.Container{
@@ -201,7 +203,7 @@ func oAuthProxyContainer(
 				Name:      cookieSecretName(tempo),
 			},
 		},
-		Resources: resources,
+		Resources: *resources,
 		Env:       proxy.ReadProxyVarsFromEnv(),
 		ReadinessProbe: &corev1.Probe{
 			ProbeHandler: corev1.ProbeHandler{

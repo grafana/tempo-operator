@@ -79,8 +79,7 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 				oauthproxy.PatchDeploymentForOauthProxy(
 					tempo.ObjectMeta, params.CtrlConfig,
 					tempo.Spec.Template.QueryFrontend.JaegerQuery.Authentication,
-					tempo.Spec.Images,
-					tempoQueryResources(tempo), d)
+					tempo.Spec.Images, d)
 
 				oauthproxy.PatchQueryFrontEndService(getQueryFrontendService(tempo, svcs), tempo.Name)
 				secret, err := oauthproxy.OAuthCookieSessionSecret(tempo.ObjectMeta)

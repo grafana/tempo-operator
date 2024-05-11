@@ -99,7 +99,6 @@ func TestOauthProxyContainer(t *testing.T) {
 				naming.Name(manifestutils.QueryFrontendComponentName, params.Tempo.Name),
 				&params.Tempo.Spec.Template.QueryFrontend.JaegerQuery.Authentication,
 				customImage,
-				manifestutils.Resources(test.tempo, manifestutils.QueryFrontendComponentName, &replicas),
 			)
 			expected := corev1.Container{
 				Image: test.expectedImage,
@@ -275,14 +274,11 @@ func TestPatchDeploymentForOauthProxy(t *testing.T) {
 		Tempo: tempo,
 	}
 
-	replicas := int32(1)
-
 	PatchDeploymentForOauthProxy(
 		params.Tempo.ObjectMeta,
 		params.CtrlConfig,
 		params.Tempo.Spec.Template.QueryFrontend.JaegerQuery.Authentication,
 		params.Tempo.Spec.Images,
-		manifestutils.Resources(params.Tempo, manifestutils.QueryFrontendComponentName, &replicas),
 		dep)
 
 	assert.Equal(t, 2, len(dep.Spec.Template.Spec.Containers))
