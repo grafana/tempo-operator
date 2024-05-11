@@ -73,7 +73,7 @@ func (r *TempoMonolithic) Default(ctrlConfig configv1alpha1.ProjectConfig) {
 			}
 		}
 
-		if r.Spec.JaegerUI.Authentication.Enabled != nil && *r.Spec.JaegerUI.Authentication.Enabled {
+		if r.Spec.JaegerUI.Authentication != nil && r.Spec.JaegerUI.Authentication.Enabled != nil && *r.Spec.JaegerUI.Authentication.Enabled {
 			if len(strings.TrimSpace(r.Spec.JaegerUI.Authentication.SAR)) == 0 {
 				defaultSAR := fmt.Sprintf("{\"namespace\": \"%s\", \"resource\": \"pods\", \"verb\": \"get\"}", r.Namespace)
 				r.Spec.JaegerUI.Authentication.SAR = defaultSAR

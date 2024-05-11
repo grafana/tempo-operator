@@ -143,6 +143,10 @@ spec:
           Tempo deployment.
         displayName: Observability
         path: observability
+      - description: Authentication defines the options for the oauth proxy used to
+          protect jaeger UI
+        displayName: Jaeger UI authentication configuration
+        path: jaegerui.authentication
       - description: Resources defines the compute resource requirements of the Tempo
           container.
         displayName: Resources
@@ -210,13 +214,16 @@ spec:
       - description: MinVersion defines the minimum acceptable TLS version.
         displayName: Min TLS Version
         path: ingestion.otlp.http.tls.minVersion
-      - description: Authentication defines the options for the oauth proxy used to
-          protect jaeger UI
-        displayName: Jaeger UI authentication configuration
-        path: jaegerui.authentication
       - description: Defines if the authentication will be enabled for jaeger UI.
         displayName: Type
         path: jaegerui.authentication.enabled
+      - description: Resources defines the compute resource requirements of the OAuth
+          Proxy container. The OAuth Proxy performs authentication and authorization
+          of incoming requests to Jaeger UI when multi-tenancy is disabled.
+        displayName: Resources
+        path: jaegerui.authentication.resources
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:resourceRequirements
       - description: 'SAR defines the SAR to be used in the oauth-proxy default is
           "{"namespace": "<tempo_stack_namespace>", "resource": "pods", "verb": "get"}'
         displayName: SAR
@@ -868,6 +875,13 @@ spec:
       - description: Defines if the authentication will be enabled for jaeger UI.
         displayName: Type
         path: template.queryFrontend.jaegerQuery.authentication.enabled
+      - description: Resources defines the compute resource requirements of the OAuth
+          Proxy container. The OAuth Proxy performs authentication and authorization
+          of incoming requests to Jaeger UI when multi-tenancy is disabled.
+        displayName: Resources
+        path: template.queryFrontend.jaegerQuery.authentication.resources
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:resourceRequirements
       - description: 'SAR defines the SAR to be used in the oauth-proxy default is
           "{"namespace": "<tempo_stack_namespace>", "resource": "pods", "verb": "get"}'
         displayName: SAR

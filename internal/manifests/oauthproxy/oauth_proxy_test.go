@@ -97,7 +97,7 @@ func TestOauthProxyContainer(t *testing.T) {
 			replicas := int32(1)
 			container := oAuthProxyContainer(params.Tempo.Name,
 				naming.Name(manifestutils.QueryFrontendComponentName, params.Tempo.Name),
-				params.Tempo.Spec.Template.QueryFrontend.JaegerQuery.Authentication,
+				&params.Tempo.Spec.Template.QueryFrontend.JaegerQuery.Authentication,
 				customImage,
 				manifestutils.Resources(test.tempo, manifestutils.QueryFrontendComponentName, &replicas),
 			)

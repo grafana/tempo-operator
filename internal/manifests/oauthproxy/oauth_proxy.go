@@ -85,7 +85,7 @@ func OAuthCookieSessionSecret(tempo metav1.ObjectMeta) (*corev1.Secret, error) {
 
 // PatchStatefulSetForOauthProxy returns a modified StatefulSet with the oauth sidecar container and the right service account.
 func PatchStatefulSetForOauthProxy(tempo metav1.ObjectMeta, serviceAccountName string,
-	authSpec v1alpha1.JaegerQueryAuthenticationSpec,
+	authSpec *v1alpha1.JaegerQueryAuthenticationSpec,
 	config configv1alpha1.ProjectConfig, statefulSet *v1.StatefulSet) {
 	statefulSet.Spec.Template.Spec.Volumes = append(statefulSet.Spec.Template.Spec.Volumes, corev1.Volume{
 		Name: getTLSSecretNameForFrontendService(tempo.Name),
@@ -136,7 +136,7 @@ func PatchDeploymentForOauthProxy(
 
 	dep.Spec.Template.Spec.Containers = append(dep.Spec.Template.Spec.Containers,
 		oAuthProxyContainer(tempo.Name, naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name),
-			authSpec, oauthProxyImage, resources))
+			&authSpec, oauthProxyImage, resources))
 
 	dep.Spec.Template.Spec.Volumes = append(dep.Spec.Template.Spec.Volumes, corev1.Volume{
 		Name: cookieSecretName(tempo.Name),
@@ -171,7 +171,7 @@ func proxyInitArguments(serviceAccountName string) []string {
 func oAuthProxyContainer(
 	tempo string,
 	serviceAccountName string,
-	authSpec v1alpha1.JaegerQueryAuthenticationSpec,
+	authSpec *v1alpha1.JaegerQueryAuthenticationSpec,
 	oauthProxyImage string,
 	resources corev1.ResourceRequirements,
 ) corev1.Container {

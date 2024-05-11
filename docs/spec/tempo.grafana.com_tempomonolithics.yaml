@@ -26,6 +26,15 @@ spec:                                    # TempoMonolithicSpec defines the desir
     authentication:                      # Authentication defines the options for the oauth proxy used to protect jaeger UI
       enabled: false                     # Defines if the authentication will be enabled for jaeger UI.
       sar: ""                            # SAR defines the SAR to be used in the oauth-proxy default is "{"namespace": "<tempo_stack_namespace>", "resource": "pods", "verb": "get"}
+      resources:                         # Resources defines the compute resource requirements of the OAuth Proxy container. The OAuth Proxy performs authentication and authorization of incoming requests to Jaeger UI when multi-tenancy is disabled.
+        claims:                          # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.   This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.   This field is immutable. It can only be set for containers.
+        - name: ""                       # Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.
+        limits:                          # Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+          cpu: "750m"
+          memory: "2Gi"
+        requests:                        # Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. Requests cannot exceed Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+          cpu: "500m"
+          memory: "1Gi"
     ingress:                             # Ingress defines the Ingress configuration for the Jaeger UI.
       enabled: false                     # Enabled defines if an Ingress object should be created for Jaeger UI.
       annotations: {}                    # Annotations defines the annotations of the Ingress object.
