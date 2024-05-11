@@ -67,18 +67,20 @@ func (r *TempoMonolithic) Default(ctrlConfig configv1alpha1.ProjectConfig) {
 			}
 		}
 
-		if ctrlConfig.Gates.OpenShift.OauthProxy.DefaultEnabled && r.Spec.JaegerUI.Authentication.Enabled == nil {
-			if r.Spec.JaegerUI.Enabled && r.Spec.JaegerUI.Route != nil {
-				r.Spec.JaegerUI.Authentication.Enabled = ptr.To(true)
+		if r.Spec.JaegerUI.Authentication != nil {
+			if r.Spec.JaegerUI.Authentication.Enabled == nil {
+				r.Spec.JaegerUI.Authentication.Enabled = ptr.To(ctrlConfig.Gates.OpenShift.OauthProxy.DefaultEnabled)
+			}
+		} else {
+			r.Spec.JaegerUI.Authentication = &JaegerQueryAuthenticationSpec{
+				Enabled: ptr.To(ctrlConfig.Gates.OpenShift.OauthProxy.DefaultEnabled),
 			}
 		}
 
-		if r.Spec.JaegerUI.Authentication != nil && r.Spec.JaegerUI.Authentication.Enabled != nil && *r.Spec.JaegerUI.Authentication.Enabled {
-			if len(strings.TrimSpace(r.Spec.JaegerUI.Authentication.SAR)) == 0 {
-				defaultSAR := fmt.Sprintf("{\"namespace\": \"%s\", \"resource\": \"pods\", \"verb\": \"get\"}", r.Namespace)
-				r.Spec.JaegerUI.Authentication.SAR = defaultSAR
-
-			}
+		if len(strings.TrimSpace(r.Spec.JaegerUI.Authentication.SAR)) == 0 {
+			defaultSAR := fmt.Sprintf("{\"namespace\": \"%s\", \"resource\": \"pods\", \"verb\": \"get\"}", r.Namespace)
+			r.Spec.JaegerUI.Authentication.SAR = defaultSAR
 		}
+
 	}
 }
