@@ -149,13 +149,15 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 		r.Spec.Template.QueryFrontend.JaegerQuery.ServicesQueryDuration = &defaultServicesDuration
 	}
 
-	if d.ctrlConfig.Gates.OpenShift.OauthProxy.DefaultEnabled && r.Spec.Template.QueryFrontend.JaegerQuery.Authentication.Enabled == nil {
-		if r.Spec.Template.QueryFrontend.JaegerQuery.Enabled && r.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type == v1alpha1.IngressTypeRoute {
-			r.Spec.Template.QueryFrontend.JaegerQuery.Authentication.Enabled = ptr.To(true)
+	if d.ctrlConfig.Gates.OpenShift.OauthProxy.DefaultEnabled {
+		if r.Spec.Template.QueryFrontend.JaegerQuery.Authentication == nil && r.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type == v1alpha1.IngressTypeRoute {
+			r.Spec.Template.QueryFrontend.JaegerQuery.Authentication = &v1alpha1.JaegerQueryAuthenticationSpec{
+				Enabled: true,
+			}
 		}
 	}
 
-	if r.Spec.Template.QueryFrontend.JaegerQuery.Authentication.Enabled != nil && *r.Spec.Template.QueryFrontend.JaegerQuery.Authentication.Enabled {
+	if r.Spec.Template.QueryFrontend.JaegerQuery.Authentication != nil && r.Spec.Template.QueryFrontend.JaegerQuery.Authentication.Enabled {
 		if len(strings.TrimSpace(r.Spec.Template.QueryFrontend.JaegerQuery.Authentication.SAR)) == 0 {
 			defaultSAR := fmt.Sprintf("{\"namespace\": \"%s\", \"resource\": \"pods\", \"verb\": \"get\"}", r.Namespace)
 			r.Spec.Template.QueryFrontend.JaegerQuery.Authentication.SAR = defaultSAR

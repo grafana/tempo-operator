@@ -58,6 +58,7 @@ func (r *TempoMonolithic) Default(ctrlConfig configv1alpha1.ProjectConfig) {
 	}
 	if r.Spec.JaegerUI != nil && r.Spec.JaegerUI.Enabled &&
 		r.Spec.JaegerUI.Route != nil && r.Spec.JaegerUI.Route.Enabled {
+
 		if r.Spec.JaegerUI.Route.Termination == "" {
 			if r.Spec.Multitenancy.IsGatewayEnabled() && ctrlConfig.Gates.OpenShift.ServingCertsService {
 				// gateway uses TLS
@@ -67,13 +68,9 @@ func (r *TempoMonolithic) Default(ctrlConfig configv1alpha1.ProjectConfig) {
 			}
 		}
 
-		if r.Spec.JaegerUI.Authentication != nil {
-			if r.Spec.JaegerUI.Authentication.Enabled == nil {
-				r.Spec.JaegerUI.Authentication.Enabled = ptr.To(ctrlConfig.Gates.OpenShift.OauthProxy.DefaultEnabled)
-			}
-		} else {
+		if r.Spec.JaegerUI.Authentication == nil {
 			r.Spec.JaegerUI.Authentication = &JaegerQueryAuthenticationSpec{
-				Enabled: ptr.To(ctrlConfig.Gates.OpenShift.OauthProxy.DefaultEnabled),
+				Enabled: ctrlConfig.Gates.OpenShift.OauthProxy.DefaultEnabled,
 			}
 		}
 

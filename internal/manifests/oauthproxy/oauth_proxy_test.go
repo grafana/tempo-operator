@@ -48,6 +48,17 @@ func TestOauthProxyContainer(t *testing.T) {
 					Name:      "test",
 					Namespace: "project1",
 				},
+				Spec: v1alpha1.TempoStackSpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+							JaegerQuery: v1alpha1.JaegerQuerySpec{
+								Authentication: &v1alpha1.JaegerQueryAuthenticationSpec{
+									Enabled: true,
+								},
+							},
+						},
+					},
+				},
 			},
 		},
 		{
@@ -72,8 +83,8 @@ func TestOauthProxyContainer(t *testing.T) {
 					Template: v1alpha1.TempoTemplateSpec{
 						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
 							JaegerQuery: v1alpha1.JaegerQuerySpec{
-								Authentication: v1alpha1.JaegerQueryAuthenticationSpec{
-									Enabled: ptr.To(true),
+								Authentication: &v1alpha1.JaegerQueryAuthenticationSpec{
+									Enabled: true,
 									SAR:     "{\"namespace\":\"app-dev\",\"resource\":\"services\",\"resourceName\":\"proxy\",\"verb\":\"get\"}",
 								},
 							},
@@ -97,7 +108,7 @@ func TestOauthProxyContainer(t *testing.T) {
 			replicas := int32(1)
 			container := oAuthProxyContainer(params.Tempo.Name,
 				naming.Name(manifestutils.QueryFrontendComponentName, params.Tempo.Name),
-				&params.Tempo.Spec.Template.QueryFrontend.JaegerQuery.Authentication,
+				params.Tempo.Spec.Template.QueryFrontend.JaegerQuery.Authentication,
 				customImage,
 			)
 			expected := corev1.Container{
@@ -145,6 +156,17 @@ func TestOAuthProxyServiceAccount(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "testoauthsecret",
 			Namespace: "project1",
+		},
+		Spec: v1alpha1.TempoStackSpec{
+			Template: v1alpha1.TempoTemplateSpec{
+				QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+					JaegerQuery: v1alpha1.JaegerQuerySpec{
+						Authentication: &v1alpha1.JaegerQueryAuthenticationSpec{
+							Enabled: true,
+						},
+					},
+				},
+			},
 		},
 	}
 
@@ -262,7 +284,17 @@ func TestPatchDeploymentForOauthProxy(t *testing.T) {
 			Name:      "test3",
 			Namespace: "project1",
 		},
-		Spec: v1alpha1.TempoStackSpec{},
+		Spec: v1alpha1.TempoStackSpec{
+			Template: v1alpha1.TempoTemplateSpec{
+				QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+					JaegerQuery: v1alpha1.JaegerQuerySpec{
+						Authentication: &v1alpha1.JaegerQueryAuthenticationSpec{
+							Enabled: true,
+						},
+					},
+				},
+			},
+		},
 	}
 
 	params := manifestutils.Params{

@@ -53,8 +53,8 @@ type JaegerQueryAuthenticationSpec struct {
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Type"
-	Enabled *bool `json:"enabled,omitempty"`
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enabled",order=1,xDescriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
+	Enabled bool `json:"enabled"`
 
 	// SAR defines the SAR to be used in the oauth-proxy
 	// default is "{"namespace": "<tempo_stack_namespace>", "resource": "pods", "verb": "get"}

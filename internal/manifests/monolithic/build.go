@@ -85,7 +85,7 @@ func BuildAll(opts Options) ([]client.Object, error) {
 				return nil, err
 			}
 			manifests = append(manifests, route)
-			if tempo.Spec.JaegerUI.Authentication.Enabled != nil && *tempo.Spec.JaegerUI.Authentication.Enabled {
+			if tempo.Spec.JaegerUI.Authentication.Enabled {
 				oauthproxy.PatchStatefulSetForOauthProxy(
 					tempo.ObjectMeta,
 					serviceAccountName,

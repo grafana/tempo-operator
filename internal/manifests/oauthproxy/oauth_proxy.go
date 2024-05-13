@@ -113,7 +113,7 @@ func PatchStatefulSetForOauthProxy(tempo metav1.ObjectMeta, serviceAccountName s
 func PatchDeploymentForOauthProxy(
 	tempo metav1.ObjectMeta,
 	config configv1alpha1.ProjectConfig,
-	authSpec v1alpha1.JaegerQueryAuthenticationSpec,
+	authSpec *v1alpha1.JaegerQueryAuthenticationSpec,
 	imageSpec configv1alpha1.ImagesSpec,
 	dep *v1.Deployment) {
 	dep.Spec.Template.Spec.Volumes = append(dep.Spec.Template.Spec.Volumes, corev1.Volume{
@@ -134,7 +134,7 @@ func PatchDeploymentForOauthProxy(
 
 	dep.Spec.Template.Spec.Containers = append(dep.Spec.Template.Spec.Containers,
 		oAuthProxyContainer(tempo.Name, naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name),
-			&authSpec, oauthProxyImage))
+			authSpec, oauthProxyImage))
 
 	dep.Spec.Template.Spec.Volumes = append(dep.Spec.Template.Spec.Volumes, corev1.Volume{
 		Name: cookieSecretName(tempo.Name),

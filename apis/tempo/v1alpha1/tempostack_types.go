@@ -603,7 +603,7 @@ type JaegerQuerySpec struct {
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger UI authentication configuration"
-	Authentication JaegerQueryAuthenticationSpec `json:"authentication,omitempty"`
+	Authentication *JaegerQueryAuthenticationSpec `json:"authentication,omitempty"`
 }
 
 // JaegerQueryMonitor defines configuration for the service monitoring tab in the Jaeger console.

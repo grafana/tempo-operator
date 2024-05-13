@@ -74,8 +74,9 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 				return nil, err
 			}
 
-			oauthEnabled := tempo.Spec.Template.QueryFrontend.JaegerQuery.Authentication.Enabled
-			if oauthEnabled != nil && *oauthEnabled {
+			jaegerUIAuthentication := tempo.Spec.Template.QueryFrontend.JaegerQuery.Authentication
+
+			if jaegerUIAuthentication != nil && jaegerUIAuthentication.Enabled {
 				oauthproxy.PatchDeploymentForOauthProxy(
 					tempo.ObjectMeta, params.CtrlConfig,
 					tempo.Spec.Template.QueryFrontend.JaegerQuery.Authentication,

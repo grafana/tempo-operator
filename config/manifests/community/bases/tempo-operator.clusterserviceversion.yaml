@@ -65,6 +65,11 @@ spec:
         path: ingestion.otlp.http.tls.enabled
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
+      - description: Defines if the authentication will be enabled for jaeger UI.
+        displayName: Enabled
+        path: jaegerui.authentication.enabled
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
       - description: Enabled defines if the Jaeger UI component should be created.
         displayName: Enabled
         path: jaegerui.enabled
@@ -214,9 +219,6 @@ spec:
       - description: MinVersion defines the minimum acceptable TLS version.
         displayName: Min TLS Version
         path: ingestion.otlp.http.tls.minVersion
-      - description: Defines if the authentication will be enabled for jaeger UI.
-        displayName: Type
-        path: jaegerui.authentication.enabled
       - description: Resources defines the compute resource requirements of the OAuth
           Proxy container. The OAuth Proxy performs authentication and authorization
           of incoming requests to Jaeger UI when multi-tenancy is disabled.
@@ -459,6 +461,11 @@ spec:
       - description: Enabled defines if TLS is enabled.
         displayName: Enabled
         path: template.distributor.tls.enabled
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
+      - description: Defines if the authentication will be enabled for jaeger UI.
+        displayName: Enabled
+        path: template.queryFrontend.jaegerQuery.authentication.enabled
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
       - displayName: Extra Configurations
@@ -872,9 +879,6 @@ spec:
           protect jaeger UI
         displayName: Jaeger UI authentication configuration
         path: template.queryFrontend.jaegerQuery.authentication
-      - description: Defines if the authentication will be enabled for jaeger UI.
-        displayName: Type
-        path: template.queryFrontend.jaegerQuery.authentication.enabled
       - description: Resources defines the compute resource requirements of the OAuth
           Proxy container. The OAuth Proxy performs authentication and authorization
           of incoming requests to Jaeger UI when multi-tenancy is disabled.
