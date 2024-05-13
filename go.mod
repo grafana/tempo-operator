@@ -15,7 +15,7 @@ require (
 	github.com/onsi/gomega v1.33.1
 	github.com/openshift/library-go v0.0.0-20220622115547-84d884f4c9f6
 	github.com/operator-framework/operator-lib v0.13.0
-	github.com/prometheus/client_golang v1.19.0
+	github.com/prometheus/client_golang v1.19.1
 	github.com/prometheus/common v0.53.0
 	github.com/spf13/cobra v1.8.0
 	go.opentelemetry.io/otel v1.26.0
