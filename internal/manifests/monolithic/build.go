@@ -39,11 +39,9 @@ func BuildAll(opts Options) ([]client.Object, error) {
 	manifests = append(manifests, configMap)
 	maps.Copy(extraStsAnnotations, annotations)
 
-	serviceAccountName := tempo.Spec.ServiceAccount
 	var serviceAccount *corev1.ServiceAccount
 	if tempo.Spec.ServiceAccount == "" {
 		serviceAccount = BuildServiceAccount(opts)
-		serviceAccountName = serviceAccount.Name
 		manifests = append(manifests, serviceAccount)
 	}
 
@@ -88,7 +86,6 @@ func BuildAll(opts Options) ([]client.Object, error) {
 			if tempo.Spec.JaegerUI.Authentication.Enabled {
 				oauthproxy.PatchStatefulSetForOauthProxy(
 					tempo.ObjectMeta,
-					serviceAccountName,
 					tempo.Spec.JaegerUI.Authentication,
 					opts.CtrlConfig,
 					statefulSet)

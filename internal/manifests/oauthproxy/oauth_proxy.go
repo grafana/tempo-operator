@@ -27,6 +27,7 @@ const (
 	oauthReadinessProbeInitialDelaySeconds = 10
 	oauthReadinessProbeTimeoutSeconds      = 5
 	serviceAccountRedirectAnnotation       = "serviceaccounts.openshift.io/oauth-redirectreference.primary"
+	minBytesRequiredByCookieValue          = 16
 )
 
 // OAuthServiceAccount returns a service account representing a client in the context of the OAuth Proxy.
@@ -84,7 +85,7 @@ func OAuthCookieSessionSecret(tempo metav1.ObjectMeta) (*corev1.Secret, error) {
 }
 
 // PatchStatefulSetForOauthProxy returns a modified StatefulSet with the oauth sidecar container and the right service account.
-func PatchStatefulSetForOauthProxy(tempo metav1.ObjectMeta, serviceAccountName string,
+func PatchStatefulSetForOauthProxy(tempo metav1.ObjectMeta,
 	authSpec *v1alpha1.JaegerQueryAuthenticationSpec,
 	config configv1alpha1.ProjectConfig, statefulSet *v1.StatefulSet) {
 	statefulSet.Spec.Template.Spec.Volumes = append(statefulSet.Spec.Template.Spec.Volumes, corev1.Volume{
@@ -106,7 +107,7 @@ func PatchStatefulSetForOauthProxy(tempo metav1.ObjectMeta, serviceAccountName s
 	})
 
 	statefulSet.Spec.Template.Spec.Containers = append(statefulSet.Spec.Template.Spec.Containers,
-		oAuthProxyContainer(tempo.Name, serviceAccountName, authSpec, config.DefaultImages.OauthProxy))
+		oAuthProxyContainer(tempo.Name, statefulSet.Spec.Template.Spec.ServiceAccountName, authSpec, config.DefaultImages.OauthProxy))
 }
 
 // PatchDeploymentForOauthProxy returns a modified deployment with the oauth sidecar container and the right service account.
@@ -236,7 +237,7 @@ func PatchQueryFrontEndService(service *corev1.Service, tempo string) {
 }
 
 func generateProxySecret() (string, error) {
-	randomBytes := make([]byte, 16)
+	randomBytes := make([]byte, minBytesRequiredByCookieValue)
 	_, err := rand.Read(randomBytes)
 	if err != nil {
 		return "", err
