@@ -12,9 +12,9 @@ metadata:
 spec:
   host: example.com
   port:
-    targetPort: jaeger-ui
+    targetPort: oauth-proxy
   tls:
-    termination: edge
+    termination: reencrypt
   to:
     kind: Service
     name: tempo-simplest-query-frontend

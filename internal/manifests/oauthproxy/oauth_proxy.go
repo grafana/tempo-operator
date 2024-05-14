@@ -223,6 +223,10 @@ func oAuthProxyContainer(
 
 // PatchQueryFrontEndService add necessary ports and annotations to the front end service.
 func PatchQueryFrontEndService(service *corev1.Service, tempo string) {
+	if service == nil {
+		return
+	}
+
 	if service.Annotations == nil {
 		service.Annotations = make(map[string]string)
 	}
