@@ -87,6 +87,11 @@ spec:
     port: 16687
     protocol: TCP
     targetPort: jaeger-metrics
+  - name: oauth-proxy
+    port: 8443
+    protocol: TCP
+    targetPort: oauth-proxy
+
   selector:
     app.kubernetes.io/component: query-frontend
     app.kubernetes.io/instance: tempostack
@@ -108,9 +113,9 @@ metadata:
   namespace: chainsaw-monitoring
 spec:
   port:
-    targetPort: jaeger-ui
+    targetPort: oauth-proxy
   tls:
-    termination: edge
+    termination: reencrypt
   to:
     kind: Service
     name: tempo-tempostack-query-frontend
