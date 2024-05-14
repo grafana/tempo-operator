@@ -21,6 +21,7 @@ import (
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/manifests/memberlist"
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
+	"github.com/grafana/tempo-operator/internal/manifests/oauthproxy"
 )
 
 const (
@@ -73,16 +74,21 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 				return nil, err
 			}
 
-			oauthEnabled := tempo.Spec.Template.QueryFrontend.JaegerQuery.Oauth.Enabled
-			if oauthEnabled != nil && *oauthEnabled {
-				patchDeploymentForOauthProxy(params, d)
-				patchQueryFrontEndService(svcs, tempo)
-				secret, err := oauthCookieSessionSecret(tempo)
+			jaegerUIAuthentication := tempo.Spec.Template.QueryFrontend.JaegerQuery.Authentication
+
+			if jaegerUIAuthentication != nil && jaegerUIAuthentication.Enabled {
+				oauthproxy.PatchDeploymentForOauthProxy(
+					tempo.ObjectMeta, params.CtrlConfig,
+					tempo.Spec.Template.QueryFrontend.JaegerQuery.Authentication,
+					tempo.Spec.Images, d)
+
+				oauthproxy.PatchQueryFrontEndService(getQueryFrontendService(tempo, svcs), tempo.Name)
+				secret, err := oauthproxy.OAuthCookieSessionSecret(tempo.ObjectMeta)
 				if err != nil {
 					return nil, err
 				}
-				manifests = append(manifests, oauthServiceAccount(tempo), secret)
-				routeObj = patchRouteForOauthProxy(routeObj)
+				manifests = append(manifests, oauthproxy.OAuthServiceAccount(tempo.ObjectMeta), secret)
+				oauthproxy.PatchRouteForOauthProxy(routeObj)
 			}
 			manifests = append(manifests, routeObj)
 		}
@@ -97,6 +103,16 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 	}
 
 	return manifests, nil
+}
+
+func getQueryFrontendService(tempo v1alpha1.TempoStack, services []*corev1.Service) *corev1.Service {
+	serviceName := naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name)
+	for _, svc := range services {
+		if svc.Name == serviceName {
+			return svc
+		}
+	}
+	return nil
 }
 
 func resources(tempo v1alpha1.TempoStack) corev1.ResourceRequirements {

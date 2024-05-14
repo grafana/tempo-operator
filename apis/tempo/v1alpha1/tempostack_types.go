@@ -598,12 +598,12 @@ type JaegerQuerySpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="ServicesQueryDuration"
 	ServicesQueryDuration *metav1.Duration `json:"servicesQueryDuration,omitempty"`
 
-	// Oauth defines the options for the oauth proxy used to protect jaeger UI
+	// Authentication defines the options for the oauth proxy used to protect jaeger UI
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger UI authentication configuration"
-	Oauth JaegerQueryAuthenticationSpec `json:"authentication,omitempty"`
+	Authentication *JaegerQueryAuthenticationSpec `json:"authentication,omitempty"`
 }
 
 // JaegerQueryMonitor defines configuration for the service monitoring tab in the Jaeger console.
@@ -673,24 +673,6 @@ type RouteSpec struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="TLS Termination Policy"
 	Termination TLSRouteTerminationType `json:"termination,omitempty"`
-}
-
-// JaegerQueryAuthenticationSpec defines options applied to proxy sidecar that controls the authentication of the jaeger UI.
-type JaegerQueryAuthenticationSpec struct {
-	// Defines if the authentication will be enabled for jaeger UI.
-	//
-	// +optional
-	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Type"
-	Enabled *bool `json:"enabled,omitempty"`
-
-	// SAR defines the SAR to be used in the oauth-proxy
-	// default is "{"namespace": "<tempo_stack_namespace>", "resource": "pods", "verb": "get"}
-	//
-	// +optional
-	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="SAR"
-	SAR string `json:"sar,omitempty"`
 }
 
 // LimitSpec defines Global and PerTenant rate limits.

@@ -65,6 +65,11 @@ spec:
         path: ingestion.otlp.http.tls.enabled
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
+      - description: Defines if the authentication will be enabled for jaeger UI.
+        displayName: Enabled
+        path: jaegerui.authentication.enabled
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
       - description: Enabled defines if the Jaeger UI component should be created.
         displayName: Enabled
         path: jaegerui.enabled
@@ -143,6 +148,10 @@ spec:
           Tempo deployment.
         displayName: Observability
         path: observability
+      - description: Authentication defines the options for the oauth proxy used to
+          protect jaeger UI
+        displayName: Jaeger UI authentication configuration
+        path: jaegerui.authentication
       - description: Resources defines the compute resource requirements of the Tempo
           container.
         displayName: Resources
@@ -210,6 +219,17 @@ spec:
       - description: MinVersion defines the minimum acceptable TLS version.
         displayName: Min TLS Version
         path: ingestion.otlp.http.tls.minVersion
+      - description: Resources defines the compute resource requirements of the OAuth
+          Proxy container. The OAuth Proxy performs authentication and authorization
+          of incoming requests to Jaeger UI when multi-tenancy is disabled.
+        displayName: Resources
+        path: jaegerui.authentication.resources
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:resourceRequirements
+      - description: 'SAR defines the SAR to be used in the oauth-proxy default is
+          "{"namespace": "<tempo_stack_namespace>", "resource": "pods", "verb": "get"}'
+        displayName: SAR
+        path: jaegerui.authentication.sar
       - description: Annotations defines the annotations of the Ingress object.
         displayName: Annotations
         path: jaegerui.ingress.annotations
@@ -441,6 +461,11 @@ spec:
       - description: Enabled defines if TLS is enabled.
         displayName: Enabled
         path: template.distributor.tls.enabled
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
+      - description: Defines if the authentication will be enabled for jaeger UI.
+        displayName: Enabled
+        path: template.queryFrontend.jaegerQuery.authentication.enabled
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
       - displayName: Extra Configurations
@@ -850,13 +875,17 @@ spec:
       - description: JaegerQuery defines options specific to the Jaeger Query component.
         displayName: Jaeger Query Settings
         path: template.queryFrontend.jaegerQuery
-      - description: Oauth defines the options for the oauth proxy used to protect
-          jaeger UI
+      - description: Authentication defines the options for the oauth proxy used to
+          protect jaeger UI
         displayName: Jaeger UI authentication configuration
         path: template.queryFrontend.jaegerQuery.authentication
-      - description: Defines if the authentication will be enabled for jaeger UI.
-        displayName: Type
-        path: template.queryFrontend.jaegerQuery.authentication.enabled
+      - description: Resources defines the compute resource requirements of the OAuth
+          Proxy container. The OAuth Proxy performs authentication and authorization
+          of incoming requests to Jaeger UI when multi-tenancy is disabled.
+        displayName: Resources
+        path: template.queryFrontend.jaegerQuery.authentication.resources
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:resourceRequirements
       - description: 'SAR defines the SAR to be used in the oauth-proxy default is
           "{"namespace": "<tempo_stack_namespace>", "resource": "pods", "verb": "get"}'
         displayName: SAR

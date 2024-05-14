@@ -5,6 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/api/resource"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
 )
@@ -123,6 +124,270 @@ func TestMonolithicDefault(t *testing.T) {
 						},
 					},
 					Management: "Unmanaged",
+				},
+			},
+		},
+		{
+			name: "enable jaeger ui oauth when feature gate is enabled",
+			ctrlConfig: configv1alpha1.ProjectConfig{
+				Gates: configv1alpha1.FeatureGates{
+					OpenShift: configv1alpha1.OpenShiftFeatureGates{
+						OauthProxy: configv1alpha1.OauthProxyFeatureGates{
+							DefaultEnabled: true,
+						},
+					},
+				},
+			},
+			input: &TempoMonolithic{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      "test",
+					Namespace: "testns",
+				},
+				Spec: TempoMonolithicSpec{
+					Storage: &MonolithicStorageSpec{
+						Traces: MonolithicTracesStorageSpec{
+							Backend: "s3",
+							Size:    &twentyGBQuantity,
+						},
+					},
+					JaegerUI: &MonolithicJaegerUISpec{
+						Enabled: true,
+						Route: &MonolithicJaegerUIRouteSpec{
+							Enabled: true,
+						},
+					},
+				},
+			},
+			expected: &TempoMonolithic{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      "test",
+					Namespace: "testns",
+				},
+				Spec: TempoMonolithicSpec{
+					Storage: &MonolithicStorageSpec{
+						Traces: MonolithicTracesStorageSpec{
+							Backend: "s3",
+							Size:    &twentyGBQuantity,
+						},
+					},
+					Ingestion: &MonolithicIngestionSpec{
+						OTLP: &MonolithicIngestionOTLPSpec{
+							GRPC: &MonolithicIngestionOTLPProtocolsGRPCSpec{
+								Enabled: true,
+							},
+							HTTP: &MonolithicIngestionOTLPProtocolsHTTPSpec{
+								Enabled: true,
+							},
+						},
+					},
+					JaegerUI: &MonolithicJaegerUISpec{
+						Enabled: true,
+						Route: &MonolithicJaegerUIRouteSpec{
+							Enabled:     true,
+							Termination: TLSRouteTerminationTypeEdge,
+						},
+						Authentication: &JaegerQueryAuthenticationSpec{
+							Enabled: true,
+							SAR:     "{\"namespace\": \"testns\", \"resource\": \"pods\", \"verb\": \"get\"}",
+						},
+					},
+					Management: "Managed",
+				},
+			},
+		},
+		{
+			name: "no touch jaeger ui oauth when feature gate is enabled and user specified false value explicit",
+			ctrlConfig: configv1alpha1.ProjectConfig{
+				Gates: configv1alpha1.FeatureGates{
+					OpenShift: configv1alpha1.OpenShiftFeatureGates{
+						OauthProxy: configv1alpha1.OauthProxyFeatureGates{
+							DefaultEnabled: true,
+						},
+					},
+				},
+			},
+			input: &TempoMonolithic{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      "test",
+					Namespace: "testns",
+				},
+				Spec: TempoMonolithicSpec{
+					Storage: &MonolithicStorageSpec{
+						Traces: MonolithicTracesStorageSpec{
+							Backend: "s3",
+							Size:    &twentyGBQuantity,
+						},
+					},
+					JaegerUI: &MonolithicJaegerUISpec{
+						Enabled: true,
+						Route: &MonolithicJaegerUIRouteSpec{
+							Enabled: true,
+						},
+						Authentication: &JaegerQueryAuthenticationSpec{
+							Enabled: false,
+						},
+					},
+				},
+			},
+			expected: &TempoMonolithic{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      "test",
+					Namespace: "testns",
+				},
+				Spec: TempoMonolithicSpec{
+					Storage: &MonolithicStorageSpec{
+						Traces: MonolithicTracesStorageSpec{
+							Backend: "s3",
+							Size:    &twentyGBQuantity,
+						},
+					},
+					Ingestion: &MonolithicIngestionSpec{
+						OTLP: &MonolithicIngestionOTLPSpec{
+							GRPC: &MonolithicIngestionOTLPProtocolsGRPCSpec{
+								Enabled: true,
+							},
+							HTTP: &MonolithicIngestionOTLPProtocolsHTTPSpec{
+								Enabled: true,
+							},
+						},
+					},
+					JaegerUI: &MonolithicJaegerUISpec{
+						Enabled: true,
+						Route: &MonolithicJaegerUIRouteSpec{
+							Enabled:     true,
+							Termination: TLSRouteTerminationTypeEdge,
+						},
+						Authentication: &JaegerQueryAuthenticationSpec{
+							Enabled: false,
+							SAR:     "{\"namespace\": \"testns\", \"resource\": \"pods\", \"verb\": \"get\"}",
+						},
+					},
+					Management: "Managed",
+				},
+			},
+		},
+		{
+			name: "no touch jaeger ui oauth when feature gate is disabled (true case)",
+			input: &TempoMonolithic{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      "test",
+					Namespace: "testns",
+				},
+				Spec: TempoMonolithicSpec{
+					Storage: &MonolithicStorageSpec{
+						Traces: MonolithicTracesStorageSpec{
+							Backend: "s3",
+							Size:    &twentyGBQuantity,
+						},
+					},
+					JaegerUI: &MonolithicJaegerUISpec{
+						Enabled: true,
+						Route: &MonolithicJaegerUIRouteSpec{
+							Enabled: true,
+						},
+						Authentication: &JaegerQueryAuthenticationSpec{
+							Enabled: true,
+							SAR:     "{\"namespace\": \"testns\", \"resource\": \"pods\", \"verb\": \"get\"}",
+						},
+					},
+				},
+			},
+			expected: &TempoMonolithic{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      "test",
+					Namespace: "testns",
+				},
+				Spec: TempoMonolithicSpec{
+					Storage: &MonolithicStorageSpec{
+						Traces: MonolithicTracesStorageSpec{
+							Backend: "s3",
+							Size:    &twentyGBQuantity,
+						},
+					},
+					Ingestion: &MonolithicIngestionSpec{
+						OTLP: &MonolithicIngestionOTLPSpec{
+							GRPC: &MonolithicIngestionOTLPProtocolsGRPCSpec{
+								Enabled: true,
+							},
+							HTTP: &MonolithicIngestionOTLPProtocolsHTTPSpec{
+								Enabled: true,
+							},
+						},
+					},
+					JaegerUI: &MonolithicJaegerUISpec{
+						Enabled: true,
+						Route: &MonolithicJaegerUIRouteSpec{
+							Enabled:     true,
+							Termination: TLSRouteTerminationTypeEdge,
+						},
+						Authentication: &JaegerQueryAuthenticationSpec{
+							Enabled: true,
+							SAR:     "{\"namespace\": \"testns\", \"resource\": \"pods\", \"verb\": \"get\"}",
+						},
+					},
+					Management: "Managed",
+				},
+			},
+		},
+		{
+			name: "no touch jaeger ui oauth when feature gate is disabled (false case)",
+			input: &TempoMonolithic{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      "test",
+					Namespace: "testns",
+				},
+				Spec: TempoMonolithicSpec{
+					Storage: &MonolithicStorageSpec{
+						Traces: MonolithicTracesStorageSpec{
+							Backend: "s3",
+							Size:    &twentyGBQuantity,
+						},
+					},
+					JaegerUI: &MonolithicJaegerUISpec{
+						Enabled: true,
+						Route: &MonolithicJaegerUIRouteSpec{
+							Enabled: true,
+						},
+						Authentication: &JaegerQueryAuthenticationSpec{
+							Enabled: false,
+						},
+					},
+				},
+			},
+			expected: &TempoMonolithic{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      "test",
+					Namespace: "testns",
+				},
+				Spec: TempoMonolithicSpec{
+					Storage: &MonolithicStorageSpec{
+						Traces: MonolithicTracesStorageSpec{
+							Backend: "s3",
+							Size:    &twentyGBQuantity,
+						},
+					},
+					Ingestion: &MonolithicIngestionSpec{
+						OTLP: &MonolithicIngestionOTLPSpec{
+							GRPC: &MonolithicIngestionOTLPProtocolsGRPCSpec{
+								Enabled: true,
+							},
+							HTTP: &MonolithicIngestionOTLPProtocolsHTTPSpec{
+								Enabled: true,
+							},
+						},
+					},
+					JaegerUI: &MonolithicJaegerUISpec{
+						Enabled: true,
+						Route: &MonolithicJaegerUIRouteSpec{
+							Enabled:     true,
+							Termination: TLSRouteTerminationTypeEdge,
+						},
+						Authentication: &JaegerQueryAuthenticationSpec{
+							Enabled: false,
+							SAR:     "{\"namespace\": \"testns\", \"resource\": \"pods\", \"verb\": \"get\"}",
+						},
+					},
+					Management: "Managed",
 				},
 			},
 		},

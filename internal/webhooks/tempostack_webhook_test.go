@@ -26,24 +26,24 @@ import (
 )
 
 func TestDefault(t *testing.T) {
-	defaulter := &Defaulter{
-		ctrlConfig: configv1alpha1.ProjectConfig{
-			DefaultImages: configv1alpha1.ImagesSpec{
-				Tempo:           "docker.io/grafana/tempo:x.y.z",
-				TempoQuery:      "docker.io/grafana/tempo-query:x.y.z",
-				TempoGateway:    "docker.io/observatorium/gateway:1.2.3",
-				TempoGatewayOpa: "docker.io/observatorium/opa-openshift:1.2.3",
-				OauthProxy:      "docker.io/observatorium/oauth-proxy:1.2.3",
-			},
-			Distribution: "upstream",
+	defaultCfgConfig := configv1alpha1.ProjectConfig{
+		DefaultImages: configv1alpha1.ImagesSpec{
+			Tempo:           "docker.io/grafana/tempo:x.y.z",
+			TempoQuery:      "docker.io/grafana/tempo-query:x.y.z",
+			TempoGateway:    "docker.io/observatorium/gateway:1.2.3",
+			TempoGatewayOpa: "docker.io/observatorium/opa-openshift:1.2.3",
+			OauthProxy:      "docker.io/observatorium/oauth-proxy:1.2.3",
 		},
+		Distribution: "upstream",
 	}
+
 	defaultDefaultResultLimit := 20
 
 	tests := []struct {
-		input    *v1alpha1.TempoStack
-		expected *v1alpha1.TempoStack
-		name     string
+		input      *v1alpha1.TempoStack
+		expected   *v1alpha1.TempoStack
+		name       string
+		ctrlConfig configv1alpha1.ProjectConfig
 	}{
 		{
 			name: "no action default values are provided",
@@ -138,6 +138,7 @@ func TestDefault(t *testing.T) {
 					},
 				},
 			},
+			ctrlConfig: defaultCfgConfig,
 		},
 		{
 			name: "default values are set in the webhook",
@@ -202,6 +203,7 @@ func TestDefault(t *testing.T) {
 					},
 				},
 			},
+			ctrlConfig: defaultCfgConfig,
 		},
 		{
 			name: "use Edge TLS termination if unset",
@@ -278,11 +280,199 @@ func TestDefault(t *testing.T) {
 					},
 				},
 			},
+			ctrlConfig: defaultCfgConfig,
+		},
+		{
+			name: "enable oauth default if feature gate is true",
+			input: &v1alpha1.TempoStack{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+				},
+				Spec: v1alpha1.TempoStackSpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+							JaegerQuery: v1alpha1.JaegerQuerySpec{
+								Enabled: true,
+								Ingress: v1alpha1.IngressSpec{
+									Type: v1alpha1.IngressTypeRoute,
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: &v1alpha1.TempoStack{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+					Labels: map[string]string{
+						"app.kubernetes.io/managed-by":   "tempo-operator",
+						"tempo.grafana.com/distribution": "upstream",
+					},
+				},
+				Spec: v1alpha1.TempoStackSpec{
+					ReplicationFactor: 1,
+					Images:            configv1alpha1.ImagesSpec{},
+					ServiceAccount:    "tempo-test",
+					Retention: v1alpha1.RetentionSpec{
+						Global: v1alpha1.RetentionConfig{
+							Traces: metav1.Duration{Duration: 48 * time.Hour},
+						},
+					},
+					StorageSize: resource.MustParse("10Gi"),
+					SearchSpec: v1alpha1.SearchSpec{
+						MaxDuration:        metav1.Duration{Duration: 0},
+						DefaultResultLimit: &defaultDefaultResultLimit,
+					},
+					Template: v1alpha1.TempoTemplateSpec{
+						Compactor: v1alpha1.TempoComponentSpec{
+							Replicas: ptr.To(int32(1)),
+						},
+						Distributor: v1alpha1.TempoDistributorSpec{
+							TempoComponentSpec: v1alpha1.TempoComponentSpec{
+								Replicas: ptr.To(int32(1)),
+							},
+							TLS: v1alpha1.TLSSpec{},
+						},
+						Ingester: v1alpha1.TempoComponentSpec{
+							Replicas: ptr.To(int32(1)),
+						},
+						Querier: v1alpha1.TempoComponentSpec{
+							Replicas: ptr.To(int32(1)),
+						},
+						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+							TempoComponentSpec: v1alpha1.TempoComponentSpec{
+								Replicas: ptr.To(int32(1)),
+							},
+							JaegerQuery: v1alpha1.JaegerQuerySpec{
+								Enabled: true,
+								Ingress: v1alpha1.IngressSpec{
+									Type: "route",
+									Route: v1alpha1.RouteSpec{
+										Termination: "edge",
+									},
+								},
+								ServicesQueryDuration: &defaultServicesDuration,
+								Authentication: &v1alpha1.JaegerQueryAuthenticationSpec{
+									Enabled: true,
+									SAR:     "{\"namespace\": \"\", \"resource\": \"pods\", \"verb\": \"get\"}",
+								},
+							},
+						},
+					},
+				},
+			},
+			ctrlConfig: configv1alpha1.ProjectConfig{
+				DefaultImages: defaultCfgConfig.DefaultImages,
+				Gates: configv1alpha1.FeatureGates{
+					OpenShift: configv1alpha1.OpenShiftFeatureGates{
+						OauthProxy: configv1alpha1.OauthProxyFeatureGates{
+							DefaultEnabled: true,
+						},
+					},
+				},
+				Distribution: "upstream",
+			},
+		},
+		{
+			name: "honor explicit disable oauth if feature gate is true",
+			input: &v1alpha1.TempoStack{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+				},
+				Spec: v1alpha1.TempoStackSpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+							JaegerQuery: v1alpha1.JaegerQuerySpec{
+								Enabled: true,
+								Ingress: v1alpha1.IngressSpec{
+									Type: v1alpha1.IngressTypeRoute,
+								},
+								Authentication: &v1alpha1.JaegerQueryAuthenticationSpec{
+									Enabled: false,
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: &v1alpha1.TempoStack{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+					Labels: map[string]string{
+						"app.kubernetes.io/managed-by":   "tempo-operator",
+						"tempo.grafana.com/distribution": "upstream",
+					},
+				},
+				Spec: v1alpha1.TempoStackSpec{
+					ReplicationFactor: 1,
+					Images:            configv1alpha1.ImagesSpec{},
+					ServiceAccount:    "tempo-test",
+					Retention: v1alpha1.RetentionSpec{
+						Global: v1alpha1.RetentionConfig{
+							Traces: metav1.Duration{Duration: 48 * time.Hour},
+						},
+					},
+					StorageSize: resource.MustParse("10Gi"),
+					SearchSpec: v1alpha1.SearchSpec{
+						MaxDuration:        metav1.Duration{Duration: 0},
+						DefaultResultLimit: &defaultDefaultResultLimit,
+					},
+					Template: v1alpha1.TempoTemplateSpec{
+						Compactor: v1alpha1.TempoComponentSpec{
+							Replicas: ptr.To(int32(1)),
+						},
+						Distributor: v1alpha1.TempoDistributorSpec{
+							TempoComponentSpec: v1alpha1.TempoComponentSpec{
+								Replicas: ptr.To(int32(1)),
+							},
+							TLS: v1alpha1.TLSSpec{},
+						},
+						Ingester: v1alpha1.TempoComponentSpec{
+							Replicas: ptr.To(int32(1)),
+						},
+						Querier: v1alpha1.TempoComponentSpec{
+							Replicas: ptr.To(int32(1)),
+						},
+						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+							TempoComponentSpec: v1alpha1.TempoComponentSpec{
+								Replicas: ptr.To(int32(1)),
+							},
+							JaegerQuery: v1alpha1.JaegerQuerySpec{
+								Enabled: true,
+								Ingress: v1alpha1.IngressSpec{
+									Type: "route",
+									Route: v1alpha1.RouteSpec{
+										Termination: "edge",
+									},
+								},
+								ServicesQueryDuration: &defaultServicesDuration,
+								Authentication: &v1alpha1.JaegerQueryAuthenticationSpec{
+									Enabled: false,
+								},
+							},
+						},
+					},
+				},
+			},
+			ctrlConfig: configv1alpha1.ProjectConfig{
+				DefaultImages: defaultCfgConfig.DefaultImages,
+				Gates: configv1alpha1.FeatureGates{
+					OpenShift: configv1alpha1.OpenShiftFeatureGates{
+						OauthProxy: configv1alpha1.OauthProxyFeatureGates{
+							DefaultEnabled: true,
+						},
+					},
+				},
+				Distribution: "upstream",
+			},
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			defaulter := &Defaulter{
+				ctrlConfig: test.ctrlConfig,
+			}
 			err := defaulter.Default(context.Background(), test.input)
 			assert.NoError(t, err)
 			assert.Equal(t, test.expected, test.input)

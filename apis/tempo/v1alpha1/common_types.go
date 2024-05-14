@@ -46,3 +46,27 @@ type ExtraConfigSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tempo Extra Configurations"
 	Tempo apiextensionsv1.JSON `json:"tempo,omitempty"`
 }
+
+// JaegerQueryAuthenticationSpec defines options applied to proxy sidecar that controls the authentication of the jaeger UI.
+type JaegerQueryAuthenticationSpec struct {
+	// Defines if the authentication will be enabled for jaeger UI.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enabled",order=1,xDescriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
+	Enabled bool `json:"enabled"`
+
+	// SAR defines the SAR to be used in the oauth-proxy
+	// default is "{"namespace": "<tempo_stack_namespace>", "resource": "pods", "verb": "get"}
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="SAR"
+	SAR string `json:"sar,omitempty"`
+	// Resources defines the compute resource requirements of the OAuth Proxy container.
+	// The OAuth Proxy performs authentication and authorization of incoming requests to Jaeger UI when multi-tenancy is disabled.
+	//
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Resources",xDescriptors="urn:alm:descriptor:com.tectonic.ui:resourceRequirements"
+	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
+}

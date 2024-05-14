@@ -237,6 +237,13 @@ type MonolithicJaegerUISpec struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Route",order=4
 	Route *MonolithicJaegerUIRouteSpec `json:"route,omitempty"`
+
+	// Authentication defines the options for the oauth proxy used to protect jaeger UI
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger UI authentication configuration",order=5
+	Authentication *JaegerQueryAuthenticationSpec `json:"authentication,omitempty"`
 }
 
 // MonolithicJaegerUIIngressSpec defines the settings for the Jaeger UI ingress.
