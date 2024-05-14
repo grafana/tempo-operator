@@ -65,7 +65,6 @@ metadata:
   name: tempo-tempostack-query-frontend
   namespace: chainsaw-monitoring
 spec:
-  internalTrafficPolicy: Cluster
   ports:
   - name: http
     port: 3200
@@ -91,14 +90,11 @@ spec:
     port: 8443
     protocol: TCP
     targetPort: oauth-proxy
-
   selector:
     app.kubernetes.io/component: query-frontend
     app.kubernetes.io/instance: tempostack
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
-  sessionAffinity: None
-  type: ClusterIP
 
 ---
 apiVersion: route.openshift.io/v1
