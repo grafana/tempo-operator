@@ -2,13 +2,12 @@
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
-  creationTimestamp: null
   name: route
 spec:
   steps:
-  - name: step-00
+  - name: Install TempoStack with ingress type route
     try:
     - apply:
-        file: 00-install.yaml
+        file: install-tempo.yaml
     - assert:
-        file: 00-assert.yaml
+        file: install-tempo-assert.yaml

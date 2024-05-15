@@ -18,3 +18,4 @@ spec:
   to:
     kind: Service
     name: tempo-simplest-query-frontend
+    weight: 100
