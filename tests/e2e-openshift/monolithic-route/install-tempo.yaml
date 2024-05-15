@@ -1,0 +1,10 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoMonolithic
+metadata:
+  name: mono-route
+  namespace: chainsaw-mono-route
+spec:
+  jaegerui:
+    enabled: true
+    route:
+      enabled: true

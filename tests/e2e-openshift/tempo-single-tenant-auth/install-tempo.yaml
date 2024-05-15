@@ -1,0 +1,32 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoStack
+metadata:
+  name: tempo-st
+  namespace: chainsaw-tst
+spec:
+  storage:
+    secret:
+      name: minio
+      type: s3
+  storageSize: 200M
+  resources:
+    total:
+      limits:
+        memory: 2Gi
+        cpu: 2000m
+  template:
+    queryFrontend:
+      jaegerQuery:
+        enabled: true
+        authentication:
+          enabled: true
+          sar: "{\"namespace\": \"chainsaw-mst\", \"resource\": \"pods\", \"verb\": \"get\"}"
+          resources:
+            limits:
+              cpu: 200m
+              memory: 512Gi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+        ingress:
+          type: route
