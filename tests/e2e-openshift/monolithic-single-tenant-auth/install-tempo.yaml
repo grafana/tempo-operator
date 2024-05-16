@@ -1,0 +1,20 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoMonolithic
+metadata:
+  name: monolithic-st
+  namespace: chainsaw-mst
+spec:
+  jaegerui:
+    enabled: true
+    authentication:
+      enabled: true
+      sar: "{\"namespace\": \"chainsaw-mst\", \"resource\": \"pods\", \"verb\": \"get\"}"
+      resources:
+        limits:
+          cpu: 200m
+          memory: 512Gi
+        requests:
+          cpu: 100m
+          memory: 256Mi
+    route:
+      enabled: true

@@ -1,0 +1,417 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoStack
+metadata:
+  name: tempo-st
+#
+# Service Accounts
+#
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: tempo-tempo-st
+  labels:
+    app.kubernetes.io/component: serviceaccount
+    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+#
+# Deployments
+#
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/component: query-frontend
+    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-tempo-st-query-frontend
+  namespace: chainsaw-tst
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: query-frontend
+      app.kubernetes.io/instance: tempo-st
+      app.kubernetes.io/managed-by: tempo-operator
+      app.kubernetes.io/name: tempo
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: query-frontend
+        app.kubernetes.io/instance: tempo-st
+        app.kubernetes.io/managed-by: tempo-operator
+        app.kubernetes.io/name: tempo
+        tempo-gossip-member: "true"
+    spec:
+      containers:
+      - name: tempo
+      - name: tempo-query
+      - args:
+        - --cookie-secret-file=/etc/proxy/cookie//session_secret
+        - --https-address=:8443
+        - --openshift-service-account=tempo-tempo-st-query-frontend
+        - --provider=openshift
+        - --tls-cert=/etc/tls/private/tls.crt
+        - --tls-key=/etc/tls/private/tls.key
+        - --upstream=http://localhost:16686
+        - '--openshift-sar={"namespace": "chainsaw-mst", "resource": "pods", "verb":
+          "get"}'
+        name: oauth-proxy
+        ports:
+        - containerPort: 8443
+          name: oauth-proxy
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 200m
+            memory: 512Gi
+          requests:
+            cpu: 100m
+            memory: 256Mi
+status:
+  availableReplicas: 1
+  readyReplicas: 1
+  replicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-tempo-st-distributor
+  labels:
+    app.kubernetes.io/component: distributor
+    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: distributor
+      app.kubernetes.io/instance: tempo-st
+      app.kubernetes.io/managed-by: tempo-operator
+      app.kubernetes.io/name: tempo
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-tempo-st-querier
+  labels:
+    app.kubernetes.io/component: querier
+    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: querier
+      app.kubernetes.io/instance: tempo-st
+      app.kubernetes.io/managed-by: tempo-operator
+      app.kubernetes.io/name: tempo
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-tempo-st-compactor
+  labels:
+    app.kubernetes.io/component: compactor
+    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: compactor
+      app.kubernetes.io/instance: tempo-st
+      app.kubernetes.io/managed-by: tempo-operator
+      app.kubernetes.io/name: tempo
+status:
+  readyReplicas: 1
+#
+# StatefulSets
+#
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: tempo-tempo-st-ingester
+  labels:
+    app.kubernetes.io/component: ingester
+    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: ingester
+      app.kubernetes.io/instance: tempo-st
+      app.kubernetes.io/managed-by: tempo-operator
+      app.kubernetes.io/name: tempo
+status:
+  readyReplicas: 1
+#
+# Services
+#
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: compactor
+    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-tempo-st-compactor
+spec:
+  ports:
+    - name: http-memberlist
+      port: 7946
+      protocol: TCP
+      targetPort: http-memberlist
+    - name: http
+      port: 3200
+      protocol: TCP
+      targetPort: http
+  selector:
+    app.kubernetes.io/component: compactor
+    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: distributor
+    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-tempo-st-distributor
+spec:
+  ports:
+    - name: otlp-grpc
+      port: 4317
+      protocol: TCP
+      targetPort: otlp-grpc
+    - name: http
+      port: 3200
+      protocol: TCP
+      targetPort: http
+    - name: otlp-http
+      port: 4318
+      protocol: TCP
+      targetPort: otlp-http
+    - name: thrift-http
+      port: 14268
+      protocol: TCP
+      targetPort: thrift-http
+    - name: thrift-compact
+      port: 6831
+      protocol: UDP
+      targetPort: thrift-compact
+    - name: thrift-binary
+      port: 6832
+      protocol: UDP
+      targetPort: thrift-binary
+    - name: jaeger-grpc
+      port: 14250
+      protocol: TCP
+      targetPort: jaeger-grpc
+    - name: http-zipkin
+      port: 9411
+      protocol: TCP
+      targetPort: http-zipkin
+  selector:
+    app.kubernetes.io/component: distributor
+    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: gossip-ring
+    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-tempo-st-gossip-ring
+spec:
+  clusterIP: None
+  publishNotReadyAddresses: true
+  ports:
+    - name: http-memberlist
+      port: 7946
+      protocol: TCP
+      targetPort: http-memberlist
+  selector:
+    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+    tempo-gossip-member: "true"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: ingester
+    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-tempo-st-ingester
+spec:
+  ports:
+    - name: http
+      port: 3200
+      protocol: TCP
+      targetPort: http
+    - name: grpc
+      port: 9095
+      protocol: TCP
+      targetPort: grpc
+  selector:
+    app.kubernetes.io/component: ingester
+    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: querier
+    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-tempo-st-querier
+spec:
+  ports:
+    - name: http-memberlist
+      port: 7946
+      protocol: TCP
+      targetPort: http-memberlist
+    - name: http
+      port: 3200
+      protocol: TCP
+      targetPort: http
+    - name: grpc
+      port: 9095
+      protocol: TCP
+      targetPort: grpc
+  selector:
+    app.kubernetes.io/component: querier
+    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: query-frontend
+    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-tempo-st-query-frontend
+  namespace: chainsaw-tst
+spec:
+  ports:
+  - name: http
+    port: 3200
+    protocol: TCP
+    targetPort: http
+  - name: grpc
+    port: 9095
+    protocol: TCP
+    targetPort: grpc
+  - name: jaeger-grpc
+    port: 16685
+    protocol: TCP
+    targetPort: jaeger-grpc
+  - name: jaeger-ui
+    port: 16686
+    protocol: TCP
+    targetPort: jaeger-ui
+  - name: jaeger-metrics
+    port: 16687
+    protocol: TCP
+    targetPort: jaeger-metrics
+  - name: oauth-proxy
+    port: 8443
+    protocol: TCP
+    targetPort: oauth-proxy
+  selector:
+    app.kubernetes.io/component: query-frontend
+    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: query-frontend-discovery
+    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-tempo-st-query-frontend-discovery
+spec:
+  clusterIP: None
+  publishNotReadyAddresses: true
+  ports:
+    - name: http
+      port: 3200
+      protocol: TCP
+      targetPort: http
+    - name: grpc
+      port: 9095
+      protocol: TCP
+      targetPort: grpc
+    - name: grpclb
+      port: 9096
+      protocol: TCP
+      targetPort: grpclb
+    - name: jaeger-grpc
+      port: 16685
+      protocol: TCP
+      targetPort: jaeger-grpc
+    - name: jaeger-ui
+      port: 16686
+      protocol: TCP
+      targetPort: jaeger-ui
+    - name: jaeger-metrics
+      port: 16687
+      protocol: TCP
+      targetPort: jaeger-metrics
+  selector:
+    app.kubernetes.io/component: query-frontend
+    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/managed-by: tempo-operator
+#
+# Ingresses
+#
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  labels:
+    app.kubernetes.io/component: query-frontend
+    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-tempo-st-query-frontend
+  namespace: chainsaw-tst
+spec:
+  port:
+    targetPort: oauth-proxy
+  tls:
+    termination: reencrypt
+  to:
+    kind: Service
+    name: tempo-tempo-st-query-frontend
+    weight: 100

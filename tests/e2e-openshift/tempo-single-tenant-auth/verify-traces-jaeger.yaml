@@ -1,0 +1,25 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: verify-traces-jaeger
+  namespace: chainsaw-tst
+spec:
+  template:
+    spec:
+      containers:
+      - name: verify-traces
+        image: ghcr.io/grafana/tempo-operator/test-utils:main
+        command: ["/bin/bash", "-eux", "-c"]
+        args:
+        - |
+          curl -vG \
+            http://tempo-tempo-st-query-frontend.chainsaw-tst.svc:16686/api/traces \
+            --data-urlencode "service=telemetrygen" \
+            | tee /tmp/jaeger.out
+
+          num_traces=$(jq ".data | length" /tmp/jaeger.out)
+          if [[ "$num_traces" != "10" ]]; then
+            echo && echo "The Jaeger API returned $num_traces instead of 10 traces."
+            exit 1
+          fi
+      restartPolicy: Never
