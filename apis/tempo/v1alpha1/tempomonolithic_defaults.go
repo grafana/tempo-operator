@@ -82,7 +82,7 @@ func (r *TempoMonolithic) Default(ctrlConfig configv1alpha1.ProjectConfig) {
 			r.Spec.JaegerUI.Authentication.SAR = defaultSAR
 		}
 
-		if r.Spec.JaegerUI.Enabled && r.Spec.JaegerUI.ServicesQueryDuration == nil {
+		if r.Spec.JaegerUI.ServicesQueryDuration == nil {
 			r.Spec.JaegerUI.ServicesQueryDuration = &defaultServicesDuration
 		}
 
