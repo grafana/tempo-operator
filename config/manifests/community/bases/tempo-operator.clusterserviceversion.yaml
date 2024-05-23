@@ -253,6 +253,8 @@ spec:
           in the services list
         displayName: ServicesQueryDuration
         path: jaegerui.servicesQueryDuration
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:advanced
       - description: 'ManagementState defines whether this instance is managed by
           the operator or self-managed. Default: Managed.'
         displayName: Management State
