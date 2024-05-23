@@ -248,7 +248,7 @@ type MonolithicJaegerUISpec struct {
 	// ServicesQueryDuration defines how long the services will be available in the services list
 	//
 	// +optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="ServicesQueryDuration"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="ServicesQueryDuration",xDescriptors="urn:alm:descriptor:com.tectonic.ui:advanced"
 	ServicesQueryDuration *metav1.Duration `json:"servicesQueryDuration,omitempty"`
 }
 
