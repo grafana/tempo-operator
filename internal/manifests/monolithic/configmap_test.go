@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
@@ -40,6 +41,10 @@ func TestBuildConfigMap(t *testing.T) {
 						},
 					},
 				},
+				JaegerUI: &v1alpha1.MonolithicJaegerUISpec{
+					Enabled:               true,
+					ServicesQueryDuration: &metav1.Duration{Duration: time.Duration(3 * 24 * time.Hour)},
+				},
 			},
 		},
 	}
@@ -51,6 +56,14 @@ func TestBuildConfigMap(t *testing.T) {
 	require.Equal(t, map[string]string{
 		"tempo.grafana.com/tempoConfig.hash": fmt.Sprintf("%x", sha256.Sum256([]byte(cm.Data["tempo.yaml"]))),
 	}, annotations)
+
+	require.NotNil(t, cm.Data["tempo-query.yaml"])
+	tempoQueryCfg := `
+backend: 127.0.0.1:3200
+tenant_header_key: x-scope-orgid
+services_query_duration: 72h0m0s
+`
+	require.YAMLEq(t, tempoQueryCfg, cm.Data["tempo-query.yaml"])
 }
 
 func TestBuildConfig(t *testing.T) {

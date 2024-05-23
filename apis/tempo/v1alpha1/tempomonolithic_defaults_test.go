@@ -2,6 +2,7 @@ package v1alpha1
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -190,6 +191,7 @@ func TestMonolithicDefault(t *testing.T) {
 							Enabled: true,
 							SAR:     "{\"namespace\": \"testns\", \"resource\": \"pods\", \"verb\": \"get\"}",
 						},
+						ServicesQueryDuration: &defaultServicesDuration,
 					},
 					Management: "Managed",
 				},
@@ -261,6 +263,7 @@ func TestMonolithicDefault(t *testing.T) {
 							Enabled: false,
 							SAR:     "{\"namespace\": \"testns\", \"resource\": \"pods\", \"verb\": \"get\"}",
 						},
+						ServicesQueryDuration: &defaultServicesDuration,
 					},
 					Management: "Managed",
 				},
@@ -324,6 +327,7 @@ func TestMonolithicDefault(t *testing.T) {
 							Enabled: true,
 							SAR:     "{\"namespace\": \"testns\", \"resource\": \"pods\", \"verb\": \"get\"}",
 						},
+						ServicesQueryDuration: &defaultServicesDuration,
 					},
 					Management: "Managed",
 				},
@@ -386,6 +390,68 @@ func TestMonolithicDefault(t *testing.T) {
 							Enabled: false,
 							SAR:     "{\"namespace\": \"testns\", \"resource\": \"pods\", \"verb\": \"get\"}",
 						},
+						ServicesQueryDuration: &defaultServicesDuration,
+					},
+					Management: "Managed",
+				},
+			},
+		},
+		{
+			name: "define custom duration for services list",
+			input: &TempoMonolithic{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      "test",
+					Namespace: "testns",
+				},
+				Spec: TempoMonolithicSpec{
+					Storage: &MonolithicStorageSpec{
+						Traces: MonolithicTracesStorageSpec{
+							Backend: "s3",
+							Size:    &twentyGBQuantity,
+						},
+					},
+					JaegerUI: &MonolithicJaegerUISpec{
+						Enabled: true,
+						Route: &MonolithicJaegerUIRouteSpec{
+							Enabled: true,
+						},
+						ServicesQueryDuration: &v1.Duration{Duration: time.Duration(100 * 100)},
+					},
+				},
+			},
+			expected: &TempoMonolithic{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      "test",
+					Namespace: "testns",
+				},
+				Spec: TempoMonolithicSpec{
+					Storage: &MonolithicStorageSpec{
+						Traces: MonolithicTracesStorageSpec{
+							Backend: "s3",
+							Size:    &twentyGBQuantity,
+						},
+					},
+					Ingestion: &MonolithicIngestionSpec{
+						OTLP: &MonolithicIngestionOTLPSpec{
+							GRPC: &MonolithicIngestionOTLPProtocolsGRPCSpec{
+								Enabled: true,
+							},
+							HTTP: &MonolithicIngestionOTLPProtocolsHTTPSpec{
+								Enabled: true,
+							},
+						},
+					},
+					JaegerUI: &MonolithicJaegerUISpec{
+						Enabled: true,
+						Route: &MonolithicJaegerUIRouteSpec{
+							Enabled:     true,
+							Termination: TLSRouteTerminationTypeEdge,
+						},
+						Authentication: &JaegerQueryAuthenticationSpec{
+							Enabled: false,
+							SAR:     "{\"namespace\": \"testns\", \"resource\": \"pods\", \"verb\": \"get\"}",
+						},
+						ServicesQueryDuration: &v1.Duration{Duration: time.Duration(100 * 100)},
 					},
 					Management: "Managed",
 				},

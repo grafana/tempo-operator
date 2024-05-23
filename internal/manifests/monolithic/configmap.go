@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"path"
+	"time"
 
 	"gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
@@ -93,8 +94,9 @@ type tempoConfig struct {
 }
 
 type tempoQueryConfig struct {
-	Backend         string `yaml:"backend"`
-	TenantHeaderKey string `yaml:"tenant_header_key"`
+	Backend               string        `yaml:"backend"`
+	TenantHeaderKey       string        `yaml:"tenant_header_key"`
+	ServicesQueryDuration time.Duration `yaml:"services_query_duration"`
 }
 
 // BuildConfigMap creates the Tempo ConfigMap for a monolithic deployment.
@@ -127,7 +129,7 @@ func BuildConfigMap(opts Options) (*corev1.ConfigMap, map[string]string, error) 
 	extraAnnotations["tempo.grafana.com/tempoConfig.hash"] = fmt.Sprintf("%x", h)
 
 	if tempo.Spec.JaegerUI != nil && tempo.Spec.JaegerUI.Enabled {
-		tempoQueryConfig, err := buildTempoQueryConfig()
+		tempoQueryConfig, err := buildTempoQueryConfig(tempo.Spec.JaegerUI)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -268,10 +270,10 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 	}
 }
 
-func buildTempoQueryConfig() ([]byte, error) {
+func buildTempoQueryConfig(jaegerUISpec *v1alpha1.MonolithicJaegerUISpec) ([]byte, error) {
 	config := tempoQueryConfig{}
 	config.Backend = fmt.Sprintf("127.0.0.1:%d", manifestutils.PortHTTPServer)
 	config.TenantHeaderKey = manifestutils.TenantHeader
-
+	config.ServicesQueryDuration = jaegerUISpec.ServicesQueryDuration.Duration
 	return yaml.Marshal(&config)
 }
