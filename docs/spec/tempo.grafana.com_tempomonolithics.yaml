@@ -45,6 +45,7 @@ spec:                                    # TempoMonolithicSpec defines the desir
       annotations: {}                    # Annotations defines the annotations of the Route object.
       host: ""                           # Host defines the hostname of the Route object.
       termination: ""                    # Termination specifies the termination type.
+    servicesQueryDuration: ""            # ServicesQueryDuration defines how long the services will be available in the services list
     resources:                           # Resources defines the compute resource requirements of the Jaeger UI container.
       claims:                            # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.   This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.   This field is immutable. It can only be set for containers.
       - name: ""                         # Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.
