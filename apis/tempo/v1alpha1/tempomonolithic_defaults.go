@@ -3,16 +3,19 @@ package v1alpha1
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/ptr"
 
 	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
 )
 
 var (
-	twoGBQuantity = resource.MustParse("2Gi")
-	tenGBQuantity = resource.MustParse("10Gi")
+	twoGBQuantity           = resource.MustParse("2Gi")
+	tenGBQuantity           = resource.MustParse("10Gi")
+	defaultServicesDuration = metav1.Duration{Duration: time.Hour * 24 * 3}
 )
 
 // Default sets all default values in a central place, instead of setting it at every place where the value is accessed.
@@ -56,28 +59,33 @@ func (r *TempoMonolithic) Default(ctrlConfig configv1alpha1.ProjectConfig) {
 			Enabled: true,
 		}
 	}
-	if r.Spec.JaegerUI != nil && r.Spec.JaegerUI.Enabled &&
-		r.Spec.JaegerUI.Route != nil && r.Spec.JaegerUI.Route.Enabled {
+	if r.Spec.JaegerUI != nil && r.Spec.JaegerUI.Enabled {
 
-		if r.Spec.JaegerUI.Route.Termination == "" {
-			if r.Spec.Multitenancy.IsGatewayEnabled() && ctrlConfig.Gates.OpenShift.ServingCertsService {
-				// gateway uses TLS
-				r.Spec.JaegerUI.Route.Termination = TLSRouteTerminationTypePassthrough
-			} else {
-				r.Spec.JaegerUI.Route.Termination = TLSRouteTerminationTypeEdge
+		if r.Spec.JaegerUI.Route != nil && r.Spec.JaegerUI.Route.Enabled {
+
+			if r.Spec.JaegerUI.Route.Termination == "" {
+				if r.Spec.Multitenancy.IsGatewayEnabled() && ctrlConfig.Gates.OpenShift.ServingCertsService {
+					// gateway uses TLS
+					r.Spec.JaegerUI.Route.Termination = TLSRouteTerminationTypePassthrough
+				} else {
+					r.Spec.JaegerUI.Route.Termination = TLSRouteTerminationTypeEdge
+				}
+			}
+
+			if r.Spec.JaegerUI.Authentication == nil {
+				r.Spec.JaegerUI.Authentication = &JaegerQueryAuthenticationSpec{
+					Enabled: ctrlConfig.Gates.OpenShift.OauthProxy.DefaultEnabled,
+				}
+			}
+
+			if len(strings.TrimSpace(r.Spec.JaegerUI.Authentication.SAR)) == 0 {
+				defaultSAR := fmt.Sprintf("{\"namespace\": \"%s\", \"resource\": \"pods\", \"verb\": \"get\"}", r.Namespace)
+				r.Spec.JaegerUI.Authentication.SAR = defaultSAR
 			}
 		}
 
-		if r.Spec.JaegerUI.Authentication == nil {
-			r.Spec.JaegerUI.Authentication = &JaegerQueryAuthenticationSpec{
-				Enabled: ctrlConfig.Gates.OpenShift.OauthProxy.DefaultEnabled,
-			}
+		if r.Spec.JaegerUI.ServicesQueryDuration == nil {
+			r.Spec.JaegerUI.ServicesQueryDuration = &defaultServicesDuration
 		}
-
-		if len(strings.TrimSpace(r.Spec.JaegerUI.Authentication.SAR)) == 0 {
-			defaultSAR := fmt.Sprintf("{\"namespace\": \"%s\", \"resource\": \"pods\", \"verb\": \"get\"}", r.Namespace)
-			r.Spec.JaegerUI.Authentication.SAR = defaultSAR
-		}
-
 	}
 }

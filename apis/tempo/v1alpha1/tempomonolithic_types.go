@@ -244,6 +244,12 @@ type MonolithicJaegerUISpec struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger UI authentication configuration",order=5
 	Authentication *JaegerQueryAuthenticationSpec `json:"authentication,omitempty"`
+
+	// ServicesQueryDuration defines how long the services will be available in the services list
+	//
+	// +optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="ServicesQueryDuration",xDescriptors="urn:alm:descriptor:com.tectonic.ui:advanced"
+	ServicesQueryDuration *metav1.Duration `json:"servicesQueryDuration,omitempty"`
 }
 
 // MonolithicJaegerUIIngressSpec defines the settings for the Jaeger UI ingress.
