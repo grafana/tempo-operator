@@ -1290,6 +1290,10 @@ spec:
                     required:
                     - enabled
                     type: object
+                  servicesQueryDuration:
+                    description: ServicesQueryDuration defines how long the services
+                      will be available in the services list
+                    type: string
                 required:
                 - enabled
                 type: object

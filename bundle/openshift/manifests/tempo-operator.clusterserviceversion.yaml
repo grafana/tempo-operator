@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.10.0
-    createdAt: "2024-05-13T02:29:58Z"
+    createdAt: "2024-05-23T08:51:59Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -320,6 +320,10 @@ spec:
       - description: Termination specifies the termination type.
         displayName: TLS Termination
         path: jaegerui.route.termination
+      - description: ServicesQueryDuration defines how long the services will be available
+          in the services list
+        displayName: ServicesQueryDuration
+        path: jaegerui.servicesQueryDuration
       - description: 'ManagementState defines whether this instance is managed by
           the operator or self-managed. Default: Managed.'
         displayName: Management State
