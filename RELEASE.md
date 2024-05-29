@@ -25,7 +25,6 @@ We plan to release the operator monthly, **at the end of each month**.
 
 | Release Date | Version | Release Manager                                          |
 |--------------|---------| -------------------------------------------------------- |
-| May 2024     | 0.10.0  | [Ruben Vargas](https://github.com/rubenvp8510)           |
 | Jun 2024     | 0.11.0  | [Pavol Loffay](https://github.com/pavolloffay)           |
 | Jul 2024     | 0.12.0  | [Andreas Gerstmayr](https://github.com/andreasgerstmayr) |
 | Aug 2024     | 0.13.0  | [Benedikt Bongartz](https://github.com/frzifus)          |
