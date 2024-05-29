@@ -242,9 +242,9 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 							Env:   proxy.ReadProxyVarsFromEnv(),
 							Args: append([]string{
 								fmt.Sprintf("--traces.tenant-header=%s", manifestutils.TenantHeader),
-								fmt.Sprintf("--web.listen=0.0.0.0:%d", manifestutils.GatewayPortHTTPServer),                                                                                             // proxies Tempo API and optionally Jaeger UI
-								fmt.Sprintf("--web.internal.listen=0.0.0.0:%d", manifestutils.GatewayPortInternalHTTPServer),                                                                            // serves health checks
-								fmt.Sprintf("--traces.write.endpoint=%s:%d", naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.DistributorComponentName), manifestutils.PortOtlpGrpcServer), // Tempo Distributor gRPC upstream
+								fmt.Sprintf("--web.listen=0.0.0.0:%d", manifestutils.GatewayPortHTTPServer),                                                                                                      // proxies Tempo API and optionally Jaeger UI
+								fmt.Sprintf("--web.internal.listen=0.0.0.0:%d", manifestutils.GatewayPortInternalHTTPServer),                                                                                     // serves health checks
+								fmt.Sprintf("--traces.write.otlpgrcp.endpoint=%s:%d", naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.DistributorComponentName), manifestutils.PortOtlpGrpcServer), // Tempo Distributor gRPC upstream
 								fmt.Sprintf("--traces.tempo.endpoint=%s://%s:%d", httpScheme(params.CtrlConfig.Gates.HTTPEncryption),
 									naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.QueryFrontendComponentName), manifestutils.PortHTTPServer), // Tempo API upstream
 								fmt.Sprintf("--grpc.listen=0.0.0.0:%d", manifestutils.GatewayPortGRPCServer), // proxies Tempo Distributor gRPC

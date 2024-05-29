@@ -154,7 +154,7 @@ spec:
         - --traces.tenant-header=x-scope-orgid
         - --web.listen=0.0.0.0:8080
         - --web.internal.listen=0.0.0.0:8081
-        - --traces.write.endpoint=tempo-simplest-distributor.chainsaw-multitenancy.svc.cluster.local:4317
+        - --traces.write.otlpgrpc.endpoint=tempo-simplest-distributor.chainsaw-multitenancy.svc.cluster.local:4317
         - --traces.tempo.endpoint=https://tempo-simplest-query-frontend.chainsaw-multitenancy.svc.cluster.local:3200
         - --grpc.listen=0.0.0.0:8090
         - --rbac.config=/etc/tempo-gateway/cm/rbac.yaml
