@@ -29,3 +29,4 @@ We plan to release the operator monthly, **at the end of each month**.
 | Jul 2024     | 0.12.0  | [Andreas Gerstmayr](https://github.com/andreasgerstmayr) |
 | Aug 2024     | 0.13.0  | [Benedikt Bongartz](https://github.com/frzifus)          |
 | Sep 2024     | 0.14.0  | [Israel Blancas](https://github.com/iblancasa)           |
+| Oct 2024     | 0.15.0  | [Ruben Vargas](https://github.com/rubenvp8510)           |
