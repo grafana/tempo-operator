@@ -793,6 +793,7 @@ func TestStatefulsetGateway(t *testing.T) {
 			"--log.level=info",
 			"--grpc.listen=0.0.0.0:8090",
 			"--traces.write.otlpgrpc.endpoint=localhost:4317",
+			"--traces.write.otlphttp.endpoint=http://localhost:4318",
 			"--traces.read.endpoint=http://localhost:16686",
 			"--tls.server.cert-file=/etc/tempo-gateway/serving-cert/tls.crt",
 			"--tls.server.key-file=/etc/tempo-gateway/serving-cert/tls.key",

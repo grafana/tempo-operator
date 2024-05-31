@@ -69,9 +69,15 @@ distributor:
             key_file: {{ .ReceiverTLS.Paths.Key }}
             min_version: {{ .ReceiverTLS.MinTLSVersion }}
 {{- end }}
-{{- if not .Gateway }}
         http:
           endpoint: 0.0.0.0:4318
+{{- if and .Gates.GRPCEncryption .Gateway }}
+          tls:
+            client_ca_file:  {{ .TLS.Paths.CA }}
+            cert_file: {{ .TLS.Paths.Certificate }}
+            key_file: {{ .TLS.Paths.Key }}
+            min_version: {{ .TLS.Profile.MinTLSVersionShort }}
+{{- end }}
 {{- if .ReceiverTLS.Enabled }}
           tls:
 {{- if .ReceiverTLS.ClientCAEnabled }}
@@ -80,7 +86,6 @@ distributor:
             cert_file: {{ .ReceiverTLS.Paths.Certificate }}
             key_file: {{ .ReceiverTLS.Paths.Key }}
             min_version: {{ .ReceiverTLS.MinTLSVersion }}
-{{- end }}
 {{- end }}
   ring:
     kvstore:

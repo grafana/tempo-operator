@@ -395,8 +395,9 @@ func configureGateway(opts Options, sts *appsv1.StatefulSet) error {
 	}
 
 	if tempo.Spec.Ingestion != nil && tempo.Spec.Ingestion.OTLP != nil && tempo.Spec.Ingestion.OTLP.GRPC != nil && tempo.Spec.Ingestion.OTLP.GRPC.Enabled {
-		args = append(args, fmt.Sprintf("--grpc.listen=0.0.0.0:%d", manifestutils.GatewayPortGRPCServer))                   // proxies Tempo Distributor gRPC
-		args = append(args, fmt.Sprintf("--traces.write.otlpgrpc.endpoint=localhost:%d", manifestutils.PortOtlpGrpcServer)) // Tempo Distributor gRPC upstream
+		args = append(args, fmt.Sprintf("--grpc.listen=0.0.0.0:%d", manifestutils.GatewayPortGRPCServer))                    // proxies Tempo Distributor gRPC
+		args = append(args, fmt.Sprintf("--traces.write.otlpgrpc.endpoint=localhost:%d", manifestutils.PortOtlpGrpcServer))  // Tempo Distributor gRPC upstream
+		args = append(args, fmt.Sprintf("--traces.write.otlphttp.endpoint=http://localhost:%d", manifestutils.PortOtlpHttp)) // Tempo Distributor HTTP upstream
 		ports = append(ports, corev1.ContainerPort{
 			Name:          manifestutils.GatewayGrpcPortName,
 			ContainerPort: manifestutils.GatewayPortGRPCServer,
