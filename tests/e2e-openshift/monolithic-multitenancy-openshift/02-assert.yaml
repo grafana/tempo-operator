@@ -11,10 +11,21 @@ apiVersion: v1
 kind: Service
 metadata:
   name: dev-collector
+  namespace: chainsaw-monolithic-multitenancy
 spec:
   ports:
   - appProtocol: grpc
-    name: otlp-grpc
+    name: otlp-grpc-grpc
     port: 4317
     protocol: TCP
     targetPort: 4317
+  - appProtocol: http
+    name: otlp-http-http
+    port: 4318
+    protocol: TCP
+    targetPort: 4318
+  selector:
+    app.kubernetes.io/component: opentelemetry-collector
+    app.kubernetes.io/instance: chainsaw-monolithic-multitenancy.dev
+    app.kubernetes.io/managed-by: opentelemetry-operator
+    app.kubernetes.io/part-of: opentelemetry

@@ -28,8 +28,9 @@ spec:
           image: ghcr.io/open-telemetry/opentelemetry-collector-contrib/telemetrygen:v0.92.0
           args:
             - traces
-            - --otlp-endpoint=dev-collector:4317
-            - --service=http
+            - --otlp-endpoint=dev-collector:4318
+            - --otlp-http
             - --otlp-insecure
+            - --service=http
             - --traces=10
       restartPolicy: Never
