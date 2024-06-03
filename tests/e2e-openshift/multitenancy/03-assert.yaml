@@ -1,7 +1,17 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: generate-traces
+  name: generate-traces-grpc
+  namespace: chainsaw-multitenancy
+status:
+  conditions:
+    - status: "True"
+      type: Complete
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: generate-traces-http
   namespace: chainsaw-multitenancy
 status:
   conditions:

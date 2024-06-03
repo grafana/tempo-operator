@@ -254,6 +254,11 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 				config.Distributor.Receivers.OTLP.Protocols.HTTP = &tempoReceiverConfig{
 					TLS: receiverTLS,
 				}
+
+				if tempo.Spec.Multitenancy.IsGatewayEnabled() {
+					// all connections to tempo must go via gateway
+					config.Distributor.Receivers.OTLP.Protocols.HTTP.Endpoint = fmt.Sprintf("localhost:%d", manifestutils.PortOtlpHttp)
+				}
 			}
 		}
 	}

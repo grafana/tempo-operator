@@ -146,14 +146,6 @@ func (v *monolithicValidator) validateMultitenancy(tempo tempov1alpha1.TempoMono
 	}
 
 	multitenancyBase := field.NewPath("spec", "multitenancy")
-	if tempo.Spec.Ingestion != nil && tempo.Spec.Ingestion.OTLP != nil &&
-		tempo.Spec.Ingestion.OTLP.HTTP != nil && tempo.Spec.Ingestion.OTLP.HTTP.Enabled {
-		return field.ErrorList{field.Invalid(
-			multitenancyBase.Child("enabled"),
-			tempo.Spec.Multitenancy.Enabled,
-			"OTLP/HTTP ingestion must be disabled to enable multi-tenancy",
-		)}
-	}
 
 	err := ValidateTenantConfigs(&tempo.Spec.Multitenancy.TenantsSpec, tempo.Spec.Multitenancy.IsGatewayEnabled())
 	if err != nil {

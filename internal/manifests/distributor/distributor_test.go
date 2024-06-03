@@ -35,6 +35,11 @@ func TestBuildDistributor(t *testing.T) {
 			enableGateway: false,
 			expectedContainerPorts: []corev1.ContainerPort{
 				{
+					Name:          manifestutils.PortOtlpHttpName,
+					ContainerPort: manifestutils.PortOtlpHttp,
+					Protocol:      corev1.ProtocolTCP,
+				},
+				{
 					Name:          manifestutils.OtlpGrpcPortName,
 					ContainerPort: manifestutils.PortOtlpGrpcServer,
 					Protocol:      corev1.ProtocolTCP,
@@ -47,11 +52,6 @@ func TestBuildDistributor(t *testing.T) {
 				{
 					Name:          manifestutils.HttpMemberlistPortName,
 					ContainerPort: manifestutils.PortMemberlist,
-					Protocol:      corev1.ProtocolTCP,
-				},
-				{
-					Name:          manifestutils.PortOtlpHttpName,
-					ContainerPort: manifestutils.PortOtlpHttp,
 					Protocol:      corev1.ProtocolTCP,
 				},
 				{
@@ -82,6 +82,12 @@ func TestBuildDistributor(t *testing.T) {
 			},
 			expectedServicePorts: []corev1.ServicePort{
 				{
+					Name:       manifestutils.PortOtlpHttpName,
+					Port:       manifestutils.PortOtlpHttp,
+					TargetPort: intstr.FromString(manifestutils.PortOtlpHttpName),
+					Protocol:   corev1.ProtocolTCP,
+				},
+				{
 					Name:       manifestutils.OtlpGrpcPortName,
 					Protocol:   corev1.ProtocolTCP,
 					Port:       manifestutils.PortOtlpGrpcServer,
@@ -92,12 +98,6 @@ func TestBuildDistributor(t *testing.T) {
 					Protocol:   corev1.ProtocolTCP,
 					Port:       manifestutils.PortHTTPServer,
 					TargetPort: intstr.FromString(manifestutils.HttpPortName),
-				},
-				{
-					Name:       manifestutils.PortOtlpHttpName,
-					Port:       manifestutils.PortOtlpHttp,
-					TargetPort: intstr.FromString(manifestutils.PortOtlpHttpName),
-					Protocol:   corev1.ProtocolTCP,
 				},
 				{
 					Name:       manifestutils.PortJaegerThriftHTTPName,
@@ -176,6 +176,11 @@ func TestBuildDistributor(t *testing.T) {
 			enableReceiverTLS: true,
 			expectedContainerPorts: []corev1.ContainerPort{
 				{
+					Name:          manifestutils.PortOtlpHttpName,
+					ContainerPort: manifestutils.PortOtlpHttp,
+					Protocol:      corev1.ProtocolTCP,
+				},
+				{
 					Name:          manifestutils.OtlpGrpcPortName,
 					ContainerPort: manifestutils.PortOtlpGrpcServer,
 					Protocol:      corev1.ProtocolTCP,
@@ -188,11 +193,6 @@ func TestBuildDistributor(t *testing.T) {
 				{
 					Name:          manifestutils.HttpMemberlistPortName,
 					ContainerPort: manifestutils.PortMemberlist,
-					Protocol:      corev1.ProtocolTCP,
-				},
-				{
-					Name:          manifestutils.PortOtlpHttpName,
-					ContainerPort: manifestutils.PortOtlpHttp,
 					Protocol:      corev1.ProtocolTCP,
 				},
 				{
@@ -223,6 +223,12 @@ func TestBuildDistributor(t *testing.T) {
 			},
 			expectedServicePorts: []corev1.ServicePort{
 				{
+					Name:       manifestutils.PortOtlpHttpName,
+					Port:       manifestutils.PortOtlpHttp,
+					TargetPort: intstr.FromString(manifestutils.PortOtlpHttpName),
+					Protocol:   corev1.ProtocolTCP,
+				},
+				{
 					Name:       manifestutils.OtlpGrpcPortName,
 					Protocol:   corev1.ProtocolTCP,
 					Port:       manifestutils.PortOtlpGrpcServer,
@@ -233,12 +239,6 @@ func TestBuildDistributor(t *testing.T) {
 					Protocol:   corev1.ProtocolTCP,
 					Port:       manifestutils.PortHTTPServer,
 					TargetPort: intstr.FromString(manifestutils.HttpPortName),
-				},
-				{
-					Name:       manifestutils.PortOtlpHttpName,
-					Port:       manifestutils.PortOtlpHttp,
-					TargetPort: intstr.FromString(manifestutils.PortOtlpHttpName),
-					Protocol:   corev1.ProtocolTCP,
 				},
 				{
 					Name:       manifestutils.PortJaegerThriftHTTPName,
@@ -344,6 +344,11 @@ func TestBuildDistributor(t *testing.T) {
 			enableGateway: true,
 			expectedContainerPorts: []corev1.ContainerPort{
 				{
+					Name:          manifestutils.PortOtlpHttpName,
+					ContainerPort: manifestutils.PortOtlpHttp,
+					Protocol:      corev1.ProtocolTCP,
+				},
+				{
 					Name:          manifestutils.OtlpGrpcPortName,
 					ContainerPort: manifestutils.PortOtlpGrpcServer,
 					Protocol:      corev1.ProtocolTCP,
@@ -360,6 +365,12 @@ func TestBuildDistributor(t *testing.T) {
 				},
 			},
 			expectedServicePorts: []corev1.ServicePort{
+				{
+					Name:       manifestutils.PortOtlpHttpName,
+					Port:       manifestutils.PortOtlpHttp,
+					TargetPort: intstr.FromString(manifestutils.PortOtlpHttpName),
+					Protocol:   corev1.ProtocolTCP,
+				},
 				{
 					Name:       manifestutils.OtlpGrpcPortName,
 					Protocol:   corev1.ProtocolTCP,

@@ -157,6 +157,10 @@ metadata:
   name: tempo-simplest-distributor
 spec:
   ports:
+    - name: otlp-http
+      port: 4318
+      protocol: TCP
+      targetPort: otlp-http
     - name: otlp-grpc
       port: 4317
       protocol: TCP
@@ -165,10 +169,6 @@ spec:
       port: 3200
       protocol: TCP
       targetPort: http
-    - name: otlp-http
-      port: 4318
-      protocol: TCP
-      targetPort: otlp-http
     - name: thrift-http
       port: 14268
       protocol: TCP

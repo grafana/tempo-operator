@@ -12,22 +12,27 @@ spec:
         filename: "/var/run/secrets/kubernetes.io/serviceaccount/token"
 
     receivers:
-      otlp:
+      otlp/grpc:
         protocols:
           grpc:
+      otlp/http:
+        protocols:
           http:
-      jaeger:
-        protocols:
-          thrift_binary:
-          thrift_compact:
-          thrift_http:
-          grpc:
 
     processors:
 
     exporters:
       otlp:
         endpoint: tempo-simplest-gateway.chainsaw-multitenancy.svc.cluster.local:8090
+        tls:
+          insecure: false
+          ca_file: "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt"
+        auth:
+          authenticator: bearertokenauth
+        headers:
+          X-Scope-OrgID: "dev"
+      otlphttp:
+        endpoint: https://tempo-simplest-gateway.chainsaw-multitenancy.svc.cluster.local:8080/api/traces/v1/dev
         tls:
           insecure: false
           ca_file: "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt"
@@ -44,9 +49,12 @@ spec:
           encoding: "json"
       extensions: [bearertokenauth]
       pipelines:
-        traces:
-          receivers: [otlp, jaeger]
+        traces/grpc:
+          receivers: [otlp/grpc]
           exporters: [otlp]
+        traces/http:
+          receivers: [otlp/http]
+          exporters: [otlphttp]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
