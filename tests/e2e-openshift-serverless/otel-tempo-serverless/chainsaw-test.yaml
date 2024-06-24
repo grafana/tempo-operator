@@ -1,0 +1,89 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: otel-tempo-serverless
+spec:
+  # The test case needs to run serially as it creates resources in static namespaces knative-serving knative-eventing.
+  concurrent: false
+  namespace: chainsaw-otel-tempo-serverless
+  steps:
+  - name: Install Minio object store
+    try:
+    - apply:
+        file: install-minio.yaml
+    - assert:
+        file: install-minio-assert.yaml
+  - name: Install TempoStack
+    try:
+    - apply:
+        file: install-tempo.yaml
+    - assert:
+        file: install-tempo-assert.yaml
+  - name: Create the OTEL collector instance
+    try:
+    - apply:
+        file: create-otel-collector.yaml
+    - assert:
+        file: create-otel-collector-assert.yaml
+  - name: Create Knative serving instance
+    try:
+    - apply:
+        file: create-knative-serving.yaml
+    - assert:
+        file: create-knative-serving-assert.yaml
+  - name: Create Knative eventing instance
+    try:
+    - apply:
+        file: create-knative-eventing.yaml
+    - assert:
+        file: create-knative-eventing-assert.yaml
+  - name: Create Knative service app instance
+    try:
+    - apply:
+        file: create-knative-app.yaml
+    - assert:
+        file: create-knative-app-assert.yaml
+  - name: Generate Traces by probing the Knative service app instance
+    try:
+    - apply:
+        file: generate-traces.yaml
+    - assert:
+        file: generate-traces-assert.yaml
+  - name: Verify the Traces in Tempo instance
+    try:
+    - apply:
+        file: verify-traces.yaml
+    - assert:
+        file: verify-traces-assert.yaml
+    cleanup:
+    - delete:
+        ref:
+          apiVersion: serving.knative.dev/v1
+          kind: Service
+          name: serverless-app
+          namespace: chainsaw-otel-tempo-serverless
+    - delete:
+          ref:
+            apiVersion: serving.knative.dev/v1
+            kind: Route
+            name: serverless-app
+            namespace: chainsaw-otel-tempo-serverless
+    - delete:
+        ref:
+          apiVersion: networking.internal.knative.dev/v1alpha1
+          kind: Ingress
+          name: serverless-app
+          namespace: chainsaw-otel-tempo-serverless
+    - delete:
+        ref:
+          apiVersion: operator.knative.dev/v1beta1
+          kind: KnativeEventing
+          name: serverless
+          namespace: knative-eventing
+    - delete:
+        ref:
+          apiVersion: operator.knative.dev/v1beta1
+          kind: KnativeServing
+          name: serverless
+          namespace: knative-serving
+

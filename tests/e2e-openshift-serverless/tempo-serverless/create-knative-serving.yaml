@@ -1,0 +1,19 @@
+apiVersion: project.openshift.io/v1
+kind: Project
+metadata:
+  name: knative-serving
+spec: {}
+
+---
+apiVersion: operator.knative.dev/v1beta1
+kind: KnativeServing
+metadata:
+    name: serverless
+    namespace: knative-serving
+spec:
+  config:
+    tracing:
+      backend: "zipkin"
+      zipkin-endpoint: "http://tempo-serverless-distributor.chainsaw-tempo-serverless.svc:9411/api/v2/spans"
+      debug: "false"
+      sample-rate: "0.1" 
