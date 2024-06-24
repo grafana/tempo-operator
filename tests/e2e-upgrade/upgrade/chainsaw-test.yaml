@@ -73,7 +73,8 @@ spec:
         tail: 100
     finally:
     - get:
-        resource: subscriptions.operators.coreos.com
+        apiVersion: operators.coreos.com/v1alpha1
+        kind: Subscription
         namespace: chainsaw-operator-upgrade
         name: tempo
         format: yaml
@@ -90,10 +91,12 @@ spec:
             - status: 'True'
     finally:
     - get:
-        resource: deployment
+        apiVersion: apps/v1
+        kind: Deployment
         format: yaml
     - get:
-        resource: statefulset
+        apiVersion: apps/v1
+        kind: StatefulSet
         format: yaml
   - name: step-70
     try:
