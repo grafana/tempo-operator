@@ -32,7 +32,6 @@ func upgrade0_11_0(ctx context.Context, u Upgrade, tempo *v1alpha1.TempoStack) e
 	if image == "" {
 		image = u.CtrlConfig.DefaultImages.Tempo
 	}
-	rootUser := int64(0)
 
 	listOps := []client.ListOption{
 		client.MatchingLabels(manifestutils.ComponentLabels(manifestutils.IngesterComponentName, tempo.Name)),
@@ -43,8 +42,30 @@ func upgrade0_11_0(ctx context.Context, u Upgrade, tempo *v1alpha1.TempoStack) e
 		return err
 	}
 
+	return upgrade0_11_0_pvcs(ctx, u, tempo.ObjectMeta, tempo.Spec.Template.Ingester.NodeSelector, image, pvcs)
+}
+
+func upgrade0_11_0_monolithic(ctx context.Context, u Upgrade, tempo *v1alpha1.TempoMonolithic) error {
+	// do nothing on OpenShift
+	if u.CtrlConfig.Gates.OpenShift.OpenShiftRoute {
+		return nil
+	}
+
+	listOps := []client.ListOption{
+		client.MatchingLabels(manifestutils.ComponentLabels(manifestutils.TempoMonolithComponentName, tempo.Name)),
+	}
+	pvcs := &corev1.PersistentVolumeClaimList{}
+	err := u.Client.List(ctx, pvcs, listOps...)
+	if err != nil {
+		return err
+	}
+	return upgrade0_11_0_pvcs(ctx, u, tempo.ObjectMeta, tempo.Spec.NodeSelector, u.CtrlConfig.DefaultImages.Tempo, pvcs)
+}
+
+func upgrade0_11_0_pvcs(ctx context.Context, u Upgrade, tempo metav1.ObjectMeta, nodeSelector map[string]string, image string, pvcs *corev1.PersistentVolumeClaimList) error {
 	// keep the jobs around for 1 day
 	ttl := int32(60 * 60 * 24)
+	rootUser := int64(0)
 	var errs []error
 	for _, pvc := range pvcs.Items {
 		upgradeJob := v1.Job{
@@ -56,7 +77,7 @@ func upgrade0_11_0(ctx context.Context, u Upgrade, tempo *v1alpha1.TempoStack) e
 				Template: corev1.PodTemplateSpec{
 					Spec: corev1.PodSpec{
 						// Make sure the job runs on the same node as ingester
-						NodeSelector:       tempo.Spec.Template.Ingester.NodeSelector,
+						NodeSelector:       nodeSelector,
 						ServiceAccountName: naming.DefaultServiceAccountName(tempo.Name),
 						Volumes: []corev1.Volume{
 							{
@@ -70,7 +91,7 @@ func upgrade0_11_0(ctx context.Context, u Upgrade, tempo *v1alpha1.TempoStack) e
 						},
 						Containers: []corev1.Container{
 							{
-								Name:    "chwon",
+								Name:    "chown",
 								Image:   image,
 								Command: []string{"chown", "-R", "10001:10001", "/var/tempo"},
 								VolumeMounts: []corev1.VolumeMount{
@@ -88,7 +109,7 @@ func upgrade0_11_0(ctx context.Context, u Upgrade, tempo *v1alpha1.TempoStack) e
 			},
 		}
 
-		if errOwnerRef := ctrl.SetControllerReference(tempo, &upgradeJob, u.Client.Scheme()); errOwnerRef != nil {
+		if errOwnerRef := ctrl.SetControllerReference(&tempo, &upgradeJob, u.Client.Scheme()); errOwnerRef != nil {
 			errs = append(errs, errOwnerRef)
 		}
 		errCreate := u.Client.Create(ctx, &upgradeJob)
