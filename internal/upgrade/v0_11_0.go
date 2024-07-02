@@ -21,7 +21,7 @@ import (
 // The user is changed to 10001:10001
 // The previous user in 2.4.2 was root (0)
 // The Red Hat Tempo image does not use root user (it uses 1001) and on OpenShift the /var/tempo PV has a different fsGroup
-// so the issue does not happen on OpenShift
+// so the issue does not happen on OpenShift.
 func upgrade0_11_0(ctx context.Context, u Upgrade, tempo *v1alpha1.TempoStack) error {
 	// do nothing on OpenShift
 	if u.CtrlConfig.Gates.OpenShift.OpenShiftRoute {
