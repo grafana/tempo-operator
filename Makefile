@@ -159,7 +159,7 @@ run: manifests generate ## Run a controller from your host.
 
 .PHONY: docker-build
 docker-build: ## Build docker image with the manager.
-	docker buildx build --load --platform linux/${ARCH} --build-arg OPERATOR_VERSION -t ${IMG} .
+	docker buildx build --load --platform linux/${ARCH} --build-arg OPERATOR_VERSION --build-arg TEMPO_VERSION -t ${IMG} .
 
 .PHONY: docker-push
 docker-push: ## Push docker image with the manager.

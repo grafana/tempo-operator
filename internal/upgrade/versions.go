@@ -45,5 +45,9 @@ var (
 			version:           *semver.MustParse("0.8.0"),
 			upgradeTempoStack: upgrade0_8_0,
 		},
+		{
+			version:           *semver.MustParse("0.11.0"),
+			upgradeTempoStack: upgrade0_11_0,
+		},
 	}
 )

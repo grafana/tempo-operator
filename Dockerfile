@@ -18,6 +18,7 @@ COPY . .
 
 # Build
 ARG OPERATOR_VERSION
+ARG TEMPO_VERSION
 RUN make build
 
 # Use distroless as minimal base image to package the manager binary

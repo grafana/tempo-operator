@@ -47,11 +47,24 @@ rules:
   verbs:
   - update
 - apiGroups:
+  - batch
+  resources:
+  - jobs
+  verbs:
+  - create
+- apiGroups:
   - config.openshift.io
   resources:
   - dnses
   verbs:
   - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolumeclaims
+  verbs:
   - list
   - watch
 - apiGroups:
