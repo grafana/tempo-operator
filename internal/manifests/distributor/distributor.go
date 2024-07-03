@@ -1,6 +1,8 @@
 package distributor
 
 import (
+	"fmt"
+
 	"github.com/ViaQ/logerr/v2/kverrors"
 	"github.com/imdario/mergo"
 	"github.com/operator-framework/operator-lib/proxy"
@@ -16,6 +18,8 @@ import (
 	"github.com/grafana/tempo-operator/internal/manifests/memberlist"
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
 )
+
+const openshiftServiceTLSAnnotation = "service.beta.openshift.io/serving-cert-secret-name"
 
 // BuildDistributor creates distributor objects.
 func BuildDistributor(params manifestutils.Params) ([]client.Object, error) {
@@ -38,14 +42,31 @@ func BuildDistributor(params manifestutils.Params) ([]client.Object, error) {
 		}
 	}
 
+	distributorService := service(tempo)
+	objects := []client.Object{dep, distributorService}
+
 	if tempo.Spec.Template.Distributor.TLS.Enabled {
-		err = configureReceiversTLS(dep, tempo)
-		if err != nil {
-			return nil, err
+		if params.CtrlConfig.Gates.OpenShift.DistributorServingCertsService {
+			caSecretName := getTLSConfigMapName(tempo.Name)
+			certSecretName := getTLSSecretName(tempo.Name)
+			err = configureReceiversTLS(dep, caSecretName, certSecretName)
+			if err != nil {
+				return nil, err
+			}
+			distributorService.Annotations[openshiftServiceTLSAnnotation] = getTLSSecretName(tempo.Name)
+			objects = append(objects, getConfigmapCABundle(tempo))
+		} else {
+			caSecretName := tempo.Spec.Template.Distributor.TLS.CA
+			certSecretName := tempo.Spec.Template.Distributor.TLS.Cert
+			err = configureReceiversTLS(dep, caSecretName, certSecretName)
+			if err != nil {
+				return nil, err
+			}
 		}
+
 	}
 
-	return []client.Object{dep, service(tempo)}, nil
+	return objects, nil
 }
 
 func resources(tempo v1alpha1.TempoStack) corev1.ResourceRequirements {
@@ -55,9 +76,7 @@ func resources(tempo v1alpha1.TempoStack) corev1.ResourceRequirements {
 	return *tempo.Spec.Template.Distributor.Resources
 }
 
-func configureReceiversTLS(dep *v1.Deployment, tempo v1alpha1.TempoStack) error {
-	caSecretName := tempo.Spec.Template.Distributor.TLS.CA
-	certSecretName := tempo.Spec.Template.Distributor.TLS.Cert
+func configureReceiversTLS(dep *v1.Deployment, caSecretName, certSecretName string) error {
 	podSpec := &dep.Spec.Template.Spec
 	if caSecretName != "" {
 		/*Configure CA*/
@@ -335,6 +354,33 @@ func service(tempo v1alpha1.TempoStack) *corev1.Service {
 		Spec: corev1.ServiceSpec{
 			Ports:    servicePorts,
 			Selector: labels,
+		},
+	}
+}
+
+func getTLSSecretName(tempoName string) string {
+	return fmt.Sprintf("%s-distributor-tls", tempoName)
+}
+func getTLSConfigMapName(tempoName string) string {
+	return fmt.Sprintf("%s-distributor-ca", tempoName)
+}
+
+func getConfigmapCABundle(tempo v1alpha1.TempoStack) *corev1.ConfigMap {
+	name := getTLSConfigMapName(tempo.Name)
+	annotations := map[string]string{
+		"service.beta.openshift.io/inject-cabundle": "true",
+	}
+
+	return &corev1.ConfigMap{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "v1",
+			Kind:       "ConfigMap",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        name,
+			Namespace:   tempo.Namespace,
+			Annotations: annotations,
+			Labels:      manifestutils.ComponentLabels(manifestutils.DistributorComponentName, tempo.Name),
 		},
 	}
 }

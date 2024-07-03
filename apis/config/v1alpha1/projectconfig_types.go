@@ -95,6 +95,9 @@ type OpenShiftFeatureGates struct {
 
 	// OauthProxy define options for the oauth proxy feature.
 	OauthProxy OauthProxyFeatureGates `json:"oAuthProxy,omitempty"`
+
+	// DistributorServingCertsService
+	DistributorServingCertsService bool `json:"distributorServingCertsService,omitempty"`
 }
 
 // TLSProfileType is a TLS security profile based on the Mozilla definitions:
