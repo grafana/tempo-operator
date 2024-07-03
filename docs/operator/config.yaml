@@ -143,6 +143,9 @@ featureGates:
     # If empty the operator automatically derives the domain from the cluster.
     baseDomain: ""
 
+    # DistributorServingCertsService
+    distributorServingCertsService: false
+
     # OauthProxy define options for the oauth proxy feature.
     oAuthProxy:
 
