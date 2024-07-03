@@ -42,7 +42,7 @@ func upgrade0_11_0(ctx context.Context, u Upgrade, tempo *v1alpha1.TempoStack) e
 		return err
 	}
 
-	return upgrade0_11_0_pvcs(ctx, u, tempo.ObjectMeta, tempo.Spec.Template.Ingester.NodeSelector, image, pvcs)
+	return upgrade0_11_0_pvcs(ctx, u, tempo, tempo.Spec.Template.Ingester.NodeSelector, image, pvcs)
 }
 
 func upgrade0_11_0_monolithic(ctx context.Context, u Upgrade, tempo *v1alpha1.TempoMonolithic) error {
@@ -59,10 +59,10 @@ func upgrade0_11_0_monolithic(ctx context.Context, u Upgrade, tempo *v1alpha1.Te
 	if err != nil {
 		return err
 	}
-	return upgrade0_11_0_pvcs(ctx, u, tempo.ObjectMeta, tempo.Spec.NodeSelector, u.CtrlConfig.DefaultImages.Tempo, pvcs)
+	return upgrade0_11_0_pvcs(ctx, u, tempo, tempo.Spec.NodeSelector, u.CtrlConfig.DefaultImages.Tempo, pvcs)
 }
 
-func upgrade0_11_0_pvcs(ctx context.Context, u Upgrade, tempo metav1.ObjectMeta, nodeSelector map[string]string, image string, pvcs *corev1.PersistentVolumeClaimList) error {
+func upgrade0_11_0_pvcs(ctx context.Context, u Upgrade, tempo metav1.Object, nodeSelector map[string]string, image string, pvcs *corev1.PersistentVolumeClaimList) error {
 	// keep the jobs around for 1 day
 	ttl := int32(60 * 60 * 24)
 	rootUser := int64(0)
@@ -71,14 +71,14 @@ func upgrade0_11_0_pvcs(ctx context.Context, u Upgrade, tempo metav1.ObjectMeta,
 		upgradeJob := v1.Job{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("chown-%s", pvc.Name),
-				Namespace: tempo.Namespace,
+				Namespace: tempo.GetNamespace(),
 			},
 			Spec: v1.JobSpec{
 				Template: corev1.PodTemplateSpec{
 					Spec: corev1.PodSpec{
 						// Make sure the job runs on the same node as ingester
 						NodeSelector:       nodeSelector,
-						ServiceAccountName: naming.DefaultServiceAccountName(tempo.Name),
+						ServiceAccountName: naming.DefaultServiceAccountName(tempo.GetName()),
 						Volumes: []corev1.Volume{
 							{
 								Name: "data",
@@ -109,7 +109,7 @@ func upgrade0_11_0_pvcs(ctx context.Context, u Upgrade, tempo metav1.ObjectMeta,
 			},
 		}
 
-		if errOwnerRef := ctrl.SetControllerReference(&tempo, &upgradeJob, u.Client.Scheme()); errOwnerRef != nil {
+		if errOwnerRef := ctrl.SetControllerReference(tempo, &upgradeJob, u.Client.Scheme()); errOwnerRef != nil {
 			errs = append(errs, errOwnerRef)
 		}
 		errCreate := u.Client.Create(ctx, &upgradeJob)
