@@ -53,7 +53,7 @@ func BuildDistributor(params manifestutils.Params) ([]client.Object, error) {
 			if err != nil {
 				return nil, err
 			}
-			distributorService.Annotations[openshiftServiceTLSAnnotation] = getTLSSecretName(tempo.Name)
+			distributorService.Annotations = map[string]string{openshiftServiceTLSAnnotation: getTLSSecretName(tempo.Name)}
 			objects = append(objects, getConfigmapCABundle(tempo))
 		} else {
 			caSecretName := tempo.Spec.Template.Distributor.TLS.CA
