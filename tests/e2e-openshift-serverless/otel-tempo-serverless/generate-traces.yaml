@@ -1,0 +1,38 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: generate-traces
+  namespace: chainsaw-otel-tempo-serverless
+spec:
+  template:
+    spec:
+      containers:
+      - name: generate-traces
+        image: ghcr.io/grafana/tempo-operator/test-utils:main
+        command:
+        - /bin/bash
+        - -c
+        args:
+        - |
+          # Initialize success counter
+          success_count=0
+
+          # Loop until we have 10 successful runs
+          while (( success_count < 500 )); do
+              # Run the curl command
+              output=$(curl -s http://serverless-app.chainsaw-otel-tempo-serverless.svc || true)
+              sleep 1
+
+              # Check if the command was successful
+              if [[ $? -eq 0 && "$output" == 'Hello World! How about some tasty noodles?' ]]; then
+                  # Increment the success counter
+                  ((success_count++))
+                  echo "Success: $success_count"
+              else
+                  # If the command failed, retry
+                  echo "Command failed, retrying..."
+              fi
+          done
+
+          echo "Completed 500 successful runs."
+      restartPolicy: Never
