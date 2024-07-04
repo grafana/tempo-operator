@@ -1,7 +1,7 @@
 # Current Operator version
-OPERATOR_VERSION ?= 0.10.0
-TEMPO_VERSION ?= 2.4.1
-TEMPO_QUERY_VERSION ?= 2.4.1
+OPERATOR_VERSION ?= 0.11.0
+TEMPO_VERSION ?= 2.5.0
+TEMPO_QUERY_VERSION ?= 2.5.0
 TEMPO_GATEWAY_VERSION ?= main-2024-05-29-ca8d2de
 TEMPO_GATEWAY_OPA_VERSION ?= main-2024-04-29-914c13f
 OAUTH_PROXY_VERSION=4.12
@@ -159,7 +159,7 @@ run: manifests generate ## Run a controller from your host.
 
 .PHONY: docker-build
 docker-build: ## Build docker image with the manager.
-	docker buildx build --load --platform linux/${ARCH} --build-arg OPERATOR_VERSION -t ${IMG} .
+	docker buildx build --load --platform linux/${ARCH} --build-arg OPERATOR_VERSION --build-arg TEMPO_VERSION -t ${IMG} .
 
 .PHONY: docker-push
 docker-push: ## Push docker image with the manager.

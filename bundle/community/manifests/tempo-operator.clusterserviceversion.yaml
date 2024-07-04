@@ -73,8 +73,8 @@ metadata:
       ]
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
-    containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.10.0
-    createdAt: "2024-06-28T12:21:20Z"
+    containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.11.0
+    createdAt: "2024-07-04T13:04:01Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -83,7 +83,7 @@ metadata:
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     repository: https://github.com/grafana/tempo-operator
     support: Grafana Tempo Operator SIG
-  name: tempo-operator.v0.10.0
+  name: tempo-operator.v0.11.0
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -1191,11 +1191,27 @@ spec:
           verbs:
           - update
         - apiGroups:
+          - batch
+          resources:
+          - jobs
+          verbs:
+          - create
+          - get
+          - list
+          - watch
+        - apiGroups:
           - config.openshift.io
           resources:
           - dnses
           verbs:
           - get
+          - list
+          - watch
+        - apiGroups:
+          - ""
+          resources:
+          - persistentvolumeclaims
+          verbs:
           - list
           - watch
         - apiGroups:
@@ -1366,16 +1382,16 @@ spec:
                 - --config=controller_manager_config.yaml
                 env:
                 - name: RELATED_IMAGE_TEMPO
-                  value: docker.io/grafana/tempo:2.4.1
+                  value: docker.io/grafana/tempo:2.5.0
                 - name: RELATED_IMAGE_TEMPO_QUERY
-                  value: docker.io/grafana/tempo-query:2.4.1
+                  value: docker.io/grafana/tempo-query:2.5.0
                 - name: RELATED_IMAGE_TEMPO_GATEWAY
                   value: quay.io/observatorium/api:main-2024-05-29-ca8d2de
                 - name: RELATED_IMAGE_TEMPO_GATEWAY_OPA
                   value: quay.io/observatorium/opa-openshift:main-2024-04-29-914c13f
                 - name: RELATED_IMAGE_OAUTH_PROXY
                   value: quay.io/openshift/origin-oauth-proxy:4.12
-                image: ghcr.io/grafana/tempo-operator/tempo-operator:v0.10.0
+                image: ghcr.io/grafana/tempo-operator/tempo-operator:v0.11.0
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -1513,9 +1529,9 @@ spec:
   provider:
     name: Grafana Tempo Operator SIG
   relatedImages:
-  - image: docker.io/grafana/tempo:2.4.1
+  - image: docker.io/grafana/tempo:2.5.0
     name: tempo
-  - image: docker.io/grafana/tempo-query:2.4.1
+  - image: docker.io/grafana/tempo-query:2.5.0
     name: tempo-query
   - image: quay.io/observatorium/api:main-2024-05-29-ca8d2de
     name: tempo-gateway
@@ -1523,7 +1539,7 @@ spec:
     name: tempo-gateway-opa
   - image: quay.io/openshift/origin-oauth-proxy:4.12
     name: oauth-proxy
-  version: 0.10.0
+  version: 0.11.0
   webhookdefinitions:
   - admissionReviewVersions:
     - v1
