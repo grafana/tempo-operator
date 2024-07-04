@@ -800,6 +800,7 @@ func TestStatefulsetGateway(t *testing.T) {
 			"--tls.healthchecks.server-ca-file=/etc/tempo-gateway/serving-ca/service-ca.crt",
 			"--tls.healthchecks.server-name=tempo-sample-gateway.default.svc.cluster.local",
 			"--web.healthchecks.url=https://localhost:8080",
+			"--tls.client-auth-type=NoClientCert",
 		},
 		Ports: []corev1.ContainerPort{
 			{

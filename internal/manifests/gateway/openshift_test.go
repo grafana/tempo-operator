@@ -107,6 +107,7 @@ func TestPatchOCPServingCerts(t *testing.T) {
 			"--tls.healthchecks.server-ca-file=/etc/tempo-gateway/cabundle/service-ca.crt",
 			fmt.Sprintf("--tls.healthchecks.server-name=tempo-%s-gateway.%s.svc.cluster.local", tempo.Name, tempo.Namespace),
 			"--web.healthchecks.url=https://localhost:8080",
+			"--tls.client-auth-type=NoClientCert",
 		}...)
 	expected.Spec.Template.Spec.Containers[0].VolumeMounts = append(expected.Spec.Template.Spec.Containers[0].VolumeMounts,
 		corev1.VolumeMount{
