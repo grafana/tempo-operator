@@ -2,7 +2,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: verify-traces-grpc
-  namespace: chainsaw-multitenancy
+  namespace: chainsaw-tls-singletenant
 spec:
   template:
     spec:
@@ -15,17 +15,21 @@ spec:
         - -c
         args:
         - |
-          token=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+          # The query frontend must be accessible via HTTP (no mTLS) to enable connections from Grafana
           curl \
             -v -G \
-            --header "Authorization: Bearer $token" \
-            --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
-            https://tempo-simplest-gateway.chainsaw-multitenancy.svc:8080/api/traces/v1/dev/api/traces \
-            --data-urlencode "service=grpc" \
-            | tee /tmp/jaeger.out
-
+            http://tempo-simplest-query-frontend:3200/api/search \
+            --data-urlencode "q={}" \
+            | tee /tmp/tempo.out
+          num_traces=$(jq ".traces | length" /tmp/tempo.out)
+          if [[ "$num_traces" -ne 10 ]]; then
+            echo && echo "The Tempo API returned $num_traces instead of 10 traces."
+            exit 1
+          fi
+            
+          curl -v -G http://tempo-simplest-query-frontend:16686/api/traces --data-urlencode "service=grpc" | tee /tmp/jaeger.out
           num_traces=$(jq ".data | length" /tmp/jaeger.out)
-          if [[ "$num_traces" != "10" ]]; then
+          if [[ "$num_traces" -ne 10 ]]; then
             echo && echo "The Jaeger API returned $num_traces instead of 10 traces."
             exit 1
           fi
@@ -34,40 +38,8 @@ spec:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: verify-traces-traceql-grpc
-  namespace: chainsaw-multitenancy
-spec:
-  template:
-    spec:
-      containers:
-        - name: verify-traces
-          image: ghcr.io/grafana/tempo-operator/test-utils:main
-          command:
-            - /bin/bash
-            - -eux
-            - -c
-          args:
-            - |
-              token=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
-              curl \
-                -v -G \
-                --header "Authorization: Bearer $token" \
-                --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
-                https://tempo-simplest-gateway.chainsaw-multitenancy.svc:8080/api/traces/v1/dev/tempo/api/search \
-                --data-urlencode 'q={ resource.service.name="grpc" }' \
-                | tee /tmp/jaeger.out
-              num_traces=$(jq ".traces | length" /tmp/jaeger.out)
-              if [[ "$num_traces" != "10" ]]; then
-                echo && echo "The Jaeger API returned $num_traces instead of 10 traces."
-                exit 1
-              fi
-      restartPolicy: Never
----
-apiVersion: batch/v1
-kind: Job
-metadata:
   name: verify-traces-http
-  namespace: chainsaw-multitenancy
+  namespace: chainsaw-tls-singletenant
 spec:
   template:
     spec:
@@ -79,51 +51,23 @@ spec:
             - -eux
             - -c
           args:
-            - |
-              token=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
-              curl \
-                -v -G \
-                --header "Authorization: Bearer $token" \
-                --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
-                https://tempo-simplest-gateway.chainsaw-multitenancy.svc:8080/api/traces/v1/dev/api/traces \
-                --data-urlencode "service=http" \
-                | tee /tmp/jaeger.out
-              
-              num_traces=$(jq ".data | length" /tmp/jaeger.out)
-              if [[ "$num_traces" != "10" ]]; then
-                echo && echo "The Jaeger API returned $num_traces instead of 10 traces."
-                exit 1
-              fi
-      restartPolicy: Never
----
-apiVersion: batch/v1
-kind: Job
-metadata:
-  name: verify-traces-traceql-http
-  namespace: chainsaw-multitenancy
-spec:
-  template:
-    spec:
-      containers:
-        - name: verify-traces
-          image: ghcr.io/grafana/tempo-operator/test-utils:main
-          command:
-            - /bin/bash
-            - -eux
-            - -c
-          args:
-            - |
-              token=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
-              curl \
-                -v -G \
-                --header "Authorization: Bearer $token" \
-                --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
-                https://tempo-simplest-gateway.chainsaw-multitenancy.svc:8080/api/traces/v1/dev/tempo/api/search \
-                --data-urlencode 'q={ resource.service.name="http" }' \
-                | tee /tmp/jaeger.out
-              num_traces=$(jq ".traces | length" /tmp/jaeger.out)
-              if [[ "$num_traces" != "10" ]]; then
-                echo && echo "The Jaeger API returned $num_traces instead of 10 traces."
-                exit 1
-              fi
+          - |
+            # The query frontend must be accessible via HTTP (no mTLS) to enable connections from Grafana
+            curl \
+              -v -G \
+              http://tempo-simplest-query-frontend:3200/api/search \
+              --data-urlencode "q={}" \
+              | tee /tmp/tempo.out
+            num_traces=$(jq ".traces | length" /tmp/tempo.out)
+            if [[ "$num_traces" -ne 10 ]]; then
+              echo && echo "The Tempo API returned $num_traces instead of 10 traces."
+              exit 1
+            fi
+            
+            curl -v -G http://tempo-simplest-query-frontend:16686/api/traces --data-urlencode "service=http" | tee /tmp/jaeger.out
+            num_traces=$(jq ".data | length" /tmp/jaeger.out)
+            if [[ "$num_traces" -ne 10 ]]; then
+              echo && echo "The Jaeger API returned $num_traces instead of 10 traces."
+              exit 1
+            fi
       restartPolicy: Never

@@ -2,7 +2,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: generate-traces-grpc
-  namespace: chainsaw-multitenancy
+  namespace: chainsaw-tls-singletenant
 spec:
   template:
     spec:
@@ -21,7 +21,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: generate-traces-http
-  namespace: chainsaw-multitenancy
+  namespace: chainsaw-tls-singletenant
 spec:
   template:
     spec:

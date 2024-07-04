@@ -2,6 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: minio
-  namespace: chainsaw-multitenancy
+  namespace: chainsaw-tls-singletenant
 status:
   readyReplicas: 1

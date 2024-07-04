@@ -10,7 +10,7 @@ metadata:
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-simplest-gateway
-  namespace: chainsaw-multitenancy
+  namespace: chainsaw-tls-singletenant
   ownerReferences:
     - apiVersion: tempo.grafana.com/v1alpha1
       blockOwnerDeletion: true
@@ -30,7 +30,7 @@ metadata:
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-simplest-gateway
-  namespace: chainsaw-multitenancy
+  namespace: chainsaw-tls-singletenant
   ownerReferences:
     - apiVersion: tempo.grafana.com/v1alpha1
       blockOwnerDeletion: true
@@ -49,7 +49,7 @@ metadata:
   annotations:
     service.beta.openshift.io/inject-cabundle: "true"
   name: tempo-simplest-gateway-cabundle
-  namespace: chainsaw-multitenancy
+  namespace: chainsaw-tls-singletenant
   ownerReferences:
     - apiVersion: tempo.grafana.com/v1alpha1
       blockOwnerDeletion: true
@@ -70,7 +70,7 @@ metadata:
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-simplest-gateway
-  namespace: chainsaw-multitenancy
+  namespace: chainsaw-tls-singletenant
   ownerReferences:
     - apiVersion: tempo.grafana.com/v1alpha1
       blockOwnerDeletion: true
@@ -154,9 +154,9 @@ spec:
         - --traces.tenant-header=x-scope-orgid
         - --web.listen=0.0.0.0:8080
         - --web.internal.listen=0.0.0.0:8081
-        - --traces.write.otlpgrpc.endpoint=tempo-simplest-distributor.chainsaw-multitenancy.svc.cluster.local:4317
-        - --traces.write.otlphttp.endpoint=https://tempo-simplest-distributor.chainsaw-multitenancy.svc.cluster.local:4318
-        - --traces.tempo.endpoint=https://tempo-simplest-query-frontend.chainsaw-multitenancy.svc.cluster.local:3200
+        - --traces.write.otlpgrpc.endpoint=tempo-simplest-distributor.chainsaw-tls-singletenant.svc.cluster.local:4317
+        - --traces.write.otlphttp.endpoint=https://tempo-simplest-distributor.chainsaw-tls-singletenant.svc.cluster.local:4318
+        - --traces.tempo.endpoint=https://tempo-simplest-query-frontend.chainsaw-tls-singletenant.svc.cluster.local:3200
         - --grpc.listen=0.0.0.0:8090
         - --rbac.config=/etc/tempo-gateway/cm/rbac.yaml
         - --tenants.config=/etc/tempo-gateway/secret/tenants.yaml
@@ -169,9 +169,9 @@ spec:
         - --tls.server.cert-file=/etc/tempo-gateway/serving-certs/tls.crt
         - --tls.server.key-file=/etc/tempo-gateway/serving-certs/tls.key
         - --tls.healthchecks.server-ca-file=/etc/tempo-gateway/cabundle/service-ca.crt
-        - --tls.healthchecks.server-name=tempo-simplest-gateway.chainsaw-multitenancy.svc.cluster.local
+        - --tls.healthchecks.server-name=tempo-simplest-gateway.chainsaw-tls-singletenant.svc.cluster.local
         - --web.healthchecks.url=https://localhost:8080
-        - --traces.read.endpoint=https://tempo-simplest-query-frontend.chainsaw-multitenancy.svc.cluster.local:16686
+        - --traces.read.endpoint=https://tempo-simplest-query-frontend.chainsaw-tls-singletenant.svc.cluster.local:16686
         livenessProbe:
           failureThreshold: 10
           httpGet:
@@ -320,7 +320,7 @@ metadata:
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-simplest-gateway
-  namespace: chainsaw-multitenancy
+  namespace: chainsaw-tls-singletenant
   ownerReferences:
     - apiVersion: tempo.grafana.com/v1alpha1
       blockOwnerDeletion: true
@@ -349,7 +349,7 @@ metadata:
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-simplest-gateway
-  namespace: chainsaw-multitenancy
+  namespace: chainsaw-tls-singletenant
   ownerReferences:
     - apiVersion: tempo.grafana.com/v1alpha1
       blockOwnerDeletion: true
@@ -381,7 +381,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tempo-simplest-compactor
-  namespace: chainsaw-multitenancy
+  namespace: chainsaw-tls-singletenant
 status:
   readyReplicas: 1
 ---
@@ -389,7 +389,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tempo-simplest-distributor
-  namespace: chainsaw-multitenancy
+  namespace: chainsaw-tls-singletenant
 status:
   readyReplicas: 1
 ---
@@ -397,7 +397,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tempo-simplest-querier
-  namespace: chainsaw-multitenancy
+  namespace: chainsaw-tls-singletenant
 status:
   readyReplicas: 1
 ---
@@ -405,7 +405,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tempo-simplest-query-frontend
-  namespace: chainsaw-multitenancy
+  namespace: chainsaw-tls-singletenant
 status:
   readyReplicas: 1
 ---
@@ -413,6 +413,6 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: tempo-simplest-ingester
-  namespace: chainsaw-multitenancy
+  namespace: chainsaw-tls-singletenant
 status:
   readyReplicas: 1
