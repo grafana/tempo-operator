@@ -161,6 +161,7 @@ spec:
         - --rbac.config=/etc/tempo-gateway/cm/rbac.yaml
         - --tenants.config=/etc/tempo-gateway/secret/tenants.yaml
         - --log.level=info
+        - --tls.client-auth-type=NoClientCert
         - --tls.internal.server.key-file=/var/run/tls/server/tls.key
         - --tls.internal.server.cert-file=/var/run/tls/server/tls.crt
         - --traces.tls.key-file=/var/run/tls/server/tls.key
@@ -171,6 +172,7 @@ spec:
         - --tls.healthchecks.server-ca-file=/etc/tempo-gateway/cabundle/service-ca.crt
         - --tls.healthchecks.server-name=tempo-simplest-gateway.chainsaw-multitenancy.svc.cluster.local
         - --web.healthchecks.url=https://localhost:8080
+        - --tls.client-auth-type=NoClientCert
         - --traces.read.endpoint=https://tempo-simplest-query-frontend.chainsaw-multitenancy.svc.cluster.local:16686
         livenessProbe:
           failureThreshold: 10
