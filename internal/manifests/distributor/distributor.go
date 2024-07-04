@@ -1,8 +1,6 @@
 package distributor
 
 import (
-	"fmt"
-
 	"github.com/ViaQ/logerr/v2/kverrors"
 	"github.com/imdario/mergo"
 	"github.com/operator-framework/operator-lib/proxy"
@@ -47,13 +45,13 @@ func BuildDistributor(params manifestutils.Params) ([]client.Object, error) {
 
 	if tempo.Spec.Template.Distributor.TLS.Enabled {
 		if params.CtrlConfig.Gates.OpenShift.DistributorServingCertsService {
-			caSecretName := getTLSConfigMapName(tempo.Name)
-			certSecretName := getTLSSecretName(tempo.Name)
+			caSecretName := naming.ServingCABundleName(tempo.Name)
+			certSecretName := naming.ServingCertName(manifestutils.DistributorComponentName, tempo.Name)
 			err = configureReceiversTLS(dep, caSecretName, certSecretName)
 			if err != nil {
 				return nil, err
 			}
-			distributorService.Annotations = map[string]string{openshiftServiceTLSAnnotation: getTLSSecretName(tempo.Name)}
+			distributorService.Annotations = map[string]string{openshiftServiceTLSAnnotation: certSecretName}
 			objects = append(objects, getConfigmapCABundle(tempo))
 		} else {
 			caSecretName := tempo.Spec.Template.Distributor.TLS.CA
@@ -358,29 +356,9 @@ func service(tempo v1alpha1.TempoStack) *corev1.Service {
 	}
 }
 
-func getTLSSecretName(tempoName string) string {
-	return fmt.Sprintf("%s-distributor-tls", tempoName)
-}
-func getTLSConfigMapName(tempoName string) string {
-	return fmt.Sprintf("%s-distributor-ca", tempoName)
-}
-
 func getConfigmapCABundle(tempo v1alpha1.TempoStack) *corev1.ConfigMap {
-	name := getTLSConfigMapName(tempo.Name)
-	annotations := map[string]string{
-		"service.beta.openshift.io/inject-cabundle": "true",
-	}
-
-	return &corev1.ConfigMap{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "v1",
-			Kind:       "ConfigMap",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:        name,
-			Namespace:   tempo.Namespace,
-			Annotations: annotations,
-			Labels:      manifestutils.ComponentLabels(manifestutils.DistributorComponentName, tempo.Name),
-		},
-	}
+	return manifestutils.NewConfigMapCABundle(tempo.Namespace,
+		naming.ServingCABundleName(tempo.Name),
+		manifestutils.ComponentLabels(manifestutils.DistributorComponentName, tempo.Name),
+	)
 }
