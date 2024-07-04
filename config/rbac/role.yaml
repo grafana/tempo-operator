@@ -52,6 +52,9 @@ rules:
   - jobs
   verbs:
   - create
+  - get
+  - list
+  - watch
 - apiGroups:
   - config.openshift.io
   resources:

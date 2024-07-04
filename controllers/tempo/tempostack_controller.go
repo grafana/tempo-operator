@@ -61,7 +61,7 @@ type TempoStackReconciler struct {
 
 // Upgrate for 0.11.0 to Tempo 2.5
 // +kubebuilder:rbac:groups="core",resources=persistentvolumeclaims,verbs=list;watch
-// +kubebuilder:rbac:groups=batch,resources=jobs,verbs=create
+// +kubebuilder:rbac:groups=batch,resources=jobs,verbs=get;list;watch;create
 
 //+kubebuilder:rbac:groups=tempo.grafana.com,resources=tempostacks,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=tempo.grafana.com,resources=tempostacks/status,verbs=get;update;patch
