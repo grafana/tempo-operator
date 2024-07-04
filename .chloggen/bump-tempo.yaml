@@ -16,5 +16,5 @@ issues: [958]
 subtext: |
   Upstream Tempo 2.5.0 image switched user from `root` to `tempo` (10001:10001) and ownership of `/var/tempo`.
   Therefore ingester's `/var/tempo/wal` created by previous deployment using Tempo 2.4.1 needs to be updated and
-  changed ownership. The operator should upgrade the `/var/tempo` ownership by deploying a `job` with `securityContext.runAsUser(0)`
-  and run `chown -R /var/tempo 10001:10001`.
+  changed ownership. The operator upgrades the `/var/tempo` ownership by deploying a `job` with `securityContext.runAsUser(0)`
+  and it runs `chown -R /var/tempo 10001:10001`.

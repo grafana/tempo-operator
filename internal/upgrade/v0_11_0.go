@@ -48,6 +48,9 @@ func upgrade0_11_0(ctx context.Context, u Upgrade, tempo *v1alpha1.TempoStack) e
 	if err != nil {
 		return err
 	}
+	if len(pvcs.Items) == 0 {
+		return nil
+	}
 
 	err = scale_down_ingester(ctx, u, client.ObjectKey{Namespace: tempo.GetNamespace(), Name: naming.Name(manifestutils.IngesterComponentName, tempo.GetName())})
 	if err != nil {
@@ -71,6 +74,9 @@ func upgrade0_11_0_monolithic(ctx context.Context, u Upgrade, tempo *v1alpha1.Te
 	if err != nil {
 		return err
 	}
+	if len(pvcs.Items) == 0 {
+		return nil
+	}
 
 	err = scale_down_ingester(ctx, u, client.ObjectKey{Namespace: tempo.GetNamespace(), Name: naming.Name(manifestutils.TempoMonolithComponentName, tempo.GetName())})
 	if err != nil {
@@ -84,6 +90,10 @@ func scale_down_ingester(ctx context.Context, u Upgrade, ingesterQuery client.Ob
 	ingester := &appsv1.StatefulSet{}
 	err := u.Client.Get(ctx, ingesterQuery, ingester)
 	if err != nil {
+		// ingester does not exist, maybe scaled down?
+		if client.IgnoreNotFound(err) == nil {
+			return nil
+		}
 		return err
 	}
 
