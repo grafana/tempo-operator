@@ -416,6 +416,7 @@ func configureGateway(opts Options, sts *appsv1.StatefulSet) error {
 			fmt.Sprintf("--tls.healthchecks.server-ca-file=%s", path.Join(servingCADir, "service-ca.crt")),
 			fmt.Sprintf("--tls.healthchecks.server-name=%s", naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.GatewayComponentName)),
 			"--web.healthchecks.url=https://localhost:8080",
+			"--tls.client-auth-type=NoClientCert",
 		}...)
 	}
 
