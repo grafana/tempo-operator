@@ -5,6 +5,7 @@ import (
 
 	routev1 "github.com/openshift/api/route/v1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -1170,4 +1171,30 @@ func TestGetMutateFunc_MutateRoute(t *testing.T) {
 	require.Exactly(t, got.Labels, want.Labels)
 	require.Exactly(t, got.Annotations, want.Annotations)
 	require.Exactly(t, got.Spec, want.Spec)
+}
+
+func TestMutateServiceAccount(t *testing.T) {
+	existing := corev1.ServiceAccount{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "simplest",
+			Annotations: map[string]string{
+				"config.openshift.io/serving-cert-secret-name": "my-secret",
+			},
+		},
+	}
+	desired := corev1.ServiceAccount{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "simplest",
+		},
+	}
+
+	mutateFn := manifests.MutateFuncFor(&existing, &desired)
+	err := mutateFn()
+	require.NoError(t, err)
+	assert.Equal(t, corev1.ServiceAccount{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        "simplest",
+			Annotations: map[string]string{"config.openshift.io/serving-cert-secret-name": "my-secret"},
+		},
+	}, existing)
 }
