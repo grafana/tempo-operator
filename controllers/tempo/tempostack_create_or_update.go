@@ -7,7 +7,6 @@ import (
 	grafanav1 "github.com/grafana/grafana-operator/v5/api/v1beta1"
 	routev1 "github.com/openshift/api/route/v1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
-	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
@@ -77,7 +76,7 @@ func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, tempo v1alpha
 	// https://docs.openshift.com/container-platform/4.16/release_notes/ocp-4-16-release-notes.html part
 	// "Legacy service account API token secrets are no longer generated for each service account
 
-	managedObjects, err = r.filterServiceAccountObjects(ctx, tempo, managedObjects)
+	managedObjects, err = filterServiceAccountObjects(ctx, r.Client, tempo.ObjectMeta, managedObjects)
 	if err != nil {
 		return fmt.Errorf("error filtering object for creation/update: %w", err)
 	}
@@ -97,46 +96,6 @@ func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, tempo v1alpha
 	}
 
 	return nil
-}
-
-// Filter service account objects already created and modified by OCP. e.g  bound service account tokens
-// when generating pull secrets adds an annotation to the SA. In such case we are not interested on modified it.
-func (r *TempoStackReconciler) filterServiceAccountObjects(ctx context.Context,
-	tempo v1alpha1.TempoStack, objects []client.Object) ([]client.Object, error) {
-
-	var filtered []client.Object
-
-	serviceAccountList := &corev1.ServiceAccountList{}
-	err := r.List(ctx, serviceAccountList,
-		&client.ListOptions{
-			Namespace:     tempo.GetNamespace(),
-			LabelSelector: labels.SelectorFromSet(manifestutils.CommonLabels(tempo.Name)),
-		},
-	)
-
-	if err != nil {
-		return nil, err
-	}
-
-	for _, o := range objects {
-		switch newSA := o.(type) {
-		case *corev1.ServiceAccount:
-			needsUpdate := true
-			for _, existingSA := range serviceAccountList.Items {
-				if existingSA.Name == newSA.Name {
-					// may be is not enough to verify for existence, we need to fine tune this part
-					needsUpdate = false
-				}
-			}
-			if needsUpdate {
-				filtered = append(filtered, o)
-			}
-		default:
-			filtered = append(filtered, o)
-		}
-	}
-
-	return filtered, nil
 }
 
 func (r *TempoStackReconciler) findObjectsOwnedByTempoOperator(ctx context.Context, tempo v1alpha1.TempoStack) (map[types.UID]client.Object, error) {
