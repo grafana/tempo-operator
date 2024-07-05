@@ -12,7 +12,7 @@ import (
 )
 
 // Filter service account objects already created and modified by other controller. e.g  bound service account tokens
-// when generating pull secrets adds an annotation to the SA. In such case we are not interested on modified it.
+// when generating pull secrets add an annotation to the SA. In such a case, we are not interested in modifying it.
 func filterServiceAccountObjects(ctx context.Context,
 	cl client.Client, tempo metav1.ObjectMeta, objects []client.Object) ([]client.Object, error) {
 
