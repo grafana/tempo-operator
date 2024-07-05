@@ -1,5 +1,5 @@
 # Build the manager binary
-FROM golang:1.21 as builder
+FROM golang:1.22 as builder
 
 WORKDIR /workspace
 # Cache tool dependencies
@@ -18,6 +18,7 @@ COPY . .
 
 # Build
 ARG OPERATOR_VERSION
+ARG TEMPO_VERSION
 RUN make build
 
 # Use distroless as minimal base image to package the manager binary

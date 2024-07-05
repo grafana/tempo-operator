@@ -1,0 +1,23 @@
+apiVersion: opentelemetry.io/v1alpha1
+kind: OpenTelemetryCollector
+metadata:
+  name: serverless
+  namespace: chainsaw-otel-tempo-serverless
+spec:
+  mode: deployment
+  config: |
+    receivers:
+      zipkin:
+    processors:
+    exporters:
+      otlp:
+        endpoint: tempo-serverless-distributor:4317
+        tls:
+          insecure: true
+      debug:
+    service:
+      pipelines:
+        traces:
+          receivers: [zipkin]
+          processors: []
+          exporters: [debug, otlp]

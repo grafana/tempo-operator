@@ -152,6 +152,7 @@ func patchOCPServingCerts(tempo v1alpha1.TempoStack, dep *v1.Deployment) (*v1.De
 			fmt.Sprintf("--tls.healthchecks.server-ca-file=%s", path.Join(tempoGatewayMountDir, "cabundle", "service-ca.crt")),
 			fmt.Sprintf("--tls.healthchecks.server-name=%s", naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.GatewayComponentName)),
 			"--web.healthchecks.url=https://localhost:8080",
+			"--tls.client-auth-type=NoClientCert",
 		},
 	}
 	// WithOverrides overrides the HTTP in probes
