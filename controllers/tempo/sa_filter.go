@@ -11,7 +11,7 @@ import (
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 )
 
-// Filter service account objects already created and modified by OCP. e.g  bound service account tokens
+// Filter service account objects already created and modified by other controller. e.g  bound service account tokens
 // when generating pull secrets adds an annotation to the SA. In such case we are not interested on modified it.
 func filterServiceAccountObjects(ctx context.Context,
 	cl client.Client, tempo metav1.ObjectMeta, objects []client.Object) ([]client.Object, error) {
