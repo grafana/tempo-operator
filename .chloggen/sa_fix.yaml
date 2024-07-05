@@ -1,0 +1,25 @@
+# One of 'breaking', 'deprecation', 'new_component', 'enhancement', 'bug_fix'
+change_type: bug_fix
+
+# The name of the component, or a single word describing the area of concern, (e.g. operator, github action)
+component: operator
+
+# A brief description of the change. Surround your text with quotes ("") if it needs to start with a backtick (`).
+note: Check if the service account exists before try to create or update it.
+
+# One or more tracking issues related to the change
+issues: [970]
+
+# (Optional) One or more lines of additional information to render under the primary note.
+# These lines will be padded with 2 spaces and then inserted directly into the document.
+# Use pipe (|) for multiline entries.
+subtext: |
+  This prevents other controllers that modified the SA from create an infinite loop where the other controller modifies something,
+  and tempo-operator removes it, the other controller detect the changes and add its and so on and so on.
+  
+  This is specific for OpenShift case, where the openshift-controller-manager annotates the SA with
+  openshift.io/internal-registry-pull-secret-ref.
+  
+  See https://github.com/openshift/openshift-controller-manager/pull/288/ and 
+  https://docs.openshift.com/container-platform/4.16/release_notes/ocp-4-16-release-notes.html section about 
+  "Legacy service account API token secrets are no longer generated for each service account"
