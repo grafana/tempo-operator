@@ -142,11 +142,6 @@ func (r *TempoMonolithicReconciler) createOrUpdate(ctx context.Context, tempo v1
 		return fmt.Errorf("error building manifests: %w", err)
 	}
 
-	managedObjects, err = filterServiceAccountObjects(ctx, r.Client, tempo.ObjectMeta, managedObjects)
-	if err != nil {
-		return fmt.Errorf("error filtering object for creation/update: %w", err)
-	}
-
 	ownedObjects, err := r.getOwnedObjects(ctx, tempo)
 	if err != nil {
 		return err

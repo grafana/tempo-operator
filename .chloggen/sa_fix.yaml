@@ -5,7 +5,7 @@ change_type: bug_fix
 component: operator
 
 # A brief description of the change. Surround your text with quotes ("") if it needs to start with a backtick (`).
-note: Check if the service account exists before try to create or update it.
+note: Modify SA annotations managed by the operator, preserve others.
 
 # One or more tracking issues related to the change
 issues: [970]

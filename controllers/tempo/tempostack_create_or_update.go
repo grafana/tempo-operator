@@ -66,21 +66,6 @@ func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, tempo v1alpha
 		return fmt.Errorf("error building manifests: %w", err)
 	}
 
-	// This because other controllers could modify the SAs, we need to make sure
-	// to not create an infinite loop where the other controller modifies something, and we remove it.
-	//
-	// This is specific for OpenShift case, where the openshift-controller-manager annotates the SA with
-	// openshift.io/internal-registry-pull-secret-ref.
-	//
-	// See https://github.com/openshift/openshift-controller-manager/pull/288/ and
-	// https://docs.openshift.com/container-platform/4.16/release_notes/ocp-4-16-release-notes.html part
-	// "Legacy service account API token secrets are no longer generated for each service account
-
-	managedObjects, err = filterServiceAccountObjects(ctx, r.Client, tempo.ObjectMeta, managedObjects)
-	if err != nil {
-		return fmt.Errorf("error filtering object for creation/update: %w", err)
-	}
-
 	// Collect all objects owned by the operator, to be able to prune objects
 	// which exist in the cluster but are not managed by the operator anymore.
 	// For example, when the Jaeger Query Ingress is enabled and later disabled,
