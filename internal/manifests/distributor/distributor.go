@@ -44,7 +44,7 @@ func BuildDistributor(params manifestutils.Params) ([]client.Object, error) {
 	objects := []client.Object{dep, distributorService}
 
 	if tempo.Spec.Template.Distributor.TLS.Enabled {
-		if params.CtrlConfig.Gates.OpenShift.DistributorServingCertsService {
+		if params.CtrlConfig.Gates.OpenShift.ServingCertsService {
 			caSecretName := naming.ServingCABundleName(tempo.Name)
 			certSecretName := naming.ServingCertName(manifestutils.DistributorComponentName, tempo.Name)
 			err = configureReceiversTLS(dep, caSecretName, certSecretName)

@@ -27,7 +27,6 @@ data:
       openshift:
         openshiftRoute: false
         servingCertsService: false
-        distributorServingCertsService: false
         oAuthProxy:
           defaultEnabled: false
       prometheusOperator: false
