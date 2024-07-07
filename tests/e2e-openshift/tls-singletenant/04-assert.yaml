@@ -11,27 +11,7 @@ status:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: verify-traces-traceql-grpc
-  namespace: chainsaw-tls-singletenant
-status:
-  conditions:
-    - status: "True"
-      type: Complete
----
-apiVersion: batch/v1
-kind: Job
-metadata:
   name: verify-traces-http
-  namespace: chainsaw-tls-singletenant
-status:
-  conditions:
-    - status: "True"
-      type: Complete
----
-apiVersion: batch/v1
-kind: Job
-metadata:
-  name: verify-traces-traceql-http
   namespace: chainsaw-tls-singletenant
 status:
   conditions:
