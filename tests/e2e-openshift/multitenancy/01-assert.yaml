@@ -161,7 +161,6 @@ spec:
         - --rbac.config=/etc/tempo-gateway/cm/rbac.yaml
         - --tenants.config=/etc/tempo-gateway/secret/tenants.yaml
         - --log.level=info
-        - --tls.client-auth-type=NoClientCert
         - --tls.internal.server.key-file=/var/run/tls/server/tls.key
         - --tls.internal.server.cert-file=/var/run/tls/server/tls.crt
         - --traces.tls.key-file=/var/run/tls/server/tls.key
