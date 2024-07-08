@@ -3,6 +3,26 @@ Changes by Version
 
 <!-- next version -->
 
+## 0.11.1
+
+### 🧰 Bug fixes 🧰
+
+- `operator`: Avoid certificate prompt when accessing UI via gateway (#967)
+- `operator`: Modify SA annotations managed by the operator, preserve others. (#970)
+  This prevents other controllers that modified the SA from create an infinite loop where the other controller modifies something,
+  and tempo-operator removes it, the other controller detect the changes and add its and so on and so on.
+  
+  This is specific for OpenShift case, where the openshift-controller-manager annotates the SA with
+  openshift.io/internal-registry-pull-secret-ref.
+  
+  See https://github.com/openshift/openshift-controller-manager/pull/288/ and 
+  https://docs.openshift.com/container-platform/4.16/release_notes/ocp-4-16-release-notes.html section about 
+  "Legacy service account API token secrets are no longer generated for each service account"
+  
+
+### Components
+- Tempo: [v2.5.0](https://github.com/grafana/tempo/releases/tag/v2.5.0)
+
 ## 0.11.0
 
 ### 🛑 Breaking changes 🛑
