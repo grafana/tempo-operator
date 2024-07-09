@@ -1,0 +1,24 @@
+# based on config/samples/openshift/tempo_v1alpha1_multitenancy.yaml
+apiVersion: tempo.grafana.com/v1alpha1
+kind:  TempoStack
+metadata:
+  name: simplest
+  namespace: chainsaw-tls-singletenant
+spec:
+  storage:
+    secret:
+      name: minio
+      type: s3
+  storageSize: 1Gi
+  resources:
+    total:
+      limits:
+        memory: 2Gi
+        cpu: 2000m
+  template:
+    distributor:
+      tls:
+        enabled: true
+    queryFrontend:
+      jaegerQuery:
+        enabled: true

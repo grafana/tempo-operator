@@ -75,10 +75,14 @@ type BuiltInCertManagement struct {
 
 // OpenShiftFeatureGates is the supported set of all operator features gates on OpenShift.
 type OpenShiftFeatureGates struct {
-	// ServingCertsService enables OpenShift service-ca annotations on the TempoStack gateway service only
+	// ServingCertsService enables OpenShift service-ca annotations on the TempoStack
 	// to use the in-platform CA and generate a TLS cert/key pair per service for
 	// in-cluster data-in-transit encryption.
 	// More details: https://docs.openshift.com/container-platform/latest/security/certificate_types_descriptions/service-ca-certificates.html
+	//
+	// Currently is only used in two cases:
+	//   - If gateway is enabled, it will be used by the gateway component
+	//   - If the gateway is disabled and TLS is enabled on the distributor but no caName and certName are specified
 	ServingCertsService bool `json:"servingCertsService,omitempty"`
 
 	// OpenShiftRoute enables creating OpenShift Route objects.

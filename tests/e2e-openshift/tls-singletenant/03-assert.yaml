@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: generate-traces-grpc
+  namespace: chainsaw-tls-singletenant
+status:
+  conditions:
+    - status: "True"
+      type: Complete
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: generate-traces-http
+  namespace: chainsaw-tls-singletenant
+status:
+  conditions:
+    - status: "True"
+      type: Complete

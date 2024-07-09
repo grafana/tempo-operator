@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.11.1
-    createdAt: "2024-07-08T10:12:32Z"
+    createdAt: "2024-07-09T01:46:51Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -850,7 +850,10 @@ spec:
           the calculated resources derived from total
         displayName: Resources
         path: template.distributor.resources
-      - description: TLS defines TLS configuration for distributor receivers
+      - description: "TLS defines TLS configuration for distributor receivers \n If
+          openshift feature flag `servingCertsService` is enabled and TLS is enabled
+          but no certName or caName is specified, OpenShift service serving certificates
+          will  be used."
         displayName: TLS
         path: template.distributor.tls
       - description: CA is the name of a ConfigMap containing a CA certificate (service-ca.crt).

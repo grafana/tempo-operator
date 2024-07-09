@@ -17,6 +17,8 @@ import (
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
 )
 
+const openshiftServiceTLSAnnotation = "service.beta.openshift.io/serving-cert-secret-name"
+
 // BuildDistributor creates distributor objects.
 func BuildDistributor(params manifestutils.Params) ([]client.Object, error) {
 	dep := deployment(params)
@@ -38,14 +40,31 @@ func BuildDistributor(params manifestutils.Params) ([]client.Object, error) {
 		}
 	}
 
+	distributorService := service(tempo)
+	objects := []client.Object{dep, distributorService}
+
 	if tempo.Spec.Template.Distributor.TLS.Enabled {
-		err = configureReceiversTLS(dep, tempo)
-		if err != nil {
-			return nil, err
+		if params.CtrlConfig.Gates.OpenShift.ServingCertsService {
+			caSecretName := naming.ServingCABundleName(tempo.Name)
+			certSecretName := naming.ServingCertName(manifestutils.DistributorComponentName, tempo.Name)
+			err = configureReceiversTLS(dep, caSecretName, certSecretName)
+			if err != nil {
+				return nil, err
+			}
+			distributorService.Annotations = map[string]string{openshiftServiceTLSAnnotation: certSecretName}
+			objects = append(objects, getConfigmapCABundle(tempo))
+		} else {
+			caSecretName := tempo.Spec.Template.Distributor.TLS.CA
+			certSecretName := tempo.Spec.Template.Distributor.TLS.Cert
+			err = configureReceiversTLS(dep, caSecretName, certSecretName)
+			if err != nil {
+				return nil, err
+			}
 		}
+
 	}
 
-	return []client.Object{dep, service(tempo)}, nil
+	return objects, nil
 }
 
 func resources(tempo v1alpha1.TempoStack) corev1.ResourceRequirements {
@@ -55,9 +74,7 @@ func resources(tempo v1alpha1.TempoStack) corev1.ResourceRequirements {
 	return *tempo.Spec.Template.Distributor.Resources
 }
 
-func configureReceiversTLS(dep *v1.Deployment, tempo v1alpha1.TempoStack) error {
-	caSecretName := tempo.Spec.Template.Distributor.TLS.CA
-	certSecretName := tempo.Spec.Template.Distributor.TLS.Cert
+func configureReceiversTLS(dep *v1.Deployment, caSecretName, certSecretName string) error {
 	podSpec := &dep.Spec.Template.Spec
 	if caSecretName != "" {
 		/*Configure CA*/
@@ -337,4 +354,11 @@ func service(tempo v1alpha1.TempoStack) *corev1.Service {
 			Selector: labels,
 		},
 	}
+}
+
+func getConfigmapCABundle(tempo v1alpha1.TempoStack) *corev1.ConfigMap {
+	return manifestutils.NewConfigMapCABundle(tempo.Namespace,
+		naming.ServingCABundleName(tempo.Name),
+		manifestutils.ComponentLabels(manifestutils.DistributorComponentName, tempo.Name),
+	)
 }

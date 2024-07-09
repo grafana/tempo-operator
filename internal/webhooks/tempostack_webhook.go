@@ -409,7 +409,7 @@ func (v *validator) validateDeprecatedFields(tempo v1alpha1.TempoStack) field.Er
 
 func (v *validator) validateReceiverTLS(tempo v1alpha1.TempoStack) field.ErrorList {
 	spec := tempo.Spec.Template.Distributor.TLS
-	if spec.Enabled {
+	if spec.Enabled && !v.ctrlConfig.Gates.OpenShift.ServingCertsService {
 		if spec.Cert == "" {
 			return field.ErrorList{
 				field.Invalid(

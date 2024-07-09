@@ -1,0 +1,39 @@
+# based on config/samples/otelcol_v1alpha1_openshift.yaml
+apiVersion: opentelemetry.io/v1alpha1
+kind: OpenTelemetryCollector
+metadata:
+  name: dev
+  namespace: chainsaw-tls-singletenant
+spec:
+  config: |
+    receivers:
+      otlp/grpc:
+        protocols:
+          grpc:
+      otlp/http:
+        protocols:
+          http:
+    exporters:
+      otlp:
+        endpoint: tempo-simplest-distributor.chainsaw-tls-singletenant.svc.cluster.local:4317
+        tls:
+          insecure: false
+          ca_file: "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt"
+      otlphttp:
+        endpoint: https://tempo-simplest-distributor.chainsaw-tls-singletenant.svc.cluster.local:4318
+        tls:
+          insecure: false
+          ca_file: "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt"
+    service:
+      telemetry:
+        logs:
+          level: "DEBUG"
+          development: true
+          encoding: "json"
+      pipelines:
+        traces/grpc:
+          receivers: [otlp/grpc]
+          exporters: [otlp]
+        traces/http:
+          receivers: [otlp/http]
+          exporters: [otlphttp]

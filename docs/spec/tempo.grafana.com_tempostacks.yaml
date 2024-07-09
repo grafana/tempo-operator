@@ -104,7 +104,7 @@ spec:                                    # TempoStackSpec defines the desired st
             cpu: "500m"
             memory: "1Gi"
         tolerations: {}                  # Tolerations defines component-specific pod tolerations.
-      tls:                               # TLS defines TLS configuration for distributor receivers
+      tls:                               # TLS defines TLS configuration for distributor receivers   If openshift feature flag `servingCertsService` is enabled and TLS is enabled but no certName or caName is specified, OpenShift service serving certificates will  be used.
         enabled: false                   # Enabled defines if TLS is enabled.
         caName: ""                       # CA is the name of a ConfigMap containing a CA certificate (service-ca.crt). It needs to be in the same namespace as the Tempo custom resource.
         certName: ""                     # Cert is the name of a Secret containing a certificate (tls.crt) and private key (tls.key). It needs to be in the same namespace as the Tempo custom resource.
