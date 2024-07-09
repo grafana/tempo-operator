@@ -493,6 +493,9 @@ type TempoDistributorSpec struct {
 	//
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="TLS"
+	//
+	// If openshift feature flag `servingCertsService` is enabled and TLS is enabled but no
+	// certName or caName is specified, OpenShift service serving certificates will  be used.
 	TLS TLSSpec `json:"tls,omitempty"`
 }
 

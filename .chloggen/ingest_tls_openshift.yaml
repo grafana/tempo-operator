@@ -14,7 +14,7 @@ issues: [963]
 # These lines will be padded with 2 spaces and then inserted directly into the document.
 # Use pipe (|) for multiline entries.
 subtext: |
-  On OpenShift when operator config `DistributorServingCertsService` is enabled and the following TempoStack CR is used.
+  On OpenShift when operator config `servingCertsService` is enabled and the following TempoStack CR is used.
   The operator provisions OpenShift serving certificates for the distributor ingest APIs
   ```
     apiVersion: tempo.grafana.com/v1alpha1
