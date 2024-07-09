@@ -29,6 +29,13 @@ func BuildServices(opts Options) []client.Object {
 // buildTempoService creates the service for a monolithic deployment.
 func buildTempoService(opts Options) *corev1.Service {
 	tempo := opts.Tempo
+	annotations := map[string]string{}
+
+	if opts.CtrlConfig.Gates.OpenShift.ServingCertsService && ingestionTLSEnabled(tempo) &&
+		tlsSecretAndBundleEmpty(tempo) {
+		annotations["service.beta.openshift.io/serving-cert-secret-name"] = naming.ServingCertName(manifestutils.TempoMonolithComponentName, tempo.Name)
+	}
+
 	labels := ComponentLabels(manifestutils.TempoMonolithComponentName, tempo.Name)
 	ports := []corev1.ServicePort{{
 		Name:       manifestutils.HttpPortName,
@@ -62,9 +69,10 @@ func buildTempoService(opts Options) *corev1.Service {
 			Kind:       "Service",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      naming.Name(manifestutils.TempoMonolithComponentName, tempo.Name),
-			Namespace: tempo.Namespace,
-			Labels:    labels,
+			Name:        naming.Name(manifestutils.TempoMonolithComponentName, tempo.Name),
+			Namespace:   tempo.Namespace,
+			Labels:      labels,
+			Annotations: annotations,
 		},
 		Spec: corev1.ServiceSpec{
 			Ports:    ports,

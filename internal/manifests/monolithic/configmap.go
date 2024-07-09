@@ -232,6 +232,7 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 			if tempo.Spec.Ingestion.OTLP.GRPC != nil && tempo.Spec.Ingestion.OTLP.GRPC.Enabled {
 				receiverTLS, err := configureReceiverTLS(tempo.Spec.Ingestion.OTLP.GRPC.TLS, opts.TLSProfile,
 					manifestutils.ReceiverGRPCTLSCADir, manifestutils.ReceiverGRPCTLSCertDir)
+
 				if err != nil {
 					return nil, err
 				}
