@@ -139,15 +139,15 @@ func BuildConfigMap(opts Options) (*corev1.ConfigMap, map[string]string, error) 
 	return configMap, extraAnnotations, nil
 }
 
-func configureReceiverTLS(tlsSpec *v1alpha1.TLSSpec, tlsProfile tlsprofile.TLSProfileOptions) (tempoReceiverTLSConfig, error) {
+func configureReceiverTLS(tlsSpec *v1alpha1.TLSSpec, tlsProfile tlsprofile.TLSProfileOptions, caCertDir, certDir string) (tempoReceiverTLSConfig, error) {
 	tlsCfg := tempoReceiverTLSConfig{}
 	if tlsSpec != nil && tlsSpec.Enabled {
 		if tlsSpec.Cert != "" {
-			tlsCfg.CertFile = path.Join(manifestutils.ReceiverTLSCertDir, manifestutils.TLSCertFilename)
-			tlsCfg.KeyFile = path.Join(manifestutils.ReceiverTLSCertDir, manifestutils.TLSKeyFilename)
+			tlsCfg.CertFile = path.Join(certDir, manifestutils.TLSCertFilename)
+			tlsCfg.KeyFile = path.Join(certDir, manifestutils.TLSKeyFilename)
 		}
 		if tlsSpec.CA != "" {
-			tlsCfg.CAFile = path.Join(manifestutils.ReceiverTLSCADir, manifestutils.TLSCAFilename)
+			tlsCfg.CAFile = path.Join(caCertDir, manifestutils.TLSCAFilename)
 		}
 		if tlsSpec.MinVersion != "" {
 			tlsCfg.MinVersion = tlsSpec.MinVersion
@@ -230,7 +230,8 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 	if tempo.Spec.Ingestion != nil {
 		if tempo.Spec.Ingestion.OTLP != nil {
 			if tempo.Spec.Ingestion.OTLP.GRPC != nil && tempo.Spec.Ingestion.OTLP.GRPC.Enabled {
-				receiverTLS, err := configureReceiverTLS(tempo.Spec.Ingestion.OTLP.GRPC.TLS, opts.TLSProfile)
+				receiverTLS, err := configureReceiverTLS(tempo.Spec.Ingestion.OTLP.GRPC.TLS, opts.TLSProfile,
+					manifestutils.ReceiverGRPCTLSCADir, manifestutils.ReceiverGRPCTLSCertDir)
 				if err != nil {
 					return nil, err
 				}
@@ -246,7 +247,8 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 			}
 
 			if tempo.Spec.Ingestion.OTLP.HTTP != nil && tempo.Spec.Ingestion.OTLP.HTTP.Enabled {
-				receiverTLS, err := configureReceiverTLS(tempo.Spec.Ingestion.OTLP.HTTP.TLS, opts.TLSProfile)
+				receiverTLS, err := configureReceiverTLS(tempo.Spec.Ingestion.OTLP.HTTP.TLS,
+					opts.TLSProfile, manifestutils.ReceiverHTTPTLSCADir, manifestutils.ReceiverHTTPTLSCertDir)
 				if err != nil {
 					return nil, err
 				}
