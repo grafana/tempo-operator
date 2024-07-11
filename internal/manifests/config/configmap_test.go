@@ -34,8 +34,10 @@ func TestConfigmap(t *testing.T) {
 		},
 		StorageParams: manifestutils.StorageParams{
 			S3: &manifestutils.S3{
-				Endpoint: "http://minio:9000",
-				Bucket:   "tempo",
+				LongLived: &manifestutils.S3LongLived{
+					Endpoint: "http://minio:9000",
+					Bucket:   "tempo",
+				},
 			},
 		},
 	})

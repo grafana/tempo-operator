@@ -38,11 +38,23 @@ type GCS struct {
 
 // S3 holds S3 configuration.
 type S3 struct {
+	LongLived  *S3LongLived
+	ShortLived *S3ShortLived
+}
+
+type S3LongLived struct {
 	// Endpoint without http/https
 	Endpoint string
 	Bucket   string
 	Insecure bool
-	TLS      StorageTLS
+
+	TLS StorageTLS
+}
+
+type S3ShortLived struct {
+	Bucket  string
+	RoleARN string
+	Region  string
 }
 
 // StorageTLS holds StorageTLS configuration.

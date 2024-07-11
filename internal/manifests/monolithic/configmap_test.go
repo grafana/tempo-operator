@@ -252,8 +252,10 @@ usage_report:
 				},
 				StorageParams: manifestutils.StorageParams{
 					S3: &manifestutils.S3{
-						Endpoint: "minio",
-						Bucket:   "tempo",
+						LongLived: &manifestutils.S3LongLived{
+							Endpoint: "minio",
+							Bucket:   "tempo",
+						},
 					},
 				},
 			},

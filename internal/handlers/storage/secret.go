@@ -45,15 +45,23 @@ func ensureNotEmpty(storageSecret corev1.Secret, fields []string, path *field.Pa
 }
 
 func validateS3Secret(storageSecret corev1.Secret, path *field.Path) field.ErrorList {
+	if storageSecret.Data["role_arn"] != nil {
+		secretFieldsShortLived := []string{
+			"bucket",
+			"region",
+			"role_arn",
+		}
+		return ensureNotEmpty(storageSecret, secretFieldsShortLived, path)
+	}
+
 	var allErrs field.ErrorList
-	secretFields := []string{
+	secretFieldsLongLived := []string{
 		"endpoint",
 		"bucket",
 		"access_key_id",
 		"access_key_secret",
 	}
-
-	allErrs = append(allErrs, ensureNotEmpty(storageSecret, secretFields, path)...)
+	allErrs = append(allErrs, ensureNotEmpty(storageSecret, secretFieldsLongLived, path)...)
 
 	if endpoint, ok := storageSecret.Data["endpoint"]; ok {
 		u, err := url.ParseRequestURI(string(endpoint))
@@ -78,15 +86,27 @@ func getS3Params(storageSecret corev1.Secret, path *field.Path) (*manifestutils.
 		return nil, errs
 	}
 
+	if storageSecret.Data["role_arn"] != nil {
+		return &manifestutils.S3{
+			ShortLived: &manifestutils.S3ShortLived{
+				Bucket:  string(storageSecret.Data["bucket"]),
+				RoleARN: string(storageSecret.Data["role_arn"]),
+				Region:  string(storageSecret.Data["region"]),
+			},
+		}, nil
+	}
+
 	endpoint := string(storageSecret.Data["endpoint"])
 	insecure := !strings.HasPrefix(endpoint, "https://")
 	endpoint = strings.TrimPrefix(endpoint, "https://")
 	endpoint = strings.TrimPrefix(endpoint, "http://")
 
 	return &manifestutils.S3{
-		Endpoint: endpoint,
-		Bucket:   string(storageSecret.Data["bucket"]),
-		Insecure: insecure,
+		LongLived: &manifestutils.S3LongLived{
+			Endpoint: endpoint,
+			Bucket:   string(storageSecret.Data["bucket"]),
+			Insecure: insecure,
+		},
 	}, nil
 }
 

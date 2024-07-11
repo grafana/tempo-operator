@@ -118,9 +118,11 @@ query_frontend:
 		},
 		StorageParams: manifestutils.StorageParams{
 			S3: &manifestutils.S3{
-				Endpoint: "minio:9000",
-				Bucket:   "tempo",
-				Insecure: true,
+				LongLived: &manifestutils.S3LongLived{
+					Endpoint: "minio:9000",
+					Bucket:   "tempo",
+					Insecure: true,
+				},
 			},
 		},
 		TLSProfile: tlsprofile.TLSProfileOptions{
@@ -978,9 +980,11 @@ query_frontend:
 				},
 				StorageParams: manifestutils.StorageParams{
 					S3: &manifestutils.S3{
-						Endpoint: "minio:9000",
-						Bucket:   "tempo",
-						Insecure: true,
+						LongLived: &manifestutils.S3LongLived{
+							Endpoint: "minio:9000",
+							Bucket:   "tempo",
+							Insecure: true,
+						},
 					},
 				},
 				TLSProfile: tlsprofile.TLSProfileOptions{
@@ -1350,9 +1354,11 @@ query_frontend:
 		},
 		StorageParams: manifestutils.StorageParams{
 			S3: &manifestutils.S3{
-				Endpoint: "minio:9000",
-				Bucket:   "tempo",
-				Insecure: true,
+				LongLived: &manifestutils.S3LongLived{
+					Endpoint: "minio:9000",
+					Bucket:   "tempo",
+					Insecure: true,
+				},
 			},
 		},
 		TLSProfile: tlsprofile.TLSProfileOptions{
@@ -1639,9 +1645,11 @@ ingester_client:
 				},
 				StorageParams: manifestutils.StorageParams{
 					S3: &manifestutils.S3{
-						Endpoint: "minio:9000",
-						Bucket:   "tempo",
-						Insecure: true,
+						LongLived: &manifestutils.S3LongLived{
+							Endpoint: "minio:9000",
+							Bucket:   "tempo",
+							Insecure: true,
+						},
 					},
 				},
 				TLSProfile: tc.options,
@@ -1801,9 +1809,11 @@ ingester_client:
 		},
 		StorageParams: manifestutils.StorageParams{
 			S3: &manifestutils.S3{
-				Endpoint: "minio:9000",
-				Bucket:   "tempo",
-				Insecure: true,
+				LongLived: &manifestutils.S3LongLived{
+					Endpoint: "minio:9000",
+					Bucket:   "tempo",
+					Insecure: true,
+				},
 			},
 		},
 		TLSProfile: tlsprofile.TLSProfileOptions{
@@ -2166,9 +2176,11 @@ query_frontend:
 				},
 				StorageParams: manifestutils.StorageParams{
 					S3: &manifestutils.S3{
-						Endpoint: "minio:9000",
-						Bucket:   "tempo",
-						Insecure: true,
+						LongLived: &manifestutils.S3LongLived{
+							Endpoint: "minio:9000",
+							Bucket:   "tempo",
+							Insecure: true,
+						},
 					},
 				},
 				TLSProfile: tlsprofile.TLSProfileOptions{
@@ -2382,9 +2394,11 @@ query_frontend:
 				},
 				StorageParams: manifestutils.StorageParams{
 					S3: &manifestutils.S3{
-						Endpoint: "minio:9000",
-						Bucket:   "tempo",
-						Insecure: true,
+						LongLived: &manifestutils.S3LongLived{
+							Endpoint: "minio:9000",
+							Bucket:   "tempo",
+							Insecure: true,
+						},
 					},
 				},
 			})

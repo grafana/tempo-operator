@@ -218,13 +218,12 @@ storage:
     gcs:
       bucket_name: {{ .Bucket }}
     {{- end }}
-    {{- with .StorageParams.S3 }}
+    {{- if and .StorageParams.S3 .StorageParams.S3.LongLived }}
     s3:
-      endpoint: {{ .Endpoint }}
-      bucket: {{ .Bucket }}
-      insecure: {{ .Insecure }}
-    {{- end }}
-{{- if and .StorageParams.S3 .S3StorageTLS.Enabled }}
+      endpoint: {{ .StorageParams.S3.LongLived.Endpoint }}
+      bucket: {{ .StorageParams.S3.LongLived.Bucket }}
+      insecure: {{ .StorageParams.S3.LongLived.Insecure }}
+    {{- if .S3StorageTLS.Enabled }}
     {{- if .S3StorageTLS.CA }}
       tls_ca_path: {{ .S3StorageTLS.CA }}
     {{- end }}
@@ -234,7 +233,13 @@ storage:
     {{- if and .S3StorageTLS.Key }}
       tls_key_path: {{ .S3StorageTLS.Key }}
     {{- end }}
-{{- end }}
+    {{- end }}
+  {{- end }}
+  {{- if and .StorageParams.S3 .StorageParams.S3.ShortLived }}
+  s3:
+    bucket: {{ .StorageParams.S3.ShortLived.Bucket }}
+    endpoint: s3.{{ .StorageParams.S3.ShortLived.Region }}.amazonaws.com
+  {{- end }}
     local:
       path: /var/tempo/traces
     wal:
