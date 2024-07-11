@@ -315,7 +315,7 @@ func deployment(params manifestutils.Params) (*appsv1.Deployment, error) {
 		d.Spec.Template.Spec.Volumes = append(d.Spec.Template.Spec.Volumes, jaegerQueryVolume)
 	}
 
-	err := manifestutils.ConfigureStorage(tempo, &d.Spec.Template.Spec, "tempo")
+	err := manifestutils.ConfigureStorage(params.StorageParams, tempo, &d.Spec.Template.Spec, "tempo")
 	if err != nil {
 		return nil, err
 	}
