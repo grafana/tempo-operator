@@ -679,6 +679,68 @@ func TestValidateStorageSecret(t *testing.T) {
 			},
 			expected: nil,
 		},
+		{
+			name:  "S3 short lived - valid",
+			tempo: tempoS3,
+			input: corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: tempoS3.Spec.Storage.Secret.Name,
+				},
+				Data: map[string][]byte{
+					"bucket":   []byte("bucket"),
+					"region":   []byte("us-east-1"),
+					"role_arn": []byte("role-arn"),
+				},
+			},
+		},
+		{
+			name:  "S3 short lived - missing bucket",
+			tempo: tempoS3,
+			input: corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: tempoS3.Spec.Storage.Secret.Name,
+				},
+				Data: map[string][]byte{
+					"role_arn": []byte("role"),
+					"region":   []byte("us-east-1"),
+				},
+			},
+			expected: field.ErrorList{
+				field.Invalid(secretNamePath, tempoS3.Spec.Storage.Secret.Name, "storage secret must contain \"bucket\" field"),
+			},
+		},
+		{
+			name:  "S3 short lived - missing role_arn",
+			tempo: tempoS3,
+			input: corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: tempoS3.Spec.Storage.Secret.Name,
+				},
+				Data: map[string][]byte{
+					"bucket": []byte("bucket"),
+					"region": []byte("us-east-1"),
+				},
+			},
+			expected: field.ErrorList{
+				field.Invalid(secretNamePath, tempoS3.Spec.Storage.Secret.Name, "storage secret must contain \"role_arn\" field"),
+			},
+		},
+		{
+			name:  "S3 short lived - missing region",
+			tempo: tempoS3,
+			input: corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: tempoS3.Spec.Storage.Secret.Name,
+				},
+				Data: map[string][]byte{
+					"bucket":   []byte("bucket"),
+					"role_arn": []byte("role"),
+				},
+			},
+			expected: field.ErrorList{
+				field.Invalid(secretNamePath, tempoS3.Spec.Storage.Secret.Name, "storage secret must contain \"region\" field"),
+			},
+		},
 	}
 
 	for _, test := range tests {

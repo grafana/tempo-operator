@@ -45,7 +45,7 @@ func ensureNotEmpty(storageSecret corev1.Secret, fields []string, path *field.Pa
 }
 
 func validateS3Secret(storageSecret corev1.Secret, path *field.Path) field.ErrorList {
-	if storageSecret.Data["role_arn"] != nil {
+	if storageSecret.Data["role_arn"] != nil || storageSecret.Data["region"] != nil {
 		secretFieldsShortLived := []string{
 			"bucket",
 			"region",
@@ -86,7 +86,7 @@ func getS3Params(storageSecret corev1.Secret, path *field.Path) (*manifestutils.
 		return nil, errs
 	}
 
-	if storageSecret.Data["role_arn"] != nil {
+	if storageSecret.Data["role_arn"] != nil || storageSecret.Data["region"] != nil {
 		return &manifestutils.S3{
 			ShortLived: &manifestutils.S3ShortLived{
 				Bucket:  string(storageSecret.Data["bucket"]),

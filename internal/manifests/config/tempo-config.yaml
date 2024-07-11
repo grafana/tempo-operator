@@ -235,11 +235,11 @@ storage:
     {{- end }}
     {{- end }}
   {{- end }}
-  {{- if and .StorageParams.S3 .StorageParams.S3.ShortLived }}
-  s3:
-    bucket: {{ .StorageParams.S3.ShortLived.Bucket }}
-    endpoint: s3.{{ .StorageParams.S3.ShortLived.Region }}.amazonaws.com
-  {{- end }}
+    {{- if and .StorageParams.S3 .StorageParams.S3.ShortLived }}
+    s3:
+      bucket: {{ .StorageParams.S3.ShortLived.Bucket }}
+      endpoint: s3.{{ .StorageParams.S3.ShortLived.Region }}.amazonaws.com
+    {{- end }}
     local:
       path: /var/tempo/traces
     wal:
