@@ -214,7 +214,7 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 				}
 			} else if opts.StorageParams.S3.ShortLived != nil {
 				config.Storage.Trace.S3.Bucket = opts.StorageParams.S3.ShortLived.Bucket
-				config.Storage.Trace.S3.Endpoint = fmt.Sprintf("s3.%s.amazonaws.com ", opts.StorageParams.S3.ShortLived.Region)
+				config.Storage.Trace.S3.Endpoint = fmt.Sprintf("s3.%s.amazonaws.com", opts.StorageParams.S3.ShortLived.Region)
 			}
 
 		case v1alpha1.MonolithicTracesStorageBackendAzure:
