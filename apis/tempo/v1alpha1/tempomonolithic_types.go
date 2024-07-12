@@ -190,6 +190,9 @@ type MonolithicIngestionOTLPProtocolsGRPCSpec struct {
 
 	// TLS defines the TLS configuration for OTLP/gRPC ingestion.
 	//
+	// On OpenShift when operator config `servingCertsService`  and TLS is enabled  but no `certName` and `caName`
+	// are provided it will use OpenShift serving certificate service.
+	//
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="TLS"
 	TLS *TLSSpec `json:"tls,omitempty"`
@@ -206,6 +209,9 @@ type MonolithicIngestionOTLPProtocolsHTTPSpec struct {
 	Enabled bool `json:"enabled"`
 
 	// TLS defines the TLS configuration for OTLP/HTTP ingestion.
+	//
+	// On OpenShift when operator config `servingCertsService`  and TLS is enabled  but no `certName` and `caName`
+	// are provided it will use OpenShift serving certificate service.
 	//
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="TLS"
