@@ -257,7 +257,7 @@ func configureStorage(opts Options, sts *appsv1.StatefulSet) error {
 			return errors.New("please configure .spec.storage.traces.s3")
 		}
 
-		err := manifestutils.ConfigureS3Storage(&sts.Spec.Template.Spec, "tempo", tempo.Spec.Storage.Traces.S3.Secret, tempo.Spec.Storage.Traces.S3.TLS)
+		err := manifestutils.ConfigureS3Storage(&sts.Spec.Template.Spec, "tempo", tempo.Spec.Storage.Traces.S3.Secret, tempo.Spec.Storage.Traces.S3.TLS, opts.StorageParams.S3)
 		if err != nil {
 			return err
 		}

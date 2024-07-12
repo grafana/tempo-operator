@@ -45,15 +45,49 @@ func ensureNotEmpty(storageSecret corev1.Secret, fields []string, path *field.Pa
 }
 
 func validateS3Secret(storageSecret corev1.Secret, path *field.Path) field.ErrorList {
-	var allErrs field.ErrorList
-	secretFields := []string{
-		"endpoint",
+	shortLivedFields := []string{
 		"bucket",
+		"region",
+		"role_arn",
+	}
+	longLivedFields := []string{
+		"bucket",
+		"endpoint",
 		"access_key_id",
 		"access_key_secret",
 	}
 
-	allErrs = append(allErrs, ensureNotEmpty(storageSecret, secretFields, path)...)
+	// ship bucket as it is common for both
+	var isShortLived bool
+	for _, v := range shortLivedFields[1:] {
+		_, ok := storageSecret.Data[v]
+		if ok {
+			isShortLived = true
+		}
+	}
+	var isLongLived bool
+	for _, v := range longLivedFields[1:] {
+		_, ok := storageSecret.Data[v]
+		if ok {
+			isLongLived = true
+		}
+	}
+
+	if isShortLived && isLongLived {
+		return field.ErrorList{field.Invalid(
+			path,
+			storageSecret.Name,
+			"storage secret contains fields for long lived and short lived configuration",
+		)}
+	}
+
+	// check short-lived first
+	if storageSecret.Data["role_arn"] != nil || storageSecret.Data["region"] != nil {
+		return ensureNotEmpty(storageSecret, shortLivedFields, path)
+	}
+
+	var allErrs field.ErrorList
+	allErrs = append(allErrs, ensureNotEmpty(storageSecret, longLivedFields, path)...)
 
 	if endpoint, ok := storageSecret.Data["endpoint"]; ok {
 		u, err := url.ParseRequestURI(string(endpoint))
@@ -78,15 +112,27 @@ func getS3Params(storageSecret corev1.Secret, path *field.Path) (*manifestutils.
 		return nil, errs
 	}
 
+	if storageSecret.Data["role_arn"] != nil || storageSecret.Data["region"] != nil {
+		return &manifestutils.S3{
+			ShortLived: &manifestutils.S3ShortLived{
+				Bucket:  string(storageSecret.Data["bucket"]),
+				RoleARN: string(storageSecret.Data["role_arn"]),
+				Region:  string(storageSecret.Data["region"]),
+			},
+		}, nil
+	}
+
 	endpoint := string(storageSecret.Data["endpoint"])
 	insecure := !strings.HasPrefix(endpoint, "https://")
 	endpoint = strings.TrimPrefix(endpoint, "https://")
 	endpoint = strings.TrimPrefix(endpoint, "http://")
 
 	return &manifestutils.S3{
-		Endpoint: endpoint,
-		Bucket:   string(storageSecret.Data["bucket"]),
-		Insecure: insecure,
+		LongLived: &manifestutils.S3LongLived{
+			Endpoint: endpoint,
+			Bucket:   string(storageSecret.Data["bucket"]),
+			Insecure: insecure,
+		},
 	}, nil
 }
 

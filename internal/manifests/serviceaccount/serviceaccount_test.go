@@ -13,12 +13,13 @@ import (
 )
 
 func TestBuildDefaultServiceAccount(t *testing.T) {
-	serviceAccount := BuildDefaultServiceAccount(v1alpha1.TempoStack{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "test",
-			Namespace: "ns1",
-		},
-	})
+	serviceAccount := BuildDefaultServiceAccount(manifestutils.Params{
+		Tempo: v1alpha1.TempoStack{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test",
+				Namespace: "ns1",
+			},
+		}})
 
 	labels := manifestutils.ComponentLabels("serviceaccount", "test")
 	require.NotNil(t, serviceAccount)
@@ -27,6 +28,37 @@ func TestBuildDefaultServiceAccount(t *testing.T) {
 			Name:      "tempo-test",
 			Namespace: "ns1",
 			Labels:    labels,
+		},
+	}, serviceAccount)
+}
+
+func TestBuildDefaultServiceAccount_aws_sts(t *testing.T) {
+	serviceAccount := BuildDefaultServiceAccount(manifestutils.Params{
+		Tempo: v1alpha1.TempoStack{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test",
+				Namespace: "ns1",
+			},
+		},
+		StorageParams: manifestutils.StorageParams{
+			S3: &manifestutils.S3{
+				ShortLived: &manifestutils.S3ShortLived{
+					RoleARN: "arn:aws:iam::123456777012:role/aws-service-role",
+				},
+			},
+		}})
+
+	labels := manifestutils.ComponentLabels("serviceaccount", "test")
+	require.NotNil(t, serviceAccount)
+	assert.Equal(t, &v1.ServiceAccount{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "tempo-test",
+			Namespace: "ns1",
+			Labels:    labels,
+			Annotations: map[string]string{
+				"eks.amazonaws.com/audience": "sts.amazonaws.com",
+				"eks.amazonaws.com/role-arn": "arn:aws:iam::123456777012:role/aws-service-role",
+			},
 		},
 	}, serviceAccount)
 }

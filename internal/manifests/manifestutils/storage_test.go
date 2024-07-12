@@ -96,7 +96,7 @@ func TestGetS3Storage(t *testing.T) {
 		},
 	}
 
-	assert.NoError(t, ConfigureS3Storage(&pod, "ingester", tempo.Spec.Storage.Secret.Name, &tempo.Spec.Storage.TLS))
+	assert.NoError(t, ConfigureS3Storage(&pod, "ingester", tempo.Spec.Storage.Secret.Name, &tempo.Spec.Storage.TLS, &S3{}))
 	assert.Len(t, pod.Containers[0].Env, 2)
 	assert.NoError(t, findEnvVar("S3_SECRET_KEY", &pod.Containers[0].Env))
 	assert.NoError(t, findEnvVar("S3_ACCESS_KEY", &pod.Containers[0].Env))
@@ -104,6 +104,31 @@ func TestGetS3Storage(t *testing.T) {
 	assert.Len(t, pod.Containers[0].Args, 2)
 	assert.Contains(t, pod.Containers[0].Args, "--storage.trace.s3.secret_key=$(S3_SECRET_KEY)")
 	assert.Contains(t, pod.Containers[0].Args, "--storage.trace.s3.access_key=$(S3_ACCESS_KEY)")
+}
+
+func TestGetS3Storage_short_lived(t *testing.T) {
+	tempo := v1alpha1.TempoStack{
+		Spec: v1alpha1.TempoStackSpec{
+			Storage: v1alpha1.ObjectStorageSpec{
+				Secret: v1alpha1.ObjectStorageSecretSpec{
+					Name: "test",
+					Type: v1alpha1.ObjectStorageSecretAzure,
+				},
+			},
+		},
+	}
+
+	pod := corev1.PodSpec{
+		Containers: []corev1.Container{
+			{
+				Name: "ingester",
+			},
+		},
+	}
+
+	assert.NoError(t, ConfigureS3Storage(&pod, "ingester", tempo.Spec.Storage.Secret.Name, &tempo.Spec.Storage.TLS, &S3{ShortLived: &S3ShortLived{}}))
+	assert.Len(t, pod.Containers[0].Env, 0)
+	assert.Len(t, pod.Containers[0].Args, 0)
 }
 
 func TestGetS3StorageWithCA(t *testing.T) {
@@ -130,7 +155,7 @@ func TestGetS3StorageWithCA(t *testing.T) {
 		},
 	}
 
-	assert.NoError(t, ConfigureS3Storage(&pod, "ingester", tempo.Spec.Storage.Secret.Name, &tempo.Spec.Storage.TLS))
+	assert.NoError(t, ConfigureS3Storage(&pod, "ingester", tempo.Spec.Storage.Secret.Name, &tempo.Spec.Storage.TLS, &S3{}))
 	assert.Equal(t, []corev1.Volume{
 		{
 			Name: "customca",
@@ -228,7 +253,7 @@ func TestConfigureStorage(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			assert.NoError(t, ConfigureStorage(test.tempo, &test.pod, "ingester"))
+			assert.NoError(t, ConfigureStorage(StorageParams{}, test.tempo, &test.pod, "ingester"))
 			assert.NoError(t, findEnvVar(test.envName, &test.pod.Containers[0].Env))
 		})
 	}

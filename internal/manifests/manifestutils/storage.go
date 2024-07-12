@@ -81,7 +81,11 @@ func ConfigureGCS(pod *corev1.PodSpec, containerName string, storageSecretName s
 }
 
 // ConfigureS3Storage mounts the Amazon S3 credentials and TLS certs in a pod.
-func ConfigureS3Storage(pod *corev1.PodSpec, containerName string, storageSecretName string, tlsSpec *v1alpha1.TLSSpec) error {
+func ConfigureS3Storage(pod *corev1.PodSpec, containerName string, storageSecretName string, tlsSpec *v1alpha1.TLSSpec, s3 *S3) error {
+	if s3 != nil && s3.ShortLived != nil {
+		return nil
+	}
+
 	containerIdx, err := findContainerIndex(pod, containerName)
 	if err != nil {
 		return err
@@ -126,19 +130,16 @@ func ConfigureS3Storage(pod *corev1.PodSpec, containerName string, storageSecret
 }
 
 // ConfigureStorage configures storage.
-func ConfigureStorage(tempo v1alpha1.TempoStack, pod *corev1.PodSpec, containerName string) error {
+func ConfigureStorage(storage StorageParams, tempo v1alpha1.TempoStack, pod *corev1.PodSpec, containerName string) error {
 	if tempo.Spec.Storage.Secret.Name != "" {
-		var configure func(pod *corev1.PodSpec, containerName string, storageSecretName string, tlsSpec *v1alpha1.TLSSpec) error
 		switch tempo.Spec.Storage.Secret.Type {
 		case v1alpha1.ObjectStorageSecretAzure:
-			configure = ConfigureAzureStorage
+			return ConfigureAzureStorage(pod, containerName, tempo.Spec.Storage.Secret.Name, &tempo.Spec.Storage.TLS)
 		case v1alpha1.ObjectStorageSecretGCS:
-			configure = ConfigureGCS
+			return ConfigureGCS(pod, containerName, tempo.Spec.Storage.Secret.Name, &tempo.Spec.Storage.TLS)
 		case v1alpha1.ObjectStorageSecretS3:
-			configure = ConfigureS3Storage
+			return ConfigureS3Storage(pod, containerName, tempo.Spec.Storage.Secret.Name, &tempo.Spec.Storage.TLS, storage.S3)
 		}
-
-		return configure(pod, containerName, tempo.Spec.Storage.Secret.Name, &tempo.Spec.Storage.TLS)
 	}
 	return nil
 }
