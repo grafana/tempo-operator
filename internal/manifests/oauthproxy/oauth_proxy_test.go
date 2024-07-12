@@ -173,7 +173,7 @@ func TestOAuthProxyServiceAccount(t *testing.T) {
 		},
 	}
 
-	service := OAuthServiceAccount(tempo.ObjectMeta)
+	service := OAuthServiceAccount(manifestutils.Params{Tempo: tempo})
 
 	assert.Equal(t,
 		naming.Name(manifestutils.QueryFrontendComponentName, "testoauthsecret"), service.Name)
@@ -181,6 +181,38 @@ func TestOAuthProxyServiceAccount(t *testing.T) {
 	assert.Equal(t,
 		map[string]string{
 			"serviceaccounts.openshift.io/oauth-redirectreference.primary": `{"kind":"OAuthRedirectReference","apiVersion":"v1","reference":{"kind":"Route","name":"tempo-testoauthsecret-query-frontend"}}`,
+		}, service.Annotations)
+}
+
+func TestOAuthProxyServiceAccount_aws_sts(t *testing.T) {
+	tempo := v1alpha1.TempoStack{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "testoauthsecret",
+			Namespace: "project1",
+		},
+		Spec: v1alpha1.TempoStackSpec{
+			Template: v1alpha1.TempoTemplateSpec{
+				QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+					JaegerQuery: v1alpha1.JaegerQuerySpec{
+						Authentication: &v1alpha1.JaegerQueryAuthenticationSpec{
+							Enabled: true,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	service := OAuthServiceAccount(manifestutils.Params{Tempo: tempo, StorageParams: manifestutils.StorageParams{S3: &manifestutils.S3{ShortLived: &manifestutils.S3ShortLived{RoleARN: "foobar"}}}})
+
+	assert.Equal(t,
+		naming.Name(manifestutils.QueryFrontendComponentName, "testoauthsecret"), service.Name)
+
+	assert.Equal(t,
+		map[string]string{
+			"serviceaccounts.openshift.io/oauth-redirectreference.primary": `{"kind":"OAuthRedirectReference","apiVersion":"v1","reference":{"kind":"Route","name":"tempo-testoauthsecret-query-frontend"}}`,
+			"eks.amazonaws.com/audience":                                   "sts.amazonaws.com",
+			"eks.amazonaws.com/role-arn":                                   "foobar",
 		}, service.Annotations)
 }
 
