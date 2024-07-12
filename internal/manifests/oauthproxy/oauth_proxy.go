@@ -31,20 +31,27 @@ const (
 )
 
 // OAuthServiceAccount returns a service account representing a client in the context of the OAuth Proxy.
-func OAuthServiceAccount(tempo metav1.ObjectMeta) *corev1.ServiceAccount {
-	labels := manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, tempo.Name)
+func OAuthServiceAccount(params manifestutils.Params) *corev1.ServiceAccount {
+	labels := manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, params.Tempo.Name)
+	annotations := map[string]string{
+		serviceAccountRedirectAnnotation: getOAuthRedirectReference(naming.Name(manifestutils.QueryFrontendComponentName, params.Tempo.Name)),
+	}
+	if params.StorageParams.S3 != nil && params.StorageParams.S3.ShortLived != nil {
+		awsAnnotations := manifestutils.S3AWSSTSAnnotations(*params.StorageParams.S3.ShortLived)
+		for k, v := range awsAnnotations {
+			annotations[k] = v
+		}
+	}
 	return &corev1.ServiceAccount{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "v1",
 			Kind:       "ServiceAccount",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name),
-			Namespace: tempo.Namespace,
-			Labels:    labels,
-			Annotations: map[string]string{
-				serviceAccountRedirectAnnotation: getOAuthRedirectReference(naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name)),
-			},
+			Name:        naming.Name(manifestutils.QueryFrontendComponentName, params.Tempo.Name),
+			Namespace:   params.Tempo.Namespace,
+			Labels:      labels,
+			Annotations: annotations,
 		},
 	}
 }

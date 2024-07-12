@@ -6,6 +6,7 @@ import (
 
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/manifests/gateway"
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
 )
 
@@ -22,6 +23,15 @@ func BuildServiceAccount(opts Options) *corev1.ServiceAccount {
 		annotations = gateway.BuildServiceAccountAnnotations(tempo.Spec.Multitenancy.TenantsSpec, naming.Name("jaegerui", tempo.Name))
 	}
 
+	if opts.StorageParams.S3 != nil && opts.StorageParams.S3.ShortLived != nil {
+		awsAnnotations := manifestutils.S3AWSSTSAnnotations(*opts.StorageParams.S3.ShortLived)
+		if annotations == nil {
+			annotations = map[string]string{}
+		}
+		for k, v := range awsAnnotations {
+			annotations[k] = v
+		}
+	}
 	return &corev1.ServiceAccount{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        naming.DefaultServiceAccountName(tempo.Name),

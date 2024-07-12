@@ -87,7 +87,7 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 				if err != nil {
 					return nil, err
 				}
-				manifests = append(manifests, oauthproxy.OAuthServiceAccount(tempo.ObjectMeta), secret)
+				manifests = append(manifests, oauthproxy.OAuthServiceAccount(params), secret)
 				oauthproxy.PatchRouteForOauthProxy(routeObj)
 			}
 			manifests = append(manifests, routeObj)
@@ -315,7 +315,7 @@ func deployment(params manifestutils.Params) (*appsv1.Deployment, error) {
 		d.Spec.Template.Spec.Volumes = append(d.Spec.Template.Spec.Volumes, jaegerQueryVolume)
 	}
 
-	err := manifestutils.ConfigureStorage(tempo, &d.Spec.Template.Spec, "tempo")
+	err := manifestutils.ConfigureStorage(params.StorageParams, tempo, &d.Spec.Template.Spec, "tempo")
 	if err != nil {
 		return nil, err
 	}

@@ -193,23 +193,28 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 		case v1alpha1.MonolithicTracesStorageBackendS3:
 			config.Storage.Trace.Backend = "s3"
 			config.Storage.Trace.S3 = &tempoS3Config{}
-			config.Storage.Trace.S3.Endpoint = opts.StorageParams.S3.Endpoint
-			config.Storage.Trace.S3.Insecure = opts.StorageParams.S3.Insecure
-			config.Storage.Trace.S3.Bucket = opts.StorageParams.S3.Bucket
-			if tempo.Spec.Storage.Traces.S3 != nil && tempo.Spec.Storage.Traces.S3.TLS != nil && tempo.Spec.Storage.Traces.S3.TLS.Enabled {
-				if tempo.Spec.Storage.Traces.S3.TLS.CA != "" {
-					config.Storage.Trace.S3.TLSCAPath = path.Join(manifestutils.StorageTLSCADir, opts.StorageParams.S3.TLS.CAFilename)
+			if opts.StorageParams.S3.LongLived != nil {
+				config.Storage.Trace.S3.Endpoint = opts.StorageParams.S3.LongLived.Endpoint
+				config.Storage.Trace.S3.Insecure = opts.StorageParams.S3.LongLived.Insecure
+				config.Storage.Trace.S3.Bucket = opts.StorageParams.S3.LongLived.Bucket
+				if tempo.Spec.Storage.Traces.S3 != nil && tempo.Spec.Storage.Traces.S3.TLS != nil && tempo.Spec.Storage.Traces.S3.TLS.Enabled {
+					if tempo.Spec.Storage.Traces.S3.TLS.CA != "" {
+						config.Storage.Trace.S3.TLSCAPath = path.Join(manifestutils.StorageTLSCADir, opts.StorageParams.S3.LongLived.TLS.CAFilename)
+					}
+					if tempo.Spec.Storage.Traces.S3.TLS.Cert != "" {
+						config.Storage.Trace.S3.TLSCertPath = path.Join(manifestutils.StorageTLSCertDir, manifestutils.TLSCertFilename)
+						config.Storage.Trace.S3.TLSKeyPath = path.Join(manifestutils.StorageTLSCertDir, manifestutils.TLSKeyFilename)
+					}
+					if tempo.Spec.Storage.Traces.S3.TLS.MinVersion != "" {
+						config.Storage.Trace.S3.TLSMinVersion = tempo.Spec.Storage.Traces.S3.TLS.MinVersion
+					} else if opts.TLSProfile.MinTLSVersion != "" {
+						config.Storage.Trace.S3.TLSMinVersion = opts.TLSProfile.MinTLSVersion
+					}
+					config.Storage.Trace.S3.TLSCipherSuites = opts.TLSProfile.TLSCipherSuites()
 				}
-				if tempo.Spec.Storage.Traces.S3.TLS.Cert != "" {
-					config.Storage.Trace.S3.TLSCertPath = path.Join(manifestutils.StorageTLSCertDir, manifestutils.TLSCertFilename)
-					config.Storage.Trace.S3.TLSKeyPath = path.Join(manifestutils.StorageTLSCertDir, manifestutils.TLSKeyFilename)
-				}
-				if tempo.Spec.Storage.Traces.S3.TLS.MinVersion != "" {
-					config.Storage.Trace.S3.TLSMinVersion = tempo.Spec.Storage.Traces.S3.TLS.MinVersion
-				} else if opts.TLSProfile.MinTLSVersion != "" {
-					config.Storage.Trace.S3.TLSMinVersion = opts.TLSProfile.MinTLSVersion
-				}
-				config.Storage.Trace.S3.TLSCipherSuites = opts.TLSProfile.TLSCipherSuites()
+			} else if opts.StorageParams.S3.ShortLived != nil {
+				config.Storage.Trace.S3.Bucket = opts.StorageParams.S3.ShortLived.Bucket
+				config.Storage.Trace.S3.Endpoint = fmt.Sprintf("s3.%s.amazonaws.com", opts.StorageParams.S3.ShortLived.Region)
 			}
 
 		case v1alpha1.MonolithicTracesStorageBackendAzure:
