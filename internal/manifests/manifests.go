@@ -54,7 +54,7 @@ func BuildAll(params manifestutils.Params) ([]client.Object, error) {
 	var manifests []client.Object
 	manifests = append(manifests, configMaps)
 	if params.Tempo.Spec.ServiceAccount == naming.DefaultServiceAccountName(params.Tempo.Name) {
-		manifests = append(manifests, serviceaccount.BuildDefaultServiceAccount(params.Tempo, params.StorageParams))
+		manifests = append(manifests, serviceaccount.BuildDefaultServiceAccount(params))
 	}
 	manifests = append(manifests, distributorObjs...)
 	manifests = append(manifests, ingesterObjs...)

@@ -13,12 +13,13 @@ import (
 )
 
 func TestBuildDefaultServiceAccount(t *testing.T) {
-	serviceAccount := BuildDefaultServiceAccount(v1alpha1.TempoStack{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "test",
-			Namespace: "ns1",
-		},
-	}, manifestutils.StorageParams{})
+	serviceAccount := BuildDefaultServiceAccount(manifestutils.Params{
+		Tempo: v1alpha1.TempoStack{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test",
+				Namespace: "ns1",
+			},
+		}})
 
 	labels := manifestutils.ComponentLabels("serviceaccount", "test")
 	require.NotNil(t, serviceAccount)
@@ -32,18 +33,20 @@ func TestBuildDefaultServiceAccount(t *testing.T) {
 }
 
 func TestBuildDefaultServiceAccount_aws_sts(t *testing.T) {
-	serviceAccount := BuildDefaultServiceAccount(v1alpha1.TempoStack{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "test",
-			Namespace: "ns1",
-		},
-	}, manifestutils.StorageParams{
-		S3: &manifestutils.S3{
-			ShortLived: &manifestutils.S3ShortLived{
-				RoleARN: "arn:aws:iam::123456777012:role/aws-service-role",
+	serviceAccount := BuildDefaultServiceAccount(manifestutils.Params{
+		Tempo: v1alpha1.TempoStack{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test",
+				Namespace: "ns1",
 			},
 		},
-	})
+		StorageParams: manifestutils.StorageParams{
+			S3: &manifestutils.S3{
+				ShortLived: &manifestutils.S3ShortLived{
+					RoleARN: "arn:aws:iam::123456777012:role/aws-service-role",
+				},
+			},
+		}})
 
 	labels := manifestutils.ComponentLabels("serviceaccount", "test")
 	require.NotNil(t, serviceAccount)
