@@ -45,23 +45,49 @@ func ensureNotEmpty(storageSecret corev1.Secret, fields []string, path *field.Pa
 }
 
 func validateS3Secret(storageSecret corev1.Secret, path *field.Path) field.ErrorList {
-	if storageSecret.Data["role_arn"] != nil || storageSecret.Data["region"] != nil {
-		secretFieldsShortLived := []string{
-			"bucket",
-			"region",
-			"role_arn",
-		}
-		return ensureNotEmpty(storageSecret, secretFieldsShortLived, path)
-	}
-
-	var allErrs field.ErrorList
-	secretFieldsLongLived := []string{
-		"endpoint",
+	shortLivedFields := []string{
 		"bucket",
+		"region",
+		"role_arn",
+	}
+	longLivedFields := []string{
+		"bucket",
+		"endpoint",
 		"access_key_id",
 		"access_key_secret",
 	}
-	allErrs = append(allErrs, ensureNotEmpty(storageSecret, secretFieldsLongLived, path)...)
+
+	// ship bucket as it is common for both
+	var isShortLived bool
+	for _, v := range shortLivedFields[1:] {
+		_, ok := storageSecret.Data[v]
+		if ok {
+			isShortLived = true
+		}
+	}
+	var isLongLived bool
+	for _, v := range longLivedFields[1:] {
+		_, ok := storageSecret.Data[v]
+		if ok {
+			isLongLived = true
+		}
+	}
+
+	if isShortLived && isLongLived {
+		return field.ErrorList{field.Invalid(
+			path,
+			storageSecret.Name,
+			"storage secret contains fields for long lived and short lived configuration",
+		)}
+	}
+
+	// check short-lived first
+	if storageSecret.Data["role_arn"] != nil || storageSecret.Data["region"] != nil {
+		return ensureNotEmpty(storageSecret, shortLivedFields, path)
+	}
+
+	var allErrs field.ErrorList
+	allErrs = append(allErrs, ensureNotEmpty(storageSecret, longLivedFields, path)...)
 
 	if endpoint, ok := storageSecret.Data["endpoint"]; ok {
 		u, err := url.ParseRequestURI(string(endpoint))
