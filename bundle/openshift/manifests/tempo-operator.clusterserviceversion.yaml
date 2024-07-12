@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.11.1
-    createdAt: "2024-07-09T01:46:51Z"
+    createdAt: "2024-07-10T03:57:57Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -249,7 +249,10 @@ spec:
       - description: GRPC defines the OTLP over gRPC configuration.
         displayName: gRPC
         path: ingestion.otlp.grpc
-      - description: TLS defines the TLS configuration for OTLP/gRPC ingestion.
+      - description: "TLS defines the TLS configuration for OTLP/gRPC ingestion. \n
+          On OpenShift when operator config `servingCertsService`  and TLS is enabled
+          \ but no `certName` and `caName` are provided it will use OpenShift serving
+          certificate service."
         displayName: TLS
         path: ingestion.otlp.grpc.tls
       - description: CA is the name of a ConfigMap containing a CA certificate (service-ca.crt).
@@ -271,7 +274,10 @@ spec:
       - description: HTTP defines the OTLP over HTTP configuration.
         displayName: HTTP
         path: ingestion.otlp.http
-      - description: TLS defines the TLS configuration for OTLP/HTTP ingestion.
+      - description: "TLS defines the TLS configuration for OTLP/HTTP ingestion. \n
+          On OpenShift when operator config `servingCertsService`  and TLS is enabled
+          \ but no `certName` and `caName` are provided it will use OpenShift serving
+          certificate service."
         displayName: TLS
         path: ingestion.otlp.http.tls
       - description: CA is the name of a ConfigMap containing a CA certificate (service-ca.crt).

@@ -45,9 +45,10 @@ func TestBuildServices(t *testing.T) {
 						Kind:       "Service",
 					},
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      "tempo-sample",
-						Namespace: "default",
-						Labels:    ComponentLabels("tempo", "sample"),
+						Name:        "tempo-sample",
+						Namespace:   "default",
+						Labels:      ComponentLabels("tempo", "sample"),
+						Annotations: map[string]string{},
 					},
 					Spec: corev1.ServiceSpec{
 						Ports: []corev1.ServicePort{{
@@ -79,9 +80,10 @@ func TestBuildServices(t *testing.T) {
 						Kind:       "Service",
 					},
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      "tempo-sample",
-						Namespace: "default",
-						Labels:    ComponentLabels("tempo", "sample"),
+						Name:        "tempo-sample",
+						Namespace:   "default",
+						Labels:      ComponentLabels("tempo", "sample"),
+						Annotations: map[string]string{},
 					},
 					Spec: corev1.ServiceSpec{
 						Ports: []corev1.ServicePort{
@@ -121,9 +123,10 @@ func TestBuildServices(t *testing.T) {
 						Kind:       "Service",
 					},
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      "tempo-sample",
-						Namespace: "default",
-						Labels:    ComponentLabels("tempo", "sample"),
+						Name:        "tempo-sample",
+						Namespace:   "default",
+						Labels:      ComponentLabels("tempo", "sample"),
+						Annotations: map[string]string{},
 					},
 					Spec: corev1.ServiceSpec{
 						Ports: []corev1.ServicePort{
@@ -159,9 +162,10 @@ func TestBuildServices(t *testing.T) {
 						Kind:       "Service",
 					},
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      "tempo-sample",
-						Namespace: "default",
-						Labels:    ComponentLabels("tempo", "sample"),
+						Name:        "tempo-sample",
+						Namespace:   "default",
+						Labels:      ComponentLabels("tempo", "sample"),
+						Annotations: map[string]string{},
 					},
 					Spec: corev1.ServiceSpec{
 						Ports: []corev1.ServicePort{

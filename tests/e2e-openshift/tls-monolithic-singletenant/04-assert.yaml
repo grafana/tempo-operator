@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: verify-traces-grpc
+  namespace: tls-monolithic-singletenant
+status:
+  conditions:
+    - status: "True"
+      type: Complete
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: verify-traces-http
+  namespace: tls-monolithic-singletenant
+status:
+  conditions:
+    - status: "True"
+      type: Complete
