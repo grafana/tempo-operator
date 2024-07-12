@@ -43,6 +43,7 @@ type S3 struct {
 }
 
 // S3LongLived holds long-lived S3 configuration.
+// The long-lived token uses access key and secret.
 type S3LongLived struct {
 	// Endpoint without http/https
 	Endpoint string
@@ -53,6 +54,7 @@ type S3LongLived struct {
 }
 
 // S3ShortLived holds short-lived S3 configuration.
+// The short-lived S3 token uses AWS STS.
 type S3ShortLived struct {
 	Bucket  string
 	RoleARN string
