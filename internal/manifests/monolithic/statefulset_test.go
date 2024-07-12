@@ -427,12 +427,12 @@ func TestStatefulsetReceiverTLS(t *testing.T) {
 		},
 		{
 			Name:      "custom-ca",
-			MountPath: "/var/run/ca-receiver",
+			MountPath: "/var/run/ca-receiver/grpc",
 			ReadOnly:  true,
 		},
 		{
 			Name:      "custom-cert",
-			MountPath: "/var/run/tls/receiver",
+			MountPath: "/var/run/tls/receiver/grpc",
 			ReadOnly:  true,
 		},
 	}, sts.Spec.Template.Spec.Containers[0].VolumeMounts)

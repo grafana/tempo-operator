@@ -121,7 +121,7 @@ func BuildTempoStatefulset(opts Options, extraAnnotations map[string]string) (*a
 			tempo.Spec.Ingestion.OTLP.GRPC.TLS != nil && tempo.Spec.Ingestion.OTLP.GRPC.TLS.Enabled {
 			err := manifestutils.MountTLSSpecVolumes(
 				&sts.Spec.Template.Spec, "tempo", *tempo.Spec.Ingestion.OTLP.GRPC.TLS,
-				manifestutils.ReceiverTLSCADir, manifestutils.ReceiverTLSCertDir,
+				manifestutils.ReceiverGRPCTLSCADir, manifestutils.ReceiverGRPCTLSCertDir,
 			)
 			if err != nil {
 				return nil, err
@@ -132,7 +132,7 @@ func BuildTempoStatefulset(opts Options, extraAnnotations map[string]string) (*a
 			tempo.Spec.Ingestion.OTLP.HTTP.TLS != nil && tempo.Spec.Ingestion.OTLP.HTTP.TLS.Enabled {
 			err := manifestutils.MountTLSSpecVolumes(
 				&sts.Spec.Template.Spec, "tempo", *tempo.Spec.Ingestion.OTLP.HTTP.TLS,
-				manifestutils.ReceiverTLSCADir, manifestutils.ReceiverTLSCertDir,
+				manifestutils.ReceiverHTTPTLSCADir, manifestutils.ReceiverHTTPTLSCertDir,
 			)
 			if err != nil {
 				return nil, err

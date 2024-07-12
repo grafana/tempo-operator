@@ -27,16 +27,19 @@ func MountCAConfigMap(
 		MountPath: caDir,
 		ReadOnly:  true,
 	})
-	pod.Volumes = append(pod.Volumes, corev1.Volume{
-		Name: caConfigMap,
-		VolumeSource: corev1.VolumeSource{
-			ConfigMap: &corev1.ConfigMapVolumeSource{
-				LocalObjectReference: corev1.LocalObjectReference{
-					Name: caConfigMap,
+
+	if !containsVolume(pod, caConfigMap) {
+		pod.Volumes = append(pod.Volumes, corev1.Volume{
+			Name: caConfigMap,
+			VolumeSource: corev1.VolumeSource{
+				ConfigMap: &corev1.ConfigMapVolumeSource{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: caConfigMap,
+					},
 				},
 			},
-		},
-	})
+		})
+	}
 
 	return nil
 }
@@ -58,14 +61,17 @@ func MountCertSecret(
 		MountPath: certDir,
 		ReadOnly:  true,
 	})
-	pod.Volumes = append(pod.Volumes, corev1.Volume{
-		Name: certSecret,
-		VolumeSource: corev1.VolumeSource{
-			Secret: &corev1.SecretVolumeSource{
-				SecretName: certSecret,
+
+	if !containsVolume(pod, certSecret) {
+		pod.Volumes = append(pod.Volumes, corev1.Volume{
+			Name: certSecret,
+			VolumeSource: corev1.VolumeSource{
+				Secret: &corev1.SecretVolumeSource{
+					SecretName: certSecret,
+				},
 			},
-		},
-	})
+		})
+	}
 
 	return nil
 }
@@ -116,4 +122,14 @@ func findContainerIndex(pod *corev1.PodSpec, containerName string) (int, error) 
 	}
 
 	return -1, fmt.Errorf("cannot find container %s", containerName)
+}
+
+func containsVolume(pod *corev1.PodSpec, volumeName string) bool {
+	for _, volume := range pod.Volumes {
+		if volume.Name == volumeName {
+			return true
+		}
+	}
+
+	return false
 }
