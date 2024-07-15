@@ -8,6 +8,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/internal/manifests/naming"
 )
 
 // MountCAConfigMap mounts the CA ConfigMap in a pod.
@@ -22,15 +23,17 @@ func MountCAConfigMap(
 		return err
 	}
 
+	volumeName := naming.DNSName(caConfigMap)
+
 	pod.Containers[containerIdx].VolumeMounts = append(pod.Containers[containerIdx].VolumeMounts, corev1.VolumeMount{
-		Name:      caConfigMap,
+		Name:      volumeName,
 		MountPath: caDir,
 		ReadOnly:  true,
 	})
 
-	if !containsVolume(pod, caConfigMap) {
+	if !containsVolume(pod, volumeName) {
 		pod.Volumes = append(pod.Volumes, corev1.Volume{
-			Name: caConfigMap,
+			Name: volumeName,
 			VolumeSource: corev1.VolumeSource{
 				ConfigMap: &corev1.ConfigMapVolumeSource{
 					LocalObjectReference: corev1.LocalObjectReference{
@@ -56,15 +59,17 @@ func MountCertSecret(
 		return err
 	}
 
+	volumeName := naming.DNSName(certSecret)
+
 	pod.Containers[containerIdx].VolumeMounts = append(pod.Containers[containerIdx].VolumeMounts, corev1.VolumeMount{
-		Name:      certSecret,
+		Name:      volumeName,
 		MountPath: certDir,
 		ReadOnly:  true,
 	})
 
-	if !containsVolume(pod, certSecret) {
+	if !containsVolume(pod, volumeName) {
 		pod.Volumes = append(pod.Volumes, corev1.Volume{
-			Name: certSecret,
+			Name: volumeName,
 			VolumeSource: corev1.VolumeSource{
 				Secret: &corev1.SecretVolumeSource{
 					SecretName: certSecret,
