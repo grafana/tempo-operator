@@ -121,7 +121,7 @@ func BuildTempoStatefulset(opts Options, extraAnnotations map[string]string) (*a
 			tempo.Spec.Ingestion.OTLP.GRPC.TLS != nil && tempo.Spec.Ingestion.OTLP.GRPC.TLS.Enabled {
 			err := manifestutils.MountTLSSpecVolumes(
 				&sts.Spec.Template.Spec, "tempo", *tempo.Spec.Ingestion.OTLP.GRPC.TLS,
-				manifestutils.ReceiverTLSCADir, manifestutils.ReceiverTLSCertDir,
+				manifestutils.ReceiverGRPCTLSCADir, manifestutils.ReceiverGRPCTLSCertDir,
 			)
 			if err != nil {
 				return nil, err
@@ -132,7 +132,7 @@ func BuildTempoStatefulset(opts Options, extraAnnotations map[string]string) (*a
 			tempo.Spec.Ingestion.OTLP.HTTP.TLS != nil && tempo.Spec.Ingestion.OTLP.HTTP.TLS.Enabled {
 			err := manifestutils.MountTLSSpecVolumes(
 				&sts.Spec.Template.Spec, "tempo", *tempo.Spec.Ingestion.OTLP.HTTP.TLS,
-				manifestutils.ReceiverTLSCADir, manifestutils.ReceiverTLSCertDir,
+				manifestutils.ReceiverHTTPTLSCADir, manifestutils.ReceiverHTTPTLSCertDir,
 			)
 			if err != nil {
 				return nil, err
@@ -257,7 +257,7 @@ func configureStorage(opts Options, sts *appsv1.StatefulSet) error {
 			return errors.New("please configure .spec.storage.traces.s3")
 		}
 
-		err := manifestutils.ConfigureS3Storage(&sts.Spec.Template.Spec, "tempo", tempo.Spec.Storage.Traces.S3.Secret, tempo.Spec.Storage.Traces.S3.TLS)
+		err := manifestutils.ConfigureS3Storage(&sts.Spec.Template.Spec, "tempo", tempo.Spec.Storage.Traces.S3.Secret, tempo.Spec.Storage.Traces.S3.TLS, opts.StorageParams.S3)
 		if err != nil {
 			return err
 		}

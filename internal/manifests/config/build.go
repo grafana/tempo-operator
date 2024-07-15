@@ -128,7 +128,7 @@ func buildS3StorageTLSConfig(params manifestutils.Params) storageTLSOptions {
 		MinTLSVersion: params.Tempo.Spec.Storage.TLS.MinVersion,
 	}
 	if tempo.Spec.Storage.TLS.CA != "" {
-		opts.CA = path.Join(manifestutils.StorageTLSCADir, params.StorageParams.S3.TLS.CAFilename)
+		opts.CA = path.Join(manifestutils.StorageTLSCADir, params.StorageParams.S3.LongLived.TLS.CAFilename)
 	}
 	if tempo.Spec.Storage.TLS.Cert != "" {
 		opts.Certificate = path.Join(manifestutils.StorageTLSCertDir, manifestutils.TLSCertFilename)

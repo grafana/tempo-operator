@@ -170,9 +170,115 @@ distributor:
       protocols:
         grpc:
           tls:
-            client_ca_file: /var/run/ca-receiver/service-ca.crt
-            cert_file: /var/run/tls/receiver/tls.crt
-            key_file: /var/run/tls/receiver/tls.key
+            client_ca_file: /var/run/ca-receiver/grpc/service-ca.crt
+            cert_file: /var/run/tls/receiver/grpc/tls.crt
+            key_file: /var/run/tls/receiver/grpc/tls.key
+            min_version: "1.3"
+usage_report:
+  reporting_enabled: false
+`,
+		},
+		{
+			name: "OTLP/HTTP with TLS",
+			spec: v1alpha1.TempoMonolithicSpec{
+				Ingestion: &v1alpha1.MonolithicIngestionSpec{
+					OTLP: &v1alpha1.MonolithicIngestionOTLPSpec{
+						GRPC: &v1alpha1.MonolithicIngestionOTLPProtocolsGRPCSpec{
+							Enabled: false,
+						},
+						HTTP: &v1alpha1.MonolithicIngestionOTLPProtocolsHTTPSpec{
+							Enabled: true,
+							TLS: &v1alpha1.TLSSpec{
+								Enabled:    true,
+								CA:         "ca",
+								Cert:       "cert",
+								MinVersion: "1.3",
+							},
+						},
+					},
+				},
+			},
+			expected: `
+server:
+  http_listen_port: 3200
+internal_server:
+  enable: true
+  http_listen_address: 0.0.0.0
+storage:
+  trace:
+    backend: local
+    wal:
+      path: /var/tempo/wal
+    local:
+      path: /var/tempo/blocks
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        http:
+          tls:
+            client_ca_file: /var/run/ca-receiver/http/service-ca.crt
+            cert_file: /var/run/tls/receiver/http/tls.crt
+            key_file: /var/run/tls/receiver/http/tls.key
+            min_version: "1.3"
+usage_report:
+  reporting_enabled: false
+`,
+		},
+		{
+			name: "OTLP/HTTP and OTLP/Grpc with TLS",
+			spec: v1alpha1.TempoMonolithicSpec{
+				Ingestion: &v1alpha1.MonolithicIngestionSpec{
+					OTLP: &v1alpha1.MonolithicIngestionOTLPSpec{
+						GRPC: &v1alpha1.MonolithicIngestionOTLPProtocolsGRPCSpec{
+							Enabled: true,
+							TLS: &v1alpha1.TLSSpec{
+								Enabled:    true,
+								CA:         "ca",
+								Cert:       "cert",
+								MinVersion: "1.3",
+							},
+						},
+						HTTP: &v1alpha1.MonolithicIngestionOTLPProtocolsHTTPSpec{
+							Enabled: true,
+							TLS: &v1alpha1.TLSSpec{
+								Enabled:    true,
+								CA:         "ca",
+								Cert:       "cert",
+								MinVersion: "1.3",
+							},
+						},
+					},
+				},
+			},
+			expected: `
+server:
+  http_listen_port: 3200
+internal_server:
+  enable: true
+  http_listen_address: 0.0.0.0
+storage:
+  trace:
+    backend: local
+    wal:
+      path: /var/tempo/wal
+    local:
+      path: /var/tempo/blocks
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        http:
+          tls:
+            client_ca_file: /var/run/ca-receiver/http/service-ca.crt
+            cert_file: /var/run/tls/receiver/http/tls.crt
+            key_file: /var/run/tls/receiver/http/tls.key
+            min_version: "1.3"
+        grpc:
+          tls:
+            client_ca_file: /var/run/ca-receiver/grpc/service-ca.crt
+            cert_file: /var/run/tls/receiver/grpc/tls.crt
+            key_file: /var/run/tls/receiver/grpc/tls.key
             min_version: "1.3"
 usage_report:
   reporting_enabled: false
@@ -222,9 +328,9 @@ distributor:
       protocols:
         grpc:
           tls:
-            client_ca_file: /var/run/ca-receiver/service-ca.crt
-            cert_file: /var/run/tls/receiver/tls.crt
-            key_file: /var/run/tls/receiver/tls.key
+            client_ca_file: /var/run/ca-receiver/grpc/service-ca.crt
+            cert_file: /var/run/tls/receiver/grpc/tls.crt
+            key_file: /var/run/tls/receiver/grpc/tls.key
             min_version: "1.2"
             cipher_suites: [abc]
 usage_report:
@@ -252,8 +358,10 @@ usage_report:
 				},
 				StorageParams: manifestutils.StorageParams{
 					S3: &manifestutils.S3{
-						Endpoint: "minio",
-						Bucket:   "tempo",
+						LongLived: &manifestutils.S3LongLived{
+							Endpoint: "minio",
+							Bucket:   "tempo",
+						},
 					},
 				},
 			},

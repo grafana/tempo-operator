@@ -178,7 +178,10 @@ spec:
       - description: GRPC defines the OTLP over gRPC configuration.
         displayName: gRPC
         path: ingestion.otlp.grpc
-      - description: TLS defines the TLS configuration for OTLP/gRPC ingestion.
+      - description: "TLS defines the TLS configuration for OTLP/gRPC ingestion. \n
+          On OpenShift when operator config `servingCertsService`  and TLS is enabled
+          \ but no `certName` and `caName` are provided it will use OpenShift serving
+          certificate service."
         displayName: TLS
         path: ingestion.otlp.grpc.tls
       - description: CA is the name of a ConfigMap containing a CA certificate (service-ca.crt).
@@ -200,7 +203,10 @@ spec:
       - description: HTTP defines the OTLP over HTTP configuration.
         displayName: HTTP
         path: ingestion.otlp.http
-      - description: TLS defines the TLS configuration for OTLP/HTTP ingestion.
+      - description: "TLS defines the TLS configuration for OTLP/HTTP ingestion. \n
+          On OpenShift when operator config `servingCertsService`  and TLS is enabled
+          \ but no `certName` and `caName` are provided it will use OpenShift serving
+          certificate service."
         displayName: TLS
         path: ingestion.otlp.http.tls
       - description: CA is the name of a ConfigMap containing a CA certificate (service-ca.crt).

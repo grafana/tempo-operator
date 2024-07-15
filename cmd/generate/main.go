@@ -189,8 +189,10 @@ func NewGenerateCommand() *cobra.Command {
 				}
 			case s3Endpoint != "":
 				params.StorageParams.S3 = &manifestutils.S3{
-					Endpoint: s3Endpoint,
-					Bucket:   s3Bucket,
+					LongLived: &manifestutils.S3LongLived{
+						Endpoint: s3Endpoint,
+						Bucket:   s3Bucket,
+					},
 				}
 			}
 

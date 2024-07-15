@@ -55,6 +55,23 @@ func BuildAll(opts Options) ([]client.Object, error) {
 		maps.Copy(extraStsAnnotations, annotations)
 	}
 
+	if opts.CtrlConfig.Gates.OpenShift.ServingCertsService {
+		manifests = append(manifests, manifestutils.NewConfigMapCABundle(
+			tempo.Namespace,
+			naming.ServingCABundleName(tempo.Name),
+			CommonLabels(tempo.Name),
+		))
+		if ingestionHTTPTLSEnabled(tempo) && tlsSecretAndBundleEmptyHTTP(tempo) {
+			tempo.Spec.Ingestion.OTLP.HTTP.TLS.CA = naming.ServingCABundleName(tempo.Name)
+			tempo.Spec.Ingestion.OTLP.HTTP.TLS.Cert = naming.ServingCertName(manifestutils.TempoMonolithComponentName, tempo.Name)
+		}
+
+		if ingestionGRPCTLSEnabled(tempo) && tlsSecretAndBundleEmptyGRPC(tempo) {
+			tempo.Spec.Ingestion.OTLP.GRPC.TLS.CA = naming.ServingCABundleName(tempo.Name)
+			tempo.Spec.Ingestion.OTLP.GRPC.TLS.Cert = naming.ServingCertName(manifestutils.TempoMonolithComponentName, tempo.Name)
+		}
+	}
+
 	statefulSet, err := BuildTempoStatefulset(opts, extraStsAnnotations)
 	if err != nil {
 		return nil, err
@@ -63,14 +80,6 @@ func BuildAll(opts Options) ([]client.Object, error) {
 	manifests = append(manifests, statefulSet)
 	services := BuildServices(opts)
 	manifests = append(manifests, services...)
-
-	if opts.CtrlConfig.Gates.OpenShift.ServingCertsService {
-		manifests = append(manifests, manifestutils.NewConfigMapCABundle(
-			tempo.Namespace,
-			naming.ServingCABundleName(tempo.Name),
-			CommonLabels(tempo.Name),
-		))
-	}
 
 	if tempo.Spec.JaegerUI != nil && tempo.Spec.JaegerUI.Enabled {
 		if tempo.Spec.JaegerUI.Ingress != nil && tempo.Spec.JaegerUI.Ingress.Enabled {

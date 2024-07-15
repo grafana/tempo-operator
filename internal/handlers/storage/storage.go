@@ -32,7 +32,7 @@ func GetStorageParamsForTempoStack(ctx context.Context, client client.Client, te
 		}
 
 		if tempo.Spec.Storage.TLS.Enabled {
-			storageParams.S3.TLS, errs = getTLSParams(ctx, client, tempo.Namespace, tempo.Spec.Storage.TLS, tlsPath.Child("caName"))
+			storageParams.S3.LongLived.TLS, errs = getTLSParams(ctx, client, tempo.Namespace, tempo.Spec.Storage.TLS, tlsPath.Child("caName"))
 			if len(errs) > 0 {
 				return manifestutils.StorageParams{}, errs
 			}
@@ -115,7 +115,7 @@ func GetStorageParamsForTempoMonolithic(ctx context.Context, client client.Clien
 
 		if tempo.Spec.Storage.Traces.S3.TLS != nil && tempo.Spec.Storage.Traces.S3.TLS.Enabled {
 			caPath := tracesPath.Child("s3", "tls", "caName")
-			storageParams.S3.TLS, errs = getTLSParams(ctx, client, tempo.Namespace, *tempo.Spec.Storage.Traces.S3.TLS, caPath)
+			storageParams.S3.LongLived.TLS, errs = getTLSParams(ctx, client, tempo.Namespace, *tempo.Spec.Storage.Traces.S3.TLS, caPath)
 			if len(errs) > 0 {
 				return manifestutils.StorageParams{}, errs
 			}

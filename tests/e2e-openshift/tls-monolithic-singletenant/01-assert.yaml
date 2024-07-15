@@ -1,0 +1,121 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoMonolithic
+metadata:
+  name: monolithic-cert
+  namespace: chainsaw-tls-mono-st
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app.kubernetes.io/component: tempo
+    app.kubernetes.io/instance: monolithic-cert
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo-monolithic
+  name: tempo-monolithic-st
+  namespace: chainsaw-tls-mono-st
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: tempo
+      app.kubernetes.io/instance: monolithic-cert
+      app.kubernetes.io/managed-by: tempo-operator
+      app.kubernetes.io/name: tempo-monolithic
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: tempo
+        app.kubernetes.io/instance: monolithic-cert
+        app.kubernetes.io/managed-by: tempo-operator
+        app.kubernetes.io/name: tempo-monolithic
+    spec:
+      containers:
+        - name: tempo
+        - name: tempo-query
+status:
+  availableReplicas: 1
+  currentReplicas: 1
+  readyReplicas: 1
+  replicas: 1
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app.kubernetes.io/component: tempo
+    app.kubernetes.io/instance: monolithic-cert
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo-monolithic
+  namespace: chainsaw-tls-mono-st
+status:
+  containerStatuses:
+    - name: tempo
+      ready: true
+      started: true
+    - name: tempo-query
+      ready: true
+      started: true
+  phase: Running
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: tempo
+    app.kubernetes.io/instance: mono-cert
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo-monolithic
+  name: tempo-monolithic-cert
+  namespace: chainsaw-tls-mono-st
+spec:
+  ipFamilyPolicy: SingleStack
+  ports:
+    - name: http
+      port: 3200
+      protocol: TCP
+      targetPort: http
+    - name: otlp-grpc
+      port: 4317
+      protocol: TCP
+      targetPort: otlp-grpc
+    - name: otlp-http
+      port: 4318
+      protocol: TCP
+      targetPort: otlp-http
+  selector:
+    app.kubernetes.io/component: tempo
+    app.kubernetes.io/instance: mono-cert
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo-monolithic
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: jaegerui
+    app.kubernetes.io/instance: monolithic-cert
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo-monolithic
+  name: mono-cert-jaegerui
+  namespace: chainsaw-tls-mono-st
+spec:
+  ipFamilyPolicy: SingleStack
+  ports:
+    - name: jaeger-grpc
+      port: 16685
+      protocol: TCP
+      targetPort: jaeger-grpc
+    - name: jaeger-ui
+      port: 16686
+      protocol: TCP
+      targetPort: jaeger-ui
+    - name: jaeger-metrics
+      port: 16687
+      protocol: TCP
+      targetPort: jaeger-metrics
+  selector:
+    app.kubernetes.io/component: tempo
+    app.kubernetes.io/instance: monolithic-cert
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo-monolithic

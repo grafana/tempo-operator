@@ -21,8 +21,10 @@ func TestBuildAll(t *testing.T) {
 				Bucket: "test",
 			},
 			S3: &manifestutils.S3{
-				Endpoint: "https://localhost",
-				Bucket:   "test",
+				LongLived: &manifestutils.S3LongLived{
+					Endpoint: "https://localhost",
+					Bucket:   "test",
+				},
 			},
 		},
 		Tempo: v1alpha1.TempoStack{

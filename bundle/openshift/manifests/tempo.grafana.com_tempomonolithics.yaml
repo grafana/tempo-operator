@@ -963,8 +963,12 @@ spec:
                               Default: enabled.
                             type: boolean
                           tls:
-                            description: TLS defines the TLS configuration for OTLP/gRPC
-                              ingestion.
+                            description: |-
+                              TLS defines the TLS configuration for OTLP/gRPC ingestion.
+
+
+                              On OpenShift when operator config `servingCertsService`  and TLS is enabled  but no `certName` and `caName`
+                              are provided it will use OpenShift serving certificate service.
                             properties:
                               caName:
                                 description: |-
@@ -997,8 +1001,12 @@ spec:
                               Default: enabled.
                             type: boolean
                           tls:
-                            description: TLS defines the TLS configuration for OTLP/HTTP
-                              ingestion.
+                            description: |-
+                              TLS defines the TLS configuration for OTLP/HTTP ingestion.
+
+
+                              On OpenShift when operator config `servingCertsService`  and TLS is enabled  but no `certName` and `caName`
+                              are provided it will use OpenShift serving certificate service.
                             properties:
                               caName:
                                 description: |-

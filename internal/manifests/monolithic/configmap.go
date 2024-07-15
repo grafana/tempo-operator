@@ -139,15 +139,15 @@ func BuildConfigMap(opts Options) (*corev1.ConfigMap, map[string]string, error) 
 	return configMap, extraAnnotations, nil
 }
 
-func configureReceiverTLS(tlsSpec *v1alpha1.TLSSpec, tlsProfile tlsprofile.TLSProfileOptions) (tempoReceiverTLSConfig, error) {
+func configureReceiverTLS(tlsSpec *v1alpha1.TLSSpec, tlsProfile tlsprofile.TLSProfileOptions, caCertDir, certDir string) (tempoReceiverTLSConfig, error) {
 	tlsCfg := tempoReceiverTLSConfig{}
 	if tlsSpec != nil && tlsSpec.Enabled {
 		if tlsSpec.Cert != "" {
-			tlsCfg.CertFile = path.Join(manifestutils.ReceiverTLSCertDir, manifestutils.TLSCertFilename)
-			tlsCfg.KeyFile = path.Join(manifestutils.ReceiverTLSCertDir, manifestutils.TLSKeyFilename)
+			tlsCfg.CertFile = path.Join(certDir, manifestutils.TLSCertFilename)
+			tlsCfg.KeyFile = path.Join(certDir, manifestutils.TLSKeyFilename)
 		}
 		if tlsSpec.CA != "" {
-			tlsCfg.CAFile = path.Join(manifestutils.ReceiverTLSCADir, manifestutils.TLSCAFilename)
+			tlsCfg.CAFile = path.Join(caCertDir, manifestutils.TLSCAFilename)
 		}
 		if tlsSpec.MinVersion != "" {
 			tlsCfg.MinVersion = tlsSpec.MinVersion
@@ -193,23 +193,28 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 		case v1alpha1.MonolithicTracesStorageBackendS3:
 			config.Storage.Trace.Backend = "s3"
 			config.Storage.Trace.S3 = &tempoS3Config{}
-			config.Storage.Trace.S3.Endpoint = opts.StorageParams.S3.Endpoint
-			config.Storage.Trace.S3.Insecure = opts.StorageParams.S3.Insecure
-			config.Storage.Trace.S3.Bucket = opts.StorageParams.S3.Bucket
-			if tempo.Spec.Storage.Traces.S3 != nil && tempo.Spec.Storage.Traces.S3.TLS != nil && tempo.Spec.Storage.Traces.S3.TLS.Enabled {
-				if tempo.Spec.Storage.Traces.S3.TLS.CA != "" {
-					config.Storage.Trace.S3.TLSCAPath = path.Join(manifestutils.StorageTLSCADir, opts.StorageParams.S3.TLS.CAFilename)
+			if opts.StorageParams.S3.LongLived != nil {
+				config.Storage.Trace.S3.Endpoint = opts.StorageParams.S3.LongLived.Endpoint
+				config.Storage.Trace.S3.Insecure = opts.StorageParams.S3.LongLived.Insecure
+				config.Storage.Trace.S3.Bucket = opts.StorageParams.S3.LongLived.Bucket
+				if tempo.Spec.Storage.Traces.S3 != nil && tempo.Spec.Storage.Traces.S3.TLS != nil && tempo.Spec.Storage.Traces.S3.TLS.Enabled {
+					if tempo.Spec.Storage.Traces.S3.TLS.CA != "" {
+						config.Storage.Trace.S3.TLSCAPath = path.Join(manifestutils.StorageTLSCADir, opts.StorageParams.S3.LongLived.TLS.CAFilename)
+					}
+					if tempo.Spec.Storage.Traces.S3.TLS.Cert != "" {
+						config.Storage.Trace.S3.TLSCertPath = path.Join(manifestutils.StorageTLSCertDir, manifestutils.TLSCertFilename)
+						config.Storage.Trace.S3.TLSKeyPath = path.Join(manifestutils.StorageTLSCertDir, manifestutils.TLSKeyFilename)
+					}
+					if tempo.Spec.Storage.Traces.S3.TLS.MinVersion != "" {
+						config.Storage.Trace.S3.TLSMinVersion = tempo.Spec.Storage.Traces.S3.TLS.MinVersion
+					} else if opts.TLSProfile.MinTLSVersion != "" {
+						config.Storage.Trace.S3.TLSMinVersion = opts.TLSProfile.MinTLSVersion
+					}
+					config.Storage.Trace.S3.TLSCipherSuites = opts.TLSProfile.TLSCipherSuites()
 				}
-				if tempo.Spec.Storage.Traces.S3.TLS.Cert != "" {
-					config.Storage.Trace.S3.TLSCertPath = path.Join(manifestutils.StorageTLSCertDir, manifestutils.TLSCertFilename)
-					config.Storage.Trace.S3.TLSKeyPath = path.Join(manifestutils.StorageTLSCertDir, manifestutils.TLSKeyFilename)
-				}
-				if tempo.Spec.Storage.Traces.S3.TLS.MinVersion != "" {
-					config.Storage.Trace.S3.TLSMinVersion = tempo.Spec.Storage.Traces.S3.TLS.MinVersion
-				} else if opts.TLSProfile.MinTLSVersion != "" {
-					config.Storage.Trace.S3.TLSMinVersion = opts.TLSProfile.MinTLSVersion
-				}
-				config.Storage.Trace.S3.TLSCipherSuites = opts.TLSProfile.TLSCipherSuites()
+			} else if opts.StorageParams.S3.ShortLived != nil {
+				config.Storage.Trace.S3.Bucket = opts.StorageParams.S3.ShortLived.Bucket
+				config.Storage.Trace.S3.Endpoint = fmt.Sprintf("s3.%s.amazonaws.com", opts.StorageParams.S3.ShortLived.Region)
 			}
 
 		case v1alpha1.MonolithicTracesStorageBackendAzure:
@@ -230,7 +235,9 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 	if tempo.Spec.Ingestion != nil {
 		if tempo.Spec.Ingestion.OTLP != nil {
 			if tempo.Spec.Ingestion.OTLP.GRPC != nil && tempo.Spec.Ingestion.OTLP.GRPC.Enabled {
-				receiverTLS, err := configureReceiverTLS(tempo.Spec.Ingestion.OTLP.GRPC.TLS, opts.TLSProfile)
+				receiverTLS, err := configureReceiverTLS(tempo.Spec.Ingestion.OTLP.GRPC.TLS, opts.TLSProfile,
+					manifestutils.ReceiverGRPCTLSCADir, manifestutils.ReceiverGRPCTLSCertDir)
+
 				if err != nil {
 					return nil, err
 				}
@@ -246,7 +253,8 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 			}
 
 			if tempo.Spec.Ingestion.OTLP.HTTP != nil && tempo.Spec.Ingestion.OTLP.HTTP.Enabled {
-				receiverTLS, err := configureReceiverTLS(tempo.Spec.Ingestion.OTLP.HTTP.TLS, opts.TLSProfile)
+				receiverTLS, err := configureReceiverTLS(tempo.Spec.Ingestion.OTLP.HTTP.TLS,
+					opts.TLSProfile, manifestutils.ReceiverHTTPTLSCADir, manifestutils.ReceiverHTTPTLSCertDir)
 				if err != nil {
 					return nil, err
 				}
