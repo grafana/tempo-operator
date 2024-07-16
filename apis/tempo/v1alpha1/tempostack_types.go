@@ -71,7 +71,6 @@ type TempoStackSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Object Storage"
 	Storage ObjectStorageSpec `json:"storage"`
 
-	// NOTE: currently this field is not considered.
 	// Retention period defined by dataset.
 	// User can specify how long data should be stored.
 	//
