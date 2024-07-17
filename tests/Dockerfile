@@ -29,6 +29,17 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
     && unzip awscliv2.zip \
     && ./aws/install
 
+# Install Azure CLI
+RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+
+# Install Google Cloud CLI
+RUN curl -LO https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-linux-x86_64.tar.gz \
+    && tar -xf google-cloud-cli-linux-x86_64.tar.gz \
+    && ./google-cloud-sdk/install.sh -q
+
+# Add gcloud to PATH
+ENV PATH="/tmp/google-cloud-sdk/bin:${PATH}"
+
 # Set the working directory
 WORKDIR /tmp/tempo-operator
 
