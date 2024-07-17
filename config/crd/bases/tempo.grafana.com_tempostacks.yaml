@@ -354,7 +354,6 @@ spec:
                 type: object
               retention:
                 description: |-
-                  NOTE: currently this field is not considered.
                   Retention period defined by dataset.
                   User can specify how long data should be stored.
                 properties:
