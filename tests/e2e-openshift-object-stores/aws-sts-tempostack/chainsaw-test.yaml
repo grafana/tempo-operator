@@ -1,0 +1,45 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: aws-sts-tempostack
+  
+  labels:
+    type: aws-sts
+spec:
+  description: Test TempoStack support for AWS S3 using STS. This test is meant to be run from OpenShift CI as it depends on the credentials from CI.
+  namespace: chainsaw-awssts-tempo
+  steps:
+  - name: Create AWS S3 bucket, IAM policy and role required for STS
+    try:
+    - script:
+        timeout: 2m
+        content: ./aws-sts-s3-create.sh tmstack chainsaw-awssts-tempo
+    - assert:
+        file: aws-sts-s3-create-assert.yaml
+  - name: Install TempoStack
+    try:
+    - apply:
+        file: install-tempostack.yaml
+    - assert:
+        file: install-tempostack-assert.yaml
+  - name: Wait for the TempoStack to be ready
+    try:
+    - script:
+        timeout: 5m
+        content: oc get --namespace chainsaw-awssts-tempo tempo tmstack -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' | grep True
+  - name: Generate traces
+    try:
+    - apply:
+        file: generate-traces.yaml
+    - assert:
+        file: generate-traces-assert.yaml
+  - name: Verify traces
+    try:
+    - apply:
+        file: verify-traces.yaml
+    - assert:
+        file: verify-traces-assert.yaml
+    cleanup:
+    - script:
+        timeout: 2m
+        content: ./aws-sts-s3-delete.sh tmstack chainsaw-awssts-tempo
