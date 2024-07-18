@@ -2,7 +2,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: generate-traces-grpc
-  namespace: tls-monolithic-singletenant
+  namespace: chainsaw-tls-mono-st
 status:
   conditions:
     - status: "True"
@@ -12,7 +12,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: generate-traces-http
-  namespace: tls-monolithic-singletenant
+  namespace: chainsaw-tls-mono-st
 status:
   conditions:
     - status: "True"

@@ -1,4 +1,3 @@
-
 apiVersion: opentelemetry.io/v1alpha1
 kind: OpenTelemetryCollector
 metadata:
@@ -37,4 +36,3 @@ spec:
         traces/http:
           receivers: [otlp/http]
           exporters: [otlphttp]
-
