@@ -1,0 +1,15 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoMonolithic
+metadata:
+  name: tmmono
+  namespace: chainsaw-awssts-mono
+spec:
+  storage:
+    traces:
+      backend: s3
+      s3:
+        secret: aws-sts
+  jaegerui:
+    enabled: true
+    route:
+      enabled: true

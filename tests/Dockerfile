@@ -8,7 +8,7 @@ COPY . /tmp/tempo-operator
 WORKDIR /tmp
 
 # Install dependencies required by test cases and debugging
-RUN apt-get update && apt-get install -y jq vim libreadline-dev
+RUN apt-get update && apt-get install -y jq vim libreadline-dev unzip
 
 # Install kuttl
 RUN curl -LO https://github.com/kudobuilder/kuttl/releases/download/v0.15.0/kubectl-kuttl_0.15.0_linux_x86_64 \
@@ -16,13 +16,29 @@ RUN curl -LO https://github.com/kudobuilder/kuttl/releases/download/v0.15.0/kube
     && mv kubectl-kuttl_0.15.0_linux_x86_64 /usr/local/bin/kuttl
 
 # Install chainsaw
-RUN go install github.com/kyverno/chainsaw@v0.2.4
+RUN go install github.com/kyverno/chainsaw@v0.2.6
 
 # Install kubectl and oc
 RUN curl -L -o oc.tar.gz https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest/openshift-client-linux.tar.gz \
     && tar -xvzf oc.tar.gz \
     && chmod +x kubectl oc \
     && mv oc kubectl /usr/local/bin/
+
+# Install AWS CLI
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
+    && unzip awscliv2.zip \
+    && ./aws/install
+
+# Install Azure CLI
+RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+
+# Install Google Cloud CLI
+RUN curl -LO https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-linux-x86_64.tar.gz \
+    && tar -xf google-cloud-cli-linux-x86_64.tar.gz \
+    && ./google-cloud-sdk/install.sh -q
+
+# Add gcloud to PATH
+ENV PATH="/tmp/google-cloud-sdk/bin:${PATH}"
 
 # Set the working directory
 WORKDIR /tmp/tempo-operator

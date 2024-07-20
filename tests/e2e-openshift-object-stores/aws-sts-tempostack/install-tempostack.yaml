@@ -1,0 +1,22 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoStack
+metadata:
+  name: tmstack
+  namespace: chainsaw-awssts-tempo
+spec:
+  storage:
+    secret:
+      name: aws-sts
+      type: s3
+  storageSize: 10Gi
+  resources:
+    total:
+      limits:
+        memory: 4Gi
+        cpu: 2000m
+  template:
+    queryFrontend:
+      jaegerQuery:
+        enabled: true
+        ingress:
+          type: route
