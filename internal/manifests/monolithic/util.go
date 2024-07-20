@@ -2,14 +2,6 @@ package monolithic
 
 import "github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 
-func ingestionTLSEnabled(tempo v1alpha1.TempoMonolithic) bool {
-	return ingestionGRPCTLSEnabled(tempo) || ingestionHTTPTLSEnabled(tempo)
-}
-
-func tlsSecretAndBundleEmpty(tempo v1alpha1.TempoMonolithic) bool {
-	return tlsSecretAndBundleEmptyGRPC(tempo) || tlsSecretAndBundleEmptyHTTP(tempo)
-
-}
 func tlsSecretAndBundleEmptyGRPC(tempo v1alpha1.TempoMonolithic) bool {
 	if tempo.Spec.Ingestion != nil && tempo.Spec.Ingestion.OTLP != nil &&
 		tempo.Spec.Ingestion.OTLP.GRPC != nil && tempo.Spec.Ingestion.OTLP.GRPC.TLS != nil {

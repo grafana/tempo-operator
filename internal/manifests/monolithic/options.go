@@ -9,10 +9,11 @@ import (
 
 // Options defines calculated options required to generate all manifests.
 type Options struct {
-	CtrlConfig          configv1alpha1.ProjectConfig
-	Tempo               v1alpha1.TempoMonolithic
-	StorageParams       manifestutils.StorageParams
-	GatewayTenantSecret []*manifestutils.GatewayTenantOIDCSecret
-	GatewayTenantsData  []*manifestutils.GatewayTenantsData
-	TLSProfile          tlsprofile.TLSProfileOptions
+	CtrlConfig                configv1alpha1.ProjectConfig
+	Tempo                     v1alpha1.TempoMonolithic
+	StorageParams             manifestutils.StorageParams
+	GatewayTenantSecret       []*manifestutils.GatewayTenantOIDCSecret
+	GatewayTenantsData        []*manifestutils.GatewayTenantsData
+	TLSProfile                tlsprofile.TLSProfileOptions
+	useServiceCertsOnReceiver bool
 }
