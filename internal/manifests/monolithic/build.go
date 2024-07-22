@@ -64,11 +64,13 @@ func BuildAll(opts Options) ([]client.Object, error) {
 		if ingestionHTTPTLSEnabled(tempo) && tlsSecretAndBundleEmptyHTTP(tempo) {
 			tempo.Spec.Ingestion.OTLP.HTTP.TLS.CA = naming.ServingCABundleName(tempo.Name)
 			tempo.Spec.Ingestion.OTLP.HTTP.TLS.Cert = naming.ServingCertName(manifestutils.TempoMonolithComponentName, tempo.Name)
+			opts.useServiceCertsOnReceiver = true
 		}
 
 		if ingestionGRPCTLSEnabled(tempo) && tlsSecretAndBundleEmptyGRPC(tempo) {
 			tempo.Spec.Ingestion.OTLP.GRPC.TLS.CA = naming.ServingCABundleName(tempo.Name)
 			tempo.Spec.Ingestion.OTLP.GRPC.TLS.Cert = naming.ServingCertName(manifestutils.TempoMonolithComponentName, tempo.Name)
+			opts.useServiceCertsOnReceiver = true
 		}
 	}
 

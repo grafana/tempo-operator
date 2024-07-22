@@ -31,8 +31,7 @@ func buildTempoService(opts Options) *corev1.Service {
 	tempo := opts.Tempo
 	annotations := map[string]string{}
 
-	if opts.CtrlConfig.Gates.OpenShift.ServingCertsService && ingestionTLSEnabled(tempo) &&
-		tlsSecretAndBundleEmpty(tempo) {
+	if opts.useServiceCertsOnReceiver {
 		annotations["service.beta.openshift.io/serving-cert-secret-name"] = naming.ServingCertName(manifestutils.TempoMonolithComponentName, tempo.Name)
 	}
 

@@ -31,9 +31,10 @@ func TestBuildServices(t *testing.T) {
 	}
 
 	tests := []struct {
-		name     string
-		input    v1alpha1.TempoMonolithicSpec
-		expected []client.Object
+		name                      string
+		input                     v1alpha1.TempoMonolithicSpec
+		addServiceCertAnnotations bool
+		expected                  []client.Object
 	}{
 		{
 			name:  "no ingestion ports, no jaeger ui",
@@ -280,11 +281,61 @@ func TestBuildServices(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "add service cert annotation",
+			input: v1alpha1.TempoMonolithicSpec{
+				Ingestion: &v1alpha1.MonolithicIngestionSpec{
+					OTLP: &v1alpha1.MonolithicIngestionOTLPSpec{
+						GRPC: &v1alpha1.MonolithicIngestionOTLPProtocolsGRPCSpec{
+							Enabled: true,
+							TLS: &v1alpha1.TLSSpec{
+								Enabled: true,
+							},
+						},
+					},
+				},
+			},
+			addServiceCertAnnotations: true,
+			expected: []client.Object{
+				&corev1.Service{
+					TypeMeta: metav1.TypeMeta{
+						APIVersion: "apps/v1",
+						Kind:       "Service",
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "tempo-sample",
+						Namespace: "default",
+						Labels:    ComponentLabels("tempo", "sample"),
+						Annotations: map[string]string{
+							"service.beta.openshift.io/serving-cert-secret-name": "tempo-sample-serving-cert",
+						},
+					},
+					Spec: corev1.ServiceSpec{
+						Ports: []corev1.ServicePort{
+							{
+								Name:       "http",
+								Protocol:   corev1.ProtocolTCP,
+								Port:       3200,
+								TargetPort: intstr.FromString("http"),
+							},
+							{
+								Name:       "otlp-grpc",
+								Protocol:   corev1.ProtocolTCP,
+								Port:       4317,
+								TargetPort: intstr.FromString("otlp-grpc"),
+							},
+						},
+						Selector: ComponentLabels("tempo", "sample"),
+					},
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			opts.Tempo.Spec = test.input
+			opts.useServiceCertsOnReceiver = test.addServiceCertAnnotations
 			svcs := BuildServices(opts)
 			require.Equal(t, test.expected, svcs)
 		})
