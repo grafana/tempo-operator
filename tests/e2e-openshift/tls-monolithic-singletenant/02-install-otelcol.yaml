@@ -1,9 +1,9 @@
-# based on config/samples/otelcol_v1alpha1_openshift.yaml
+
 apiVersion: opentelemetry.io/v1alpha1
 kind: OpenTelemetryCollector
 metadata:
   name: dev
-  namespace: chainsaw-tls-monolithic-singletenant
+  namespace: chainsaw-tls-mono-st
 spec:
   config: |
     receivers:
@@ -15,12 +15,12 @@ spec:
           http:
     exporters:
       otlp:
-        endpoint: tempo-monolithic-cert.chainsaw-tls-monolithic-singletenant.svc.cluster.local:4317
+        endpoint: tempo-mono.chainsaw-tls-mono-st.svc.cluster.local:4317
         tls:
           insecure: false
           ca_file: "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt"
       otlphttp:
-        endpoint: https://tempo-monolithic-cert.chainsaw-tls-monolithic-singletenant.svc.cluster.local:4318
+        endpoint: https://tempo-mono.chainsaw-tls-mono-st.svc.cluster.local:4318
         tls:
           insecure: false
           ca_file: "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt"
@@ -37,3 +37,4 @@ spec:
         traces/http:
           receivers: [otlp/http]
           exporters: [otlphttp]
+
