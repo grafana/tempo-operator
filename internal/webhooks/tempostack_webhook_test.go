@@ -127,6 +127,11 @@ func TestDefault(t *testing.T) {
 						Querier: v1alpha1.TempoComponentSpec{
 							Replicas: ptr.To(int32(1)),
 						},
+						Gateway: v1alpha1.TempoGatewaySpec{
+							TempoComponentSpec: v1alpha1.TempoComponentSpec{
+								Replicas: ptr.To(int32(1)),
+							},
+						},
 						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
 							TempoComponentSpec: v1alpha1.TempoComponentSpec{
 								Replicas: ptr.To(int32(1)),
@@ -198,6 +203,11 @@ func TestDefault(t *testing.T) {
 							},
 							JaegerQuery: v1alpha1.JaegerQuerySpec{
 								ServicesQueryDuration: &defaultServicesDuration,
+							},
+						},
+						Gateway: v1alpha1.TempoGatewaySpec{
+							TempoComponentSpec: v1alpha1.TempoComponentSpec{
+								Replicas: ptr.To(int32(1)),
 							},
 						},
 					},
@@ -277,6 +287,11 @@ func TestDefault(t *testing.T) {
 								ServicesQueryDuration: &defaultServicesDuration,
 							},
 						},
+						Gateway: v1alpha1.TempoGatewaySpec{
+							TempoComponentSpec: v1alpha1.TempoComponentSpec{
+								Replicas: ptr.To(int32(1)),
+							},
+						},
 					},
 				},
 			},
@@ -338,6 +353,11 @@ func TestDefault(t *testing.T) {
 						},
 						Querier: v1alpha1.TempoComponentSpec{
 							Replicas: ptr.To(int32(1)),
+						},
+						Gateway: v1alpha1.TempoGatewaySpec{
+							TempoComponentSpec: v1alpha1.TempoComponentSpec{
+								Replicas: ptr.To(int32(1)),
+							},
 						},
 						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
 							TempoComponentSpec: v1alpha1.TempoComponentSpec{
@@ -449,6 +469,11 @@ func TestDefault(t *testing.T) {
 								Authentication: &v1alpha1.JaegerQueryAuthenticationSpec{
 									Enabled: false,
 								},
+							},
+						},
+						Gateway: v1alpha1.TempoGatewaySpec{
+							TempoComponentSpec: v1alpha1.TempoComponentSpec{
+								Replicas: ptr.To(int32(1)),
 							},
 						},
 					},

@@ -115,8 +115,13 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 	if r.Spec.Template.Querier.Replicas == nil {
 		r.Spec.Template.Querier.Replicas = defaultComponentReplicas
 	}
+
 	if r.Spec.Template.QueryFrontend.Replicas == nil {
 		r.Spec.Template.QueryFrontend.Replicas = defaultComponentReplicas
+	}
+
+	if r.Spec.Template.Gateway.Replicas == nil {
+		r.Spec.Template.Gateway.Replicas = defaultComponentReplicas
 	}
 
 	// Default replication factor if not specified.
