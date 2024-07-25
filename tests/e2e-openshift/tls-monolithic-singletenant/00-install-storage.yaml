@@ -1,9 +1,3 @@
-# The namespace is auto-deleted by chainsaw after the test run.
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: chainsaw-tls-mono-st
----
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:

@@ -2,9 +2,9 @@
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
-  creationTimestamp: null
-  name: tls-singletenant
+  name: tls-singletenant-monolithic
 spec:
+  namespace: chainsaw-tls-mono-st
   steps:
   - name: step-00
     try:

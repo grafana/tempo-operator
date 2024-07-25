@@ -2,7 +2,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: verify-traces-grpc
-  namespace: tls-monolithic-singletenant
+  namespace: chainsaw-tls-mono-st
 spec:
   template:
     spec:
@@ -15,7 +15,7 @@ spec:
         - -c
         args:
         - |
-          curl -v -G http://tempo-simplest-query-frontend:16686/api/traces --data-urlencode "service=grpc" | tee /tmp/jaeger.out
+          curl -v -G http://tempo-mono-jaegerui:16686/api/traces --data-urlencode "service=grpc" | tee /tmp/jaeger.out
           num_traces=$(jq ".data | length" /tmp/jaeger.out)
           if [[ "$num_traces" -ne 10 ]]; then
             echo && echo "The Jaeger API returned $num_traces instead of 10 traces."
@@ -27,7 +27,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: verify-traces-http
-  namespace: tls-monolithic-singletenant
+  namespace: chainsaw-tls-mono-st
 spec:
   template:
     spec:
@@ -40,7 +40,7 @@ spec:
             - -c
           args:
           - |          
-            curl -v -G http://tempo-simplest-query-frontend:16686/api/traces --data-urlencode "service=http" | tee /tmp/jaeger.out
+            curl -v -G http://tempo-mono-jaegerui:16686/api/traces --data-urlencode "service=http" | tee /tmp/jaeger.out
             num_traces=$(jq ".data | length" /tmp/jaeger.out)
             if [[ "$num_traces" -ne 10 ]]; then
               echo && echo "The Jaeger API returned $num_traces instead of 10 traces."
