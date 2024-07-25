@@ -210,7 +210,7 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 			fmt.Sprintf("--traces.tls.key-file=%s", path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSKeyFilename)),
 			fmt.Sprintf("--traces.tls.cert-file=%s", path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSCertFilename)),
 			fmt.Sprintf("--traces.tls.ca-file=%s", path.Join(manifestutils.TempoInternalTLSCADir, manifestutils.TLSCAFilename)),
-			fmt.Sprintf("--traces.tls.watch-certs=true"),
+			"--traces.tls.watch-certs=true",
 		}
 	}
 
