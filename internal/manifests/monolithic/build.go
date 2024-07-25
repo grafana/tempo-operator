@@ -31,6 +31,23 @@ func BuildAll(opts Options) ([]client.Object, error) {
 	manifests := []client.Object{}
 	extraStsAnnotations := map[string]string{}
 
+	if opts.CtrlConfig.Gates.OpenShift.ServingCertsService {
+		manifests = append(manifests, manifestutils.NewConfigMapCABundle(
+			tempo.Namespace,
+			naming.ServingCABundleName(tempo.Name),
+			CommonLabels(tempo.Name),
+		))
+		if ingestionHTTPTLSEnabled(tempo) && tlsSecretAndBundleEmptyHTTP(tempo) {
+			tempo.Spec.Ingestion.OTLP.HTTP.TLS.Cert = naming.ServingCertName(manifestutils.TempoMonolithComponentName, tempo.Name)
+			opts.useServiceCertsOnReceiver = true
+		}
+
+		if ingestionGRPCTLSEnabled(tempo) && tlsSecretAndBundleEmptyGRPC(tempo) {
+			tempo.Spec.Ingestion.OTLP.GRPC.TLS.Cert = naming.ServingCertName(manifestutils.TempoMonolithComponentName, tempo.Name)
+			opts.useServiceCertsOnReceiver = true
+		}
+	}
+
 	configMap, annotations, err := BuildConfigMap(opts)
 	if err != nil {
 		return nil, err
@@ -53,25 +70,6 @@ func BuildAll(opts Options) ([]client.Object, error) {
 
 		manifests = append(manifests, objs...)
 		maps.Copy(extraStsAnnotations, annotations)
-	}
-
-	if opts.CtrlConfig.Gates.OpenShift.ServingCertsService {
-		manifests = append(manifests, manifestutils.NewConfigMapCABundle(
-			tempo.Namespace,
-			naming.ServingCABundleName(tempo.Name),
-			CommonLabels(tempo.Name),
-		))
-		if ingestionHTTPTLSEnabled(tempo) && tlsSecretAndBundleEmptyHTTP(tempo) {
-			tempo.Spec.Ingestion.OTLP.HTTP.TLS.CA = naming.ServingCABundleName(tempo.Name)
-			tempo.Spec.Ingestion.OTLP.HTTP.TLS.Cert = naming.ServingCertName(manifestutils.TempoMonolithComponentName, tempo.Name)
-			opts.useServiceCertsOnReceiver = true
-		}
-
-		if ingestionGRPCTLSEnabled(tempo) && tlsSecretAndBundleEmptyGRPC(tempo) {
-			tempo.Spec.Ingestion.OTLP.GRPC.TLS.CA = naming.ServingCABundleName(tempo.Name)
-			tempo.Spec.Ingestion.OTLP.GRPC.TLS.Cert = naming.ServingCertName(manifestutils.TempoMonolithComponentName, tempo.Name)
-			opts.useServiceCertsOnReceiver = true
-		}
 	}
 
 	statefulSet, err := BuildTempoStatefulset(opts, extraStsAnnotations)
