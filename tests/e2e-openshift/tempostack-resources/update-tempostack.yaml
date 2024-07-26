@@ -1,0 +1,92 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoStack
+metadata:
+  name: tmrs
+spec:
+  storage:
+    secret:
+      name: minio
+      type: s3
+  storageSize: 1Gi
+  resources:
+    total:
+      limits:
+        memory: 2Gi
+        cpu: 2000m
+  tenants:
+    mode: openshift
+    authentication:
+      - tenantName: dev
+        tenantId: "1610b0c3-c509-4592-a256-a1871353dbfa"
+      - tenantName: prod
+        tenantId: "1610b0c3-c509-4592-a256-a1871353dbfb"
+  template:
+    compactor:
+      resources:
+        limits:
+          cpu: 301m
+          memory: 349Mi
+        requests:
+          cpu: 91m
+          memory: 105Mi
+    distributor:
+      component:
+        resources:
+          limits:
+            cpu: 521m
+            memory: 226Mi
+          requests:
+            cpu: 157m
+            memory: 69Mi
+    gateway:
+      enabled: true
+      component:
+        resources:
+          limits:
+            cpu: 122m
+            memory: 104Mi
+          requests:
+            cpu: 37m
+            memory: 32Mi
+    ingester:
+      resources:
+        limits:
+          cpu: 721m
+          memory: 1013Mi
+        requests:
+          cpu: 217m
+          memory: 302Mi
+    querier:
+      resources:
+        limits:
+          cpu: 181m
+          memory: 288Mi
+        requests:
+          cpu: 55m
+          memory: 87Mi
+    queryFrontend:
+      component:
+        resources:
+          limits:
+            cpu: 161m
+            memory: 83Mi
+          requests:
+            cpu: 49m
+            memory: 27Mi
+      jaegerQuery:
+        authentication:
+          resources:
+            limits:
+              cpu: 161m
+              memory: 83Mi
+            requests:
+              cpu: 49m
+              memory: 29Mi
+        enabled: true
+        resources:
+          limits:
+            cpu: 167m
+            memory: 86Mi
+          requests:
+            cpu: 49m
+            memory: 29Mi

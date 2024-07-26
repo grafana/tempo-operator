@@ -1,0 +1,211 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: tempo-tmrs-ingester
+spec:
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: ingester
+        app.kubernetes.io/instance: tmrs
+        app.kubernetes.io/managed-by: tempo-operator
+        app.kubernetes.io/name: tempo
+        tempo-gossip-member: "true"
+    spec:
+      containers:
+      - name: tempo
+        resources:
+          limits:
+            cpu: 720m
+            memory: "1052267008"
+          requests:
+            cpu: 216m
+            memory: "315680128"
+status:
+  availableReplicas: 1
+  currentReplicas: 1
+  readyReplicas: 1
+  replicas: 1
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-tmrs-compactor
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: compactor
+      app.kubernetes.io/instance: tmrs
+      app.kubernetes.io/managed-by: tempo-operator
+      app.kubernetes.io/name: tempo
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: compactor
+        app.kubernetes.io/instance: tmrs
+        app.kubernetes.io/managed-by: tempo-operator
+        app.kubernetes.io/name: tempo
+        tempo-gossip-member: "true"
+    spec:
+      containers:
+      - name: tempo
+        resources:
+          limits:
+            cpu: 300m
+            memory: "365072224"
+          requests:
+            cpu: 90m
+            memory: "109521672"
+status:
+  availableReplicas: 1
+  readyReplicas: 1
+  replicas: 1
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-tmrs-distributor
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: distributor
+      app.kubernetes.io/instance: tmrs
+      app.kubernetes.io/managed-by: tempo-operator
+      app.kubernetes.io/name: tempo
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: distributor
+        app.kubernetes.io/instance: tmrs
+        app.kubernetes.io/managed-by: tempo-operator
+        app.kubernetes.io/name: tempo
+        tempo-gossip-member: "true"
+    spec:
+      containers:
+      - name: tempo
+        resources:
+          limits:
+            cpu: 520m
+            memory: "236223200"
+          requests:
+            cpu: 156m
+            memory: "70866960"
+status:
+  availableReplicas: 1
+  readyReplicas: 1
+  replicas: 1
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-tmrs-gateway
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: gateway
+      app.kubernetes.io/instance: tmrs
+      app.kubernetes.io/managed-by: tempo-operator
+      app.kubernetes.io/name: tempo
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: gateway
+        app.kubernetes.io/instance: tmrs
+        app.kubernetes.io/managed-by: tempo-operator
+        app.kubernetes.io/name: tempo
+    spec:
+      containers:
+      - name: tempo-gateway
+        resources:
+          limits:
+            cpu: 120m
+            memory: "107374184"
+          requests:
+            cpu: 36m
+            memory: "32212256"
+      - name: tempo-gateway-opa
+status:
+  availableReplicas: 1
+  readyReplicas: 1
+  replicas: 1
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-tmrs-querier
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: querier
+      app.kubernetes.io/instance: tmrs
+      app.kubernetes.io/managed-by: tempo-operator
+      app.kubernetes.io/name: tempo
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: querier
+        app.kubernetes.io/instance: tmrs
+        app.kubernetes.io/managed-by: tempo-operator
+        app.kubernetes.io/name: tempo
+        tempo-gossip-member: "true"
+    spec:
+      containers:
+      - name: tempo
+        resources:
+          limits:
+            cpu: 180m
+            memory: "300647712"
+          requests:
+            cpu: 54m
+            memory: "90194320"
+status:
+  availableReplicas: 1
+  readyReplicas: 1
+  replicas: 1
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-tmrs-query-frontend
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: query-frontend
+      app.kubernetes.io/instance: tmrs
+      app.kubernetes.io/managed-by: tempo-operator
+      app.kubernetes.io/name: tempo
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: query-frontend
+        app.kubernetes.io/instance: tmrs
+        app.kubernetes.io/managed-by: tempo-operator
+        app.kubernetes.io/name: tempo
+        tempo-gossip-member: "true"
+    spec:
+      containers:
+      - name: tempo
+        resources:
+          limits:
+            cpu: 160m
+            memory: "85899344"
+          requests:
+            cpu: 48m
+            memory: "25769804"
+      - name: tempo-query
+        resources:
+          limits:
+            cpu: 160m
+            memory: "85899344"
+          requests:
+            cpu: 48m
+            memory: "25769804"
+status:
+  availableReplicas: 1
+  readyReplicas: 1
+  replicas: 1

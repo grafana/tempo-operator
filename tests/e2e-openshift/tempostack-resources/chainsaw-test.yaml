@@ -1,0 +1,36 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: tempostack-resources
+spec:
+  description: Test global and per-component resources allocation in TempoStack.
+  steps:
+  - name: Install Minio
+    try:
+    - apply:
+        file: install-storage.yaml
+    - assert:
+        file: install-storage-assert.yaml
+  - name: Create TempoStack with resources assigned globally
+    try:
+    - apply:
+        file: install-tempostack.yaml
+    - assert:
+        file: install-tempostack-assert.yaml
+  - name: Check the status of TempoStack
+    try:
+    - script:
+        timeout: 5m
+        content: kubectl get --namespace $NAMESPACE tempo tmrs -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}'
+  - name: Update TempoStack with per-component resource allocation
+    try:
+    - apply:
+        file: update-tempostack.yaml
+    - assert:
+        file: update-tempostack-assert.yaml
+  - name: Check the status of TempoStack
+    try:
+    - script:
+        timeout: 5m
+        content: kubectl get --namespace $NAMESPACE tempo tmrs -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}'
+ 
