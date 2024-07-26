@@ -17,6 +17,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
@@ -151,6 +152,9 @@ func TestBuildGateway_openshift(t *testing.T) {
 		Spec: v1alpha1.TempoStackSpec{
 			Template: v1alpha1.TempoTemplateSpec{
 				Gateway: v1alpha1.TempoGatewaySpec{
+					TempoComponentSpec: v1alpha1.TempoComponentSpec{
+						Replicas: ptr.To(int32(4)),
+					},
 					Enabled: true,
 					Ingress: v1alpha1.IngressSpec{
 						Type: v1alpha1.IngressTypeRoute,
@@ -189,6 +193,8 @@ func TestBuildGateway_openshift(t *testing.T) {
 	require.NotNil(t, obj)
 	dep, ok := obj.(*appsv1.Deployment)
 	require.True(t, ok)
+	assert.Equal(t, int32(4), *dep.Spec.Replicas)
+
 	assert.Equal(t, 2, len(dep.Spec.Template.Spec.Containers))
 	assert.Equal(t, "tempo-gateway-opa", dep.Spec.Template.Spec.Containers[1].Name)
 	assert.Equal(t, "tempo-simplest-gateway", dep.Spec.Template.Spec.ServiceAccountName)

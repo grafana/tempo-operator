@@ -223,6 +223,7 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 			Labels:    labels,
 		},
 		Spec: appsv1.DeploymentSpec{
+			Replicas: tempo.Spec.Template.Gateway.Replicas,
 			Selector: &metav1.LabelSelector{
 				MatchLabels: labels,
 			},
