@@ -5,6 +5,7 @@ resources:
 - prometheus_role_binding.yaml
 - cluster_monitoring_view_role.yaml
 - cluster_monitoring_role_binding.yaml
+- tempo_operator_prometheus_rules.yaml
 
 # Adds namespace to all resources.
 namespace: tempo-operator-system
