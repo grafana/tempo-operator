@@ -187,7 +187,7 @@ func TestMonolithicDefault(t *testing.T) {
 							Enabled:     true,
 							Termination: TLSRouteTerminationTypeEdge,
 						},
-						Authentication: &JaegerQueryAuthenticationSpec{
+						Authentication: &OAuthAuthenticationSpec{
 							Enabled: true,
 							SAR:     "{\"namespace\": \"testns\", \"resource\": \"pods\", \"verb\": \"get\"}",
 						},
@@ -225,7 +225,7 @@ func TestMonolithicDefault(t *testing.T) {
 						Route: &MonolithicJaegerUIRouteSpec{
 							Enabled: true,
 						},
-						Authentication: &JaegerQueryAuthenticationSpec{
+						Authentication: &OAuthAuthenticationSpec{
 							Enabled: false,
 						},
 					},
@@ -259,7 +259,7 @@ func TestMonolithicDefault(t *testing.T) {
 							Enabled:     true,
 							Termination: TLSRouteTerminationTypeEdge,
 						},
-						Authentication: &JaegerQueryAuthenticationSpec{
+						Authentication: &OAuthAuthenticationSpec{
 							Enabled: false,
 							SAR:     "{\"namespace\": \"testns\", \"resource\": \"pods\", \"verb\": \"get\"}",
 						},
@@ -288,7 +288,7 @@ func TestMonolithicDefault(t *testing.T) {
 						Route: &MonolithicJaegerUIRouteSpec{
 							Enabled: true,
 						},
-						Authentication: &JaegerQueryAuthenticationSpec{
+						Authentication: &OAuthAuthenticationSpec{
 							Enabled: true,
 							SAR:     "{\"namespace\": \"testns\", \"resource\": \"pods\", \"verb\": \"get\"}",
 						},
@@ -323,7 +323,7 @@ func TestMonolithicDefault(t *testing.T) {
 							Enabled:     true,
 							Termination: TLSRouteTerminationTypeEdge,
 						},
-						Authentication: &JaegerQueryAuthenticationSpec{
+						Authentication: &OAuthAuthenticationSpec{
 							Enabled: true,
 							SAR:     "{\"namespace\": \"testns\", \"resource\": \"pods\", \"verb\": \"get\"}",
 						},
@@ -352,7 +352,7 @@ func TestMonolithicDefault(t *testing.T) {
 						Route: &MonolithicJaegerUIRouteSpec{
 							Enabled: true,
 						},
-						Authentication: &JaegerQueryAuthenticationSpec{
+						Authentication: &OAuthAuthenticationSpec{
 							Enabled: false,
 						},
 					},
@@ -386,7 +386,7 @@ func TestMonolithicDefault(t *testing.T) {
 							Enabled:     true,
 							Termination: TLSRouteTerminationTypeEdge,
 						},
-						Authentication: &JaegerQueryAuthenticationSpec{
+						Authentication: &OAuthAuthenticationSpec{
 							Enabled: false,
 							SAR:     "{\"namespace\": \"testns\", \"resource\": \"pods\", \"verb\": \"get\"}",
 						},
@@ -447,7 +447,7 @@ func TestMonolithicDefault(t *testing.T) {
 							Enabled:     true,
 							Termination: TLSRouteTerminationTypeEdge,
 						},
-						Authentication: &JaegerQueryAuthenticationSpec{
+						Authentication: &OAuthAuthenticationSpec{
 							Enabled: false,
 							SAR:     "{\"namespace\": \"testns\", \"resource\": \"pods\", \"verb\": \"get\"}",
 						},

@@ -39,7 +39,8 @@ func TestOauthProxyContainer(t *testing.T) {
 			expectedImage: customImage,
 			expectedArgs: []string{
 				fmt.Sprintf("--cookie-secret-file=%s/%s", oauthProxySecretMountPath, sessionSecretKey),
-				fmt.Sprintf("--https-address=:%d", manifestutils.OAuthProxyPort),
+				fmt.Sprintf("--https-address=:%d", manifestutils.OAuthJaegerUIProxyPortHTTPS),
+				fmt.Sprintf("--http-address=:%d", manifestutils.OAuthJaegerUIProxyPortHTTP),
 				fmt.Sprintf("--openshift-service-account=%s", naming.Name(manifestutils.QueryFrontendComponentName, "test")),
 				"--provider=openshift",
 				fmt.Sprintf("--tls-cert=%s/tls.crt", tlsProxyPath),
@@ -55,7 +56,7 @@ func TestOauthProxyContainer(t *testing.T) {
 					Template: v1alpha1.TempoTemplateSpec{
 						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
 							JaegerQuery: v1alpha1.JaegerQuerySpec{
-								Authentication: &v1alpha1.JaegerQueryAuthenticationSpec{
+								Authentication: &v1alpha1.OAuthAuthenticationSpec{
 									Enabled: true,
 								},
 							},
@@ -69,7 +70,8 @@ func TestOauthProxyContainer(t *testing.T) {
 			expectedImage: customImage,
 			expectedArgs: []string{
 				fmt.Sprintf("--cookie-secret-file=%s/%s", oauthProxySecretMountPath, sessionSecretKey),
-				fmt.Sprintf("--https-address=:%d", manifestutils.OAuthProxyPort),
+				fmt.Sprintf("--https-address=:%d", manifestutils.OAuthJaegerUIProxyPortHTTPS),
+				fmt.Sprintf("--http-address=:%d", manifestutils.OAuthJaegerUIProxyPortHTTP),
 				fmt.Sprintf("--openshift-service-account=%s", naming.Name(manifestutils.QueryFrontendComponentName, "test2")),
 				"--provider=openshift",
 				fmt.Sprintf("--tls-cert=%s/tls.crt", tlsProxyPath),
@@ -86,7 +88,7 @@ func TestOauthProxyContainer(t *testing.T) {
 					Template: v1alpha1.TempoTemplateSpec{
 						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
 							JaegerQuery: v1alpha1.JaegerQuerySpec{
-								Authentication: &v1alpha1.JaegerQueryAuthenticationSpec{
+								Authentication: &v1alpha1.OAuthAuthenticationSpec{
 									Enabled: true,
 									SAR:     "{\"namespace\":\"app-dev\",\"resource\":\"services\",\"resourceName\":\"proxy\",\"verb\":\"get\"}",
 								},
@@ -109,19 +111,27 @@ func TestOauthProxyContainer(t *testing.T) {
 			}
 			params.Tempo = test.tempo
 			replicas := int32(1)
-			container := oAuthProxyContainer(params.Tempo.Name,
+			container := oAuthProxyContainer(
+				params.Tempo.Name,
 				naming.Name(manifestutils.QueryFrontendComponentName, params.Tempo.Name),
-				params.Tempo.Spec.Template.QueryFrontend.JaegerQuery.Authentication,
-				customImage,
+				*params.Tempo.Spec.Template.QueryFrontend.JaegerQuery.Authentication,
+				test.expectedImage,
+				"query-frontend",
+				manifestutils.OAuthJaegerUIProxyPortHTTP,
+				manifestutils.OAuthJaegerUIProxyPortHTTPS,
+				corev1.ContainerPort{
+					ContainerPort: manifestutils.PortJaegerUI,
+					Name:          manifestutils.JaegerUIPortName,
+				},
 			)
 			expected := corev1.Container{
 				Image: test.expectedImage,
-				Name:  "oauth-proxy",
+				Name:  "query-frontend-oauth-proxy",
 				Args:  test.expectedArgs,
 				Ports: []corev1.ContainerPort{
 					{
-						ContainerPort: manifestutils.OAuthProxyPort,
-						Name:          manifestutils.OAuthProxyPortName,
+						ContainerPort: manifestutils.OAuthJaegerUIProxyPortHTTPS,
+						Name:          manifestutils.JaegerUIPortName,
 					},
 				},
 				VolumeMounts: []corev1.VolumeMount{{
@@ -141,7 +151,7 @@ func TestOauthProxyContainer(t *testing.T) {
 						HTTPGet: &corev1.HTTPGetAction{
 							Scheme: corev1.URISchemeHTTPS,
 							Path:   healthPath,
-							Port:   intstr.FromString(manifestutils.OAuthProxyPortName),
+							Port:   intstr.FromString(manifestutils.JaegerUIPortName),
 						},
 					},
 					InitialDelaySeconds: oauthReadinessProbeInitialDelaySeconds,
@@ -164,7 +174,7 @@ func TestOAuthProxyServiceAccount(t *testing.T) {
 			Template: v1alpha1.TempoTemplateSpec{
 				QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
 					JaegerQuery: v1alpha1.JaegerQuerySpec{
-						Authentication: &v1alpha1.JaegerQueryAuthenticationSpec{
+						Authentication: &v1alpha1.OAuthAuthenticationSpec{
 							Enabled: true,
 						},
 					},
@@ -194,7 +204,7 @@ func TestOAuthProxyServiceAccount_aws_sts(t *testing.T) {
 			Template: v1alpha1.TempoTemplateSpec{
 				QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
 					JaegerQuery: v1alpha1.JaegerQuerySpec{
-						Authentication: &v1alpha1.JaegerQueryAuthenticationSpec{
+						Authentication: &v1alpha1.OAuthAuthenticationSpec{
 							Enabled: true,
 						},
 					},
@@ -216,7 +226,7 @@ func TestOAuthProxyServiceAccount_aws_sts(t *testing.T) {
 		}, service.Annotations)
 }
 
-func TestPatchDeploymentForOauthProxy(t *testing.T) {
+func TestPatchPodSpecForOauthProxy(t *testing.T) {
 	labels := manifestutils.ComponentLabels("query-frontend", "test")
 	annotations := manifestutils.CommonAnnotations("")
 	defaultImage := "myrepo/oauth_proxy:1.1"
@@ -250,7 +260,7 @@ func TestPatchDeploymentForOauthProxy(t *testing.T) {
 							Env:   []corev1.EnvVar{},
 							Args: []string{
 								"-target=query-frontend",
-								"-config.file=/conf/tempo-query-frontend.yaml",
+								"-ProjectConfig.file=/conf/tempo-query-frontend.yaml",
 								"-mem-ballast-size-mbs=1024",
 								"-log.level=info",
 							},
@@ -323,7 +333,7 @@ func TestPatchDeploymentForOauthProxy(t *testing.T) {
 			Template: v1alpha1.TempoTemplateSpec{
 				QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
 					JaegerQuery: v1alpha1.JaegerQuerySpec{
-						Authentication: &v1alpha1.JaegerQueryAuthenticationSpec{
+						Authentication: &v1alpha1.OAuthAuthenticationSpec{
 							Enabled: true,
 						},
 					},
@@ -341,155 +351,25 @@ func TestPatchDeploymentForOauthProxy(t *testing.T) {
 		Tempo: tempo,
 	}
 
-	PatchDeploymentForOauthProxy(
-		params.Tempo.ObjectMeta,
-		params.CtrlConfig,
-		params.Tempo.Spec.Template.QueryFrontend.JaegerQuery.Authentication,
-		params.Tempo.Spec.Images,
-		dep)
+	PatchPodSpecForOauthProxy(Params{
+		TempoMeta:     params.Tempo.ObjectMeta,
+		AuthSpec:      *params.Tempo.Spec.Template.QueryFrontend.JaegerQuery.Authentication,
+		ProjectConfig: params.CtrlConfig,
+		Port: corev1.ContainerPort{
+
+			Name:          manifestutils.HttpPortName,
+			ContainerPort: manifestutils.PortHTTPServer,
+			Protocol:      corev1.ProtocolTCP,
+		},
+		ProxyImage:             params.Tempo.Spec.Images.OauthProxy,
+		ContainerName:          "tempo",
+		OverrideServiceAccount: true,
+	}, &dep.Spec.Template.Spec)
 
 	assert.Equal(t, 2, len(dep.Spec.Template.Spec.Containers))
-	assert.Equal(t, "oauth-proxy", dep.Spec.Template.Spec.Containers[1].Name)
+	assert.Equal(t, "tempo-oauth-proxy", dep.Spec.Template.Spec.Containers[1].Name)
 	assert.Equal(t, naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name), dep.Spec.Template.Spec.ServiceAccountName)
 	assert.Equal(t, 4, len(dep.Spec.Template.Spec.Volumes))
-
-}
-
-func TestPatchStatefulSetForOauthProxy(t *testing.T) {
-	labels := manifestutils.ComponentLabels("query-frontend", "test")
-	annotations := manifestutils.CommonAnnotations("")
-	defaultImage := "myrepo/oauth_proxy:1.1"
-
-	statefulSet := &v1.StatefulSet{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: v1.SchemeGroupVersion.String(),
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      naming.Name(manifestutils.QueryFrontendComponentName, "tempoi"),
-			Namespace: "project1",
-			Labels:    labels,
-		},
-		Spec: v1.StatefulSetSpec{
-			Replicas: ptr.To(int32(1)),
-			Selector: &metav1.LabelSelector{
-				MatchLabels: labels,
-			},
-			Template: corev1.PodTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{
-					Labels:      k8slabels.Merge(labels, memberlist.GossipSelector),
-					Annotations: annotations,
-				},
-				Spec: corev1.PodSpec{
-					ServiceAccountName: "tempo-test-serviceaccount",
-					Affinity:           manifestutils.DefaultAffinity(labels),
-					Containers: []corev1.Container{
-						{
-							Name:  "tempo",
-							Image: "docker.io/grafana/tempo:1.5.0",
-							Env:   []corev1.EnvVar{},
-							Args: []string{
-								"-target=query-frontend",
-								"-config.file=/conf/tempo-query-frontend.yaml",
-								"-mem-ballast-size-mbs=1024",
-								"-log.level=info",
-							},
-							Ports: []corev1.ContainerPort{
-								{
-									Name:          manifestutils.HttpPortName,
-									ContainerPort: manifestutils.PortHTTPServer,
-									Protocol:      corev1.ProtocolTCP,
-								},
-								{
-									Name:          manifestutils.GrpcPortName,
-									ContainerPort: manifestutils.PortGRPCServer,
-									Protocol:      corev1.ProtocolTCP,
-								},
-							},
-							ReadinessProbe: manifestutils.TempoReadinessProbe(false),
-							VolumeMounts: []corev1.VolumeMount{
-								{
-									Name:      manifestutils.ConfigVolumeName,
-									MountPath: "/conf",
-									ReadOnly:  true,
-								},
-								{
-									Name:      manifestutils.TmpStorageVolumeName,
-									MountPath: manifestutils.TmpTempoStoragePath,
-								},
-							},
-							Resources: corev1.ResourceRequirements{
-								Limits: corev1.ResourceList{
-									corev1.ResourceCPU:    *resource.NewMilliQuantity(90, resource.BinarySI),
-									corev1.ResourceMemory: *resource.NewQuantity(107374184, resource.BinarySI),
-								},
-								Requests: corev1.ResourceList{
-									corev1.ResourceCPU:    *resource.NewMilliQuantity(27, resource.BinarySI),
-									corev1.ResourceMemory: *resource.NewQuantity(32212256, resource.BinarySI),
-								},
-							},
-							SecurityContext: manifestutils.TempoContainerSecurityContext(),
-						},
-					},
-					Volumes: []corev1.Volume{
-						{
-							Name: manifestutils.ConfigVolumeName,
-							VolumeSource: corev1.VolumeSource{
-								ConfigMap: &corev1.ConfigMapVolumeSource{
-									LocalObjectReference: corev1.LocalObjectReference{
-										Name: naming.Name("", "test"),
-									},
-								},
-							},
-						},
-						{
-							Name: manifestutils.TmpStorageVolumeName,
-							VolumeSource: corev1.VolumeSource{
-								EmptyDir: &corev1.EmptyDirVolumeSource{},
-							},
-						},
-					},
-				},
-			},
-		},
-	}
-
-	tempo := v1alpha1.TempoStack{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "test3",
-			Namespace: "project1",
-		},
-		Spec: v1alpha1.TempoStackSpec{
-			Template: v1alpha1.TempoTemplateSpec{
-				QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
-					JaegerQuery: v1alpha1.JaegerQuerySpec{
-						Authentication: &v1alpha1.JaegerQueryAuthenticationSpec{
-							Enabled: true,
-						},
-					},
-				},
-			},
-		},
-	}
-
-	params := manifestutils.Params{
-		CtrlConfig: configv1alpha1.ProjectConfig{
-			DefaultImages: configv1alpha1.ImagesSpec{
-				OauthProxy: defaultImage,
-			},
-		},
-		Tempo: tempo,
-	}
-
-	PatchStatefulSetForOauthProxy(
-		params.Tempo.ObjectMeta,
-		params.Tempo.Spec.Template.QueryFrontend.JaegerQuery.Authentication,
-		params.CtrlConfig,
-		statefulSet)
-
-	assert.Equal(t, 2, len(statefulSet.Spec.Template.Spec.Containers))
-	assert.Equal(t, "oauth-proxy", statefulSet.Spec.Template.Spec.Containers[1].Name)
-	assert.Equal(t, "tempo-test-serviceaccount", statefulSet.Spec.Template.Spec.ServiceAccountName)
-	assert.Equal(t, 4, len(statefulSet.Spec.Template.Spec.Volumes))
 
 }
 
@@ -527,8 +407,6 @@ func TestPatchQueryFrontEndService(t *testing.T) {
 
 	PatchQueryFrontEndService(service, "test")
 
-	newPorts := append([]corev1.ServicePort{}, ports...)
-
 	assert.Equal(t, &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      naming.Name(manifestutils.JaegerUIComponentName, "test"),
@@ -538,11 +416,7 @@ func TestPatchQueryFrontEndService(t *testing.T) {
 			},
 		},
 		Spec: corev1.ServiceSpec{
-			Ports: append(newPorts, corev1.ServicePort{
-				Name:       manifestutils.OAuthProxyPortName,
-				Port:       manifestutils.OAuthProxyPort,
-				TargetPort: intstr.FromString(manifestutils.OAuthProxyPortName),
-			}),
+			Ports: ports,
 		},
 	}, service)
 }
@@ -587,7 +461,7 @@ func TestPatchRouteForOauthProxy(t *testing.T) {
 				Name: "Xservice",
 			},
 			Port: &routev1.RoutePort{
-				TargetPort: intstr.FromString(manifestutils.OAuthProxyPortName),
+				TargetPort: intstr.FromString("targetPort"),
 			},
 			TLS: &routev1.TLSConfig{Termination: routev1.TLSTerminationReencrypt},
 		},

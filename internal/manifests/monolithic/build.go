@@ -92,22 +92,35 @@ func BuildAll(opts Options) ([]client.Object, error) {
 				return nil, err
 			}
 			manifests = append(manifests, route)
-			if tempo.Spec.JaegerUI.Authentication.Enabled && !tempo.Spec.Multitenancy.IsGatewayEnabled() {
-				oauthproxy.PatchStatefulSetForOauthProxy(
-					tempo.ObjectMeta,
-					tempo.Spec.JaegerUI.Authentication,
-					opts.CtrlConfig,
-					statefulSet)
-				oauthproxy.PatchQueryFrontEndService(getJaegerUIService(services, tempo), tempo.Name)
-				if serviceAccount != nil {
-					oauthproxy.AddServiceAccountAnnotations(serviceAccount, route.Name)
+			if !tempo.Spec.Multitenancy.IsGatewayEnabled() {
+				if tempo.Spec.JaegerUI.Authentication.Enabled {
+					oauthproxy.PatchPodSpecForOauthProxy(
+						oauthproxy.Params{
+							TempoMeta:     tempo.ObjectMeta,
+							ProjectConfig: opts.CtrlConfig,
+							ProxyImage:    opts.CtrlConfig.DefaultImages.OauthProxy,
+							ContainerName: "tempo-query",
+							Port: corev1.ContainerPort{
+								Name:          manifestutils.JaegerUIPortName,
+								ContainerPort: manifestutils.PortJaegerUI,
+								Protocol:      corev1.ProtocolTCP,
+							},
+							HTTPPort:               manifestutils.OAuthJaegerUIProxyPortHTTP,
+							HTTPSPort:              manifestutils.OAuthJaegerUIProxyPortHTTPS,
+							OverrideServiceAccount: false,
+						}, &statefulSet.Spec.Template.Spec,
+					)
+					oauthproxy.PatchQueryFrontEndService(getJaegerUIService(services, tempo), tempo.Name)
+					if serviceAccount != nil {
+						oauthproxy.AddServiceAccountAnnotations(serviceAccount, route.Name)
+					}
+					secret, err := oauthproxy.OAuthCookieSessionSecret(tempo.ObjectMeta)
+					oauthproxy.PatchRouteForOauthProxy(route)
+					if err != nil {
+						return nil, err
+					}
+					manifests = append(manifests, secret)
 				}
-				secret, err := oauthproxy.OAuthCookieSessionSecret(tempo.ObjectMeta)
-				oauthproxy.PatchRouteForOauthProxy(route)
-				if err != nil {
-					return nil, err
-				}
-				manifests = append(manifests, secret)
 			}
 		}
 	}

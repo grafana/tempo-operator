@@ -47,8 +47,8 @@ type ExtraConfigSpec struct {
 	Tempo apiextensionsv1.JSON `json:"tempo,omitempty"`
 }
 
-// JaegerQueryAuthenticationSpec defines options applied to proxy sidecar that controls the authentication of the jaeger UI.
-type JaegerQueryAuthenticationSpec struct {
+// OAuthAuthenticationSpec defines options applied to proxy sidecar that controls the authentication of the jaeger UI.
+type OAuthAuthenticationSpec struct {
 	// Defines if the authentication will be enabled for jaeger UI.
 	//
 	// +optional

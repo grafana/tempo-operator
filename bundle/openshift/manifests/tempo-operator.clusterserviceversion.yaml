@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.11.1
-    createdAt: "2024-07-15T15:06:50Z"
+    createdAt: "2024-07-30T22:33:25Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -548,6 +548,11 @@ spec:
         - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
       - description: Defines if the authentication will be enabled for jaeger UI.
         displayName: Enabled
+        path: template.queryFrontend.authentication.enabled
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
+      - description: Defines if the authentication will be enabled for jaeger UI.
+        displayName: Enabled
         path: template.queryFrontend.jaegerQuery.authentication.enabled
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
@@ -958,6 +963,21 @@ spec:
       - description: TempoQueryFrontendSpec defines the query frontend spec.
         displayName: Query Frontend pods
         path: template.queryFrontend
+      - description: Authentication defines the options for the oauth proxy used to
+          protect query frontend
+        displayName: Query Frontend authentication configuration
+        path: template.queryFrontend.authentication
+      - description: Resources defines the compute resource requirements of the OAuth
+          Proxy container. The OAuth Proxy performs authentication and authorization
+          of incoming requests to Jaeger UI when multi-tenancy is disabled.
+        displayName: Resources
+        path: template.queryFrontend.authentication.resources
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:resourceRequirements
+      - description: 'SAR defines the SAR to be used in the oauth-proxy default is
+          "{"namespace": "<tempo_stack_namespace>", "resource": "pods", "verb": "get"}'
+        displayName: SAR
+        path: template.queryFrontend.authentication.sar
       - description: JaegerQuery defines options specific to the Jaeger Query component.
         displayName: Jaeger Query Settings
         path: template.queryFrontend.jaegerQuery

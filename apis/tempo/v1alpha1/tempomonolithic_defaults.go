@@ -73,7 +73,7 @@ func (r *TempoMonolithic) Default(ctrlConfig configv1alpha1.ProjectConfig) {
 			}
 
 			if r.Spec.JaegerUI.Authentication == nil {
-				r.Spec.JaegerUI.Authentication = &JaegerQueryAuthenticationSpec{
+				r.Spec.JaegerUI.Authentication = &OAuthAuthenticationSpec{
 					Enabled: ctrlConfig.Gates.OpenShift.OauthProxy.DefaultEnabled,
 				}
 			}

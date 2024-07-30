@@ -9,11 +9,11 @@ import (
 func TempoReadinessProbe(tlsEnable bool) *corev1.Probe {
 
 	scheme := corev1.URISchemeHTTP
-	port := intstr.FromString(HttpPortName)
+	port := intstr.FromInt32(PortHTTPServer)
 
 	if tlsEnable {
 		scheme = corev1.URISchemeHTTPS
-		port = intstr.FromInt(PortInternalHTTPServer)
+		port = intstr.FromInt32(PortInternalHTTPServer)
 	}
 
 	return &corev1.Probe{

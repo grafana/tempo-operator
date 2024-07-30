@@ -150,18 +150,30 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 	}
 
 	if d.ctrlConfig.Gates.OpenShift.OauthProxy.DefaultEnabled {
-		if r.Spec.Template.QueryFrontend.JaegerQuery.Authentication == nil && r.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type == v1alpha1.IngressTypeRoute {
-			r.Spec.Template.QueryFrontend.JaegerQuery.Authentication = &v1alpha1.JaegerQueryAuthenticationSpec{
+		if r.Spec.Template.QueryFrontend.JaegerQuery.Authentication == nil {
+			r.Spec.Template.QueryFrontend.JaegerQuery.Authentication = &v1alpha1.OAuthAuthenticationSpec{
+				Enabled: true,
+			}
+		}
+
+		if r.Spec.Template.QueryFrontend.Authentication == nil {
+			r.Spec.Template.QueryFrontend.Authentication = &v1alpha1.OAuthAuthenticationSpec{
 				Enabled: true,
 			}
 		}
 	}
 
+	defaultSAR := fmt.Sprintf("{\"namespace\": \"%s\", \"resource\": \"pods\", \"verb\": \"get\"}", r.Namespace)
+
 	if r.Spec.Template.QueryFrontend.JaegerQuery.Authentication != nil && r.Spec.Template.QueryFrontend.JaegerQuery.Authentication.Enabled {
 		if len(strings.TrimSpace(r.Spec.Template.QueryFrontend.JaegerQuery.Authentication.SAR)) == 0 {
-			defaultSAR := fmt.Sprintf("{\"namespace\": \"%s\", \"resource\": \"pods\", \"verb\": \"get\"}", r.Namespace)
 			r.Spec.Template.QueryFrontend.JaegerQuery.Authentication.SAR = defaultSAR
+		}
+	}
 
+	if r.Spec.Template.QueryFrontend.Authentication != nil && r.Spec.Template.QueryFrontend.Authentication.Enabled {
+		if len(strings.TrimSpace(r.Spec.Template.QueryFrontend.Authentication.SAR)) == 0 {
+			r.Spec.Template.QueryFrontend.Authentication.SAR = defaultSAR
 		}
 	}
 

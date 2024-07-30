@@ -249,7 +249,7 @@ type MonolithicJaegerUISpec struct {
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger UI authentication configuration",order=5
-	Authentication *JaegerQueryAuthenticationSpec `json:"authentication,omitempty"`
+	Authentication *OAuthAuthenticationSpec `json:"authentication,omitempty"`
 
 	// ServicesQueryDuration defines how long the services will be available in the services list
 	//

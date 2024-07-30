@@ -8,12 +8,10 @@ import (
 
 	routev1 "github.com/openshift/api/route/v1"
 	"github.com/operator-framework/operator-lib/proxy"
-	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
-	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
@@ -64,10 +62,9 @@ func AddServiceAccountAnnotations(serviceAccount *corev1.ServiceAccount, routeNa
 	serviceAccount.Annotations[serviceAccountRedirectAnnotation] = getOAuthRedirectReference(routeName)
 }
 
-// PatchRouteForOauthProxy a modified route pointing to the oauth proxy and annotated.
+// PatchRouteForOauthProxy a modified route to use re-encrypt.
 func PatchRouteForOauthProxy(route *routev1.Route) { // point route to the oauth proxy
 	route.Spec.TLS = &routev1.TLSConfig{Termination: routev1.TLSTerminationReencrypt}
-	route.Spec.Port.TargetPort = intstr.FromString(manifestutils.OAuthProxyPortName)
 }
 
 // OAuthCookieSessionSecret returns a secret that contains the cookie secret used by oauth proxy.
@@ -91,67 +88,77 @@ func OAuthCookieSessionSecret(tempo metav1.ObjectMeta) (*corev1.Secret, error) {
 	}, nil
 }
 
-// PatchStatefulSetForOauthProxy returns a modified StatefulSet with the oauth sidecar container and the right service account.
-func PatchStatefulSetForOauthProxy(tempo metav1.ObjectMeta,
-	authSpec *v1alpha1.JaegerQueryAuthenticationSpec,
-	config configv1alpha1.ProjectConfig, statefulSet *v1.StatefulSet) {
-	statefulSet.Spec.Template.Spec.Volumes = append(statefulSet.Spec.Template.Spec.Volumes, corev1.Volume{
-		Name: getTLSSecretNameForFrontendService(tempo.Name),
-		VolumeSource: corev1.VolumeSource{
-			Secret: &corev1.SecretVolumeSource{
-				SecretName: getTLSSecretNameForFrontendService(tempo.Name),
-			},
-		},
-	})
+// PatchPodSpecForOauthProxy returns a modified PodSpec with the oauth sidecar container and the right service account.
+func PatchPodSpecForOauthProxy(params Params, podSpec *corev1.PodSpec,
 
-	statefulSet.Spec.Template.Spec.Volumes = append(statefulSet.Spec.Template.Spec.Volumes, corev1.Volume{
-		Name: cookieSecretName(tempo.Name),
-		VolumeSource: corev1.VolumeSource{
-			Secret: &corev1.SecretVolumeSource{
-				SecretName: cookieSecretName(tempo.Name),
-			},
-		},
-	})
-
-	statefulSet.Spec.Template.Spec.Containers = append(statefulSet.Spec.Template.Spec.Containers,
-		oAuthProxyContainer(tempo.Name, statefulSet.Spec.Template.Spec.ServiceAccountName, authSpec, config.DefaultImages.OauthProxy))
-}
-
-// PatchDeploymentForOauthProxy returns a modified deployment with the oauth sidecar container and the right service account.
-func PatchDeploymentForOauthProxy(
-	tempo metav1.ObjectMeta,
-	config configv1alpha1.ProjectConfig,
-	authSpec *v1alpha1.JaegerQueryAuthenticationSpec,
-	imageSpec configv1alpha1.ImagesSpec,
-	dep *v1.Deployment) {
-	dep.Spec.Template.Spec.Volumes = append(dep.Spec.Template.Spec.Volumes, corev1.Volume{
-		Name: getTLSSecretNameForFrontendService(tempo.Name),
-		VolumeSource: corev1.VolumeSource{
-			Secret: &corev1.SecretVolumeSource{
-				SecretName: getTLSSecretNameForFrontendService(tempo.Name),
-			},
-		},
-	})
-
-	dep.Spec.Template.Spec.ServiceAccountName = naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name)
-
-	oauthProxyImage := imageSpec.OauthProxy
+) {
+	oauthProxyImage := params.ProxyImage
 	if oauthProxyImage == "" {
-		oauthProxyImage = config.DefaultImages.OauthProxy
+		oauthProxyImage = params.ProjectConfig.DefaultImages.OauthProxy
 	}
 
-	dep.Spec.Template.Spec.Containers = append(dep.Spec.Template.Spec.Containers,
-		oAuthProxyContainer(tempo.Name, naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name),
-			authSpec, oauthProxyImage))
+	if params.OverrideServiceAccount {
+		podSpec.ServiceAccountName = naming.Name(manifestutils.QueryFrontendComponentName, params.TempoMeta.Name)
+	}
 
-	dep.Spec.Template.Spec.Volumes = append(dep.Spec.Template.Spec.Volumes, corev1.Volume{
-		Name: cookieSecretName(tempo.Name),
-		VolumeSource: corev1.VolumeSource{
-			Secret: &corev1.SecretVolumeSource{
-				SecretName: cookieSecretName(tempo.Name),
+	certsVolumeName := getTLSSecretNameForFrontendService(params.TempoMeta.Name)
+	if !manifestutils.ContainsVolume(podSpec.Volumes, certsVolumeName) {
+		podSpec.Volumes = append(podSpec.Volumes, corev1.Volume{
+			Name: getTLSSecretNameForFrontendService(params.TempoMeta.Name),
+			VolumeSource: corev1.VolumeSource{
+				Secret: &corev1.SecretVolumeSource{
+					SecretName: getTLSSecretNameForFrontendService(params.TempoMeta.Name),
+				},
 			},
-		},
-	})
+		})
+	}
+
+	cookieVolumeName := cookieSecretName(params.TempoMeta.Name)
+	if !manifestutils.ContainsVolume(podSpec.Volumes, cookieVolumeName) {
+		podSpec.Volumes = append(podSpec.Volumes, corev1.Volume{
+			Name: cookieSecretName(params.TempoMeta.Name),
+			VolumeSource: corev1.VolumeSource{
+				Secret: &corev1.SecretVolumeSource{
+					SecretName: cookieSecretName(params.TempoMeta.Name),
+				},
+			},
+		})
+	}
+
+	removePortFromContainer(params.ContainerName, params.Port, podSpec)
+
+	podSpec.Containers = append(podSpec.Containers,
+		oAuthProxyContainer(
+			params.TempoMeta.Name,
+			podSpec.ServiceAccountName,
+			params.AuthSpec,
+			oauthProxyImage,
+			params.ContainerName,
+			params.HTTPPort,
+			params.HTTPSPort,
+			params.Port,
+		),
+	)
+}
+
+func removePortFromContainer(containerName string, port corev1.ContainerPort, podSpec *corev1.PodSpec) {
+	i, err := manifestutils.FindContainerIndex(podSpec, containerName)
+	if err != nil {
+		return
+	}
+	// Find the Port
+	var newPorts []corev1.ContainerPort
+
+	containers := podSpec.Containers
+
+	if containers[i].Ports != nil {
+		for _, containerPort := range containers[i].Ports {
+			if containerPort.Name != port.Name || containerPort.ContainerPort != port.ContainerPort {
+				newPorts = append(newPorts, containerPort)
+			}
+		}
+	}
+	containers[i].Ports = newPorts
 }
 
 func getTLSSecretNameForFrontendService(tempoName string) string {
@@ -162,25 +169,34 @@ func cookieSecretName(tempoName string) string {
 	return fmt.Sprintf("tempo-%s-cookie-proxy", tempoName)
 }
 
-func proxyInitArguments(serviceAccountName string) []string {
+func proxyInitArguments(serviceAccountName string, originalPort int32, proxyPort int32, proxyPortHTTP int32) []string {
 	return []string{
 		fmt.Sprintf("--cookie-secret-file=%s/%s", oauthProxySecretMountPath, sessionSecretKey),
-		fmt.Sprintf("--https-address=:%d", manifestutils.OAuthProxyPort),
+		fmt.Sprintf("--https-address=:%d", proxyPort),
+		fmt.Sprintf("--http-address=:%d", proxyPortHTTP),
+
 		fmt.Sprintf("--openshift-service-account=%s", serviceAccountName),
 		"--provider=openshift",
 		fmt.Sprintf("--tls-cert=%s/tls.crt", tlsProxyPath),
 		fmt.Sprintf("--tls-key=%s/tls.key", tlsProxyPath),
-		fmt.Sprintf("--upstream=http://localhost:%d", manifestutils.PortJaegerUI),
+		fmt.Sprintf("--upstream=http://localhost:%d", originalPort),
 	}
 }
 
 func oAuthProxyContainer(
 	tempo string,
 	serviceAccountName string,
-	authSpec *v1alpha1.JaegerQueryAuthenticationSpec,
+	authSpec v1alpha1.OAuthAuthenticationSpec,
 	oauthProxyImage string,
-) corev1.Container {
-	args := proxyInitArguments(serviceAccountName)
+	containerName string,
+	oauthProxyHTTPPort int32,
+	oauthProxyHTTPSPort int32,
+	containerPort corev1.ContainerPort) corev1.Container {
+
+	originalPort := containerPort.ContainerPort
+	containerPort.ContainerPort = oauthProxyHTTPSPort
+
+	args := proxyInitArguments(serviceAccountName, originalPort, oauthProxyHTTPSPort, oauthProxyHTTPPort)
 
 	if len(strings.TrimSpace(authSpec.SAR)) > 0 {
 		args = append(args, fmt.Sprintf("--openshift-sar=%s", authSpec.SAR))
@@ -193,14 +209,9 @@ func oAuthProxyContainer(
 
 	return corev1.Container{
 		Image: oauthProxyImage,
-		Name:  "oauth-proxy",
+		Name:  fmt.Sprintf("%s-oauth-proxy", containerName),
 		Args:  args,
-		Ports: []corev1.ContainerPort{
-			{
-				ContainerPort: manifestutils.OAuthProxyPort,
-				Name:          manifestutils.OAuthProxyPortName,
-			},
-		},
+		Ports: []corev1.ContainerPort{containerPort},
 		VolumeMounts: []corev1.VolumeMount{{
 			MountPath: tlsProxyPath,
 			Name:      getTLSSecretNameForFrontendService(tempo),
@@ -218,7 +229,7 @@ func oAuthProxyContainer(
 				HTTPGet: &corev1.HTTPGetAction{
 					Scheme: corev1.URISchemeHTTPS,
 					Path:   healthPath,
-					Port:   intstr.FromString(manifestutils.OAuthProxyPortName),
+					Port:   intstr.FromString(containerPort.Name),
 				},
 			},
 			InitialDelaySeconds: oauthReadinessProbeInitialDelaySeconds,
@@ -239,12 +250,6 @@ func PatchQueryFrontEndService(service *corev1.Service, tempo string) {
 	}
 
 	service.Annotations["service.beta.openshift.io/serving-cert-secret-name"] = getTLSSecretNameForFrontendService(tempo)
-
-	service.Spec.Ports = append(service.Spec.Ports, corev1.ServicePort{
-		Name:       manifestutils.OAuthProxyPortName,
-		Port:       manifestutils.OAuthProxyPort,
-		TargetPort: intstr.FromString(manifestutils.OAuthProxyPortName),
-	})
 }
 
 func generateProxySecret() (string, error) {

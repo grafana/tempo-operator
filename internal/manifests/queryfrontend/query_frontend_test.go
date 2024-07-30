@@ -690,7 +690,7 @@ func TestQueryFrontendJaegerRouteSecured(t *testing.T) {
 				QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
 					JaegerQuery: v1alpha1.JaegerQuerySpec{
 						Enabled: true,
-						Authentication: &v1alpha1.JaegerQueryAuthenticationSpec{
+						Authentication: &v1alpha1.OAuthAuthenticationSpec{
 							Enabled: true,
 						},
 						Ingress: v1alpha1.IngressSpec{
@@ -700,13 +700,16 @@ func TestQueryFrontendJaegerRouteSecured(t *testing.T) {
 							},
 						},
 					},
+					Authentication: &v1alpha1.OAuthAuthenticationSpec{
+						Enabled: true,
+					},
 				},
 			},
 		},
 	}})
 
 	require.NoError(t, err)
-	require.Equal(t, 6, len(objects))
+	require.Equal(t, 8, len(objects))
 	assert.Equal(t, &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      naming.Name(manifestutils.QueryFrontendComponentName, "test"),
@@ -744,11 +747,6 @@ func TestQueryFrontendJaegerRouteSecured(t *testing.T) {
 					Port:       manifestutils.PortJaegerMetrics,
 					TargetPort: intstr.FromString(manifestutils.JaegerMetricsPortName),
 				},
-				{
-					Name:       manifestutils.OAuthProxyPortName,
-					Port:       manifestutils.OAuthProxyPort,
-					TargetPort: intstr.FromString(manifestutils.OAuthProxyPortName),
-				},
 			},
 			Selector: manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, "test"),
 		},
@@ -770,7 +768,7 @@ func TestQueryFrontendJaegerRouteSecured(t *testing.T) {
 				Name: naming.Name(manifestutils.QueryFrontendComponentName, "test"),
 			},
 			Port: &routev1.RoutePort{
-				TargetPort: intstr.FromString(manifestutils.OAuthProxyPortName),
+				TargetPort: intstr.FromString(manifestutils.JaegerUIPortName),
 			},
 			TLS: &routev1.TLSConfig{
 				Termination: routev1.TLSTerminationReencrypt,

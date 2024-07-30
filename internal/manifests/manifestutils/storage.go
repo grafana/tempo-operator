@@ -10,7 +10,7 @@ import (
 
 // ConfigureAzureStorage mounts the Azure Storage credentials in a pod.
 func ConfigureAzureStorage(pod *corev1.PodSpec, containerName string, storageSecretName string, tlsSpec *v1alpha1.TLSSpec) error {
-	containerIdx, err := findContainerIndex(pod, containerName)
+	containerIdx, err := FindContainerIndex(pod, containerName)
 	if err != nil {
 		return err
 	}
@@ -52,7 +52,7 @@ func ConfigureGCS(pod *corev1.PodSpec, containerName string, storageSecretName s
 	secretDirectory := "/etc/storage/secrets/" // nolint #nosec
 	secretFile := path.Join(secretDirectory, "key.json")
 
-	containerIdx, err := findContainerIndex(pod, containerName)
+	containerIdx, err := FindContainerIndex(pod, containerName)
 	if err != nil {
 		return err
 	}
@@ -86,7 +86,7 @@ func ConfigureS3Storage(pod *corev1.PodSpec, containerName string, storageSecret
 		return nil
 	}
 
-	containerIdx, err := findContainerIndex(pod, containerName)
+	containerIdx, err := FindContainerIndex(pod, containerName)
 	if err != nil {
 		return err
 	}

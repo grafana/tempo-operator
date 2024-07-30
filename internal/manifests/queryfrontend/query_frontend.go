@@ -77,10 +77,22 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 			jaegerUIAuthentication := tempo.Spec.Template.QueryFrontend.JaegerQuery.Authentication
 
 			if jaegerUIAuthentication != nil && jaegerUIAuthentication.Enabled {
-				oauthproxy.PatchDeploymentForOauthProxy(
-					tempo.ObjectMeta, params.CtrlConfig,
-					tempo.Spec.Template.QueryFrontend.JaegerQuery.Authentication,
-					tempo.Spec.Images, d)
+				oauthproxy.PatchPodSpecForOauthProxy(
+					oauthproxy.Params{
+						TempoMeta:     tempo.ObjectMeta,
+						ProjectConfig: params.CtrlConfig,
+						ProxyImage:    tempo.Spec.Images.OauthProxy,
+						ContainerName: "tempo-query",
+						Port: corev1.ContainerPort{
+							Name:          manifestutils.JaegerUIPortName,
+							ContainerPort: manifestutils.PortJaegerUI,
+							Protocol:      corev1.ProtocolTCP,
+						},
+						HTTPPort:               manifestutils.OAuthJaegerUIProxyPortHTTP,
+						HTTPSPort:              manifestutils.OAuthJaegerUIProxyPortHTTPS,
+						OverrideServiceAccount: true,
+					}, &d.Spec.Template.Spec,
+				)
 
 				oauthproxy.PatchQueryFrontEndService(getQueryFrontendService(tempo, svcs), tempo.Name)
 				secret, err := oauthproxy.OAuthCookieSessionSecret(tempo.ObjectMeta)
@@ -91,6 +103,32 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 				oauthproxy.PatchRouteForOauthProxy(routeObj)
 			}
 			manifests = append(manifests, routeObj)
+		}
+
+		if tempo.Spec.Template.QueryFrontend.Authentication != nil && tempo.Spec.Template.QueryFrontend.Authentication.Enabled {
+			oauthproxy.PatchPodSpecForOauthProxy(
+				oauthproxy.Params{
+					TempoMeta:     tempo.ObjectMeta,
+					ProjectConfig: params.CtrlConfig,
+					ProxyImage:    tempo.Spec.Images.OauthProxy,
+					ContainerName: "tempo",
+					Port: corev1.ContainerPort{
+						Name:          manifestutils.HttpPortName,
+						ContainerPort: manifestutils.PortHTTPServer,
+						Protocol:      corev1.ProtocolTCP,
+					},
+					HTTPPort:               manifestutils.OAuthQueryFrontendProxyPortHTTP,
+					HTTPSPort:              manifestutils.OAuthQueryFrontendProxyPortHTTPS,
+					OverrideServiceAccount: true,
+				}, &d.Spec.Template.Spec,
+			)
+
+			oauthproxy.PatchQueryFrontEndService(getQueryFrontendService(tempo, svcs), tempo.Name)
+			secret, err := oauthproxy.OAuthCookieSessionSecret(tempo.ObjectMeta)
+			if err != nil {
+				return nil, err
+			}
+			manifests = append(manifests, oauthproxy.OAuthServiceAccount(params), secret)
 		}
 	}
 

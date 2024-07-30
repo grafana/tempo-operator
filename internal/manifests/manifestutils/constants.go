@@ -48,10 +48,15 @@ const (
 	// PortJaegerUI declares the port number of the Jaeger UI HTTP port.
 	PortJaegerUI = 16686
 
-	// OAuthProxyPortName declares the name of the Jaeger UI oauth proxy HTTP port.
-	OAuthProxyPortName = "oauth-proxy"
-	// OAuthProxyPort declares the port number of the Jaeger UI oauth proxy HTTP port.
-	OAuthProxyPort = 8443
+	// OAuthJaegerUIProxyPortHTTP declares the port number of the Jaeger UI oauth proxy HTTPS port.
+	OAuthJaegerUIProxyPortHTTP = 8443
+	// OAuthJaegerUIProxyPortHTTPS declares the port number of the Jaeger UI oauth proxy HTTPS port.
+	OAuthJaegerUIProxyPortHTTPS = 8444
+
+	// OAuthQueryFrontendProxyPortHTTP declares the port number of the query frontend oauth proxy HTTPS port.
+	OAuthQueryFrontendProxyPortHTTP = 8443
+	// OAuthQueryFrontendProxyPortHTTPS declares the port number of the query frontend oauth proxy HTTPS port.
+	OAuthQueryFrontendProxyPortHTTPS = 8444
 
 	// JaegerGRPCQuery declares the name of the Jaeger UI gPRC port.
 	JaegerGRPCQuery = "jaeger-grpc"
