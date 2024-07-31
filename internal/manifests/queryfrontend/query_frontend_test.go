@@ -752,9 +752,9 @@ func TestQueryFrontendJaegerRouteSecured(t *testing.T) {
 		},
 	}, objects[0].(*corev1.Service))
 
-	assert.Equal(t, "tempo-test-query-frontend", objects[2].(*corev1.ServiceAccount).Name)
+	assert.Equal(t, "tempo-test-query-frontend", objects[3].(*corev1.ServiceAccount).Name)
 
-	assert.Equal(t, "tempo-test-cookie-proxy", objects[3].(*corev1.Secret).Name)
+	assert.Equal(t, "tempo-test-cookie-proxy", objects[4].(*corev1.Secret).Name)
 
 	assert.Equal(t, &routev1.Route{
 		ObjectMeta: metav1.ObjectMeta{
@@ -774,5 +774,5 @@ func TestQueryFrontendJaegerRouteSecured(t *testing.T) {
 				Termination: routev1.TLSTerminationReencrypt,
 			},
 		},
-	}, objects[4].(*routev1.Route))
+	}, objects[2].(*routev1.Route))
 }
