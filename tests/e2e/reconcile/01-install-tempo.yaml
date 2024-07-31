@@ -8,10 +8,3 @@ spec:
       name: minio-test
       type: s3
   storageSize: 200M
-  template:
-    queryFrontend:
-      jaegerQuery:
-        enabled: true
-        ingress:
-          type: route
-
