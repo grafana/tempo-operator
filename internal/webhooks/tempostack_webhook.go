@@ -64,6 +64,24 @@ type Defaulter struct {
 	ctrlConfig configv1alpha1.ProjectConfig
 }
 
+func (d *Defaulter) defaultAuthentication(spec *v1alpha1.OAuthAuthenticationSpec, meta metav1.ObjectMeta) *v1alpha1.OAuthAuthenticationSpec {
+	newSpec := spec
+
+	if d.ctrlConfig.Gates.OpenShift.OauthProxy.DefaultEnabled {
+		if spec == nil {
+			newSpec = &v1alpha1.OAuthAuthenticationSpec{
+				Enabled: true,
+			}
+		}
+	}
+
+	if newSpec != nil && newSpec.Enabled && len(strings.TrimSpace(newSpec.SAR)) == 0 {
+		newSpec.SAR = fmt.Sprintf("{\"namespace\": \"%s\", \"resource\": \"pods\", \"verb\": \"get\"}", meta.Namespace)
+	}
+
+	return newSpec
+}
+
 // Default applies default values to a Kubernetes object.
 func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 	r, ok := obj.(*v1alpha1.TempoStack)
@@ -154,33 +172,15 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 		r.Spec.Template.QueryFrontend.JaegerQuery.ServicesQueryDuration = &defaultServicesDuration
 	}
 
-	if d.ctrlConfig.Gates.OpenShift.OauthProxy.DefaultEnabled {
-		if r.Spec.Template.QueryFrontend.JaegerQuery.Authentication == nil {
-			r.Spec.Template.QueryFrontend.JaegerQuery.Authentication = &v1alpha1.OAuthAuthenticationSpec{
-				Enabled: true,
-			}
-		}
+	r.Spec.Template.QueryFrontend.JaegerQuery.Authentication = d.defaultAuthentication(
+		r.Spec.Template.QueryFrontend.JaegerQuery.Authentication,
+		r.ObjectMeta,
+	)
 
-		if r.Spec.Template.QueryFrontend.Authentication == nil {
-			r.Spec.Template.QueryFrontend.Authentication = &v1alpha1.OAuthAuthenticationSpec{
-				Enabled: true,
-			}
-		}
-	}
-
-	defaultSAR := fmt.Sprintf("{\"namespace\": \"%s\", \"resource\": \"pods\", \"verb\": \"get\"}", r.Namespace)
-
-	if r.Spec.Template.QueryFrontend.JaegerQuery.Authentication != nil && r.Spec.Template.QueryFrontend.JaegerQuery.Authentication.Enabled {
-		if len(strings.TrimSpace(r.Spec.Template.QueryFrontend.JaegerQuery.Authentication.SAR)) == 0 {
-			r.Spec.Template.QueryFrontend.JaegerQuery.Authentication.SAR = defaultSAR
-		}
-	}
-
-	if r.Spec.Template.QueryFrontend.Authentication != nil && r.Spec.Template.QueryFrontend.Authentication.Enabled {
-		if len(strings.TrimSpace(r.Spec.Template.QueryFrontend.Authentication.SAR)) == 0 {
-			r.Spec.Template.QueryFrontend.Authentication.SAR = defaultSAR
-		}
-	}
+	r.Spec.Template.QueryFrontend.Authentication = d.defaultAuthentication(
+		r.Spec.Template.QueryFrontend.Authentication,
+		r.ObjectMeta,
+	)
 
 	return nil
 }

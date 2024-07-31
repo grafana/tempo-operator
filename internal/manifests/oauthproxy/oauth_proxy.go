@@ -266,3 +266,9 @@ func getOAuthRedirectReference(routeName string) string {
 		`{"kind":"OAuthRedirectReference","apiVersion":"v1","reference":{"kind":"Route","name":"%s"}}`,
 		routeName)
 }
+
+// IsOauthEnabled return true if oauth is enabled.
+func IsOauthEnabled(spec *v1alpha1.OAuthAuthenticationSpec) bool {
+	return spec != nil && spec.Enabled
+
+}

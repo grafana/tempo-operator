@@ -74,9 +74,7 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 				return nil, err
 			}
 
-			jaegerUIAuthentication := tempo.Spec.Template.QueryFrontend.JaegerQuery.Authentication
-
-			if jaegerUIAuthentication != nil && jaegerUIAuthentication.Enabled {
+			if oauthproxy.IsOauthEnabled(tempo.Spec.Template.QueryFrontend.JaegerQuery.Authentication) {
 				oauthproxy.PatchPodSpecForOauthProxy(
 					oauthproxy.Params{
 						TempoMeta:     tempo.ObjectMeta,
@@ -105,7 +103,7 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 			manifests = append(manifests, routeObj)
 		}
 
-		if tempo.Spec.Template.QueryFrontend.Authentication != nil && tempo.Spec.Template.QueryFrontend.Authentication.Enabled {
+		if oauthproxy.IsOauthEnabled(tempo.Spec.Template.QueryFrontend.Authentication) {
 			oauthproxy.PatchPodSpecForOauthProxy(
 				oauthproxy.Params{
 					TempoMeta:     tempo.ObjectMeta,
