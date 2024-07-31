@@ -63,70 +63,36 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 		manifests = append(manifests, s)
 	}
 
+	var routeObj *routev1.Route
+
 	if !tempo.Spec.Template.Gateway.Enabled {
 		//exhaustive:ignore
 		switch tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type {
 		case v1alpha1.IngressTypeIngress:
 			manifests = append(manifests, ingress(tempo))
 		case v1alpha1.IngressTypeRoute:
-			routeObj, err := route(tempo)
+			routeObj, err = route(tempo)
 			if err != nil {
 				return nil, err
-			}
-
-			if oauthproxy.IsOauthEnabled(tempo.Spec.Template.QueryFrontend.JaegerQuery.Authentication) {
-				oauthproxy.PatchPodSpecForOauthProxy(
-					oauthproxy.Params{
-						TempoMeta:     tempo.ObjectMeta,
-						ProjectConfig: params.CtrlConfig,
-						ProxyImage:    tempo.Spec.Images.OauthProxy,
-						ContainerName: "tempo-query",
-						Port: corev1.ContainerPort{
-							Name:          manifestutils.JaegerUIPortName,
-							ContainerPort: manifestutils.PortJaegerUI,
-							Protocol:      corev1.ProtocolTCP,
-						},
-						HTTPPort:               manifestutils.OAuthJaegerUIProxyPortHTTP,
-						HTTPSPort:              manifestutils.OAuthJaegerUIProxyPortHTTPS,
-						OverrideServiceAccount: true,
-					}, &d.Spec.Template.Spec,
-				)
-
-				oauthproxy.PatchQueryFrontEndService(getQueryFrontendService(tempo, svcs), tempo.Name)
-				secret, err := oauthproxy.OAuthCookieSessionSecret(tempo.ObjectMeta)
-				if err != nil {
-					return nil, err
-				}
-				manifests = append(manifests, oauthproxy.OAuthServiceAccount(params), secret)
-				oauthproxy.PatchRouteForOauthProxy(routeObj)
 			}
 			manifests = append(manifests, routeObj)
 		}
 
-		if oauthproxy.IsOauthEnabled(tempo.Spec.Template.QueryFrontend.Authentication) {
-			oauthproxy.PatchPodSpecForOauthProxy(
-				oauthproxy.Params{
-					TempoMeta:     tempo.ObjectMeta,
-					ProjectConfig: params.CtrlConfig,
-					ProxyImage:    tempo.Spec.Images.OauthProxy,
-					ContainerName: "tempo",
-					Port: corev1.ContainerPort{
-						Name:          manifestutils.HttpPortName,
-						ContainerPort: manifestutils.PortHTTPServer,
-						Protocol:      corev1.ProtocolTCP,
-					},
-					HTTPPort:               manifestutils.OAuthQueryFrontendProxyPortHTTP,
-					HTTPSPort:              manifestutils.OAuthQueryFrontendProxyPortHTTPS,
-					OverrideServiceAccount: true,
-				}, &d.Spec.Template.Spec,
-			)
-
-			oauthproxy.PatchQueryFrontEndService(getQueryFrontendService(tempo, svcs), tempo.Name)
-			secret, err := oauthproxy.OAuthCookieSessionSecret(tempo.ObjectMeta)
+		if isOAuthEnabled(tempo) {
+			oauthObjects, err := createCommonOauthObjects(params)
 			if err != nil {
 				return nil, err
 			}
-			manifests = append(manifests, oauthproxy.OAuthServiceAccount(params), secret)
+			manifests = append(manifests, oauthObjects...)
+		}
+
+		if oauthproxy.IsOauthEnabled(tempo.Spec.Template.QueryFrontend.JaegerQuery.Authentication) {
+			enableOauthForJaeger(params, d, svcs, routeObj)
+		}
+
+		if oauthproxy.IsOauthEnabled(tempo.Spec.Template.QueryFrontend.Authentication) {
+			enableOauthForTempo(params, d, svcs)
+
 		}
 	}
 
@@ -139,6 +105,84 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 	}
 
 	return manifests, nil
+}
+
+func isOAuthEnabled(tempo v1alpha1.TempoStack) bool {
+	return oauthproxy.IsOauthEnabled(tempo.Spec.Template.QueryFrontend.JaegerQuery.Authentication) || oauthproxy.IsOauthEnabled(tempo.Spec.Template.QueryFrontend.Authentication)
+}
+
+func createCommonOauthObjects(params manifestutils.Params) ([]client.Object, error) {
+	tempo := params.Tempo
+	var manifests []client.Object
+
+	// Create cookie secret
+	secret, err := oauthproxy.OAuthCookieSessionSecret(tempo.ObjectMeta)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create service account
+	sAccount := oauthproxy.OAuthServiceAccount(params)
+
+	// Add those to the manifests
+	manifests = append(manifests, sAccount, secret)
+
+	return manifests, nil
+}
+
+func enableOauthForTempo(params manifestutils.Params, d *appsv1.Deployment, svcs []*corev1.Service) {
+	tempo := params.Tempo
+	// Patch deployment, inject oauth proxy, add volumes if needed, replace container ports for tempo container.
+	oauthproxy.PatchPodSpecForOauthProxy(
+		oauthproxy.Params{
+			TempoMeta:     tempo.ObjectMeta,
+			ProjectConfig: params.CtrlConfig,
+			ProxyImage:    tempo.Spec.Images.OauthProxy,
+			ContainerName: "tempo",
+			Port: corev1.ContainerPort{
+				Name:          manifestutils.HttpPortName,
+				ContainerPort: manifestutils.PortHTTPServer,
+				Protocol:      corev1.ProtocolTCP,
+			},
+			HTTPPort:               manifestutils.OAuthQueryFrontendProxyPortHTTP,
+			HTTPSPort:              manifestutils.OAuthQueryFrontendProxyPortHTTPS,
+			OverrideServiceAccount: true,
+		}, &d.Spec.Template.Spec,
+	)
+
+	// Patch frontend service if needed
+	oauthproxy.PatchQueryFrontEndService(getQueryFrontendService(tempo, svcs), tempo.Name)
+}
+
+func enableOauthForJaeger(params manifestutils.Params, d *appsv1.Deployment, svcs []*corev1.Service, route *routev1.Route) {
+
+	tempo := params.Tempo
+
+	// Patch deployment, inject oauth proxy, add volumes if needed, replace container ports for jaeger container
+	oauthproxy.PatchPodSpecForOauthProxy(
+		oauthproxy.Params{
+			TempoMeta:     tempo.ObjectMeta,
+			ProjectConfig: params.CtrlConfig,
+			ProxyImage:    tempo.Spec.Images.OauthProxy,
+			ContainerName: "tempo-query",
+			Port: corev1.ContainerPort{
+				Name:          manifestutils.JaegerUIPortName,
+				ContainerPort: manifestutils.PortJaegerUI,
+				Protocol:      corev1.ProtocolTCP,
+			},
+			HTTPPort:               manifestutils.OAuthJaegerUIProxyPortHTTP,
+			HTTPSPort:              manifestutils.OAuthJaegerUIProxyPortHTTPS,
+			OverrideServiceAccount: true,
+		}, &d.Spec.Template.Spec,
+	)
+
+	// Patch query frontend service if needed.
+	oauthproxy.PatchQueryFrontEndService(getQueryFrontendService(tempo, svcs), tempo.Name)
+
+	// Patch the route if needed
+	if route != nil {
+		oauthproxy.PatchRouteForOauthProxy(route)
+	}
 }
 
 func getQueryFrontendService(tempo v1alpha1.TempoStack, services []*corev1.Service) *corev1.Service {

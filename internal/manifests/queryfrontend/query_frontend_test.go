@@ -709,7 +709,7 @@ func TestQueryFrontendJaegerRouteSecured(t *testing.T) {
 	}})
 
 	require.NoError(t, err)
-	require.Equal(t, 8, len(objects))
+	require.Equal(t, 6, len(objects))
 	assert.Equal(t, &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      naming.Name(manifestutils.QueryFrontendComponentName, "test"),
