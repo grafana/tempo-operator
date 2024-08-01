@@ -1,0 +1,125 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: tempo-monitor
+status:
+  availableReplicas: 1
+  readyReplicas: 1
+  replicas: 1
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: tempo-monitor-0
+status:
+  containerStatuses:
+  - name: oauth-proxy
+    ready: true
+    started: true
+  - name: tempo
+    ready: true
+    started: true
+  - name: tempo-query
+    ready: true
+    started: true
+  phase: Running
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tempo-monitor
+spec:
+  ports:
+  - name: http
+    port: 3200
+    protocol: TCP
+    targetPort: http
+  - name: otlp-grpc
+    port: 4317
+    protocol: TCP
+    targetPort: otlp-grpc
+  - name: otlp-http
+    port: 4318
+    protocol: TCP
+    targetPort: otlp-http
+  selector:
+    app.kubernetes.io/component: tempo
+    app.kubernetes.io/instance: monitor
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo-monolithic
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tempo-monitor-jaegerui
+spec:
+  ports:
+  - name: jaeger-grpc
+    port: 16685
+    protocol: TCP
+    targetPort: jaeger-grpc
+  - name: jaeger-ui
+    port: 16686
+    protocol: TCP
+    targetPort: jaeger-ui
+  - name: jaeger-metrics
+    port: 16687
+    protocol: TCP
+    targetPort: jaeger-metrics
+  - name: oauth-proxy
+    port: 8443
+    protocol: TCP
+    targetPort: oauth-proxy
+  selector:
+    app.kubernetes.io/component: tempo
+    app.kubernetes.io/instance: monitor
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo-monolithic
+  type: ClusterIP
+
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: tempo-monitor-jaegerui
+spec:
+  port:
+    targetPort: oauth-proxy
+  tls:
+    termination: reencrypt
+  to:
+    kind: Service
+    name: tempo-monitor-jaegerui
+    weight: 100
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: tempo-monitor
+spec:
+  endpoints:
+  - path: /metrics
+    port: http
+    relabelings:
+    - action: replace
+      sourceLabels:
+      - __meta_kubernetes_service_label_app_kubernetes_io_instance
+      targetLabel: cluster
+    - action: replace
+      separator: /
+      sourceLabels:
+      - __meta_kubernetes_namespace
+      - __meta_kubernetes_service_label_app_kubernetes_io_component
+      targetLabel: job
+    scheme: http
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: tempo
+      app.kubernetes.io/instance: monitor
+      app.kubernetes.io/managed-by: tempo-operator
+      app.kubernetes.io/name: tempo-monolithic

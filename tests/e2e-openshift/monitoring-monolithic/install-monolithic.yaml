@@ -1,0 +1,15 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoMonolithic
+metadata:
+  name: monitor
+spec:
+  jaegerui:
+    enabled: true
+    route:
+      enabled: true
+  observability:
+    metrics:
+      prometheusRules:
+        enabled: true
+      serviceMonitors:
+        enabled: true
