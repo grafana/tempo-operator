@@ -123,6 +123,7 @@ func TestOauthProxyContainer(t *testing.T) {
 					ContainerPort: manifestutils.PortJaegerUI,
 					Name:          manifestutils.JaegerUIPortName,
 				},
+				fmt.Sprintf("%s-ui-oauth-proxy-tls", test.tempo.Name),
 			)
 			expected := corev1.Container{
 				Image: test.expectedImage,

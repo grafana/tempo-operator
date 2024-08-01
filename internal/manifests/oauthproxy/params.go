@@ -19,4 +19,5 @@ type Params struct {
 	OverrideServiceAccount bool
 	HTTPPort               int32
 	HTTPSPort              int32
+	TLSSecretName          string
 }

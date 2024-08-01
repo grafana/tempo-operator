@@ -31,7 +31,7 @@ func buildTempoService(opts Options) *corev1.Service {
 	tempo := opts.Tempo
 	annotations := map[string]string{}
 
-	if opts.useServiceCertsOnReceiver {
+	if opts.useServiceCertsOnReceiver || isOauthProxyEnabled(tempo) {
 		annotations["service.beta.openshift.io/serving-cert-secret-name"] = naming.ServingCertName(manifestutils.TempoMonolithComponentName, tempo.Name)
 	}
 

@@ -101,13 +101,19 @@ func PatchPodSpecForOauthProxy(params Params, podSpec *corev1.PodSpec,
 		podSpec.ServiceAccountName = naming.Name(manifestutils.QueryFrontendComponentName, params.TempoMeta.Name)
 	}
 
-	certsVolumeName := getTLSSecretNameForFrontendService(params.TempoMeta.Name)
+	tlsSecretName := params.TLSSecretName
+
+	if len(tlsSecretName) == 0 {
+		tlsSecretName = getTLSSecretNameForFrontendService(params.TempoMeta.Name)
+	}
+
+	certsVolumeName := tlsSecretName
 	if !manifestutils.ContainsVolume(podSpec.Volumes, certsVolumeName) {
 		podSpec.Volumes = append(podSpec.Volumes, corev1.Volume{
-			Name: getTLSSecretNameForFrontendService(params.TempoMeta.Name),
+			Name: tlsSecretName,
 			VolumeSource: corev1.VolumeSource{
 				Secret: &corev1.SecretVolumeSource{
-					SecretName: getTLSSecretNameForFrontendService(params.TempoMeta.Name),
+					SecretName: tlsSecretName,
 				},
 			},
 		})
@@ -137,6 +143,7 @@ func PatchPodSpecForOauthProxy(params Params, podSpec *corev1.PodSpec,
 			params.HTTPPort,
 			params.HTTPSPort,
 			params.Port,
+			tlsSecretName,
 		),
 	)
 }
@@ -191,7 +198,9 @@ func oAuthProxyContainer(
 	containerName string,
 	oauthProxyHTTPPort int32,
 	oauthProxyHTTPSPort int32,
-	containerPort corev1.ContainerPort) corev1.Container {
+	containerPort corev1.ContainerPort,
+	tlsSecret string,
+) corev1.Container {
 
 	originalPort := containerPort.ContainerPort
 	containerPort.ContainerPort = oauthProxyHTTPSPort
@@ -212,10 +221,11 @@ func oAuthProxyContainer(
 		Name:  fmt.Sprintf("%s-oauth-proxy", containerName),
 		Args:  args,
 		Ports: []corev1.ContainerPort{containerPort},
-		VolumeMounts: []corev1.VolumeMount{{
-			MountPath: tlsProxyPath,
-			Name:      getTLSSecretNameForFrontendService(tempo),
-		},
+		VolumeMounts: []corev1.VolumeMount{
+			{
+				MountPath: tlsProxyPath,
+				Name:      tlsSecret,
+			},
 
 			{
 				MountPath: oauthProxySecretMountPath,

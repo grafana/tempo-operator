@@ -78,7 +78,7 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 			manifests = append(manifests, routeObj)
 		}
 
-		if isOAuthEnabled(tempo) {
+		if isOAuthRequired(tempo) {
 			oauthObjects, err := createCommonOauthObjects(params)
 			if err != nil {
 				return nil, err
@@ -87,7 +87,9 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 		}
 
 		if oauthproxy.IsOauthEnabled(tempo.Spec.Template.QueryFrontend.JaegerQuery.Authentication) {
-			enableOauthForJaeger(params, d, svcs, routeObj)
+			if tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled {
+				enableOauthForJaeger(params, d, svcs, routeObj)
+			}
 		}
 
 		if oauthproxy.IsOauthEnabled(tempo.Spec.Template.QueryFrontend.Authentication) {
@@ -107,8 +109,11 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 	return manifests, nil
 }
 
-func isOAuthEnabled(tempo v1alpha1.TempoStack) bool {
-	return oauthproxy.IsOauthEnabled(tempo.Spec.Template.QueryFrontend.JaegerQuery.Authentication) || oauthproxy.IsOauthEnabled(tempo.Spec.Template.QueryFrontend.Authentication)
+func isOAuthRequired(tempo v1alpha1.TempoStack) bool {
+	jaegerUIEnabled := tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled
+	jaegerUIOAuth := oauthproxy.IsOauthEnabled(tempo.Spec.Template.QueryFrontend.JaegerQuery.Authentication)
+	tempoOauth := oauthproxy.IsOauthEnabled(tempo.Spec.Template.QueryFrontend.Authentication)
+	return (jaegerUIEnabled && jaegerUIOAuth) || tempoOauth
 }
 
 func createCommonOauthObjects(params manifestutils.Params) ([]client.Object, error) {

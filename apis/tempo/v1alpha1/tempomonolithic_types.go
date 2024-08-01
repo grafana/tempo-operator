@@ -63,6 +63,12 @@ type TempoMonolithicSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Extra Configuration",xDescriptors="urn:alm:descriptor:com.tectonic.ui:advanced"
 	ExtraConfig *ExtraConfigSpec `json:"extraConfig,omitempty"`
 
+	// QuerySpec defines configurations for query path
+	//
+	// +optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Query",xDescriptors="urn:alm:descriptor:com.tectonic.ui:advanced"
+	Query *QuerySpec `json:"query,omitempty"`
+
 	MonolithicSchedulerSpec `json:",inline"`
 }
 
@@ -256,6 +262,16 @@ type MonolithicJaegerUISpec struct {
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="ServicesQueryDuration",xDescriptors="urn:alm:descriptor:com.tectonic.ui:advanced"
 	ServicesQueryDuration *metav1.Duration `json:"servicesQueryDuration,omitempty"`
+}
+
+// QuerySpec specific configuratitons for query frontend.
+type QuerySpec struct {
+	// Authentication defines the options for the oauth proxy used to protect jaeger UI
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger UI authentication configuration",order=5
+	Authentication *OAuthAuthenticationSpec `json:"authentication,omitempty"`
 }
 
 // MonolithicJaegerUIIngressSpec defines the settings for the Jaeger UI ingress.

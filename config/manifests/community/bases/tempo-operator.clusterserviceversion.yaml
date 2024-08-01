@@ -105,6 +105,11 @@ spec:
         path: observability.metrics.serviceMonitors.enabled
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
+      - description: Defines if the authentication will be enabled for jaeger UI.
+        displayName: Enabled
+        path: query.authentication.enabled
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
       - description: Storage defines the storage configuration.
         displayName: Storage
         path: storage
@@ -152,6 +157,10 @@ spec:
           protect jaeger UI
         displayName: Jaeger UI authentication configuration
         path: jaegerui.authentication
+      - description: Authentication defines the options for the oauth proxy used to
+          protect jaeger UI
+        displayName: Jaeger UI authentication configuration
+        path: query.authentication
       - description: Resources defines the compute resource requirements of the Tempo
           container.
         displayName: Resources
@@ -359,6 +368,22 @@ spec:
       - description: ServiceMonitors defines the ServiceMonitor configuration.
         displayName: Service Monitors
         path: observability.metrics.serviceMonitors
+      - description: QuerySpec defines configurations for query path
+        displayName: Query
+        path: query
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:advanced
+      - description: Resources defines the compute resource requirements of the OAuth
+          Proxy container. The OAuth Proxy performs authentication and authorization
+          of incoming requests to Jaeger UI when multi-tenancy is disabled.
+        displayName: Resources
+        path: query.authentication.resources
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:resourceRequirements
+      - description: 'SAR defines the SAR to be used in the oauth-proxy default is
+          "{"namespace": "<tempo_stack_namespace>", "resource": "pods", "verb": "get"}'
+        displayName: SAR
+        path: query.authentication.sar
       - description: ServiceAccount defines the Service Account to use for all Tempo
           components.
         displayName: Service Account

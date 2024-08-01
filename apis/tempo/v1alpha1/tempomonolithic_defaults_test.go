@@ -45,6 +45,7 @@ func TestMonolithicDefault(t *testing.T) {
 							},
 						},
 					},
+					Query:      &QuerySpec{},
 					Management: "Managed",
 				},
 			},
@@ -78,6 +79,7 @@ func TestMonolithicDefault(t *testing.T) {
 							},
 						},
 					},
+					Query:      &QuerySpec{},
 					Management: "Managed",
 				},
 			},
@@ -103,6 +105,7 @@ func TestMonolithicDefault(t *testing.T) {
 							},
 						},
 					},
+					Query:      &QuerySpec{},
 					Management: "Unmanaged",
 				},
 			},
@@ -124,12 +127,13 @@ func TestMonolithicDefault(t *testing.T) {
 							},
 						},
 					},
+					Query:      &QuerySpec{},
 					Management: "Unmanaged",
 				},
 			},
 		},
 		{
-			name: "enable jaeger ui oauth when feature gate is enabled",
+			name: "enable oauth when feature gate is enabled",
 			ctrlConfig: configv1alpha1.ProjectConfig{
 				Gates: configv1alpha1.FeatureGates{
 					OpenShift: configv1alpha1.OpenShiftFeatureGates{
@@ -192,6 +196,12 @@ func TestMonolithicDefault(t *testing.T) {
 							SAR:     "{\"namespace\": \"testns\", \"resource\": \"pods\", \"verb\": \"get\"}",
 						},
 						ServicesQueryDuration: &defaultServicesDuration,
+					},
+					Query: &QuerySpec{
+						Authentication: &OAuthAuthenticationSpec{
+							Enabled: true,
+							SAR:     "{\"namespace\": \"testns\", \"resource\": \"pods\", \"verb\": \"get\"}",
+						},
 					},
 					Management: "Managed",
 				},
@@ -229,6 +239,11 @@ func TestMonolithicDefault(t *testing.T) {
 							Enabled: false,
 						},
 					},
+					Query: &QuerySpec{
+						Authentication: &OAuthAuthenticationSpec{
+							Enabled: false,
+						},
+					},
 				},
 			},
 			expected: &TempoMonolithic{
@@ -261,16 +276,20 @@ func TestMonolithicDefault(t *testing.T) {
 						},
 						Authentication: &OAuthAuthenticationSpec{
 							Enabled: false,
-							SAR:     "{\"namespace\": \"testns\", \"resource\": \"pods\", \"verb\": \"get\"}",
 						},
 						ServicesQueryDuration: &defaultServicesDuration,
+					},
+					Query: &QuerySpec{
+						Authentication: &OAuthAuthenticationSpec{
+							Enabled: false,
+						},
 					},
 					Management: "Managed",
 				},
 			},
 		},
 		{
-			name: "no touch jaeger ui oauth when feature gate is disabled (true case)",
+			name: "no touch oauth when feature gate is disabled (true case)",
 			input: &TempoMonolithic{
 				ObjectMeta: v1.ObjectMeta{
 					Name:      "test",
@@ -288,6 +307,12 @@ func TestMonolithicDefault(t *testing.T) {
 						Route: &MonolithicJaegerUIRouteSpec{
 							Enabled: true,
 						},
+						Authentication: &OAuthAuthenticationSpec{
+							Enabled: true,
+							SAR:     "{\"namespace\": \"testns\", \"resource\": \"pods\", \"verb\": \"get\"}",
+						},
+					},
+					Query: &QuerySpec{
 						Authentication: &OAuthAuthenticationSpec{
 							Enabled: true,
 							SAR:     "{\"namespace\": \"testns\", \"resource\": \"pods\", \"verb\": \"get\"}",
@@ -328,6 +353,12 @@ func TestMonolithicDefault(t *testing.T) {
 							SAR:     "{\"namespace\": \"testns\", \"resource\": \"pods\", \"verb\": \"get\"}",
 						},
 						ServicesQueryDuration: &defaultServicesDuration,
+					},
+					Query: &QuerySpec{
+						Authentication: &OAuthAuthenticationSpec{
+							Enabled: true,
+							SAR:     "{\"namespace\": \"testns\", \"resource\": \"pods\", \"verb\": \"get\"}",
+						},
 					},
 					Management: "Managed",
 				},
@@ -356,6 +387,11 @@ func TestMonolithicDefault(t *testing.T) {
 							Enabled: false,
 						},
 					},
+					Query: &QuerySpec{
+						Authentication: &OAuthAuthenticationSpec{
+							Enabled: false,
+						},
+					},
 				},
 			},
 			expected: &TempoMonolithic{
@@ -388,9 +424,13 @@ func TestMonolithicDefault(t *testing.T) {
 						},
 						Authentication: &OAuthAuthenticationSpec{
 							Enabled: false,
-							SAR:     "{\"namespace\": \"testns\", \"resource\": \"pods\", \"verb\": \"get\"}",
 						},
 						ServicesQueryDuration: &defaultServicesDuration,
+					},
+					Query: &QuerySpec{
+						Authentication: &OAuthAuthenticationSpec{
+							Enabled: false,
+						},
 					},
 					Management: "Managed",
 				},
@@ -447,12 +487,9 @@ func TestMonolithicDefault(t *testing.T) {
 							Enabled:     true,
 							Termination: TLSRouteTerminationTypeEdge,
 						},
-						Authentication: &OAuthAuthenticationSpec{
-							Enabled: false,
-							SAR:     "{\"namespace\": \"testns\", \"resource\": \"pods\", \"verb\": \"get\"}",
-						},
 						ServicesQueryDuration: &v1.Duration{Duration: time.Duration(100 * 100)},
 					},
+					Query:      &QuerySpec{},
 					Management: "Managed",
 				},
 			},

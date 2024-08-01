@@ -3,6 +3,7 @@ package monolithic
 import (
 	"maps"
 
+	v1 "github.com/openshift/api/route/v1"
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -81,46 +82,77 @@ func BuildAll(opts Options) ([]client.Object, error) {
 	services := BuildServices(opts)
 	manifests = append(manifests, services...)
 
+	var route *v1.Route
+
 	if tempo.Spec.JaegerUI != nil && tempo.Spec.JaegerUI.Enabled {
 		if tempo.Spec.JaegerUI.Ingress != nil && tempo.Spec.JaegerUI.Ingress.Enabled {
 			manifests = append(manifests, BuildJaegerUIIngress(opts))
 		}
 
 		if tempo.Spec.JaegerUI.Route != nil && tempo.Spec.JaegerUI.Route.Enabled {
-			route, err := BuildJaegerUIRoute(opts)
+			route, err = BuildJaegerUIRoute(opts)
 			if err != nil {
 				return nil, err
 			}
 			manifests = append(manifests, route)
-			if !tempo.Spec.Multitenancy.IsGatewayEnabled() {
-				if tempo.Spec.JaegerUI.Authentication.Enabled {
-					oauthproxy.PatchPodSpecForOauthProxy(
-						oauthproxy.Params{
-							TempoMeta:     tempo.ObjectMeta,
-							ProjectConfig: opts.CtrlConfig,
-							ProxyImage:    opts.CtrlConfig.DefaultImages.OauthProxy,
-							ContainerName: "tempo-query",
-							Port: corev1.ContainerPort{
-								Name:          manifestutils.JaegerUIPortName,
-								ContainerPort: manifestutils.PortJaegerUI,
-								Protocol:      corev1.ProtocolTCP,
-							},
-							HTTPPort:               manifestutils.OAuthJaegerUIProxyPortHTTP,
-							HTTPSPort:              manifestutils.OAuthJaegerUIProxyPortHTTPS,
-							OverrideServiceAccount: false,
-						}, &statefulSet.Spec.Template.Spec,
-					)
-					oauthproxy.PatchQueryFrontEndService(getJaegerUIService(services, tempo), tempo.Name)
+
+		}
+	}
+
+	if !tempo.Spec.Multitenancy.IsGatewayEnabled() {
+
+		if isOauthProxyEnabled(tempo) {
+			// Create common objects
+			secret, err := oauthproxy.OAuthCookieSessionSecret(tempo.ObjectMeta)
+			if err != nil {
+				return nil, err
+			}
+			manifests = append(manifests, secret)
+
+			if isOauthProxyEnabledForJaegerUI(tempo) {
+				oauthproxy.PatchPodSpecForOauthProxy(
+					oauthproxy.Params{
+						TempoMeta:     tempo.ObjectMeta,
+						ProjectConfig: opts.CtrlConfig,
+						ProxyImage:    opts.CtrlConfig.DefaultImages.OauthProxy,
+						ContainerName: "tempo-query",
+						Port: corev1.ContainerPort{
+							Name:          manifestutils.JaegerUIPortName,
+							ContainerPort: manifestutils.PortJaegerUI,
+							Protocol:      corev1.ProtocolTCP,
+						},
+						HTTPPort:               manifestutils.OAuthJaegerUIProxyPortHTTP,
+						HTTPSPort:              manifestutils.OAuthJaegerUIProxyPortHTTPS,
+						OverrideServiceAccount: false,
+					}, &statefulSet.Spec.Template.Spec,
+				)
+				if route != nil {
 					if serviceAccount != nil {
 						oauthproxy.AddServiceAccountAnnotations(serviceAccount, route.Name)
 					}
-					secret, err := oauthproxy.OAuthCookieSessionSecret(tempo.ObjectMeta)
 					oauthproxy.PatchRouteForOauthProxy(route)
-					if err != nil {
-						return nil, err
-					}
-					manifests = append(manifests, secret)
 				}
+				oauthproxy.PatchQueryFrontEndService(getJaegerUIService(services, tempo), tempo.Name)
+			}
+
+			if isOauthProxyEnabledForTempo(tempo) {
+				oauthproxy.PatchPodSpecForOauthProxy(
+					oauthproxy.Params{
+						TempoMeta:     tempo.ObjectMeta,
+						ProjectConfig: opts.CtrlConfig,
+						ProxyImage:    opts.CtrlConfig.DefaultImages.OauthProxy,
+						ContainerName: "tempo",
+						Port: corev1.ContainerPort{
+							Name:          manifestutils.HttpPortName,
+							ContainerPort: manifestutils.PortHTTPServer,
+							Protocol:      corev1.ProtocolTCP,
+						},
+						HTTPPort:               manifestutils.OAuthQueryFrontendProxyPortHTTP,
+						HTTPSPort:              manifestutils.OAuthQueryFrontendProxyPortHTTPS,
+						OverrideServiceAccount: false,
+						TLSSecretName:          naming.ServingCertName(manifestutils.TempoMonolithComponentName, tempo.Name),
+					}, &statefulSet.Spec.Template.Spec,
+				)
 			}
 		}
 	}
@@ -147,4 +179,15 @@ func BuildAll(opts Options) ([]client.Object, error) {
 	}
 
 	return manifests, nil
+}
+func isOauthProxyEnabledForJaegerUI(tempo v1alpha1.TempoMonolithic) bool {
+	return tempo.Spec.JaegerUI != nil && tempo.Spec.JaegerUI.Enabled && tempo.Spec.JaegerUI.Authentication != nil && tempo.Spec.JaegerUI.Authentication.Enabled
+}
+
+func isOauthProxyEnabledForTempo(tempo v1alpha1.TempoMonolithic) bool {
+	return tempo.Spec.Query != nil && tempo.Spec.Query.Authentication != nil && tempo.Spec.Query.Authentication.Enabled
+}
+
+func isOauthProxyEnabled(tempo v1alpha1.TempoMonolithic) bool {
+	return isOauthProxyEnabledForTempo(tempo) || isOauthProxyEnabledForJaegerUI(tempo)
 }
