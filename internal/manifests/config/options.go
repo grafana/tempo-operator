@@ -19,6 +19,7 @@ type options struct {
 	Gates                  featureGates
 	ReceiverTLS            receiverTLSOptions
 	S3StorageTLS           storageTLSOptions
+	ListenLocalHostOnly    bool
 }
 
 type tempoQueryOptions struct {

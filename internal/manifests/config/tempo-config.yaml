@@ -179,6 +179,9 @@ internal_server:
     key_file: {{ .TLS.Paths.Key }}
 {{- end }}
 server:
+{{- if .ListenLocalHostOnly}}
+  http_listen_address: localhost
+{{- end }}
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
   http_listen_port: 3200

@@ -169,8 +169,8 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 	config := tempoConfig{}
 	config.MultitenancyEnabled = tempo.Spec.Multitenancy != nil && tempo.Spec.Multitenancy.Enabled
 	config.Server.HttpListenPort = manifestutils.PortHTTPServer
-	if tempo.Spec.Multitenancy.IsGatewayEnabled() {
-		// all connections to tempo must go via gateway
+	if tempo.Spec.Multitenancy.IsGatewayEnabled() || isOauthProxyEnabledForTempo(tempo) {
+		// all connections to tempo must go via gateway or oauth-proxy
 		config.Server.HTTPListenAddress = "localhost"
 		config.Server.GRPCListenAddress = "localhost"
 	}
