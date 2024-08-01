@@ -166,7 +166,7 @@ querier:
 {{- if .Search.ExternalHedgeRequestsUpTo }}
     external_hedge_requests_up_to: {{ .Search.ExternalHedgeRequestsUpTo }}
 {{- end }}
-{{- if .Gates.HTTPEncryption }}
+{{- if or .Gates.HTTPEncryption  .ListenLocalHostOnly }}
 internal_server:
   enable: true
   http_listen_address: ""

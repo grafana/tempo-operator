@@ -228,6 +228,11 @@ func deployment(params manifestutils.Params) (*appsv1.Deployment, error) {
 		tempoQueryImage = params.CtrlConfig.DefaultImages.TempoQuery
 	}
 
+	httpEncryption := params.CtrlConfig.Gates.HTTPEncryption
+	gatewayEnabled := params.Tempo.Spec.Template.Gateway.Enabled
+	oauthQueryFrontendEnabled := oauthproxy.IsOauthEnabled(tempo.Spec.Template.QueryFrontend.Authentication)
+	readinesProbe := manifestutils.TempoReadinessProbe((httpEncryption && gatewayEnabled) || oauthQueryFrontendEnabled)
+
 	d := &appsv1.Deployment{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: appsv1.SchemeGroupVersion.String(),
@@ -275,7 +280,7 @@ func deployment(params manifestutils.Params) (*appsv1.Deployment, error) {
 									Protocol:      corev1.ProtocolTCP,
 								},
 							},
-							ReadinessProbe: manifestutils.TempoReadinessProbe(params.CtrlConfig.Gates.HTTPEncryption && params.Tempo.Spec.Template.Gateway.Enabled),
+							ReadinessProbe: readinesProbe,
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      manifestutils.ConfigVolumeName,
