@@ -1,0 +1,39 @@
+# Add the cluter role binding required for fetching metrics from Thanos querier. Refer https://issues.redhat.com/browse/MON-3379
+# The ClusterRoleBinding step is not a Tempo requirement and is used only by the test case to check the metrics using the check_metrics.sh script.
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: chainsaw-tempo-monitoring-view
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-monitoring-view
+subjects:
+- kind: ServiceAccount
+  name: prometheus-user-workload
+  namespace: openshift-user-workload-monitoring
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: verify-traces
+spec:
+  template:
+    spec:
+      containers:
+      - name: verify-traces
+        image: registry.access.redhat.com/ubi9/ubi:9.1
+        command:
+        - /bin/bash
+        - -eux
+        - -c
+        args:
+        - |
+          curl -v -G http://tempo-monitor-jaegerui:16686/api/services | tee /tmp/out.log
+          if ! grep -q telemetrygen /tmp/out.log; then
+            echo && echo "No traces found"
+            exit 1
+          fi
+      restartPolicy: Never
