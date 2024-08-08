@@ -21,7 +21,7 @@ make olm-install
 
 export IMG_PREFIX=docker.io/${USER}  # specify a container registry with push permissions
 export OPERATOR_VERSION=100.0.0
-export LATEST_VERSION=$(curl -sS "https://operatorhub.io/api/operator?packageName=tempo-operator" | jq -r .operator.version)
+export LATEST_VERSION=v$(curl -sS "https://operatorhub.io/api/operator?packageName=tempo-operator" | jq -r .operator.version)
 export BUNDLE_IMGS=ghcr.io/grafana/tempo-operator/tempo-operator-bundle:${LATEST_VERSION},${IMG_PREFIX}/tempo-operator-bundle:v${OPERATOR_VERSION}
 make bundle docker-build docker-push bundle-build bundle-push catalog-build catalog-push
 
