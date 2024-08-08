@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: tempo-operator-prometheus-rules
+spec:
+  groups:
+    - name: tempo-operator-monitoring.rules
+      rules:
+        - expr: sum by (type) (tempo_operator_tempostack_storage_backend)
+          record: tempo_operator_tempostack_storage_backend
+        - expr: sum by (state) (tempo_operator_tempostack_managed)
+          record: tempo_operator_tempostack_managed
+        - expr:  sum by (type) (tempo_operator_tempostack_multi_tenancy)
+          record: tempo_operator_tempostack_multi_tenancy
+        - expr: sum by (enabled) (tempo_operator_tempostack_jaeger_ui)
+          record: tempo_operator_tempostack_jaeger_ui
