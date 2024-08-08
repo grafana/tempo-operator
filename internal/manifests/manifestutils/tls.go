@@ -1,8 +1,6 @@
 package manifestutils
 
 import (
-	"fmt"
-
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -18,7 +16,7 @@ func MountCAConfigMap(
 	caConfigMap string,
 	caDir string,
 ) error {
-	containerIdx, err := findContainerIndex(pod, containerName)
+	containerIdx, err := FindContainerIndex(pod, containerName)
 	if err != nil {
 		return err
 	}
@@ -31,7 +29,7 @@ func MountCAConfigMap(
 		ReadOnly:  true,
 	})
 
-	if !containsVolume(pod, volumeName) {
+	if !ContainsVolume(pod.Volumes, volumeName) {
 		pod.Volumes = append(pod.Volumes, corev1.Volume{
 			Name: volumeName,
 			VolumeSource: corev1.VolumeSource{
@@ -54,7 +52,7 @@ func MountCertSecret(
 	certSecret string,
 	certDir string,
 ) error {
-	containerIdx, err := findContainerIndex(pod, containerName)
+	containerIdx, err := FindContainerIndex(pod, containerName)
 	if err != nil {
 		return err
 	}
@@ -67,7 +65,7 @@ func MountCertSecret(
 		ReadOnly:  true,
 	})
 
-	if !containsVolume(pod, volumeName) {
+	if !ContainsVolume(pod.Volumes, volumeName) {
 		pod.Volumes = append(pod.Volumes, corev1.Volume{
 			Name: volumeName,
 			VolumeSource: corev1.VolumeSource{
@@ -117,24 +115,4 @@ func NewConfigMapCABundle(namespace string, name string, labels labels.Set) *cor
 			Annotations: map[string]string{"service.beta.openshift.io/inject-cabundle": "true"},
 		},
 	}
-}
-
-func findContainerIndex(pod *corev1.PodSpec, containerName string) (int, error) {
-	for i, container := range pod.Containers {
-		if container.Name == containerName {
-			return i, nil
-		}
-	}
-
-	return -1, fmt.Errorf("cannot find container %s", containerName)
-}
-
-func containsVolume(pod *corev1.PodSpec, volumeName string) bool {
-	for _, volume := range pod.Volumes {
-		if volume.Name == volumeName {
-			return true
-		}
-	}
-
-	return false
 }

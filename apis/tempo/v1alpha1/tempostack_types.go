@@ -564,6 +564,13 @@ type TempoQueryFrontendSpec struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger Query Settings"
 	JaegerQuery JaegerQuerySpec `json:"jaegerQuery"`
+
+	// Authentication defines the options for the oauth proxy used to protect query frontend
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Query Frontend authentication configuration"
+	Authentication *OAuthAuthenticationSpec `json:"authentication,omitempty"`
 }
 
 // JaegerQuerySpec defines Jaeger Query options.
@@ -605,7 +612,7 @@ type JaegerQuerySpec struct {
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger UI authentication configuration"
-	Authentication *JaegerQueryAuthenticationSpec `json:"authentication,omitempty"`
+	Authentication *OAuthAuthenticationSpec `json:"authentication,omitempty"`
 }
 
 // JaegerQueryMonitor defines configuration for the service monitoring tab in the Jaeger console.

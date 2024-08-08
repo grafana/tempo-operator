@@ -372,10 +372,14 @@ func TestDefault(t *testing.T) {
 									},
 								},
 								ServicesQueryDuration: &defaultServicesDuration,
-								Authentication: &v1alpha1.JaegerQueryAuthenticationSpec{
+								Authentication: &v1alpha1.OAuthAuthenticationSpec{
 									Enabled: true,
 									SAR:     "{\"namespace\": \"\", \"resource\": \"pods\", \"verb\": \"get\"}",
 								},
+							},
+							Authentication: &v1alpha1.OAuthAuthenticationSpec{
+								Enabled: true,
+								SAR:     "{\"namespace\": \"\", \"resource\": \"pods\", \"verb\": \"get\"}",
 							},
 						},
 					},
@@ -407,9 +411,12 @@ func TestDefault(t *testing.T) {
 								Ingress: v1alpha1.IngressSpec{
 									Type: v1alpha1.IngressTypeRoute,
 								},
-								Authentication: &v1alpha1.JaegerQueryAuthenticationSpec{
+								Authentication: &v1alpha1.OAuthAuthenticationSpec{
 									Enabled: false,
 								},
+							},
+							Authentication: &v1alpha1.OAuthAuthenticationSpec{
+								Enabled: false,
 							},
 						},
 					},
@@ -466,9 +473,12 @@ func TestDefault(t *testing.T) {
 									},
 								},
 								ServicesQueryDuration: &defaultServicesDuration,
-								Authentication: &v1alpha1.JaegerQueryAuthenticationSpec{
+								Authentication: &v1alpha1.OAuthAuthenticationSpec{
 									Enabled: false,
 								},
+							},
+							Authentication: &v1alpha1.OAuthAuthenticationSpec{
+								Enabled: false,
 							},
 						},
 						Gateway: v1alpha1.TempoGatewaySpec{

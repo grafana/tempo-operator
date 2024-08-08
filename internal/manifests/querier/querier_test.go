@@ -153,7 +153,7 @@ func TestBuildQuerier(t *testing.T) {
 									HTTPGet: &corev1.HTTPGetAction{
 										Scheme: corev1.URISchemeHTTP,
 										Path:   manifestutils.TempoReadinessPath,
-										Port:   intstr.FromString(manifestutils.HttpPortName),
+										Port:   intstr.FromInt32(manifestutils.PortHTTPServer),
 									},
 								},
 								InitialDelaySeconds: 15,

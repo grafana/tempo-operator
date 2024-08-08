@@ -13,6 +13,7 @@ import (
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
+	"github.com/grafana/tempo-operator/internal/manifests/oauthproxy"
 )
 
 var (
@@ -53,10 +54,17 @@ func buildQueryFrontEndConfig(params manifestutils.Params) ([]byte, error) {
 		params.CtrlConfig.Gates.HTTPEncryption = false
 	}
 
-	return buildConfiguration(params)
+	opts, err := buildConfigOptions(params)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	opts.ListenLocalHostOnly = oauthproxy.IsOauthEnabled(params.Tempo.Spec.Template.QueryFrontend.Authentication)
+
+	return renderTemplate(opts)
 }
 
-func buildConfiguration(params manifestutils.Params) ([]byte, error) {
+func buildConfigOptions(params manifestutils.Params) (options, error) {
 	tempo := params.Tempo
 	tlsopts := tlsOptions{}
 	var err error
@@ -64,7 +72,7 @@ func buildConfiguration(params manifestutils.Params) ([]byte, error) {
 	if params.CtrlConfig.Gates.GRPCEncryption || params.CtrlConfig.Gates.HTTPEncryption {
 		tlsopts, err = buildTLSConfig(params)
 		if err != nil {
-			return []byte{}, err
+			return options{}, err
 		}
 	}
 
@@ -95,6 +103,14 @@ func buildConfiguration(params manifestutils.Params) ([]byte, error) {
 		opts.TenantRateLimitsPath = tenantOverridesMountPath
 	}
 
+	return opts, nil
+}
+
+func buildConfiguration(params manifestutils.Params) ([]byte, error) {
+	opts, err := buildConfigOptions(params)
+	if err != nil {
+		return []byte{}, err
+	}
 	return renderTemplate(opts)
 }
 

@@ -166,7 +166,7 @@ querier:
 {{- if .Search.ExternalHedgeRequestsUpTo }}
     external_hedge_requests_up_to: {{ .Search.ExternalHedgeRequestsUpTo }}
 {{- end }}
-{{- if .Gates.HTTPEncryption }}
+{{- if or .Gates.HTTPEncryption  .ListenLocalHostOnly }}
 internal_server:
   enable: true
   http_listen_address: ""
@@ -179,6 +179,9 @@ internal_server:
     key_file: {{ .TLS.Paths.Key }}
 {{- end }}
 server:
+{{- if .ListenLocalHostOnly}}
+  http_listen_address: localhost
+{{- end }}
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
   http_listen_port: 3200

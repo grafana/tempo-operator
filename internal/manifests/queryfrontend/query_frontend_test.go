@@ -690,7 +690,7 @@ func TestQueryFrontendJaegerRouteSecured(t *testing.T) {
 				QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
 					JaegerQuery: v1alpha1.JaegerQuerySpec{
 						Enabled: true,
-						Authentication: &v1alpha1.JaegerQueryAuthenticationSpec{
+						Authentication: &v1alpha1.OAuthAuthenticationSpec{
 							Enabled: true,
 						},
 						Ingress: v1alpha1.IngressSpec{
@@ -699,6 +699,9 @@ func TestQueryFrontendJaegerRouteSecured(t *testing.T) {
 								Termination: v1alpha1.TLSRouteTerminationTypeEdge,
 							},
 						},
+					},
+					Authentication: &v1alpha1.OAuthAuthenticationSpec{
+						Enabled: true,
 					},
 				},
 			},
@@ -744,19 +747,14 @@ func TestQueryFrontendJaegerRouteSecured(t *testing.T) {
 					Port:       manifestutils.PortJaegerMetrics,
 					TargetPort: intstr.FromString(manifestutils.JaegerMetricsPortName),
 				},
-				{
-					Name:       manifestutils.OAuthProxyPortName,
-					Port:       manifestutils.OAuthProxyPort,
-					TargetPort: intstr.FromString(manifestutils.OAuthProxyPortName),
-				},
 			},
 			Selector: manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, "test"),
 		},
 	}, objects[0].(*corev1.Service))
 
-	assert.Equal(t, "tempo-test-query-frontend", objects[2].(*corev1.ServiceAccount).Name)
+	assert.Equal(t, "tempo-test-query-frontend", objects[3].(*corev1.ServiceAccount).Name)
 
-	assert.Equal(t, "tempo-test-cookie-proxy", objects[3].(*corev1.Secret).Name)
+	assert.Equal(t, "tempo-test-cookie-proxy", objects[4].(*corev1.Secret).Name)
 
 	assert.Equal(t, &routev1.Route{
 		ObjectMeta: metav1.ObjectMeta{
@@ -770,11 +768,11 @@ func TestQueryFrontendJaegerRouteSecured(t *testing.T) {
 				Name: naming.Name(manifestutils.QueryFrontendComponentName, "test"),
 			},
 			Port: &routev1.RoutePort{
-				TargetPort: intstr.FromString(manifestutils.OAuthProxyPortName),
+				TargetPort: intstr.FromString(manifestutils.JaegerUIPortName),
 			},
 			TLS: &routev1.TLSConfig{
 				Termination: routev1.TLSTerminationReencrypt,
 			},
 		},
-	}, objects[4].(*routev1.Route))
+	}, objects[2].(*routev1.Route))
 }
