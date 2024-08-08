@@ -1,0 +1,38 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: monolithic-monitoring
+spec:
+  description: Test metrics produced by Tempo Monolithc can be scraped by in-cluster monitoring
+  # Avoid running this test case in parallel to prevent the deletion of shared resources used by multiple tests, specifically in the context of OpenShift user workload monitoring.
+  concurrent: false
+  steps:
+  - name: Enable user workload monitoring
+    try:
+    - apply:
+        file: workload-monitoring.yaml
+    - assert:
+        file: workload-monitoring-assert.yaml
+  - name: Create Tempo Monolithc instance
+    try:
+    - apply:
+        file: install-monolithic.yaml
+    - assert:
+        file: install-monolithic-assert.yaml
+  - name: Generate traces and export to the Monolithc instance
+    try:
+    - apply:
+        file: generate-traces.yaml
+    - assert:
+        file: generate-traces-assert.yaml
+  - name: Verify traces in Monolithic instance
+    try:
+    - apply:
+        file: verify-traces.yaml
+    - apply:
+        file: workload-monitoring-assert.yaml
+  - name: Check Tempo Monolithc metrics scraped by user workload monitoring
+    try:
+    - script:
+        timeout: 5m
+        content: ./check_metrics.sh

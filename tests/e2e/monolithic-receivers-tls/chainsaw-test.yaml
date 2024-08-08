@@ -30,3 +30,8 @@ spec:
         file: 04-verify-traces.yaml
     - assert:
         file: 04-assert.yaml
+    catch:
+    - podLogs:
+        selector: job-name=verify-traces-http
+    - podLogs:
+        selector: job-name=verify-traces-grpc

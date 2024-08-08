@@ -1,0 +1,18 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: generate-traces
+spec:
+  template:
+    spec:
+      containers:
+      - name: telemetrygen
+        image: ghcr.io/open-telemetry/opentelemetry-collector-contrib/telemetrygen:v0.92.0
+        args:
+        - traces
+        - --otlp-endpoint=tempo-monitor:4317
+        - --otlp-insecure
+        - --duration=3m
+        - --workers=1
+        - --span-duration=1s
+      restartPolicy: Never
