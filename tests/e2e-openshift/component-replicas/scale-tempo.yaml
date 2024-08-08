@@ -1,0 +1,43 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoStack
+metadata:
+  name: simplest
+  namespace: chainsaw-replicas
+spec:
+  storage:
+    secret:
+      name: minio
+      type: s3
+    tls:
+      enabled: false
+  storageSize: 10Gi
+  template:
+    compactor:
+      replicas: ($tempo_replicas)
+    distributor:
+      component:
+        replicas: ($tempo_replicas)
+    gateway:
+      component:
+        replicas: ($tempo_replicas)
+      enabled: true
+      ingress:
+        route:
+          termination: passthrough
+        type: route
+    ingester:
+      replicas: ($tempo_replicas)
+    querier:
+      replicas: ($tempo_replicas)
+    queryFrontend:
+      component:
+        replicas: ($tempo_replicas)
+      jaegerQuery:
+        enabled: true
+  tenants:
+    authentication:
+    - tenantId: 1610b0c3-c509-4592-a256-a1871353dbfa
+      tenantName: dev
+    - tenantId: 1610b0c3-c509-4592-a256-a1871353dbfb
+      tenantName: prod
+    mode: openshift
