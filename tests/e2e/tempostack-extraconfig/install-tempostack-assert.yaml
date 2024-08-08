@@ -1,0 +1,602 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoStack
+metadata:
+  name: simplest
+#
+# Service Accounts
+#
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: tempo-simplest
+  labels:
+    app.kubernetes.io/component: serviceaccount
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+#
+# Deployments
+#
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-simplest-query-frontend
+  labels:
+    app.kubernetes.io/component: query-frontend
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: query-frontend
+      app.kubernetes.io/instance: simplest
+      app.kubernetes.io/managed-by: tempo-operator
+      app.kubernetes.io/name: tempo
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-simplest-distributor
+  labels:
+    app.kubernetes.io/component: distributor
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: distributor
+      app.kubernetes.io/instance: simplest
+      app.kubernetes.io/managed-by: tempo-operator
+      app.kubernetes.io/name: tempo
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-simplest-querier
+  labels:
+    app.kubernetes.io/component: querier
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: querier
+      app.kubernetes.io/instance: simplest
+      app.kubernetes.io/managed-by: tempo-operator
+      app.kubernetes.io/name: tempo
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-simplest-compactor
+  labels:
+    app.kubernetes.io/component: compactor
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: compactor
+      app.kubernetes.io/instance: simplest
+      app.kubernetes.io/managed-by: tempo-operator
+      app.kubernetes.io/name: tempo
+status:
+  readyReplicas: 1
+#
+# StatefulSets
+#
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: tempo-simplest-ingester
+  labels:
+    app.kubernetes.io/component: ingester
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: ingester
+      app.kubernetes.io/instance: simplest
+      app.kubernetes.io/managed-by: tempo-operator
+      app.kubernetes.io/name: tempo
+status:
+  readyReplicas: 1
+#
+# Services
+#
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: compactor
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-simplest-compactor
+spec:
+  ports:
+    - name: http-memberlist
+      port: 7946
+      protocol: TCP
+      targetPort: http-memberlist
+    - name: http
+      port: 3200
+      protocol: TCP
+      targetPort: http
+  selector:
+    app.kubernetes.io/component: compactor
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: distributor
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-simplest-distributor
+spec:
+  ports:
+    - name: otlp-http
+      port: 4318
+      protocol: TCP
+      targetPort: otlp-http
+    - name: otlp-grpc
+      port: 4317
+      protocol: TCP
+      targetPort: otlp-grpc
+    - name: http
+      port: 3200
+      protocol: TCP
+      targetPort: http
+    - name: thrift-http
+      port: 14268
+      protocol: TCP
+      targetPort: thrift-http
+    - name: thrift-compact
+      port: 6831
+      protocol: UDP
+      targetPort: thrift-compact
+    - name: thrift-binary
+      port: 6832
+      protocol: UDP
+      targetPort: thrift-binary
+    - name: jaeger-grpc
+      port: 14250
+      protocol: TCP
+      targetPort: jaeger-grpc
+    - name: http-zipkin
+      port: 9411
+      protocol: TCP
+      targetPort: http-zipkin
+  selector:
+    app.kubernetes.io/component: distributor
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: gossip-ring
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-simplest-gossip-ring
+spec:
+  clusterIP: None
+  publishNotReadyAddresses: true
+  ports:
+    - name: http-memberlist
+      port: 7946
+      protocol: TCP
+      targetPort: http-memberlist
+  selector:
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+    tempo-gossip-member: "true"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: ingester
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-simplest-ingester
+spec:
+  ports:
+    - name: http
+      port: 3200
+      protocol: TCP
+      targetPort: http
+    - name: grpc
+      port: 9095
+      protocol: TCP
+      targetPort: grpc
+  selector:
+    app.kubernetes.io/component: ingester
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: querier
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-simplest-querier
+spec:
+  ports:
+    - name: http-memberlist
+      port: 7946
+      protocol: TCP
+      targetPort: http-memberlist
+    - name: http
+      port: 3200
+      protocol: TCP
+      targetPort: http
+    - name: grpc
+      port: 9095
+      protocol: TCP
+      targetPort: grpc
+  selector:
+    app.kubernetes.io/component: querier
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: query-frontend
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-simplest-query-frontend
+spec:
+  ports:
+    - name: http
+      port: 3200
+      protocol: TCP
+      targetPort: http
+    - name: grpc
+      port: 9095
+      protocol: TCP
+      targetPort: grpc
+    - name: jaeger-grpc
+      port: 16685
+      protocol: TCP
+      targetPort: jaeger-grpc
+    - name: jaeger-ui
+      port: 16686
+      protocol: TCP
+      targetPort: jaeger-ui
+    - name: jaeger-metrics
+      port: 16687
+      protocol: TCP
+      targetPort: jaeger-metrics
+  selector:
+    app.kubernetes.io/component: query-frontend
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: query-frontend-discovery
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-simplest-query-frontend-discovery
+spec:
+  clusterIP: None
+  publishNotReadyAddresses: true
+  ports:
+    - name: http
+      port: 3200
+      protocol: TCP
+      targetPort: http
+    - name: grpc
+      port: 9095
+      protocol: TCP
+      targetPort: grpc
+    - name: grpclb
+      port: 9096
+      protocol: TCP
+      targetPort: grpclb
+    - name: jaeger-grpc
+      port: 16685
+      protocol: TCP
+      targetPort: jaeger-grpc
+    - name: jaeger-ui
+      port: 16686
+      protocol: TCP
+      targetPort: jaeger-ui
+    - name: jaeger-metrics
+      port: 16687
+      protocol: TCP
+      targetPort: jaeger-metrics
+  selector:
+    app.kubernetes.io/component: query-frontend
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-operator
+#
+# Ingresses
+#
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  labels:
+    app.kubernetes.io/component: query-frontend
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-simplest-query-frontend
+spec:
+  defaultBackend:
+    service:
+      name: tempo-simplest-query-frontend
+      port:
+        name: jaeger-ui
+
+---
+apiVersion: v1
+data:
+  overrides.yaml: |
+    overrides:
+  tempo-query-frontend.yaml: |
+    compactor:
+        compaction:
+            block_retention: 48h0m0s
+        ring:
+            kvstore:
+                store: memberlist
+    distributor:
+        receivers:
+            jaeger:
+                protocols:
+                    grpc:
+                        endpoint: 0.0.0.0:14250
+                    thrift_binary:
+                        endpoint: 0.0.0.0:6832
+                    thrift_compact:
+                        endpoint: 0.0.0.0:6831
+                    thrift_http:
+                        endpoint: 0.0.0.0:14268
+            otlp:
+                protocols:
+                    grpc:
+                        endpoint: 0.0.0.0:4317
+                    http:
+                        endpoint: 0.0.0.0:4318
+            zipkin: null
+        ring:
+            kvstore:
+                store: memberlist
+    ingester:
+        lifecycler:
+            ring:
+                kvstore:
+                    store: memberlist
+                replication_factor: 1
+            tokens_file_path: /var/tempo/tokens.json
+        max_block_duration: 10m
+    ingester_client:
+        grpc_client_config:
+            tls_ca_path: /var/run/ca/service-ca.crt
+            tls_cert_path: /var/run/tls/server/tls.crt
+            tls_enabled: true
+            tls_insecure_skip_verify: false
+            tls_key_path: /var/run/tls/server/tls.key
+            tls_min_version: VersionTLS13
+            tls_server_name: tempo-simplest-ingester.chainsaw-tempoextcfg.svc.cluster.local
+    memberlist:
+        abort_if_cluster_join_fails: false
+        join_members:
+            - tempo-simplest-gossip-ring
+    multitenancy_enabled: false
+    querier:
+        frontend_worker:
+            frontend_address: tempo-simplest-query-frontend-discovery:9095
+            grpc_client_config:
+                tls_ca_path: /var/run/ca/service-ca.crt
+                tls_cert_path: /var/run/tls/server/tls.crt
+                tls_enabled: true
+                tls_key_path: /var/run/tls/server/tls.key
+                tls_min_version: VersionTLS13
+                tls_server_name: tempo-simplest-query-frontend.chainsaw-tempoextcfg.svc.cluster.local
+        max_concurrent_queries: 20
+        search:
+            external_hedge_requests_at: 8s
+            external_hedge_requests_up_to: 2
+            query_timeout: 180s
+    query_frontend:
+        max_retries: 3
+        search:
+            concurrent_jobs: 2000
+            default_result_limit: 20
+            max_duration: 0s
+    server:
+        grpc_server_max_recv_msg_size: 4194304
+        grpc_server_max_send_msg_size: 4194304
+        grpc_tls_config:
+            cert_file: /var/run/tls/server/tls.crt
+            client_auth_type: RequireAndVerifyClientCert
+            client_ca_file: /var/run/ca/service-ca.crt
+            key_file: /var/run/tls/server/tls.key
+        http_listen_port: 3200
+        http_server_read_timeout: 3m
+        http_server_write_timeout: 3m
+        log_format: logfmt
+        tls_min_version: VersionTLS13
+    storage:
+        trace:
+            backend: s3
+            blocklist_poll: 5m
+            cache: none
+            local:
+                path: /var/tempo/traces
+            s3:
+                bucket: tempo
+                endpoint: minio:9000
+                insecure: true
+            wal:
+                path: /var/tempo/wal
+    usage_report:
+        reporting_enabled: false
+  tempo-query.yaml: |
+    backend: 127.0.0.1:3200
+    tenant_header_key: x-scope-orgid
+    services_query_duration: 72h0m0s
+  tempo.yaml: |
+    compactor:
+        compaction:
+            block_retention: 48h0m0s
+        ring:
+            kvstore:
+                store: memberlist
+    distributor:
+        receivers:
+            jaeger:
+                protocols:
+                    grpc:
+                        endpoint: 0.0.0.0:14250
+                    thrift_binary:
+                        endpoint: 0.0.0.0:6832
+                    thrift_compact:
+                        endpoint: 0.0.0.0:6831
+                    thrift_http:
+                        endpoint: 0.0.0.0:14268
+            otlp:
+                protocols:
+                    grpc:
+                        endpoint: 0.0.0.0:4317
+                    http:
+                        endpoint: 0.0.0.0:4318
+            zipkin: null
+        ring:
+            kvstore:
+                store: memberlist
+    ingester:
+        lifecycler:
+            ring:
+                kvstore:
+                    store: memberlist
+                replication_factor: 1
+            tokens_file_path: /var/tempo/tokens.json
+        max_block_duration: 10m
+    ingester_client:
+        grpc_client_config:
+            tls_ca_path: /var/run/ca/service-ca.crt
+            tls_cert_path: /var/run/tls/server/tls.crt
+            tls_enabled: true
+            tls_insecure_skip_verify: false
+            tls_key_path: /var/run/tls/server/tls.key
+            tls_min_version: VersionTLS13
+            tls_server_name: tempo-simplest-ingester.chainsaw-tempoextcfg.svc.cluster.local
+    internal_server:
+        enable: true
+        http_listen_address: ""
+        http_tls_config:
+            cert_file: /var/run/tls/server/tls.crt
+            key_file: /var/run/tls/server/tls.key
+        tls_min_version: VersionTLS13
+    memberlist:
+        abort_if_cluster_join_fails: false
+        join_members:
+            - tempo-simplest-gossip-ring
+    multitenancy_enabled: false
+    querier:
+        frontend_worker:
+            frontend_address: tempo-simplest-query-frontend-discovery:9095
+            grpc_client_config:
+                tls_ca_path: /var/run/ca/service-ca.crt
+                tls_cert_path: /var/run/tls/server/tls.crt
+                tls_enabled: true
+                tls_key_path: /var/run/tls/server/tls.key
+                tls_min_version: VersionTLS13
+                tls_server_name: tempo-simplest-query-frontend.chainsaw-tempoextcfg.svc.cluster.local
+        max_concurrent_queries: 20
+        search:
+            external_hedge_requests_at: 8s
+            external_hedge_requests_up_to: 2
+            query_timeout: 180s
+    query_frontend:
+        max_retries: 3
+        search:
+            concurrent_jobs: 2000
+            default_result_limit: 20
+            max_duration: 0s
+    server:
+        grpc_server_max_recv_msg_size: 4194304
+        grpc_server_max_send_msg_size: 4194304
+        grpc_tls_config:
+            cert_file: /var/run/tls/server/tls.crt
+            client_auth_type: RequireAndVerifyClientCert
+            client_ca_file: /var/run/ca/service-ca.crt
+            key_file: /var/run/tls/server/tls.key
+        http_listen_port: 3200
+        http_server_read_timeout: 3m
+        http_server_write_timeout: 3m
+        http_tls_config:
+            cert_file: /var/run/tls/server/tls.crt
+            client_auth_type: RequireAndVerifyClientCert
+            client_ca_file: /var/run/ca/service-ca.crt
+            key_file: /var/run/tls/server/tls.key
+        log_format: logfmt
+        tls_min_version: VersionTLS13
+    storage:
+        trace:
+            backend: s3
+            blocklist_poll: 5m
+            cache: none
+            local:
+                path: /var/tempo/traces
+            s3:
+                bucket: tempo
+                endpoint: minio:9000
+                insecure: true
+            wal:
+                path: /var/tempo/wal
+    usage_report:
+        reporting_enabled: false
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/component: config
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-simplest
+  namespace: chainsaw-tempoextcfg
