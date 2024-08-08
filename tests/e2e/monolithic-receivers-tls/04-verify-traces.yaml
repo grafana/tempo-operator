@@ -1,47 +1,61 @@
-apiVersion: batch/v1
-kind: Job
+apiVersion: v1
+kind: Pod
 metadata:
   name: verify-traces-http
 spec:
-  template:
-    spec:
-      containers:
-        - name: verify-traces
-          image: ghcr.io/grafana/tempo-operator/test-utils:main
-          command:
-            - /bin/bash
-            - -eux
-            - -c
-          args:
-            - |
-              curl -v -G http://tempo-simplest-jaegerui:16686/api/traces --data-urlencode "service=http" | tee /tmp/jaeger.out
-              num_traces=$(jq ".data | length" /tmp/jaeger.out)
-              if [[ "$num_traces" -ne 10 ]]; then
-                echo && echo "The Jaeger API returned $num_traces instead of 10 traces."
-                exit 1
-              fi
-      restartPolicy: Never
+  containers:
+    - name: verify-traces
+      image: ghcr.io/grafana/tempo-operator/test-utils:main
+      command:
+        - /bin/bash
+        - -eu
+        - -c
+      args:
+        - |
+          while true
+          do
+            echo && echo "Starting test at $(date)..."
+            curl -v -G http://tempo-simplest-jaegerui:16686/api/traces --data-urlencode "service=http" | tee /tmp/jaeger.out
+            num_traces=$(jq ".data | length" /tmp/jaeger.out)
+            echo
+
+            if [[ "$num_traces" -eq 10 ]]; then
+              echo "Test passed."
+              exit 0
+            else
+              echo "Test failed: The Jaeger API returned $num_traces instead of 10 traces."
+              echo "Retrying in 10s..." && sleep 10
+            fi
+          done
+  restartPolicy: Never
 ---
-apiVersion: batch/v1
-kind: Job
+apiVersion: v1
+kind: Pod
 metadata:
   name: verify-traces-grpc
 spec:
-  template:
-    spec:
-      containers:
-        - name: verify-traces
-          image: ghcr.io/grafana/tempo-operator/test-utils:main
-          command:
-            - /bin/bash
-            - -eux
-            - -c
-          args:
-            - |
-              curl -v -G http://tempo-simplest-jaegerui:16686/api/traces --data-urlencode "service=grpc" | tee /tmp/jaeger.out
-              num_traces=$(jq ".data | length" /tmp/jaeger.out)
-              if [[ "$num_traces" -ne 10 ]]; then
-                echo && echo "The Jaeger API returned $num_traces instead of 10 traces."
-                exit 1
-              fi
-      restartPolicy: Never
+  containers:
+    - name: verify-traces
+      image: ghcr.io/grafana/tempo-operator/test-utils:main
+      command:
+        - /bin/bash
+        - -eu
+        - -c
+      args:
+        - |
+          while true
+          do
+            echo && echo "Starting test at $(date)..."
+            curl -v -G http://tempo-simplest-jaegerui:16686/api/traces --data-urlencode "service=grpc" | tee /tmp/jaeger.out
+            num_traces=$(jq ".data | length" /tmp/jaeger.out)
+            echo
+
+            if [[ "$num_traces" -eq 10 ]]; then
+              echo "Test passed."
+              exit 0
+            else
+              echo "Test failed: The Jaeger API returned $num_traces instead of 10 traces."
+              echo "Retrying in 10s..." && sleep 10
+            fi
+          done
+  restartPolicy: Never
