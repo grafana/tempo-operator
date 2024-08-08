@@ -1,0 +1,56 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: component-replicas
+spec:
+  description: Test the scale-up/scale-down of TempoStack component replicas
+  namespace: chainsaw-replicas
+  steps:
+  - name: Create Minio storage instance
+    try:
+    - apply:
+        file: install-storage.yaml
+    - assert:
+        file: install-storage-assert.yaml
+  - name: Create TempoStack instance
+    try:
+    - apply:
+        file: install-tempo.yaml
+    - assert:
+        file: install-tempo-assert.yaml
+  - name: Scale TempoStack components replicas to 2
+    bindings:
+    - name: tempo_replicas
+      value: 2
+    try:
+    - apply:
+        file: scale-tempo.yaml
+    - assert:
+        file: scale-tempo-assert.yaml
+  - name: Install OTEL collector
+    try:
+    - apply:
+        file: install-otelcol.yaml
+    - assert:
+        file: install-otelcol-assert.yaml
+  - name: Generate traces
+    try:
+    - apply:
+        file: generate-traces.yaml
+    - assert:
+        file: generate-traces-assert.yaml
+  - name: Verify traces
+    try:
+    - apply:
+        file: verify-traces.yaml
+    - assert:
+        file: verify-traces-assert.yaml
+  - name: Scale down the TempoStack component replicas to 1
+    bindings:
+    - name: tempo_replicas
+      value: 1
+    try:
+    - apply:
+        file: scale-tempo.yaml
+    - assert:
+        file: scale-tempo-assert.yaml
