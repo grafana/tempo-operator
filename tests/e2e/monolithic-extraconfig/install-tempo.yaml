@@ -1,0 +1,14 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoMonolithic
+metadata:
+  name: simplest
+spec:
+  extraConfig:
+    tempo:
+      querier:
+        search:
+          query_timeout: 180s
+      query_frontend:
+        max_retries: 3
+  jaegerui:
+    enabled: true

@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/kyverno/chainsaw/main/.schemas/json/test-chainsaw-v1alpha1.json
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: tempostack-extraconfig
+spec:
+  description: Test extra config in TempoStack
+  namespace: chainsaw-tempoextcfg
+  steps:
+  - name: Install Minio storage
+    try:
+    - apply:
+        file: install-storage.yaml
+    - assert:
+        file: install-storage-assert.yaml
+  - name: Install TempoStack
+    try:
+    - apply:
+        file: install-tempostack.yaml
+    - assert:
+        file: install-tempostack-assert.yaml
+  - name: Check TempoStack status
+    try:
+    - script:
+        timeout: 5m
+        content: kubectl get --namespace $NAMESPACE tempo simplest -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' | grep True
