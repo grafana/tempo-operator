@@ -1,17 +1,13 @@
-apiVersion: batch/v1
-kind: Job
+apiVersion: v1
+kind: Pod
 metadata:
   name: verify-traces-http
 status:
-  conditions:
-    - status: "True"
-      type: Complete
+  phase: Succeeded
 ---
-apiVersion: batch/v1
-kind: Job
+apiVersion: v1
+kind: Pod
 metadata:
   name: verify-traces-grpc
 status:
-  conditions:
-    - status: "True"
-      type: Complete
+  phase: Succeeded
