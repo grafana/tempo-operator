@@ -22,6 +22,10 @@ spec:
         file: 02-install-otel.yaml
     - assert:
         file: 02-assert.yaml
+  - name: Wait before generating traces
+    try:
+    - sleep:
+        duration: 20s
   - name: step-03
     try:
     - apply:
