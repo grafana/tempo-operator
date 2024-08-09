@@ -23,7 +23,7 @@ spec:
 
     exporters:
       otlp:
-        endpoint: tempo-simplest-gateway.chainsaw-replicas.svc.cluster.local:8090
+        endpoint: tempo-cmpreps-gateway.chainsaw-replicas.svc.cluster.local:8090
         tls:
           insecure: false
           ca_file: "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt"
@@ -32,7 +32,7 @@ spec:
         headers:
           X-Scope-OrgID: "dev"
       otlphttp:
-        endpoint: https://tempo-simplest-gateway.chainsaw-replicas.svc.cluster.local:8080/api/traces/v1/dev
+        endpoint: https://tempo-cmpreps-gateway.chainsaw-replicas.svc.cluster.local:8080/api/traces/v1/dev
         tls:
           insecure: false
           ca_file: "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt"

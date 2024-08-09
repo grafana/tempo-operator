@@ -166,6 +166,7 @@ spec:
         - --traces.tls.key-file=/var/run/tls/server/tls.key
         - --traces.tls.cert-file=/var/run/tls/server/tls.crt
         - --traces.tls.ca-file=/var/run/ca/service-ca.crt
+        - --traces.tls.watch-certs=true
         - --tls.server.cert-file=/etc/tempo-gateway/serving-certs/tls.crt
         - --tls.server.key-file=/etc/tempo-gateway/serving-certs/tls.key
         - --tls.healthchecks.server-ca-file=/etc/tempo-gateway/cabundle/service-ca.crt
