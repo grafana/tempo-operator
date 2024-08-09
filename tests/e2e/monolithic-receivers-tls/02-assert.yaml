@@ -36,3 +36,18 @@ spec:
     app.kubernetes.io/name: otelcol
     app.kubernetes.io/instance: opentelemetry
     component: standalone-collector
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app.kubernetes.io/instance: opentelemetry
+    app.kubernetes.io/name: otelcol
+    component: standalone-collector
+status:
+  containerStatuses:
+  - name: opentelemetry-collector
+    ready: true
+    started: true
+  phase: Running
