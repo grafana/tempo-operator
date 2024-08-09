@@ -20,7 +20,7 @@ spec:
             -v -G \
             --header "Authorization: Bearer $token" \
             --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
-            https://tempo-simplest-gateway.chainsaw-replicas.svc:8080/api/traces/v1/dev/api/traces \
+            https://tempo-cmpreps-gateway.chainsaw-replicas.svc:8080/api/traces/v1/dev/api/traces \
             --data-urlencode "service=grpc" \
             | tee /tmp/jaeger.out
 
@@ -53,7 +53,7 @@ spec:
                 -v -G \
                 --header "Authorization: Bearer $token" \
                 --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
-                https://tempo-simplest-gateway.chainsaw-replicas.svc:8080/api/traces/v1/dev/tempo/api/search \
+                https://tempo-cmpreps-gateway.chainsaw-replicas.svc:8080/api/traces/v1/dev/tempo/api/search \
                 --data-urlencode 'q={ resource.service.name="grpc" }' \
                 | tee /tmp/jaeger.out
               num_traces=$(jq ".traces | length" /tmp/jaeger.out)
@@ -85,7 +85,7 @@ spec:
                 -v -G \
                 --header "Authorization: Bearer $token" \
                 --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
-                https://tempo-simplest-gateway.chainsaw-replicas.svc:8080/api/traces/v1/dev/api/traces \
+                https://tempo-cmpreps-gateway.chainsaw-replicas.svc:8080/api/traces/v1/dev/api/traces \
                 --data-urlencode "service=http" \
                 | tee /tmp/jaeger.out
               
@@ -118,7 +118,7 @@ spec:
                 -v -G \
                 --header "Authorization: Bearer $token" \
                 --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
-                https://tempo-simplest-gateway.chainsaw-replicas.svc:8080/api/traces/v1/dev/tempo/api/search \
+                https://tempo-cmpreps-gateway.chainsaw-replicas.svc:8080/api/traces/v1/dev/tempo/api/search \
                 --data-urlencode 'q={ resource.service.name="http" }' \
                 | tee /tmp/jaeger.out
               num_traces=$(jq ".traces | length" /tmp/jaeger.out)
