@@ -7,7 +7,7 @@ Changes by Version
 
 ### 💡 Enhancements 💡
 
-- `tempostack`: Add support for AWS S3 STS authentication. (#978)
+- `tempostack, tempomonolithic`: Add support for AWS S3 STS authentication. (#978)
   Now storage secret for S3 can contain
   ```
   data:
@@ -15,16 +15,6 @@ Changes by Version
     region:      # A valid AWS region, e.g. us-east-1
     role_arn:    # The AWS IAM Role associated with a trust relationship to Tempo serviceaccount
   ```
-  
-- `tempostack`: Add support for AWS S3 STS authentication. (#978)
-  Now storage secret for S3 can contain
-  ```
-  data:
-    bucket:      # Bucket name
-    region:      # A valid AWS region, e.g. us-east-1
-    role_arn:    # The AWS IAM Role associated with a trust relationship to Tempo serviceaccount
-  ```
-  
 - `tempostack`: Use TLS via OpenShift service annotation when gateway/multitenancy is disabled (#963)
   On OpenShift when operator config `servingCertsService` is enabled and the following TempoStack CR is used.
   The operator provisions OpenShift serving certificates for the distributor ingest APIs
