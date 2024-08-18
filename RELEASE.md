@@ -12,7 +12,7 @@ Steps to release a new version of the Tempo Operator:
 ## Running e2e tests on OpenShift
 A locally installed [CRC](https://github.com/crc-org/crc) cluster can be used for testing.
 
-Note: The e2e tests require [opentelemetry-operator](https://github.com/open-telemetry/opentelemetry-operator) to be installed in the cluster.
+Note: The e2e tests require [opentelemetry-operator](https://github.com/open-telemetry/opentelemetry-operator) and cluster monitoring operator (`crc config set enable-cluster-monitoring true`).
 
 ```
 kubectl create namespace tempo-operator-system
@@ -25,8 +25,8 @@ We plan to release the operator monthly, **at the end of each month**.
 
 | Release Date | Version | Release Manager                                          |
 |--------------|---------| -------------------------------------------------------- |
-| Jul 2024     | 0.12.0  | [Andreas Gerstmayr](https://github.com/andreasgerstmayr) |
 | Aug 2024     | 0.13.0  | [Benedikt Bongartz](https://github.com/frzifus)          |
 | Sep 2024     | 0.14.0  | [Israel Blancas](https://github.com/iblancasa)           |
 | Oct 2024     | 0.15.0  | [Ruben Vargas](https://github.com/rubenvp8510)           |
 | Nov 2024     | 0.16.0  | [Pavol Loffay](https://github.com/pavolloffay)           |
+| Dez 2024     | 0.17.0  | [Andreas Gerstmayr](https://github.com/andreasgerstmayr) |
