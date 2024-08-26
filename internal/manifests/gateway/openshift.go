@@ -113,9 +113,10 @@ func route(tempo v1alpha1.TempoStack) (*routev1.Route, error) {
 
 	return &routev1.Route{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      naming.Name(manifestutils.GatewayComponentName, tempo.Name),
-			Namespace: tempo.Namespace,
-			Labels:    labels,
+			Name:        naming.Name(manifestutils.GatewayComponentName, tempo.Name),
+			Namespace:   tempo.Namespace,
+			Labels:      labels,
+			Annotations: tempo.Spec.Template.Gateway.Ingress.Annotations,
 		},
 		Spec: routev1.RouteSpec{
 			Host: tempo.Spec.Template.Gateway.Ingress.Host,

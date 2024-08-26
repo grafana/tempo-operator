@@ -158,6 +158,9 @@ func TestBuildGateway_openshift(t *testing.T) {
 					Enabled: true,
 					Ingress: v1alpha1.IngressSpec{
 						Type: v1alpha1.IngressTypeRoute,
+						Annotations: map[string]string{
+							"timeout": "30s",
+						},
 						Route: v1alpha1.RouteSpec{
 							Termination: v1alpha1.TLSRouteTerminationTypePassthrough,
 						},
@@ -246,6 +249,7 @@ func TestBuildGateway_openshift(t *testing.T) {
 	require.True(t, ok)
 	require.Equal(t, "Service", route.Spec.To.Kind)
 	require.Equal(t, "tempo-simplest-gateway", route.Spec.To.Name)
+	require.Equal(t, map[string]string{"timeout": "30s"}, route.ObjectMeta.Annotations)
 
 	obj = getObjectByTypeAndName(objects, "tempo-simplest-gateway-cabundle", reflect.TypeOf(&corev1.ConfigMap{}))
 	require.NotNil(t, obj)
