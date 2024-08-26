@@ -98,7 +98,7 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 
 	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled && tempo.Spec.Template.QueryFrontend.JaegerQuery.MonitorTab.Enabled &&
 		tempo.Spec.Template.QueryFrontend.JaegerQuery.MonitorTab.PrometheusEndpoint == thanosQuerierOpenShiftMonitoring {
-		clusterRoleBinding := openShiftMonitoringClusterRoleBinding(tempo)
+		clusterRoleBinding := openShiftMonitoringClusterRoleBinding(tempo, d)
 		manifests = append(manifests, &clusterRoleBinding)
 	}
 
@@ -362,7 +362,7 @@ func enableMonitoringTab(tempo v1alpha1.TempoStack, jaegerQueryContainer corev1.
 	return jaegerQueryContainer, nil
 }
 
-func openShiftMonitoringClusterRoleBinding(tempo v1alpha1.TempoStack) rbacv1.ClusterRoleBinding {
+func openShiftMonitoringClusterRoleBinding(tempo v1alpha1.TempoStack, d *appsv1.Deployment) rbacv1.ClusterRoleBinding {
 	labels := manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, tempo.Name)
 	return rbacv1.ClusterRoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
@@ -371,7 +371,7 @@ func openShiftMonitoringClusterRoleBinding(tempo v1alpha1.TempoStack) rbacv1.Clu
 		},
 		Subjects: []rbacv1.Subject{
 			{
-				Name:      naming.DefaultServiceAccountName(tempo.Name),
+				Name:      d.Spec.Template.Spec.ServiceAccountName,
 				Kind:      "ServiceAccount",
 				Namespace: tempo.Namespace,
 			},

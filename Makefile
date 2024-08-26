@@ -500,3 +500,5 @@ release-artifacts: set-image-controller ## Generate release artifacts
 	mkdir -p dist
 	$(KUSTOMIZE) build config/overlays/community -o dist/tempo-operator.yaml
 	$(KUSTOMIZE) build config/overlays/openshift -o dist/tempo-operator-openshift.yaml
+	echo "---" >> dist/tempo-operator-openshift.yaml
+	cat bundle/openshift/manifests/tempo-operator-manager-rolebinding-cluster-monitoring-view_rbac.authorization.k8s.io_v1_clusterrolebinding.yaml >> dist/tempo-operator-openshift.yaml

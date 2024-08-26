@@ -10,6 +10,7 @@ import (
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8slabels "k8s.io/apimachinery/pkg/labels"
@@ -604,8 +605,20 @@ func TestBuildQueryFrontendWithJaegerMonitorTab(t *testing.T) {
 					},
 				},
 			},
-			args: []string{"--query.base-path=/", "--grpc-storage-plugin.configuration-file=/conf/tempo-query.yaml", "--query.bearer-token-propagation=true", "--prometheus.query.support-spanmetrics-connector", "--prometheus.tls.enabled=true", "--prometheus.token-file=/var/run/secrets/kubernetes.io/serviceaccount/token", "--prometheus.token-override-from-context=false", "--prometheus.tls.ca=/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt"},
-			env:  []corev1.EnvVar{{Name: "METRICS_STORAGE_TYPE", Value: "prometheus"}, {Name: "PROMETHEUS_SERVER_URL", Value: "https://thanos-querier.openshift-monitoring.svc.cluster.local:9091"}},
+			args: []string{
+				"--query.base-path=/",
+				"--grpc-storage-plugin.configuration-file=/conf/tempo-query.yaml",
+				"--query.bearer-token-propagation=true",
+				"--prometheus.query.support-spanmetrics-connector",
+				"--prometheus.tls.enabled=true",
+				"--prometheus.token-file=/var/run/secrets/kubernetes.io/serviceaccount/token",
+				"--prometheus.token-override-from-context=false",
+				"--prometheus.tls.ca=/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt",
+			},
+			env: []corev1.EnvVar{
+				{Name: "METRICS_STORAGE_TYPE", Value: "prometheus"},
+				{Name: "PROMETHEUS_SERVER_URL", Value: "https://thanos-querier.openshift-monitoring.svc.cluster.local:9091"},
+			},
 		},
 	}
 
@@ -627,6 +640,9 @@ func TestBuildQueryFrontendWithJaegerMonitorTab(t *testing.T) {
 				assert.Equal(t, 4, len(objects))
 
 				assert.Equal(t, "tempo-simplest-cluster-monitoring-view", objects[3].GetName())
+				crb := objects[3].(*rbacv1.ClusterRoleBinding)
+				assert.Equal(t, crb.Subjects[0].Kind, "ServiceAccount")
+				assert.Equal(t, dep.Spec.Template.Spec.ServiceAccountName, crb.Subjects[0].Name)
 			}
 		})
 	}
