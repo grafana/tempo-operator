@@ -1,8 +1,6 @@
 package oauthproxy
 
 import (
-	"crypto/rand"
-	"encoding/base64"
 	"fmt"
 	"strings"
 
@@ -198,15 +196,6 @@ func PatchQueryFrontEndService(service *corev1.Service, tempo string) {
 		Port:       manifestutils.OAuthProxyPort,
 		TargetPort: intstr.FromString(manifestutils.OAuthProxyPortName),
 	})
-}
-
-func generateProxySecret() (string, error) {
-	randomBytes := make([]byte, minBytesRequiredByCookieValue)
-	_, err := rand.Read(randomBytes)
-	if err != nil {
-		return "", err
-	}
-	return base64.StdEncoding.EncodeToString(randomBytes), nil
 }
 
 func getOAuthRedirectReference(routeName string) string {
