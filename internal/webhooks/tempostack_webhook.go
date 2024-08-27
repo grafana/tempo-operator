@@ -3,6 +3,7 @@ package webhooks
 import (
 	"context"
 	"fmt"
+	"github.com/grafana/tempo-operator/internal/status"
 	"math"
 	"net"
 	"strconv"
@@ -173,7 +174,7 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 	return nil
 }
 
-//+kubebuilder:webhook:path=/validate-tempo-grafana-com-v1alpha1-tempostack,mutating=false,failurePolicy=fail,sideEffects=None,groups=tempo.grafana.com,resources=tempostacks,verbs=create;update,versions=v1alpha1,name=vtempostack.tempo.grafana.com,admissionReviewVersions=v1
+//+kubebuilder:webhook:path=/validate-tempo-grafana-com-v1alpha1-tempostack,mutating=false,failurePolicy=fail,sideEffects=None,groups=tempo.grafana.com,resources=tempostacks,verbs=create;update;delete,versions=v1alpha1,name=vtempostack.tempo.grafana.com,admissionReviewVersions=v1
 
 type validator struct {
 	client     client.Client
@@ -188,8 +189,12 @@ func (v *validator) ValidateUpdate(ctx context.Context, oldObj, newObj runtime.O
 	return v.validate(ctx, newObj)
 }
 
-func (v *validator) ValidateDelete(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
-	// NOTE(agerstmayr): change verbs in +kubebuilder:webhook to "verbs=create;update;delete" if you want to enable deletion validation.
+func (v *validator) ValidateDelete(_ context.Context, obj runtime.Object) (admission.Warnings, error) {
+	tempo, ok := obj.(*v1alpha1.TempoStack)
+	if !ok {
+		return nil, apierrors.NewBadRequest(fmt.Sprintf("expected a TempoStack object but got %T", obj))
+	}
+	status.ClearTempoStackMetrics(tempo.Namespace, tempo.Name)
 	return nil, nil
 }
 

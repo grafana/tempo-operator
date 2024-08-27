@@ -40,3 +40,17 @@ func updateMetrics(metric *prometheus.GaugeVec, conditions []metav1.Condition, n
 		metric.WithLabelValues(namespace, name, condStr).Set(isActive)
 	}
 }
+
+func ClearTempoStackMetrics(namespace string, name string) {
+	for _, cond := range v1alpha1.AllStatusConditions {
+		condStr := string(cond)
+		metricTempoStackStatusCondition.WithLabelValues(namespace, name, condStr).Set(0)
+	}
+}
+
+func ClearMonolithicMetrics(namespace string, name string) {
+	for _, cond := range v1alpha1.AllStatusConditions {
+		condStr := string(cond)
+		metricTempoMonolithicStatusCondition.WithLabelValues(namespace, name, condStr).Set(0)
+	}
+}
