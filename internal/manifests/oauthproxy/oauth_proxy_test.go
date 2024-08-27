@@ -613,23 +613,3 @@ func TestAddServiceAccountAnnotations(t *testing.T) {
 		},
 	}, serviceAccounnt)
 }
-
-func TestOAuthCookieSessionSecret(t *testing.T) {
-	secret, err := OAuthCookieSessionSecret(metav1.ObjectMeta{
-		Name:      "test",
-		Namespace: "test-ns",
-	})
-
-	assert.NoError(t, err)
-	assert.Equal(t, &corev1.Secret{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      cookieSecretName("test"),
-			Labels:    manifestutils.ComponentLabels(manifestutils.QueryFrontendOauthProxyComponentName, "test"),
-			Namespace: "test-ns",
-		},
-		Data: map[string][]byte{
-			// Override this, because is random data, so we need to force to match
-			sessionSecretKey: secret.Data[sessionSecretKey],
-		},
-	}, secret)
-}

@@ -102,12 +102,7 @@ func BuildAll(opts Options) ([]client.Object, error) {
 				if serviceAccount != nil {
 					oauthproxy.AddServiceAccountAnnotations(serviceAccount, route.Name)
 				}
-				secret, err := oauthproxy.OAuthCookieSessionSecret(tempo.ObjectMeta)
 				oauthproxy.PatchRouteForOauthProxy(route)
-				if err != nil {
-					return nil, err
-				}
-				manifests = append(manifests, secret)
 			}
 		}
 	}

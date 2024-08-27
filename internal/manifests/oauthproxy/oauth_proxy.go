@@ -70,27 +70,6 @@ func PatchRouteForOauthProxy(route *routev1.Route) { // point route to the oauth
 	route.Spec.Port.TargetPort = intstr.FromString(manifestutils.OAuthProxyPortName)
 }
 
-// OAuthCookieSessionSecret returns a secret that contains the cookie secret used by oauth proxy.
-func OAuthCookieSessionSecret(tempo metav1.ObjectMeta) (*corev1.Secret, error) {
-	sessionSecret, err := generateProxySecret()
-
-	if err != nil {
-		return nil, err
-	}
-
-	labels := manifestutils.ComponentLabels(manifestutils.QueryFrontendOauthProxyComponentName, tempo.Name)
-	return &corev1.Secret{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      cookieSecretName(tempo.Name),
-			Labels:    labels,
-			Namespace: tempo.Namespace,
-		},
-		Data: map[string][]byte{
-			sessionSecretKey: []byte(sessionSecret),
-		},
-	}, nil
-}
-
 // PatchStatefulSetForOauthProxy returns a modified StatefulSet with the oauth sidecar container and the right service account.
 func PatchStatefulSetForOauthProxy(tempo metav1.ObjectMeta,
 	authSpec *v1alpha1.JaegerQueryAuthenticationSpec,
@@ -100,15 +79,6 @@ func PatchStatefulSetForOauthProxy(tempo metav1.ObjectMeta,
 		VolumeSource: corev1.VolumeSource{
 			Secret: &corev1.SecretVolumeSource{
 				SecretName: getTLSSecretNameForFrontendService(tempo.Name),
-			},
-		},
-	})
-
-	statefulSet.Spec.Template.Spec.Volumes = append(statefulSet.Spec.Template.Spec.Volumes, corev1.Volume{
-		Name: cookieSecretName(tempo.Name),
-		VolumeSource: corev1.VolumeSource{
-			Secret: &corev1.SecretVolumeSource{
-				SecretName: cookieSecretName(tempo.Name),
 			},
 		},
 	})
@@ -143,28 +113,15 @@ func PatchDeploymentForOauthProxy(
 	dep.Spec.Template.Spec.Containers = append(dep.Spec.Template.Spec.Containers,
 		oAuthProxyContainer(tempo.Name, naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name),
 			authSpec, oauthProxyImage))
-
-	dep.Spec.Template.Spec.Volumes = append(dep.Spec.Template.Spec.Volumes, corev1.Volume{
-		Name: cookieSecretName(tempo.Name),
-		VolumeSource: corev1.VolumeSource{
-			Secret: &corev1.SecretVolumeSource{
-				SecretName: cookieSecretName(tempo.Name),
-			},
-		},
-	})
 }
 
 func getTLSSecretNameForFrontendService(tempoName string) string {
 	return fmt.Sprintf("%s-ui-oauth-proxy-tls", tempoName)
 }
 
-func cookieSecretName(tempoName string) string {
-	return fmt.Sprintf("tempo-%s-cookie-proxy", tempoName)
-}
-
 func proxyInitArguments(serviceAccountName string) []string {
 	return []string{
-		fmt.Sprintf("--cookie-secret-file=%s/%s", oauthProxySecretMountPath, sessionSecretKey),
+		"--cookie-secret-file=/var/run/secrets/kubernetes.io/serviceaccount/token",
 		fmt.Sprintf("--https-address=:%d", manifestutils.OAuthProxyPort),
 		fmt.Sprintf("--openshift-service-account=%s", serviceAccountName),
 		"--provider=openshift",
@@ -201,14 +158,10 @@ func oAuthProxyContainer(
 				Name:          manifestutils.OAuthProxyPortName,
 			},
 		},
-		VolumeMounts: []corev1.VolumeMount{{
-			MountPath: tlsProxyPath,
-			Name:      getTLSSecretNameForFrontendService(tempo),
-		},
-
+		VolumeMounts: []corev1.VolumeMount{
 			{
-				MountPath: oauthProxySecretMountPath,
-				Name:      cookieSecretName(tempo),
+				MountPath: tlsProxyPath,
+				Name:      getTLSSecretNameForFrontendService(tempo),
 			},
 		},
 		Resources: *resources,

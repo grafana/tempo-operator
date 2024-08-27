@@ -8,5 +8,5 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 images:
 - name: controller
-  newName: ghcr.io/grafana/tempo-operator/tempo-operator
-  newTag: v0.12.0
+  newName: docker.io/pavolloffay/tempo-operator
+  newTag: v1724776589.0.0
