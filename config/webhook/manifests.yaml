@@ -47,6 +47,7 @@ webhooks:
     operations:
     - CREATE
     - UPDATE
+    - DELETE
     resources:
     - tempomonolithics
   sideEffects: None
@@ -67,6 +68,7 @@ webhooks:
     operations:
     - CREATE
     - UPDATE
+    - DELETE
     resources:
     - tempostacks
   sideEffects: None

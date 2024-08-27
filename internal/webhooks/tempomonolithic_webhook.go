@@ -18,6 +18,7 @@ import (
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	tempov1alpha1 "github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/handlers/storage"
+	"github.com/grafana/tempo-operator/internal/status"
 )
 
 // TempoMonolithicWebhook provides webhooks for TempoMonolithic CR.
@@ -32,7 +33,7 @@ func (w *TempoMonolithicWebhook) SetupWebhookWithManager(mgr ctrl.Manager, ctrlC
 		Complete()
 }
 
-//+kubebuilder:webhook:path=/validate-tempo-grafana-com-v1alpha1-tempomonolithic,mutating=false,failurePolicy=fail,sideEffects=None,groups=tempo.grafana.com,resources=tempomonolithics,verbs=create;update,versions=v1alpha1,name=vtempomonolithic.kb.io,admissionReviewVersions=v1
+//+kubebuilder:webhook:path=/validate-tempo-grafana-com-v1alpha1-tempomonolithic,mutating=false,failurePolicy=fail,sideEffects=None,groups=tempo.grafana.com,resources=tempomonolithics,verbs=create;update;delete,versions=v1alpha1,name=vtempomonolithic.kb.io,admissionReviewVersions=v1
 
 type monolithicValidator struct {
 	client     client.Client
@@ -50,8 +51,12 @@ func (v *monolithicValidator) ValidateUpdate(ctx context.Context, oldObj, newObj
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type.
-func (v *monolithicValidator) ValidateDelete(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
-	// TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
+func (v *monolithicValidator) ValidateDelete(_ context.Context, obj runtime.Object) (admission.Warnings, error) {
+	tempo, ok := obj.(*tempov1alpha1.TempoMonolithic)
+	if !ok {
+		return nil, apierrors.NewBadRequest(fmt.Sprintf("expected a TempoMonolithic object but got %T", obj))
+	}
+	status.ClearMonolithicMetrics(tempo.Namespace, tempo.Name)
 	return nil, nil
 }
 
