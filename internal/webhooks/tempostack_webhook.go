@@ -3,7 +3,6 @@ package webhooks
 import (
 	"context"
 	"fmt"
-	"github.com/grafana/tempo-operator/internal/status"
 	"math"
 	"net"
 	"strconv"
@@ -27,6 +26,7 @@ import (
 	"github.com/grafana/tempo-operator/internal/autodetect"
 	"github.com/grafana/tempo-operator/internal/handlers/storage"
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
+	"github.com/grafana/tempo-operator/internal/status"
 )
 
 var (

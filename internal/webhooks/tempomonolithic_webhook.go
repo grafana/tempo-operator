@@ -52,7 +52,6 @@ func (v *monolithicValidator) ValidateUpdate(ctx context.Context, oldObj, newObj
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type.
 func (v *monolithicValidator) ValidateDelete(_ context.Context, obj runtime.Object) (admission.Warnings, error) {
-	fmt.Println("monolithic delete")
 	tempo, ok := obj.(*tempov1alpha1.TempoMonolithic)
 	if !ok {
 		return nil, apierrors.NewBadRequest(fmt.Sprintf("expected a TempoMonolithic object but got %T", obj))
