@@ -41,6 +41,7 @@ func updateMetrics(metric *prometheus.GaugeVec, conditions []metav1.Condition, n
 	}
 }
 
+// ClearTempoStackMetrics sets status condition metrics to zero.
 func ClearTempoStackMetrics(namespace string, name string) {
 	for _, cond := range v1alpha1.AllStatusConditions {
 		condStr := string(cond)
@@ -48,6 +49,7 @@ func ClearTempoStackMetrics(namespace string, name string) {
 	}
 }
 
+// ClearMonolithicMetrics sets status condition metrics to zero.
 func ClearMonolithicMetrics(namespace string, name string) {
 	for _, cond := range v1alpha1.AllStatusConditions {
 		condStr := string(cond)
