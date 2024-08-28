@@ -3,6 +3,18 @@ Changes by Version
 
 <!-- next version -->
 
+## 0.13.0
+
+### 🧰 Bug fixes 🧰
+
+- `operator`: Fix service account for monitoring-view cluster role binding when using oauth proxy. (#1016)
+- `tempostack`: Fix setting annotations for Gateway route (#1014)
+- `tempostack, tempomonolithic`: Fix infinite reconciliation on OpenShift when route for Jaeger UI is enabled. (#1018)
+- `tempostack, tempomonolithic`: Cleanup instance metrics from the operator on instance delete action. (#1019)
+
+### Components
+- Tempo: [v2.5.0](https://github.com/grafana/tempo/releases/tag/v2.5.0)
+
 ## 0.12.0
 
 ### 💡 Enhancements 💡
