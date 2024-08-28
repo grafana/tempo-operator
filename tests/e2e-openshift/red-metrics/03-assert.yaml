@@ -48,4 +48,4 @@ roleRef:
   name: cluster-monitoring-view
 subjects:
 - kind: ServiceAccount
-  name: tempo-redmetrics
+  name: tempo-redmetrics-query-frontend
