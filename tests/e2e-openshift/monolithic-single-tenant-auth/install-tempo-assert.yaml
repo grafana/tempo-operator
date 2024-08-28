@@ -34,7 +34,7 @@ spec:
       - name: tempo
       - name: tempo-query
       - args:
-        - --cookie-secret-file=/etc/proxy/cookie//session_secret
+        - --cookie-secret-file=/var/run/secrets/kubernetes.io/serviceaccount/token
         - --https-address=:8443
         - --openshift-service-account=tempo-monolithic-st
         - --provider=openshift

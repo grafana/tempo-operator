@@ -83,11 +83,7 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 					tempo.Spec.Images, d)
 
 				oauthproxy.PatchQueryFrontEndService(getQueryFrontendService(tempo, svcs), tempo.Name)
-				secret, err := oauthproxy.OAuthCookieSessionSecret(tempo.ObjectMeta)
-				if err != nil {
-					return nil, err
-				}
-				manifests = append(manifests, oauthproxy.OAuthServiceAccount(params), secret)
+				manifests = append(manifests, oauthproxy.OAuthServiceAccount(params))
 				oauthproxy.PatchRouteForOauthProxy(routeObj)
 			}
 			manifests = append(manifests, routeObj)
