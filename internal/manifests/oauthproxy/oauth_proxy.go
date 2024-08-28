@@ -125,6 +125,10 @@ func proxyInitArguments(serviceAccountName string) []string {
 		// The proxy does not reload the token.
 		// If the token changes during lifetime of the proxy the already provisioned cookies
 		// are not invalidated.
+		// The SA token is invalidated when pod is deleted (or restarted) which logs out all users.
+		// An alternative approach would be to randomly generate the secret in the reconciliation
+		// loop and inject it as file/secret to directly via flag. The reconciliation loop would invalidate
+		// The token on every run.
 		"--cookie-secret-file=/var/run/secrets/kubernetes.io/serviceaccount/token",
 		fmt.Sprintf("--https-address=:%d", manifestutils.OAuthProxyPort),
 		fmt.Sprintf("--openshift-service-account=%s", serviceAccountName),
