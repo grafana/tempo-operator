@@ -38,7 +38,7 @@ func TestOauthProxyContainer(t *testing.T) {
 			name:          " no SAR",
 			expectedImage: customImage,
 			expectedArgs: []string{
-				fmt.Sprintf("--cookie-secret-file=%s/%s", oauthProxySecretMountPath, sessionSecretKey),
+				"--cookie-secret-file=/var/run/secrets/kubernetes.io/serviceaccount/token",
 				fmt.Sprintf("--https-address=:%d", manifestutils.OAuthProxyPort),
 				fmt.Sprintf("--openshift-service-account=%s", naming.Name(manifestutils.QueryFrontendComponentName, "test")),
 				"--provider=openshift",
@@ -68,7 +68,7 @@ func TestOauthProxyContainer(t *testing.T) {
 			name:          "SAR defined",
 			expectedImage: customImage,
 			expectedArgs: []string{
-				fmt.Sprintf("--cookie-secret-file=%s/%s", oauthProxySecretMountPath, sessionSecretKey),
+				"--cookie-secret-file=/var/run/secrets/kubernetes.io/serviceaccount/token",
 				fmt.Sprintf("--https-address=:%d", manifestutils.OAuthProxyPort),
 				fmt.Sprintf("--openshift-service-account=%s", naming.Name(manifestutils.QueryFrontendComponentName, "test2")),
 				"--provider=openshift",
@@ -128,11 +128,6 @@ func TestOauthProxyContainer(t *testing.T) {
 					MountPath: tlsProxyPath,
 					Name:      getTLSSecretNameForFrontendService(test.tempo.Name),
 				},
-
-					{
-						MountPath: oauthProxySecretMountPath,
-						Name:      cookieSecretName(test.tempo.Name),
-					},
 				},
 				Resources: manifestutils.Resources(test.tempo, manifestutils.QueryFrontendComponentName, &replicas),
 				Env:       proxy.ReadProxyVarsFromEnv(),
@@ -351,7 +346,7 @@ func TestPatchDeploymentForOauthProxy(t *testing.T) {
 	assert.Equal(t, 2, len(dep.Spec.Template.Spec.Containers))
 	assert.Equal(t, "oauth-proxy", dep.Spec.Template.Spec.Containers[1].Name)
 	assert.Equal(t, naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name), dep.Spec.Template.Spec.ServiceAccountName)
-	assert.Equal(t, 4, len(dep.Spec.Template.Spec.Volumes))
+	assert.Equal(t, 3, len(dep.Spec.Template.Spec.Volumes))
 
 }
 
@@ -489,7 +484,7 @@ func TestPatchStatefulSetForOauthProxy(t *testing.T) {
 	assert.Equal(t, 2, len(statefulSet.Spec.Template.Spec.Containers))
 	assert.Equal(t, "oauth-proxy", statefulSet.Spec.Template.Spec.Containers[1].Name)
 	assert.Equal(t, "tempo-test-serviceaccount", statefulSet.Spec.Template.Spec.ServiceAccountName)
-	assert.Equal(t, 4, len(statefulSet.Spec.Template.Spec.Volumes))
+	assert.Equal(t, 3, len(statefulSet.Spec.Template.Spec.Volumes))
 
 }
 
@@ -612,24 +607,4 @@ func TestAddServiceAccountAnnotations(t *testing.T) {
 			},
 		},
 	}, serviceAccounnt)
-}
-
-func TestOAuthCookieSessionSecret(t *testing.T) {
-	secret, err := OAuthCookieSessionSecret(metav1.ObjectMeta{
-		Name:      "test",
-		Namespace: "test-ns",
-	})
-
-	assert.NoError(t, err)
-	assert.Equal(t, &corev1.Secret{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      cookieSecretName("test"),
-			Labels:    manifestutils.ComponentLabels(manifestutils.QueryFrontendOauthProxyComponentName, "test"),
-			Namespace: "test-ns",
-		},
-		Data: map[string][]byte{
-			// Override this, because is random data, so we need to force to match
-			sessionSecretKey: secret.Data[sessionSecretKey],
-		},
-	}, secret)
 }

@@ -1,8 +1,6 @@
 package oauthproxy
 
 import (
-	"crypto/rand"
-	"encoding/base64"
 	"fmt"
 	"strings"
 
@@ -70,27 +68,6 @@ func PatchRouteForOauthProxy(route *routev1.Route) { // point route to the oauth
 	route.Spec.Port.TargetPort = intstr.FromString(manifestutils.OAuthProxyPortName)
 }
 
-// OAuthCookieSessionSecret returns a secret that contains the cookie secret used by oauth proxy.
-func OAuthCookieSessionSecret(tempo metav1.ObjectMeta) (*corev1.Secret, error) {
-	sessionSecret, err := generateProxySecret()
-
-	if err != nil {
-		return nil, err
-	}
-
-	labels := manifestutils.ComponentLabels(manifestutils.QueryFrontendOauthProxyComponentName, tempo.Name)
-	return &corev1.Secret{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      cookieSecretName(tempo.Name),
-			Labels:    labels,
-			Namespace: tempo.Namespace,
-		},
-		Data: map[string][]byte{
-			sessionSecretKey: []byte(sessionSecret),
-		},
-	}, nil
-}
-
 // PatchStatefulSetForOauthProxy returns a modified StatefulSet with the oauth sidecar container and the right service account.
 func PatchStatefulSetForOauthProxy(tempo metav1.ObjectMeta,
 	authSpec *v1alpha1.JaegerQueryAuthenticationSpec,
@@ -100,15 +77,6 @@ func PatchStatefulSetForOauthProxy(tempo metav1.ObjectMeta,
 		VolumeSource: corev1.VolumeSource{
 			Secret: &corev1.SecretVolumeSource{
 				SecretName: getTLSSecretNameForFrontendService(tempo.Name),
-			},
-		},
-	})
-
-	statefulSet.Spec.Template.Spec.Volumes = append(statefulSet.Spec.Template.Spec.Volumes, corev1.Volume{
-		Name: cookieSecretName(tempo.Name),
-		VolumeSource: corev1.VolumeSource{
-			Secret: &corev1.SecretVolumeSource{
-				SecretName: cookieSecretName(tempo.Name),
 			},
 		},
 	})
@@ -143,28 +111,25 @@ func PatchDeploymentForOauthProxy(
 	dep.Spec.Template.Spec.Containers = append(dep.Spec.Template.Spec.Containers,
 		oAuthProxyContainer(tempo.Name, naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name),
 			authSpec, oauthProxyImage))
-
-	dep.Spec.Template.Spec.Volumes = append(dep.Spec.Template.Spec.Volumes, corev1.Volume{
-		Name: cookieSecretName(tempo.Name),
-		VolumeSource: corev1.VolumeSource{
-			Secret: &corev1.SecretVolumeSource{
-				SecretName: cookieSecretName(tempo.Name),
-			},
-		},
-	})
 }
 
 func getTLSSecretNameForFrontendService(tempoName string) string {
 	return fmt.Sprintf("%s-ui-oauth-proxy-tls", tempoName)
 }
 
-func cookieSecretName(tempoName string) string {
-	return fmt.Sprintf("tempo-%s-cookie-proxy", tempoName)
-}
-
 func proxyInitArguments(serviceAccountName string) []string {
 	return []string{
-		fmt.Sprintf("--cookie-secret-file=%s/%s", oauthProxySecretMountPath, sessionSecretKey),
+		// The SA Token is injected by admission controller by adding a volume via pod mutation
+		// In Kubernetes 1.24 the SA token is short-lived (default 1h)
+		// The proxy loads the token at startup and uses it as secret to encrypt cookies.
+		// The proxy does not reload the token.
+		// If the token changes during lifetime of the proxy the already provisioned cookies
+		// are not invalidated.
+		// The SA token is invalidated when pod is deleted (or restarted) which logs out all users.
+		// An alternative approach would be to randomly generate the secret in the reconciliation
+		// loop and inject it as file/secret to directly via flag. The reconciliation loop would invalidate
+		// The token on every run.
+		"--cookie-secret-file=/var/run/secrets/kubernetes.io/serviceaccount/token",
 		fmt.Sprintf("--https-address=:%d", manifestutils.OAuthProxyPort),
 		fmt.Sprintf("--openshift-service-account=%s", serviceAccountName),
 		"--provider=openshift",
@@ -201,14 +166,10 @@ func oAuthProxyContainer(
 				Name:          manifestutils.OAuthProxyPortName,
 			},
 		},
-		VolumeMounts: []corev1.VolumeMount{{
-			MountPath: tlsProxyPath,
-			Name:      getTLSSecretNameForFrontendService(tempo),
-		},
-
+		VolumeMounts: []corev1.VolumeMount{
 			{
-				MountPath: oauthProxySecretMountPath,
-				Name:      cookieSecretName(tempo),
+				MountPath: tlsProxyPath,
+				Name:      getTLSSecretNameForFrontendService(tempo),
 			},
 		},
 		Resources: *resources,
@@ -245,15 +206,6 @@ func PatchQueryFrontEndService(service *corev1.Service, tempo string) {
 		Port:       manifestutils.OAuthProxyPort,
 		TargetPort: intstr.FromString(manifestutils.OAuthProxyPortName),
 	})
-}
-
-func generateProxySecret() (string, error) {
-	randomBytes := make([]byte, minBytesRequiredByCookieValue)
-	_, err := rand.Read(randomBytes)
-	if err != nil {
-		return "", err
-	}
-	return base64.StdEncoding.EncodeToString(randomBytes), nil
 }
 
 func getOAuthRedirectReference(routeName string) string {
