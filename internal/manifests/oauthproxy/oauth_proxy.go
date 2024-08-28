@@ -119,6 +119,12 @@ func getTLSSecretNameForFrontendService(tempoName string) string {
 
 func proxyInitArguments(serviceAccountName string) []string {
 	return []string{
+		// The SA Token is injected by admission controller by adding a volume via pod mutation
+		// In Kubernetes 1.24 the SA token is short-lived (default 1h)
+		// The proxy loads the token at startup and uses it as secret to encrypt cookies.
+		// The proxy does not reload the token.
+		// If the token changes during lifetime of the proxy the already provisioned cookies
+		// are not invalidated.
 		"--cookie-secret-file=/var/run/secrets/kubernetes.io/serviceaccount/token",
 		fmt.Sprintf("--https-address=:%d", manifestutils.OAuthProxyPort),
 		fmt.Sprintf("--openshift-service-account=%s", serviceAccountName),
