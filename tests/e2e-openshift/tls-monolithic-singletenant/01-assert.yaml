@@ -32,6 +32,19 @@ spec:
     spec:
       containers:
       - name: tempo
+        ports:
+        - containerPort: 3200
+          name: http
+          protocol: TCP
+        - containerPort: 3101
+          name: tempo-internal
+          protocol: TCP
+        - containerPort: 4317
+          name: otlp-grpc
+          protocol: TCP
+        - containerPort: 4318
+          name: otlp-http
+          protocol: TCP
         volumeMounts:
         - mountPath: /conf
           name: tempo-conf
@@ -55,8 +68,6 @@ spec:
         volumeMounts:
         - mountPath: /etc/tls/private
           name: mono-ui-oauth-proxy-tls
-        - mountPath: /etc/proxy/cookie/
-          name: tempo-mono-cookie-proxy
       volumes:
       - configMap:
           defaultMode: 420
@@ -76,12 +87,9 @@ spec:
         secret:
           defaultMode: 420
           secretName: mono-ui-oauth-proxy-tls
-      - name: tempo-mono-cookie-proxy
-        secret:
-          defaultMode: 420
-          secretName: tempo-mono-cookie-proxy
 status:
   availableReplicas: 1
+  currentReplicas: 1
   readyReplicas: 1
   replicas: 1
 
