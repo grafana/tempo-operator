@@ -5,6 +5,7 @@ metadata:
   creationTimestamp: null
   name: tls-singletenant
 spec:
+  namespace: chainsaw-tls-singletenant
   steps:
   - name: step-00
     try:
