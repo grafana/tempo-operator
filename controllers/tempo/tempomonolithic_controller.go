@@ -57,6 +57,8 @@ func (r *TempoMonolithicReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 			log.Error(err, "unable to fetch TempoMonolithic")
 			return ctrl.Result{}, fmt.Errorf("could not fetch tempo: %w", err)
 		}
+		// instance is not found, metrics can be cleared
+		status.ClearMonolithicMetrics(req.Namespace, req.Name)
 
 		// we'll ignore not-found errors, since they can't be fixed by an immediate
 		// requeue (we'll need to wait for a new notification), and we can get them
