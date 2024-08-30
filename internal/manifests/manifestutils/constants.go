@@ -58,6 +58,11 @@ const (
 	// PortJaegerGRPCQuery declares the port number of the Jaeger UI gPRC port.
 	PortJaegerGRPCQuery = 16685
 
+	// TempoGRPCQuery declares the name of the Jaeger UI gPRC port.
+	TempoGRPCQuery = "proxy-grpc"
+	// PortTempoGRPCQuery declares the port number of the Tempo storage gPRC port.
+	PortTempoGRPCQuery = 7777
+
 	// JaegerMetricsPortName declares the name of the Jaeger UI metrics port.
 	JaegerMetricsPortName = "jaeger-metrics"
 	// PortJaegerMetrics declares the port number of the Jaeger UI metrics port.
@@ -126,6 +131,8 @@ const (
 	DistributorComponentName = "distributor"
 	// QueryFrontendComponentName declares the internal name of the query-frontend component.
 	QueryFrontendComponentName = "query-frontend"
+	// JaegerFrontendComponentName declares the internal name of the jaeger-frontend component.
+	JaegerFrontendComponentName = "jaeger-frontend"
 
 	// QueryFrontendOauthProxyComponentName declares the internal name of the query-frontend-proxy component.
 	QueryFrontendOauthProxyComponentName = "query-frontend-proxy"

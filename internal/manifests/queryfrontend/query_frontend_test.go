@@ -181,12 +181,12 @@ func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 							},
 							Resources: corev1.ResourceRequirements{
 								Limits: corev1.ResourceList{
-									corev1.ResourceCPU:    *resource.NewMilliQuantity(90, resource.BinarySI),
-									corev1.ResourceMemory: *resource.NewQuantity(107374184, resource.BinarySI),
+									corev1.ResourceCPU:    *resource.NewMilliQuantity(45, resource.BinarySI),
+									corev1.ResourceMemory: *resource.NewQuantity(53687092, resource.BinarySI),
 								},
 								Requests: corev1.ResourceList{
-									corev1.ResourceCPU:    *resource.NewMilliQuantity(27, resource.BinarySI),
-									corev1.ResourceMemory: *resource.NewQuantity(32212256, resource.BinarySI),
+									corev1.ResourceCPU:    *resource.NewMilliQuantity(13, resource.BinarySI),
+									corev1.ResourceMemory: *resource.NewQuantity(16106128, resource.BinarySI),
 								},
 							},
 							SecurityContext: manifestutils.TempoContainerSecurityContext(),
@@ -217,12 +217,13 @@ func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 
 	if withJaeger {
 		jaegerQueryContainer := corev1.Container{
-			Name:  "tempo-query",
-			Image: "docker.io/grafana/tempo-query:1.5.0",
+			Name:  "jaeger-query",
+			Image: "docker.io/jaegertracing/jaeger-query:1.60",
 			Env:   []corev1.EnvVar{},
 			Args: []string{
 				"--query.base-path=/",
-				"--grpc-storage-plugin.configuration-file=/conf/tempo-query.yaml",
+				"--span-storage.type=grpc",
+				"--grpc-storage.server=localhost:7777",
 				"--query.bearer-token-propagation=true",
 			},
 			Ports: []corev1.ContainerPort{
@@ -244,23 +245,18 @@ func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 			},
 			VolumeMounts: []corev1.VolumeMount{
 				{
-					Name:      manifestutils.ConfigVolumeName,
-					MountPath: "/conf",
-					ReadOnly:  true,
-				},
-				{
 					Name:      manifestutils.TmpStorageVolumeName + "-query",
 					MountPath: manifestutils.TmpStoragePath,
 				},
 			},
 			Resources: corev1.ResourceRequirements{
 				Limits: corev1.ResourceList{
-					corev1.ResourceCPU:    *resource.NewMilliQuantity(90, resource.BinarySI),
-					corev1.ResourceMemory: *resource.NewQuantity(107374184, resource.BinarySI),
+					corev1.ResourceCPU:    *resource.NewMilliQuantity(45, resource.BinarySI),
+					corev1.ResourceMemory: *resource.NewQuantity(53687092, resource.BinarySI),
 				},
 				Requests: corev1.ResourceList{
-					corev1.ResourceCPU:    *resource.NewMilliQuantity(27, resource.BinarySI),
-					corev1.ResourceMemory: *resource.NewQuantity(32212256, resource.BinarySI),
+					corev1.ResourceCPU:    *resource.NewMilliQuantity(13, resource.BinarySI),
+					corev1.ResourceMemory: *resource.NewQuantity(16106128, resource.BinarySI),
 				},
 			},
 			SecurityContext: manifestutils.TempoContainerSecurityContext(),
@@ -271,9 +267,45 @@ func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 				EmptyDir: &corev1.EmptyDirVolumeSource{},
 			},
 		}
+
+		tempoQueryContainer := corev1.Container{
+			Name:  "tempo-query",
+			Image: "docker.io/grafana/tempo-query:1.5.0",
+			Env:   []corev1.EnvVar{},
+			Args: []string{
+				"-config=/conf/tempo-query.yaml",
+			},
+			Ports: []corev1.ContainerPort{
+				{
+					Name:          manifestutils.TempoGRPCQuery,
+					ContainerPort: manifestutils.PortTempoGRPCQuery,
+					Protocol:      corev1.ProtocolTCP,
+				},
+			},
+			VolumeMounts: []corev1.VolumeMount{
+				{
+					Name:      manifestutils.ConfigVolumeName,
+					MountPath: "/conf",
+					ReadOnly:  true,
+				},
+			},
+			Resources: corev1.ResourceRequirements{
+				Limits: corev1.ResourceList{
+					corev1.ResourceCPU:    *resource.NewMilliQuantity(45, resource.BinarySI),
+					corev1.ResourceMemory: *resource.NewQuantity(53687092, resource.BinarySI),
+				},
+				Requests: corev1.ResourceList{
+					corev1.ResourceCPU:    *resource.NewMilliQuantity(13, resource.BinarySI),
+					corev1.ResourceMemory: *resource.NewQuantity(16106128, resource.BinarySI),
+				},
+			},
+			SecurityContext: manifestutils.TempoContainerSecurityContext(),
+		}
+
 		//expectedDeployment.Spec.Template.Spec.Containers
 
 		expectedDeployment.Spec.Template.Spec.Containers = append(expectedDeployment.Spec.Template.Spec.Containers, jaegerQueryContainer)
+		expectedDeployment.Spec.Template.Spec.Containers = append(expectedDeployment.Spec.Template.Spec.Containers, tempoQueryContainer)
 		expectedDeployment.Spec.Template.Spec.Volumes = append(expectedDeployment.Spec.Template.Spec.Volumes, jaegerQueryVolume)
 		expectedDeployment.Spec.Template.Spec.NodeSelector = map[string]string{"a": "b"}
 		expectedDeployment.Spec.Template.Spec.Tolerations = []corev1.Toleration{{Key: "c"}}
@@ -335,8 +367,9 @@ func TestBuildQueryFrontendWithJaeger(t *testing.T) {
 		},
 		Spec: v1alpha1.TempoStackSpec{
 			Images: configv1alpha1.ImagesSpec{
-				Tempo:      "docker.io/grafana/tempo:1.5.0",
-				TempoQuery: "docker.io/grafana/tempo-query:1.5.0",
+				Tempo:       "docker.io/grafana/tempo:1.5.0",
+				TempoQuery:  "docker.io/grafana/tempo-query:1.5.0",
+				JaegerQuery: "docker.io/jaegertracing/jaeger-query:1.60",
 			},
 			ServiceAccount: "tempo-test-serviceaccount",
 			Template: v1alpha1.TempoTemplateSpec{
@@ -524,7 +557,7 @@ func TestQueryFrontendJaegerTLS(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, 3, len(objects))
 	deployment := objects[2].(*v1.Deployment)
-	require.Len(t, deployment.Spec.Template.Spec.Containers, 2)
+	require.Len(t, deployment.Spec.Template.Spec.Containers, 3)
 	jaegerContainer := deployment.Spec.Template.Spec.Containers[1]
 	args := jaegerContainer.Args
 	assert.Contains(t, args, "--query.http.tls.enabled=true")
@@ -563,7 +596,7 @@ func TestBuildQueryFrontendWithJaegerMonitorTab(t *testing.T) {
 				},
 			},
 			env:  []corev1.EnvVar{},
-			args: []string{"--query.base-path=/", "--grpc-storage-plugin.configuration-file=/conf/tempo-query.yaml", "--query.bearer-token-propagation=true"},
+			args: []string{"--query.base-path=/", "--span-storage.type=grpc", "--grpc-storage.server=localhost:7777", "--query.bearer-token-propagation=true"},
 		},
 		{
 			name: "custom prometheus",
@@ -582,7 +615,7 @@ func TestBuildQueryFrontendWithJaegerMonitorTab(t *testing.T) {
 					},
 				},
 			},
-			args: []string{"--query.base-path=/", "--grpc-storage-plugin.configuration-file=/conf/tempo-query.yaml", "--query.bearer-token-propagation=true", "--prometheus.query.support-spanmetrics-connector"},
+			args: []string{"--query.base-path=/", "--span-storage.type=grpc", "--grpc-storage.server=localhost:7777", "--query.bearer-token-propagation=true", "--prometheus.query.support-spanmetrics-connector"},
 			env:  []corev1.EnvVar{{Name: "METRICS_STORAGE_TYPE", Value: "prometheus"}, {Name: "PROMETHEUS_SERVER_URL", Value: "http://prometheus:9091"}},
 		},
 		{
@@ -607,7 +640,8 @@ func TestBuildQueryFrontendWithJaegerMonitorTab(t *testing.T) {
 			},
 			args: []string{
 				"--query.base-path=/",
-				"--grpc-storage-plugin.configuration-file=/conf/tempo-query.yaml",
+				"--span-storage.type=grpc",
+				"--grpc-storage.server=localhost:7777",
 				"--query.bearer-token-propagation=true",
 				"--prometheus.query.support-spanmetrics-connector",
 				"--prometheus.tls.enabled=true",

@@ -119,8 +119,15 @@ func resources(tempo v1alpha1.TempoStack) corev1.ResourceRequirements {
 }
 
 func tempoQueryResources(tempo v1alpha1.TempoStack) corev1.ResourceRequirements {
-	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Resources == nil {
+	if tempo.Spec.Template.QueryFrontend.JaegerQuery.TempoQuery.Resources == nil {
 		return manifestutils.Resources(tempo, manifestutils.QueryFrontendComponentName, tempo.Spec.Template.QueryFrontend.Replicas)
+	}
+	return *tempo.Spec.Template.QueryFrontend.JaegerQuery.Resources
+}
+
+func jaegerQueryResources(tempo v1alpha1.TempoStack) corev1.ResourceRequirements {
+	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Resources == nil {
+		return manifestutils.Resources(tempo, manifestutils.JaegerFrontendComponentName, tempo.Spec.Template.QueryFrontend.Replicas)
 	}
 	return *tempo.Spec.Template.QueryFrontend.JaegerQuery.Resources
 }
@@ -134,6 +141,11 @@ func deployment(params manifestutils.Params) (*appsv1.Deployment, error) {
 	if tempoImage == "" {
 		tempoImage = params.CtrlConfig.DefaultImages.Tempo
 	}
+	jaegerQueryImage := tempo.Spec.Images.JaegerQuery
+	if jaegerQueryImage == "" {
+		jaegerQueryImage = params.CtrlConfig.DefaultImages.JaegerQuery
+	}
+
 	tempoQueryImage := tempo.Spec.Images.TempoQuery
 	if tempoQueryImage == "" {
 		tempoQueryImage = params.CtrlConfig.DefaultImages.TempoQuery
@@ -227,12 +239,13 @@ func deployment(params manifestutils.Params) (*appsv1.Deployment, error) {
 
 	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled {
 		jaegerQueryContainer := corev1.Container{
-			Name:  "tempo-query",
-			Image: tempoQueryImage,
+			Name:  "jaeger-query",
+			Image: jaegerQueryImage,
 			Env:   proxy.ReadProxyVarsFromEnv(),
 			Args: []string{
 				"--query.base-path=/",
-				"--grpc-storage-plugin.configuration-file=/conf/tempo-query.yaml",
+				"--span-storage.type=grpc",
+				"--grpc-storage.server=localhost:7777",
 				"--query.bearer-token-propagation=true",
 			},
 			Ports: []corev1.ContainerPort{
@@ -254,13 +267,33 @@ func deployment(params manifestutils.Params) (*appsv1.Deployment, error) {
 			},
 			VolumeMounts: []corev1.VolumeMount{
 				{
+					Name:      manifestutils.TmpStorageVolumeName + "-query",
+					MountPath: manifestutils.TmpStoragePath,
+				},
+			},
+			Resources:       jaegerQueryResources(tempo),
+			SecurityContext: manifestutils.TempoContainerSecurityContext(),
+		}
+
+		tempoProxyContainer := corev1.Container{
+			Name:  "tempo-query",
+			Image: tempoQueryImage,
+			Env:   proxy.ReadProxyVarsFromEnv(),
+			Args: []string{
+				"-config=/conf/tempo-query.yaml",
+			},
+			Ports: []corev1.ContainerPort{
+				{
+					Name:          manifestutils.TempoGRPCQuery,
+					ContainerPort: manifestutils.PortTempoGRPCQuery,
+					Protocol:      corev1.ProtocolTCP,
+				},
+			},
+			VolumeMounts: []corev1.VolumeMount{
+				{
 					Name:      manifestutils.ConfigVolumeName,
 					MountPath: "/conf",
 					ReadOnly:  true,
-				},
-				{
-					Name:      manifestutils.TmpStorageVolumeName + "-query",
-					MountPath: manifestutils.TmpStoragePath,
 				},
 			},
 			Resources:       tempoQueryResources(tempo),
@@ -308,6 +341,7 @@ func deployment(params manifestutils.Params) (*appsv1.Deployment, error) {
 		}
 
 		d.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, jaegerQueryContainer)
+		d.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, tempoProxyContainer)
 		d.Spec.Template.Spec.Volumes = append(d.Spec.Template.Spec.Volumes, jaegerQueryVolume)
 	}
 

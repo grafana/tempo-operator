@@ -617,8 +617,9 @@ func TestPruneIngress(t *testing.T) {
 		},
 		Spec: v1alpha1.TempoStackSpec{
 			Images: configv1alpha1.ImagesSpec{
-				Tempo:      "docker.io/grafana/tempo:1.5.0",
-				TempoQuery: "docker.io/grafana/tempo-query:1.5.0",
+				Tempo:       "docker.io/grafana/tempo:1.5.0",
+				TempoQuery:  "docker.io/grafana/tempo-query:1.5.0",
+				JaegerQuery: "docker.io/jaegertracing/jaeger-query:1.60",
 			},
 			Storage: v1alpha1.ObjectStorageSpec{
 				Secret: v1alpha1.ObjectStorageSecretSpec{
@@ -712,6 +713,7 @@ func TestK8SGatewaySecret(t *testing.T) {
 				Tempo:        "docker.io/grafana/tempo:1.5.0",
 				TempoQuery:   "docker.io/grafana/tempo-query:1.5.0",
 				TempoGateway: "docker.io/observatorium/api:1.5.0",
+				JaegerQuery:  "docker.io/jaegertracing/jaeger-query:1.60",
 			},
 			LimitSpec: v1alpha1.LimitSpec{
 				PerTenant: map[string]v1alpha1.RateLimitSpec{},
