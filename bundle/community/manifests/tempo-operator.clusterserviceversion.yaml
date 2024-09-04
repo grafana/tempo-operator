@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.13.0
-    createdAt: "2024-08-28T09:48:15Z"
+    createdAt: "2024-09-04T09:14:02Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -1022,6 +1022,13 @@ spec:
           in the services list
         displayName: ServicesQueryDuration
         path: template.queryFrontend.jaegerQuery.servicesQueryDuration
+      - description: TempoQuery defines options specific to the Tempoo Query component.
+        displayName: Tempo Query Settings
+        path: template.queryFrontend.jaegerQuery.tempoQuery
+      - description: Resources defines resources for this component, this will override
+          the calculated resources derived from total
+        displayName: Resources
+        path: template.queryFrontend.jaegerQuery.tempoQuery.resources
       - description: NodeSelector defines the simple form of the node-selection constraint.
         displayName: Node Selector
         path: template.queryFrontend.nodeSelector
@@ -1392,8 +1399,10 @@ spec:
                 env:
                 - name: RELATED_IMAGE_TEMPO
                   value: docker.io/grafana/tempo:2.5.0
+                - name: RELATED_IMAGE_JAEGER_QUERY
+                  value: docker.io/jaegertracing/jaeger-query:1.60
                 - name: RELATED_IMAGE_TEMPO_QUERY
-                  value: docker.io/grafana/tempo-query:2.5.0
+                  value: docker.io/grafana/tempo-query:main-2999520
                 - name: RELATED_IMAGE_TEMPO_GATEWAY
                   value: quay.io/observatorium/api:main-2024-08-05-11d0d94
                 - name: RELATED_IMAGE_TEMPO_GATEWAY_OPA
@@ -1540,7 +1549,9 @@ spec:
   relatedImages:
   - image: docker.io/grafana/tempo:2.5.0
     name: tempo
-  - image: docker.io/grafana/tempo-query:2.5.0
+  - image: docker.io/jaegertracing/jaeger-query:1.60
+    name: jaeger-query
+  - image: docker.io/grafana/tempo-query:main-2999520
     name: tempo-query
   - image: quay.io/observatorium/api:main-2024-08-05-11d0d94
     name: tempo-gateway
