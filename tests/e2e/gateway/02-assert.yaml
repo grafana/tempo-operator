@@ -154,4 +154,5 @@ spec:
     spec:
       containers:
         - name: tempo
+        - name: jaeger-query
         - name: tempo-query
