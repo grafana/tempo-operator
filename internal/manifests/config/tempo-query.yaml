@@ -1,3 +1,4 @@
+address: 127.0.0.1:7777
 backend: 127.0.0.1:{{ .HTTPPort }}
 tenant_header_key: {{ .TenantHeader }}
 {{- if and .Gates.HTTPEncryption .Gateway }}

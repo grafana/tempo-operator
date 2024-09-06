@@ -21,6 +21,7 @@ func (c *ProjectConfig) Validate() error {
 	// Validate container images if set
 	for envName, envValue := range map[string]string{
 		EnvRelatedImageTempo:           c.DefaultImages.Tempo,
+		EnvRelatedImageJaegerQuery:     c.DefaultImages.JaegerQuery,
 		EnvRelatedImageTempoQuery:      c.DefaultImages.TempoQuery,
 		EnvRelatedImageTempoGateway:    c.DefaultImages.TempoGateway,
 		EnvRelatedImageTempoGatewayOpa: c.DefaultImages.TempoGatewayOpa,

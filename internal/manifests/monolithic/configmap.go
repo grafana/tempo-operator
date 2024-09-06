@@ -94,6 +94,7 @@ type tempoConfig struct {
 }
 
 type tempoQueryConfig struct {
+	Address               string        `yaml:"address"`
 	Backend               string        `yaml:"backend"`
 	TenantHeaderKey       string        `yaml:"tenant_header_key"`
 	ServicesQueryDuration time.Duration `yaml:"services_query_duration"`
@@ -285,6 +286,7 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 
 func buildTempoQueryConfig(jaegerUISpec *v1alpha1.MonolithicJaegerUISpec) ([]byte, error) {
 	config := tempoQueryConfig{}
+	config.Address = fmt.Sprintf("127.0.0.1:%d", manifestutils.PortTempoGRPCQuery)
 	config.Backend = fmt.Sprintf("127.0.0.1:%d", manifestutils.PortHTTPServer)
 	config.TenantHeaderKey = manifestutils.TenantHeader
 	config.ServicesQueryDuration = jaegerUISpec.ServicesQueryDuration.Duration

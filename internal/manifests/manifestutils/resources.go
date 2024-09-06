@@ -16,19 +16,21 @@ type componentResource struct {
 
 var (
 	resourcesMapNoGateway = map[string]componentResource{
-		"distributor":    {cpu: 0.27, memory: 0.12},
-		"ingester":       {cpu: 0.38, memory: 0.5},
-		"compactor":      {cpu: 0.16, memory: 0.18},
-		"querier":        {cpu: 0.1, memory: 0.15},
-		"query-frontend": {cpu: 0.09, memory: 0.05},
+		"distributor":     {cpu: 0.27, memory: 0.12},
+		"ingester":        {cpu: 0.38, memory: 0.5},
+		"compactor":       {cpu: 0.16, memory: 0.18},
+		"querier":         {cpu: 0.1, memory: 0.15},
+		"query-frontend":  {cpu: 0.045, memory: 0.025},
+		"jaeger-frontend": {cpu: 0.045, memory: 0.025},
 	}
 	resourcesMapWithGateway = map[string]componentResource{
-		"distributor":    {cpu: 0.26, memory: 0.11},
-		"ingester":       {cpu: 0.36, memory: 0.49},
-		"compactor":      {cpu: 0.15, memory: 0.17},
-		"querier":        {cpu: 0.09, memory: 0.14},
-		"query-frontend": {cpu: 0.08, memory: 0.04},
-		"gateway":        {cpu: 0.06, memory: 0.05},
+		"distributor":     {cpu: 0.26, memory: 0.11},
+		"ingester":        {cpu: 0.36, memory: 0.49},
+		"compactor":       {cpu: 0.15, memory: 0.17},
+		"querier":         {cpu: 0.09, memory: 0.14},
+		"query-frontend":  {cpu: 0.04, memory: 0.02},
+		"jaeger-frontend": {cpu: 0.04, memory: 0.02},
+		"gateway":         {cpu: 0.06, memory: 0.05},
 	}
 )
 

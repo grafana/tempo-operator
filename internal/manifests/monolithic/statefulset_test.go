@@ -876,7 +876,7 @@ func TestStatefulsetGateway(t *testing.T) {
 			},
 		},
 		SecurityContext: manifestutils.TempoContainerSecurityContext(),
-	}, sts.Spec.Template.Spec.Containers[2])
+	}, sts.Spec.Template.Spec.Containers[3])
 
 	require.Equal(t, []corev1.Volume{
 		{
@@ -988,5 +988,5 @@ func TestStatefulsetGateway(t *testing.T) {
 				corev1.ResourceMemory: resource.MustParse("4Gi"),
 			},
 		},
-	}, sts.Spec.Template.Spec.Containers[3])
+	}, sts.Spec.Template.Spec.Containers[4])
 }
