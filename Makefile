@@ -1,7 +1,8 @@
 # Current Operator version
 OPERATOR_VERSION ?= 0.13.0
 TEMPO_VERSION ?= 2.5.0
-TEMPO_QUERY_VERSION ?= 2.5.0
+TEMPO_QUERY_VERSION ?= main-2999520
+JAEGER_QUERY_VERSION ?= 1.60
 TEMPO_GATEWAY_VERSION ?= main-2024-08-05-11d0d94
 TEMPO_GATEWAY_OPA_VERSION ?= main-2024-04-29-914c13f
 OAUTH_PROXY_VERSION=4.12
@@ -10,6 +11,7 @@ MIN_KUBERNETES_VERSION ?= 1.25.0
 MIN_OPENSHIFT_VERSION ?= 4.12
 
 TEMPO_IMAGE ?= docker.io/grafana/tempo:$(TEMPO_VERSION)
+JAEGER_QUERY_IMAGE ?= docker.io/jaegertracing/jaeger-query:$(JAEGER_QUERY_VERSION)
 TEMPO_QUERY_IMAGE ?= docker.io/grafana/tempo-query:$(TEMPO_QUERY_VERSION)
 TEMPO_GATEWAY_IMAGE ?= quay.io/observatorium/api:$(TEMPO_GATEWAY_VERSION)
 TEMPO_GATEWAY_OPA_IMAGE ?= quay.io/observatorium/opa-openshift:$(TEMPO_GATEWAY_OPA_VERSION)
@@ -115,6 +117,7 @@ help: ## Display this help.
 .PHONY: manifests
 manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
 	sed -i '/RELATED_IMAGE_TEMPO$$/{n;s@value: .*@value: $(TEMPO_IMAGE)@}' config/manager/manager.yaml
+	sed -i '/RELATED_IMAGE_JAEGER_QUERY$$/{n;s@value: .*@value: $(JAEGER_QUERY_IMAGE)@}' config/manager/manager.yaml
 	sed -i '/RELATED_IMAGE_TEMPO_QUERY$$/{n;s@value: .*@value: $(TEMPO_QUERY_IMAGE)@}' config/manager/manager.yaml
 	sed -i '/RELATED_IMAGE_TEMPO_GATEWAY$$/{n;s@value: .*@value: $(TEMPO_GATEWAY_IMAGE)@}' config/manager/manager.yaml
 	sed -i '/RELATED_IMAGE_TEMPO_GATEWAY_OPA$$/{n;s@value: .*@value: $(TEMPO_GATEWAY_OPA_IMAGE)@}' config/manager/manager.yaml
@@ -151,6 +154,7 @@ run: manifests generate ## Run a controller from your host.
 	-kubectl delete validatingwebhookconfigurations.admissionregistration.k8s.io tempo-operator-validating-webhook-configuration
 	ENABLE_WEBHOOKS=false \
 	RELATED_IMAGE_TEMPO=$(TEMPO_IMAGE) \
+	RELATED_IMAGE_JAEGER_QUERY=$(JAEGER_QUERY_IMAGE) \
 	RELATED_IMAGE_TEMPO_QUERY=$(TEMPO_QUERY_IMAGE) \
 	RELATED_IMAGE_TEMPO_GATEWAY=$(TEMPO_GATEWAY_IMAGE) \
 	RELATED_IMAGE_TEMPO_GATEWAY_OPA=$(TEMPO_GATEWAY_OPA_IMAGE) \

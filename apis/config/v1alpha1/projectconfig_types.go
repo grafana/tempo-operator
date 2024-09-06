@@ -11,6 +11,9 @@ const (
 	// EnvRelatedImageTempo contains the name of the environment variable where the tempo image location is stored.
 	EnvRelatedImageTempo = "RELATED_IMAGE_TEMPO"
 
+	// EnvRelatedImageJaegerQuery contains the name of the environment variable where the jaegerQuery image location is stored.
+	EnvRelatedImageJaegerQuery = "RELATED_IMAGE_JAEGER_QUERY"
+
 	// EnvRelatedImageTempoQuery contains the name of the environment variable where the tempoQuery image location is stored.
 	EnvRelatedImageTempoQuery = "RELATED_IMAGE_TEMPO_QUERY"
 
@@ -35,6 +38,11 @@ type ImagesSpec struct {
 	//
 	// +optional
 	TempoQuery string `json:"tempoQuery,omitempty"`
+
+	// JaegerQuery defines the tempo-query container image.
+	//
+	// +optional
+	JaegerQuery string `json:"jaegerQuery,omitempty"`
 
 	// TempoGateway defines the tempo-gateway container image.
 	//
@@ -242,6 +250,7 @@ func DefaultProjectConfig() ProjectConfig {
 	return ProjectConfig{
 		DefaultImages: ImagesSpec{
 			Tempo:           os.Getenv(EnvRelatedImageTempo),
+			JaegerQuery:     os.Getenv(EnvRelatedImageJaegerQuery),
 			TempoQuery:      os.Getenv(EnvRelatedImageTempoQuery),
 			TempoGateway:    os.Getenv(EnvRelatedImageTempoGateway),
 			TempoGatewayOpa: os.Getenv(EnvRelatedImageTempoGatewayOpa),

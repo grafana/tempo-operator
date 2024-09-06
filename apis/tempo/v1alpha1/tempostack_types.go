@@ -594,6 +594,13 @@ type JaegerQuerySpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Resources"
 	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 
+	// TempoQuery defines options specific to the Tempoo Query component.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tempo Query Settings"
+	TempoQuery TempoQuerySpec `json:"tempoQuery,omitempty"`
+
 	// ServicesQueryDuration defines how long the services will be available in the services list
 	//
 	// +optional
@@ -606,6 +613,15 @@ type JaegerQuerySpec struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger UI authentication configuration"
 	Authentication *JaegerQueryAuthenticationSpec `json:"authentication,omitempty"`
+}
+
+// TempoQuerySpec defines Tempo Query options.
+type TempoQuerySpec struct {
+	// Resources defines resources for this component, this will override the calculated resources derived from total
+	//
+	// +optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Resources"
+	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 }
 
 // JaegerQueryMonitor defines configuration for the service monitoring tab in the Jaeger console.

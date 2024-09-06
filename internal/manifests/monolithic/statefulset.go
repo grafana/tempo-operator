@@ -294,7 +294,8 @@ func configureJaegerUI(opts Options, sts *appsv1.StatefulSet) {
 
 	args := []string{
 		"--query.base-path=/",
-		"--grpc-storage-plugin.configuration-file=/conf/tempo-query.yaml",
+		"--span-storage.type=grpc",
+		"--grpc-storage.server=localhost:7777",
 		"--query.bearer-token-propagation=true",
 	}
 
@@ -315,9 +316,9 @@ func configureJaegerUI(opts Options, sts *appsv1.StatefulSet) {
 		}...)
 	}
 
-	tempoQuery := corev1.Container{
-		Name:  "tempo-query",
-		Image: opts.CtrlConfig.DefaultImages.TempoQuery,
+	jaegerQueryContainer := corev1.Container{
+		Name:  "jaeger-query",
+		Image: opts.CtrlConfig.DefaultImages.JaegerQuery,
 		Env:   proxy.ReadProxyVarsFromEnv(),
 		Args:  args,
 		Ports: []corev1.ContainerPort{
@@ -339,16 +340,35 @@ func configureJaegerUI(opts Options, sts *appsv1.StatefulSet) {
 		},
 		VolumeMounts: []corev1.VolumeMount{
 			{
-				Name:      manifestutils.ConfigVolumeName,
-				MountPath: "/conf",
-				ReadOnly:  true,
-			},
-			{
 				Name:      tmpVolumeName,
 				MountPath: "/tmp",
 			},
 		},
-		Resources:       ptr.Deref(opts.Tempo.Spec.JaegerUI.Resources, corev1.ResourceRequirements{}),
+		SecurityContext: manifestutils.TempoContainerSecurityContext(),
+	}
+
+	tempoQuery := corev1.Container{
+		Name:  "tempo-query",
+		Image: opts.CtrlConfig.DefaultImages.TempoQuery,
+		Env:   proxy.ReadProxyVarsFromEnv(),
+		Args: []string{
+			"-config=/conf/tempo-query.yaml",
+		},
+		Ports: []corev1.ContainerPort{
+			{
+				Name:          manifestutils.TempoGRPCQuery,
+				ContainerPort: manifestutils.PortTempoGRPCQuery,
+				Protocol:      corev1.ProtocolTCP,
+			},
+		},
+		Resources: ptr.Deref(opts.Tempo.Spec.JaegerUI.Resources, corev1.ResourceRequirements{}),
+		VolumeMounts: []corev1.VolumeMount{
+			{
+				Name:      manifestutils.ConfigVolumeName,
+				MountPath: "/conf",
+				ReadOnly:  true,
+			},
+		},
 		SecurityContext: manifestutils.TempoContainerSecurityContext(),
 	}
 
@@ -359,6 +379,7 @@ func configureJaegerUI(opts Options, sts *appsv1.StatefulSet) {
 		},
 	}
 
+	sts.Spec.Template.Spec.Containers = append(sts.Spec.Template.Spec.Containers, jaegerQueryContainer)
 	sts.Spec.Template.Spec.Containers = append(sts.Spec.Template.Spec.Containers, tempoQuery)
 	sts.Spec.Template.Spec.Volumes = append(sts.Spec.Template.Spec.Volumes, tempoQueryVolume)
 }

@@ -951,6 +951,13 @@ spec:
           in the services list
         displayName: ServicesQueryDuration
         path: template.queryFrontend.jaegerQuery.servicesQueryDuration
+      - description: TempoQuery defines options specific to the Tempoo Query component.
+        displayName: Tempo Query Settings
+        path: template.queryFrontend.jaegerQuery.tempoQuery
+      - description: Resources defines resources for this component, this will override
+          the calculated resources derived from total
+        displayName: Resources
+        path: template.queryFrontend.jaegerQuery.tempoQuery.resources
       - description: NodeSelector defines the simple form of the node-selection constraint.
         displayName: Node Selector
         path: template.queryFrontend.nodeSelector
