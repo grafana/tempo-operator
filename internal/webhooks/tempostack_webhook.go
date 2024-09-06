@@ -39,7 +39,7 @@ var (
 type TempoStackWebhook struct {
 }
 
-const defaultRouteGatewayTLSTermination = v1alpha1.TLSRouteTerminationTypePassthrough
+const defaultRouteGatewayTLSTermination = v1alpha1.TLSRouteTerminationTypeReencrypt
 const defaultUITLSTermination = v1alpha1.TLSRouteTerminationTypeEdge
 
 // SetupWebhookWithManager initializes the webhook.

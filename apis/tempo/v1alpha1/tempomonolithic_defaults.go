@@ -66,7 +66,7 @@ func (r *TempoMonolithic) Default(ctrlConfig configv1alpha1.ProjectConfig) {
 			if r.Spec.JaegerUI.Route.Termination == "" {
 				if r.Spec.Multitenancy.IsGatewayEnabled() && ctrlConfig.Gates.OpenShift.ServingCertsService {
 					// gateway uses TLS
-					r.Spec.JaegerUI.Route.Termination = TLSRouteTerminationTypePassthrough
+					r.Spec.JaegerUI.Route.Termination = TLSRouteTerminationTypeReencrypt
 				} else {
 					r.Spec.JaegerUI.Route.Termination = TLSRouteTerminationTypeEdge
 				}
