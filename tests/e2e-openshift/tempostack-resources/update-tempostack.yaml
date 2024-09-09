@@ -82,6 +82,14 @@ spec:
             requests:
               cpu: 49m
               memory: 29Mi
+        tempoQuery:
+          resources:
+            limits:
+              cpu: 161m
+              memory: 83Mi
+            requests:
+              cpu: 49m
+              memory: 29Mi 
         enabled: true
         resources:
           limits:

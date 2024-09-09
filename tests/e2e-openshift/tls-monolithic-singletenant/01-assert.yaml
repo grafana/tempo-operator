@@ -31,7 +31,11 @@ spec:
         app.kubernetes.io/name: tempo-monolithic
     spec:
       containers:
-      - name: tempo
+      - args:
+        - -config.file=/conf/tempo.yaml
+        - -mem-ballast-size-mbs=1024
+        - -log.level=info
+        name: tempo
         ports:
         - containerPort: 3200
           name: http
@@ -45,6 +49,25 @@ spec:
         - containerPort: 4318
           name: otlp-http
           protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /ready
+            port: tempo-internal
+            scheme: HTTP
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        resources: {}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
         volumeMounts:
         - mountPath: /conf
           name: tempo-conf
@@ -57,14 +80,80 @@ spec:
         - mountPath: /var/run/tls/receiver/http
           name: tempo-mono-serving-cert
           readOnly: true
-      - name: tempo-query
+      - args:
+        - --query.base-path=/
+        - --span-storage.type=grpc
+        - --grpc-storage.server=localhost:7777
+        - --query.bearer-token-propagation=true
+        name: jaeger-query
+        ports:
+        - containerPort: 16685
+          name: jaeger-grpc
+          protocol: TCP
+        - containerPort: 16686
+          name: jaeger-ui
+          protocol: TCP
+        - containerPort: 16687
+          name: jaeger-metrics
+          protocol: TCP
+        resources: {}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /tmp
+          name: tempo-query-tmp
+      - args:
+        - -config=/conf/tempo-query.yaml
+        name: tempo-query
+        ports:
+        - containerPort: 7777
+          name: proxy-grpc
+          protocol: TCP
+        resources: {}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
         volumeMounts:
         - mountPath: /conf
           name: tempo-conf
           readOnly: true
-        - mountPath: /tmp
-          name: tempo-query-tmp
-      - name: oauth-proxy
+      - args:
+        - --cookie-secret-file=/var/run/secrets/kubernetes.io/serviceaccount/token
+        - --https-address=:8443
+        - --openshift-service-account=tempo-mono
+        - --provider=openshift
+        - --tls-cert=/etc/tls/private/tls.crt
+        - --tls-key=/etc/tls/private/tls.key
+        - --upstream=http://localhost:16686
+        - '--openshift-sar={"namespace": "chainsaw-tls-mono-st", "resource": "pods",
+          "verb": "get"}'
+        name: oauth-proxy
+        ports:
+        - containerPort: 8443
+          name: oauth-proxy
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /oauth/healthz
+            port: oauth-proxy
+            scheme: HTTPS
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 5
+        resources: {}
         volumeMounts:
         - mountPath: /etc/tls/private
           name: mono-ui-oauth-proxy-tls
@@ -101,6 +190,9 @@ metadata:
   namespace: chainsaw-tls-mono-st
 status:
   containerStatuses:
+  - name: jaeger-query
+    ready: true
+    started: true
   - name: oauth-proxy
     ready: true
     started: true

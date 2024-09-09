@@ -13,7 +13,7 @@ spec:
   resources:
     total:
       limits:
-        memory: 2Gi
+        memory: 3Gi
         cpu: 2000m
   tenants:
     mode: openshift

@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: hotrod
-          image: jaegertracing/example-hotrod:1.46.0
+          image: quay.io/jaegertracing/example-hotrod-snapshot:latest
           args:
             - all
             - --otel-exporter=otlp

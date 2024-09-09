@@ -277,6 +277,14 @@ spec:
           requests:
             cpu: 49m
             memory: 27Mi
+      - name: jaeger-query
+        resources:
+          limits:
+            cpu: 167m
+            memory: 86Mi
+          requests:
+            cpu: 49m
+            memory: 29Mi
       - name: tempo-query
         resources:
           limits:
@@ -289,4 +297,3 @@ status:
   availableReplicas: 1
   readyReplicas: 1
   replicas: 1
-

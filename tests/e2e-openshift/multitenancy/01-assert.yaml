@@ -128,13 +128,8 @@ metadata:
     app.kubernetes.io/name: tempo
   name: tempo-simplest-gateway
   namespace: chainsaw-multitenancy
-  ownerReferences:
-  - apiVersion: tempo.grafana.com/v1alpha1
-    blockOwnerDeletion: true
-    controller: true
-    kind: TempoStack
-    name: simplest
 spec:
+  replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/component: gateway
@@ -206,10 +201,10 @@ spec:
         resources:
           limits:
             cpu: 120m
-            memory: "107374184"
+            memory: "161061280"
           requests:
             cpu: 36m
-            memory: "32212256"
+            memory: "48318384"
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
@@ -245,7 +240,6 @@ spec:
         - --opa.package=tempostack
         - --openshift.mappings=dev=tempo.grafana.com
         - --openshift.mappings=prod=tempo.grafana.com
-        imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 10
           httpGet:
@@ -310,6 +304,7 @@ spec:
           name: tempo-simplest-gateway-cabundle
         name: cabundle
 status:
+  availableReplicas: 1
   readyReplicas: 1
   replicas: 1
 ---

@@ -14,6 +14,9 @@ metadata:
   name: tempo-monitor-0
 status:
   containerStatuses:
+  - name: jaeger-query
+    ready: true
+    started: true
   - name: oauth-proxy
     ready: true
     started: true

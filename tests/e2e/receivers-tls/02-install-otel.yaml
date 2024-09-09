@@ -28,6 +28,7 @@ data:
             endpoint: 0.0.0.0:4318
     extensions:
       health_check:
+        endpoint: 0.0.0.0:13133
     service:
       extensions: [health_check]
       pipelines:
@@ -65,7 +66,7 @@ spec:
           command:
             - /otelcol-contrib
             - --config=/conf/config.yaml
-          image: "otel/opentelemetry-collector-contrib:0.82.0"
+          image: "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.107.0"
           ports:
             - name: otlp
               containerPort: 4317

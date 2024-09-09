@@ -52,7 +52,7 @@ spec:
     spec:
       containers:
       - name: opentelemetry-collector
-        image: otel/opentelemetry-collector-contrib:0.82.0
+        image: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.106.1
         command: ["/otelcol-contrib", "--config=/conf/config.yaml"]
         volumeMounts:
         - mountPath: /conf

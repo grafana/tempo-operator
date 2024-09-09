@@ -12,6 +12,9 @@ metadata:
   name: tempo-monolithic-multitenancy-openshift-0
 status:
   containerStatuses:
+  - name: jaeger-query
+    ready: true
+    started: true
   - name: tempo
     ready: true
     started: true

@@ -17,14 +17,6 @@ status:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: tempo-simplest-querier
-  namespace: chainsaw-tls-singletenant
-status:
-  readyReplicas: 1
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
   labels:
     app.kubernetes.io/component: query-frontend
     app.kubernetes.io/instance: simplest
@@ -33,6 +25,7 @@ metadata:
   name: tempo-simplest-query-frontend
   namespace: chainsaw-tls-singletenant
 spec:
+  replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/component: query-frontend
@@ -67,7 +60,7 @@ spec:
           name: tempo-simplest-ca-bundle
         - mountPath: /var/run/tls/server
           name: tempo-simplest-query-frontend-mtls
-      - name: tempo-query
+      - name: jaeger-query
         ports:
         - containerPort: 16685
           name: jaeger-grpc
@@ -79,15 +72,21 @@ spec:
           name: jaeger-metrics
           protocol: TCP
         volumeMounts:
-        - mountPath: /conf
-          name: tempo-conf
-          readOnly: true
         - mountPath: /tmp
           name: tempo-tmp-storage-query
         - mountPath: /var/run/ca
           name: tempo-simplest-ca-bundle
         - mountPath: /var/run/tls/server
           name: tempo-simplest-query-frontend-mtls
+      - name: tempo-query
+        ports:
+        - containerPort: 7777
+          name: proxy-grpc
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /conf
+          name: tempo-conf
+          readOnly: true
       volumes:
       - configMap:
           defaultMode: 420
