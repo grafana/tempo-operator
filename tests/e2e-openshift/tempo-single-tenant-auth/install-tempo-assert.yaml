@@ -30,6 +30,7 @@ metadata:
   name: tempo-tempo-st-query-frontend
   namespace: chainsaw-tst
 spec:
+  replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/component: query-frontend
@@ -47,29 +48,79 @@ spec:
     spec:
       containers:
       - name: tempo
+        ports:
+        - containerPort: 3200
+          name: http
+          protocol: TCP
+        - containerPort: 9095
+          name: grpc
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /conf
+          name: tempo-conf
+          readOnly: true
+        - mountPath: /var/tempo
+          name: tempo-tmp-storage
+        - mountPath: /var/run/ca
+          name: tempo-tempo-st-ca-bundle
+        - mountPath: /var/run/tls/server
+          name: tempo-tempo-st-query-frontend-mtls
+      - name: jaeger-query
+        ports:
+        - containerPort: 16685
+          name: jaeger-grpc
+          protocol: TCP
+        - containerPort: 16686
+          name: jaeger-ui
+          protocol: TCP
+        - containerPort: 16687
+          name: jaeger-metrics
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /tmp
+          name: tempo-tmp-storage-query
+        - mountPath: /var/run/ca
+          name: tempo-tempo-st-ca-bundle
+        - mountPath: /var/run/tls/server
+          name: tempo-tempo-st-query-frontend-mtls
       - name: tempo-query
-      - args:
-        - --cookie-secret-file=/var/run/secrets/kubernetes.io/serviceaccount/token
-        - --https-address=:8443
-        - --openshift-service-account=tempo-tempo-st-query-frontend
-        - --provider=openshift
-        - --tls-cert=/etc/tls/private/tls.crt
-        - --tls-key=/etc/tls/private/tls.key
-        - --upstream=http://localhost:16686
-        - '--openshift-sar={"namespace": "chainsaw-mst", "resource": "pods", "verb":
-          "get"}'
-        name: oauth-proxy
+        ports:
+        - containerPort: 7777
+          name: proxy-grpc
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /conf
+          name: tempo-conf
+          readOnly: true
+      - name: oauth-proxy
         ports:
         - containerPort: 8443
           name: oauth-proxy
           protocol: TCP
-        resources:
-          limits:
-            cpu: 200m
-            memory: 512Gi
-          requests:
-            cpu: 100m
-            memory: 256Mi
+        volumeMounts:
+        - mountPath: /etc/tls/private
+          name: tempo-st-ui-oauth-proxy-tls
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: tempo-tempo-st
+        name: tempo-conf
+      - emptyDir: {}
+        name: tempo-tmp-storage
+      - emptyDir: {}
+        name: tempo-tmp-storage-query
+      - configMap:
+          defaultMode: 420
+          name: tempo-tempo-st-ca-bundle
+        name: tempo-tempo-st-ca-bundle
+      - name: tempo-tempo-st-query-frontend-mtls
+        secret:
+          defaultMode: 420
+          secretName: tempo-tempo-st-query-frontend-mtls
+      - name: tempo-st-ui-oauth-proxy-tls
+        secret:
+          defaultMode: 420
+          secretName: tempo-st-ui-oauth-proxy-tls
 status:
   availableReplicas: 1
   readyReplicas: 1

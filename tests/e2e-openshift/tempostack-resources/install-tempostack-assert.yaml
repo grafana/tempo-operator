@@ -192,19 +192,27 @@ spec:
       - name: tempo
         resources:
           limits:
-            cpu: 160m
-            memory: "85899344"
+            cpu: 80m
+            memory: "42949672"
           requests:
-            cpu: 48m
-            memory: "25769804"
+            cpu: 24m
+            memory: "12884902"
+      - name: jaeger-query
+        resources:
+          limits:
+            cpu: 80m
+            memory: "42949672"
+          requests:
+            cpu: 24m
+            memory: "12884902"
       - name: tempo-query
         resources:
           limits:
-            cpu: 160m
-            memory: "85899344"
+            cpu: 80m
+            memory: "42949672"
           requests:
-            cpu: 48m
-            memory: "25769804"
+            cpu: 24m
+            memory: "12884902"
 status:
   availableReplicas: 1
   readyReplicas: 1
