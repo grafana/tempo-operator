@@ -140,6 +140,7 @@ func statefulSet(params manifestutils.Params) (*v1.StatefulSet, error) {
 							},
 						},
 					},
+					SecurityContext: tempo.Spec.Template.Ingester.SecurityContext,
 				},
 			},
 			VolumeClaimTemplates: []corev1.PersistentVolumeClaim{

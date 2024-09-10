@@ -141,6 +141,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 							},
 						},
 					},
+					SecurityContext: tempo.Spec.Template.Querier.SecurityContext,
 				},
 			},
 		},

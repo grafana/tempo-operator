@@ -828,6 +828,10 @@ spec:
       - description: Compactor defines the tempo compactor component spec.
         displayName: Compactor pods
         path: template.compactor
+      - description: SecurityContext defines security context will be applied to all
+          pods of this component.
+        displayName: SecurityContext
+        path: template.compactor.SecurityContext
       - description: NodeSelector defines the simple form of the node-selection constraint.
         displayName: Node Selector
         path: template.compactor.nodeSelector
@@ -845,6 +849,10 @@ spec:
       - description: Distributor defines the distributor component spec.
         displayName: Distributor pods
         path: template.distributor
+      - description: SecurityContext defines security context will be applied to all
+          pods of this component.
+        displayName: SecurityContext
+        path: template.distributor.SecurityContext
       - description: NodeSelector defines the simple form of the node-selection constraint.
         displayName: Node Selector
         path: template.distributor.nodeSelector
@@ -884,6 +892,10 @@ spec:
       - description: Gateway defines the tempo gateway spec.
         displayName: Gateway pods
         path: template.gateway
+      - description: SecurityContext defines security context will be applied to all
+          pods of this component.
+        displayName: SecurityContext
+        path: template.gateway.SecurityContext
       - displayName: Enabled
         path: template.gateway.enabled
         x-descriptors:
@@ -924,6 +936,10 @@ spec:
       - description: Ingester defines the ingester component spec.
         displayName: Ingester pods
         path: template.ingester
+      - description: SecurityContext defines security context will be applied to all
+          pods of this component.
+        displayName: SecurityContext
+        path: template.ingester.SecurityContext
       - description: NodeSelector defines the simple form of the node-selection constraint.
         displayName: Node Selector
         path: template.ingester.nodeSelector
@@ -941,6 +957,10 @@ spec:
       - description: Querier defines the querier component spec.
         displayName: Querier pods
         path: template.querier
+      - description: SecurityContext defines security context will be applied to all
+          pods of this component.
+        displayName: SecurityContext
+        path: template.querier.SecurityContext
       - description: NodeSelector defines the simple form of the node-selection constraint.
         displayName: Node Selector
         path: template.querier.nodeSelector
@@ -958,6 +978,10 @@ spec:
       - description: TempoQueryFrontendSpec defines the query frontend spec.
         displayName: Query Frontend pods
         path: template.queryFrontend
+      - description: SecurityContext defines security context will be applied to all
+          pods of this component.
+        displayName: SecurityContext
+        path: template.queryFrontend.SecurityContext
       - description: JaegerQuery defines options specific to the Jaeger Query component.
         displayName: Jaeger Query Settings
         path: template.queryFrontend.jaegerQuery
