@@ -21,9 +21,9 @@ jobs:
         # should be compatible with them.
         include:
           - name: min
-            kube-version: 1.25
+            kube-version: "1.25"
           - name: max
-            kube-version: 1.30
+            kube-version: "1.30"
 
     steps:
     - name: Checkout
@@ -51,7 +51,7 @@ jobs:
       matrix:
         include:
           - name: max
-            kube-version: 1.30
+            kube-version: "1.30"
 
     steps:
     - name: Checkout
