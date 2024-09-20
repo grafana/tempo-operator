@@ -528,7 +528,7 @@ type TempoComponentSpec struct {
 	//
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="SecurityContext"
-	SecurityContext *corev1.PodSecurityContext `json:"SecurityContext,omitempty"`
+	SecurityContext *corev1.PodSecurityContext `json:"securityContext,omitempty"`
 }
 
 // TempoGatewaySpec extends TempoComponentSpec with gateway parameters.
