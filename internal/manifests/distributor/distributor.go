@@ -281,7 +281,7 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 							},
 						},
 					},
-					SecurityContext: tempo.Spec.Template.Distributor.SecurityContext,
+					SecurityContext: tempo.Spec.Template.Distributor.PodSecurityContext,
 				},
 			},
 		},

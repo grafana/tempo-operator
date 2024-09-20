@@ -323,7 +323,7 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 							},
 						},
 					},
-					SecurityContext: tempo.Spec.Template.Gateway.SecurityContext,
+					SecurityContext: tempo.Spec.Template.Gateway.PodSecurityContext,
 				},
 			},
 		},

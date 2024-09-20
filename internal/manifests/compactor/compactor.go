@@ -119,7 +119,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 							SecurityContext: manifestutils.TempoContainerSecurityContext(),
 						},
 					},
-					SecurityContext: tempo.Spec.Template.Compactor.SecurityContext,
+					SecurityContext: tempo.Spec.Template.Compactor.PodSecurityContext,
 					Volumes: []corev1.Volume{
 						{
 							Name: manifestutils.ConfigVolumeName,

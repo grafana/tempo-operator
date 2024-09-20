@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.13.0
-    createdAt: "2024-09-20T03:22:01Z"
+    createdAt: "2024-09-21T07:00:18Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -831,6 +831,10 @@ spec:
       - description: NodeSelector defines the simple form of the node-selection constraint.
         displayName: Node Selector
         path: template.compactor.nodeSelector
+      - description: PodSecurityContext defines security context will be applied to
+          all pods of this component.
+        displayName: PodSecurityContext
+        path: template.compactor.podSecurityContext
       - description: Replicas defines the number of replicas to be created for this
           component.
         displayName: Component Replicas
@@ -839,10 +843,6 @@ spec:
           the calculated resources derived from total
         displayName: Resources
         path: template.compactor.resources
-      - description: SecurityContext defines security context will be applied to all
-          pods of this component.
-        displayName: SecurityContext
-        path: template.compactor.securityContext
       - description: Tolerations defines component-specific pod tolerations.
         displayName: Tolerations
         path: template.compactor.tolerations
@@ -852,6 +852,10 @@ spec:
       - description: NodeSelector defines the simple form of the node-selection constraint.
         displayName: Node Selector
         path: template.distributor.nodeSelector
+      - description: PodSecurityContext defines security context will be applied to
+          all pods of this component.
+        displayName: PodSecurityContext
+        path: template.distributor.podSecurityContext
       - description: Replicas defines the number of replicas to be created for this
           component.
         displayName: Component Replicas
@@ -860,10 +864,6 @@ spec:
           the calculated resources derived from total
         displayName: Resources
         path: template.distributor.resources
-      - description: SecurityContext defines security context will be applied to all
-          pods of this component.
-        displayName: SecurityContext
-        path: template.distributor.securityContext
       - description: "TLS defines TLS configuration for distributor receivers \n If
           openshift feature flag `servingCertsService` is enabled and TLS is enabled
           but no certName or caName is specified, OpenShift service serving certificates
@@ -918,6 +918,10 @@ spec:
       - description: NodeSelector defines the simple form of the node-selection constraint.
         displayName: Node Selector
         path: template.gateway.nodeSelector
+      - description: PodSecurityContext defines security context will be applied to
+          all pods of this component.
+        displayName: PodSecurityContext
+        path: template.gateway.podSecurityContext
       - description: Replicas defines the number of replicas to be created for this
           component.
         displayName: Component Replicas
@@ -926,10 +930,6 @@ spec:
           the calculated resources derived from total
         displayName: Resources
         path: template.gateway.resources
-      - description: SecurityContext defines security context will be applied to all
-          pods of this component.
-        displayName: SecurityContext
-        path: template.gateway.securityContext
       - description: Tolerations defines component-specific pod tolerations.
         displayName: Tolerations
         path: template.gateway.tolerations
@@ -939,6 +939,10 @@ spec:
       - description: NodeSelector defines the simple form of the node-selection constraint.
         displayName: Node Selector
         path: template.ingester.nodeSelector
+      - description: PodSecurityContext defines security context will be applied to
+          all pods of this component.
+        displayName: PodSecurityContext
+        path: template.ingester.podSecurityContext
       - description: Replicas defines the number of replicas to be created for this
           component.
         displayName: Component Replicas
@@ -947,10 +951,6 @@ spec:
           the calculated resources derived from total
         displayName: Resources
         path: template.ingester.resources
-      - description: SecurityContext defines security context will be applied to all
-          pods of this component.
-        displayName: SecurityContext
-        path: template.ingester.securityContext
       - description: Tolerations defines component-specific pod tolerations.
         displayName: Tolerations
         path: template.ingester.tolerations
@@ -960,6 +960,10 @@ spec:
       - description: NodeSelector defines the simple form of the node-selection constraint.
         displayName: Node Selector
         path: template.querier.nodeSelector
+      - description: PodSecurityContext defines security context will be applied to
+          all pods of this component.
+        displayName: PodSecurityContext
+        path: template.querier.podSecurityContext
       - description: Replicas defines the number of replicas to be created for this
           component.
         displayName: Component Replicas
@@ -968,10 +972,6 @@ spec:
           the calculated resources derived from total
         displayName: Resources
         path: template.querier.resources
-      - description: SecurityContext defines security context will be applied to all
-          pods of this component.
-        displayName: SecurityContext
-        path: template.querier.securityContext
       - description: Tolerations defines component-specific pod tolerations.
         displayName: Tolerations
         path: template.querier.tolerations
@@ -1052,6 +1052,10 @@ spec:
       - description: NodeSelector defines the simple form of the node-selection constraint.
         displayName: Node Selector
         path: template.queryFrontend.nodeSelector
+      - description: PodSecurityContext defines security context will be applied to
+          all pods of this component.
+        displayName: PodSecurityContext
+        path: template.queryFrontend.podSecurityContext
       - description: Replicas defines the number of replicas to be created for this
           component.
         displayName: Component Replicas
@@ -1060,10 +1064,6 @@ spec:
           the calculated resources derived from total
         displayName: Resources
         path: template.queryFrontend.resources
-      - description: SecurityContext defines security context will be applied to all
-          pods of this component.
-        displayName: SecurityContext
-        path: template.queryFrontend.securityContext
       - description: Tolerations defines component-specific pod tolerations.
         displayName: Tolerations
         path: template.queryFrontend.tolerations
