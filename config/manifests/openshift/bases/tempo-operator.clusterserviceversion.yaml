@@ -757,10 +757,6 @@ spec:
       - description: Compactor defines the tempo compactor component spec.
         displayName: Compactor pods
         path: template.compactor
-      - description: SecurityContext defines security context will be applied to all
-          pods of this component.
-        displayName: SecurityContext
-        path: template.compactor.SecurityContext
       - description: NodeSelector defines the simple form of the node-selection constraint.
         displayName: Node Selector
         path: template.compactor.nodeSelector
@@ -772,16 +768,16 @@ spec:
           the calculated resources derived from total
         displayName: Resources
         path: template.compactor.resources
+      - description: SecurityContext defines security context will be applied to all
+          pods of this component.
+        displayName: SecurityContext
+        path: template.compactor.securityContext
       - description: Tolerations defines component-specific pod tolerations.
         displayName: Tolerations
         path: template.compactor.tolerations
       - description: Distributor defines the distributor component spec.
         displayName: Distributor pods
         path: template.distributor
-      - description: SecurityContext defines security context will be applied to all
-          pods of this component.
-        displayName: SecurityContext
-        path: template.distributor.SecurityContext
       - description: NodeSelector defines the simple form of the node-selection constraint.
         displayName: Node Selector
         path: template.distributor.nodeSelector
@@ -793,6 +789,10 @@ spec:
           the calculated resources derived from total
         displayName: Resources
         path: template.distributor.resources
+      - description: SecurityContext defines security context will be applied to all
+          pods of this component.
+        displayName: SecurityContext
+        path: template.distributor.securityContext
       - description: "TLS defines TLS configuration for distributor receivers \n If
           openshift feature flag `servingCertsService` is enabled and TLS is enabled
           but no certName or caName is specified, OpenShift service serving certificates
@@ -821,10 +821,6 @@ spec:
       - description: Gateway defines the tempo gateway spec.
         displayName: Gateway pods
         path: template.gateway
-      - description: SecurityContext defines security context will be applied to all
-          pods of this component.
-        displayName: SecurityContext
-        path: template.gateway.SecurityContext
       - displayName: Enabled
         path: template.gateway.enabled
         x-descriptors:
@@ -859,16 +855,16 @@ spec:
           the calculated resources derived from total
         displayName: Resources
         path: template.gateway.resources
+      - description: SecurityContext defines security context will be applied to all
+          pods of this component.
+        displayName: SecurityContext
+        path: template.gateway.securityContext
       - description: Tolerations defines component-specific pod tolerations.
         displayName: Tolerations
         path: template.gateway.tolerations
       - description: Ingester defines the ingester component spec.
         displayName: Ingester pods
         path: template.ingester
-      - description: SecurityContext defines security context will be applied to all
-          pods of this component.
-        displayName: SecurityContext
-        path: template.ingester.SecurityContext
       - description: NodeSelector defines the simple form of the node-selection constraint.
         displayName: Node Selector
         path: template.ingester.nodeSelector
@@ -880,16 +876,16 @@ spec:
           the calculated resources derived from total
         displayName: Resources
         path: template.ingester.resources
+      - description: SecurityContext defines security context will be applied to all
+          pods of this component.
+        displayName: SecurityContext
+        path: template.ingester.securityContext
       - description: Tolerations defines component-specific pod tolerations.
         displayName: Tolerations
         path: template.ingester.tolerations
       - description: Querier defines the querier component spec.
         displayName: Querier pods
         path: template.querier
-      - description: SecurityContext defines security context will be applied to all
-          pods of this component.
-        displayName: SecurityContext
-        path: template.querier.SecurityContext
       - description: NodeSelector defines the simple form of the node-selection constraint.
         displayName: Node Selector
         path: template.querier.nodeSelector
@@ -901,16 +897,16 @@ spec:
           the calculated resources derived from total
         displayName: Resources
         path: template.querier.resources
+      - description: SecurityContext defines security context will be applied to all
+          pods of this component.
+        displayName: SecurityContext
+        path: template.querier.securityContext
       - description: Tolerations defines component-specific pod tolerations.
         displayName: Tolerations
         path: template.querier.tolerations
       - description: TempoQueryFrontendSpec defines the query frontend spec.
         displayName: Query Frontend pods
         path: template.queryFrontend
-      - description: SecurityContext defines security context will be applied to all
-          pods of this component.
-        displayName: SecurityContext
-        path: template.queryFrontend.SecurityContext
       - description: JaegerQuery defines options specific to the Jaeger Query component.
         displayName: Jaeger Query Settings
         path: template.queryFrontend.jaegerQuery
@@ -993,6 +989,10 @@ spec:
           the calculated resources derived from total
         displayName: Resources
         path: template.queryFrontend.resources
+      - description: SecurityContext defines security context will be applied to all
+          pods of this component.
+        displayName: SecurityContext
+        path: template.queryFrontend.securityContext
       - description: Tolerations defines component-specific pod tolerations.
         displayName: Tolerations
         path: template.queryFrontend.tolerations
