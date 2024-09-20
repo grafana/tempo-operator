@@ -84,3 +84,9 @@ jobs:
         run: make bundle bundle-build bundle-push catalog-build catalog-push
         env:
           IMG_PREFIX: ghcr.io/${{ github.repository }}
+
+      - name: Publish must-gather image
+        if: ${{ inputs.publish_bundle }}
+        run: make container-must-gather container-must-gather-push
+        env:
+          IMG_PREFIX: ghcr.io/${{ github.repository }}
