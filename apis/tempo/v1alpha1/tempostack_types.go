@@ -303,6 +303,18 @@ var AllStatusConditions = []ConditionStatus{ConditionReady, ConditionFailed, Con
 // ConditionReason defines possible reasons for each condition.
 type ConditionReason string
 
+// InstanceAddrType defines the type of pod network to use for advertising IPs to the ring.
+//
+// +kubebuilder:validation:Enum=default;podIP
+type InstanceAddrType string
+
+const (
+	// InstanceAddrDefault when using the first from any private network interfaces (RFC 1918 and RFC 6598).
+	InstanceAddrDefault InstanceAddrType = "default"
+	// InstanceAddrPodIP when using the public pod IP from the cluster's pod network.
+	InstanceAddrPodIP InstanceAddrType = "podIP"
+)
+
 const (
 	// ReasonReady defines a healthy tempo instance.
 	ReasonReady ConditionReason = "Ready"
@@ -423,6 +435,16 @@ type MemberListSpec struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch",displayName="Enable IPv6"
 	EnableIPv6 *bool `json:"enableIPv6,omitempty"`
+
+	// InstanceAddrType defines the type of address to use to advertise to the ring.
+	// Defaults to the first address from any private network interfaces of the current pod.
+	// Alternatively the public pod IP can be used in case private networks (RFC 1918 and RFC 6598)
+	// are not available.
+	//
+	// +optional
+	// +kubebuilder:validation:optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors={"urn:alm:descriptor:com.tectonic.ui:select:default","urn:alm:descriptor:com.tectonic.ui:select:podIP"},displayName="Instance Address"
+	InstanceAddrType InstanceAddrType `json:"instanceAddrType,omitempty"`
 }
 
 // HashRingSpec defines the hash ring configuration.

@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.13.0
-    createdAt: "2024-10-10T15:57:44Z"
+    createdAt: "2024-10-12T18:04:06Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -584,6 +584,15 @@ spec:
         path: hashRing.memberlist.enableIPv6
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
+      - description: InstanceAddrType defines the type of address to use to advertise
+          to the ring. Defaults to the first address from any private network interfaces
+          of the current pod. Alternatively the public pod IP can be used in case
+          private networks (RFC 1918 and RFC 6598) are not available.
+        displayName: Instance Address
+        path: hashRing.memberlist.instanceAddrType
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:select:default
+        - urn:alm:descriptor:com.tectonic.ui:select:podIP
       - description: Images defines the image for each container.
         displayName: Container Images
         path: images

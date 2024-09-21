@@ -90,11 +90,17 @@ distributor:
   ring:
     kvstore:
       store: memberlist
+    {{- with .MemberList.InstanceAddr }}
+    instance_addr: {{ . }}
+    {{- end }}
 ingester:
   lifecycler:
     ring:
       kvstore:
         store: memberlist
+      {{- with .MemberList.InstanceAddr }}
+      instance_addr: {{ . }}
+      {{- end }}
       replication_factor: {{ .ReplicationFactor }}
     tokens_file_path: /var/tempo/tokens.json
     {{- if .MemberList.EnableIPv6 }}

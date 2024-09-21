@@ -22,6 +22,10 @@ func BuildQuerier(params manifestutils.Params) ([]client.Object, error) {
 		return nil, err
 	}
 
+	if err := memberlist.ConfigureHashRingEnv(&d.Spec.Template.Spec, params.Tempo); err != nil {
+		return nil, err
+	}
+
 	d.Spec.Template, err = manifestutils.PatchTracingJaegerEnv(params.Tempo, d.Spec.Template)
 	if err != nil {
 		return nil, err
@@ -94,6 +98,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 								"-target=querier",
 								"-config.file=/conf/tempo.yaml",
 								"-log.level=info",
+								"-config.expand-env=true",
 							},
 							Ports: []corev1.ContainerPort{
 								{
