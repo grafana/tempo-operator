@@ -9,8 +9,6 @@ import (
 	"reflect"
 	"strings"
 
-	tempov1alpha1 "github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
-	"github.com/grafana/tempo-operator/cmd/gather/config"
 	operatorsv1 "github.com/operator-framework/api/pkg/operators/v1"
 	operatorsv1alpha1 "github.com/operator-framework/api/pkg/operators/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
@@ -20,6 +18,9 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	tempov1alpha1 "github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/cmd/gather/config"
+
 	routev1 "github.com/openshift/api/route/v1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	autoscalingv2 "k8s.io/api/autoscaling/v2"
@@ -28,19 +29,20 @@ import (
 	rbacv1 "k8s.io/api/rbac/v1"
 )
 
-type Cluster struct {
+type cluster struct {
 	config               *config.Config
 	apiAvailabilityCache map[schema.GroupVersionResource]bool
 }
 
-func NewCluster(cfg *config.Config) Cluster {
-	return Cluster{
+// NewCluster creates a new cluster.
+func NewCluster(cfg *config.Config) cluster {
+	return cluster{
 		config:               cfg,
 		apiAvailabilityCache: make(map[schema.GroupVersionResource]bool),
 	}
 }
 
-func (c *Cluster) getOperatorNamespace() (string, error) {
+func (c *cluster) getOperatorNamespace() (string, error) {
 	if c.config.OperatorNamespace != "" {
 		return c.config.OperatorNamespace, nil
 	}
@@ -55,7 +57,7 @@ func (c *Cluster) getOperatorNamespace() (string, error) {
 	return c.config.OperatorNamespace, nil
 }
 
-func (c *Cluster) getOperatorDeployment() (appsv1.Deployment, error) {
+func (c *cluster) getOperatorDeployment() (appsv1.Deployment, error) {
 	operatorDeployments := appsv1.DeploymentList{}
 	err := c.config.KubernetesClient.List(context.TODO(), &operatorDeployments, &client.ListOptions{
 		LabelSelector: labels.SelectorFromSet(labels.Set{
@@ -75,7 +77,8 @@ func (c *Cluster) getOperatorDeployment() (appsv1.Deployment, error) {
 
 }
 
-func (c *Cluster) GetOperatorLogs() error {
+// GetOperatorLogs gets the operator logs from the cluster.
+func (c *cluster) GetOperatorLogs() error {
 	deployment, err := c.getOperatorDeployment()
 	if err != nil {
 		return err
@@ -95,12 +98,13 @@ func (c *Cluster) GetOperatorLogs() error {
 	return nil
 }
 
-func (c *Cluster) getPodLogs(podName, namespace, container string) {
+func (c *cluster) getPodLogs(podName, namespace, container string) {
 	pods := c.config.KubernetesClientSet.CoreV1().Pods(namespace)
 	writeLogToFile(c.config.CollectionDir, podName, container, pods)
 }
 
-func (c *Cluster) GetOperatorDeploymentInfo() error {
+// GetOperatorDeploymentInfo gets the operator deployment info from the cluster.
+func (c *cluster) GetOperatorDeploymentInfo() error {
 	err := os.MkdirAll(c.config.CollectionDir, os.ModePerm)
 	if err != nil {
 		return err
@@ -116,7 +120,8 @@ func (c *Cluster) GetOperatorDeploymentInfo() error {
 	return nil
 }
 
-func (c *Cluster) GetOLMInfo() error {
+// GetOLMInfo gets the OLM info from the cluster.
+func (c *cluster) GetOLMInfo() error {
 	if !c.isAPIAvailable(schema.GroupVersionResource{
 		Group:    operatorsv1.SchemeGroupVersion.Group,
 		Version:  operatorsv1.SchemeGroupVersion.Version,
@@ -210,7 +215,8 @@ func (c *Cluster) GetOLMInfo() error {
 	return nil
 }
 
-func (c *Cluster) GetTempoStacks() error {
+// GetTempoStacks gets all the TempoStacks in the cluster and resources owned by them.
+func (c *cluster) GetTempoStacks() error {
 	tempoStacks := tempov1alpha1.TempoStackList{}
 
 	err := c.config.KubernetesClient.List(context.TODO(), &tempoStacks)
@@ -237,7 +243,8 @@ func (c *Cluster) GetTempoStacks() error {
 	return nil
 }
 
-func (c *Cluster) GetTempoMonolithics() error {
+// GetTempoMonolithics gets all the TempoMonolithics in the cluster and resources owned by them.
+func (c *cluster) GetTempoMonolithics() error {
 	tempoMonolithics := tempov1alpha1.TempoMonolithicList{}
 
 	err := c.config.KubernetesClient.List(context.TODO(), &tempoMonolithics)
@@ -264,7 +271,7 @@ func (c *Cluster) GetTempoMonolithics() error {
 	return nil
 }
 
-func (c *Cluster) processTempoStack(tempoStack *tempov1alpha1.TempoStack) error {
+func (c *cluster) processTempoStack(tempoStack *tempov1alpha1.TempoStack) error {
 	log.Printf("Processing TempoStack %s/%s", tempoStack.Namespace, tempoStack.Name)
 	folder, err := createTempoStackFolder(c.config.CollectionDir, tempoStack)
 	if err != nil {
@@ -280,7 +287,7 @@ func (c *Cluster) processTempoStack(tempoStack *tempov1alpha1.TempoStack) error 
 	return nil
 }
 
-func (c *Cluster) processTempoMonolithic(tempoMonolithic *tempov1alpha1.TempoMonolithic) error {
+func (c *cluster) processTempoMonolithic(tempoMonolithic *tempov1alpha1.TempoMonolithic) error {
 	log.Printf("Processing TempoMonolithic %s/%s", tempoMonolithic.Namespace, tempoMonolithic.Name)
 	folder, err := createTempoMonolithicFolder(c.config.CollectionDir, tempoMonolithic)
 	if err != nil {
@@ -296,7 +303,7 @@ func (c *Cluster) processTempoMonolithic(tempoMonolithic *tempov1alpha1.TempoMon
 	return nil
 }
 
-func (c *Cluster) processOwnedResources(owner interface{}, folder string) error {
+func (c *cluster) processOwnedResources(owner interface{}, folder string) error {
 	resourceTypes := []struct {
 		list     client.ObjectList
 		apiCheck func() bool
@@ -331,7 +338,7 @@ func (c *Cluster) processOwnedResources(owner interface{}, folder string) error 
 	return nil
 }
 
-func (c *Cluster) processResourceType(list client.ObjectList, owner interface{}, folder string) error {
+func (c *cluster) processResourceType(list client.ObjectList, owner interface{}, folder string) error {
 	resources, err := c.getOwnerResources(list, owner)
 	if err != nil {
 		return fmt.Errorf("failed to get resources: %w", err)
@@ -342,7 +349,7 @@ func (c *Cluster) processResourceType(list client.ObjectList, owner interface{},
 	return nil
 }
 
-func (c *Cluster) isMonitoringAPIAvailable() bool {
+func (c *cluster) isMonitoringAPIAvailable() bool {
 	return c.isAPIAvailable(schema.GroupVersionResource{
 		Group:    monitoringv1.SchemeGroupVersion.Group,
 		Version:  monitoringv1.SchemeGroupVersion.Version,
@@ -350,7 +357,7 @@ func (c *Cluster) isMonitoringAPIAvailable() bool {
 	})
 }
 
-func (c *Cluster) isRouteAPIAvailable() bool {
+func (c *cluster) isRouteAPIAvailable() bool {
 	return c.isAPIAvailable(schema.GroupVersionResource{
 		Group:    routev1.GroupName,
 		Version:  routev1.GroupVersion.Version,
@@ -358,7 +365,7 @@ func (c *Cluster) isRouteAPIAvailable() bool {
 	})
 }
 
-func (c *Cluster) isAPIAvailable(gvr schema.GroupVersionResource) bool {
+func (c *cluster) isAPIAvailable(gvr schema.GroupVersionResource) bool {
 	if result, ok := c.apiAvailabilityCache[gvr]; ok {
 		return result
 	}
@@ -372,7 +379,7 @@ func (c *Cluster) isAPIAvailable(gvr schema.GroupVersionResource) bool {
 	return result
 }
 
-func (c *Cluster) getOwnerResources(objList client.ObjectList, owner interface{}) ([]client.Object, error) {
+func (c *cluster) getOwnerResources(objList client.ObjectList, owner interface{}) ([]client.Object, error) {
 	err := c.config.KubernetesClient.List(context.TODO(), objList, &client.ListOptions{
 		LabelSelector: labels.SelectorFromSet(labels.Set{
 			"app.kubernetes.io/managed-by": "tempo-operator",

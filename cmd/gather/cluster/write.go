@@ -54,7 +54,7 @@ func createFile(outputDir string, obj client.Object) (*os.File, error) {
 	kind = strings.ToLower(kind)
 	name := strings.ReplaceAll(obj.GetName(), ".", "-")
 
-	path := filepath.Join(outputDir, fmt.Sprintf("%s-%s.yaml", kind, name))
+	path := filepath.Clean(filepath.Join(outputDir, fmt.Sprintf("%s-%s.yaml", kind, name)))
 	return os.Create(path)
 }
 
@@ -65,7 +65,12 @@ func writeLogToFile(outputDir, podName, container string, p cgocorev1.PodInterfa
 		log.Fatalf("Error getting pod logs: %v\n", err)
 		return
 	}
-	defer podLogs.Close()
+	defer func() {
+		err := podLogs.Close()
+		if err != nil {
+			log.Fatalf("Error closing pod logs: %v", err)
+		}
+	}()
 
 	err = os.MkdirAll(outputDir, os.ModePerm)
 	if err != nil {
@@ -73,7 +78,7 @@ func writeLogToFile(outputDir, podName, container string, p cgocorev1.PodInterfa
 		return
 	}
 
-	outputFile, err := os.Create(filepath.Join(outputDir, podName))
+	outputFile, err := os.Create(filepath.Clean(filepath.Join(outputDir, podName)))
 	if err != nil {
 		log.Fatalf("Error getting pod logs: %v\n", err)
 		return
@@ -91,7 +96,12 @@ func writeToFile(outputDir string, o client.Object) {
 	if err != nil {
 		log.Fatalf("Failed to create file: %v", err)
 	}
-	defer outputFile.Close()
+	defer func() {
+		err := outputFile.Close()
+		if err != nil {
+			log.Fatalf("Error closing file: %v", err)
+		}
+	}()
 
 	unstructuredDeployment, err := runtime.DefaultUnstructuredConverter.ToUnstructured(o)
 	if err != nil {

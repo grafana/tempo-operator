@@ -27,6 +27,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+// Config is the must-gather config.
 type Config struct {
 	CollectionDir       string
 	OperatorName        string
@@ -35,6 +36,7 @@ type Config struct {
 	KubernetesClientSet *kubernetes.Clientset
 }
 
+// NewConfig creates a new must-gather config.
 func NewConfig(scheme *runtime.Scheme) (Config, error) {
 	var operatorName, operatorNamespace, collectionDir, kubeconfigPath string
 

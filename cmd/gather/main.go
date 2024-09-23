@@ -18,7 +18,6 @@ import (
 	"log"
 	"os"
 
-	tempov1alpha1 "github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	routev1 "github.com/openshift/api/route/v1"
 	operatorsv1 "github.com/operator-framework/api/pkg/operators/v1"
 	operatorsv1alpha1 "github.com/operator-framework/api/pkg/operators/v1alpha1"
@@ -31,6 +30,8 @@ import (
 	rbacv1 "k8s.io/api/rbac/v1"
 	k8sruntime "k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+
+	tempov1alpha1 "github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 
 	"github.com/grafana/tempo-operator/cmd/gather/cluster"
 	"github.com/grafana/tempo-operator/cmd/gather/config"
