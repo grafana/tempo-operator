@@ -615,7 +615,7 @@ func TestBuildQueryFrontendWithJaegerMonitorTab(t *testing.T) {
 					},
 				},
 			},
-			args: []string{"--query.base-path=/", "--span-storage.type=grpc", "--grpc-storage.server=localhost:7777", "--query.bearer-token-propagation=true", "--prometheus.query.support-spanmetrics-connector"},
+			args: []string{"--query.base-path=/", "--span-storage.type=grpc", "--grpc-storage.server=localhost:7777", "--query.bearer-token-propagation=true"},
 			env:  []corev1.EnvVar{{Name: "METRICS_STORAGE_TYPE", Value: "prometheus"}, {Name: "PROMETHEUS_SERVER_URL", Value: "http://prometheus:9091"}},
 		},
 		{
@@ -643,7 +643,6 @@ func TestBuildQueryFrontendWithJaegerMonitorTab(t *testing.T) {
 				"--span-storage.type=grpc",
 				"--grpc-storage.server=localhost:7777",
 				"--query.bearer-token-propagation=true",
-				"--prometheus.query.support-spanmetrics-connector",
 				"--prometheus.tls.enabled=true",
 				"--prometheus.token-file=/var/run/secrets/kubernetes.io/serviceaccount/token",
 				"--prometheus.token-override-from-context=false",
