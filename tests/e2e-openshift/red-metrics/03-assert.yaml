@@ -23,6 +23,24 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tempo-redmetrics-query-frontend
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: query-frontend
+      app.kubernetes.io/instance: redmetrics
+      app.kubernetes.io/managed-by: tempo-operator
+      app.kubernetes.io/name: tempo
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: query-frontend
+        app.kubernetes.io/instance: redmetrics
+        app.kubernetes.io/managed-by: tempo-operator
+        app.kubernetes.io/name: tempo
+        tempo-gossip-member: "true"
+    spec:
+      serviceAccount: tempo-redmetrics-query-frontend
+      serviceAccountName: tempo-redmetrics-query-frontend
 status:
   readyReplicas: 1
 ---
@@ -48,4 +66,15 @@ roleRef:
   name: cluster-monitoring-view
 subjects:
 - kind: ServiceAccount
+  name: tempo-redmetrics-query-frontend
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/component: query-frontend
+    app.kubernetes.io/instance: redmetrics
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
   name: tempo-redmetrics-query-frontend
