@@ -48,11 +48,11 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 
 	if gates.HTTPEncryption || gates.GRPCEncryption {
 		caBundleName := naming.SigningCABundleName(tempo.Name)
-		if err := manifestutils.ConfigureServiceCA(&d.Spec.Template.Spec, caBundleName, 0, 1); err != nil {
+		if err := manifestutils.ConfigureServiceCA(&d.Spec.Template.Spec, caBundleName, 0, 2); err != nil {
 			return nil, err
 		}
 
-		err := manifestutils.ConfigureServicePKI(tempo.Name, manifestutils.QueryFrontendComponentName, &d.Spec.Template.Spec, 0, 1)
+		err := manifestutils.ConfigureServicePKI(tempo.Name, manifestutils.QueryFrontendComponentName, &d.Spec.Template.Spec, 0, 2)
 		if err != nil {
 			return nil, err
 		}
