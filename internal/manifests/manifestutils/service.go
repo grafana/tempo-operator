@@ -8,6 +8,21 @@ import (
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
 )
 
+// ConfigureServiceCAByContainerName modify the PodSpec adding the volumes and volumeMounts to the specified containers.
+func ConfigureServiceCAByContainerName(podSpec *corev1.PodSpec, caBundleName string, containers ...string) error {
+	targetContainers := map[string]struct{}{}
+	for _, name := range containers {
+		targetContainers[name] = struct{}{}
+	}
+	ids := []int{}
+	for id, c := range podSpec.Containers {
+		if _, exists := targetContainers[c.Name]; exists {
+			ids = append(ids, id)
+		}
+	}
+	return ConfigureServiceCA(podSpec, caBundleName, ids...)
+}
+
 // ConfigureServiceCA modify the PodSpec adding the volumes and volumeMounts to the specified containers.
 func ConfigureServiceCA(podSpec *corev1.PodSpec, caBundleName string, containers ...int) error {
 	secretVolumeSpec := corev1.PodSpec{
@@ -56,6 +71,21 @@ func ConfigureServiceCA(podSpec *corev1.PodSpec, caBundleName string, containers
 		}
 	}
 	return nil
+}
+
+// ConfigureServicePKIByContainerName modify the PodSpec adding cert the volumes and volumeMounts to the specified containers.
+func ConfigureServicePKIByContainerName(tempoStackName string, component string, podSpec *corev1.PodSpec, containers ...string) error {
+	targetContainers := map[string]struct{}{}
+	for _, name := range containers {
+		targetContainers[name] = struct{}{}
+	}
+	ids := []int{}
+	for id, c := range podSpec.Containers {
+		if _, exists := targetContainers[c.Name]; exists {
+			ids = append(ids, id)
+		}
+	}
+	return ConfigureServicePKI(tempoStackName, component, podSpec, ids...)
 }
 
 // ConfigureServicePKI modify the PodSpec adding cert the volumes and volumeMounts to the specified containers.

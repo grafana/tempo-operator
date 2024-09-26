@@ -54,21 +54,12 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 
 	if gates.HTTPEncryption || gates.GRPCEncryption {
 		caBundleName := naming.SigningCABundleName(tempo.Name)
-		targetContainers := map[string]struct{}{
-			containerNameTempo:      {},
-			containerNameTempoQuery: {},
-		}
-		targets := []int{}
-		for i, c := range d.Spec.Template.Spec.Containers {
-			if _, exists := targetContainers[c.Name]; exists {
-				targets = append(targets, i)
-			}
-		}
-		if err := manifestutils.ConfigureServiceCA(&d.Spec.Template.Spec, caBundleName, targets...); err != nil {
+		targets := []string{containerNameTempo, containerNameTempoQuery}
+		if err := manifestutils.ConfigureServiceCAByContainerName(&d.Spec.Template.Spec, caBundleName, targets...); err != nil {
 			return nil, err
 		}
 
-		err := manifestutils.ConfigureServicePKI(tempo.Name, manifestutils.QueryFrontendComponentName, &d.Spec.Template.Spec, targets...)
+		err := manifestutils.ConfigureServicePKIByContainerName(tempo.Name, manifestutils.QueryFrontendComponentName, &d.Spec.Template.Spec, targets...)
 		if err != nil {
 			return nil, err
 		}
