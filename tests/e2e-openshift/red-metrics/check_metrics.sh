@@ -1,6 +1,6 @@
 #!/bin/bash
 
-TOKEN=$(oc create token prometheus-user-workload -n openshift-user-workload-monitoring)
+TOKEN=$(oc create token tempo-redmetrics-query-frontend -n $NAMESPACE)
 THANOS_QUERIER_HOST=$(oc get route thanos-querier -n openshift-monitoring -o json | jq -r '.spec.host')
 
 #Check metrics used in the prometheus rules created for TempoStack. Refer issue https://issues.redhat.com/browse/TRACING-3399 for skipped metrics.
