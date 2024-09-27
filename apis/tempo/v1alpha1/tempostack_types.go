@@ -523,6 +523,12 @@ type TempoComponentSpec struct {
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Resources"
 	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
+
+	// PodSecurityContext defines security context will be applied to all pods of this component.
+	//
+	// +optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="PodSecurityContext"
+	PodSecurityContext *corev1.PodSecurityContext `json:"podSecurityContext,omitempty"`
 }
 
 // TempoGatewaySpec extends TempoComponentSpec with gateway parameters.

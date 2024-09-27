@@ -248,6 +248,7 @@ func deployment(params manifestutils.Params) (*appsv1.Deployment, error) {
 							},
 						},
 					},
+					SecurityContext: tempo.Spec.Template.QueryFrontend.PodSecurityContext,
 				},
 			},
 		},
