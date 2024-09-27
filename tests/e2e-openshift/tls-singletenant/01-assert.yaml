@@ -74,10 +74,6 @@ spec:
         volumeMounts:
         - mountPath: /tmp
           name: tempo-tmp-storage-query
-        - mountPath: /var/run/ca
-          name: tempo-simplest-ca-bundle
-        - mountPath: /var/run/tls/server
-          name: tempo-simplest-query-frontend-mtls
       - name: tempo-query
         ports:
         - containerPort: 7777
@@ -87,6 +83,10 @@ spec:
         - mountPath: /conf
           name: tempo-conf
           readOnly: true
+        - mountPath: /var/run/ca
+          name: tempo-simplest-ca-bundle
+        - mountPath: /var/run/tls/server
+          name: tempo-simplest-query-frontend-mtls
       volumes:
       - configMap:
           defaultMode: 420
