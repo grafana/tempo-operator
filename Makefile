@@ -15,6 +15,7 @@ JAEGER_QUERY_IMAGE ?= docker.io/jaegertracing/jaeger-query:$(JAEGER_QUERY_VERSIO
 TEMPO_QUERY_IMAGE ?= docker.io/grafana/tempo-query:$(TEMPO_QUERY_VERSION)
 TEMPO_GATEWAY_IMAGE ?= quay.io/observatorium/api:$(TEMPO_GATEWAY_VERSION)
 TEMPO_GATEWAY_OPA_IMAGE ?= quay.io/observatorium/opa-openshift:$(TEMPO_GATEWAY_OPA_VERSION)
+MUSTGATHER_IMAGE ?= ${IMG_PREFIX}/must-gather:$(OPERATOR_VERSION)
 OAUTH_PROXY_IMAGE ?= quay.io/openshift/origin-oauth-proxy:$(OAUTH_PROXY_VERSION)
 
 VERSION_PKG ?= github.com/grafana/tempo-operator/internal/version
@@ -146,6 +147,10 @@ test: manifests generate fmt setup-envtest ## Run tests.
 build: generate fmt ## Build manager binary.
 	CGO_ENABLED=0 go build -o bin/manager -ldflags ${LD_FLAGS} main.go
 
+.PHONY: must-gather
+must-gather:
+	CGO_ENABLED=0 go build -o bin/must-gather ./cmd/gather/main.go
+
 .PHONY: run
 run: manifests generate ## Run a controller from your host.
 	@echo -e "\033[33mRemoving tempo-operator from the cluster. Webhooks are disabled, use the normal deployment method to enable full operator functionality.\033[0m"
@@ -160,6 +165,14 @@ run: manifests generate ## Run a controller from your host.
 	RELATED_IMAGE_TEMPO_GATEWAY_OPA=$(TEMPO_GATEWAY_OPA_IMAGE) \
 	RELATED_IMAGE_OAUTH_PROXY=$(OAUTH_PROXY_IMAGE) \
 	go run -ldflags ${LD_FLAGS} ./main.go --zap-log-level=info start
+
+.PHONY: container-must-gather
+container-must-gather:
+	docker build -f cmd/gather/Dockerfile --load -t ${MUSTGATHER_IMAGE} .
+
+.PHONY: container-must-gather-push
+container-must-gather-push:
+	docker push ${MUSTGATHER_IMAGE}
 
 .PHONY: docker-build
 docker-build: ## Build docker image with the manager.
