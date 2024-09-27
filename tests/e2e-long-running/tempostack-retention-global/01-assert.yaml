@@ -1,7 +1,7 @@
 apiVersion: tempo.grafana.com/v1alpha1
 kind: TempoStack
 metadata:
-  name: tempo-st
+  name: global
 #
 # Service Accounts
 #
@@ -9,10 +9,10 @@ metadata:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: tempo-tempo-st
+  name: tempo-global
   labels:
     app.kubernetes.io/component: serviceaccount
-    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/instance: global
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
 #
@@ -22,117 +22,29 @@ metadata:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  name: tempo-global-query-frontend
   labels:
     app.kubernetes.io/component: query-frontend
-    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/instance: global
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
-  name: tempo-tempo-st-query-frontend
-  namespace: chainsaw-tst
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/component: query-frontend
-      app.kubernetes.io/instance: tempo-st
+      app.kubernetes.io/instance: global
       app.kubernetes.io/managed-by: tempo-operator
       app.kubernetes.io/name: tempo
-  template:
-    metadata:
-      labels:
-        app.kubernetes.io/component: query-frontend
-        app.kubernetes.io/instance: tempo-st
-        app.kubernetes.io/managed-by: tempo-operator
-        app.kubernetes.io/name: tempo
-        tempo-gossip-member: "true"
-    spec:
-      containers:
-      - name: tempo
-        ports:
-        - containerPort: 3200
-          name: http
-          protocol: TCP
-        - containerPort: 9095
-          name: grpc
-          protocol: TCP
-        volumeMounts:
-        - mountPath: /conf
-          name: tempo-conf
-          readOnly: true
-        - mountPath: /var/tempo
-          name: tempo-tmp-storage
-        - mountPath: /var/run/ca
-          name: tempo-tempo-st-ca-bundle
-        - mountPath: /var/run/tls/server
-          name: tempo-tempo-st-query-frontend-mtls
-      - name: jaeger-query
-        ports:
-        - containerPort: 16685
-          name: jaeger-grpc
-          protocol: TCP
-        - containerPort: 16686
-          name: jaeger-ui
-          protocol: TCP
-        - containerPort: 16687
-          name: jaeger-metrics
-          protocol: TCP
-        volumeMounts:
-        - mountPath: /tmp
-          name: tempo-tmp-storage-query
-      - name: tempo-query
-        ports:
-        - containerPort: 7777
-          name: proxy-grpc
-          protocol: TCP
-        volumeMounts:
-        - mountPath: /conf
-          name: tempo-conf
-          readOnly: true
-        - mountPath: /var/run/ca
-          name: tempo-tempo-st-ca-bundle
-        - mountPath: /var/run/tls/server
-          name: tempo-tempo-st-query-frontend-mtls
-      - name: oauth-proxy
-        ports:
-        - containerPort: 8443
-          name: oauth-proxy
-          protocol: TCP
-        volumeMounts:
-        - mountPath: /etc/tls/private
-          name: tempo-st-ui-oauth-proxy-tls
-      volumes:
-      - configMap:
-          defaultMode: 420
-          name: tempo-tempo-st
-        name: tempo-conf
-      - emptyDir: {}
-        name: tempo-tmp-storage
-      - emptyDir: {}
-        name: tempo-tmp-storage-query
-      - configMap:
-          defaultMode: 420
-          name: tempo-tempo-st-ca-bundle
-        name: tempo-tempo-st-ca-bundle
-      - name: tempo-tempo-st-query-frontend-mtls
-        secret:
-          defaultMode: 420
-          secretName: tempo-tempo-st-query-frontend-mtls
-      - name: tempo-st-ui-oauth-proxy-tls
-        secret:
-          defaultMode: 420
-          secretName: tempo-st-ui-oauth-proxy-tls
 status:
-  availableReplicas: 1
   readyReplicas: 1
-  replicas: 1
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: tempo-tempo-st-distributor
+  name: tempo-global-distributor
   labels:
     app.kubernetes.io/component: distributor
-    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/instance: global
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
 spec:
@@ -140,7 +52,7 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/component: distributor
-      app.kubernetes.io/instance: tempo-st
+      app.kubernetes.io/instance: global
       app.kubernetes.io/managed-by: tempo-operator
       app.kubernetes.io/name: tempo
 status:
@@ -149,17 +61,17 @@ status:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: tempo-tempo-st-querier
+  name: tempo-global-querier
   labels:
     app.kubernetes.io/component: querier
-    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/instance: global
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
 spec:
   selector:
     matchLabels:
       app.kubernetes.io/component: querier
-      app.kubernetes.io/instance: tempo-st
+      app.kubernetes.io/instance: global
       app.kubernetes.io/managed-by: tempo-operator
       app.kubernetes.io/name: tempo
 status:
@@ -168,17 +80,17 @@ status:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: tempo-tempo-st-compactor
+  name: tempo-global-compactor
   labels:
     app.kubernetes.io/component: compactor
-    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/instance: global
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
 spec:
   selector:
     matchLabels:
       app.kubernetes.io/component: compactor
-      app.kubernetes.io/instance: tempo-st
+      app.kubernetes.io/instance: global
       app.kubernetes.io/managed-by: tempo-operator
       app.kubernetes.io/name: tempo
 status:
@@ -190,17 +102,17 @@ status:
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: tempo-tempo-st-ingester
+  name: tempo-global-ingester
   labels:
     app.kubernetes.io/component: ingester
-    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/instance: global
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
 spec:
   selector:
     matchLabels:
       app.kubernetes.io/component: ingester
-      app.kubernetes.io/instance: tempo-st
+      app.kubernetes.io/instance: global
       app.kubernetes.io/managed-by: tempo-operator
       app.kubernetes.io/name: tempo
 status:
@@ -214,10 +126,10 @@ kind: Service
 metadata:
   labels:
     app.kubernetes.io/component: compactor
-    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/instance: global
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
-  name: tempo-tempo-st-compactor
+  name: tempo-global-compactor
 spec:
   ports:
     - name: http-memberlist
@@ -230,7 +142,7 @@ spec:
       targetPort: http
   selector:
     app.kubernetes.io/component: compactor
-    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/instance: global
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
 ---
@@ -239,10 +151,10 @@ kind: Service
 metadata:
   labels:
     app.kubernetes.io/component: distributor
-    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/instance: global
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
-  name: tempo-tempo-st-distributor
+  name: tempo-global-distributor
 spec:
   ports:
     - name: otlp-http
@@ -279,7 +191,7 @@ spec:
       targetPort: http-zipkin
   selector:
     app.kubernetes.io/component: distributor
-    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/instance: global
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
 ---
@@ -288,10 +200,10 @@ kind: Service
 metadata:
   labels:
     app.kubernetes.io/component: gossip-ring
-    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/instance: global
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
-  name: tempo-tempo-st-gossip-ring
+  name: tempo-global-gossip-ring
 spec:
   clusterIP: None
   publishNotReadyAddresses: true
@@ -301,7 +213,7 @@ spec:
       protocol: TCP
       targetPort: http-memberlist
   selector:
-    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/instance: global
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
     tempo-gossip-member: "true"
@@ -311,10 +223,10 @@ kind: Service
 metadata:
   labels:
     app.kubernetes.io/component: ingester
-    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/instance: global
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
-  name: tempo-tempo-st-ingester
+  name: tempo-global-ingester
 spec:
   ports:
     - name: http
@@ -327,7 +239,7 @@ spec:
       targetPort: grpc
   selector:
     app.kubernetes.io/component: ingester
-    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/instance: global
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
 ---
@@ -336,10 +248,10 @@ kind: Service
 metadata:
   labels:
     app.kubernetes.io/component: querier
-    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/instance: global
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
-  name: tempo-tempo-st-querier
+  name: tempo-global-querier
 spec:
   ports:
     - name: http-memberlist
@@ -356,7 +268,7 @@ spec:
       targetPort: grpc
   selector:
     app.kubernetes.io/component: querier
-    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/instance: global
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
 ---
@@ -365,40 +277,35 @@ kind: Service
 metadata:
   labels:
     app.kubernetes.io/component: query-frontend
-    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/instance: global
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
-  name: tempo-tempo-st-query-frontend
-  namespace: chainsaw-tst
+  name: tempo-global-query-frontend
 spec:
   ports:
-  - name: http
-    port: 3200
-    protocol: TCP
-    targetPort: http
-  - name: grpc
-    port: 9095
-    protocol: TCP
-    targetPort: grpc
-  - name: jaeger-grpc
-    port: 16685
-    protocol: TCP
-    targetPort: jaeger-grpc
-  - name: jaeger-ui
-    port: 16686
-    protocol: TCP
-    targetPort: jaeger-ui
-  - name: jaeger-metrics
-    port: 16687
-    protocol: TCP
-    targetPort: jaeger-metrics
-  - name: oauth-proxy
-    port: 8443
-    protocol: TCP
-    targetPort: oauth-proxy
+    - name: http
+      port: 3200
+      protocol: TCP
+      targetPort: http
+    - name: grpc
+      port: 9095
+      protocol: TCP
+      targetPort: grpc
+    - name: jaeger-grpc
+      port: 16685
+      protocol: TCP
+      targetPort: jaeger-grpc
+    - name: jaeger-ui
+      port: 16686
+      protocol: TCP
+      targetPort: jaeger-ui
+    - name: jaeger-metrics
+      port: 16687
+      protocol: TCP
+      targetPort: jaeger-metrics
   selector:
     app.kubernetes.io/component: query-frontend
-    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/instance: global
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
 ---
@@ -407,10 +314,10 @@ kind: Service
 metadata:
   labels:
     app.kubernetes.io/component: query-frontend-discovery
-    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/instance: global
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
-  name: tempo-tempo-st-query-frontend-discovery
+  name: tempo-global-query-frontend-discovery
 spec:
   clusterIP: None
   publishNotReadyAddresses: true
@@ -441,28 +348,24 @@ spec:
       targetPort: jaeger-metrics
   selector:
     app.kubernetes.io/component: query-frontend
-    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/instance: global
     app.kubernetes.io/managed-by: tempo-operator
 #
 # Ingresses
 #
 ---
-apiVersion: route.openshift.io/v1
-kind: Route
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
   labels:
     app.kubernetes.io/component: query-frontend
-    app.kubernetes.io/instance: tempo-st
+    app.kubernetes.io/instance: global
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
-  name: tempo-tempo-st-query-frontend
-  namespace: chainsaw-tst
+  name: tempo-global-query-frontend
 spec:
-  port:
-    targetPort: oauth-proxy
-  tls:
-    termination: reencrypt
-  to:
-    kind: Service
-    name: tempo-tempo-st-query-frontend
-    weight: 100
+  defaultBackend:
+    service:
+      name: tempo-global-query-frontend
+      port:
+        name: jaeger-ui

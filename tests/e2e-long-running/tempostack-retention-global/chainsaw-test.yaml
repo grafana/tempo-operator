@@ -1,0 +1,59 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/kyverno/chainsaw/main/.schemas/json/test-chainsaw-v1alpha1.json
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  creationTimestamp: null
+  name: tempostack-retention-global
+spec:
+  steps:
+  - name: step-00
+    try:
+    - apply:
+        file: 00-install-storage.yaml
+    - assert:
+        file: 00-assert.yaml
+  - name: step-01
+    try:
+    - apply:
+        file: 01-install.yaml
+    - assert:
+        file: 01-assert.yaml
+  - name: step-02
+    try:
+    - script:
+        timeout: 5m
+        content: kubectl get --namespace $NAMESPACE tempo global -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' | grep True
+  - name: step-03
+    try:
+    - apply:
+        file: 03-generate-traces.yaml
+    - assert:
+        file: 03-assert.yaml
+  - name: step-04
+    try:
+    - apply:
+        file: 04-verify-traces-jaeger.yaml
+    - assert:
+        file: 04-assert.yaml
+  - name: step-05
+    try:
+    - apply:
+        file: 05-verify-traces-grafana.yaml
+    - assert:
+        file: 05-assert.yaml
+  - name: Wait for the TempoStack global retention time period
+    try:
+    - sleep:
+        duration: 45m
+  - name: The number of traces must be 0 post the retention period
+    try:
+    - apply:
+        file: verify-traces-jaeger-ret.yaml
+    - assert:
+        file: verify-traces-jaeger-ret-assert.yaml
+  - name: The number of traces must be 0 post the retention period
+    try:
+    - apply:
+        file: verify-traces-grafana-ret.yaml
+    - assert:
+        file: verify-traces-grafana-ret-assert.yaml
