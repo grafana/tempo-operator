@@ -30,6 +30,12 @@ const (
 	thanosQuerierOpenShiftMonitoring = "https://thanos-querier.openshift-monitoring.svc.cluster.local:9091"
 )
 
+const (
+	containerNameTempo       = "tempo"
+	containerNameJaegerQuery = "jaeger-query"
+	containerNameTempoQuery  = "tempo-query"
+)
+
 // BuildQueryFrontend creates the query-frontend objects.
 func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 	var manifests []client.Object
@@ -48,11 +54,21 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 
 	if gates.HTTPEncryption || gates.GRPCEncryption {
 		caBundleName := naming.SigningCABundleName(tempo.Name)
-		if err := manifestutils.ConfigureServiceCA(&d.Spec.Template.Spec, caBundleName, 0, 1); err != nil {
+		targetContainers := map[string]struct{}{
+			containerNameTempo:      {},
+			containerNameTempoQuery: {},
+		}
+		targets := []int{}
+		for i, c := range d.Spec.Template.Spec.Containers {
+			if _, exists := targetContainers[c.Name]; exists {
+				targets = append(targets, i)
+			}
+		}
+		if err := manifestutils.ConfigureServiceCA(&d.Spec.Template.Spec, caBundleName, targets...); err != nil {
 			return nil, err
 		}
 
-		err := manifestutils.ConfigureServicePKI(tempo.Name, manifestutils.QueryFrontendComponentName, &d.Spec.Template.Spec, 0, 1)
+		err := manifestutils.ConfigureServicePKI(tempo.Name, manifestutils.QueryFrontendComponentName, &d.Spec.Template.Spec, targets...)
 		if err != nil {
 			return nil, err
 		}
@@ -177,7 +193,7 @@ func deployment(params manifestutils.Params) (*appsv1.Deployment, error) {
 					Affinity:           manifestutils.DefaultAffinity(labels),
 					Containers: []corev1.Container{
 						{
-							Name:  "tempo",
+							Name:  containerNameTempo,
 							Image: tempoImage,
 							Env:   proxy.ReadProxyVarsFromEnv(),
 							Args: []string{
@@ -239,7 +255,7 @@ func deployment(params manifestutils.Params) (*appsv1.Deployment, error) {
 
 	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled {
 		jaegerQueryContainer := corev1.Container{
-			Name:  "jaeger-query",
+			Name:  containerNameJaegerQuery,
 			Image: jaegerQueryImage,
 			Env:   proxy.ReadProxyVarsFromEnv(),
 			Args: []string{
@@ -276,7 +292,7 @@ func deployment(params manifestutils.Params) (*appsv1.Deployment, error) {
 		}
 
 		tempoProxyContainer := corev1.Container{
-			Name:  "tempo-query",
+			Name:  containerNameTempoQuery,
 			Image: tempoQueryImage,
 			Env:   proxy.ReadProxyVarsFromEnv(),
 			Args: []string{
@@ -366,7 +382,6 @@ func enableMonitoringTab(tempo v1alpha1.TempoStack, jaegerQueryContainer corev1.
 			},
 		},
 		Args: []string{
-			"--prometheus.query.support-spanmetrics-connector",
 			// Just a note that normalization needs to be enabled for < 0.80.0 OTEL collector versions
 			// However, we do not intend to support them.
 			// --prometheus.query.normalize-calls

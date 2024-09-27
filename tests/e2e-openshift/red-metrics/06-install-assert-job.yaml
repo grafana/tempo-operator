@@ -1,20 +1,3 @@
-# Add the cluter role binding required for fetching metrics from Thanos querier. Refer https://issues.redhat.com/browse/MON-3379
-# The ClusterRoleBinding step is not a Tempo requirement and is used only by the test case to check the metrics using the check_metrics.sh script.
-
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: chainsaw-red-metrics-monitoring-view
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: cluster-monitoring-view
-subjects:
-- kind: ServiceAccount
-  name: prometheus-user-workload
-  namespace: openshift-user-workload-monitoring
-
----
 apiVersion: batch/v1
 kind: Job
 metadata:

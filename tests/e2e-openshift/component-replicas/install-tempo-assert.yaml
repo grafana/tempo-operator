@@ -326,7 +326,7 @@ spec:
   port:
     targetPort: public
   tls:
-    termination: passthrough
+    termination: reencrypt
   to:
     kind: Service
     name: tempo-cmpreps-gateway
