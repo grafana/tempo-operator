@@ -40,7 +40,7 @@ spec:
         - --leader-elect
         env:
         - name: RELATED_IMAGE_TEMPO
-          value: docker.io/grafana/tempo:2.5.0
+          value: docker.io/grafana/tempo:2.6.0
         - name: RELATED_IMAGE_JAEGER_QUERY
           value: docker.io/jaegertracing/jaeger-query:1.60
         - name: RELATED_IMAGE_TEMPO_QUERY
