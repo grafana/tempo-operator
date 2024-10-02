@@ -103,7 +103,7 @@ type TempoStackSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tempo Component Templates"
 	Template TempoTemplateSpec `json:"template,omitempty"`
 
-	// The replication factor is a configuration setting that determines how many copies of your trace data are stored across different instances of Tempo's backend storage.
+	// The replication factor is a configuration setting that determines how many ingesters need to acknowledge the data from the distributors before accepting a span.
 	//
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Replication Factor"
