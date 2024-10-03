@@ -290,8 +290,8 @@ spec:
                 type: object
               replicationFactor:
                 description: The replication factor is a configuration setting that
-                  determines how many copies of your trace data are stored across
-                  different instances of Tempo's backend storage.
+                  determines how many ingesters need to acknowledge the data from
+                  the distributors before accepting a span.
                 type: integer
               resources:
                 description: Resources defines resources configuration.
