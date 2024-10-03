@@ -40,6 +40,11 @@ type TempoStackSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Ingestion and Querying Ratelimiting"
 	LimitSpec LimitSpec `json:"limits,omitempty"`
 
+	// Timeout configures the same timeout on all components starting at ingress down to the ingestor/querier.
+	// Timeout configuration on a specific component has a higher precedence.
+	// Defaults to 30 seconds.
+	Timeout metav1.Duration `json:"timeout,omitempty"`
+
 	// StorageClassName for PVCs used by ingester. Defaults to nil (default storage class in the cluster).
 	//
 	// +optional

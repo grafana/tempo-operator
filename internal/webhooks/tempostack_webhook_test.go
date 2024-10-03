@@ -86,6 +86,7 @@ func TestDefault(t *testing.T) {
 				},
 				Spec: v1alpha1.TempoStackSpec{
 					ReplicationFactor: 2,
+					Timeout:           metav1.Duration{Duration: time.Second * 30},
 					Images: configv1alpha1.ImagesSpec{
 						Tempo:           "docker.io/grafana/tempo:1.2.3",
 						TempoQuery:      "docker.io/grafana/tempo-query:1.2.3",
@@ -162,6 +163,7 @@ func TestDefault(t *testing.T) {
 				},
 				Spec: v1alpha1.TempoStackSpec{
 					ReplicationFactor: 1,
+					Timeout:           metav1.Duration{Duration: time.Second * 30},
 					Images:            configv1alpha1.ImagesSpec{},
 					ServiceAccount:    "tempo-test",
 					Retention: v1alpha1.RetentionSpec{
@@ -244,6 +246,7 @@ func TestDefault(t *testing.T) {
 				},
 				Spec: v1alpha1.TempoStackSpec{
 					ReplicationFactor: 1,
+					Timeout:           metav1.Duration{Duration: time.Second * 30},
 					Images:            configv1alpha1.ImagesSpec{},
 					ServiceAccount:    "tempo-test",
 					Retention: v1alpha1.RetentionSpec{
@@ -326,6 +329,7 @@ func TestDefault(t *testing.T) {
 				},
 				Spec: v1alpha1.TempoStackSpec{
 					ReplicationFactor: 1,
+					Timeout:           metav1.Duration{Duration: time.Second * 30},
 					Images:            configv1alpha1.ImagesSpec{},
 					ServiceAccount:    "tempo-test",
 					Retention: v1alpha1.RetentionSpec{
@@ -425,6 +429,7 @@ func TestDefault(t *testing.T) {
 				},
 				Spec: v1alpha1.TempoStackSpec{
 					ReplicationFactor: 1,
+					Timeout:           metav1.Duration{Duration: time.Second * 30},
 					Images:            configv1alpha1.ImagesSpec{},
 					ServiceAccount:    "tempo-test",
 					Retention: v1alpha1.RetentionSpec{
@@ -490,6 +495,108 @@ func TestDefault(t *testing.T) {
 				},
 				Distribution: "upstream",
 			},
+		},
+		{
+			name: "timeout is set",
+			input: &v1alpha1.TempoStack{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+				},
+				Spec: v1alpha1.TempoStackSpec{
+					ReplicationFactor: 2,
+					Images: configv1alpha1.ImagesSpec{
+						Tempo:           "docker.io/grafana/tempo:1.2.3",
+						TempoQuery:      "docker.io/grafana/tempo-query:1.2.3",
+						TempoGateway:    "docker.io/observatorium/gateway:1.2.3",
+						TempoGatewayOpa: "docker.io/observatorium/opa-openshift:1.2.4",
+						OauthProxy:      "docker.io/observatorium/oauth-proxy:1.2.3",
+					},
+					ServiceAccount: "tempo-test",
+					Retention: v1alpha1.RetentionSpec{
+						Global: v1alpha1.RetentionConfig{
+							Traces: metav1.Duration{Duration: time.Hour},
+						},
+					},
+					Timeout:     metav1.Duration{Duration: time.Hour},
+					StorageSize: resource.MustParse("1Gi"),
+					LimitSpec: v1alpha1.LimitSpec{
+						Global: v1alpha1.RateLimitSpec{
+							Query: v1alpha1.QueryLimit{
+								MaxSearchDuration: metav1.Duration{Duration: 1 * time.Hour},
+							},
+						},
+					},
+				},
+			},
+			expected: &v1alpha1.TempoStack{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+					Labels: map[string]string{
+						"app.kubernetes.io/managed-by":   "tempo-operator",
+						"tempo.grafana.com/distribution": "upstream",
+					},
+				},
+				Spec: v1alpha1.TempoStackSpec{
+					ReplicationFactor: 2,
+					Timeout:           metav1.Duration{Duration: time.Hour},
+					Images: configv1alpha1.ImagesSpec{
+						Tempo:           "docker.io/grafana/tempo:1.2.3",
+						TempoQuery:      "docker.io/grafana/tempo-query:1.2.3",
+						TempoGateway:    "docker.io/observatorium/gateway:1.2.3",
+						TempoGatewayOpa: "docker.io/observatorium/opa-openshift:1.2.4",
+						OauthProxy:      "docker.io/observatorium/oauth-proxy:1.2.3",
+					},
+					ServiceAccount: "tempo-test",
+					Retention: v1alpha1.RetentionSpec{
+						Global: v1alpha1.RetentionConfig{
+							Traces: metav1.Duration{Duration: time.Hour},
+						},
+					},
+					StorageSize: resource.MustParse("1Gi"),
+					LimitSpec: v1alpha1.LimitSpec{
+						Global: v1alpha1.RateLimitSpec{
+							Query: v1alpha1.QueryLimit{
+								MaxSearchDuration: metav1.Duration{Duration: 1 * time.Hour},
+							},
+						},
+					},
+					SearchSpec: v1alpha1.SearchSpec{
+						MaxDuration:        metav1.Duration{Duration: 0},
+						DefaultResultLimit: &defaultDefaultResultLimit,
+					},
+					Template: v1alpha1.TempoTemplateSpec{
+						Compactor: v1alpha1.TempoComponentSpec{
+							Replicas: ptr.To(int32(1)),
+						},
+						Distributor: v1alpha1.TempoDistributorSpec{
+							TempoComponentSpec: v1alpha1.TempoComponentSpec{
+								Replicas: ptr.To(int32(1)),
+							},
+							TLS: v1alpha1.TLSSpec{},
+						},
+						Ingester: v1alpha1.TempoComponentSpec{
+							Replicas: ptr.To(int32(1)),
+						},
+						Querier: v1alpha1.TempoComponentSpec{
+							Replicas: ptr.To(int32(1)),
+						},
+						Gateway: v1alpha1.TempoGatewaySpec{
+							TempoComponentSpec: v1alpha1.TempoComponentSpec{
+								Replicas: ptr.To(int32(1)),
+							},
+						},
+						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+							TempoComponentSpec: v1alpha1.TempoComponentSpec{
+								Replicas: ptr.To(int32(1)),
+							},
+							JaegerQuery: v1alpha1.JaegerQuerySpec{
+								ServicesQueryDuration: &defaultServicesDuration,
+							},
+						},
+					},
+				},
+			},
+			ctrlConfig: defaultCfgConfig,
 		},
 	}
 

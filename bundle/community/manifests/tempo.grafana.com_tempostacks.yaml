@@ -2715,6 +2715,12 @@ spec:
                 required:
                 - mode
                 type: object
+              timeout:
+                description: |-
+                  Timeout configures the same timeout on all components starting at ingress down to the ingestor/querier.
+                  Timeout configuration on a specific component has a higher precedence.
+                  Defaults to 30 seconds.
+                type: string
             required:
             - storage
             type: object

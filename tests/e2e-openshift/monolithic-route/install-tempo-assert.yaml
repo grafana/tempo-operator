@@ -130,6 +130,7 @@ spec:
         - --tls-cert=/etc/tls/private/tls.crt
         - --tls-key=/etc/tls/private/tls.key
         - --upstream=http://localhost:16686
+        - --upstream-timeout=70s
         - '--openshift-sar={"namespace": "chainsaw-mono-route", "resource": "pods",
           "verb": "get"}'
         name: oauth-proxy
@@ -248,3 +249,24 @@ spec:
     app.kubernetes.io/instance: mono-route
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo-monolithic
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  labels:
+    app.kubernetes.io/component: jaegerui
+    app.kubernetes.io/instance: mono-route
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo-monolithic
+  name: tempo-mono-jaegerui
+  namespace: chainsaw-mono-route
+  annotations:
+    haproxy.router.openshift.io/timeout: 70s
+spec:
+  port:
+    targetPort: oauth-proxy
+  tls:
+    termination: reencrypt
+  to:
+    kind: Service
+    name: tempo-mono-jaegerui

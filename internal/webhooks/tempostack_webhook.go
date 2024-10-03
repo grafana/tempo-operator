@@ -33,6 +33,7 @@ var (
 	zeroQuantity            = resource.MustParse("0Gi")
 	tenGBQuantity           = resource.MustParse("10Gi")
 	defaultServicesDuration = metav1.Duration{Duration: time.Hour * 24 * 3}
+	defaultTimeout          = metav1.Duration{Duration: time.Second * 30}
 )
 
 // TempoStackWebhook provides webhooks for TempoStack CR.
@@ -169,6 +170,10 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 			r.Spec.Template.QueryFrontend.JaegerQuery.Authentication.SAR = defaultSAR
 
 		}
+	}
+
+	if r.Spec.Timeout.Duration == 0 {
+		r.Spec.Timeout = defaultTimeout
 	}
 
 	return nil

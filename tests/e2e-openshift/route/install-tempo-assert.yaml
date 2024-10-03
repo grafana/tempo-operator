@@ -3,6 +3,7 @@ kind: Route
 metadata:
   annotations:
     example_annotation: example_value
+    haproxy.router.openshift.io/timeout: 30s
   labels:
     app.kubernetes.io/component: query-frontend
     app.kubernetes.io/instance: simplest

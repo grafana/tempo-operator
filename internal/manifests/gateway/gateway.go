@@ -248,6 +248,7 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 								fmt.Sprintf("--web.internal.listen=0.0.0.0:%d", manifestutils.GatewayPortInternalHTTPServer),                                                                                                                                        // serves health checks
 								fmt.Sprintf("--traces.write.otlpgrpc.endpoint=%s:%d", naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.DistributorComponentName), manifestutils.PortOtlpGrpcServer),                                                    // Tempo Distributor gRPC upstream
 								fmt.Sprintf("--traces.write.otlphttp.endpoint=%s://%s:%d", httpScheme(params.CtrlConfig.Gates.HTTPEncryption), naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.DistributorComponentName), manifestutils.PortOtlpHttp), // Tempo Distributor HTTP upstream
+								fmt.Sprintf("--traces.write-timeout=%s", params.Tempo.Spec.Timeout.Duration.String()),
 								fmt.Sprintf("--traces.tempo.endpoint=%s://%s:%d", httpScheme(params.CtrlConfig.Gates.HTTPEncryption),
 									naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.QueryFrontendComponentName), manifestutils.PortHTTPServer), // Tempo API upstream
 								fmt.Sprintf("--grpc.listen=0.0.0.0:%d", manifestutils.GatewayPortGRPCServer), // proxies Tempo Distributor gRPC

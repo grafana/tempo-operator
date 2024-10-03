@@ -44,6 +44,11 @@ type TempoMonolithicSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Resources",order=5,xDescriptors="urn:alm:descriptor:com.tectonic.ui:resourceRequirements"
 	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 
+	// Timeout configures the same timeout on all components starting at ingress down to the ingestor/querier.
+	// Timeout configuration on a specific component has a higher precedence.
+	// Default is 30 seconds.
+	Timeout metav1.Duration `json:"timeout,omitempty"`
+
 	// ServiceAccount defines the Service Account to use for all Tempo components.
 	//
 	// +kubebuilder:validation:Optional

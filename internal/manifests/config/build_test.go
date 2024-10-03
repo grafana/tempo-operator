@@ -74,8 +74,8 @@ server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
   http_listen_port: 3200
-  http_server_read_timeout: 3m
-  http_server_write_timeout: 3m
+  http_server_read_timeout: 30s
+  http_server_write_timeout: 30s
   log_format: logfmt
 storage:
   trace:
@@ -103,6 +103,7 @@ query_frontend:
 				Name: "test",
 			},
 			Spec: v1alpha1.TempoStackSpec{
+				Timeout: metav1.Duration{Duration: time.Second * 30},
 				Storage: v1alpha1.ObjectStorageSpec{
 					Secret: v1alpha1.ObjectStorageSecretSpec{
 						Type: v1alpha1.ObjectStorageSecretS3,
@@ -197,8 +198,8 @@ server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
   http_listen_port: 3200
-  http_server_read_timeout: 3m
-  http_server_write_timeout: 3m
+  http_server_read_timeout: 3m0s
+  http_server_write_timeout: 3m0s
   log_format: logfmt
 storage:
   trace:
@@ -286,8 +287,8 @@ server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
   http_listen_port: 3200
-  http_server_read_timeout: 3m
-  http_server_write_timeout: 3m
+  http_server_read_timeout: 3m0s
+  http_server_write_timeout: 3m0s
   log_format: logfmt
 storage:
   trace:
@@ -374,8 +375,8 @@ server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
   http_listen_port: 3200
-  http_server_read_timeout: 3m
-  http_server_write_timeout: 3m
+  http_server_read_timeout: 3m0s
+  http_server_write_timeout: 3m0s
   log_format: logfmt
 storage:
   trace:
@@ -463,8 +464,8 @@ server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
   http_listen_port: 3200
-  http_server_read_timeout: 3m
-  http_server_write_timeout: 3m
+  http_server_read_timeout: 3m0s
+  http_server_write_timeout: 3m0s
   log_format: logfmt
 storage:
   trace:
@@ -552,8 +553,8 @@ server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
   http_listen_port: 3200
-  http_server_read_timeout: 3m
-  http_server_write_timeout: 3m
+  http_server_read_timeout: 3m0s
+  http_server_write_timeout: 3m0s
   log_format: logfmt
 storage:
   trace:
@@ -641,8 +642,8 @@ server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
   http_listen_port: 3200
-  http_server_read_timeout: 3m
-  http_server_write_timeout: 3m
+  http_server_read_timeout: 3m0s
+  http_server_write_timeout: 3m0s
   log_format: logfmt
 storage:
   trace:
@@ -730,8 +731,8 @@ server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
   http_listen_port: 3200
-  http_server_read_timeout: 3m
-  http_server_write_timeout: 3m
+  http_server_read_timeout: 3m0s
+  http_server_write_timeout: 3m0s
   log_format: logfmt
 storage:
   trace:
@@ -831,8 +832,8 @@ server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
   http_listen_port: 3200
-  http_server_read_timeout: 3m
-  http_server_write_timeout: 3m
+  http_server_read_timeout: 3m0s
+  http_server_write_timeout: 3m0s
   log_format: logfmt
 storage:
   trace:
@@ -930,8 +931,8 @@ server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
   http_listen_port: 3200
-  http_server_read_timeout: 3m
-  http_server_write_timeout: 3m
+  http_server_read_timeout: 3m0s
+  http_server_write_timeout: 3m0s
   log_format: logfmt
 storage:
   trace:
@@ -964,6 +965,7 @@ query_frontend:
 						Name: "test",
 					},
 					Spec: v1alpha1.TempoStackSpec{
+						Timeout: metav1.Duration{Duration: time.Minute * 3},
 						Storage: v1alpha1.ObjectStorageSpec{
 							Secret: v1alpha1.ObjectStorageSecretSpec{
 								Type: v1alpha1.ObjectStorageSecretS3,
@@ -1091,8 +1093,8 @@ server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
   http_listen_port: 3200
-  http_server_read_timeout: 3m
-  http_server_write_timeout: 3m
+  http_server_read_timeout: 3m0s
+  http_server_write_timeout: 3m0s
   log_format: logfmt
 storage:
   trace:
@@ -1124,6 +1126,7 @@ query_frontend:
 						Name: "test",
 					},
 					Spec: v1alpha1.TempoStackSpec{
+						Timeout: metav1.Duration{Duration: time.Minute * 3},
 						Storage: v1alpha1.ObjectStorageSpec{
 							Secret: v1alpha1.ObjectStorageSecretSpec{
 								Type: v1alpha1.ObjectStorageSecretGCS,
@@ -1205,8 +1208,8 @@ server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
   http_listen_port: 3200
-  http_server_read_timeout: 3m
-  http_server_write_timeout: 3m
+  http_server_read_timeout: 3m0s
+  http_server_write_timeout: 3m0s
   log_format: logfmt
 storage:
   trace:
@@ -1233,6 +1236,7 @@ query_frontend:
 				Name: "test",
 			},
 			Spec: v1alpha1.TempoStackSpec{
+				Timeout: metav1.Duration{Duration: time.Minute * 3},
 				Storage: v1alpha1.ObjectStorageSpec{
 					Secret: v1alpha1.ObjectStorageSecretSpec{
 						Type: v1alpha1.ObjectStorageSecretAzure,
@@ -1309,8 +1313,8 @@ server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
   http_listen_port: 3200
-  http_server_read_timeout: 3m
-  http_server_write_timeout: 3m
+  http_server_read_timeout: 3m0s
+  http_server_write_timeout: 3m0s
   log_format: logfmt
 storage:
   trace:
@@ -1338,6 +1342,7 @@ query_frontend:
 				Name: "test",
 			},
 			Spec: v1alpha1.TempoStackSpec{
+				Timeout: metav1.Duration{Duration: time.Minute * 3},
 				Storage: v1alpha1.ObjectStorageSpec{
 					Secret: v1alpha1.ObjectStorageSecretSpec{
 						Type: v1alpha1.ObjectStorageSecretS3,
@@ -1455,8 +1460,8 @@ server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
   http_listen_port: 3200
-  http_server_read_timeout: 3m
-  http_server_write_timeout: 3m
+  http_server_read_timeout: 3m0s
+  http_server_write_timeout: 3m0s
   log_format: logfmt
   tls_cipher_suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
   tls_min_version: VersionTLS12
@@ -1574,8 +1579,8 @@ server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
   http_listen_port: 3200
-  http_server_read_timeout: 3m
-  http_server_write_timeout: 3m
+  http_server_read_timeout: 3m0s
+  http_server_write_timeout: 3m0s
   log_format: logfmt
   tls_min_version: VersionTLS13
   grpc_tls_config:
@@ -1630,6 +1635,7 @@ ingester_client:
 						Namespace: "nstest",
 					},
 					Spec: v1alpha1.TempoStackSpec{
+						Timeout: metav1.Duration{Duration: time.Minute * 3},
 						Storage: v1alpha1.ObjectStorageSpec{
 							Secret: v1alpha1.ObjectStorageSecretSpec{
 								Type: v1alpha1.ObjectStorageSecretS3,
@@ -1737,8 +1743,8 @@ server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
   http_listen_port: 3200
-  http_server_read_timeout: 3m
-  http_server_write_timeout: 3m
+  http_server_read_timeout: 3m0s
+  http_server_write_timeout: 3m0s
   log_format: logfmt
   tls_cipher_suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
   tls_min_version: VersionTLS12
@@ -1789,6 +1795,7 @@ ingester_client:
 				Namespace: "nstest",
 			},
 			Spec: v1alpha1.TempoStackSpec{
+				Timeout: metav1.Duration{Duration: 3 * time.Minute},
 				Template: v1alpha1.TempoTemplateSpec{
 					Gateway: v1alpha1.TempoGatewaySpec{
 						Enabled: true,
@@ -1902,8 +1909,8 @@ server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
   http_listen_port: 3200
-  http_server_read_timeout: 3m
-  http_server_write_timeout: 3m
+  http_server_read_timeout: 3m0s
+  http_server_write_timeout: 3m0s
   log_format: logfmt
 storage:
   trace:
@@ -2010,8 +2017,8 @@ server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
   http_listen_port: 3200
-  http_server_read_timeout: 3m
-  http_server_write_timeout: 3m
+  http_server_read_timeout: 3m0s
+  http_server_write_timeout: 3m0s
   log_format: logfmt
 storage:
   trace:
@@ -2124,8 +2131,8 @@ server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
   http_listen_port: 3200
-  http_server_read_timeout: 3m
-  http_server_write_timeout: 3m
+  http_server_read_timeout: 3m0s
+  http_server_write_timeout: 3m0s
   log_format: logfmt
 storage:
   trace:
@@ -2158,6 +2165,7 @@ query_frontend:
 						Name: "test",
 					},
 					Spec: v1alpha1.TempoStackSpec{
+						Timeout: metav1.Duration{Duration: time.Minute * 3},
 						Storage: v1alpha1.ObjectStorageSpec{
 							Secret: v1alpha1.ObjectStorageSecretSpec{
 								Type: v1alpha1.ObjectStorageSecretS3,
@@ -2257,8 +2265,8 @@ server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
   http_listen_port: 3200
-  http_server_read_timeout: 3m
-  http_server_write_timeout: 3m
+  http_server_read_timeout: 3m0s
+  http_server_write_timeout: 3m0s
   log_format: logfmt
 storage:
   trace:
@@ -2340,8 +2348,8 @@ server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
   http_listen_port: 3200
-  http_server_read_timeout: 3m
-  http_server_write_timeout: 3m
+  http_server_read_timeout: 3m0s
+  http_server_write_timeout: 3m0s
   log_format: logfmt
 storage:
   trace:
@@ -2374,6 +2382,7 @@ query_frontend:
 						Name: "test",
 					},
 					Spec: v1alpha1.TempoStackSpec{
+						Timeout: metav1.Duration{Duration: 3 * time.Minute},
 						Storage: v1alpha1.ObjectStorageSpec{
 							Secret: v1alpha1.ObjectStorageSecretSpec{
 								Type: v1alpha1.ObjectStorageSecretS3,
@@ -2464,8 +2473,8 @@ server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
   http_listen_port: 3200
-  http_server_read_timeout: 3m
-  http_server_write_timeout: 3m
+  http_server_read_timeout: 3m0s
+  http_server_write_timeout: 3m0s
   log_format: logfmt
 storage:
   trace:
@@ -2492,6 +2501,7 @@ query_frontend:
 				Name: "test",
 			},
 			Spec: v1alpha1.TempoStackSpec{
+				Timeout: metav1.Duration{Duration: time.Minute * 3},
 				Storage: v1alpha1.ObjectStorageSpec{
 					Secret: v1alpha1.ObjectStorageSecretSpec{
 						Type: v1alpha1.ObjectStorageSecretS3,

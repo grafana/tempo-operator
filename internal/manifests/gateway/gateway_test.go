@@ -2,7 +2,6 @@ package gateway
 
 import (
 	"fmt"
-
 	"net"
 	"reflect"
 	"testing"
@@ -249,7 +248,7 @@ func TestBuildGateway_openshift(t *testing.T) {
 	require.True(t, ok)
 	require.Equal(t, "Service", route.Spec.To.Kind)
 	require.Equal(t, "tempo-simplest-gateway", route.Spec.To.Name)
-	require.Equal(t, map[string]string{"timeout": "30s"}, route.ObjectMeta.Annotations)
+	require.Equal(t, map[string]string{"timeout": "30s", "haproxy.router.openshift.io/timeout": "0s"}, route.ObjectMeta.Annotations)
 
 	obj = getObjectByTypeAndName(objects, "tempo-simplest-gateway-cabundle", reflect.TypeOf(&corev1.ConfigMap{}))
 	require.NotNil(t, obj)
@@ -775,6 +774,9 @@ func TestRoute(t *testing.T) {
 			Name:      naming.Name(manifestutils.GatewayComponentName, "test"),
 			Namespace: "project1",
 			Labels:    manifestutils.ComponentLabels("gateway", "test"),
+			Annotations: map[string]string{
+				"haproxy.router.openshift.io/timeout": "0s",
+			},
 		},
 		Spec: routev1.RouteSpec{
 			To: routev1.RouteTargetReference{

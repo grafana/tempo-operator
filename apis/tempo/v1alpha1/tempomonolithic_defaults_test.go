@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
@@ -46,6 +47,7 @@ func TestMonolithicDefault(t *testing.T) {
 						},
 					},
 					Management: "Managed",
+					Timeout:    metav1.Duration{Duration: time.Second * 30},
 				},
 			},
 		},
@@ -79,6 +81,7 @@ func TestMonolithicDefault(t *testing.T) {
 						},
 					},
 					Management: "Managed",
+					Timeout:    metav1.Duration{Duration: time.Second * 30},
 				},
 			},
 		},
@@ -104,6 +107,7 @@ func TestMonolithicDefault(t *testing.T) {
 						},
 					},
 					Management: "Unmanaged",
+					Timeout:    metav1.Duration{Duration: time.Second * 30},
 				},
 			},
 			expected: &TempoMonolithic{
@@ -125,6 +129,7 @@ func TestMonolithicDefault(t *testing.T) {
 						},
 					},
 					Management: "Unmanaged",
+					Timeout:    metav1.Duration{Duration: time.Second * 30},
 				},
 			},
 		},
@@ -194,6 +199,7 @@ func TestMonolithicDefault(t *testing.T) {
 						ServicesQueryDuration: &defaultServicesDuration,
 					},
 					Management: "Managed",
+					Timeout:    metav1.Duration{Duration: time.Second * 30},
 				},
 			},
 		},
@@ -266,6 +272,7 @@ func TestMonolithicDefault(t *testing.T) {
 						ServicesQueryDuration: &defaultServicesDuration,
 					},
 					Management: "Managed",
+					Timeout:    metav1.Duration{Duration: time.Second * 30},
 				},
 			},
 		},
@@ -330,6 +337,7 @@ func TestMonolithicDefault(t *testing.T) {
 						ServicesQueryDuration: &defaultServicesDuration,
 					},
 					Management: "Managed",
+					Timeout:    metav1.Duration{Duration: time.Second * 30},
 				},
 			},
 		},
@@ -393,11 +401,12 @@ func TestMonolithicDefault(t *testing.T) {
 						ServicesQueryDuration: &defaultServicesDuration,
 					},
 					Management: "Managed",
+					Timeout:    metav1.Duration{Duration: time.Second * 30},
 				},
 			},
 		},
 		{
-			name: "define custom duration for services list",
+			name: "define custom duration for services list and timeout",
 			input: &TempoMonolithic{
 				ObjectMeta: v1.ObjectMeta{
 					Name:      "test",
@@ -417,6 +426,7 @@ func TestMonolithicDefault(t *testing.T) {
 						},
 						ServicesQueryDuration: &v1.Duration{Duration: time.Duration(100 * 100)},
 					},
+					Timeout: metav1.Duration{Duration: time.Hour},
 				},
 			},
 			expected: &TempoMonolithic{
@@ -454,6 +464,7 @@ func TestMonolithicDefault(t *testing.T) {
 						ServicesQueryDuration: &v1.Duration{Duration: time.Duration(100 * 100)},
 					},
 					Management: "Managed",
+					Timeout:    metav1.Duration{Duration: time.Hour},
 				},
 			},
 		},

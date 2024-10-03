@@ -16,6 +16,7 @@ kind: TempoStack
 metadata:
   name: simplest
 spec:
+  timeout: 70s
   storage:
     secret:
       name: minio-test

@@ -1679,6 +1679,12 @@ spec:
                 required:
                 - traces
                 type: object
+              timeout:
+                description: |-
+                  Timeout configures the same timeout on all components starting at ingress down to the ingestor/querier.
+                  Timeout configuration on a specific component has a higher precedence.
+                  Default is 30 seconds.
+                type: string
               tolerations:
                 description: Tolerations defines the tolerations of a node to schedule
                   the pod onto it.
