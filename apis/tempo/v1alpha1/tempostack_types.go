@@ -103,7 +103,7 @@ type TempoStackSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tempo Component Templates"
 	Template TempoTemplateSpec `json:"template,omitempty"`
 
-	// ReplicationFactor is used to define how many component replicas should exist.
+	// The replication factor is a configuration setting that determines how many ingesters need to acknowledge the data from the distributors before accepting a span.
 	//
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Replication Factor"

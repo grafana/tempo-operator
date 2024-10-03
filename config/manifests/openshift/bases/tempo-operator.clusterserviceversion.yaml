@@ -647,8 +647,9 @@ spec:
           0 to 1.
         displayName: Sampling Fraction
         path: observability.tracing.sampling_fraction
-      - description: ReplicationFactor is used to define how many component replicas
-          should exist.
+      - description: The replication factor is a configuration setting that determines
+          how many ingesters need to acknowledge the data from the distributors before
+          accepting a span.
         displayName: Replication Factor
         path: replicationFactor
       - description: Resources defines resources configuration.

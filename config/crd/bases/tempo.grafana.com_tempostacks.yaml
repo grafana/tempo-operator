@@ -289,8 +289,9 @@ spec:
                     type: object
                 type: object
               replicationFactor:
-                description: ReplicationFactor is used to define how many component
-                  replicas should exist.
+                description: The replication factor is a configuration setting that
+                  determines how many ingesters need to acknowledge the data from
+                  the distributors before accepting a span.
                 type: integer
               resources:
                 description: Resources defines resources configuration.
