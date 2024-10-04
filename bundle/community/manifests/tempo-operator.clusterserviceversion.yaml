@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.13.0
-    createdAt: "2024-10-03T09:33:24Z"
+    createdAt: "2024-10-04T12:51:28Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -1425,7 +1425,7 @@ spec:
                 - name: RELATED_IMAGE_TEMPO
                   value: docker.io/grafana/tempo:2.5.0
                 - name: RELATED_IMAGE_JAEGER_QUERY
-                  value: docker.io/jaegertracing/jaeger-query:1.60
+                  value: docker.io/jaegertracing/jaeger-query-snapshot:d6631f5f2370cfc3a49efce312491031fb387600
                 - name: RELATED_IMAGE_TEMPO_QUERY
                   value: docker.io/grafana/tempo-query:main-2999520
                 - name: RELATED_IMAGE_TEMPO_GATEWAY
@@ -1574,7 +1574,7 @@ spec:
   relatedImages:
   - image: docker.io/grafana/tempo:2.5.0
     name: tempo
-  - image: docker.io/jaegertracing/jaeger-query:1.60
+  - image: docker.io/jaegertracing/jaeger-query-snapshot:d6631f5f2370cfc3a49efce312491031fb387600
     name: jaeger-query
   - image: docker.io/grafana/tempo-query:main-2999520
     name: tempo-query
