@@ -176,9 +176,10 @@ func buildTempoQueryConfig(params manifestutils.Params) ([]byte, error) {
 			GRPCEncryption: params.CtrlConfig.Gates.GRPCEncryption,
 			HTTPEncryption: params.CtrlConfig.Gates.HTTPEncryption,
 		},
-		TenantHeader:          manifestutils.TenantHeader,
-		Gateway:               params.Tempo.Spec.Template.Gateway.Enabled,
-		ServicesQueryDuration: params.Tempo.Spec.Template.QueryFrontend.JaegerQuery.ServicesQueryDuration.Duration.String(),
+		TenantHeader:                 manifestutils.TenantHeader,
+		Gateway:                      params.Tempo.Spec.Template.Gateway.Enabled,
+		ServicesQueryDuration:        params.Tempo.Spec.Template.QueryFrontend.JaegerQuery.ServicesQueryDuration.Duration.String(),
+		FindTracesConcurrentRequests: params.Tempo.Spec.Template.QueryFrontend.JaegerQuery.FindTracesConcurrentRequests,
 	})
 }
 

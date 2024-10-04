@@ -42,6 +42,7 @@ type TempoStackWebhook struct {
 
 const defaultRouteGatewayTLSTermination = v1alpha1.TLSRouteTerminationTypeReencrypt
 const defaultUITLSTermination = v1alpha1.TLSRouteTerminationTypeEdge
+const defaultFindTracesConcurrentRequests = 1
 
 // SetupWebhookWithManager initializes the webhook.
 func (w *TempoStackWebhook) SetupWebhookWithManager(mgr ctrl.Manager, ctrlConfig configv1alpha1.ProjectConfig) error {
@@ -154,6 +155,9 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 
 	if r.Spec.Template.QueryFrontend.JaegerQuery.ServicesQueryDuration == nil {
 		r.Spec.Template.QueryFrontend.JaegerQuery.ServicesQueryDuration = &defaultServicesDuration
+	}
+	if r.Spec.Template.QueryFrontend.JaegerQuery.FindTracesConcurrentRequests == 0 {
+		r.Spec.Template.QueryFrontend.JaegerQuery.FindTracesConcurrentRequests = defaultFindTracesConcurrentRequests
 	}
 
 	if d.ctrlConfig.Gates.OpenShift.OauthProxy.DefaultEnabled {

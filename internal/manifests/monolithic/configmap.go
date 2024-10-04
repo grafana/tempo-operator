@@ -96,10 +96,11 @@ type tempoConfig struct {
 }
 
 type tempoQueryConfig struct {
-	Address               string        `yaml:"address"`
-	Backend               string        `yaml:"backend"`
-	TenantHeaderKey       string        `yaml:"tenant_header_key"`
-	ServicesQueryDuration time.Duration `yaml:"services_query_duration"`
+	Address                      string        `yaml:"address"`
+	Backend                      string        `yaml:"backend"`
+	TenantHeaderKey              string        `yaml:"tenant_header_key"`
+	ServicesQueryDuration        time.Duration `yaml:"services_query_duration"`
+	FindTracesConcurrentRequests int           `yaml:"find_traces_concurrent_requests"`
 }
 
 // BuildConfigMap creates the Tempo ConfigMap for a monolithic deployment.
@@ -294,5 +295,6 @@ func buildTempoQueryConfig(jaegerUISpec *v1alpha1.MonolithicJaegerUISpec) ([]byt
 	config.Backend = fmt.Sprintf("127.0.0.1:%d", manifestutils.PortHTTPServer)
 	config.TenantHeaderKey = manifestutils.TenantHeader
 	config.ServicesQueryDuration = jaegerUISpec.ServicesQueryDuration.Duration
+	config.FindTracesConcurrentRequests = jaegerUISpec.FindTracesConcurrentRequests
 	return yaml.Marshal(&config)
 }
