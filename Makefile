@@ -2,7 +2,8 @@
 OPERATOR_VERSION ?= 0.13.0
 TEMPO_VERSION ?= 2.5.0
 TEMPO_QUERY_VERSION ?= main-2999520
-JAEGER_QUERY_VERSION ?= 1.60
+# TODO change this to a release version. This has https://github.com/jaegertracing/jaeger/commit/d6631f5f2370cfc3a49efce312491031fb387600
+JAEGER_QUERY_VERSION ?= d6631f5f2370cfc3a49efce312491031fb387600
 TEMPO_GATEWAY_VERSION ?= main-2024-08-05-11d0d94
 TEMPO_GATEWAY_OPA_VERSION ?= main-2024-04-29-914c13f
 OAUTH_PROXY_VERSION=4.12
@@ -11,7 +12,7 @@ MIN_KUBERNETES_VERSION ?= 1.25.0
 MIN_OPENSHIFT_VERSION ?= 4.12
 
 TEMPO_IMAGE ?= docker.io/grafana/tempo:$(TEMPO_VERSION)
-JAEGER_QUERY_IMAGE ?= docker.io/jaegertracing/jaeger-query:$(JAEGER_QUERY_VERSION)
+JAEGER_QUERY_IMAGE ?= docker.io/jaegertracing/jaeger-query-snapshot:$(JAEGER_QUERY_VERSION)
 TEMPO_QUERY_IMAGE ?= docker.io/grafana/tempo-query:$(TEMPO_QUERY_VERSION)
 TEMPO_GATEWAY_IMAGE ?= quay.io/observatorium/api:$(TEMPO_GATEWAY_VERSION)
 TEMPO_GATEWAY_OPA_IMAGE ?= quay.io/observatorium/opa-openshift:$(TEMPO_GATEWAY_OPA_VERSION)
