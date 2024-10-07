@@ -157,6 +157,7 @@ spec:
         - --traces.write.otlpgrpc.endpoint=tempo-cmpreps-distributor.chainsaw-replicas.svc.cluster.local:4317
         - --traces.write.otlphttp.endpoint=https://tempo-cmpreps-distributor.chainsaw-replicas.svc.cluster.local:4318
         - --traces.tempo.endpoint=https://tempo-cmpreps-query-frontend.chainsaw-replicas.svc.cluster.local:3200
+        - --traces.write-timeout=30s
         - --grpc.listen=0.0.0.0:8090
         - --rbac.config=/etc/tempo-gateway/cm/rbac.yaml
         - --tenants.config=/etc/tempo-gateway/secret/tenants.yaml

@@ -151,6 +151,7 @@ spec:
         - --web.internal.listen=0.0.0.0:8081
         - --traces.write.otlpgrpc.endpoint=tempo-simplest-distributor.chainsaw-multitenancy.svc.cluster.local:4317
         - --traces.write.otlphttp.endpoint=https://tempo-simplest-distributor.chainsaw-multitenancy.svc.cluster.local:4318
+        - --traces.write-timeout=30s
         - --traces.tempo.endpoint=https://tempo-simplest-query-frontend.chainsaw-multitenancy.svc.cluster.local:3200
         - --grpc.listen=0.0.0.0:8090
         - --rbac.config=/etc/tempo-gateway/cm/rbac.yaml

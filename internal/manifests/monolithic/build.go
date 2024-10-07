@@ -96,6 +96,7 @@ func BuildAll(opts Options) ([]client.Object, error) {
 				oauthproxy.PatchStatefulSetForOauthProxy(
 					tempo.ObjectMeta,
 					tempo.Spec.JaegerUI.Authentication,
+					tempo.Spec.Timeout.Duration,
 					opts.CtrlConfig,
 					statefulSet)
 				oauthproxy.PatchQueryFrontEndService(getJaegerUIService(services, tempo), tempo.Name)

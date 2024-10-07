@@ -2,6 +2,7 @@ package manifests
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -33,6 +34,7 @@ func TestBuildAll(t *testing.T) {
 				Namespace: "project1",
 			},
 			Spec: v1alpha1.TempoStackSpec{
+				Timeout: metav1.Duration{Duration: time.Second * 5},
 				Template: v1alpha1.TempoTemplateSpec{
 					Gateway: v1alpha1.TempoGatewaySpec{
 						Enabled: true,

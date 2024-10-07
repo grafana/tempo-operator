@@ -89,6 +89,7 @@ func buildConfiguration(params manifestutils.Params) ([]byte, error) {
 		TLS:          tlsopts,
 		ReceiverTLS:  buildReceiverTLSConfig(tempo),
 		S3StorageTLS: buildS3StorageTLSConfig(params),
+		Timeout:      params.Tempo.Spec.Timeout.Duration,
 	}
 
 	if isTenantOverridesConfigRequired(tempo.Spec.LimitSpec) {

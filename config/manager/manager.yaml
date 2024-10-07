@@ -50,7 +50,7 @@ spec:
         - name: RELATED_IMAGE_TEMPO_GATEWAY_OPA
           value: quay.io/observatorium/opa-openshift:main-2024-04-29-914c13f
         - name: RELATED_IMAGE_OAUTH_PROXY
-          value: quay.io/openshift/origin-oauth-proxy:4.12
+          value: quay.io/openshift/origin-oauth-proxy:4.14
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:

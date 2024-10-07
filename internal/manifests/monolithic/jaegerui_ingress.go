@@ -69,6 +69,8 @@ func BuildJaegerUIIngress(opts Options) *networkingv1.Ingress {
 	return ingress
 }
 
+const timeoutRouteAnnotation = "haproxy.router.openshift.io/timeout"
+
 // BuildJaegerUIRoute creates a Route object for Jaeger UI.
 func BuildJaegerUIRoute(opts Options) (*routev1.Route, error) {
 	tempo := opts.Tempo
@@ -89,6 +91,14 @@ func BuildJaegerUIRoute(opts Options) (*routev1.Route, error) {
 		return nil, fmt.Errorf("unsupported tls termination '%s' specified for route", tempo.Spec.JaegerUI.Route.Termination)
 	}
 
+	annotations := opts.Tempo.Spec.JaegerUI.Route.Annotations
+	if annotations == nil {
+		annotations = map[string]string{}
+	}
+	if annotations[timeoutRouteAnnotation] == "" {
+		annotations[timeoutRouteAnnotation] = fmt.Sprintf("%ds", int(tempo.Spec.Timeout.Duration.Seconds()))
+	}
+
 	return &routev1.Route{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: networkingv1.SchemeGroupVersion.String(),
@@ -98,7 +108,7 @@ func BuildJaegerUIRoute(opts Options) (*routev1.Route, error) {
 			Name:        naming.Name(manifestutils.JaegerUIComponentName, tempo.Name),
 			Namespace:   tempo.Namespace,
 			Labels:      labels,
-			Annotations: tempo.Spec.JaegerUI.Route.Annotations,
+			Annotations: annotations,
 		},
 		Spec: routev1.RouteSpec{
 			Host: tempo.Spec.JaegerUI.Route.Host,

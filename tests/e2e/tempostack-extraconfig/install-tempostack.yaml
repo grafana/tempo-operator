@@ -3,8 +3,12 @@ kind: TempoStack
 metadata:
   name: simplest
 spec:
+  timeout: 70s
   extraConfig:
     tempo:
+      server:
+        http_server_write_timeout: 10m
+        http_server_read_timeout: 10m
       querier:
         search:
           query_timeout: 180s

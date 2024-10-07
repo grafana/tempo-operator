@@ -3,6 +3,7 @@ package oauthproxy
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	routev1 "github.com/openshift/api/route/v1"
 	"github.com/operator-framework/operator-lib/proxy"
@@ -69,9 +70,12 @@ func PatchRouteForOauthProxy(route *routev1.Route) { // point route to the oauth
 }
 
 // PatchStatefulSetForOauthProxy returns a modified StatefulSet with the oauth sidecar container and the right service account.
-func PatchStatefulSetForOauthProxy(tempo metav1.ObjectMeta,
+func PatchStatefulSetForOauthProxy(
+	tempo metav1.ObjectMeta,
 	authSpec *v1alpha1.JaegerQueryAuthenticationSpec,
-	config configv1alpha1.ProjectConfig, statefulSet *v1.StatefulSet) {
+	timeout time.Duration,
+	config configv1alpha1.ProjectConfig,
+	statefulSet *v1.StatefulSet) {
 	statefulSet.Spec.Template.Spec.Volumes = append(statefulSet.Spec.Template.Spec.Volumes, corev1.Volume{
 		Name: getTLSSecretNameForFrontendService(tempo.Name),
 		VolumeSource: corev1.VolumeSource{
@@ -82,7 +86,7 @@ func PatchStatefulSetForOauthProxy(tempo metav1.ObjectMeta,
 	})
 
 	statefulSet.Spec.Template.Spec.Containers = append(statefulSet.Spec.Template.Spec.Containers,
-		oAuthProxyContainer(tempo.Name, statefulSet.Spec.Template.Spec.ServiceAccountName, authSpec, config.DefaultImages.OauthProxy))
+		oAuthProxyContainer(tempo.Name, statefulSet.Spec.Template.Spec.ServiceAccountName, authSpec, timeout, config.DefaultImages.OauthProxy))
 }
 
 // PatchDeploymentForOauthProxy returns a modified deployment with the oauth sidecar container and the right service account.
@@ -90,6 +94,7 @@ func PatchDeploymentForOauthProxy(
 	tempo metav1.ObjectMeta,
 	config configv1alpha1.ProjectConfig,
 	authSpec *v1alpha1.JaegerQueryAuthenticationSpec,
+	timeout time.Duration,
 	imageSpec configv1alpha1.ImagesSpec,
 	dep *v1.Deployment) {
 	dep.Spec.Template.Spec.Volumes = append(dep.Spec.Template.Spec.Volumes, corev1.Volume{
@@ -109,15 +114,18 @@ func PatchDeploymentForOauthProxy(
 	}
 
 	dep.Spec.Template.Spec.Containers = append(dep.Spec.Template.Spec.Containers,
-		oAuthProxyContainer(tempo.Name, naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name),
-			authSpec, oauthProxyImage))
+		oAuthProxyContainer(tempo.Name,
+			naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name),
+			authSpec,
+			timeout,
+			oauthProxyImage))
 }
 
 func getTLSSecretNameForFrontendService(tempoName string) string {
 	return fmt.Sprintf("%s-ui-oauth-proxy-tls", tempoName)
 }
 
-func proxyInitArguments(serviceAccountName string) []string {
+func proxyInitArguments(serviceAccountName string, timeout time.Duration) []string {
 	return []string{
 		// The SA Token is injected by admission controller by adding a volume via pod mutation
 		// In Kubernetes 1.24 the SA token is short-lived (default 1h)
@@ -136,6 +144,7 @@ func proxyInitArguments(serviceAccountName string) []string {
 		fmt.Sprintf("--tls-cert=%s/tls.crt", tlsProxyPath),
 		fmt.Sprintf("--tls-key=%s/tls.key", tlsProxyPath),
 		fmt.Sprintf("--upstream=http://localhost:%d", manifestutils.PortJaegerUI),
+		fmt.Sprintf("--upstream-timeout=%s", timeout.String()),
 	}
 }
 
@@ -143,9 +152,10 @@ func oAuthProxyContainer(
 	tempo string,
 	serviceAccountName string,
 	authSpec *v1alpha1.JaegerQueryAuthenticationSpec,
+	timeout time.Duration,
 	oauthProxyImage string,
 ) corev1.Container {
-	args := proxyInitArguments(serviceAccountName)
+	args := proxyInitArguments(serviceAccountName, timeout)
 
 	if len(strings.TrimSpace(authSpec.SAR)) > 0 {
 		args = append(args, fmt.Sprintf("--openshift-sar=%s", authSpec.SAR))

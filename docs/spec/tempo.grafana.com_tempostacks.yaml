@@ -388,6 +388,7 @@ spec:                                    # TempoStackSpec defines the desired st
         resources:
         - ""
     mode: "static"                       # Mode defines the multitenancy mode.
+  timeout: ""                            # Timeout configures the same timeout on all components starting at ingress down to the ingestor/querier. Timeout configuration on a specific component has a higher precedence. Defaults to 30 seconds.
   resources:                             # Resources defines resources configuration.
     total:                               # The total amount of resources for Tempo instance. The operator autonomously splits resources between deployed Tempo components. Only limits are supported, the operator calculates requests automatically. See http://github.com/grafana/tempo/issues/1540.
       claims:                            # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.   This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.   This field is immutable. It can only be set for containers.

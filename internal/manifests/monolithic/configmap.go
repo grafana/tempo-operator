@@ -54,9 +54,11 @@ type tempoConfig struct {
 	MultitenancyEnabled bool `yaml:"multitenancy_enabled,omitempty"`
 
 	Server struct {
-		HTTPListenAddress string `yaml:"http_listen_address,omitempty"`
-		HttpListenPort    int    `yaml:"http_listen_port,omitempty"`
-		GRPCListenAddress string `yaml:"grpc_listen_address,omitempty"`
+		HTTPListenAddress      string        `yaml:"http_listen_address,omitempty"`
+		HttpListenPort         int           `yaml:"http_listen_port,omitempty"`
+		GRPCListenAddress      string        `yaml:"grpc_listen_address,omitempty"`
+		HttpServerReadTimeout  time.Duration `yaml:"http_server_read_timeout,omitempty"`
+		HttpServerWriteTimeout time.Duration `yaml:"http_server_write_timeout,omitempty"`
 	} `yaml:"server"`
 
 	InternalServer struct {
@@ -170,6 +172,8 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 	config := tempoConfig{}
 	config.MultitenancyEnabled = tempo.Spec.Multitenancy != nil && tempo.Spec.Multitenancy.Enabled
 	config.Server.HttpListenPort = manifestutils.PortHTTPServer
+	config.Server.HttpServerReadTimeout = opts.Tempo.Spec.Timeout.Duration
+	config.Server.HttpServerWriteTimeout = opts.Tempo.Spec.Timeout.Duration
 	if tempo.Spec.Multitenancy.IsGatewayEnabled() {
 		// all connections to tempo must go via gateway
 		config.Server.HTTPListenAddress = "localhost"

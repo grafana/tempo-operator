@@ -136,6 +136,7 @@ spec:
         - --tls-cert=/etc/tls/private/tls.crt
         - --tls-key=/etc/tls/private/tls.key
         - --upstream=http://localhost:16686
+        - --upstream-timeout=30s
         - '--openshift-sar={"namespace": "chainsaw-tls-mono-st", "resource": "pods",
           "verb": "get"}'
         name: oauth-proxy

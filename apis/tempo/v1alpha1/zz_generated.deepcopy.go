@@ -1367,6 +1367,7 @@ func (in *TempoMonolithicSpec) DeepCopyInto(out *TempoMonolithicSpec) {
 		*out = new(v1.ResourceRequirements)
 		(*in).DeepCopyInto(*out)
 	}
+	out.Timeout = in.Timeout
 	if in.ExtraConfig != nil {
 		in, out := &in.ExtraConfig, &out.ExtraConfig
 		*out = new(ExtraConfigSpec)
@@ -1508,6 +1509,7 @@ func (in *TempoStackList) DeepCopyObject() runtime.Object {
 func (in *TempoStackSpec) DeepCopyInto(out *TempoStackSpec) {
 	*out = *in
 	in.LimitSpec.DeepCopyInto(&out.LimitSpec)
+	out.Timeout = in.Timeout
 	if in.StorageClassName != nil {
 		in, out := &in.StorageClassName, &out.StorageClassName
 		*out = new(string)

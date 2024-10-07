@@ -2,6 +2,7 @@ package monolithic
 
 import (
 	"testing"
+	"time"
 
 	"github.com/operator-framework/operator-lib/proxy"
 	"github.com/stretchr/testify/require"
@@ -732,6 +733,7 @@ func TestStatefulsetGateway(t *testing.T) {
 				Namespace: "default",
 			},
 			Spec: v1alpha1.TempoMonolithicSpec{
+				Timeout: metav1.Duration{Duration: time.Second * 5},
 				Storage: &v1alpha1.MonolithicStorageSpec{
 					Traces: v1alpha1.MonolithicTracesStorageSpec{
 						Backend: "memory",
@@ -788,6 +790,7 @@ func TestStatefulsetGateway(t *testing.T) {
 			"--web.internal.listen=0.0.0.0:8081",
 			"--traces.tenant-header=x-scope-orgid",
 			"--traces.tempo.endpoint=http://localhost:3200",
+			"--traces.write-timeout=5s",
 			"--rbac.config=/etc/tempo-gateway/rbac/rbac.yaml",
 			"--tenants.config=/etc/tempo-gateway/tenants/tenants.yaml",
 			"--log.level=info",

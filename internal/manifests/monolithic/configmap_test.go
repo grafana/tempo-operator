@@ -80,6 +80,8 @@ func TestBuildConfig(t *testing.T) {
 			expected: `
 server:
   http_listen_port: 3200
+  http_server_read_timeout: 30s
+  http_server_write_timeout: 30s
 internal_server:
   enable: true
   http_listen_address: 0.0.0.0
@@ -112,6 +114,8 @@ usage_report:
 			expected: `
 server:
   http_listen_port: 3200
+  http_server_read_timeout: 30s
+  http_server_write_timeout: 30s
 internal_server:
   enable: true
   http_listen_address: 0.0.0.0
@@ -155,6 +159,8 @@ usage_report:
 			expected: `
 server:
   http_listen_port: 3200
+  http_server_read_timeout: 30s
+  http_server_write_timeout: 30s
 internal_server:
   enable: true
   http_listen_address: 0.0.0.0
@@ -202,6 +208,8 @@ usage_report:
 			expected: `
 server:
   http_listen_port: 3200
+  http_server_read_timeout: 30s
+  http_server_write_timeout: 30s
 internal_server:
   enable: true
   http_listen_address: 0.0.0.0
@@ -255,6 +263,8 @@ usage_report:
 			expected: `
 server:
   http_listen_port: 3200
+  http_server_read_timeout: 30s
+  http_server_write_timeout: 30s
 internal_server:
   enable: true
   http_listen_address: 0.0.0.0
@@ -313,6 +323,8 @@ usage_report:
 			expected: `
 server:
   http_listen_port: 3200
+  http_server_read_timeout: 30s
+  http_server_write_timeout: 30s
 internal_server:
   enable: true
   http_listen_address: 0.0.0.0
@@ -369,6 +381,8 @@ usage_report:
 			expected: `
 server:
   http_listen_port: 3200
+  http_server_read_timeout: 30s
+  http_server_write_timeout: 30s
 internal_server:
   enable: true
   http_listen_address: 0.0.0.0
@@ -397,12 +411,14 @@ usage_report:
 			name: "extra config",
 			spec: v1alpha1.TempoMonolithicSpec{
 				ExtraConfig: &v1alpha1.ExtraConfigSpec{
-					Tempo: apiextensionsv1.JSON{Raw: []byte(`{"storage": {"trace": {"wal": {"overlay_setting": "abc"}}}}`)},
+					Tempo: apiextensionsv1.JSON{Raw: []byte(`{"storage": {"trace": {"wal": {"overlay_setting": "abc"}}}, "server": {"http_server_read_timeout": "1m", "http_server_write_timeout": "1m"}}`)},
 				},
 			},
 			expected: `
 server:
   http_listen_port: 3200
+  http_server_read_timeout: 1m
+  http_server_write_timeout: 1m
 internal_server:
   enable: true
   http_listen_address: 0.0.0.0

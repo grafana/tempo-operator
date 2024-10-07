@@ -1,6 +1,10 @@
 package config
 
-import "github.com/grafana/tempo-operator/internal/manifests/manifestutils"
+import (
+	"time"
+
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
+)
 
 // options holds the configuration template options.
 type options struct {
@@ -19,6 +23,7 @@ type options struct {
 	Gates                  featureGates
 	ReceiverTLS            receiverTLSOptions
 	S3StorageTLS           storageTLSOptions
+	Timeout                time.Duration
 }
 
 type tempoQueryOptions struct {

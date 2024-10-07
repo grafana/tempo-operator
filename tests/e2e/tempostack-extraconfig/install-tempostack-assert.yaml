@@ -456,8 +456,8 @@ data:
             client_ca_file: /var/run/ca/service-ca.crt
             key_file: /var/run/tls/server/tls.key
         http_listen_port: 3200
-        http_server_read_timeout: 3m
-        http_server_write_timeout: 3m
+        http_server_read_timeout: 10m
+        http_server_write_timeout: 10m
         log_format: logfmt
         tls_min_version: VersionTLS13
     storage:
@@ -568,8 +568,8 @@ data:
             client_ca_file: /var/run/ca/service-ca.crt
             key_file: /var/run/tls/server/tls.key
         http_listen_port: 3200
-        http_server_read_timeout: 3m
-        http_server_write_timeout: 3m
+        http_server_read_timeout: 10m
+        http_server_write_timeout: 10m
         http_tls_config:
             cert_file: /var/run/tls/server/tls.crt
             client_auth_type: RequireAndVerifyClientCert
