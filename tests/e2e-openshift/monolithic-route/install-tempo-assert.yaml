@@ -130,7 +130,7 @@ spec:
         - --tls-cert=/etc/tls/private/tls.crt
         - --tls-key=/etc/tls/private/tls.key
         - --upstream=http://localhost:16686
-        - --upstream-timeout=70s
+        - --upstream-timeout=2m0s
         - '--openshift-sar={"namespace": "chainsaw-mono-route", "resource": "pods",
           "verb": "get"}'
         name: oauth-proxy
@@ -249,19 +249,59 @@ spec:
     app.kubernetes.io/instance: mono-route
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo-monolithic
+
+---
+apiVersion: v1
+data:
+  tempo-query.yaml: |
+    address: 127.0.0.1:7777
+    backend: 127.0.0.1:3200
+    tenant_header_key: x-scope-orgid
+    services_query_duration: 72h0m0s
+  tempo.yaml: |
+    server:
+      http_listen_port: 3200
+      http_server_read_timeout: 2m0s
+      http_server_write_timeout: 2m0s
+    internal_server:
+      enable: true
+      http_listen_address: 0.0.0.0
+    storage:
+      trace:
+        backend: local
+        wal:
+          path: /var/tempo/wal
+        local:
+          path: /var/tempo/blocks
+    distributor:
+      receivers:
+        otlp:
+          protocols:
+            grpc: {}
+            http: {}
+    usage_report:
+      reporting_enabled: false
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/component: config
+    app.kubernetes.io/instance: mono-route
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo-monolithic
+  name: tempo-mono-route-config
+
 ---
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
+  annotations:
+    haproxy.router.openshift.io/timeout: 120s
   labels:
     app.kubernetes.io/component: jaegerui
     app.kubernetes.io/instance: mono-route
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo-monolithic
-  name: tempo-mono-jaegerui
-  namespace: chainsaw-mono-route
-  annotations:
-    haproxy.router.openshift.io/timeout: 70s
+  name: tempo-mono-route-jaegerui
 spec:
   port:
     targetPort: oauth-proxy
@@ -269,4 +309,6 @@ spec:
     termination: reencrypt
   to:
     kind: Service
-    name: tempo-mono-jaegerui
+    name: tempo-mono-route-jaegerui
+    weight: 100
+  wildcardPolicy: None
