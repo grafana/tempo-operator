@@ -87,6 +87,18 @@ spec:
           name: tempo-simplest-ca-bundle
         - mountPath: /var/run/tls/server
           name: tempo-simplest-query-frontend-mtls
+      - args:
+        - --cookie-secret-file=/var/run/secrets/kubernetes.io/serviceaccount/token
+        - --https-address=:8443
+        - --openshift-service-account=tempo-simplest-query-frontend
+        - --provider=openshift
+        - --tls-cert=/etc/tls/private/tls.crt
+        - --tls-key=/etc/tls/private/tls.key
+        - --upstream=http://localhost:16686
+        - --upstream-timeout=30s
+        - '--openshift-sar={"namespace": "chainsaw-tls-singletenant", "resource":
+          "pods", "verb": "get"}'
+        name: oauth-proxy
       volumes:
       - configMap:
           defaultMode: 420
@@ -104,15 +116,133 @@ spec:
         secret:
           defaultMode: 420
           secretName: tempo-simplest-query-frontend-mtls
+      - name: simplest-ui-oauth-proxy-tls
+        secret:
+          defaultMode: 420
+          secretName: simplest-ui-oauth-proxy-tls
 status:
   availableReplicas: 1
   readyReplicas: 1
   replicas: 1
+
 ---
-apiVersion: apps/v1
-kind: StatefulSet
+apiVersion: route.openshift.io/v1
+kind: Route
 metadata:
-  name: tempo-simplest-ingester
+  annotations:
+    haproxy.router.openshift.io/timeout: 30s
+  labels:
+    app.kubernetes.io/component: query-frontend
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-simplest-query-frontend
+spec:
+  port:
+    targetPort: oauth-proxy
+  tls:
+    termination: reencrypt
+  to:
+    kind: Service
+    name: tempo-simplest-query-frontend
+    weight: 100
+  wildcardPolicy: None
+
+---
+apiVersion: v1
+data:
+  overrides.yaml: |
+    overrides:
+  tempo-query-frontend.yaml: "compactor:\n  compaction:\n    block_retention: 48h0m0s\n
+    \ ring:\n    kvstore:\n      store: memberlist\ndistributor:\n  receivers:\n    jaeger:\n
+    \     protocols:\n        thrift_http:\n          endpoint: 0.0.0.0:14268\n          tls:\n
+    \           cert_file: /var/run/tls/receiver/tls.crt\n            key_file: /var/run/tls/receiver/tls.key\n
+    \           min_version: \n        thrift_binary:\n          endpoint: 0.0.0.0:6832\n
+    \       thrift_compact:\n          endpoint: 0.0.0.0:6831\n        grpc:\n          endpoint:
+    0.0.0.0:14250\n          tls:\n            cert_file: /var/run/tls/receiver/tls.crt\n
+    \           key_file: /var/run/tls/receiver/tls.key\n            min_version:
+    \n    zipkin:\n      tls:\n        cert_file: /var/run/tls/receiver/tls.crt\n
+    \       key_file: /var/run/tls/receiver/tls.key\n        min_version: \n    otlp:\n
+    \     protocols:\n        grpc:\n          endpoint: 0.0.0.0:4317\n          tls:\n
+    \           cert_file: /var/run/tls/receiver/tls.crt\n            key_file: /var/run/tls/receiver/tls.key\n
+    \           min_version: \n        http:\n          endpoint: 0.0.0.0:4318\n          tls:\n
+    \           cert_file: /var/run/tls/receiver/tls.crt\n            key_file: /var/run/tls/receiver/tls.key\n
+    \           min_version: \n  ring:\n    kvstore:\n      store: memberlist\ningester:\n
+    \ lifecycler:\n    ring:\n      kvstore:\n        store: memberlist\n      replication_factor:
+    1\n    tokens_file_path: /var/tempo/tokens.json\n  max_block_duration: 10m\nmemberlist:\n
+    \ abort_if_cluster_join_fails: false\n  join_members:\n  - tempo-simplest-gossip-ring\nmultitenancy_enabled:
+    false\nquerier:\n  max_concurrent_queries: 20\n  frontend_worker:\n    frontend_address:
+    tempo-simplest-query-frontend-discovery:9095\n    grpc_client_config:\n      tls_enabled:
+    true\n      tls_cert_path:  /var/run/tls/server/tls.crt\n      tls_key_path: /var/run/tls/server/tls.key\n
+    \     tls_ca_path: /var/run/ca/service-ca.crt\n      tls_server_name: tempo-simplest-query-frontend.chainsaw-tls-singletenant.svc.cluster.local\n
+    \     tls_min_version: VersionTLS13\n  search:\n    external_hedge_requests_at:
+    8s\n    external_hedge_requests_up_to: 2\nserver:\n  grpc_server_max_recv_msg_size:
+    4194304\n  grpc_server_max_send_msg_size: 4194304\n  http_listen_port: 3200\n
+    \ http_server_read_timeout: 30s\n  http_server_write_timeout: 30s\n  log_format:
+    logfmt\n  tls_min_version: VersionTLS13\n  grpc_tls_config:\n    cert_file:  /var/run/tls/server/tls.crt\n
+    \   key_file: /var/run/tls/server/tls.key\n    client_ca_file: /var/run/ca/service-ca.crt\n
+    \   client_auth_type: RequireAndVerifyClientCert\nstorage:\n  trace:\n    backend:
+    s3\n    blocklist_poll: 5m\n    cache: none\n    s3:\n      endpoint: minio:9000\n
+    \     bucket: tempo\n      insecure: true\n    local:\n      path: /var/tempo/traces\n
+    \   wal:\n      path: /var/tempo/wal\nusage_report:\n  reporting_enabled: false\nquery_frontend:\n
+    \ search:\n    concurrent_jobs: 2000\n    max_duration: 0s\n    default_result_limit:
+    20\ningester_client:\n  grpc_client_config:\n    tls_enabled: true\n    tls_cert_path:
+    \ /var/run/tls/server/tls.crt\n    tls_key_path: /var/run/tls/server/tls.key\n
+    \   tls_ca_path: /var/run/ca/service-ca.crt\n    tls_server_name: tempo-simplest-ingester.chainsaw-tls-singletenant.svc.cluster.local\n
+    \   tls_insecure_skip_verify: false\n    tls_min_version: VersionTLS13\n"
+  tempo-query.yaml: |
+    address: 127.0.0.1:7777
+    backend: 127.0.0.1:3200
+    tenant_header_key: x-scope-orgid
+    services_query_duration: 72h0m0s
+  tempo.yaml: "compactor:\n  compaction:\n    block_retention: 48h0m0s\n  ring:\n
+    \   kvstore:\n      store: memberlist\ndistributor:\n  receivers:\n    jaeger:\n
+    \     protocols:\n        thrift_http:\n          endpoint: 0.0.0.0:14268\n          tls:\n
+    \           cert_file: /var/run/tls/receiver/tls.crt\n            key_file: /var/run/tls/receiver/tls.key\n
+    \           min_version: \n        thrift_binary:\n          endpoint: 0.0.0.0:6832\n
+    \       thrift_compact:\n          endpoint: 0.0.0.0:6831\n        grpc:\n          endpoint:
+    0.0.0.0:14250\n          tls:\n            cert_file: /var/run/tls/receiver/tls.crt\n
+    \           key_file: /var/run/tls/receiver/tls.key\n            min_version:
+    \n    zipkin:\n      tls:\n        cert_file: /var/run/tls/receiver/tls.crt\n
+    \       key_file: /var/run/tls/receiver/tls.key\n        min_version: \n    otlp:\n
+    \     protocols:\n        grpc:\n          endpoint: 0.0.0.0:4317\n          tls:\n
+    \           cert_file: /var/run/tls/receiver/tls.crt\n            key_file: /var/run/tls/receiver/tls.key\n
+    \           min_version: \n        http:\n          endpoint: 0.0.0.0:4318\n          tls:\n
+    \           cert_file: /var/run/tls/receiver/tls.crt\n            key_file: /var/run/tls/receiver/tls.key\n
+    \           min_version: \n  ring:\n    kvstore:\n      store: memberlist\ningester:\n
+    \ lifecycler:\n    ring:\n      kvstore:\n        store: memberlist\n      replication_factor:
+    1\n    tokens_file_path: /var/tempo/tokens.json\n  max_block_duration: 10m\nmemberlist:\n
+    \ abort_if_cluster_join_fails: false\n  join_members:\n  - tempo-simplest-gossip-ring\nmultitenancy_enabled:
+    false\nquerier:\n  max_concurrent_queries: 20\n  frontend_worker:\n    frontend_address:
+    tempo-simplest-query-frontend-discovery:9095\n    grpc_client_config:\n      tls_enabled:
+    true\n      tls_cert_path:  /var/run/tls/server/tls.crt\n      tls_key_path: /var/run/tls/server/tls.key\n
+    \     tls_ca_path: /var/run/ca/service-ca.crt\n      tls_server_name: tempo-simplest-query-frontend.chainsaw-tls-singletenant.svc.cluster.local\n
+    \     tls_min_version: VersionTLS13\n  search:\n    external_hedge_requests_at:
+    8s\n    external_hedge_requests_up_to: 2\ninternal_server:\n  enable: true\n  http_listen_address:
+    \"\"\n  tls_min_version: VersionTLS13\n  http_tls_config:\n    cert_file: /var/run/tls/server/tls.crt\n
+    \   key_file: /var/run/tls/server/tls.key\nserver:\n  grpc_server_max_recv_msg_size:
+    4194304\n  grpc_server_max_send_msg_size: 4194304\n  http_listen_port: 3200\n
+    \ http_server_read_timeout: 30s\n  http_server_write_timeout: 30s\n  log_format:
+    logfmt\n  tls_min_version: VersionTLS13\n  grpc_tls_config:\n    cert_file:  /var/run/tls/server/tls.crt\n
+    \   key_file: /var/run/tls/server/tls.key\n    client_ca_file: /var/run/ca/service-ca.crt\n
+    \   client_auth_type: RequireAndVerifyClientCert\n  http_tls_config:\n    cert_file:
+    \ /var/run/tls/server/tls.crt\n    client_auth_type: RequireAndVerifyClientCert\n
+    \   key_file: /var/run/tls/server/tls.key\n    client_ca_file: /var/run/ca/service-ca.crt\nstorage:\n
+    \ trace:\n    backend: s3\n    blocklist_poll: 5m\n    cache: none\n    s3:\n
+    \     endpoint: minio:9000\n      bucket: tempo\n      insecure: true\n    local:\n
+    \     path: /var/tempo/traces\n    wal:\n      path: /var/tempo/wal\nusage_report:\n
+    \ reporting_enabled: false\nquery_frontend:\n  search:\n    concurrent_jobs: 2000\n
+    \   max_duration: 0s\n    default_result_limit: 20\ningester_client:\n  grpc_client_config:\n
+    \   tls_enabled: true\n    tls_cert_path:  /var/run/tls/server/tls.crt\n    tls_key_path:
+    /var/run/tls/server/tls.key\n    tls_ca_path: /var/run/ca/service-ca.crt\n    tls_server_name:
+    tempo-simplest-ingester.chainsaw-tls-singletenant.svc.cluster.local\n    tls_insecure_skip_verify:
+    false\n    tls_min_version: VersionTLS13\n"
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/component: config
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-simplest
   namespace: chainsaw-tls-singletenant
-status:
-  readyReplicas: 1

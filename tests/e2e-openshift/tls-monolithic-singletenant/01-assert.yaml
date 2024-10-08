@@ -276,6 +276,8 @@ spec:
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
+  annotations:
+    haproxy.router.openshift.io/timeout: 30s
   labels:
     app.kubernetes.io/component: jaegerui
     app.kubernetes.io/instance: mono
@@ -291,3 +293,52 @@ spec:
   to:
     kind: Service
     name: tempo-mono-jaegerui
+  
+---
+apiVersion: v1
+data:
+  tempo-query.yaml: |
+    address: 127.0.0.1:7777
+    backend: 127.0.0.1:3200
+    tenant_header_key: x-scope-orgid
+    services_query_duration: 72h0m0s
+  tempo.yaml: |
+    server:
+      http_listen_port: 3200
+      http_server_read_timeout: 30s
+      http_server_write_timeout: 30s
+    internal_server:
+      enable: true
+      http_listen_address: 0.0.0.0
+    storage:
+      trace:
+        backend: local
+        wal:
+          path: /var/tempo/wal
+        local:
+          path: /var/tempo/blocks
+    distributor:
+      receivers:
+        otlp:
+          protocols:
+            grpc:
+              tls:
+                cert_file: /var/run/tls/receiver/grpc/tls.crt
+                key_file: /var/run/tls/receiver/grpc/tls.key
+                min_version: "1.3"
+            http:
+              tls:
+                cert_file: /var/run/tls/receiver/http/tls.crt
+                key_file: /var/run/tls/receiver/http/tls.key
+                min_version: "1.3"
+    usage_report:
+      reporting_enabled: false
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/component: config
+    app.kubernetes.io/instance: mono
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo-monolithic
+  name: tempo-mono-config
+
