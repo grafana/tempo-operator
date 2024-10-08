@@ -56,7 +56,7 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 
 	if gates.HTTPEncryption || gates.GRPCEncryption {
 		caBundleName := naming.SigningCABundleName(tempo.Name)
-		targets := []string{containerNameTempo, containerNameTempoQuery}
+		targets := []string{containerNameTempo, containerNameJaegerQuery, containerNameTempoQuery}
 		if err := manifestutils.ConfigureServiceCAByContainerName(&d.Spec.Template.Spec, caBundleName, targets...); err != nil {
 			return nil, err
 		}
