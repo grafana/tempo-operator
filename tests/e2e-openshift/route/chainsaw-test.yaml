@@ -23,3 +23,8 @@ spec:
     - script:
         timeout: 5m
         content: kubectl get --namespace $NAMESPACE tempo simplest -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' | grep True
+  - name: Run the must-gather and verify the contents
+    try:
+    - script:
+        timeout: 5m
+        content: ./check-must-gahter.sh

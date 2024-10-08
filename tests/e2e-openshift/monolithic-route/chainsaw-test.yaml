@@ -11,3 +11,8 @@ spec:
         file: install-tempo.yaml
     - assert:
         file: install-tempo-assert.yaml
+  - name: Run the must-gather and verify the contents
+    try:
+    - script:
+        timeout: 5m
+        content: ./check-must-gahter.sh
