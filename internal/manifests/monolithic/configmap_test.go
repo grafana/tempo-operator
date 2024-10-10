@@ -42,8 +42,9 @@ func TestBuildConfigMap(t *testing.T) {
 					},
 				},
 				JaegerUI: &v1alpha1.MonolithicJaegerUISpec{
-					Enabled:               true,
-					ServicesQueryDuration: &metav1.Duration{Duration: time.Duration(3 * 24 * time.Hour)},
+					Enabled:                      true,
+					ServicesQueryDuration:        &metav1.Duration{Duration: time.Duration(3 * 24 * time.Hour)},
+					FindTracesConcurrentRequests: 22,
 				},
 			},
 		},
@@ -63,6 +64,7 @@ address: 127.0.0.1:7777
 backend: 127.0.0.1:3200
 tenant_header_key: x-scope-orgid
 services_query_duration: 72h0m0s
+find_traces_concurrent_requests: 22
 `
 	require.YAMLEq(t, tempoQueryCfg, cm.Data["tempo-query.yaml"])
 }
