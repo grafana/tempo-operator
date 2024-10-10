@@ -663,6 +663,8 @@ type IngressSpec struct {
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
+	// +kubebuilder:default=""
+	// +kubebuilder:validation:Enum=ingress;route;""
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Type"
 	Type IngressType `json:"type,omitempty"`
 

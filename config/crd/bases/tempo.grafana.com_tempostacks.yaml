@@ -1421,12 +1421,18 @@ spec:
                                 type: string
                             type: object
                           type:
+                            allOf:
+                            - enum:
+                              - ingress
+                              - route
+                            - enum:
+                              - ingress
+                              - route
+                              - ""
+                            default: ""
                             description: |-
                               Type defines the type of Ingress for the Jaeger Query UI.
                               Currently ingress, route and none are supported.
-                            enum:
-                            - ingress
-                            - route
                             type: string
                         type: object
                     required:
@@ -2422,12 +2428,18 @@ spec:
                                     type: string
                                 type: object
                               type:
+                                allOf:
+                                - enum:
+                                  - ingress
+                                  - route
+                                - enum:
+                                  - ingress
+                                  - route
+                                  - ""
+                                default: ""
                                 description: |-
                                   Type defines the type of Ingress for the Jaeger Query UI.
                                   Currently ingress, route and none are supported.
-                                enum:
-                                - ingress
-                                - route
                                 type: string
                             type: object
                           monitorTab:
