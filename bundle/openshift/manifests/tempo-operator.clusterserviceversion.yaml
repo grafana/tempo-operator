@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.13.0
-    createdAt: "2024-10-07T07:11:27Z"
+    createdAt: "2024-10-10T15:57:44Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -307,6 +307,19 @@ spec:
           "{"namespace": "<tempo_stack_namespace>", "resource": "pods", "verb": "get"}'
         displayName: SAR
         path: jaegerui.authentication.sar
+      - description: 'FindTracesConcurrentRequests defines how many concurrent request
+          a single trace search can submit (defaults 2). The search for traces in
+          Jaeger submits limit+1 requests. First requests finds trace IDs and then
+          it fetches entire traces by ID. This property allows Jaeger to fetch traces
+          in parallel. Note that by default a single Tempo querier can process 20
+          concurrent search jobs. Increasing this property might require scaling up
+          querier instances, especially on error "job queue full" See also Tempo''s
+          extraConfig: querier.max_concurrent_queries (20 default) query_frontend.max_outstanding_per_tenant:
+          (2000 default). Increase if the query-frontend returns 429'
+        displayName: FindTracesConcurrentRequests
+        path: jaegerui.findTracesConcurrentRequests
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:advanced
       - description: Annotations defines the annotations of the Ingress object.
         displayName: Annotations
         path: jaegerui.ingress.annotations
@@ -1002,6 +1015,19 @@ spec:
         path: template.queryFrontend.jaegerQuery.enabled
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
+      - description: 'FindTracesConcurrentRequests defines how many concurrent request
+          a single trace search can submit (defaults querier.replicas*2). The search
+          for traces in Jaeger submits limit+1 requests. First requests finds trace
+          IDs and then it fetches entire traces by ID. This property allows Jaeger
+          to fetch traces in parallel. Note that by default a single Tempo querier
+          can process 20 concurrent search jobs. Increasing this property might require
+          scaling up querier instances, especially on error "job queue full" See also
+          Tempo''s extraConfig: querier.max_concurrent_queries (20 default) query_frontend.max_outstanding_per_tenant:
+          (2000 default). Increase if the query-frontend returns 429'
+        displayName: FindTracesConcurrentRequests
+        path: template.queryFrontend.jaegerQuery.findTracesConcurrentRequests
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:advanced
       - description: Ingress defines the options for the Jaeger Query ingress.
         displayName: Jaeger Query UI Ingress Settings
         path: template.queryFrontend.jaegerQuery.ingress
@@ -1437,7 +1463,7 @@ spec:
                 - name: RELATED_IMAGE_JAEGER_QUERY
                   value: docker.io/jaegertracing/jaeger-query:1.62.0
                 - name: RELATED_IMAGE_TEMPO_QUERY
-                  value: docker.io/grafana/tempo-query:main-2999520
+                  value: docker.io/grafana/tempo-query:main-1de25ca
                 - name: RELATED_IMAGE_TEMPO_GATEWAY
                   value: quay.io/observatorium/api:main-2024-08-05-11d0d94
                 - name: RELATED_IMAGE_TEMPO_GATEWAY_OPA
@@ -1597,7 +1623,7 @@ spec:
     name: tempo
   - image: docker.io/jaegertracing/jaeger-query:1.62.0
     name: jaeger-query
-  - image: docker.io/grafana/tempo-query:main-2999520
+  - image: docker.io/grafana/tempo-query:main-1de25ca
     name: tempo-query
   - image: quay.io/observatorium/api:main-2024-08-05-11d0d94
     name: tempo-gateway

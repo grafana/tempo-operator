@@ -10,3 +10,4 @@ tls_insecure_skip_verify: false
 tls_server_name: {{ .TLS.ServerNames.QueryFrontend }}
 {{- end }}
 services_query_duration: {{ .ServicesQueryDuration }}
+find_traces_concurrent_requests: {{ .FindTracesConcurrentRequests }}
