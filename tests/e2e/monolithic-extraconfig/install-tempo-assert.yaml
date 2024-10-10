@@ -81,7 +81,7 @@ data:
     backend: 127.0.0.1:3200
     tenant_header_key: x-scope-orgid
     services_query_duration: 72h0m0s
-    find_traces_concurrent_requests: 1
+    find_traces_concurrent_requests: 2
   tempo.yaml: |
     distributor:
         receivers:

@@ -138,8 +138,7 @@ func TestDefault(t *testing.T) {
 								Replicas: ptr.To(int32(1)),
 							},
 							JaegerQuery: v1alpha1.JaegerQuerySpec{
-								ServicesQueryDuration:        &defaultServicesDuration,
-								FindTracesConcurrentRequests: 1,
+								ServicesQueryDuration: &defaultServicesDuration,
 							},
 						},
 					},
@@ -205,8 +204,7 @@ func TestDefault(t *testing.T) {
 								Replicas: ptr.To(int32(1)),
 							},
 							JaegerQuery: v1alpha1.JaegerQuerySpec{
-								ServicesQueryDuration:        &defaultServicesDuration,
-								FindTracesConcurrentRequests: 1,
+								ServicesQueryDuration: &defaultServicesDuration,
 							},
 						},
 						Gateway: v1alpha1.TempoGatewaySpec{
@@ -289,8 +287,7 @@ func TestDefault(t *testing.T) {
 										Termination: "edge",
 									},
 								},
-								ServicesQueryDuration:        &defaultServicesDuration,
-								FindTracesConcurrentRequests: 1,
+								ServicesQueryDuration: &defaultServicesDuration,
 							},
 						},
 						Gateway: v1alpha1.TempoGatewaySpec{
@@ -378,8 +375,7 @@ func TestDefault(t *testing.T) {
 										Termination: "edge",
 									},
 								},
-								ServicesQueryDuration:        &defaultServicesDuration,
-								FindTracesConcurrentRequests: 1,
+								ServicesQueryDuration: &defaultServicesDuration,
 								Authentication: &v1alpha1.JaegerQueryAuthenticationSpec{
 									Enabled: true,
 									SAR:     "{\"namespace\": \"\", \"resource\": \"pods\", \"verb\": \"get\"}",
@@ -474,8 +470,7 @@ func TestDefault(t *testing.T) {
 										Termination: "edge",
 									},
 								},
-								ServicesQueryDuration:        &defaultServicesDuration,
-								FindTracesConcurrentRequests: 1,
+								ServicesQueryDuration: &defaultServicesDuration,
 								Authentication: &v1alpha1.JaegerQueryAuthenticationSpec{
 									Enabled: false,
 								},
@@ -595,8 +590,7 @@ func TestDefault(t *testing.T) {
 								Replicas: ptr.To(int32(1)),
 							},
 							JaegerQuery: v1alpha1.JaegerQuerySpec{
-								FindTracesConcurrentRequests: 1,
-								ServicesQueryDuration:        &defaultServicesDuration,
+								ServicesQueryDuration: &defaultServicesDuration,
 							},
 						},
 					},

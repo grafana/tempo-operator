@@ -169,6 +169,14 @@ func buildTempoQueryConfig(params manifestutils.Params) ([]byte, error) {
 		return []byte{}, err
 	}
 
+	findTracesConcurrentRequests := params.Tempo.Spec.Template.QueryFrontend.JaegerQuery.FindTracesConcurrentRequests
+	if findTracesConcurrentRequests == 0 {
+		querierReplicas := int32(1)
+		if params.Tempo.Spec.Template.Querier.Replicas != nil {
+			querierReplicas = *params.Tempo.Spec.Template.Querier.Replicas
+		}
+		findTracesConcurrentRequests = int(querierReplicas) * 2
+	}
 	return renderTempoQueryTemplate(tempoQueryOptions{
 		TLS:      tlsopts,
 		HTTPPort: manifestutils.PortHTTPServer,
@@ -179,7 +187,7 @@ func buildTempoQueryConfig(params manifestutils.Params) ([]byte, error) {
 		TenantHeader:                 manifestutils.TenantHeader,
 		Gateway:                      params.Tempo.Spec.Template.Gateway.Enabled,
 		ServicesQueryDuration:        params.Tempo.Spec.Template.QueryFrontend.JaegerQuery.ServicesQueryDuration.Duration.String(),
-		FindTracesConcurrentRequests: params.Tempo.Spec.Template.QueryFrontend.JaegerQuery.FindTracesConcurrentRequests,
+		FindTracesConcurrentRequests: findTracesConcurrentRequests,
 	})
 }
 

@@ -262,7 +262,7 @@ type MonolithicJaegerUISpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="ServicesQueryDuration",xDescriptors="urn:alm:descriptor:com.tectonic.ui:advanced"
 	ServicesQueryDuration *metav1.Duration `json:"servicesQueryDuration,omitempty"`
 
-	// FindTracesConcurrentRequests defines how many concurrent request a single trace search can submit.
+	// FindTracesConcurrentRequests defines how many concurrent request a single trace search can submit (defaults 2).
 	// The search for traces in Jaeger submits limit+1 requests. First requests finds trace IDs and then it fetches
 	// entire traces by ID. This property allows Jaeger to fetch traces in parallel.
 	// Note that by default a single Tempo querier can process 20 concurrent search jobs.
