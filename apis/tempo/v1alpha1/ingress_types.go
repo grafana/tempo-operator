@@ -2,7 +2,8 @@ package v1alpha1
 
 type (
 	// IngressType represents how a service should be exposed (ingress vs route).
-	// +kubebuilder:validation:Enum=ingress;route
+	// +kubebuilder:validation:Enum=ingress;route;""
+	// +kubebuilder:default=""
 	IngressType string
 )
 
