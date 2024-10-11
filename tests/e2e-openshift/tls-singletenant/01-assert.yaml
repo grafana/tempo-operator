@@ -42,7 +42,25 @@ spec:
         tempo-gossip-member: "true"
     spec:
       containers:
-      - name: tempo
+      - args:
+        - -target=query-frontend
+        - -config.file=/conf/tempo-query-frontend.yaml
+        - -mem-ballast-size-mbs=1024
+        - -log.level=info
+        - --storage.trace.s3.secret_key=$(S3_SECRET_KEY)
+        - --storage.trace.s3.access_key=$(S3_ACCESS_KEY)
+        env:
+        - name: S3_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              key: access_key_secret
+              name: minio
+        - name: S3_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              key: access_key_id
+              name: minio
+        name: tempo
         ports:
         - containerPort: 3200
           name: http
@@ -60,7 +78,12 @@ spec:
           name: tempo-simplest-ca-bundle
         - mountPath: /var/run/tls/server
           name: tempo-simplest-query-frontend-mtls
-      - name: jaeger-query
+      - args:
+        - --query.base-path=/
+        - --span-storage.type=grpc
+        - --grpc-storage.server=localhost:7777
+        - --query.bearer-token-propagation=true
+        name: jaeger-query
         ports:
         - containerPort: 16685
           name: jaeger-grpc
@@ -74,7 +97,13 @@ spec:
         volumeMounts:
         - mountPath: /tmp
           name: tempo-tmp-storage-query
-      - name: tempo-query
+        - mountPath: /var/run/ca
+          name: tempo-simplest-ca-bundle
+        - mountPath: /var/run/tls/server
+          name: tempo-simplest-query-frontend-mtls
+      - args:
+        - -config=/conf/tempo-query.yaml
+        name: tempo-query
         ports:
         - containerPort: 7777
           name: proxy-grpc
@@ -99,6 +128,10 @@ spec:
         - '--openshift-sar={"namespace": "chainsaw-tls-singletenant", "resource":
           "pods", "verb": "get"}'
         name: oauth-proxy
+        ports:
+        - containerPort: 8443
+          name: oauth-proxy
+          protocol: TCP
       volumes:
       - configMap:
           defaultMode: 420
@@ -195,6 +228,7 @@ data:
     backend: 127.0.0.1:3200
     tenant_header_key: x-scope-orgid
     services_query_duration: 72h0m0s
+    find_traces_concurrent_requests: 2
   tempo.yaml: "compactor:\n  compaction:\n    block_retention: 48h0m0s\n  ring:\n
     \   kvstore:\n      store: memberlist\ndistributor:\n  receivers:\n    jaeger:\n
     \     protocols:\n        thrift_http:\n          endpoint: 0.0.0.0:14268\n          tls:\n
