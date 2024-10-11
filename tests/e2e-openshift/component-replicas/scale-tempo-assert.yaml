@@ -135,6 +135,7 @@ metadata:
     kind: TempoStack
     name: cmpreps
 spec:
+  replicas: 2
   selector:
     matchLabels:
       app.kubernetes.io/component: gateway
@@ -156,8 +157,8 @@ spec:
         - --web.internal.listen=0.0.0.0:8081
         - --traces.write.otlpgrpc.endpoint=tempo-cmpreps-distributor.chainsaw-replicas.svc.cluster.local:4317
         - --traces.write.otlphttp.endpoint=https://tempo-cmpreps-distributor.chainsaw-replicas.svc.cluster.local:4318
-        - --traces.tempo.endpoint=https://tempo-cmpreps-query-frontend.chainsaw-replicas.svc.cluster.local:3200
         - --traces.write-timeout=30s
+        - --traces.tempo.endpoint=https://tempo-cmpreps-query-frontend.chainsaw-replicas.svc.cluster.local:3200
         - --grpc.listen=0.0.0.0:8090
         - --rbac.config=/etc/tempo-gateway/cm/rbac.yaml
         - --tenants.config=/etc/tempo-gateway/secret/tenants.yaml
