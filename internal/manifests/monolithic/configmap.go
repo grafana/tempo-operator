@@ -291,8 +291,8 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 
 func buildTempoQueryConfig(jaegerUISpec *v1alpha1.MonolithicJaegerUISpec) ([]byte, error) {
 	config := tempoQueryConfig{}
-	config.Address = fmt.Sprintf("127.0.0.1:%d", manifestutils.PortTempoGRPCQuery)
-	config.Backend = fmt.Sprintf("127.0.0.1:%d", manifestutils.PortHTTPServer)
+	config.Address = fmt.Sprintf("0.0.0.0:%d", manifestutils.PortTempoGRPCQuery)
+	config.Backend = fmt.Sprintf("localhost:%d", manifestutils.PortHTTPServer)
 	config.TenantHeaderKey = manifestutils.TenantHeader
 	config.ServicesQueryDuration = jaegerUISpec.ServicesQueryDuration.Duration
 	config.FindTracesConcurrentRequests = jaegerUISpec.FindTracesConcurrentRequests
