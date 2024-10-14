@@ -13,9 +13,11 @@ import (
 )
 
 var (
-	twoGBQuantity           = resource.MustParse("2Gi")
-	tenGBQuantity           = resource.MustParse("10Gi")
-	defaultServicesDuration = metav1.Duration{Duration: time.Hour * 24 * 3}
+	twoGBQuantity                       = resource.MustParse("2Gi")
+	tenGBQuantity                       = resource.MustParse("10Gi")
+	defaultServicesDuration             = metav1.Duration{Duration: time.Hour * 24 * 3}
+	defaultTimeout                      = metav1.Duration{Duration: time.Second * 30}
+	defaultFindTracesConcurrentRequests = 2
 )
 
 // Default sets all default values in a central place, instead of setting it at every place where the value is accessed.
@@ -87,5 +89,12 @@ func (r *TempoMonolithic) Default(ctrlConfig configv1alpha1.ProjectConfig) {
 		if r.Spec.JaegerUI.ServicesQueryDuration == nil {
 			r.Spec.JaegerUI.ServicesQueryDuration = &defaultServicesDuration
 		}
+		if r.Spec.JaegerUI.FindTracesConcurrentRequests == 0 {
+			r.Spec.JaegerUI.FindTracesConcurrentRequests = defaultFindTracesConcurrentRequests
+		}
+	}
+
+	if r.Spec.Timeout.Duration == 0 {
+		r.Spec.Timeout = defaultTimeout
 	}
 }

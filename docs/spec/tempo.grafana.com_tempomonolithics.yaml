@@ -35,6 +35,7 @@ spec:                                    # TempoMonolithicSpec defines the desir
         requests:                        # Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. Requests cannot exceed Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
           cpu: "500m"
           memory: "1Gi"
+    findTracesConcurrentRequests: 0      # FindTracesConcurrentRequests defines how many concurrent request a single trace search can submit (defaults 2). The search for traces in Jaeger submits limit+1 requests. First requests finds trace IDs and then it fetches entire traces by ID. This property allows Jaeger to fetch traces in parallel. Note that by default a single Tempo querier can process 20 concurrent search jobs. Increasing this property might require scaling up querier instances, especially on error "job queue full" See also Tempo's extraConfig: querier.max_concurrent_queries (20 default) query_frontend.max_outstanding_per_tenant: (2000 default). Increase if the query-frontend returns 429
     ingress:                             # Ingress defines the Ingress configuration for the Jaeger UI.
       enabled: false                     # Enabled defines if an Ingress object should be created for Jaeger UI.
       annotations: {}                    # Annotations defines the annotations of the Ingress object.
@@ -126,6 +127,7 @@ spec:                                    # TempoMonolithicSpec defines the desir
           certName: ""                   # Cert is the name of a Secret containing a certificate (tls.crt) and private key (tls.key). It needs to be in the same namespace as the Tempo custom resource.
           minVersion: ""                 # MinVersion defines the minimum acceptable TLS version.
       size: 0Gi                          # Size defines the size of the volume where traces are stored. For in-memory storage, this defines the size of the tmpfs volume. For persistent volume storage, this defines the size of the persistent volume. For object storage, this defines the size of the persistent volume containing the Write-Ahead Log (WAL) of Tempo. Default: 2Gi for memory, 10Gi for all other backends.
+  timeout: ""                            # Timeout configures the same timeout on all components starting at ingress down to the ingestor/querier. Timeout configuration on a specific component has a higher precedence. Default is 30 seconds.
   affinity:                              # Affinity defines the Affinity rules for scheduling pods.
     nodeAffinity: {}                     # Describes node affinity scheduling rules for the pod.
     podAffinity: {}                      # Describes pod affinity scheduling rules (e.g. co-locate this pod in the same node, zone, etc. as some other pod(s)).

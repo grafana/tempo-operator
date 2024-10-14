@@ -47,7 +47,25 @@ spec:
         tempo-gossip-member: "true"
     spec:
       containers:
-      - name: tempo
+      - args:
+        - -target=query-frontend
+        - -config.file=/conf/tempo-query-frontend.yaml
+        - -mem-ballast-size-mbs=1024
+        - -log.level=info
+        - --storage.trace.s3.secret_key=$(S3_SECRET_KEY)
+        - --storage.trace.s3.access_key=$(S3_ACCESS_KEY)
+        env:
+        - name: S3_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              key: access_key_secret
+              name: minio
+        - name: S3_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              key: access_key_id
+              name: minio
+        name: tempo
         ports:
         - containerPort: 3200
           name: http
@@ -65,7 +83,12 @@ spec:
           name: tempo-tempo-st-ca-bundle
         - mountPath: /var/run/tls/server
           name: tempo-tempo-st-query-frontend-mtls
-      - name: jaeger-query
+      - args:
+        - --query.base-path=/
+        - --span-storage.type=grpc
+        - --grpc-storage.server=localhost:7777
+        - --query.bearer-token-propagation=true
+        name: jaeger-query
         ports:
         - containerPort: 16685
           name: jaeger-grpc
@@ -79,7 +102,13 @@ spec:
         volumeMounts:
         - mountPath: /tmp
           name: tempo-tmp-storage-query
-      - name: tempo-query
+        - mountPath: /var/run/ca
+          name: tempo-tempo-st-ca-bundle
+        - mountPath: /var/run/tls/server
+          name: tempo-tempo-st-query-frontend-mtls
+      - args:
+        - -config=/conf/tempo-query.yaml
+        name: tempo-query
         ports:
         - containerPort: 7777
           name: proxy-grpc
@@ -92,7 +121,18 @@ spec:
           name: tempo-tempo-st-ca-bundle
         - mountPath: /var/run/tls/server
           name: tempo-tempo-st-query-frontend-mtls
-      - name: oauth-proxy
+      - args:
+        - --cookie-secret-file=/var/run/secrets/kubernetes.io/serviceaccount/token
+        - --https-address=:8443
+        - --openshift-service-account=tempo-tempo-st-query-frontend
+        - --provider=openshift
+        - --tls-cert=/etc/tls/private/tls.crt
+        - --tls-key=/etc/tls/private/tls.key
+        - --upstream=http://localhost:16686
+        - --upstream-timeout=30s
+        - '--openshift-sar={"namespace": "chainsaw-mst", "resource": "pods", "verb":
+          "get"}'
+        name: oauth-proxy
         ports:
         - containerPort: 8443
           name: oauth-proxy

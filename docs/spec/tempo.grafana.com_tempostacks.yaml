@@ -54,7 +54,7 @@ spec:                                    # TempoStackSpec defines the desired st
     tracing:                             # Tracing defines a config for operands.
       jaeger_agent_endpoint: "localhost:6831" # JaegerAgentEndpoint defines the jaeger endpoint data gets send to.
       sampling_fraction: ""              # SamplingFraction defines the sampling ratio. Valid values are 0 to 1.
-  replicationFactor: 0                   # ReplicationFactor is used to define how many component replicas should exist.
+  replicationFactor: 0                   # The replication factor is a configuration setting that determines how many ingesters need to acknowledge the data from the distributors before accepting a span.
   retention:                             # Retention period defined by dataset. User can specify how long data should be stored.
     global:                              # Global is used to configure global retention.
       traces: ""                         # Traces defines retention period. Supported parameter suffixes are "s", "m" and "h". example: 336h default: value is 48h.
@@ -330,6 +330,7 @@ spec:                                    # TempoStackSpec defines the desired st
             requests:                    # Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. Requests cannot exceed Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
               cpu: "500m"
               memory: "1Gi"
+        findTracesConcurrentRequests: 0  # FindTracesConcurrentRequests defines how many concurrent request a single trace search can submit (defaults querier.replicas*2). The search for traces in Jaeger submits limit+1 requests. First requests finds trace IDs and then it fetches entire traces by ID. This property allows Jaeger to fetch traces in parallel. Note that by default a single Tempo querier can process 20 concurrent search jobs. Increasing this property might require scaling up querier instances, especially on error "job queue full" See also Tempo's extraConfig: querier.max_concurrent_queries (20 default) query_frontend.max_outstanding_per_tenant: (2000 default). Increase if the query-frontend returns 429
         ingress:                         # Ingress defines the options for the Jaeger Query ingress.
           annotations: {}                # Annotations defines the annotations of the Ingress object.
           host: ""                       # Host defines the hostname of the Ingress object.
@@ -388,6 +389,7 @@ spec:                                    # TempoStackSpec defines the desired st
         resources:
         - ""
     mode: "static"                       # Mode defines the multitenancy mode.
+  timeout: ""                            # Timeout configures the same timeout on all components starting at ingress down to the ingestor/querier. Timeout configuration on a specific component has a higher precedence. Defaults to 30 seconds.
   resources:                             # Resources defines resources configuration.
     total:                               # The total amount of resources for Tempo instance. The operator autonomously splits resources between deployed Tempo components. Only limits are supported, the operator calculates requests automatically. See http://github.com/grafana/tempo/issues/1540.
       claims:                            # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.   This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.   This field is immutable. It can only be set for containers.

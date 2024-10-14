@@ -163,6 +163,9 @@ func TestBuildJaegerUIRoute(t *testing.T) {
 					Name:      "tempo-sample-jaegerui",
 					Namespace: "default",
 					Labels:    labels,
+					Annotations: map[string]string{
+						"haproxy.router.openshift.io/timeout": "30s",
+					},
 				},
 				Spec: routev1.RouteSpec{
 					Host: "",
@@ -221,6 +224,9 @@ func TestBuildJaegerUIRoute(t *testing.T) {
 					Name:      "tempo-sample-jaegerui",
 					Namespace: "default",
 					Labels:    labels,
+					Annotations: map[string]string{
+						"haproxy.router.openshift.io/timeout": "30s",
+					},
 				},
 				Spec: routev1.RouteSpec{
 					Host: "",

@@ -511,6 +511,9 @@ func TestQueryFrontendJaegerRoute(t *testing.T) {
 			Name:      naming.Name(manifestutils.QueryFrontendComponentName, "test"),
 			Namespace: "project1",
 			Labels:    manifestutils.ComponentLabels("query-frontend", "test"),
+			Annotations: map[string]string{
+				"haproxy.router.openshift.io/timeout": "0s",
+			},
 		},
 		Spec: routev1.RouteSpec{
 			To: routev1.RouteTargetReference{
@@ -810,6 +813,9 @@ func TestQueryFrontendJaegerRouteSecured(t *testing.T) {
 			Name:      naming.Name(manifestutils.QueryFrontendComponentName, "test"),
 			Namespace: "project1",
 			Labels:    manifestutils.ComponentLabels("query-frontend", "test"),
+			Annotations: map[string]string{
+				"haproxy.router.openshift.io/timeout": "0s",
+			},
 		},
 		Spec: routev1.RouteSpec{
 			To: routev1.RouteTargetReference{

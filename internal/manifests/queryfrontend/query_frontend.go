@@ -34,6 +34,8 @@ const (
 	containerNameTempo       = "tempo"
 	containerNameJaegerQuery = "jaeger-query"
 	containerNameTempoQuery  = "tempo-query"
+
+	timeoutRouteAnnotation = "haproxy.router.openshift.io/timeout"
 )
 
 // BuildQueryFrontend creates the query-frontend objects.
@@ -54,7 +56,7 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 
 	if gates.HTTPEncryption || gates.GRPCEncryption {
 		caBundleName := naming.SigningCABundleName(tempo.Name)
-		targets := []string{containerNameTempo, containerNameTempoQuery}
+		targets := []string{containerNameTempo, containerNameJaegerQuery, containerNameTempoQuery}
 		if err := manifestutils.ConfigureServiceCAByContainerName(&d.Spec.Template.Spec, caBundleName, targets...); err != nil {
 			return nil, err
 		}
@@ -85,9 +87,12 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 
 			if jaegerUIAuthentication != nil && jaegerUIAuthentication.Enabled {
 				oauthproxy.PatchDeploymentForOauthProxy(
-					tempo.ObjectMeta, params.CtrlConfig,
+					tempo.ObjectMeta,
+					params.CtrlConfig,
 					tempo.Spec.Template.QueryFrontend.JaegerQuery.Authentication,
-					tempo.Spec.Images, d)
+					tempo.Spec.Timeout.Duration,
+					tempo.Spec.Images,
+					d)
 
 				oauthproxy.PatchQueryFrontEndService(getQueryFrontendService(tempo, svcs), tempo.Name)
 				manifests = append(manifests, oauthproxy.OAuthServiceAccount(params))
@@ -582,12 +587,20 @@ func route(tempo v1alpha1.TempoStack) (*routev1.Route, error) {
 
 	serviceName := naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name)
 
+	annotations := tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Annotations
+	if annotations == nil {
+		annotations = map[string]string{}
+	}
+	if annotations[timeoutRouteAnnotation] == "" {
+		annotations[timeoutRouteAnnotation] = fmt.Sprintf("%ds", int(tempo.Spec.Timeout.Duration.Seconds()))
+	}
+
 	return &routev1.Route{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        queryFrontendName,
 			Namespace:   tempo.Namespace,
 			Labels:      labels,
-			Annotations: tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Annotations,
+			Annotations: annotations,
 		},
 		Spec: routev1.RouteSpec{
 			Host: tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Host,

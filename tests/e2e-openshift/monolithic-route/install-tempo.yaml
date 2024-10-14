@@ -4,6 +4,7 @@ metadata:
   name: mono-route
   namespace: chainsaw-mono-route
 spec:
+  timeout: 2m
   jaegerui:
     enabled: true
     route:

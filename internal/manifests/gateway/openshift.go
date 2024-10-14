@@ -22,6 +22,8 @@ import (
 const (
 	gatewayOPAHTTPPort     = 8082
 	gatewayOPAInternalPort = 8083
+
+	timeoutRouteAnnotation = "haproxy.router.openshift.io/timeout"
 )
 
 // BuildServiceAccountAnnotations returns the annotations to use a ServiceAccount as an OAuth client.
@@ -111,12 +113,20 @@ func route(tempo v1alpha1.TempoStack) (*routev1.Route, error) {
 		return nil, fmt.Errorf("unsupported tls termination specified for route")
 	}
 
+	annotations := tempo.Spec.Template.Gateway.Ingress.Annotations
+	if annotations == nil {
+		annotations = map[string]string{}
+	}
+	if annotations[timeoutRouteAnnotation] == "" {
+		annotations[timeoutRouteAnnotation] = fmt.Sprintf("%ds", int(tempo.Spec.Timeout.Duration.Seconds()))
+	}
+
 	return &routev1.Route{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        naming.Name(manifestutils.GatewayComponentName, tempo.Name),
 			Namespace:   tempo.Namespace,
 			Labels:      labels,
-			Annotations: tempo.Spec.Template.Gateway.Ingress.Annotations,
+			Annotations: annotations,
 		},
 		Spec: routev1.RouteSpec{
 			Host: tempo.Spec.Template.Gateway.Ingress.Host,

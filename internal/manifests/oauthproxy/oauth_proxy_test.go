@@ -2,6 +2,7 @@ package oauthproxy
 
 import (
 	"fmt"
+	"time"
 
 	"testing"
 
@@ -45,6 +46,7 @@ func TestOauthProxyContainer(t *testing.T) {
 				fmt.Sprintf("--tls-cert=%s/tls.crt", tlsProxyPath),
 				fmt.Sprintf("--tls-key=%s/tls.key", tlsProxyPath),
 				fmt.Sprintf("--upstream=http://localhost:%d", manifestutils.PortJaegerUI),
+				"--upstream-timeout=5s",
 			},
 			tempo: v1alpha1.TempoStack{
 				ObjectMeta: metav1.ObjectMeta{
@@ -75,6 +77,7 @@ func TestOauthProxyContainer(t *testing.T) {
 				fmt.Sprintf("--tls-cert=%s/tls.crt", tlsProxyPath),
 				fmt.Sprintf("--tls-key=%s/tls.key", tlsProxyPath),
 				fmt.Sprintf("--upstream=http://localhost:%d", manifestutils.PortJaegerUI),
+				"--upstream-timeout=5s",
 				"--openshift-sar={\"namespace\":\"app-dev\",\"resource\":\"services\",\"resourceName\":\"proxy\",\"verb\":\"get\"}",
 			},
 			tempo: v1alpha1.TempoStack{
@@ -112,6 +115,7 @@ func TestOauthProxyContainer(t *testing.T) {
 			container := oAuthProxyContainer(params.Tempo.Name,
 				naming.Name(manifestutils.QueryFrontendComponentName, params.Tempo.Name),
 				params.Tempo.Spec.Template.QueryFrontend.JaegerQuery.Authentication,
+				time.Second*5,
 				customImage,
 			)
 			expected := corev1.Container{
@@ -340,6 +344,7 @@ func TestPatchDeploymentForOauthProxy(t *testing.T) {
 		params.Tempo.ObjectMeta,
 		params.CtrlConfig,
 		params.Tempo.Spec.Template.QueryFrontend.JaegerQuery.Authentication,
+		time.Second*5,
 		params.Tempo.Spec.Images,
 		dep)
 
@@ -478,6 +483,7 @@ func TestPatchStatefulSetForOauthProxy(t *testing.T) {
 	PatchStatefulSetForOauthProxy(
 		params.Tempo.ObjectMeta,
 		params.Tempo.Spec.Template.QueryFrontend.JaegerQuery.Authentication,
+		time.Second*5,
 		params.CtrlConfig,
 		statefulSet)
 

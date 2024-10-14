@@ -1,0 +1,18 @@
+# One of 'breaking', 'deprecation', 'new_component', 'enhancement', 'bug_fix'
+change_type: breaking
+
+# The name of the component, or a single word describing the area of concern, (e.g. tempostack, tempomonolithic, github action)
+component: tempostack, tempomonolithic
+
+# A brief description of the change. Surround your text with quotes ("") if it needs to start with a backtick (`).
+note: Add unified timeout configuration. It changes the default to 30s.
+
+# One or more tracking issues related to the change
+issues: [1045]
+
+# (Optional) One or more lines of additional information to render under the primary note.
+# These lines will be padded with 2 spaces and then inserted directly into the document.
+# Use pipe (|) for multiline entries.
+subtext: |
+  Adding `spec.timeout` CRD option to configure timeout on all components and default it to 30s.
+  Before Tempo server was defaulting to 3m, gateway to 2m, OpenShift route to 30s (for query), oauth-proxy to 30s (for query).

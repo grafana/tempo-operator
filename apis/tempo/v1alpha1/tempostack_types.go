@@ -40,6 +40,11 @@ type TempoStackSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Ingestion and Querying Ratelimiting"
 	LimitSpec LimitSpec `json:"limits,omitempty"`
 
+	// Timeout configures the same timeout on all components starting at ingress down to the ingestor/querier.
+	// Timeout configuration on a specific component has a higher precedence.
+	// Defaults to 30 seconds.
+	Timeout metav1.Duration `json:"timeout,omitempty"`
+
 	// StorageClassName for PVCs used by ingester. Defaults to nil (default storage class in the cluster).
 	//
 	// +optional
@@ -103,7 +108,7 @@ type TempoStackSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tempo Component Templates"
 	Template TempoTemplateSpec `json:"template,omitempty"`
 
-	// ReplicationFactor is used to define how many component replicas should exist.
+	// The replication factor is a configuration setting that determines how many ingesters need to acknowledge the data from the distributors before accepting a span.
 	//
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Replication Factor"
@@ -612,6 +617,19 @@ type JaegerQuerySpec struct {
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="ServicesQueryDuration"
 	ServicesQueryDuration *metav1.Duration `json:"servicesQueryDuration,omitempty"`
+
+	// FindTracesConcurrentRequests defines how many concurrent request a single trace search can submit (defaults querier.replicas*2).
+	// The search for traces in Jaeger submits limit+1 requests. First requests finds trace IDs and then it fetches
+	// entire traces by ID. This property allows Jaeger to fetch traces in parallel.
+	// Note that by default a single Tempo querier can process 20 concurrent search jobs.
+	// Increasing this property might require scaling up querier instances, especially on error "job queue full"
+	// See also Tempo's extraConfig:
+	// querier.max_concurrent_queries (20 default)
+	// query_frontend.max_outstanding_per_tenant: (2000 default). Increase if the query-frontend returns 429
+	//
+	// +optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="FindTracesConcurrentRequests",xDescriptors="urn:alm:descriptor:com.tectonic.ui:advanced"
+	FindTracesConcurrentRequests int `json:"findTracesConcurrentRequests,omitempty"`
 
 	// Authentication defines the options for the oauth proxy used to protect jaeger UI
 	//

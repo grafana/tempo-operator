@@ -398,6 +398,7 @@ func configureGateway(opts Options, sts *appsv1.StatefulSet) error {
 		fmt.Sprintf("--web.internal.listen=0.0.0.0:%d", manifestutils.GatewayPortInternalHTTPServer), // serves health checks
 		fmt.Sprintf("--traces.tenant-header=%s", manifestutils.TenantHeader),
 		fmt.Sprintf("--traces.tempo.endpoint=http://localhost:%d", manifestutils.PortHTTPServer), // Tempo API upstream
+		fmt.Sprintf("--traces.write-timeout=%s", opts.Tempo.Spec.Timeout.Duration.String()),
 		fmt.Sprintf("--rbac.config=%s", path.Join(gatewayMountDir, "rbac", manifestutils.GatewayRBACFileName)),
 		fmt.Sprintf("--tenants.config=%s", path.Join(gatewayMountDir, "tenants", manifestutils.GatewayTenantFileName)),
 		"--log.level=info",

@@ -81,6 +81,7 @@ data:
     backend: 127.0.0.1:3200
     tenant_header_key: x-scope-orgid
     services_query_duration: 72h0m0s
+    find_traces_concurrent_requests: 2
   tempo.yaml: |
     distributor:
         receivers:
@@ -98,6 +99,8 @@ data:
         max_retries: 3
     server:
         http_listen_port: 3200
+        http_server_read_timeout: 30s
+        http_server_write_timeout: 30s
     storage:
         trace:
             backend: local

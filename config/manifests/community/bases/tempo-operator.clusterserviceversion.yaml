@@ -236,6 +236,19 @@ spec:
           "{"namespace": "<tempo_stack_namespace>", "resource": "pods", "verb": "get"}'
         displayName: SAR
         path: jaegerui.authentication.sar
+      - description: 'FindTracesConcurrentRequests defines how many concurrent request
+          a single trace search can submit (defaults 2). The search for traces in
+          Jaeger submits limit+1 requests. First requests finds trace IDs and then
+          it fetches entire traces by ID. This property allows Jaeger to fetch traces
+          in parallel. Note that by default a single Tempo querier can process 20
+          concurrent search jobs. Increasing this property might require scaling up
+          querier instances, especially on error "job queue full" See also Tempo''s
+          extraConfig: querier.max_concurrent_queries (20 default) query_frontend.max_outstanding_per_tenant:
+          (2000 default). Increase if the query-frontend returns 429'
+        displayName: FindTracesConcurrentRequests
+        path: jaegerui.findTracesConcurrentRequests
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:advanced
       - description: Annotations defines the annotations of the Ingress object.
         displayName: Annotations
         path: jaegerui.ingress.annotations
@@ -647,8 +660,9 @@ spec:
           0 to 1.
         displayName: Sampling Fraction
         path: observability.tracing.sampling_fraction
-      - description: ReplicationFactor is used to define how many component replicas
-          should exist.
+      - description: The replication factor is a configuration setting that determines
+          how many ingesters need to acknowledge the data from the distributors before
+          accepting a span.
         displayName: Replication Factor
         path: replicationFactor
       - description: Resources defines resources configuration.
@@ -930,6 +944,19 @@ spec:
         path: template.queryFrontend.jaegerQuery.enabled
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
+      - description: 'FindTracesConcurrentRequests defines how many concurrent request
+          a single trace search can submit (defaults querier.replicas*2). The search
+          for traces in Jaeger submits limit+1 requests. First requests finds trace
+          IDs and then it fetches entire traces by ID. This property allows Jaeger
+          to fetch traces in parallel. Note that by default a single Tempo querier
+          can process 20 concurrent search jobs. Increasing this property might require
+          scaling up querier instances, especially on error "job queue full" See also
+          Tempo''s extraConfig: querier.max_concurrent_queries (20 default) query_frontend.max_outstanding_per_tenant:
+          (2000 default). Increase if the query-frontend returns 429'
+        displayName: FindTracesConcurrentRequests
+        path: template.queryFrontend.jaegerQuery.findTracesConcurrentRequests
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:advanced
       - description: Ingress defines the options for the Jaeger Query ingress.
         displayName: Jaeger Query UI Ingress Settings
         path: template.queryFrontend.jaegerQuery.ingress

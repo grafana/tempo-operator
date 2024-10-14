@@ -42,8 +42,9 @@ func TestBuildConfigMap(t *testing.T) {
 					},
 				},
 				JaegerUI: &v1alpha1.MonolithicJaegerUISpec{
-					Enabled:               true,
-					ServicesQueryDuration: &metav1.Duration{Duration: time.Duration(3 * 24 * time.Hour)},
+					Enabled:                      true,
+					ServicesQueryDuration:        &metav1.Duration{Duration: time.Duration(3 * 24 * time.Hour)},
+					FindTracesConcurrentRequests: 22,
 				},
 			},
 		},
@@ -63,6 +64,7 @@ address: 127.0.0.1:7777
 backend: 127.0.0.1:3200
 tenant_header_key: x-scope-orgid
 services_query_duration: 72h0m0s
+find_traces_concurrent_requests: 22
 `
 	require.YAMLEq(t, tempoQueryCfg, cm.Data["tempo-query.yaml"])
 }
@@ -80,6 +82,8 @@ func TestBuildConfig(t *testing.T) {
 			expected: `
 server:
   http_listen_port: 3200
+  http_server_read_timeout: 30s
+  http_server_write_timeout: 30s
 internal_server:
   enable: true
   http_listen_address: 0.0.0.0
@@ -112,6 +116,8 @@ usage_report:
 			expected: `
 server:
   http_listen_port: 3200
+  http_server_read_timeout: 30s
+  http_server_write_timeout: 30s
 internal_server:
   enable: true
   http_listen_address: 0.0.0.0
@@ -155,6 +161,8 @@ usage_report:
 			expected: `
 server:
   http_listen_port: 3200
+  http_server_read_timeout: 30s
+  http_server_write_timeout: 30s
 internal_server:
   enable: true
   http_listen_address: 0.0.0.0
@@ -202,6 +210,8 @@ usage_report:
 			expected: `
 server:
   http_listen_port: 3200
+  http_server_read_timeout: 30s
+  http_server_write_timeout: 30s
 internal_server:
   enable: true
   http_listen_address: 0.0.0.0
@@ -255,6 +265,8 @@ usage_report:
 			expected: `
 server:
   http_listen_port: 3200
+  http_server_read_timeout: 30s
+  http_server_write_timeout: 30s
 internal_server:
   enable: true
   http_listen_address: 0.0.0.0
@@ -313,6 +325,8 @@ usage_report:
 			expected: `
 server:
   http_listen_port: 3200
+  http_server_read_timeout: 30s
+  http_server_write_timeout: 30s
 internal_server:
   enable: true
   http_listen_address: 0.0.0.0
@@ -369,6 +383,8 @@ usage_report:
 			expected: `
 server:
   http_listen_port: 3200
+  http_server_read_timeout: 30s
+  http_server_write_timeout: 30s
 internal_server:
   enable: true
   http_listen_address: 0.0.0.0
@@ -397,12 +413,14 @@ usage_report:
 			name: "extra config",
 			spec: v1alpha1.TempoMonolithicSpec{
 				ExtraConfig: &v1alpha1.ExtraConfigSpec{
-					Tempo: apiextensionsv1.JSON{Raw: []byte(`{"storage": {"trace": {"wal": {"overlay_setting": "abc"}}}}`)},
+					Tempo: apiextensionsv1.JSON{Raw: []byte(`{"storage": {"trace": {"wal": {"overlay_setting": "abc"}}}, "server": {"http_server_read_timeout": "1m", "http_server_write_timeout": "1m"}}`)},
 				},
 			},
 			expected: `
 server:
   http_listen_port: 3200
+  http_server_read_timeout: 1m
+  http_server_write_timeout: 1m
 internal_server:
   enable: true
   http_listen_address: 0.0.0.0
