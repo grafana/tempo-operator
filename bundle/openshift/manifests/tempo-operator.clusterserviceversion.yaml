@@ -1468,7 +1468,7 @@ spec:
                 - --config=controller_manager_config.yaml
                 env:
                 - name: RELATED_IMAGE_TEMPO
-                  value: docker.io/grafana/tempo:2.5.0
+                  value: docker.io/grafana/tempo:2.6.0
                 - name: RELATED_IMAGE_JAEGER_QUERY
                   value: docker.io/jaegertracing/jaeger-query:1.62.0
                 - name: RELATED_IMAGE_TEMPO_QUERY
@@ -1628,7 +1628,7 @@ spec:
   provider:
     name: Grafana Tempo Operator SIG
   relatedImages:
-  - image: docker.io/grafana/tempo:2.5.0
+  - image: docker.io/grafana/tempo:2.6.0
     name: tempo
   - image: docker.io/jaegertracing/jaeger-query:1.62.0
     name: jaeger-query
