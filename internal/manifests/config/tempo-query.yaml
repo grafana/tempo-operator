@@ -1,5 +1,5 @@
-address: 127.0.0.1:7777
-backend: 127.0.0.1:{{ .HTTPPort }}
+address: 0.0.0.0:7777
+backend: localhost:{{ .HTTPPort }}
 tenant_header_key: {{ .TenantHeader }}
 {{- if and .Gates.HTTPEncryption .Gateway }}
 tls_enabled: true

@@ -60,8 +60,8 @@ func TestBuildConfigMap(t *testing.T) {
 
 	require.NotNil(t, cm.Data["tempo-query.yaml"])
 	tempoQueryCfg := `
-address: 127.0.0.1:7777
-backend: 127.0.0.1:3200
+address: 0.0.0.0:7777
+backend: localhost:3200
 tenant_header_key: x-scope-orgid
 services_query_duration: 72h0m0s
 find_traces_concurrent_requests: 22

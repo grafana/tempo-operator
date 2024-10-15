@@ -1453,7 +1453,7 @@ spec:
                 - name: RELATED_IMAGE_JAEGER_QUERY
                   value: docker.io/jaegertracing/jaeger-query:1.62.0
                 - name: RELATED_IMAGE_TEMPO_QUERY
-                  value: docker.io/grafana/tempo-query:main-1de25ca
+                  value: docker.io/grafana/tempo-query:main-a2f70c9
                 - name: RELATED_IMAGE_TEMPO_GATEWAY
                   value: quay.io/observatorium/api:main-2024-08-05-11d0d94
                 - name: RELATED_IMAGE_TEMPO_GATEWAY_OPA
@@ -1602,7 +1602,7 @@ spec:
     name: tempo
   - image: docker.io/jaegertracing/jaeger-query:1.62.0
     name: jaeger-query
-  - image: docker.io/grafana/tempo-query:main-1de25ca
+  - image: docker.io/grafana/tempo-query:main-a2f70c9
     name: tempo-query
   - image: quay.io/observatorium/api:main-2024-08-05-11d0d94
     name: tempo-gateway
