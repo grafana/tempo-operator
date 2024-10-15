@@ -289,6 +289,16 @@ func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 					ReadOnly:  true,
 				},
 			},
+			ReadinessProbe: &corev1.Probe{
+				ProbeHandler: corev1.ProbeHandler{
+					GRPC: &corev1.GRPCAction{
+						Port: manifestutils.PortTempoGRPCQuery,
+					},
+				},
+				TimeoutSeconds:   1,
+				PeriodSeconds:    5,
+				FailureThreshold: 12,
+			},
 			Resources: corev1.ResourceRequirements{
 				Limits: corev1.ResourceList{
 					corev1.ResourceCPU:    *resource.NewMilliQuantity(45, resource.BinarySI),
