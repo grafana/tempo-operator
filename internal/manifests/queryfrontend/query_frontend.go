@@ -311,6 +311,16 @@ func deployment(params manifestutils.Params) (*appsv1.Deployment, error) {
 			},
 			Resources:       tempoQueryResources(tempo),
 			SecurityContext: manifestutils.TempoContainerSecurityContext(),
+			ReadinessProbe: &corev1.Probe{
+				ProbeHandler: corev1.ProbeHandler{
+					GRPC: &corev1.GRPCAction{
+						Port: manifestutils.PortTempoGRPCQuery,
+					},
+				},
+				TimeoutSeconds:   1,
+				PeriodSeconds:    5,
+				FailureThreshold: 12,
+			},
 		}
 		jaegerQueryVolume := corev1.Volume{
 			Name: manifestutils.TmpStorageVolumeName + "-query",
