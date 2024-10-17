@@ -224,8 +224,8 @@ data:
     \   tls_ca_path: /var/run/ca/service-ca.crt\n    tls_server_name: tempo-simplest-ingester.chainsaw-tls-singletenant.svc.cluster.local\n
     \   tls_insecure_skip_verify: false\n    tls_min_version: VersionTLS13\n"
   tempo-query.yaml: |
-    address: 127.0.0.1:7777
-    backend: 127.0.0.1:3200
+    address: 0.0.0.0:7777
+    backend: localhost:3200
     tenant_header_key: x-scope-orgid
     services_query_duration: 72h0m0s
     find_traces_concurrent_requests: 2

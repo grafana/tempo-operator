@@ -135,7 +135,6 @@ metadata:
     kind: TempoStack
     name: cmpreps
 spec:
-  replicas: 2
   selector:
     matchLabels:
       app.kubernetes.io/component: gateway

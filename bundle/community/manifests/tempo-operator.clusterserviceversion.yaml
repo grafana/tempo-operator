@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.13.0
-    createdAt: "2024-10-15T03:28:05Z"
+    createdAt: "2024-10-16T08:06:57Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -1458,15 +1458,15 @@ spec:
                 - --config=controller_manager_config.yaml
                 env:
                 - name: RELATED_IMAGE_TEMPO
-                  value: docker.io/grafana/tempo:2.6.0
+                  value: docker.io/grafana/tempo:2.6.1
                 - name: RELATED_IMAGE_JAEGER_QUERY
                   value: docker.io/jaegertracing/jaeger-query:1.62.0
                 - name: RELATED_IMAGE_TEMPO_QUERY
-                  value: docker.io/grafana/tempo-query:main-1de25ca
+                  value: docker.io/grafana/tempo-query:2.6.1
                 - name: RELATED_IMAGE_TEMPO_GATEWAY
-                  value: quay.io/observatorium/api:main-2024-08-05-11d0d94
+                  value: quay.io/observatorium/api:main-2024-10-15-0c59e41
                 - name: RELATED_IMAGE_TEMPO_GATEWAY_OPA
-                  value: quay.io/observatorium/opa-openshift:main-2024-04-29-914c13f
+                  value: quay.io/observatorium/opa-openshift:main-2024-10-09-7237863
                 - name: RELATED_IMAGE_OAUTH_PROXY
                   value: quay.io/openshift/origin-oauth-proxy:4.14
                 image: ghcr.io/grafana/tempo-operator/tempo-operator:v0.13.0
@@ -1607,15 +1607,15 @@ spec:
   provider:
     name: Grafana Tempo Operator SIG
   relatedImages:
-  - image: docker.io/grafana/tempo:2.6.0
+  - image: docker.io/grafana/tempo:2.6.1
     name: tempo
   - image: docker.io/jaegertracing/jaeger-query:1.62.0
     name: jaeger-query
-  - image: docker.io/grafana/tempo-query:main-1de25ca
+  - image: docker.io/grafana/tempo-query:2.6.1
     name: tempo-query
-  - image: quay.io/observatorium/api:main-2024-08-05-11d0d94
+  - image: quay.io/observatorium/api:main-2024-10-15-0c59e41
     name: tempo-gateway
-  - image: quay.io/observatorium/opa-openshift:main-2024-04-29-914c13f
+  - image: quay.io/observatorium/opa-openshift:main-2024-10-09-7237863
     name: tempo-gateway-opa
   - image: quay.io/openshift/origin-oauth-proxy:4.14
     name: oauth-proxy
