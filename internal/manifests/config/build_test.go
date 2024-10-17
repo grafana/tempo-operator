@@ -2569,6 +2569,7 @@ ingester:
       kvstore:
         store: memberlist
       replication_factor: 1
+    address: ${HASH_RING_INSTANCE_ADDR}
     tokens_file_path: /var/tempo/tokens.json
   max_block_duration: 10m
 memberlist:

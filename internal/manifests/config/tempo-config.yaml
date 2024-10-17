@@ -99,6 +99,9 @@ ingester:
       kvstore:
         store: memberlist
       replication_factor: {{ .ReplicationFactor }}
+{{- with .MemberList.InstanceAddr }}
+    address: {{ . }}
+{{- end }}
     tokens_file_path: /var/tempo/tokens.json
     {{- if .MemberList.EnableIPv6 }}
     enable_inet6: true
