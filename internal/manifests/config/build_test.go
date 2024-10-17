@@ -2568,7 +2568,6 @@ ingester:
     ring:
       kvstore:
         store: memberlist
-      instance_addr: ${HASH_RING_INSTANCE_ADDR}
       replication_factor: 1
     tokens_file_path: /var/tempo/tokens.json
   max_block_duration: 10m
