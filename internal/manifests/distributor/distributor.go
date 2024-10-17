@@ -24,6 +24,11 @@ func BuildDistributor(params manifestutils.Params) ([]client.Object, error) {
 	dep := deployment(params)
 	var err error
 	dep.Spec.Template, err = manifestutils.PatchTracingJaegerEnv(params.Tempo, dep.Spec.Template)
+
+	if err := memberlist.ConfigureHashRingEnv(&dep.Spec.Template.Spec, params.Tempo); err != nil {
+		return nil, err
+	}
+
 	if err != nil {
 		return nil, err
 	}
@@ -245,6 +250,7 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 								"-target=distributor",
 								"-config.file=/conf/tempo.yaml",
 								"-log.level=info",
+								"-config.expand-env=true",
 							},
 							Ports:          containerPorts,
 							ReadinessProbe: manifestutils.TempoReadinessProbe(params.CtrlConfig.Gates.HTTPEncryption),

@@ -47,6 +47,10 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 		return nil, err
 	}
 
+	if err := memberlist.ConfigureHashRingEnv(&d.Spec.Template.Spec, params.Tempo); err != nil {
+		return nil, err
+	}
+
 	d.Spec.Template, err = manifestutils.PatchTracingJaegerEnv(params.Tempo, d.Spec.Template)
 	if err != nil {
 		return nil, err
@@ -197,6 +201,7 @@ func deployment(params manifestutils.Params) (*appsv1.Deployment, error) {
 								"-config.file=/conf/tempo-query-frontend.yaml",
 								"-mem-ballast-size-mbs=1024",
 								"-log.level=info",
+								"-config.expand-env=true",
 							},
 							Ports: []corev1.ContainerPort{
 								{

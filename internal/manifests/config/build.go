@@ -12,6 +12,7 @@ import (
 
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
+	"github.com/grafana/tempo-operator/internal/manifests/memberlist"
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
 )
 
@@ -73,8 +74,9 @@ func buildConfiguration(params manifestutils.Params) ([]byte, error) {
 		StorageParams:   params.StorageParams,
 		GlobalRetention: tempo.Spec.Retention.Global.Traces.Duration.String(),
 		MemberList: memberlistOptions{
-			JoinMembers: []string{naming.Name("gossip-ring", tempo.Name)},
-			EnableIPv6:  ptr.Deref(tempo.Spec.HashRing.MemberList.EnableIPv6, false),
+			JoinMembers:  []string{naming.Name("gossip-ring", tempo.Name)},
+			EnableIPv6:   ptr.Deref(tempo.Spec.HashRing.MemberList.EnableIPv6, false),
+			InstanceAddr: gossipRingInstanceAddr(tempo.Spec.HashRing),
 		},
 		QueryFrontendDiscovery: fmt.Sprintf("%s:%d", naming.Name("query-frontend-discovery", tempo.Name), manifestutils.PortGRPCServer),
 		GlobalRateLimits:       fromRateLimitSpecToRateLimitOptions(tempo.Spec.LimitSpec.Global),
@@ -255,4 +257,18 @@ func renderTempoQueryTemplate(opts tempoQueryOptions) ([]byte, error) {
 	}
 
 	return cfg, nil
+}
+
+func gossipRingInstanceAddr(spec v1alpha1.HashRingSpec) string {
+	var instanceAddr string
+	switch spec.MemberList.InstanceAddrType {
+	case v1alpha1.InstanceAddrPodIP:
+		instanceAddr = fmt.Sprintf("${%s}", memberlist.GossipInstanceAddrEnvVarName)
+	case v1alpha1.InstanceAddrDefault:
+		// Do nothing use tempo defaults
+	default:
+		// Do nothing use tempo defaults
+	}
+
+	return instanceAddr
 }

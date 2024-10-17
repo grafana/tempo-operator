@@ -74,8 +74,9 @@ type tlsOptions struct {
 }
 
 type memberlistOptions struct {
-	JoinMembers []string
-	EnableIPv6  bool
+	JoinMembers  []string
+	EnableIPv6   bool
+	InstanceAddr string
 }
 
 type receiverTLSOptions struct {

@@ -154,6 +154,7 @@ func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 								"-config.file=/conf/tempo-query-frontend.yaml",
 								"-mem-ballast-size-mbs=1024",
 								"-log.level=info",
+								"-config.expand-env=true",
 							},
 							Ports: []corev1.ContainerPort{
 								{

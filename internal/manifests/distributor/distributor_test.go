@@ -28,11 +28,13 @@ func TestBuildDistributor(t *testing.T) {
 		expectedServiceAnnotations map[string]string
 		expectCABundleConfigMap    bool
 		enableServingCertsService  bool
+		instanceAddrType           v1alpha1.InstanceAddrType
 		expectedContainerPorts     []corev1.ContainerPort
 		expectedServicePorts       []corev1.ServicePort
 		expectedResources          corev1.ResourceRequirements
 		expectedVolumes            []corev1.Volume
 		expectedVolumeMounts       []corev1.VolumeMount
+		expectedContainerEnvVars   []corev1.EnvVar
 	}{
 		{
 			name:            "Gateway disabled",
@@ -174,6 +176,7 @@ func TestBuildDistributor(t *testing.T) {
 					MountPath: manifestutils.TmpTempoStoragePath,
 				},
 			},
+			expectedContainerEnvVars: []corev1.EnvVar{},
 		},
 		{
 			name:            "Receiver TLS enable",
@@ -348,6 +351,7 @@ func TestBuildDistributor(t *testing.T) {
 					ReadOnly:  true,
 				},
 			},
+			expectedContainerEnvVars: []corev1.EnvVar{},
 		},
 		{
 			name:            "Receiver TLS enable with ServingCertsService feature enabled",
@@ -523,6 +527,7 @@ func TestBuildDistributor(t *testing.T) {
 					ReadOnly:  true,
 				},
 			},
+			expectedContainerEnvVars: []corev1.EnvVar{},
 		},
 		{
 			name:          "Receiver TLS enable with ServingCertsService feature enabled no custom certs",
@@ -700,6 +705,7 @@ func TestBuildDistributor(t *testing.T) {
 					ReadOnly:  true,
 				},
 			},
+			expectedContainerEnvVars: []corev1.EnvVar{},
 		},
 		{
 			name:            "Gateway enable",
@@ -786,11 +792,171 @@ func TestBuildDistributor(t *testing.T) {
 					MountPath: manifestutils.TmpTempoStoragePath,
 				},
 			},
+			expectedContainerEnvVars: []corev1.EnvVar{},
+		},
+		{
+			name:            "set InstanceAddrType to PodIP",
+			enableGateway:   false,
+			expectedObjects: 2,
+			expectedContainerPorts: []corev1.ContainerPort{
+				{
+					Name:          manifestutils.PortOtlpHttpName,
+					ContainerPort: manifestutils.PortOtlpHttp,
+					Protocol:      corev1.ProtocolTCP,
+				},
+				{
+					Name:          manifestutils.OtlpGrpcPortName,
+					ContainerPort: manifestutils.PortOtlpGrpcServer,
+					Protocol:      corev1.ProtocolTCP,
+				},
+				{
+					Name:          manifestutils.HttpPortName,
+					ContainerPort: manifestutils.PortHTTPServer,
+					Protocol:      corev1.ProtocolTCP,
+				},
+				{
+					Name:          manifestutils.HttpMemberlistPortName,
+					ContainerPort: manifestutils.PortMemberlist,
+					Protocol:      corev1.ProtocolTCP,
+				},
+				{
+					Name:          manifestutils.PortJaegerThriftHTTPName,
+					ContainerPort: manifestutils.PortJaegerThriftHTTP,
+					Protocol:      corev1.ProtocolTCP,
+				},
+				{
+					Name:          manifestutils.PortJaegerThriftCompactName,
+					ContainerPort: manifestutils.PortJaegerThriftCompact,
+					Protocol:      corev1.ProtocolUDP,
+				},
+				{
+					Name:          manifestutils.PortJaegerThriftBinaryName,
+					ContainerPort: manifestutils.PortJaegerThriftBinary,
+					Protocol:      corev1.ProtocolUDP,
+				},
+				{
+					Name:          manifestutils.PortJaegerGrpcName,
+					ContainerPort: manifestutils.PortJaegerGrpc,
+					Protocol:      corev1.ProtocolTCP,
+				},
+				{
+					Name:          manifestutils.PortZipkinName,
+					ContainerPort: manifestutils.PortZipkin,
+					Protocol:      corev1.ProtocolTCP,
+				},
+			},
+			expectedServicePorts: []corev1.ServicePort{
+				{
+					Name:       manifestutils.PortOtlpHttpName,
+					Port:       manifestutils.PortOtlpHttp,
+					TargetPort: intstr.FromString(manifestutils.PortOtlpHttpName),
+					Protocol:   corev1.ProtocolTCP,
+				},
+				{
+					Name:       manifestutils.OtlpGrpcPortName,
+					Protocol:   corev1.ProtocolTCP,
+					Port:       manifestutils.PortOtlpGrpcServer,
+					TargetPort: intstr.FromString(manifestutils.OtlpGrpcPortName),
+				},
+				{
+					Name:       manifestutils.HttpPortName,
+					Protocol:   corev1.ProtocolTCP,
+					Port:       manifestutils.PortHTTPServer,
+					TargetPort: intstr.FromString(manifestutils.HttpPortName),
+				},
+				{
+					Name:       manifestutils.PortJaegerThriftHTTPName,
+					Port:       manifestutils.PortJaegerThriftHTTP,
+					TargetPort: intstr.FromString(manifestutils.PortJaegerThriftHTTPName),
+					Protocol:   corev1.ProtocolTCP,
+				},
+				{
+					Name:       manifestutils.PortJaegerThriftCompactName,
+					Port:       manifestutils.PortJaegerThriftCompact,
+					TargetPort: intstr.FromString(manifestutils.PortJaegerThriftCompactName),
+					Protocol:   corev1.ProtocolUDP,
+				},
+				{
+					Name:       manifestutils.PortJaegerThriftBinaryName,
+					Port:       manifestutils.PortJaegerThriftBinary,
+					TargetPort: intstr.FromString(manifestutils.PortJaegerThriftBinaryName),
+					Protocol:   corev1.ProtocolUDP,
+				},
+				{
+					Name:       manifestutils.PortJaegerGrpcName,
+					Port:       manifestutils.PortJaegerGrpc,
+					TargetPort: intstr.FromString(manifestutils.PortJaegerGrpcName),
+					Protocol:   corev1.ProtocolTCP,
+				},
+				{
+					Name:       manifestutils.PortZipkinName,
+					Port:       manifestutils.PortZipkin,
+					TargetPort: intstr.FromString(manifestutils.PortZipkinName),
+					Protocol:   corev1.ProtocolTCP,
+				},
+			},
+			expectedResources: corev1.ResourceRequirements{
+				Limits: corev1.ResourceList{
+					corev1.ResourceCPU:    *resource.NewMilliQuantity(270, resource.BinarySI),
+					corev1.ResourceMemory: *resource.NewQuantity(257698032, resource.BinarySI),
+				},
+				Requests: corev1.ResourceList{
+					corev1.ResourceCPU:    *resource.NewMilliQuantity(81, resource.BinarySI),
+					corev1.ResourceMemory: *resource.NewQuantity(77309416, resource.BinarySI),
+				},
+			},
+			expectedVolumes: []corev1.Volume{
+				{
+					Name: manifestutils.ConfigVolumeName,
+					VolumeSource: corev1.VolumeSource{
+						ConfigMap: &corev1.ConfigMapVolumeSource{
+							LocalObjectReference: corev1.LocalObjectReference{
+								Name: "tempo-test",
+							},
+						},
+					},
+				},
+				{
+					Name: manifestutils.TmpStorageVolumeName,
+					VolumeSource: corev1.VolumeSource{
+						EmptyDir: &corev1.EmptyDirVolumeSource{},
+					},
+				},
+			},
+			expectedVolumeMounts: []corev1.VolumeMount{
+				{
+					Name:      manifestutils.ConfigVolumeName,
+					MountPath: "/conf",
+					ReadOnly:  true,
+				},
+				{
+					Name:      manifestutils.TmpStorageVolumeName,
+					MountPath: manifestutils.TmpTempoStoragePath,
+				},
+			},
+			expectedContainerEnvVars: []corev1.EnvVar{
+				{
+					Name: "HASH_RING_INSTANCE_ADDR",
+					ValueFrom: &corev1.EnvVarSource{
+						FieldRef: &corev1.ObjectFieldSelector{
+							APIVersion: "v1",
+							FieldPath:  "status.podIP",
+						},
+					},
+				},
+			},
+			instanceAddrType: v1alpha1.InstanceAddrPodIP,
 		},
 	}
 
 	for _, ts := range tests {
 		t.Run(ts.name, func(t *testing.T) {
+
+			instanceAddrType := v1alpha1.InstanceAddrDefault
+			if ts.instanceAddrType != "" {
+				instanceAddrType = ts.instanceAddrType
+			}
+
 			objects, err := BuildDistributor(manifestutils.Params{
 				Tempo: v1alpha1.TempoStack{
 					ObjectMeta: metav1.ObjectMeta{
@@ -825,6 +991,11 @@ func TestBuildDistributor(t *testing.T) {
 									corev1.ResourceCPU:    resource.MustParse("1000m"),
 									corev1.ResourceMemory: resource.MustParse("2Gi"),
 								},
+							},
+						},
+						HashRing: v1alpha1.HashRingSpec{
+							MemberList: v1alpha1.MemberListSpec{
+								InstanceAddrType: instanceAddrType,
 							},
 						},
 					},
@@ -879,8 +1050,9 @@ func TestBuildDistributor(t *testing.T) {
 										"-target=distributor",
 										"-config.file=/conf/tempo.yaml",
 										"-log.level=info",
+										"-config.expand-env=true",
 									},
-									Env:          []corev1.EnvVar{},
+									Env:          ts.expectedContainerEnvVars,
 									VolumeMounts: ts.expectedVolumeMounts,
 									Ports:        ts.expectedContainerPorts,
 									ReadinessProbe: &corev1.Probe{
