@@ -113,6 +113,9 @@ memberlist:
   {{- range .MemberList.JoinMembers }}
   - {{ . }}
   {{- end }}
+  {{- with .MemberList.InstanceAddr }}
+  advertise_addr: {{ . }}
+  {{- end }}
 multitenancy_enabled: {{ .Multitenancy }}
 {{- if or
   .GlobalRateLimits.IngestionBurstSizeBytes

@@ -2576,6 +2576,7 @@ memberlist:
   abort_if_cluster_join_fails: false
   join_members:
     - tempo-test-gossip-ring
+  advertise_addr: ${HASH_RING_INSTANCE_ADDR}
 multitenancy_enabled: false
 querier:
   max_concurrent_queries: 20
