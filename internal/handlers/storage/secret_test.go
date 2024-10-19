@@ -22,7 +22,7 @@ func TestGetS3ParamsInsecure(t *testing.T) {
 	s3, errs := getS3Params(storageSecret, nil)
 	require.Len(t, errs, 0)
 	require.Equal(t, "minio:9000", s3.LongLived.Endpoint)
-	require.True(t, s3.LongLived.Insecure)
+	require.True(t, s3.Insecure)
 	require.Equal(t, "testbucket", s3.LongLived.Bucket)
 }
 
@@ -39,7 +39,7 @@ func TestGetS3ParamsSecure(t *testing.T) {
 	s3, errs := getS3Params(storageSecret, nil)
 	require.Len(t, errs, 0)
 	require.Equal(t, "minio:9000", s3.LongLived.Endpoint)
-	require.False(t, s3.LongLived.Insecure)
+	require.False(t, s3.Insecure)
 	require.Equal(t, "testbucket", s3.LongLived.Bucket)
 }
 

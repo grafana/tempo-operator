@@ -40,6 +40,7 @@ type GCS struct {
 type S3 struct {
 	LongLived  *S3LongLived
 	ShortLived *S3ShortLived
+	Insecure   bool
 }
 
 // S3LongLived holds long-lived S3 configuration.
@@ -48,9 +49,7 @@ type S3LongLived struct {
 	// Endpoint without http/https
 	Endpoint string
 	Bucket   string
-	Insecure bool
-
-	TLS StorageTLS
+	TLS      StorageTLS
 }
 
 // S3ShortLived holds short-lived S3 configuration.

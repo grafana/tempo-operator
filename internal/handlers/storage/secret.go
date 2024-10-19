@@ -128,10 +128,10 @@ func getS3Params(storageSecret corev1.Secret, path *field.Path) (*manifestutils.
 	endpoint = strings.TrimPrefix(endpoint, "http://")
 
 	return &manifestutils.S3{
+		Insecure: insecure,
 		LongLived: &manifestutils.S3LongLived{
 			Endpoint: endpoint,
 			Bucket:   string(storageSecret.Data["bucket"]),
-			Insecure: insecure,
 		},
 	}, nil
 }
