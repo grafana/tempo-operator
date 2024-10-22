@@ -27,6 +27,11 @@ func BuildCompactor(params manifestutils.Params) ([]client.Object, error) {
 	}
 	gates := params.CtrlConfig.Gates
 	tempo := params.Tempo
+
+	if err := memberlist.ConfigureHashRingEnv(&d.Spec.Template.Spec, params.Tempo); err != nil {
+		return nil, err
+	}
+
 	if gates.HTTPEncryption || gates.GRPCEncryption {
 		caBundleName := naming.SigningCABundleName(tempo.Name)
 		if err := manifestutils.ConfigureServiceCA(&d.Spec.Template.Spec, caBundleName); err != nil {
@@ -90,6 +95,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 								"-target=compactor",
 								"-config.file=/conf/tempo.yaml",
 								"-log.level=info",
+								"-config.expand-env=true",
 							},
 							Ports: []corev1.ContainerPort{
 								{
