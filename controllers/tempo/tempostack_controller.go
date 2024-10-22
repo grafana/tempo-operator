@@ -139,7 +139,7 @@ func (r *TempoStackReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 //
 //   - For any other error: Set the status condition to Failed,
 //     the Reason to "FailedReconciliation" and the message to the error message.
-func (r *TempoStackReconciler) handleReconcileStatus(ctx context.Context, log logr.Logger, tempo v1alpha1.TempoStack, reconcileError error) (ctrl.Result, error) {
+func (r *TempoStackReconciler) handleReconcileStatus(ctx context.Context, log logr.Logger, tempo v1alpha1.TempoStack, reconcileError error) (ctrl.Result, error) { //nolint:unparam
 	// First refresh components
 	newStatus, rerr := status.GetComponentsStatus(ctx, r, tempo)
 	if rerr != nil {
