@@ -29,6 +29,8 @@ import (
 	rbacv1 "k8s.io/api/rbac/v1"
 )
 
+const defaultDirectoryPermissions = 0750
+
 type cluster struct {
 	config               *config.Config
 	apiAvailabilityCache map[schema.GroupVersionResource]bool
@@ -105,7 +107,7 @@ func (c *cluster) getPodLogs(podName, namespace, container string) {
 
 // GetOperatorDeploymentInfo gets the operator deployment info from the cluster.
 func (c *cluster) GetOperatorDeploymentInfo() error {
-	err := os.MkdirAll(c.config.CollectionDir, os.ModePerm)
+	err := os.MkdirAll(c.config.CollectionDir, defaultDirectoryPermissions)
 	if err != nil {
 		return err
 	}
@@ -132,7 +134,7 @@ func (c *cluster) GetOLMInfo() error {
 	}
 
 	outputDir := filepath.Join(c.config.CollectionDir, "olm")
-	err := os.MkdirAll(outputDir, os.ModePerm)
+	err := os.MkdirAll(outputDir, defaultDirectoryPermissions)
 	if err != nil {
 		return err
 	}
