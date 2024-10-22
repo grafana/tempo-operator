@@ -2642,8 +2642,8 @@ query_frontend:
 				LongLived: &manifestutils.S3LongLived{
 					Endpoint: "minio:9000",
 					Bucket:   "tempo",
-					Insecure: true,
 				},
+				Insecure: true,
 			},
 		},
 		TLSProfile: tlsprofile.TLSProfileOptions{
