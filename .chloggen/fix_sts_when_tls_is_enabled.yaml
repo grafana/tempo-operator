@@ -5,7 +5,7 @@ change_type: bug_fix
 component: tempostack
 
 # A brief description of the change. Surround your text with quotes ("") if it needs to start with a backtick (`).
-note:  Allow insecure = false/true regardless of type of token used.
+note:  Fix panic when toggling spec.storage.tls.enabled to true, when using Tempo with AWS STS
 
 # One or more tracking issues related to the change
 issues: [1067]
