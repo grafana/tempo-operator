@@ -22,7 +22,7 @@ import (
 
 func createTempoStackFolder(collectionDir string, tempoStack *tempov1alpha1.TempoStack) (string, error) {
 	outputDir := filepath.Join(collectionDir, "namespaces", tempoStack.Namespace, "tempostack", tempoStack.Name)
-	err := os.MkdirAll(outputDir, os.ModePerm)
+	err := os.MkdirAll(outputDir, defaultDirectoryPermissions)
 	if err != nil {
 		return "", err
 	}
@@ -31,7 +31,7 @@ func createTempoStackFolder(collectionDir string, tempoStack *tempov1alpha1.Temp
 
 func createTempoMonolithicFolder(collectionDir string, tempoMonolith *tempov1alpha1.TempoMonolithic) (string, error) {
 	outputDir := filepath.Join(collectionDir, "namespaces", tempoMonolith.Namespace, "tempomonolithic", tempoMonolith.Name)
-	err := os.MkdirAll(outputDir, os.ModePerm)
+	err := os.MkdirAll(outputDir, defaultDirectoryPermissions)
 	if err != nil {
 		return "", err
 	}
@@ -72,7 +72,7 @@ func writeLogToFile(outputDir, podName, container string, p cgocorev1.PodInterfa
 		}
 	}()
 
-	err = os.MkdirAll(outputDir, os.ModePerm)
+	err = os.MkdirAll(outputDir, defaultDirectoryPermissions)
 	if err != nil {
 		log.Fatalln(err)
 		return
