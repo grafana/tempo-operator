@@ -57,7 +57,10 @@ func build(params manifestutils.Params) ([]client.Object, error) {
 
 func toYAMLManifest(scheme *runtime.Scheme, objects []client.Object, out io.Writer) error {
 	for _, obj := range objects {
-		fmt.Fprintln(out, "---")
+		_, err := fmt.Fprintln(out, "---")
+		if err != nil {
+			return err
+		}
 
 		// set Group, Version and Kind
 		types, _, err := scheme.ObjectKinds(obj)
