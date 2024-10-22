@@ -27,6 +27,10 @@ func BuildIngester(params manifestutils.Params) ([]client.Object, error) {
 		return nil, err
 	}
 
+	if err := memberlist.ConfigureHashRingEnv(&ss.Spec.Template.Spec, params.Tempo); err != nil {
+		return nil, err
+	}
+
 	gates := params.CtrlConfig.Gates
 	tempo := params.Tempo
 
@@ -94,6 +98,7 @@ func statefulSet(params manifestutils.Params) (*v1.StatefulSet, error) {
 								"-target=ingester",
 								"-config.file=/conf/tempo.yaml",
 								"-log.level=info",
+								"-config.expand-env=true",
 							},
 							VolumeMounts: []corev1.VolumeMount{
 								{
