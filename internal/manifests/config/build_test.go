@@ -119,10 +119,10 @@ query_frontend:
 		},
 		StorageParams: manifestutils.StorageParams{
 			S3: &manifestutils.S3{
+				Insecure: true,
 				LongLived: &manifestutils.S3LongLived{
 					Endpoint: "minio:9000",
 					Bucket:   "tempo",
-					Insecure: true,
 				},
 			},
 		},
@@ -982,10 +982,10 @@ query_frontend:
 				},
 				StorageParams: manifestutils.StorageParams{
 					S3: &manifestutils.S3{
+						Insecure: true,
 						LongLived: &manifestutils.S3LongLived{
 							Endpoint: "minio:9000",
 							Bucket:   "tempo",
-							Insecure: true,
 						},
 					},
 				},
@@ -1359,10 +1359,10 @@ query_frontend:
 		},
 		StorageParams: manifestutils.StorageParams{
 			S3: &manifestutils.S3{
+				Insecure: true,
 				LongLived: &manifestutils.S3LongLived{
 					Endpoint: "minio:9000",
 					Bucket:   "tempo",
-					Insecure: true,
 				},
 			},
 		},
@@ -1651,10 +1651,10 @@ ingester_client:
 				},
 				StorageParams: manifestutils.StorageParams{
 					S3: &manifestutils.S3{
+						Insecure: true,
 						LongLived: &manifestutils.S3LongLived{
 							Endpoint: "minio:9000",
 							Bucket:   "tempo",
-							Insecure: true,
 						},
 					},
 				},
@@ -1816,10 +1816,10 @@ ingester_client:
 		},
 		StorageParams: manifestutils.StorageParams{
 			S3: &manifestutils.S3{
+				Insecure: true,
 				LongLived: &manifestutils.S3LongLived{
 					Endpoint: "minio:9000",
 					Bucket:   "tempo",
-					Insecure: true,
 				},
 			},
 		},
@@ -2184,10 +2184,10 @@ query_frontend:
 				},
 				StorageParams: manifestutils.StorageParams{
 					S3: &manifestutils.S3{
+						Insecure: true,
 						LongLived: &manifestutils.S3LongLived{
 							Endpoint: "minio:9000",
 							Bucket:   "tempo",
-							Insecure: true,
 						},
 					},
 				},
@@ -2403,10 +2403,10 @@ query_frontend:
 				},
 				StorageParams: manifestutils.StorageParams{
 					S3: &manifestutils.S3{
+						Insecure: true,
 						LongLived: &manifestutils.S3LongLived{
 							Endpoint: "minio:9000",
 							Bucket:   "tempo",
-							Insecure: true,
 						},
 					},
 				},
@@ -2642,8 +2642,8 @@ query_frontend:
 				LongLived: &manifestutils.S3LongLived{
 					Endpoint: "minio:9000",
 					Bucket:   "tempo",
-					Insecure: true,
 				},
+				Insecure: true,
 			},
 		},
 		TLSProfile: tlsprofile.TLSProfileOptions{

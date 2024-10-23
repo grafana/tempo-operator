@@ -231,7 +231,7 @@ storage:
     s3:
       endpoint: {{ .StorageParams.S3.LongLived.Endpoint }}
       bucket: {{ .StorageParams.S3.LongLived.Bucket }}
-      insecure: {{ .StorageParams.S3.LongLived.Insecure }}
+      insecure: {{ .StorageParams.S3.Insecure }}
     {{- if .S3StorageTLS.Enabled }}
     {{- if .S3StorageTLS.CA }}
       tls_ca_path: {{ .S3StorageTLS.CA }}

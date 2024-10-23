@@ -31,7 +31,9 @@ func GetStorageParamsForTempoStack(ctx context.Context, client client.Client, te
 			return manifestutils.StorageParams{}, errs
 		}
 
-		if tempo.Spec.Storage.TLS.Enabled {
+		storageParams.S3.Insecure = !tempo.Spec.Storage.TLS.Enabled
+
+		if tempo.Spec.Storage.TLS.Enabled && storageParams.S3.LongLived != nil {
 			storageParams.S3.LongLived.TLS, errs = getTLSParams(ctx, client, tempo.Namespace, tempo.Spec.Storage.TLS, tlsPath.Child("caName"))
 			if len(errs) > 0 {
 				return manifestutils.StorageParams{}, errs
