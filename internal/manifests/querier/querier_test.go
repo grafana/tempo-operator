@@ -124,6 +124,7 @@ func TestBuildQuerier(t *testing.T) {
 								"-target=querier",
 								"-config.file=/conf/tempo.yaml",
 								"-log.level=info",
+								"-config.expand-env=true",
 							},
 							VolumeMounts: []corev1.VolumeMount{
 								{

@@ -68,4 +68,4 @@ jobs:
         uses: golangci/golangci-lint-action@v6
         with:
           args: -v
-          version: v1.56.1
+          version: v1.61.0
