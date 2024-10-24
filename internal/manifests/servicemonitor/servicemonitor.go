@@ -23,7 +23,7 @@ func BuildServiceMonitors(params manifestutils.Params) []client.Object {
 		buildServiceMonitor(params, manifestutils.DistributorComponentName, manifestutils.HttpPortName),
 		buildServiceMonitor(params, manifestutils.IngesterComponentName, manifestutils.HttpPortName),
 		buildServiceMonitor(params, manifestutils.QuerierComponentName, manifestutils.HttpPortName),
-		buildServiceMonitor(params, manifestutils.QueryFrontendComponentName, manifestutils.HttpPortName),
+		buildFrontEndServiceMonitor(params, manifestutils.HttpPortName),
 	}
 
 	if params.Tempo.Spec.Template.Gateway.Enabled {
@@ -36,6 +36,13 @@ func BuildServiceMonitors(params manifestutils.Params) []client.Object {
 func buildServiceMonitor(params manifestutils.Params, component string, port string) *monitoringv1.ServiceMonitor {
 	labels := manifestutils.ComponentLabels(component, params.Tempo.Name)
 	return NewServiceMonitor(params.Tempo.Namespace, params.Tempo.Name, labels, params.CtrlConfig.Gates.HTTPEncryption, component, port)
+}
+
+func buildFrontEndServiceMonitor(params manifestutils.Params, port string) *monitoringv1.ServiceMonitor {
+	labels := manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, params.Tempo.Name)
+	tls := params.CtrlConfig.Gates.HTTPEncryption && params.Tempo.Spec.Template.Gateway.Enabled
+	return NewServiceMonitor(params.Tempo.Namespace, params.Tempo.Name, labels, tls,
+		manifestutils.QueryFrontendComponentName, port)
 }
 
 // NewServiceMonitor creates a ServiceMonitor.
