@@ -1,11 +1,10 @@
 #!/bin/bash
 
-# Check if must gather directory exists
-MUST_GATHER_DIR=/tmp/monolithic-route
-mkdir -p $MUST_GATHER_DIR
+# Create a temporary directory to store must-gather
+MUST_GATHER_DIR=$(mktemp -d)
 
 # Run the must-gather script
-oc adm must-gather --dest-dir=$MUST_GATHER_DIR --image=quay.io/rhn_support_ikanse/tempo-must-gather:latest -- /usr/bin/must-gather --operator-namespace tempo-operator
+oc adm must-gather --dest-dir=$MUST_GATHER_DIR --image=quay.io/rhn_support_ikanse/tempo-must-gather:latest -- /usr/bin/must-gather --operator-namespace $temponamespace
 
 # Define required files and directories
 REQUIRED_ITEMS=(
