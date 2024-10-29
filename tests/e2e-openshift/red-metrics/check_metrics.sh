@@ -4,7 +4,7 @@ TOKEN=$(oc create token tempo-redmetrics-query-frontend -n $NAMESPACE)
 THANOS_QUERIER_HOST=$(oc get route thanos-querier -n openshift-monitoring -o json | jq -r '.spec.host')
 
 #Check metrics used in the prometheus rules created for TempoStack. Refer issue https://issues.redhat.com/browse/TRACING-3399 for skipped metrics.
-metrics="traces_span_metrics_duration_bucket traces_span_metrics_duration_count traces_span_metrics_duration_sum traces_span_metrics_calls"
+metrics="duration_bucket duration_count duration_sum calls"
 
 for metric in $metrics; do
 query="$metric"
