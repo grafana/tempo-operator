@@ -1,11 +1,11 @@
 # One of 'breaking', 'deprecation', 'new_component', 'enhancement', 'bug_fix'
-change_type: bug_fix
+change_type: breaking
 
 # The name of the component, or a single word describing the area of concern, (e.g. tempostack, tempomonolithic, github action)
 component: tempostack
 
 # A brief description of the change. Surround your text with quotes ("") if it needs to start with a backtick (`).
-note: Remove the default metrics namespace/prefix for span RED metrics in Jaeger query.
+note: Use new default metrics namespace/prefix for span RED metrics in Jaeger query.
 
 
 # One or more tracking issues related to the change
@@ -15,10 +15,13 @@ issues: [1072]
 # These lines will be padded with 2 spaces and then inserted directly into the document.
 # Use pipe (|) for multiline entries.
 subtext: |
-  Fix RED metric retrieval from Prometheus by removing the default RED metric namespace introduced in Jaeger 1.62.
-  The Operator overwrites the new default namespace jaeger-query takes into account using the `--prometheus.query.namespace=` flag.
-  A user can overwrite the default namespace by configuring it in the CR.
-  Example:
+  Use the new RED metrics default namespace `traces.span.metrics` for retrieval from Prometheus.
+  Since OpenTelemetry Collector version 0.109.0 the default namespace is set to traces.span.metrics.
+  The namespace taken into account by jaeger-query can be configured via a TempoStack CR entry.
+  To achieve this the Operator will set the jaeger-query `--prometheus.query.namespace=` flag.
+  Since Jaeger version 1.62, jaeger-query uses `traces.span.metrics` as default too.
+
+  Example how to overwrite the default namespace with the old default before `0.109.0` by configuring it in the CR:
   ```
   apiVersion: tempo.grafana.com/v1alpha1
   kind: TempoStack
