@@ -17,6 +17,22 @@ issues: [1072]
 subtext: |
   Fix RED metric retrieval from Prometheus by removing the default RED metric namespace introduced in Jaeger 1.62.
   The Operator overwrites the new default namespace jaeger-query takes into account using the `--prometheus.query.namespace=` flag.
+  A user can overwrite the default namespace by configuring it in the CR.
+  Example:
+  ```
+  apiVersion: tempo.grafana.com/v1alpha1
+  kind: TempoStack
+  ...
+  spec:
+    template:
+      queryFrontend:
+        jaegerQuery:
+          enabled: true
+          monitorTab:
+            enabled: true
+            prometheusEndpoint: "http://myPromInstance:9090"
+            redMetricsNamespace: "custom"
+  ```
   More details can be found here:
   - https://github.com/jaegertracing/jaeger/pull/6007
   - https://github.com/open-telemetry/opentelemetry-collector-contrib/pull/34485

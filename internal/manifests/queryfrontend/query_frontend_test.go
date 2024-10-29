@@ -621,15 +621,16 @@ func TestBuildQueryFrontendWithJaegerMonitorTab(t *testing.T) {
 							JaegerQuery: v1alpha1.JaegerQuerySpec{
 								Enabled: true,
 								MonitorTab: v1alpha1.JaegerQueryMonitor{
-									Enabled:            true,
-									PrometheusEndpoint: "http://prometheus:9091",
+									Enabled:             true,
+									PrometheusEndpoint:  "http://prometheus:9091",
+									REDMetricsNamespace: "test",
 								},
 							},
 						},
 					},
 				},
 			},
-			args: []string{"--query.base-path=/", "--span-storage.type=grpc", "--grpc-storage.server=localhost:7777", "--query.bearer-token-propagation=true", "--prometheus.query.namespace="},
+			args: []string{"--query.base-path=/", "--span-storage.type=grpc", "--grpc-storage.server=localhost:7777", "--query.bearer-token-propagation=true", "--prometheus.query.namespace=test"},
 			env:  []corev1.EnvVar{{Name: "METRICS_STORAGE_TYPE", Value: "prometheus"}, {Name: "PROMETHEUS_SERVER_URL", Value: "http://prometheus:9091"}},
 		},
 		{

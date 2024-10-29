@@ -689,6 +689,12 @@ type JaegerQueryMonitor struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Prometheus endpoint"
 	PrometheusEndpoint string `json:"prometheusEndpoint"`
+	// REDMetricsNamespace defines the a prefix used retrieve span rate, error, and duration (RED) metrics.
+	// By default no namespace is set.
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="RED Metric Namespace"
+	REDMetricsNamespace string `json:"redMetricsNamespace"`
 }
 
 // IngressSpec defines Jaeger Query Ingress options.
