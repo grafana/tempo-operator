@@ -398,6 +398,11 @@ func enableMonitoringTab(tempo v1alpha1.TempoStack, jaegerQueryContainer corev1.
 			// However, we do not intend to support them.
 			// --prometheus.query.normalize-calls
 			// --prometheus.query.normalize-duration
+			//
+			// NOTE: Jaeger 1.62 default namespace changed to "traces_span_metrics".
+			// We fallback to no namespace.
+			// See https://github.com/jaegertracing/jaeger/pull/6007.
+			fmt.Sprintf("--prometheus.query.namespace=%s", tempo.Spec.Template.QueryFrontend.JaegerQuery.MonitorTab.REDMetricsNamespace),
 		},
 	}
 	// If the endpoint matches Prometheus on OpenShift, configure TLS and token based auth

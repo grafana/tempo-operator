@@ -689,6 +689,13 @@ type JaegerQueryMonitor struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Prometheus endpoint"
 	PrometheusEndpoint string `json:"prometheusEndpoint"`
+	// REDMetricsNamespace defines the a prefix used retrieve span rate, error, and duration (RED) metrics.
+	// By default it is set to `traces.span.metrics` following the default namespace of the OpenTelemetry Collector since Version 0.109.0.
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default:=traces.span.metrics
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="RED Metric Namespace"
+	REDMetricsNamespace string `json:"redMetricsNamespace"`
 }
 
 // IngressSpec defines Jaeger Query Ingress options.
