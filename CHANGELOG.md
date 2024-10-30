@@ -3,6 +3,82 @@ Changes by Version
 
 <!-- next version -->
 
+## 0.14.0
+
+### 🛑 Breaking changes 🛑
+
+- `tempostack`: Use new default metrics namespace/prefix for span RED metrics in Jaeger query. (#1072)
+  Use the new RED metrics default namespace `traces.span.metrics` for retrieval from Prometheus.
+  Since OpenTelemetry Collector version 0.109.0 the default namespace is set to traces.span.metrics.
+  The namespace taken into account by jaeger-query can be configured via a TempoStack CR entry.
+  To achieve this the Operator will set the jaeger-query `--prometheus.query.namespace=` flag.
+  Since Jaeger version 1.62, jaeger-query uses `traces.span.metrics` as default too.
+  
+  Example how to restore the default namespace used prior to version `0.109.0`, by configuring an empty value for `redMetricsNamespace` in the TempoStack CR:
+  ```
+  apiVersion: tempo.grafana.com/v1alpha1
+  kind: TempoStack
+  ...
+  spec:
+    template:
+      queryFrontend:
+        jaegerQuery:
+          enabled: true
+          monitorTab:
+            enabled: true
+            prometheusEndpoint: "http://myPromInstance:9090"
+            redMetricsNamespace: ""
+  ```
+  More details can be found here:
+  - https://github.com/jaegertracing/jaeger/pull/6007
+  - https://github.com/open-telemetry/opentelemetry-collector-contrib/pull/34485
+  
+- `tempostack, tempomonolithic`: Add unified timeout configuration. It changes the default to 30s. (#1045)
+  Adding `spec.timeout` CRD option to configure timeout on all components and default it to 30s.
+  Before Tempo server was defaulting to 3m, gateway to 2m, OpenShift route to 30s (for query), oauth-proxy to 30s (for query).
+  
+
+### 🚀 New components 🚀
+
+- `must-gather`: Add must-gather to collect information about the components deployed by the operator in a cluster. (#1033)
+
+### 💡 Enhancements 💡
+
+- `tempostack`: Expose a way to set a PodSecurityContext on each component (#996)
+- `tempostack, tempomonolithic`: bump jaeger to v1.62 (#1050)
+- `tempostack`: Bump jaeger to v1.60 by replacing the tempo-query gRPC storage plugin due to the deprecation in Jaeger 1.58.0 with a gRPC standalone service. (#1025)
+- `operator`: Kubernetes 1.30 enablement (#1030)
+- `tempostack, tempomonolithic`: Make re-encrypt route the default TLS termination to allow access outside the cluster. (#1027)
+- `tempostack, tempomonolithic`: Add tempo-query CRD option to speed up trace search. (#1048)
+  Following CRD options were added to speed up trace search in Jaeger UI/API. The trace search first
+  searches for traceids and then it gets a full trace. With this configuration option the requests
+  to get the full trace can be run in parallel:
+  For `TempoStack` - `spec.template.queryFrontend.jaegerQuery.findTracesConcurrentRequests`  
+  For `TempoMonolithic` - `spec.jaegerui.findTracesConcurrentRequests`
+  
+- `tempostack`: bump tempo-query to version with separate tls settings for server and client (#1057)
+- `operator`: Update Tempo to v2.6.1 (#1044, #1064)
+
+### 🧰 Bug fixes 🧰
+
+- `tempostack`: The default value for the IngressType type is now correctly "" (empty string). Previously, it was impossible to select it in tools like the OpenShift web console, what could cause some issues. (#1054)
+- `tempostack`: Add support for memberlist bind network configuration (#1060)
+  Adds support to configure the memberlist instance_addr field using the pod network IP range instead of the default private network range used. 
+  In managed Kubernetes/OpenShift cluster environments as well as in special on-prem setup the private IP range might not be available for using them. 
+  With this change set the TempoStack administrator can choose as a bind address the current pod network IP assigned by the cluster's pod network.
+  
+- `tempostack`: grant jaeer-query access to pki certs (#1051)
+- `tempostack`: Create query-frontend service monitor with HTTP protocol when gateway is disabled (#1070)
+- `tempostack`: Fix panic when toggling spec.storage.tls.enabled to true, when using Tempo with AWS STS (#1067)
+- `tempostack, tempomonolithic`: Mount CA and Certs to tempo-query when tls is enabled. (#1038)
+- `tempostack, tempomonolithic`: The operator no longer sets the `--prometheus.query.support-spanmetrics-connector` flag that got removed in Jaeger 1.58. (#1036)
+  The Flag controled whether the metrics queries should match the OpenTelemetry Collector's spanmetrics connector naming or spanmetrics processor naming.
+- `tempostack`: Use the ReadinessProbe to better indicate when tempo-query is ready to accept requests. Improving the startup reliability by avoiding lost data. (#1058)
+  Without a readiness check in place, there is a risk that data will be lost when the queryfrontend pod is ready but the tempo query API is not yet available.
+
+### Components
+- Tempo: [v2.6.1](https://github.com/grafana/tempo/releases/tag/v2.6.1)
+
 ## 0.13.0
 
 ### 🧰 Bug fixes 🧰
