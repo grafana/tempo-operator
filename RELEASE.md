@@ -25,8 +25,8 @@ We plan to release the operator monthly, **at the end of each month**.
 
 | Release Date | Version | Release Manager                                          |
 |--------------|---------| -------------------------------------------------------- |
-| Aug 2024     | 0.13.0  | [Benedikt Bongartz](https://github.com/frzifus)          |
-| Sep 2024     | 0.14.0  | [Israel Blancas](https://github.com/iblancasa)           |
-| Oct 2024     | 0.15.0  | [Ruben Vargas](https://github.com/rubenvp8510)           |
-| Nov 2024     | 0.16.0  | [Pavol Loffay](https://github.com/pavolloffay)           |
-| Dez 2024     | 0.17.0  | [Andreas Gerstmayr](https://github.com/andreasgerstmayr) |
+| Nov 2024     | 0.14.0  | [Israel Blancas](https://github.com/iblancasa)           |
+| Dez 2024     | 0.15.0  | [Ruben Vargas](https://github.com/rubenvp8510)           |
+| Jan 2025     | 0.16.0  | [Pavol Loffay](https://github.com/pavolloffay)           |
+| Feb 2025     | 0.17.0  | [Andreas Gerstmayr](https://github.com/andreasgerstmayr) |
+| Mar 2025     | 0.18.0  | [Benedikt Bongartz](https://github.com/frzifus)          |
