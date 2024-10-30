@@ -21,7 +21,7 @@ subtext: |
   To achieve this the Operator will set the jaeger-query `--prometheus.query.namespace=` flag.
   Since Jaeger version 1.62, jaeger-query uses `traces.span.metrics` as default too.
 
-  Example how to overwrite the default namespace with the old default before `0.109.0` by configuring it in the CR:
+  Example how to restore the default namespace used prior to version `0.109.0`, by configuring an empty value for `redMetricsNamespace` in the TempoStack CR:
   ```
   apiVersion: tempo.grafana.com/v1alpha1
   kind: TempoStack
@@ -34,7 +34,7 @@ subtext: |
           monitorTab:
             enabled: true
             prometheusEndpoint: "http://myPromInstance:9090"
-            redMetricsNamespace: "custom"
+            redMetricsNamespace: ""
   ```
   More details can be found here:
   - https://github.com/jaegertracing/jaeger/pull/6007
