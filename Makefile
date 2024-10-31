@@ -1,9 +1,9 @@
 # Current Operator version
-OPERATOR_VERSION ?= 0.13.0
+OPERATOR_VERSION ?= 0.14.0
 TEMPO_VERSION ?= 2.6.1
 JAEGER_QUERY_VERSION ?= 1.62.0
 TEMPO_QUERY_VERSION ?= 2.6.1
-TEMPO_GATEWAY_VERSION ?= main-2024-10-15-0c59e41
+TEMPO_GATEWAY_VERSION ?= main-2024-10-16-43b97ec
 TEMPO_GATEWAY_OPA_VERSION ?= main-2024-10-09-7237863
 OAUTH_PROXY_VERSION=4.14
 
@@ -227,6 +227,7 @@ CONTROLLER_GEN_VERSION ?= v0.15.0
 GEN_API_DOCS_VERSION ?= v0.6.0
 ENVTEST_VERSION ?= latest
 OPERATOR_SDK_VERSION ?= 1.32.0
+OLM_VERSION ?= v0.28.0
 CERTMANAGER_VERSION ?= 1.9.1
 CHAINSAW_VERSION ?= v0.2.4
 
@@ -424,7 +425,7 @@ $(OPERATOR_SDK): $(LOCALBIN)
 
 .PHONY: olm-install
 olm-install: operator-sdk ## Install Operator Lifecycle Manager (OLM)
-	$(OPERATOR_SDK) olm install
+	$(OPERATOR_SDK) olm install --version $(OLM_VERSION) --verbose
 
 # go-get-tool will 'go get' any package $2 and install it to $1.
 define go-get-tool
