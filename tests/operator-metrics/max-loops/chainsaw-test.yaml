@@ -19,3 +19,8 @@ spec:
           file: 01-verify-metrics.yaml
       - assert:
           file: 01-assert-job.yaml
+    catch:
+      - events: {}
+      - podLogs:
+          selector: operator-metrics
+          tail: 10
