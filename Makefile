@@ -389,7 +389,7 @@ e2e:
 
 .PHONY: test-operator-metrics
 test-operator-metrics:
-	$(CHAINSAW) test --test-dir ./tests/operator-metrics --skip-delete
+	$(CHAINSAW) test --test-dir ./tests/operator-metrics
 
 # OpenShift end-to-tests
 .PHONY: e2e-openshift
