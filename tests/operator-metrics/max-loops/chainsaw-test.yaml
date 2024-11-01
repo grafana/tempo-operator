@@ -22,5 +22,6 @@ spec:
     catch:
       - events: {}
       - podLogs:
-          selector: operator-metrics
+          selector: job-name=verify-metrics
+          namespace: tempo-operator-system
           tail: 10
