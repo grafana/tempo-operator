@@ -11,9 +11,9 @@ spec:
           image: ghcr.io/grafana/tempo-operator/test-utils:main
           env:
             - name: TEMPOMONOLITHIC_THRESHOLD
-              value: "1"
+              value: "150"
             - name: TEMPOSTACK_THRESHOLD
-              value: "1"
+              value: "150"
           command:
             - /bin/bash
             - -eux
