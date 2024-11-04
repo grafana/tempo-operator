@@ -1,0 +1,50 @@
+apiVersion: opentelemetry.io/v1alpha1
+kind: OpenTelemetryCollector
+metadata:
+  name: dev
+spec:
+  config: |
+    extensions:
+      bearertokenauth:
+        filename: /var/run/secrets/kubernetes.io/serviceaccount/token
+
+    receivers:
+      otlp/grpc:
+        protocols:
+          grpc:
+      otlp/http:
+        protocols:
+          http:
+
+    exporters:
+      otlp:
+        endpoint: tempo-monolithic-multitenancy-openshift-gateway.chainsaw-monolithic-multitenancy.svc.cluster.local:4317
+        tls:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt
+        auth:
+          authenticator: bearertokenauth
+        headers:
+          X-Scope-OrgID: dev  # tenantName
+      otlphttp:
+        endpoint: https://tempo-monolithic-multitenancy-openshift-gateway.chainsaw-monolithic-multitenancy.svc.cluster.local:8080/api/traces/v1/dev
+        tls:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt
+        auth:
+          authenticator: bearertokenauth
+        headers:
+          X-Scope-OrgID: dev  # tenantName
+
+    service:
+      telemetry:
+        logs:
+          level: "DEBUG"
+          development: true
+          encoding: "json"
+      extensions: [bearertokenauth]
+      pipelines:
+        traces/grpc:
+          receivers: [otlp/grpc]
+          exporters: [otlp]
+        traces/http:
+          receivers: [otlp/http]
+          exporters: [otlphttp]

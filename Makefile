@@ -382,6 +382,7 @@ deploy-minio:
 # generic end-to-tests
 .PHONY: prepare-e2e
 prepare-e2e: chainsaw start-kind cert-manager set-test-image-vars build docker-build load-image-operator deploy
+			 ./hack/install/install-openshift-routes.sh
 
 .PHONY: e2e
 e2e:

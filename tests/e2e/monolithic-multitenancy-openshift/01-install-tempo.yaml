@@ -1,0 +1,81 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoMonolithic
+metadata:
+  name: monolithic-multitenancy-openshift
+spec:
+  jaegerui:
+    enabled: true
+  multitenancy:
+    enabled: true
+    mode: openshift
+    authentication:
+    - tenantName: dev
+      tenantId: "1610b0c3-c509-4592-a256-a1871353dbfa"
+    - tenantName: prod
+      tenantId: "1610b0c3-c509-4592-a256-a1871353dbfb"
+---
+
+# Grant the dev-collector Service Account permission to write traces to the 'dev' tenant
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: allow-write-traces-dev-tenant
+rules:
+- apiGroups: [tempo.grafana.com]
+  resources: [dev]  # tenantName
+  resourceNames: [traces]
+  verbs: [create]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: allow-write-traces-dev-tenant
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: allow-write-traces-dev-tenant
+subjects:
+- kind: ServiceAccount
+  name: dev-collector
+  namespace: chainsaw-monolithic-multitenancy
+---
+
+# Grant the default Service Account (used by the verify-traces pod) permission to read traces of the 'dev' tenant
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: allow-read-traces-dev-tenant
+rules:
+- apiGroups: [tempo.grafana.com]
+  resources: [dev]  # tenantName
+  resourceNames: [traces]
+  verbs: [get]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: allow-read-traces-dev-tenant
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: allow-read-traces-dev-tenant
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: chainsaw-monolithic-multitenancy
+---
+# Grant the default ServiceAccount (used by the verify-traces pod) view permissions of the chainsaw-monolithic-multitenancy namespace.
+# If the ServiceAccount cannot access any namespaces, every 'get' request will be denied:
+# https://github.com/observatorium/opa-openshift/pull/18/files
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: view
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: view
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: chainsaw-monolithic-multitenancy

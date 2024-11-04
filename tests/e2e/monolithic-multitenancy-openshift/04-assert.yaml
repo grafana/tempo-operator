@@ -1,0 +1,35 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: verify-traces-jaegerui-grpc
+status:
+  conditions:
+  - status: "True"
+    type: Complete
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: verify-traces-traceql-grpc
+status:
+  conditions:
+  - status: "True"
+    type: Complete
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: verify-traces-jaegerui-http
+status:
+  conditions:
+    - status: "True"
+      type: Complete
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: verify-traces-traceql-http
+status:
+  conditions:
+    - status: "True"
+      type: Complete
