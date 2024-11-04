@@ -376,8 +376,11 @@ func patchTracing(tempo v1alpha1.TempoStack, pod corev1.PodTemplateSpec) (corev1
 	}
 
 	for i := range pod.Spec.Containers {
-		if err := mergo.Merge(&pod.Spec.Containers[i], container, mergo.WithAppendSlice); err != nil {
-			return corev1.PodTemplateSpec{}, err
+		// Only the observatorium-api container is instrumented with traces, not the opa-openshift container.
+		if pod.Spec.Containers[i].Name == containerNameTempoGateway {
+			if err := mergo.Merge(&pod.Spec.Containers[i], container, mergo.WithAppendSlice); err != nil {
+				return corev1.PodTemplateSpec{}, err
+			}
 		}
 	}
 

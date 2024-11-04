@@ -298,7 +298,7 @@ func TestPatchTracing(t *testing.T) {
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{
 						{
-							Name: "first",
+							Name: containerNameTempoGateway,
 							Args: []string{
 								"--abc",
 							},
@@ -316,7 +316,7 @@ func TestPatchTracing(t *testing.T) {
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{
 						{
-							Name: "first",
+							Name: containerNameTempoGateway,
 							Args: []string{
 								"--abc",
 								"--internal.tracing.endpoint=agent:1234",
