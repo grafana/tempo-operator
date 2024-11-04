@@ -1,0 +1,62 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: verify-metrics
+  namespace: tempo-operator-system
+spec:
+  template:
+    spec:
+      containers:
+        - name: verify-metrics
+          image: ghcr.io/grafana/tempo-operator/test-utils:main
+          env:
+            - name: TEMPOMONOLITHIC_THRESHOLD
+              value: "1000"
+            - name: TEMPOSTACK_THRESHOLD
+              value: "1000"
+          command:
+            - /bin/bash
+            - -eux
+            - -c
+          args:
+            - |
+              TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+              curl -k -H "Authorization: Bearer $TOKEN" -G https://tempo-operator-controller-manager-metrics-service:8443/metrics -o /tmp/tempo.out
+
+              # Define thresholds
+              declare -A SUCCESS_THRESHOLDS=(
+                  ["tempomonolithic"]=${TEMPOMONOLITHIC_THRESHOLD:-0}
+                  ["tempostack"]=${TEMPOSTACK_THRESHOLD:-0}
+              )
+
+              # Initialize counters
+              declare -A success_counts=()
+
+
+              while IFS= read -r line; do
+                  if [[ $line =~ ^controller_runtime_reconcile_total ]]; then
+                      echo $line
+                      controller=$(echo "$line" | awk -F'[{}]' '{split($2, a, ","); split(a[1], b, "="); gsub(/"/, "", b[2]); print b[2]}')
+                      result=$(echo "$line" | awk -F'[{}]' '{split($2, a, ","); split(a[2], b, "="); gsub(/"/, "", b[2]); print b[2]}')
+                      value=$(echo "$line" | awk '{print $NF}')
+                      if [[ $result == "success" ]]; then
+                        success_counts["$controller"]=$value
+                      fi
+                  fi
+              done < /tmp/tempo.out
+
+              # Validate counts against thresholds
+              for controller in "${!SUCCESS_THRESHOLDS[@]}"; do
+                  success_count=${success_counts["$controller"]:-0}
+                  if (( success_count > SUCCESS_THRESHOLDS["$controller"] )); then
+                      echo "Alert: Success count for $controller ($success_count) exceeds threshold (${SUCCESS_THRESHOLDS["$controller"]})."
+                      exit 1
+                  fi
+              done
+
+              # Print all success counts at the end
+              echo "All metrics are within acceptable limits."
+              echo "Success counts:"
+              declare -p success_counts
+      restartPolicy: Never
+      serviceAccountName: sa-assert-metrics

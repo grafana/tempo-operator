@@ -387,6 +387,10 @@ prepare-e2e: chainsaw start-kind cert-manager set-test-image-vars build docker-b
 e2e:
 	$(CHAINSAW) test --test-dir ./tests/e2e
 
+.PHONY: test-operator-metrics
+test-operator-metrics:
+	$(CHAINSAW) test --test-dir ./tests/operator-metrics
+
 # OpenShift end-to-tests
 .PHONY: e2e-openshift
 e2e-openshift:

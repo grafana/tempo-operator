@@ -42,7 +42,8 @@ jobs:
     - name: "run tests"
       env:
         KUBE_VERSION: ${{ matrix.kube-version }}
-      run: make prepare-e2e e2e KUBE_VERSION=$KUBE_VERSION
+      run: make prepare-e2e e2e test-operator-metrics KUBE_VERSION=$KUBE_VERSION
+
 
   upgrade-tests:
     name: Upgrade tests ${{ matrix.name }}
