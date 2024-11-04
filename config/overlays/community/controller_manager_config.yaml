@@ -23,7 +23,7 @@ leaderElection:
 featureGates:
   openshift:
     openshiftRoute: true
-    servingCertsService: false
+    servingCertsService: true
     oAuthProxy:
       defaultEnabled: true
   prometheusOperator: false

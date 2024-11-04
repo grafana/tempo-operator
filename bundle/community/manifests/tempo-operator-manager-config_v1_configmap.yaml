@@ -25,10 +25,10 @@ data:
     # leaderElectionReleaseOnCancel: true
     featureGates:
       openshift:
-        openshiftRoute: false
-        servingCertsService: false
+        openshiftRoute: true
+        servingCertsService: true
         oAuthProxy:
-          defaultEnabled: false
+          defaultEnabled: true
       prometheusOperator: false
       grafanaOperator: false
       httpEncryption: true
