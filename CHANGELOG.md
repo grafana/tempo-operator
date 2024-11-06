@@ -9,7 +9,7 @@ Changes by Version
 
 - `tempostack`: Fix enabling `.spec.observability.tracing` with multi-tenancy on OpenShift (#1081)
 - `tempostack, tempomonolithic`: Register missing Jaeger UI routes (#1082)
-  Without these routes, hitting refresh on the trace detail, system architecture or monitor page of Jaeger UI results in a 404.
+  Without these routes, hitting refresh on the trace detail, system architecture or monitor page of Jaeger UI results in a 404 when multi-tenancy is enabled.
   
 
 ### Components
