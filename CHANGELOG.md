@@ -3,6 +3,18 @@ Changes by Version
 
 <!-- next version -->
 
+## 0.14.1
+
+### 🧰 Bug fixes 🧰
+
+- `tempostack`: Fix enabling `.spec.observability.tracing` with multi-tenancy on OpenShift (#1081)
+- `tempostack, tempomonolithic`: Register missing Jaeger UI routes (#1082)
+  Without these routes, hitting refresh on the trace detail, system architecture or monitor page of Jaeger UI results in a 404.
+  
+
+### Components
+- Tempo: [v2.6.1](https://github.com/grafana/tempo/releases/tag/v2.6.1)
+
 ## 0.14.0
 
 ### 🛑 Breaking changes 🛑
