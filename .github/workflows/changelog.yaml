@@ -74,7 +74,7 @@ jobs:
 
       # In order to validate any links in the yaml file, render the config to markdown
       - name: Render .chloggen changelog entries
-        run: make chlog-preview > changelog_preview.md
+        run: make chlog-preview > changelog_preview.md 2>&1
       - name: Install markdown-link-check
         run: npm install -g markdown-link-check@3.12.2
       - name: Run markdown-link-check

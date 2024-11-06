@@ -497,7 +497,7 @@ FILENAME?=$(shell git branch --show-current)
 
 .PHONY: chloggen
 chloggen:
-	test -s $(CHLOGGEN) || $(call go-get-tool,$(CHLOGGEN),go.opentelemetry.io/build-tools/chloggen,$(CHLOGGEN_VERSION))
+	@test -s $(CHLOGGEN) || $(call go-get-tool,$(CHLOGGEN),go.opentelemetry.io/build-tools/chloggen,$(CHLOGGEN_VERSION))
 
 .PHONY: chlog-new
 chlog-new: chloggen
