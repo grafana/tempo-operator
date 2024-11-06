@@ -15,8 +15,8 @@ A locally installed [CRC](https://github.com/crc-org/crc) cluster can be used fo
 Note: The e2e tests require [opentelemetry-operator](https://github.com/open-telemetry/opentelemetry-operator) and cluster monitoring operator (`crc config set enable-cluster-monitoring true`).
 
 ```
-kubectl create namespace tempo-operator-system
-IMG_PREFIX=docker.io/your_username OPERATOR_VERSION=x.y.z BUNDLE_VARIANT=openshift make bundle docker-build docker-push bundle-build bundle-push olm-deploy
+kubectl create namespace openshift-tempo-operator
+IMG_PREFIX=docker.io/your_username OPERATOR_VERSION=x.y.z BUNDLE_VARIANT=openshift OPERATOR_NAMESPACE=openshift-tempo-operator make build docker-build docker-push bundle bundle-build bundle-push olm-deploy
 make e2e e2e-openshift
 ```
 
