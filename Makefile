@@ -3,7 +3,7 @@ OPERATOR_VERSION ?= 0.14.0
 TEMPO_VERSION ?= 2.6.1
 JAEGER_QUERY_VERSION ?= 1.62.0
 TEMPO_QUERY_VERSION ?= 2.6.1
-TEMPO_GATEWAY_VERSION ?= main-2024-10-16-43b97ec
+TEMPO_GATEWAY_VERSION ?= main-2024-11-05-28e4c83
 TEMPO_GATEWAY_OPA_VERSION ?= main-2024-10-09-7237863
 OAUTH_PROXY_VERSION=4.14
 
@@ -497,7 +497,7 @@ FILENAME?=$(shell git branch --show-current)
 
 .PHONY: chloggen
 chloggen:
-	test -s $(CHLOGGEN) || $(call go-get-tool,$(CHLOGGEN),go.opentelemetry.io/build-tools/chloggen,$(CHLOGGEN_VERSION))
+	@test -s $(CHLOGGEN) || $(call go-get-tool,$(CHLOGGEN),go.opentelemetry.io/build-tools/chloggen,$(CHLOGGEN_VERSION))
 
 .PHONY: chlog-new
 chlog-new: chloggen
