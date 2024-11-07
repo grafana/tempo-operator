@@ -97,6 +97,9 @@ metadata:
   namespace: chainsaw-awssts-mono
 status:
   containerStatuses:
+  - name: jaeger-query
+    ready: true
+    started: true
   - name: oauth-proxy
     ready: true
     started: true
