@@ -44,8 +44,12 @@ endif
 ECHO ?= @echo $(echo_prefix)
 
 
-# Default namespace of the operator
+# Default namespace of the Tempo operator
 OPERATOR_NAMESPACE ?= tempo-operator-system
+
+# OpenTelemetry operator installation vars
+OTEL_OPERATOR_NAMESPACE ?= otel-operator-system
+OTEL_BUNDLE_IMG ?= "ghcr.io/open-telemetry/opentelemetry-operator/operator-bundle:v0.115.0"
 
 # CHANNELS define the bundle channels used in the bundle.
 # Add a new line here if you would like to change its default config. (E.g CHANNELS = "candidate,fast,stable")
@@ -214,6 +218,12 @@ olm-deploy: operator-sdk ## Deploy operator via OLM
 olm-upgrade: operator-sdk ## Upgrade operator via OLM
 	$(OPERATOR_SDK) run bundle-upgrade -n $(OPERATOR_NAMESPACE) $(BUNDLE_IMG)
 
+##@ OpenTelemetry Operator deployment
+.PHONY: otel-deploy
+otel-deploy: operator-sdk ## Deploy OpenTelemetry operator via OLM
+	kubectl create namespace otel-operator-system
+	$(OPERATOR_SDK) run bundle --timeout=5m --security-context-config=restricted -n $(OTEL_OPERATOR_NAMESPACE) $(OTEL_BUNDLE_IMG)
+
 ##@ Build Dependencies
 
 ## Location to install dependencies to
@@ -381,7 +391,7 @@ deploy-minio:
 
 # generic end-to-tests
 .PHONY: prepare-e2e
-prepare-e2e: chainsaw start-kind cert-manager set-test-image-vars build docker-build load-image-operator deploy
+prepare-e2e: chainsaw start-kind cert-manager set-test-image-vars build docker-build load-image-operator deploy olm-install otel-deploy
 
 .PHONY: e2e
 e2e:
@@ -426,6 +436,8 @@ $(OPERATOR_SDK): $(LOCALBIN)
 .PHONY: olm-install
 olm-install: operator-sdk ## Install Operator Lifecycle Manager (OLM)
 	$(OPERATOR_SDK) olm install --version $(OLM_VERSION) --verbose
+	# Wait for OLM components to be ready
+	sleep 20s
 
 # go-get-tool will 'go get' any package $2 and install it to $1.
 define go-get-tool
