@@ -8,6 +8,19 @@ spec:
   steps:
   - name: step-00
     try:
+    - command:
+        entrypoint: oc
+        args:
+        - get
+        - pods
+        - -A
+        - -l control-plane=controller-manager
+        - -l app.kubernetes.io/name=tempo-operator
+        - -o 
+        - jsonpath={.items[0].metadata.namespace}
+        outputs:
+        - name: TEMPO_NAMESPACE
+          value: ($stdout)
     - apply:
         file: 00-metrics-service.yaml
     - assert:
@@ -15,6 +28,19 @@ spec:
 
   - name: step-01
     try:
+      - command:
+          entrypoint: oc
+          args:
+          - get
+          - pods
+          - -A
+          - -l control-plane=controller-manager
+          - -l app.kubernetes.io/name=tempo-operator
+          - -o 
+          - jsonpath={.items[0].metadata.namespace}
+          outputs:
+          - name: TEMPO_NAMESPACE
+            value: ($stdout)
       - apply:
           file: 01-verify-metrics.yaml
       - assert:
