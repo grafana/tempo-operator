@@ -3,10 +3,13 @@ package cmd
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
 )
@@ -40,6 +43,30 @@ func TestReadConfig(t *testing.T) {
 			name:  "invalid featureGates.tlsProfile given, show error",
 			input: "testdata/tlsprofile_invalid.yaml",
 			err:   "controller config validation failed: invalid value 'abc' for setting featureGates.tlsProfile (valid values: Old, Intermediate and Modern)",
+		},
+		{
+			name:  "duration without quotes",
+			input: "testdata/duration_no_quotes.yaml",
+			expected: configv1alpha1.ProjectConfig{
+				Gates: configv1alpha1.FeatureGates{
+					TLSProfile: string(configv1alpha1.TLSProfileModernType),
+					BuiltInCertManagement: configv1alpha1.BuiltInCertManagement{
+						Enabled: true,
+						CACertValidity: configv1alpha1.Duration{
+							Duration: metav1.Duration{Duration: time.Hour * 43830},
+						},
+						CACertRefresh: configv1alpha1.Duration{
+							Duration: metav1.Duration{Duration: time.Hour * 35064},
+						},
+						CertValidity: configv1alpha1.Duration{
+							Duration: metav1.Duration{Duration: time.Hour * 2160},
+						},
+						CertRefresh: configv1alpha1.Duration{
+							Duration: metav1.Duration{Duration: time.Hour * 1728},
+						},
+					},
+				},
+			},
 		},
 	}
 

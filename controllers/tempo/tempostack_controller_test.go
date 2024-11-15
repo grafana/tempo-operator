@@ -537,17 +537,17 @@ func TestTLSEnable(t *testing.T) {
 			Gates: configv1alpha1.FeatureGates{
 				BuiltInCertManagement: configv1alpha1.BuiltInCertManagement{
 					Enabled: true,
-					CACertValidity: metav1.Duration{
-						Duration: time.Hour * 43830,
+					CACertValidity: configv1alpha1.Duration{
+						Duration: metav1.Duration{Duration: time.Hour * 43830},
 					},
-					CACertRefresh: metav1.Duration{
-						Duration: time.Hour * 35064,
+					CACertRefresh: configv1alpha1.Duration{
+						Duration: metav1.Duration{Duration: time.Hour * 35064},
 					},
-					CertValidity: metav1.Duration{
-						Duration: time.Hour * 2160,
+					CertValidity: configv1alpha1.Duration{
+						Duration: metav1.Duration{Duration: time.Hour * 2160},
 					},
-					CertRefresh: metav1.Duration{
-						Duration: time.Hour * 1728,
+					CertRefresh: configv1alpha1.Duration{
+						Duration: metav1.Duration{Duration: time.Hour * 1728},
 					},
 				},
 				HTTPEncryption: true,
@@ -783,17 +783,17 @@ func TestK8SGatewaySecret(t *testing.T) {
 			Gates: configv1alpha1.FeatureGates{
 				BuiltInCertManagement: configv1alpha1.BuiltInCertManagement{
 					Enabled: true,
-					CACertValidity: metav1.Duration{
-						Duration: time.Hour * 43830,
+					CACertValidity: configv1alpha1.Duration{
+						Duration: metav1.Duration{Duration: time.Hour * 43830},
 					},
-					CACertRefresh: metav1.Duration{
-						Duration: time.Hour * 35064,
+					CACertRefresh: configv1alpha1.Duration{
+						Duration: metav1.Duration{Duration: time.Hour * 35064},
 					},
-					CertValidity: metav1.Duration{
-						Duration: time.Hour * 2160,
+					CertValidity: configv1alpha1.Duration{
+						Duration: metav1.Duration{Duration: time.Hour * 2160},
 					},
-					CertRefresh: metav1.Duration{
-						Duration: time.Hour * 1728,
+					CertRefresh: configv1alpha1.Duration{
+						Duration: metav1.Duration{Duration: time.Hour * 1728},
 					},
 				},
 				HTTPEncryption: true,

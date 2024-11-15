@@ -58,9 +58,9 @@ type Rotation struct {
 // ParseRotation builds a new RotationOptions struct from the feature gate string values.
 func ParseRotation(cfg configv1alpha1.BuiltInCertManagement) (Rotation, error) {
 	return Rotation{
-		CACertValidity:     cfg.CACertValidity.Duration,
-		CACertRefresh:      cfg.CACertRefresh.Duration,
-		TargetCertValidity: cfg.CertValidity.Duration,
-		TargetCertRefresh:  cfg.CertRefresh.Duration,
+		CACertValidity:     cfg.CACertValidity.Duration.Duration,
+		CACertRefresh:      cfg.CACertRefresh.Duration.Duration,
+		TargetCertValidity: cfg.CertValidity.Duration.Duration,
+		TargetCertRefresh:  cfg.CertRefresh.Duration.Duration,
 	}, nil
 }

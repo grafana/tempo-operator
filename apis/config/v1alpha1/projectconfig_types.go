@@ -1,10 +1,12 @@
 package v1alpha1
 
 import (
+	"encoding/json"
 	"os"
+	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	cfg "sigs.k8s.io/controller-runtime/pkg/config/v1alpha1"
+	configv1alpha1 "k8s.io/component-base/config/v1alpha1"
 )
 
 const (
@@ -32,32 +34,32 @@ type ImagesSpec struct {
 	// Tempo defines the tempo container image.
 	//
 	// +optional
-	Tempo string `json:"tempo,omitempty"`
+	Tempo string `json:"tempo,omitempty" yaml:"tempo,omitempty"`
 
 	// TempoQuery defines the tempo-query container image.
 	//
 	// +optional
-	TempoQuery string `json:"tempoQuery,omitempty"`
+	TempoQuery string `json:"tempoQuery,omitempty" yaml:"tempoQuery,omitempty"`
 
 	// JaegerQuery defines the tempo-query container image.
 	//
 	// +optional
-	JaegerQuery string `json:"jaegerQuery,omitempty"`
+	JaegerQuery string `json:"jaegerQuery,omitempty" yaml:"jaegerQuery,omitempty"`
 
 	// TempoGateway defines the tempo-gateway container image.
 	//
 	// +optional
-	TempoGateway string `json:"tempoGateway,omitempty"`
+	TempoGateway string `json:"tempoGateway,omitempty" yaml:"tempoGateway,omitempty"`
 
 	// TempoGatewayOpa defines the OPA sidecar container for TempoGateway.
 	//
 	// +optional
-	TempoGatewayOpa string `json:"tempoGatewayOpa,omitempty"`
+	TempoGatewayOpa string `json:"tempoGatewayOpa,omitempty" yaml:"tempoGatewayOpa,omitempty"`
 
 	// OauthProxy defines the oauth proxy image used to protect the jaegerUI on single tenant.
 	//
 	// +optional
-	OauthProxy string `json:"oauthProxy,omitempty"`
+	OauthProxy string `json:"oauthProxy,omitempty" yaml:"oauthProxy,omitempty"`
 }
 
 // BuiltInCertManagement is the configuration for the built-in facility to generate and rotate
@@ -65,20 +67,60 @@ type ImagesSpec struct {
 // secrets and configmaps for protecting the internal components will be created if this option is enabled.
 type BuiltInCertManagement struct {
 	// CACertValidity defines the total duration of the CA certificate validity.
-	CACertValidity metav1.Duration `json:"caValidity,omitempty"`
+	CACertValidity Duration `json:"caValidity,omitempty" yaml:"caValidity,omitempty"`
 	// CACertRefresh defines the duration of the CA certificate validity until a rotation
 	// should happen. It can be set up to 80% of CA certificate validity or equal to the
 	// CA certificate validity. Latter should be used only for rotating only when expired.
-	CACertRefresh metav1.Duration `json:"caRefresh,omitempty"`
+	CACertRefresh Duration `json:"caRefresh,omitempty" yaml:"caRefresh,omitempty"`
 	// CertValidity defines the total duration of the validity for all Tempo certificates.
-	CertValidity metav1.Duration `json:"certValidity,omitempty"`
+	CertValidity Duration `json:"certValidity,omitempty" yaml:"certValidity,omitempty"`
 	// CertRefresh defines the duration of the certificate validity until a rotation
 	// should happen. It can be set up to 80% of certificate validity or equal to the
 	// certificate validity. Latter should be used only for rotating only when expired.
 	// The refresh is applied to all Tempo certificates at once.
-	CertRefresh metav1.Duration `json:"certRefresh,omitempty"`
+	CertRefresh Duration `json:"certRefresh,omitempty" yaml:"certRefresh,omitempty"`
 	// Enabled defines to flag to enable/disable built-in certificate management feature gate.
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled bool `json:"enabled,omitempty" yaml:"enabled,omitempty"`
+}
+
+// Duration is a wrapper around metav1.Duration to support parsing duration from a string.
+// Note that ProjectConfig allows setting times like this:
+//
+//	caValidity: 43830h
+//
+// Since no quotes are used, Golang will interpret 43830 as an integer and 'h' as a kind of scalar.
+// Not a string. To avoid breaking changes, we need to support this format. That's why we need
+// to implement custom unmarshalling logic.
+type Duration struct {
+	metav1.Duration `json:",inline" yaml:",inline"`
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface.
+func (d *Duration) UnmarshalJSON(b []byte) error {
+	var str string
+	if err := json.Unmarshal(b, &str); err == nil {
+		parsed, err := time.ParseDuration(str)
+		if err != nil {
+			return err
+		}
+		d.Duration = metav1.Duration{Duration: parsed}
+		return nil
+	}
+	return json.Unmarshal(b, &d.Duration)
+}
+
+// UnmarshalYAML implements the yaml.Unmarshaler interface.
+func (d *Duration) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var str string
+	if err := unmarshal(&str); err == nil {
+		parsed, err := time.ParseDuration(str)
+		if err != nil {
+			return err
+		}
+		d.Duration = metav1.Duration{Duration: parsed}
+		return nil
+	}
+	return unmarshal(&d.Duration)
 }
 
 // OpenShiftFeatureGates is the supported set of all operator features gates on OpenShift.
@@ -91,22 +133,22 @@ type OpenShiftFeatureGates struct {
 	// Currently is only used in two cases:
 	//   - If gateway is enabled, it will be used by the gateway component
 	//   - If the gateway is disabled and TLS is enabled on the distributor but no caName and certName are specified
-	ServingCertsService bool `json:"servingCertsService,omitempty"`
+	ServingCertsService bool `json:"servingCertsService,omitempty" yaml:"servingCertsService,omitempty"`
 
 	// OpenShiftRoute enables creating OpenShift Route objects.
 	// More details: https://docs.openshift.com/container-platform/latest/networking/understanding-networking.html
-	OpenShiftRoute bool `json:"openshiftRoute,omitempty"`
+	OpenShiftRoute bool `json:"openshiftRoute,omitempty" yaml:"openshiftRoute,omitempty"`
 
 	// BaseDomain is used internally for redirect URL in gateway OpenShift auth mode.
 	// If empty the operator automatically derives the domain from the cluster.
-	BaseDomain string `json:"baseDomain,omitempty"`
+	BaseDomain string `json:"baseDomain,omitempty" yaml:"baseDomain,omitempty"`
 
 	// ClusterTLSPolicy enables usage of TLS policies set in the API Server.
 	// More details: https://docs.openshift.com/container-platform/4.11/security/tls-security-profiles.html
-	ClusterTLSPolicy bool
+	ClusterTLSPolicy bool `json:"clusterTLSPolicy,omitempty" yaml:"clusterTLSPolicy,omitempty"`
 
 	// OauthProxy define options for the oauth proxy feature.
-	OauthProxy OauthProxyFeatureGates `json:"oAuthProxy,omitempty"`
+	OauthProxy OauthProxyFeatureGates `json:"oAuthProxy,omitempty" yaml:"oAuthProxy,omitempty"`
 }
 
 // TLSProfileType is a TLS security profile based on the Mozilla definitions:
@@ -129,29 +171,29 @@ const (
 type MetricsFeatureGates struct {
 	// CreateServiceMonitors defines whether the operator should install ServiceMonitors
 	// to scrape metrics of the operator.
-	CreateServiceMonitors bool `json:"createServiceMonitors,omitempty"`
+	CreateServiceMonitors bool `json:"createServiceMonitors,omitempty" yaml:"createServiceMonitors,omitempty"`
 
 	// CreatePrometheusRules defines whether the operator should install PrometheusRules
 	// to receive alerts about the operator.
-	CreatePrometheusRules bool `json:"createPrometheusRules,omitempty"`
+	CreatePrometheusRules bool `json:"createPrometheusRules,omitempty" yaml:"createPrometheusRules,omitempty"`
 }
 
 // ObservabilityFeatureGates configures observability of the operator.
 type ObservabilityFeatureGates struct {
 	// Metrics configures metrics of the operator.
-	Metrics MetricsFeatureGates `json:"metrics,omitempty"`
+	Metrics MetricsFeatureGates `json:"metrics,omitempty" yaml:"metrics,omitempty"`
 }
 
 // OauthProxyFeatureGates configures oauth proxy options.
 type OauthProxyFeatureGates struct {
 	// OAuthProxyEnabled is used internally for enable by default the oauth proxy for the UI when multi-tenancy is disabled.
-	DefaultEnabled bool `json:"defaultEnabled,omitempty"`
+	DefaultEnabled bool `json:"defaultEnabled,omitempty" yaml:"defaultEnabled,omitempty"`
 }
 
 // FeatureGates is the supported set of all operator feature gates.
 type FeatureGates struct {
 	// OpenShift contains a set of feature gates supported only on OpenShift.
-	OpenShift OpenShiftFeatureGates `json:"openshift,omitempty"`
+	OpenShift OpenShiftFeatureGates `json:"openshift,omitempty" yaml:"openshift,omitempty"`
 
 	// BuiltInCertManagement enables the built-in facility for generating and rotating
 	// TLS client and serving certificates for the communication between ingesters and distributors and also between
@@ -162,7 +204,7 @@ type FeatureGates struct {
 	// - `service-ca.crt`: The CA signing the service certificate in `tls.crt`.
 	// All necessary secrets and configmaps for protecting the internal components will be created if this
 	// option is enabled.
-	BuiltInCertManagement BuiltInCertManagement `json:"builtInCertManagement,omitempty"`
+	BuiltInCertManagement BuiltInCertManagement `json:"builtInCertManagement,omitempty" yaml:"builtInCertManagement,omitempty"`
 	// HTTPEncryption enables TLS encryption for all HTTP TempoStack components.
 	// Each HTTP component requires a secret, the name should be the name of the component with the
 	// suffix `-mtls` and prefix by the TempoStack name e.g `tempo-dev-distributor-mtls`.
@@ -184,7 +226,7 @@ type FeatureGates struct {
 	// public faced component.
 	// - If Gateway is enabled, all comunications between the gateway and the tempo components will be protected
 	// by mTLS, and the Gateway itself won´t be, as it will be the only public face component.
-	HTTPEncryption bool `json:"httpEncryption,omitempty"`
+	HTTPEncryption bool `json:"httpEncryption,omitempty" yaml:"httpEncryption,omitempty"`
 	// GRPCEncryption enables TLS encryption for all GRPC TempoStack services.
 	// Each GRPC component requires a secret, the name should be the name of the component with the
 	// suffix `-mtls` and prefix by the TempoStack name e.g `tempo-dev-distributor-mtls`.
@@ -205,22 +247,22 @@ type FeatureGates struct {
 	// component.
 	// - If Gateway is enabled, all comunications between the gateway and the tempo components will be protected
 	// by mTLS, and the Gateway itself won´t be, as it will be the only public face component.
-	GRPCEncryption bool `json:"grpcEncryption,omitempty"`
+	GRPCEncryption bool `json:"grpcEncryption,omitempty" yaml:"grpcEncryption,omitempty"`
 
 	// TLSProfile allows to chose a TLS security profile. Enforced
 	// when using HTTPEncryption or GRPCEncryption.
-	TLSProfile string `json:"tlsProfile,omitempty"`
+	TLSProfile string `json:"tlsProfile,omitempty" yaml:"tlsProfile,omitempty"`
 
 	// PrometheusOperator defines whether the Prometheus Operator CRD exists in the cluster.
 	// This CRD is part of prometheus-operator.
-	PrometheusOperator bool `json:"prometheusOperator,omitempty"`
+	PrometheusOperator bool `json:"prometheusOperator,omitempty" yaml:"prometheusOperator,omitempty"`
 
 	// Observability configures observability features of the operator.
-	Observability ObservabilityFeatureGates `json:"observability,omitempty"`
+	Observability ObservabilityFeatureGates `json:"observability,omitempty" yaml:"observability,omitempty"`
 
 	// GrafanaOperator defines whether the Grafana Operator CRD exists in the cluster.
 	// This CRD is part of grafana-operator.
-	GrafanaOperator bool `json:"grafanaOperator,omitempty"`
+	GrafanaOperator bool `json:"grafanaOperator,omitempty" yaml:"grafanaOperator,omitempty"`
 }
 
 //+kubebuilder:object:root=true
@@ -228,17 +270,57 @@ type FeatureGates struct {
 
 // ProjectConfig is the Schema for the projectconfigs API.
 type ProjectConfig struct {
-	metav1.TypeMeta `json:",inline"`
-	// ControllerManagerConfigurationSpec returns the configurations for controllers
-	cfg.ControllerManagerConfigurationSpec `json:",inline"`
+	metav1.TypeMeta `json:",inline" yaml:",inline"`
+
+	// LeaderElection is the LeaderElection config to be used when configuring
+	// the manager.Manager leader election
+	LeaderElection *configv1alpha1.LeaderElectionConfiguration `json:"leaderElection,omitempty" yaml:"leaderElection,omitempty"`
+
+	// Metrics contains the controller metrics configuration
+	Metrics ControllerMetrics `json:"metrics,omitempty" yaml:"metrics,omitempty"`
+
+	// Health contains the controller health configuration
+	Health ControllerHealth `json:"health,omitempty" yaml:"health,omitempty"`
+
+	// Webhook contains the controllers webhook configuration
+	Webhook ControllerWebhook `json:"webhook,omitempty" yaml:"webhook,omitempty"`
 
 	// The images are read from environment variables and not from the configuration file
-	DefaultImages ImagesSpec
+	DefaultImages ImagesSpec `json:"defaultImages,omitempty" yaml:"defaultImages,omitempty"`
 
-	Gates FeatureGates `json:"featureGates,omitempty"`
+	Gates FeatureGates `json:"featureGates,omitempty" yaml:"featureGates,omitempty"`
 
 	// Distribution defines the operator distribution name.
-	Distribution string `json:"distribution"`
+	Distribution string `json:"distribution" yaml:"distribution"`
+}
+
+// ControllerMetrics is the metrics configuration for the controller.
+type ControllerMetrics struct {
+	// BindAddress is the TCP address that the controller should bind to
+	// for serving prometheus metrics.
+	// It can be set to "0" to disable the metrics serving.
+	BindAddress string `json:"bindAddress,omitempty" yaml:"bindAddress,omitempty"`
+}
+
+// ControllerHealth is the health configuration for the controller.
+type ControllerHealth struct {
+	// HealthProbeBindAddress is the TCP address that the controller should bind to
+	// for serving health probes
+	// It can be set to "0" or "" to disable serving the health probe.
+	HealthProbeBindAddress string `json:"healthProbeBindAddress,omitempty" yaml:"healthProbeBindAddress,omitempty"`
+
+	// ReadinessEndpointName, defaults to "readyz"
+	ReadinessEndpointName string `json:"readinessEndpointName,omitempty" yaml:"readinessEndpointName,omitempty"`
+
+	// LivenessEndpointName, defaults to "healthz"
+	LivenessEndpointName string `json:"livenessEndpointName,omitempty" yaml:"livenessEndpointName,omitempty"`
+}
+
+// ControllerWebhook is the webhook configuration for the controller.
+type ControllerWebhook struct {
+	// Port is the port that the webhook server serves at.
+	// It is used to set webhook.Server.Port.
+	Port *int `json:"port,omitempty" yaml:"port,omitempty"`
 }
 
 func init() {

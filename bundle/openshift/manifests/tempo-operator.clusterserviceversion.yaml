@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.14.1
-    createdAt: "2024-11-06T14:25:12Z"
+    createdAt: "2024-11-15T17:03:27Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -1264,6 +1264,13 @@ spec:
           - create
           - patch
         - apiGroups:
+          - ""
+          resources:
+          - persistentvolumeclaims
+          verbs:
+          - list
+          - watch
+        - apiGroups:
           - apps
           resources:
           - deployments
@@ -1297,13 +1304,6 @@ spec:
           - dnses
           verbs:
           - get
-          - list
-          - watch
-        - apiGroups:
-          - ""
-          resources:
-          - persistentvolumeclaims
-          verbs:
           - list
           - watch
         - apiGroups:
@@ -1380,31 +1380,6 @@ spec:
           - tempo.grafana.com
           resources:
           - tempomonolithics
-          verbs:
-          - create
-          - delete
-          - get
-          - list
-          - patch
-          - update
-          - watch
-        - apiGroups:
-          - tempo.grafana.com
-          resources:
-          - tempomonolithics/finalizers
-          verbs:
-          - update
-        - apiGroups:
-          - tempo.grafana.com
-          resources:
-          - tempomonolithics/status
-          verbs:
-          - get
-          - patch
-          - update
-        - apiGroups:
-          - tempo.grafana.com
-          resources:
           - tempostacks
           verbs:
           - create
@@ -1417,12 +1392,14 @@ spec:
         - apiGroups:
           - tempo.grafana.com
           resources:
+          - tempomonolithics/finalizers
           - tempostacks/finalizers
           verbs:
           - update
         - apiGroups:
           - tempo.grafana.com
           resources:
+          - tempomonolithics/status
           - tempostacks/status
           verbs:
           - get

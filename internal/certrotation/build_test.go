@@ -20,10 +20,10 @@ func TestBuildAll(t *testing.T) {
 	CertRefresh, _ := time.ParseDuration("1m")
 
 	cfg := configv1alpha1.BuiltInCertManagement{
-		CACertValidity: metav1.Duration{Duration: CACertValidity},
-		CACertRefresh:  metav1.Duration{Duration: CACertRefresh},
-		CertValidity:   metav1.Duration{Duration: CertValidity},
-		CertRefresh:    metav1.Duration{Duration: CertRefresh},
+		CACertValidity: configv1alpha1.Duration{Duration: metav1.Duration{Duration: CACertValidity}},
+		CACertRefresh:  configv1alpha1.Duration{Duration: metav1.Duration{Duration: CACertRefresh}},
+		CertValidity:   configv1alpha1.Duration{Duration: metav1.Duration{Duration: CertValidity}},
+		CertRefresh:    configv1alpha1.Duration{Duration: metav1.Duration{Duration: CertRefresh}},
 	}
 	opts := Options{
 		StackName:      "dev",
@@ -58,10 +58,10 @@ func TestApplyDefaultSettings_EmptySecrets(t *testing.T) {
 	CertRefresh, _ := time.ParseDuration("1m")
 
 	cfg := configv1alpha1.BuiltInCertManagement{
-		CACertValidity: metav1.Duration{Duration: CACertValidity},
-		CACertRefresh:  metav1.Duration{Duration: CACertRefresh},
-		CertValidity:   metav1.Duration{Duration: CertValidity},
-		CertRefresh:    metav1.Duration{Duration: CertRefresh},
+		CACertValidity: configv1alpha1.Duration{Duration: metav1.Duration{Duration: CACertValidity}},
+		CACertRefresh:  configv1alpha1.Duration{Duration: metav1.Duration{Duration: CACertRefresh}},
+		CertValidity:   configv1alpha1.Duration{Duration: metav1.Duration{Duration: CertValidity}},
+		CertRefresh:    configv1alpha1.Duration{Duration: metav1.Duration{Duration: CertRefresh}},
 	}
 
 	opts := Options{
@@ -102,10 +102,10 @@ func TestApplyDefaultSettings_ExistingSecrets(t *testing.T) {
 	CertRefresh, _ := time.ParseDuration("1m")
 
 	cfg := configv1alpha1.BuiltInCertManagement{
-		CACertValidity: metav1.Duration{Duration: CACertValidity},
-		CACertRefresh:  metav1.Duration{Duration: CACertRefresh},
-		CertValidity:   metav1.Duration{Duration: CertValidity},
-		CertRefresh:    metav1.Duration{Duration: CertRefresh},
+		CACertValidity: configv1alpha1.Duration{Duration: metav1.Duration{Duration: CACertValidity}},
+		CACertRefresh:  configv1alpha1.Duration{Duration: metav1.Duration{Duration: CACertRefresh}},
+		CertValidity:   configv1alpha1.Duration{Duration: metav1.Duration{Duration: CertValidity}},
+		CertRefresh:    configv1alpha1.Duration{Duration: metav1.Duration{Duration: CertRefresh}},
 	}
 
 	opts := Options{

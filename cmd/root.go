@@ -3,6 +3,8 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"os"
+	"path/filepath"
 
 	grafanav1 "github.com/grafana/grafana-operator/v5/api/v1beta1"
 	configv1 "github.com/openshift/api/config/v1"
@@ -10,6 +12,7 @@ import (
 	routev1 "github.com/openshift/api/route/v1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v2"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -52,10 +55,14 @@ func readConfig(cmd *cobra.Command, configFile string) error {
 	var err error
 	options := ctrl.Options{Scheme: scheme}
 	if configFile != "" {
-		options, err = options.AndFrom(ctrl.ConfigFile().AtPath(configFile).OfKind(&ctrlConfig))
+		configData, err := os.ReadFile(filepath.Clean(configFile))
 		if err != nil {
-			return fmt.Errorf("unable to load the config file: %w", err)
+			return fmt.Errorf("unable to read config file: %w", err)
 		}
+		if err := yaml.Unmarshal(configData, &ctrlConfig); err != nil {
+			return fmt.Errorf("unable to parse config file: %w", err)
+		}
+		options = ctrl.Options{Scheme: scheme}
 	}
 
 	err = ctrlConfig.Validate()

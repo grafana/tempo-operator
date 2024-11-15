@@ -26,10 +26,10 @@ func TestCertificatesExpired(t *testing.T) {
 		invalidNotBefore, _ = time.Parse(time.RFC3339, "")
 		rawCA, caBytes      = newTestCABundle(t, "dev-ca")
 		cfg                 = configv1alpha1.BuiltInCertManagement{
-			CACertValidity: metav1.Duration{Duration: CACertValidity},
-			CACertRefresh:  metav1.Duration{Duration: CACertRefresh},
-			CertValidity:   metav1.Duration{Duration: CertValidity},
-			CertRefresh:    metav1.Duration{Duration: CertRefresh},
+			CACertValidity: configv1alpha1.Duration{Duration: metav1.Duration{Duration: CACertValidity}},
+			CACertRefresh:  configv1alpha1.Duration{Duration: metav1.Duration{Duration: CACertRefresh}},
+			CertValidity:   configv1alpha1.Duration{Duration: metav1.Duration{Duration: CertValidity}},
+			CertRefresh:    configv1alpha1.Duration{Duration: metav1.Duration{Duration: CertRefresh}},
 		}
 	)
 
@@ -90,10 +90,10 @@ func TestBuildTargetCertKeyPairSecrets_Create(t *testing.T) {
 		CertRefresh, _    = time.ParseDuration("1m")
 		rawCA, _          = newTestCABundle(t, "test-ca")
 		cfg               = configv1alpha1.BuiltInCertManagement{
-			CACertValidity: metav1.Duration{Duration: CACertValidity},
-			CACertRefresh:  metav1.Duration{Duration: CACertRefresh},
-			CertValidity:   metav1.Duration{Duration: CertValidity},
-			CertRefresh:    metav1.Duration{Duration: CertRefresh},
+			CACertValidity: configv1alpha1.Duration{Duration: metav1.Duration{Duration: CACertValidity}},
+			CACertRefresh:  configv1alpha1.Duration{Duration: metav1.Duration{Duration: CACertRefresh}},
+			CertValidity:   configv1alpha1.Duration{Duration: metav1.Duration{Duration: CertValidity}},
+			CertRefresh:    configv1alpha1.Duration{Duration: metav1.Duration{Duration: CertRefresh}},
 		}
 	)
 
@@ -124,10 +124,10 @@ func TestBuildTargetCertKeyPairSecrets_Rotate(t *testing.T) {
 		invalidNotAfter, _  = time.Parse(time.RFC3339, "")
 		invalidNotBefore, _ = time.Parse(time.RFC3339, "")
 		cfg                 = configv1alpha1.BuiltInCertManagement{
-			CACertValidity: metav1.Duration{Duration: CACertValidity},
-			CACertRefresh:  metav1.Duration{Duration: CACertRefresh},
-			CertValidity:   metav1.Duration{Duration: CertValidity},
-			CertRefresh:    metav1.Duration{Duration: CertRefresh},
+			CACertValidity: configv1alpha1.Duration{Duration: metav1.Duration{Duration: CACertValidity}},
+			CACertRefresh:  configv1alpha1.Duration{Duration: metav1.Duration{Duration: CACertRefresh}},
+			CertValidity:   configv1alpha1.Duration{Duration: metav1.Duration{Duration: CertValidity}},
+			CertRefresh:    configv1alpha1.Duration{Duration: metav1.Duration{Duration: CertRefresh}},
 		}
 	)
 
