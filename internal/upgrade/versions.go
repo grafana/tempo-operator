@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Masterminds/semver/v3"
+
 	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 )
 
