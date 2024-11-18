@@ -31,7 +31,7 @@ import (
 	k8sruntime "k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 
-	tempov1alpha1 "github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	tempov1alpha1 "github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 
 	"github.com/grafana/tempo-operator/cmd/gather/cluster"
 	"github.com/grafana/tempo-operator/cmd/gather/config"

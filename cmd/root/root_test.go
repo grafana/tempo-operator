@@ -1,4 +1,4 @@
-package cmd
+package root
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
+	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
 )
 
 func TestReadConfig(t *testing.T) {
@@ -20,7 +20,7 @@ func TestReadConfig(t *testing.T) {
 	}{
 		{
 			name:  "no featureGates.tlsProfile given, using default value",
-			input: "testdata/empty.yaml",
+			input: "../testdata/empty.yaml",
 			expected: configv1alpha1.ProjectConfig{
 				Gates: configv1alpha1.FeatureGates{
 					TLSProfile: string(configv1alpha1.TLSProfileModernType),
@@ -29,7 +29,7 @@ func TestReadConfig(t *testing.T) {
 		},
 		{
 			name:  "featureGates.tlsProfile given, not using default value",
-			input: "testdata/tlsprofile_old.yaml",
+			input: "../testdata/tlsprofile_old.yaml",
 			expected: configv1alpha1.ProjectConfig{
 				Gates: configv1alpha1.FeatureGates{
 					TLSProfile: string(configv1alpha1.TLSProfileOldType),
@@ -38,7 +38,7 @@ func TestReadConfig(t *testing.T) {
 		},
 		{
 			name:  "invalid featureGates.tlsProfile given, show error",
-			input: "testdata/tlsprofile_invalid.yaml",
+			input: "../testdata/tlsprofile_invalid.yaml",
 			err:   "controller config validation failed: invalid value 'abc' for setting featureGates.tlsProfile (valid values: Old, Intermediate and Modern)",
 		},
 	}

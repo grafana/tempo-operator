@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
-	tempov1alpha1 "github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
-	"github.com/grafana/tempo-operator/controllers/tempo/internal/management/state"
+	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
+	tempov1alpha1 "github.com/grafana/tempo-operator/api/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/internal/controller/tempo/internal/management/state"
 
 	"github.com/stretchr/testify/require"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -27,7 +27,7 @@ var testScheme *runtime.Scheme = scheme.Scheme
 
 func TestMain(m *testing.M) {
 	testEnv = &envtest.Environment{
-		CRDDirectoryPaths: []string{filepath.Join("..", "..", "..", "..", "..", "config", "crd", "bases")},
+		CRDDirectoryPaths: []string{filepath.Join("..", "..", "..", "..", "..", "..", "config", "crd", "bases")},
 	}
 	cfg, err := testEnv.Start()
 	if err != nil {

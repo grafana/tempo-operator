@@ -145,7 +145,7 @@ test: manifests generate fmt setup-envtest ## Run tests.
 
 .PHONY: build
 build: generate fmt ## Build manager binary.
-	CGO_ENABLED=0 go build -o bin/manager -ldflags ${LD_FLAGS} main.go
+	CGO_ENABLED=0 go build -o bin/manager -ldflags ${LD_FLAGS} cmd/main.go
 
 .PHONY: must-gather
 must-gather:
@@ -164,7 +164,7 @@ run: manifests generate ## Run a controller from your host.
 	RELATED_IMAGE_TEMPO_GATEWAY=$(TEMPO_GATEWAY_IMAGE) \
 	RELATED_IMAGE_TEMPO_GATEWAY_OPA=$(TEMPO_GATEWAY_OPA_IMAGE) \
 	RELATED_IMAGE_OAUTH_PROXY=$(OAUTH_PROXY_IMAGE) \
-	go run -ldflags ${LD_FLAGS} ./main.go --zap-log-level=info start
+	go run -ldflags ${LD_FLAGS} ./cmd/main.go --zap-log-level=info start
 
 .PHONY: container-must-gather
 container-must-gather:
@@ -223,10 +223,10 @@ $(LOCALBIN):
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v5.0.3
-CONTROLLER_GEN_VERSION ?= v0.15.0
+CONTROLLER_GEN_VERSION ?= v0.16.5
 GEN_API_DOCS_VERSION ?= v0.6.0
 ENVTEST_VERSION ?= latest
-OPERATOR_SDK_VERSION ?= 1.32.0
+OPERATOR_SDK_VERSION ?= 1.33.0
 OLM_VERSION ?= v0.28.0
 CERTMANAGER_VERSION ?= 1.9.1
 CHAINSAW_VERSION ?= v0.2.4
@@ -488,7 +488,7 @@ docs/spec/%: bundle/community/manifests/% | gen-api-docs
 	$(GEN_API_DOCS) < $^ > $@
 
 docs/operator/config.yaml: gen-api-docs
-	$(GEN_API_DOCS) -pkg github.com/grafana/tempo-operator/apis/config/v1alpha1 -type ProjectConfig -format multiline > $@
+	$(GEN_API_DOCS) -pkg github.com/grafana/tempo-operator/api/config/v1alpha1 -type ProjectConfig -format multiline > $@
 
 ##@ Release
 CHLOGGEN_VERSION=v0.11.0

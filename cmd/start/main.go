@@ -16,9 +16,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
-	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
-	"github.com/grafana/tempo-operator/cmd"
-	controllers "github.com/grafana/tempo-operator/controllers/tempo"
+	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
+	"github.com/grafana/tempo-operator/cmd/root"
+	controllers "github.com/grafana/tempo-operator/internal/controller/tempo"
 	"github.com/grafana/tempo-operator/internal/crdmetrics"
 	"github.com/grafana/tempo-operator/internal/version"
 	"github.com/grafana/tempo-operator/internal/webhooks"
@@ -26,7 +26,7 @@ import (
 )
 
 func start(c *cobra.Command, args []string) {
-	rootCmdConfig := c.Context().Value(cmd.RootConfigKey{}).(cmd.RootConfig)
+	rootCmdConfig := c.Context().Value(root.RootConfigKey{}).(root.RootConfig)
 	ctrlConfig, options := rootCmdConfig.CtrlConfig, rootCmdConfig.Options
 	setupLog := ctrl.Log.WithName("setup")
 	version := version.Get()
