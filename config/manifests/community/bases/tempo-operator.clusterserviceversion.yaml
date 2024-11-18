@@ -45,7 +45,9 @@ spec:
         name: ""
         version: v1
       specDescriptors:
-      - description: 'Enabled defines if OTLP over gRPC is enabled. Default: enabled.'
+      - description: |-
+          Enabled defines if OTLP over gRPC is enabled.
+          Default: enabled.
         displayName: Enabled
         path: ingestion.otlp.grpc.enabled
         x-descriptors:
@@ -55,7 +57,9 @@ spec:
         path: ingestion.otlp.grpc.tls.enabled
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
-      - description: 'Enabled defines if OTLP over HTTP is enabled. Default: enabled.'
+      - description: |-
+          Enabled defines if OTLP over HTTP is enabled.
+          Default: enabled.
         displayName: Enabled
         path: ingestion.otlp.http.enabled
         x-descriptors:
@@ -108,7 +112,9 @@ spec:
       - description: Storage defines the storage configuration.
         displayName: Storage
         path: storage
-      - description: 'Backend defines the backend for storing traces. Default: memory.'
+      - description: |-
+          Backend defines the backend for storing traces.
+          Default: memory.
         displayName: Storage Backend
         path: storage.traces.backend
       - description: Enabled defines if TLS is enabled.
@@ -125,11 +131,12 @@ spec:
         path: jaegerui.resources
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:resourceRequirements
-      - description: 'Size defines the size of the volume where traces are stored.
-          For in-memory storage, this defines the size of the tmpfs volume. For persistent
-          volume storage, this defines the size of the persistent volume. For object
-          storage, this defines the size of the persistent volume containing the Write-Ahead
-          Log (WAL) of Tempo. Default: 2Gi for memory, 10Gi for all other backends.'
+      - description: |-
+          Size defines the size of the volume where traces are stored.
+          For in-memory storage, this defines the size of the tmpfs volume.
+          For persistent volume storage, this defines the size of the persistent volume.
+          For object storage, this defines the size of the persistent volume containing the Write-Ahead Log (WAL) of Tempo.
+          Default: 2Gi for memory, 10Gi for all other backends.
         displayName: Size
         path: storage.traces.size
         x-descriptors:
@@ -178,21 +185,24 @@ spec:
       - description: GRPC defines the OTLP over gRPC configuration.
         displayName: gRPC
         path: ingestion.otlp.grpc
-      - description: "TLS defines the TLS configuration for OTLP/gRPC ingestion. \n
-          On OpenShift when operator config `servingCertsService`  and TLS is enabled
-          \ but no `certName` and `caName` are provided it will use OpenShift serving
-          certificate service."
+      - description: |-
+          TLS defines the TLS configuration for OTLP/gRPC ingestion.
+
+
+          On OpenShift when operator config `servingCertsService`  and TLS is enabled  but no `certName` and `caName`
+          are provided it will use OpenShift serving certificate service.
         displayName: TLS
         path: ingestion.otlp.grpc.tls
-      - description: CA is the name of a ConfigMap containing a CA certificate (service-ca.crt).
+      - description: |-
+          CA is the name of a ConfigMap containing a CA certificate (service-ca.crt).
           It needs to be in the same namespace as the Tempo custom resource.
         displayName: CA ConfigMap
         path: ingestion.otlp.grpc.tls.caName
         x-descriptors:
         - urn:alm:descriptor:io.kubernetes:ConfigMap
-      - description: Cert is the name of a Secret containing a certificate (tls.crt)
-          and private key (tls.key). It needs to be in the same namespace as the Tempo
-          custom resource.
+      - description: |-
+          Cert is the name of a Secret containing a certificate (tls.crt) and private key (tls.key).
+          It needs to be in the same namespace as the Tempo custom resource.
         displayName: Certificate Secret
         path: ingestion.otlp.grpc.tls.certName
         x-descriptors:
@@ -203,21 +213,24 @@ spec:
       - description: HTTP defines the OTLP over HTTP configuration.
         displayName: HTTP
         path: ingestion.otlp.http
-      - description: "TLS defines the TLS configuration for OTLP/HTTP ingestion. \n
-          On OpenShift when operator config `servingCertsService`  and TLS is enabled
-          \ but no `certName` and `caName` are provided it will use OpenShift serving
-          certificate service."
+      - description: |-
+          TLS defines the TLS configuration for OTLP/HTTP ingestion.
+
+
+          On OpenShift when operator config `servingCertsService`  and TLS is enabled  but no `certName` and `caName`
+          are provided it will use OpenShift serving certificate service.
         displayName: TLS
         path: ingestion.otlp.http.tls
-      - description: CA is the name of a ConfigMap containing a CA certificate (service-ca.crt).
+      - description: |-
+          CA is the name of a ConfigMap containing a CA certificate (service-ca.crt).
           It needs to be in the same namespace as the Tempo custom resource.
         displayName: CA ConfigMap
         path: ingestion.otlp.http.tls.caName
         x-descriptors:
         - urn:alm:descriptor:io.kubernetes:ConfigMap
-      - description: Cert is the name of a Secret containing a certificate (tls.crt)
-          and private key (tls.key). It needs to be in the same namespace as the Tempo
-          custom resource.
+      - description: |-
+          Cert is the name of a Secret containing a certificate (tls.crt) and private key (tls.key).
+          It needs to be in the same namespace as the Tempo custom resource.
         displayName: Certificate Secret
         path: ingestion.otlp.http.tls.certName
         x-descriptors:
@@ -225,26 +238,27 @@ spec:
       - description: MinVersion defines the minimum acceptable TLS version.
         displayName: Min TLS Version
         path: ingestion.otlp.http.tls.minVersion
-      - description: Resources defines the compute resource requirements of the OAuth
-          Proxy container. The OAuth Proxy performs authentication and authorization
-          of incoming requests to Jaeger UI when multi-tenancy is disabled.
+      - description: |-
+          Resources defines the compute resource requirements of the OAuth Proxy container.
+          The OAuth Proxy performs authentication and authorization of incoming requests to Jaeger UI when multi-tenancy is disabled.
         displayName: Resources
         path: jaegerui.authentication.resources
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:resourceRequirements
-      - description: 'SAR defines the SAR to be used in the oauth-proxy default is
-          "{"namespace": "<tempo_stack_namespace>", "resource": "pods", "verb": "get"}'
+      - description: |-
+          SAR defines the SAR to be used in the oauth-proxy
+          default is "{"namespace": "<tempo_stack_namespace>", "resource": "pods", "verb": "get"}
         displayName: SAR
         path: jaegerui.authentication.sar
-      - description: 'FindTracesConcurrentRequests defines how many concurrent request
-          a single trace search can submit (defaults 2). The search for traces in
-          Jaeger submits limit+1 requests. First requests finds trace IDs and then
-          it fetches entire traces by ID. This property allows Jaeger to fetch traces
-          in parallel. Note that by default a single Tempo querier can process 20
-          concurrent search jobs. Increasing this property might require scaling up
-          querier instances, especially on error "job queue full" See also Tempo''s
-          extraConfig: querier.max_concurrent_queries (20 default) query_frontend.max_outstanding_per_tenant:
-          (2000 default). Increase if the query-frontend returns 429'
+      - description: |-
+          FindTracesConcurrentRequests defines how many concurrent request a single trace search can submit (defaults 2).
+          The search for traces in Jaeger submits limit+1 requests. First requests finds trace IDs and then it fetches
+          entire traces by ID. This property allows Jaeger to fetch traces in parallel.
+          Note that by default a single Tempo querier can process 20 concurrent search jobs.
+          Increasing this property might require scaling up querier instances, especially on error "job queue full"
+          See also Tempo's extraConfig:
+          querier.max_concurrent_queries (20 default)
+          query_frontend.max_outstanding_per_tenant: (2000 default). Increase if the query-frontend returns 429
         displayName: FindTracesConcurrentRequests
         path: jaegerui.findTracesConcurrentRequests
         x-descriptors:
@@ -255,8 +269,9 @@ spec:
       - description: Host defines the hostname of the Ingress object.
         displayName: Hostname
         path: jaegerui.ingress.host
-      - description: IngressClassName defines the name of an IngressClass cluster
-          resource. Defines which ingress controller serves this ingress resource.
+      - description: |-
+          IngressClassName defines the name of an IngressClass cluster resource.
+          Defines which ingress controller serves this ingress resource.
         displayName: Ingress Class Name
         path: jaegerui.ingress.ingressClassName
       - description: Annotations defines the annotations of the Route object.
@@ -274,8 +289,9 @@ spec:
         path: jaegerui.servicesQueryDuration
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:advanced
-      - description: 'ManagementState defines whether this instance is managed by
-          the operator or self-managed. Default: Managed.'
+      - description: |-
+          ManagementState defines whether this instance is managed by the operator or self-managed.
+          Default: Managed.
         displayName: Management State
         path: management
         x-descriptors:
@@ -305,15 +321,15 @@ spec:
         path: multitenancy.authentication[0].oidc.secret.name
         x-descriptors:
         - urn:alm:descriptor:io.kubernetes:Secret
-      - description: TenantID defines a universally unique identifier of the tenant.
-          Unlike the tenantName, which must be unique at a given time, the tenantId
-          must be unique over the entire lifetime of the Tempo deployment. Tempo uses
-          this ID to prefix objects in the object storage.
+      - description: |-
+          TenantID defines a universally unique identifier of the tenant.
+          Unlike the tenantName, which must be unique at a given time, the tenantId must be unique over the entire lifetime of the Tempo deployment.
+          Tempo uses this ID to prefix objects in the object storage.
         displayName: Tenant ID
         path: multitenancy.authentication[0].tenantId
-      - description: TenantName defines a human readable, unique name of the tenant.
-          The value of this field must be specified in the X-Scope-OrgID header and
-          in the resources field of a ClusterRole to identify the tenant.
+      - description: |-
+          TenantName defines a human readable, unique name of the tenant.
+          The value of this field must be specified in the X-Scope-OrgID header and in the resources field of a ClusterRole to identify the tenant.
         displayName: Tenant Name
         path: multitenancy.authentication[0].tenantName
       - description: Authorization defines the tempo-gateway component authorization
@@ -338,9 +354,9 @@ spec:
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:select:static
         - urn:alm:descriptor:com.tectonic.ui:select:openshift
-      - description: Resources defines the compute resource requirements of the gateway
-          container. The gateway performs authentication and authorization of incoming
-          requests when multi-tenancy is enabled.
+      - description: |-
+          Resources defines the compute resource requirements of the gateway container.
+          The gateway performs authentication and authorization of incoming requests when multi-tenancy is enabled.
         displayName: Resources
         path: multitenancy.resources
         x-descriptors:
@@ -384,9 +400,9 @@ spec:
       - description: Azure defines the configuration for Azure Storage.
         displayName: Azure Storage
         path: storage.traces.azure
-      - description: Secret is the name of a Secret containing credentials for accessing
-          object storage. It needs to be in the same namespace as the TempoMonolithic
-          custom resource.
+      - description: |-
+          Secret is the name of a Secret containing credentials for accessing object storage.
+          It needs to be in the same namespace as the TempoMonolithic custom resource.
         displayName: Storage Secret
         path: storage.traces.azure.secret
         x-descriptors:
@@ -394,9 +410,9 @@ spec:
       - description: GCP defines the configuration for Google Cloud Storage.
         displayName: Google Cloud Storage
         path: storage.traces.gcs
-      - description: Secret is the name of a Secret containing credentials for accessing
-          object storage. It needs to be in the same namespace as the TempoMonolithic
-          custom resource.
+      - description: |-
+          Secret is the name of a Secret containing credentials for accessing object storage.
+          It needs to be in the same namespace as the TempoMonolithic custom resource.
         displayName: Storage Secret
         path: storage.traces.gcs.secret
         x-descriptors:
@@ -404,9 +420,9 @@ spec:
       - description: S3 defines the configuration for Amazon S3.
         displayName: Amazon S3
         path: storage.traces.s3
-      - description: Secret is the name of a Secret containing credentials for accessing
-          object storage. It needs to be in the same namespace as the TempoMonolithic
-          custom resource.
+      - description: |-
+          Secret is the name of a Secret containing credentials for accessing object storage.
+          It needs to be in the same namespace as the TempoMonolithic custom resource.
         displayName: Storage Secret
         path: storage.traces.s3.secret
         x-descriptors:
@@ -414,15 +430,16 @@ spec:
       - description: TLS defines the TLS configuration for Amazon S3.
         displayName: TLS
         path: storage.traces.s3.tls
-      - description: CA is the name of a ConfigMap containing a CA certificate (service-ca.crt).
+      - description: |-
+          CA is the name of a ConfigMap containing a CA certificate (service-ca.crt).
           It needs to be in the same namespace as the Tempo custom resource.
         displayName: CA ConfigMap
         path: storage.traces.s3.tls.caName
         x-descriptors:
         - urn:alm:descriptor:io.kubernetes:ConfigMap
-      - description: Cert is the name of a Secret containing a certificate (tls.crt)
-          and private key (tls.key). It needs to be in the same namespace as the Tempo
-          custom resource.
+      - description: |-
+          Cert is the name of a Secret containing a certificate (tls.crt) and private key (tls.key).
+          It needs to be in the same namespace as the Tempo custom resource.
         displayName: Certificate Secret
         path: storage.traces.s3.tls.certName
         x-descriptors:
@@ -513,10 +530,11 @@ spec:
         path: hashRing.memberlist.enableIPv6
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
-      - description: InstanceAddrType defines the type of address to use to advertise
-          to the ring. Defaults to the first address from any private network interfaces
-          of the current pod. Alternatively the public pod IP can be used in case
-          private networks (RFC 1918 and RFC 6598) are not available.
+      - description: |-
+          InstanceAddrType defines the type of address to use to advertise to the ring.
+          Defaults to the first address from any private network interfaces of the current pod.
+          Alternatively the public pod IP can be used in case private networks (RFC 1918 and RFC 6598)
+          are not available.
         displayName: Instance Address
         path: hashRing.memberlist.instanceAddrType
         x-descriptors:
@@ -567,14 +585,17 @@ spec:
         path: limits.global.query.maxBytesPerTagValues
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:number
-      - description: 'DEPRECATED. MaxSearchBytesPerTrace defines the maximum size
-          of search data for a single trace in bytes. default: `0` to disable.'
+      - description: |-
+          DEPRECATED. MaxSearchBytesPerTrace defines the maximum size of search data for a single
+          trace in bytes.
+          default: `0` to disable.
         displayName: Max Traces per User
         path: limits.global.query.maxSearchBytesPerTrace
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:number
-      - description: MaxSearchDuration defines the maximum allowed time range for
-          a search. If this value is not set, then spec.search.maxDuration is used.
+      - description: |-
+          MaxSearchDuration defines the maximum allowed time range for a search.
+          If this value is not set, then spec.search.maxDuration is used.
         displayName: Max Search Duration per User
         path: limits.global.query.maxSearchDuration
       - description: PerTenant is used to define rate limits per tenant.
@@ -616,18 +637,22 @@ spec:
         path: limits.perTenant.query.maxBytesPerTagValues
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:number
-      - description: 'DEPRECATED. MaxSearchBytesPerTrace defines the maximum size
-          of search data for a single trace in bytes. default: `0` to disable.'
+      - description: |-
+          DEPRECATED. MaxSearchBytesPerTrace defines the maximum size of search data for a single
+          trace in bytes.
+          default: `0` to disable.
         displayName: Max Traces per User
         path: limits.perTenant.query.maxSearchBytesPerTrace
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:number
-      - description: MaxSearchDuration defines the maximum allowed time range for
-          a search. If this value is not set, then spec.search.maxDuration is used.
+      - description: |-
+          MaxSearchDuration defines the maximum allowed time range for a search.
+          If this value is not set, then spec.search.maxDuration is used.
         displayName: Max Search Duration per User
         path: limits.perTenant.query.maxSearchDuration
-      - description: ManagementState defines if the CR should be managed by the operator
-          or not. Default is managed.
+      - description: |-
+          ManagementState defines if the CR should be managed by the operator or not.
+          Default is managed.
         displayName: Management State
         path: managementState
         x-descriptors:
@@ -677,20 +702,25 @@ spec:
       - description: Resources defines resources configuration.
         displayName: Resources
         path: resources
-      - description: The total amount of resources for Tempo instance. The operator
-          autonomously splits resources between deployed Tempo components. Only limits
-          are supported, the operator calculates requests automatically. See http://github.com/grafana/tempo/issues/1540.
+      - description: |-
+          The total amount of resources for Tempo instance.
+          The operator autonomously splits resources between deployed Tempo components.
+          Only limits are supported, the operator calculates requests automatically.
+          See http://github.com/grafana/tempo/issues/1540.
         displayName: Resource Requirements
         path: resources.total
-      - description: Retention period defined by dataset. User can specify how long
-          data should be stored.
+      - description: |-
+          Retention period defined by dataset.
+          User can specify how long data should be stored.
         displayName: Retention Period
         path: retention
       - description: Global is used to configure global retention.
         displayName: Global Retention
         path: retention.global
-      - description: 'Traces defines retention period. Supported parameter suffixes
-          are "s", "m" and "h". example: 336h default: value is 48h.'
+      - description: |-
+          Traces defines retention period. Supported parameter suffixes are "s", "m" and "h".
+          example: 336h
+          default: value is 48h.
         displayName: Trace Retention Period
         path: retention.global.traces
         x-descriptors:
@@ -698,8 +728,10 @@ spec:
       - description: PerTenant is used to configure retention per tenant.
         displayName: PerTenant Retention
         path: retention.perTenant
-      - description: 'Traces defines retention period. Supported parameter suffixes
-          are "s", "m" and "h". example: 336h default: value is 48h.'
+      - description: |-
+          Traces defines retention period. Supported parameter suffixes are "s", "m" and "h".
+          example: 336h
+          default: value is 48h.
         displayName: Trace Retention Period
         path: retention.perTenant.traces
         x-descriptors:
@@ -716,10 +748,10 @@ spec:
           means unlimited.'
         displayName: Max search time range allowed
         path: search.maxDuration
-      - description: The maximum allowed value of the limit parameter on search requests.
-          If the search request limit parameter exceeds the value configured here
-          it will be set to the value configured here. The default value of 0 disables
-          this limit.
+      - description: |-
+          The maximum allowed value of the limit parameter on search requests. If the search request limit parameter
+          exceeds the value configured here it will be set to the value configured here.
+          The default value of 0 disables this limit.
         displayName: The maximum allowed value of the limit parameter on search requests,
           this determine the max number of traces allowed to be returned
         path: search.maxResultLimit
@@ -727,12 +759,14 @@ spec:
           components.
         displayName: Service Account
         path: serviceAccount
-      - description: Storage defines the spec for the object storage endpoint to store
-          traces. User is required to create secret and supply it.
+      - description: |-
+          Storage defines the spec for the object storage endpoint to store traces.
+          User is required to create secret and supply it.
         displayName: Object Storage
         path: storage
-      - description: Secret for object storage authentication. Name of a secret in
-          the same namespace as the TempoStack custom resource.
+      - description: |-
+          Secret for object storage authentication.
+          Name of a secret in the same namespace as the TempoStack custom resource.
         displayName: Object Storage Secret
         path: storage.secret
       - description: Name of a secret in the namespace configured for object storage
@@ -751,15 +785,16 @@ spec:
       - description: TLS configuration for reaching the object storage endpoint.
         displayName: TLS Config
         path: storage.tls
-      - description: CA is the name of a ConfigMap containing a CA certificate (service-ca.crt).
+      - description: |-
+          CA is the name of a ConfigMap containing a CA certificate (service-ca.crt).
           It needs to be in the same namespace as the Tempo custom resource.
         displayName: CA ConfigMap
         path: storage.tls.caName
         x-descriptors:
         - urn:alm:descriptor:io.kubernetes:ConfigMap
-      - description: Cert is the name of a Secret containing a certificate (tls.crt)
-          and private key (tls.key). It needs to be in the same namespace as the Tempo
-          custom resource.
+      - description: |-
+          Cert is the name of a Secret containing a certificate (tls.crt) and private key (tls.key).
+          It needs to be in the same namespace as the Tempo custom resource.
         displayName: Certificate Secret
         path: storage.tls.certName
         x-descriptors:
@@ -816,21 +851,24 @@ spec:
           the calculated resources derived from total
         displayName: Resources
         path: template.distributor.resources
-      - description: "TLS defines TLS configuration for distributor receivers \n If
-          openshift feature flag `servingCertsService` is enabled and TLS is enabled
-          but no certName or caName is specified, OpenShift service serving certificates
-          will  be used."
+      - description: |-
+          TLS defines TLS configuration for distributor receivers
+
+
+          If openshift feature flag `servingCertsService` is enabled and TLS is enabled but no
+          certName or caName is specified, OpenShift service serving certificates will  be used.
         displayName: TLS
         path: template.distributor.tls
-      - description: CA is the name of a ConfigMap containing a CA certificate (service-ca.crt).
+      - description: |-
+          CA is the name of a ConfigMap containing a CA certificate (service-ca.crt).
           It needs to be in the same namespace as the Tempo custom resource.
         displayName: CA ConfigMap
         path: template.distributor.tls.caName
         x-descriptors:
         - urn:alm:descriptor:io.kubernetes:ConfigMap
-      - description: Cert is the name of a Secret containing a certificate (tls.crt)
-          and private key (tls.key). It needs to be in the same namespace as the Tempo
-          custom resource.
+      - description: |-
+          Cert is the name of a Secret containing a certificate (tls.crt) and private key (tls.key).
+          It needs to be in the same namespace as the Tempo custom resource.
         displayName: Certificate Secret
         path: template.distributor.tls.certName
         x-descriptors:
@@ -860,11 +898,14 @@ spec:
       - description: Route defines the options for the OpenShift route.
         displayName: Route Configuration
         path: template.gateway.ingress.route
-      - description: Termination defines the termination type. The default is "edge".
+      - description: |-
+          Termination defines the termination type.
+          The default is "edge".
         displayName: TLS Termination Policy
         path: template.gateway.ingress.route.termination
-      - description: Type defines the type of Ingress for the Jaeger Query UI. Currently
-          ingress, route and none are supported.
+      - description: |-
+          Type defines the type of Ingress for the Jaeger Query UI.
+          Currently ingress, route and none are supported.
         displayName: Type
         path: template.gateway.ingress.type
       - description: NodeSelector defines the simple form of the node-selection constraint.
@@ -937,15 +978,16 @@ spec:
           protect jaeger UI
         displayName: Jaeger UI authentication configuration
         path: template.queryFrontend.jaegerQuery.authentication
-      - description: Resources defines the compute resource requirements of the OAuth
-          Proxy container. The OAuth Proxy performs authentication and authorization
-          of incoming requests to Jaeger UI when multi-tenancy is disabled.
+      - description: |-
+          Resources defines the compute resource requirements of the OAuth Proxy container.
+          The OAuth Proxy performs authentication and authorization of incoming requests to Jaeger UI when multi-tenancy is disabled.
         displayName: Resources
         path: template.queryFrontend.jaegerQuery.authentication.resources
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:resourceRequirements
-      - description: 'SAR defines the SAR to be used in the oauth-proxy default is
-          "{"namespace": "<tempo_stack_namespace>", "resource": "pods", "verb": "get"}'
+      - description: |-
+          SAR defines the SAR to be used in the oauth-proxy
+          default is "{"namespace": "<tempo_stack_namespace>", "resource": "pods", "verb": "get"}
         displayName: SAR
         path: template.queryFrontend.jaegerQuery.authentication.sar
       - description: Enabled defines if the Jaeger Query component should be created.
@@ -953,15 +995,15 @@ spec:
         path: template.queryFrontend.jaegerQuery.enabled
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
-      - description: 'FindTracesConcurrentRequests defines how many concurrent request
-          a single trace search can submit (defaults querier.replicas*2). The search
-          for traces in Jaeger submits limit+1 requests. First requests finds trace
-          IDs and then it fetches entire traces by ID. This property allows Jaeger
-          to fetch traces in parallel. Note that by default a single Tempo querier
-          can process 20 concurrent search jobs. Increasing this property might require
-          scaling up querier instances, especially on error "job queue full" See also
-          Tempo''s extraConfig: querier.max_concurrent_queries (20 default) query_frontend.max_outstanding_per_tenant:
-          (2000 default). Increase if the query-frontend returns 429'
+      - description: |-
+          FindTracesConcurrentRequests defines how many concurrent request a single trace search can submit (defaults querier.replicas*2).
+          The search for traces in Jaeger submits limit+1 requests. First requests finds trace IDs and then it fetches
+          entire traces by ID. This property allows Jaeger to fetch traces in parallel.
+          Note that by default a single Tempo querier can process 20 concurrent search jobs.
+          Increasing this property might require scaling up querier instances, especially on error "job queue full"
+          See also Tempo's extraConfig:
+          querier.max_concurrent_queries (20 default)
+          query_frontend.max_outstanding_per_tenant: (2000 default). Increase if the query-frontend returns 429
         displayName: FindTracesConcurrentRequests
         path: template.queryFrontend.jaegerQuery.findTracesConcurrentRequests
         x-descriptors:
@@ -978,25 +1020,29 @@ spec:
       - description: Route defines the options for the OpenShift route.
         displayName: Route Configuration
         path: template.queryFrontend.jaegerQuery.ingress.route
-      - description: Termination defines the termination type. The default is "edge".
+      - description: |-
+          Termination defines the termination type.
+          The default is "edge".
         displayName: TLS Termination Policy
         path: template.queryFrontend.jaegerQuery.ingress.route.termination
-      - description: Type defines the type of Ingress for the Jaeger Query UI. Currently
-          ingress, route and none are supported.
+      - description: |-
+          Type defines the type of Ingress for the Jaeger Query UI.
+          Currently ingress, route and none are supported.
         displayName: Type
         path: template.queryFrontend.jaegerQuery.ingress.type
       - description: MonitorTab defines the monitor tab configuration.
         displayName: Jaeger Query UI Monitor Tab Settings
         path: template.queryFrontend.jaegerQuery.monitorTab
-      - description: Enabled enables the monitor tab in the Jaeger console. The PrometheusEndpoint
-          must be configured to enable this feature.
+      - description: |-
+          Enabled enables the monitor tab in the Jaeger console.
+          The PrometheusEndpoint must be configured to enable this feature.
         displayName: Enabled
         path: template.queryFrontend.jaegerQuery.monitorTab.enabled
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
-      - description: PrometheusEndpoint defines the endpoint to the Prometheus instance
-          that contains the span rate, error, and duration (RED) metrics. For instance
-          on OpenShift this is set to https://thanos-querier.openshift-monitoring.svc.cluster.local:9091
+      - description: |-
+          PrometheusEndpoint defines the endpoint to the Prometheus instance that contains the span rate, error, and duration (RED) metrics.
+          For instance on OpenShift this is set to https://thanos-querier.openshift-monitoring.svc.cluster.local:9091
         displayName: Prometheus endpoint
         path: template.queryFrontend.jaegerQuery.monitorTab.prometheusEndpoint
       - description: REDMetricsNamespace defines the a prefix used retrieve span rate,
@@ -1062,15 +1108,15 @@ spec:
         path: tenants.authentication[0].oidc.secret.name
         x-descriptors:
         - urn:alm:descriptor:io.kubernetes:Secret
-      - description: TenantID defines a universally unique identifier of the tenant.
-          Unlike the tenantName, which must be unique at a given time, the tenantId
-          must be unique over the entire lifetime of the Tempo deployment. Tempo uses
-          this ID to prefix objects in the object storage.
+      - description: |-
+          TenantID defines a universally unique identifier of the tenant.
+          Unlike the tenantName, which must be unique at a given time, the tenantId must be unique over the entire lifetime of the Tempo deployment.
+          Tempo uses this ID to prefix objects in the object storage.
         displayName: Tenant ID
         path: tenants.authentication[0].tenantId
-      - description: TenantName defines a human readable, unique name of the tenant.
-          The value of this field must be specified in the X-Scope-OrgID header and
-          in the resources field of a ClusterRole to identify the tenant.
+      - description: |-
+          TenantName defines a human readable, unique name of the tenant.
+          The value of this field must be specified in the X-Scope-OrgID header and in the resources field of a ClusterRole to identify the tenant.
         displayName: Tenant Name
         path: tenants.authentication[0].tenantName
       - description: Authorization defines the tempo-gateway component authorization
