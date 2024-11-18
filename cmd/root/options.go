@@ -30,6 +30,11 @@ func LoadConfig(scheme *runtime.Scheme, configFile string) (*configv1alpha1.Proj
 		return nil, options, fmt.Errorf("failed to parse controller manager config file: %w", err)
 	}
 
+	err = ctrlConfig.Validate()
+	if err != nil {
+		return nil, options, fmt.Errorf("controller config validation failed: %w", err)
+	}
+
 	options = mergeOptionsFromFile(options, &ctrlConfig)
 	return &ctrlConfig, options, nil
 }
