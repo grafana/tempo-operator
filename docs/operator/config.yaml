@@ -5,37 +5,26 @@
 # More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
 apiVersion: ""
 
-# CacheNamespace if specified restricts the manager's cache to watch objects in
-# the desired namespace Defaults to all namespaces
-#
-# Note: If a namespace is specified, controllers can still Watch for a
-# cluster-scoped resource (e.g Node).  For namespaced resources the cache
-# will only hold objects from the desired namespace.
-cacheNamespace: ""
+# The images are read from environment variables and not from the configuration file
+defaultImages:
 
-# Controller contains global configuration options for controllers
-# registered within this manager.
-controller:
+  # JaegerQuery defines the tempo-query container image.
+  jaegerQuery: ""
 
-  # CacheSyncTimeout refers to the time limit set to wait for syncing caches.
-  # Defaults to 2 minutes if not set.
-  cacheSyncTimeout: 0
+  # OauthProxy defines the oauth proxy image used to protect the jaegerUI on single tenant.
+  oauthProxy: ""
 
-  # GroupKindConcurrency is a map from a Kind to the number of concurrent reconciliation
-  # allowed for that controller.
-  #
-  # When a controller is registered within this manager using the builder utilities,
-  # users have to specify the type the controller reconciles in the For(...) call.
-  # If the object's kind passed matches one of the keys in this map, the concurrency
-  # for that controller is set to the number specified.
-  #
-  # The key is expected to be consistent in form with GroupKind.String(),
-  # e.g. ReplicaSet in apps group (regardless of version) would be `ReplicaSet.apps`.
-  groupKindConcurrency:
-    "key": 0
+  # Tempo defines the tempo container image.
+  tempo: ""
 
-  # RecoverPanic indicates if panics should be recovered.
-  recoverPanic: false
+  # TempoGateway defines the tempo-gateway container image.
+  tempoGateway: ""
+
+  # TempoGatewayOpa defines the OPA sidecar container for TempoGateway.
+  tempoGatewayOpa: ""
+
+  # TempoQuery defines the tempo-query container image.
+  tempoQuery: ""
 
 # Distribution defines the operator distribution name.
 distribution: ""
@@ -60,19 +49,19 @@ featureGates:
     # CACertRefresh defines the duration of the CA certificate validity until a rotation
     # should happen. It can be set up to 80% of CA certificate validity or equal to the
     # CA certificate validity. Latter should be used only for rotating only when expired.
-    caRefresh: 0h
+    caRefresh:
 
     # CACertValidity defines the total duration of the CA certificate validity.
-    caValidity: 0h
+    caValidity:
 
     # CertRefresh defines the duration of the certificate validity until a rotation
     # should happen. It can be set up to 80% of certificate validity or equal to the
     # certificate validity. Latter should be used only for rotating only when expired.
     # The refresh is applied to all Tempo certificates at once.
-    certRefresh: 0h
+    certRefresh:
 
     # CertValidity defines the total duration of the validity for all Tempo certificates.
-    certValidity: 0h
+    certValidity:
 
   # GrafanaOperator defines whether the Grafana Operator CRD exists in the cluster.
   # This CRD is part of grafana-operator.
@@ -143,6 +132,10 @@ featureGates:
     # If empty the operator automatically derives the domain from the cluster.
     baseDomain: ""
 
+    # ClusterTLSPolicy enables usage of TLS policies set in the API Server.
+    # More details: https://docs.openshift.com/container-platform/4.11/security/tls-security-profiles.html
+    clusterTLSPolicy: false
+
     # OauthProxy define options for the oauth proxy feature.
     oAuthProxy:
 
@@ -170,12 +163,6 @@ featureGates:
   # TLSProfile allows to chose a TLS security profile. Enforced
   # when using HTTPEncryption or GRPCEncryption.
   tlsProfile: ""
-
-# GracefulShutdownTimeout is the duration given to runnable to stop before the manager actually returns on stop.
-# To disable graceful shutdown, set to time.Duration(0)
-# To use graceful shutdown without timeout, set to a negative duration, e.G. time.Duration(-1)
-# The graceful shutdown is skipped for safety reasons in case the leader election lease is lost.
-gracefulShutDown: 0h
 
 # Health contains the controller health configuration
 health:
@@ -246,26 +233,8 @@ metrics:
   # It can be set to "0" to disable the metrics serving.
   bindAddress: ""
 
-# SyncPeriod determines the minimum frequency at which watched resources are
-# reconciled. A lower period will correct entropy more quickly, but reduce
-# responsiveness to change if there are many watched resources. Change this
-# value only if you know what you are doing. Defaults to 10 hours if unset.
-# there will a 10 percent jitter between the SyncPeriod of all controllers
-# so that all controllers will not send list requests simultaneously.
-syncPeriod: 0h
-
 # Webhook contains the controllers webhook configuration
 webhook:
-
-  # CertDir is the directory that contains the server key and certificate.
-  # if not set, webhook server would look up the server key and certificate in
-  # {TempDir}/k8s-webhook-server/serving-certs. The server key and certificate
-  # must be named tls.key and tls.crt, respectively.
-  certDir: ""
-
-  # Host is the hostname that the webhook server binds to.
-  # It is used to set webhook.Server.Host.
-  host: ""
 
   # Port is the port that the webhook server serves at.
   # It is used to set webhook.Server.Port.

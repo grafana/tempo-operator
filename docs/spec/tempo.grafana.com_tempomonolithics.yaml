@@ -9,14 +9,14 @@ spec:                                    # TempoMonolithicSpec defines the desir
     otlp:                                # OTLP defines the ingestion configuration for the OTLP protocol.
       grpc:                              # GRPC defines the OTLP over gRPC configuration.
         enabled: true                    # Enabled defines if OTLP over gRPC is enabled. Default: enabled.
-        tls:                             # TLS defines the TLS configuration for OTLP/gRPC ingestion.   On OpenShift when operator config `servingCertsService`  and TLS is enabled  but no `certName` and `caName` are provided it will use OpenShift serving certificate service.
+        tls:                             # TLS defines the TLS configuration for OTLP/gRPC ingestion.  On OpenShift when operator config `servingCertsService`  and TLS is enabled  but no `certName` and `caName` are provided it will use OpenShift serving certificate service.
           enabled: false                 # Enabled defines if TLS is enabled.
           caName: ""                     # CA is the name of a ConfigMap containing a CA certificate (service-ca.crt). It needs to be in the same namespace as the Tempo custom resource.
           certName: ""                   # Cert is the name of a Secret containing a certificate (tls.crt) and private key (tls.key). It needs to be in the same namespace as the Tempo custom resource.
           minVersion: ""                 # MinVersion defines the minimum acceptable TLS version.
       http:                              # HTTP defines the OTLP over HTTP configuration.
         enabled: true                    # Enabled defines if OTLP over HTTP is enabled. Default: enabled.
-        tls:                             # TLS defines the TLS configuration for OTLP/HTTP ingestion.   On OpenShift when operator config `servingCertsService`  and TLS is enabled  but no `certName` and `caName` are provided it will use OpenShift serving certificate service.
+        tls:                             # TLS defines the TLS configuration for OTLP/HTTP ingestion.  On OpenShift when operator config `servingCertsService`  and TLS is enabled  but no `certName` and `caName` are provided it will use OpenShift serving certificate service.
           enabled: false                 # Enabled defines if TLS is enabled.
           caName: ""                     # CA is the name of a ConfigMap containing a CA certificate (service-ca.crt). It needs to be in the same namespace as the Tempo custom resource.
           certName: ""                   # Cert is the name of a Secret containing a certificate (tls.crt) and private key (tls.key). It needs to be in the same namespace as the Tempo custom resource.
@@ -27,8 +27,9 @@ spec:                                    # TempoMonolithicSpec defines the desir
       enabled: false                     # Defines if the authentication will be enabled for jaeger UI.
       sar: ""                            # SAR defines the SAR to be used in the oauth-proxy default is "{"namespace": "<tempo_stack_namespace>", "resource": "pods", "verb": "get"}
       resources:                         # Resources defines the compute resource requirements of the OAuth Proxy container. The OAuth Proxy performs authentication and authorization of incoming requests to Jaeger UI when multi-tenancy is disabled.
-        claims:                          # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.   This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.   This field is immutable. It can only be set for containers.
+        claims:                          # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.  This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.  This field is immutable. It can only be set for containers.
         - name: ""                       # Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.
+          request: ""                    # Request is the name chosen for a request in the referenced claim. If empty, everything from the claim is made available, otherwise only the result of this request.
         limits:                          # Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
           cpu: "750m"
           memory: "2Gi"
@@ -48,8 +49,9 @@ spec:                                    # TempoMonolithicSpec defines the desir
       termination: ""                    # Termination specifies the termination type.
     servicesQueryDuration: ""            # ServicesQueryDuration defines how long the services will be available in the services list
     resources:                           # Resources defines the compute resource requirements of the Jaeger UI container.
-      claims:                            # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.   This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.   This field is immutable. It can only be set for containers.
+      claims:                            # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.  This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.  This field is immutable. It can only be set for containers.
       - name: ""                         # Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.
+        request: ""                      # Request is the name chosen for a request in the referenced claim. If empty, everything from the claim is made available, otherwise only the result of this request.
       limits:                            # Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
         cpu: "750m"
         memory: "2Gi"
@@ -87,8 +89,9 @@ spec:                                    # TempoMonolithicSpec defines the desir
         - ""
     mode: "static"                       # Mode defines the multitenancy mode.
     resources:                           # Resources defines the compute resource requirements of the gateway container. The gateway performs authentication and authorization of incoming requests when multi-tenancy is enabled.
-      claims:                            # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.   This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.   This field is immutable. It can only be set for containers.
+      claims:                            # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.  This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.  This field is immutable. It can only be set for containers.
       - name: ""                         # Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.
+        request: ""                      # Request is the name chosen for a request in the referenced claim. If empty, everything from the claim is made available, otherwise only the result of this request.
       limits:                            # Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
         cpu: "750m"
         memory: "2Gi"
@@ -134,8 +137,9 @@ spec:                                    # TempoMonolithicSpec defines the desir
     podAntiAffinity: {}                  # Describes pod anti-affinity scheduling rules (e.g. avoid putting this pod in the same node, zone, etc. as some other pod(s)).
   nodeSelector: {}                       # NodeSelector defines which labels are required by a node to schedule the pod onto it.
   resources:                             # Resources defines the compute resource requirements of the Tempo container.
-    claims:                              # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.   This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.   This field is immutable. It can only be set for containers.
+    claims:                              # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.  This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.  This field is immutable. It can only be set for containers.
     - name: ""                           # Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.
+      request: ""                        # Request is the name chosen for a request in the referenced claim. If empty, everything from the claim is made available, otherwise only the result of this request.
     limits:                              # Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
       cpu: "750m"
       memory: "2Gi"
@@ -154,6 +158,6 @@ status:                                  # TempoMonolithicStatus defines the obs
     observedGeneration: 0                # observedGeneration represents the .metadata.generation that the condition was set based upon. For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date with respect to the current state of the instance.
     reason: ""                           # reason contains a programmatic identifier indicating the reason for the condition's last transition. Producers of specific condition types may define expected values and meanings for this field, and whether the values are considered a guaranteed API. The value should be a CamelCase string. This field may not be empty.
     status: ""                           # status of the condition, one of True, False, Unknown.
-    type: ""                             # type of condition in CamelCase or in foo.example.com/CamelCase. --- Many .condition.type values are consistent across resources like Available, but because arbitrary conditions can be useful (see .node.status.conditions), the ability to deconflict is important. The regex it matches is (dns1123SubdomainFmt/)?(qualifiedNameFmt)
+    type: ""                             # type of condition in CamelCase or in foo.example.com/CamelCase.
   operatorVersion: ""                    # Version of the Tempo Operator.
   tempoVersion: ""                       # Version of the managed Tempo instance.
