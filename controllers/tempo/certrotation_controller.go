@@ -10,6 +10,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/google/uuid"
 	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
 	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
 	tempoStackState "github.com/grafana/tempo-operator/controllers/tempo/internal/management/state"
@@ -88,6 +89,7 @@ func (r *CertRotationReconciler) Reconcile(ctx context.Context, req ctrl.Request
 // SetupWithManager sets up the controller with the Manager.
 func (r *CertRotationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
+		Named("certrotation" + uuid.New().String()).
 		For(&v1alpha1.TempoStack{}).
 		Owns(&corev1.Secret{}).
 		Complete(r)

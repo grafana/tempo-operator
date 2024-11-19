@@ -70,6 +70,11 @@ func readConfig(cmd *cobra.Command, configFile string) error {
 		return fmt.Errorf("controller config validation failed: %w", err)
 	}
 
+	options.HealthProbeBindAddress = ":8081"
+	options.PprofBindAddress = ":6060"
+	options.ReadinessEndpointName = "/readyz"
+	options.LivenessEndpointName = "/healthz"
+
 	cmd.SetContext(context.WithValue(cmd.Context(), RootConfigKey{}, RootConfig{options, ctrlConfig}))
 	return nil
 }

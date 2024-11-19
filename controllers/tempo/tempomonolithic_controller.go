@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/google/uuid"
 	grafanav1 "github.com/grafana/grafana-operator/v5/api/v1beta1"
 	routev1 "github.com/openshift/api/route/v1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
@@ -228,6 +229,7 @@ func (r *TempoMonolithicReconciler) getOwnedObjects(ctx context.Context, tempo v
 // SetupWithManager sets up the controller with the Manager.
 func (r *TempoMonolithicReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	builder := ctrl.NewControllerManagedBy(mgr).
+		Named("tempomonolithic" + uuid.New().String()).
 		For(&v1alpha1.TempoMonolithic{}).
 		Owns(&corev1.ConfigMap{}).
 		Owns(&corev1.Secret{}).
