@@ -4,6 +4,4 @@ metadata:
   name: generate-traces
   namespace: chainsaw-tst
 status:
-  conditions:
-    - status: "True"
-      type: Complete
+  succeeded: 1

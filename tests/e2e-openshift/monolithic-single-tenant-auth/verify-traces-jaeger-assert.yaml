@@ -4,6 +4,4 @@ metadata:
   name: verify-traces-jaeger
   namespace: chainsaw-mst
 status:
-  conditions:
-    - status: "True"
-      type: Complete
+  succeeded: 1

@@ -3,6 +3,4 @@ kind: Job
 metadata:
   name: verify-metrics
 status:
-  conditions:
-  - status: "True"
-    type: Complete
+  succeeded: 1

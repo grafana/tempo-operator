@@ -17,6 +17,4 @@ kind: Job
 metadata:
   name: verify-traces
 status:
-  conditions:
-    - status: "True"
-      type: Complete
+  succeeded: 1

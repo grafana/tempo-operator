@@ -4,9 +4,7 @@ metadata:
   name: generate-traces-grpc
   namespace: chainsaw-multitenancy
 status:
-  conditions:
-    - status: "True"
-      type: Complete
+  succeeded: 1
 ---
 apiVersion: batch/v1
 kind: Job
@@ -14,6 +12,4 @@ metadata:
   name: generate-traces-http
   namespace: chainsaw-multitenancy
 status:
-  conditions:
-    - status: "True"
-      type: Complete
+  succeeded: 1

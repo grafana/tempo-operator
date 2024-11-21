@@ -15,7 +15,7 @@ REQUIRED_ITEMS=(
   "*sha*/olm/clusterserviceversion-tempo-operator-*.yaml"
   "*sha*/olm/operator-opentelemetry-product-openshift-opentelemetry-operator.yaml"
   "*sha*/olm/operator-tempo-*-tempo-operator.yaml"
-  "*sha*/olm/subscription-tempo-operator-*-sub.yaml"
+  "*sha*/olm/subscription-tempo-*.yaml"
   "*sha*/namespaces/chainsaw-mono-route/tempomonolithic/mono-route/tempomonolithic-mono-route.yaml"
   "*sha*/namespaces/chainsaw-mono-route/tempomonolithic/mono-route/service-tempo-mono-route-jaegerui.yaml"
   "*sha*/namespaces/chainsaw-mono-route/tempomonolithic/mono-route/configmap-tempo-mono-route-serving-cabundle.yaml"

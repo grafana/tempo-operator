@@ -4,6 +4,4 @@ metadata:
   name: verify-traces
   namespace: chainsaw-otel-tempo-serverless
 status:
-  conditions:
-    - status: "True"
-      type: Complete
+  succeeded: 1
