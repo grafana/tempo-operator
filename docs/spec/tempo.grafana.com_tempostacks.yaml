@@ -342,7 +342,7 @@ spec:                                    # TempoStackSpec defines the desired st
         monitorTab:                      # MonitorTab defines the monitor tab configuration.
           enabled: false                 # Enabled enables the monitor tab in the Jaeger console. The PrometheusEndpoint must be configured to enable this feature.
           prometheusEndpoint: ""         # PrometheusEndpoint defines the endpoint to the Prometheus instance that contains the span rate, error, and duration (RED) metrics. For instance on OpenShift this is set to https://thanos-querier.openshift-monitoring.svc.cluster.local:9091
-          redMetricsNamespace: "traces.span.metrics" # REDMetricsNamespace defines the a prefix used retrieve span rate, error, and duration (RED) metrics. By default it is set to `traces.span.metrics` following the default namespace of the OpenTelemetry Collector since Version 0.109.0.
+          redMetricsNamespace: ""        # REDMetricsNamespace defines the a prefix used retrieve span rate, error, and duration (RED) metrics.
         servicesQueryDuration: ""        # ServicesQueryDuration defines how long the services will be available in the services list
         tempoQuery:                      # TempoQuery defines options specific to the Tempoo Query component.
           resources:                     # Resources defines resources for this component, this will override the calculated resources derived from total
