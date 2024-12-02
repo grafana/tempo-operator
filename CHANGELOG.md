@@ -3,6 +3,19 @@ Changes by Version
 
 <!-- next version -->
 
+## 0.14.2
+
+### 🧰 Bug fixes 🧰
+
+- `tempostack`: Use default Jaeger RED metrics namespace if field is unset (#1096)
+  Use the default Jaeger RED metrics namespace if `.spec.template.queryFrontend.jaegerQuery.monitorTab.redMetricsNamespace` is not set.
+  Before Jaeger 1.62 the default namespace was empty, since [Jaeger 1.62](https://github.com/jaegertracing/jaeger/releases/tag/v1.62.0) (shipped in Tempo Operator v0.14.0) the default namespace is "traces_span_metrics".
+  Before OpenTelemetry Collector v0.109.0 the default namespace of the spanmetrics connector was empty, since [OpenTelemetry Collector v0.109.0](https://github.com/open-telemetry/opentelemetry-collector-contrib/releases/tag/v0.109.0) the default namespace is "traces_span_metrics".
+  
+
+### Components
+- Tempo: [v2.6.1](https://github.com/grafana/tempo/releases/tag/v2.6.1)
+
 ## 0.14.1
 
 ### 🧰 Bug fixes 🧰
