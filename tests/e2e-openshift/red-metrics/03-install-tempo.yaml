@@ -28,6 +28,6 @@ spec:
         monitorTab:
           enabled: true
           prometheusEndpoint: https://thanos-querier.openshift-monitoring.svc.cluster.local:9091
-          redMetricsNamespace: ""
+          redMetricsNamespace: traces_span_metrics
         ingress:
           type: route

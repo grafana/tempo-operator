@@ -20,7 +20,7 @@ spec:
         description: '{{$labels.instance}} has 95th request latency above 2s (current
           value: {{$value}}s)'
         summary: High request latency on {{$labels.service_name}} and {{$labels.span_name}}
-      expr: histogram_quantile(0.95, sum(rate(duration_bucket{service_name="frontend",
+      expr: histogram_quantile(0.95, sum(rate(traces_span_metrics_duration_bucket{service_name="frontend",
         span_kind="SPAN_KIND_SERVER"}[1m])) by (le, service_name, span_name)) > 1000
       labels:
         severity: Warning

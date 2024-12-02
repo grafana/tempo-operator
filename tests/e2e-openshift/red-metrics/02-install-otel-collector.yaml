@@ -34,7 +34,7 @@ spec:
         resource_to_telemetry_conversion: 
           enabled: true # by default resource attributes are dropped
 
-      logging:
+      debug:
 
       otlp:
         endpoint: tempo-redmetrics-distributor:4317
@@ -53,7 +53,7 @@ spec:
           exporters: [otlp, spanmetrics]
         metrics:
           receivers: [spanmetrics]
-          exporters: [prometheus, logging]
+          exporters: [prometheus, debug]
 
 ---
 apiVersion: monitoring.coreos.com/v1
@@ -65,7 +65,7 @@ spec:
   - name: server-side-latency
     rules:
     - alert: SpanREDFrontendAPIRequestLatency
-      expr: histogram_quantile(0.95, sum(rate(duration_bucket{service_name="frontend", span_kind="SPAN_KIND_SERVER"}[1m])) by (le, service_name, span_name)) > 1000
+      expr: histogram_quantile(0.95, sum(rate(traces_span_metrics_duration_bucket{service_name="frontend", span_kind="SPAN_KIND_SERVER"}[1m])) by (le, service_name, span_name)) > 1000
       labels:
         severity: Warning
       annotations:
