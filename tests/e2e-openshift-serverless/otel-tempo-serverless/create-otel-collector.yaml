@@ -7,7 +7,7 @@ spec:
   mode: deployment
   config: |
     receivers:
-      zipkin:
+      zipkin: {}
     processors:
     exporters:
       otlp:

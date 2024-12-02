@@ -6,7 +6,7 @@ metadata:
 spec:
   config: |
     receivers:
-      zipkin:
+      zipkin: {}
       otlp:
         protocols:
           grpc:

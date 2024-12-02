@@ -4,9 +4,7 @@ metadata:
   name: verify-traces-grpc
   namespace: chainsaw-multitenancy
 status:
-  conditions:
-    - status: "True"
-      type: Complete
+  succeeded: 1
 ---
 apiVersion: batch/v1
 kind: Job
@@ -14,9 +12,7 @@ metadata:
   name: verify-traces-traceql-grpc
   namespace: chainsaw-multitenancy
 status:
-  conditions:
-    - status: "True"
-      type: Complete
+  succeeded: 1
 ---
 apiVersion: batch/v1
 kind: Job
@@ -24,9 +20,7 @@ metadata:
   name: verify-traces-http
   namespace: chainsaw-multitenancy
 status:
-  conditions:
-    - status: "True"
-      type: Complete
+  succeeded: 1
 ---
 apiVersion: batch/v1
 kind: Job
@@ -34,6 +28,4 @@ metadata:
   name: verify-traces-traceql-http
   namespace: chainsaw-multitenancy
 status:
-  conditions:
-    - status: "True"
-      type: Complete
+  succeeded: 1

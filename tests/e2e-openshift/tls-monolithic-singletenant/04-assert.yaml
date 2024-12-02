@@ -4,9 +4,7 @@ metadata:
   name: verify-traces-grpc
   namespace: chainsaw-tls-mono-st
 status:
-  conditions:
-    - status: "True"
-      type: Complete
+  succeeded: 1
 ---
 apiVersion: batch/v1
 kind: Job
@@ -14,6 +12,4 @@ metadata:
   name: verify-traces-http
   namespace: chainsaw-tls-mono-st
 status:
-  conditions:
-    - status: "True"
-      type: Complete
+  succeeded: 1

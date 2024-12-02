@@ -4,6 +4,4 @@ metadata:
   name: verify-metrics
   namespace: ($TEMPO_NAMESPACE)
 status:
-  conditions:
-    - status: "True"
-      type: Complete
+  succeeded: 1

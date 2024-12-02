@@ -15,7 +15,7 @@ REQUIRED_ITEMS=(
   "*sha*/olm/clusterserviceversion-tempo-operator-*.yaml"
   "*sha*/olm/operator-opentelemetry-product-openshift-opentelemetry-operator.yaml"
   "*sha*/olm/operator-*-tempo-operator.yaml"
-  "*sha*/olm/subscription-tempo-operator-*-sub.yaml"
+  "*sha*/olm/subscription-tempo-*.yaml"
   "*sha*/namespaces/chainsaw-route/tempostack/simplest/service-tempo-simplest-distributor.yaml"
   "*sha*/namespaces/chainsaw-route/tempostack/simplest/service-tempo-simplest-ingester.yaml"
   "*sha*/namespaces/chainsaw-route/tempostack/simplest/deployment-tempo-simplest-distributor.yaml"

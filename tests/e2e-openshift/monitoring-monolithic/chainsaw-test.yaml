@@ -29,8 +29,8 @@ spec:
     try:
     - apply:
         file: verify-traces.yaml
-    - apply:
-        file: workload-monitoring-assert.yaml
+    - assert:
+        file: verify-traces-assert.yaml
   - name: Check Tempo Monolithc metrics scraped by user workload monitoring
     try:
     - script:

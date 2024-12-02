@@ -3,15 +3,11 @@ kind: Job
 metadata:
   name: generate-traces-grpc
 status:
-  conditions:
-  - status: "True"
-    type: Complete
+  succeeded: 1
 ---
 apiVersion: batch/v1
 kind: Job
 metadata:
   name: generate-traces-http
 status:
-  conditions:
-    - status: "True"
-      type: Complete
+  succeeded: 1
