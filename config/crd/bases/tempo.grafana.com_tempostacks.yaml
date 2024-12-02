@@ -2467,10 +2467,9 @@ spec:
                                   For instance on OpenShift this is set to https://thanos-querier.openshift-monitoring.svc.cluster.local:9091
                                 type: string
                               redMetricsNamespace:
-                                default: traces.span.metrics
-                                description: |-
-                                  REDMetricsNamespace defines the a prefix used retrieve span rate, error, and duration (RED) metrics.
-                                  By default it is set to `traces.span.metrics` following the default namespace of the OpenTelemetry Collector since Version 0.109.0.
+                                description: REDMetricsNamespace defines the a prefix
+                                  used retrieve span rate, error, and duration (RED)
+                                  metrics.
                                 type: string
                             type: object
                           resources:

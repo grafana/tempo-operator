@@ -398,11 +398,6 @@ func enableMonitoringTab(tempo v1alpha1.TempoStack, jaegerQueryContainer corev1.
 			// However, we do not intend to support them.
 			// --prometheus.query.normalize-calls
 			// --prometheus.query.normalize-duration
-			//
-			// NOTE: Jaeger 1.62 default namespace changed to "traces_span_metrics".
-			// We fallback to no namespace.
-			// See https://github.com/jaegertracing/jaeger/pull/6007.
-			fmt.Sprintf("--prometheus.query.namespace=%s", tempo.Spec.Template.QueryFrontend.JaegerQuery.MonitorTab.REDMetricsNamespace),
 		},
 	}
 	// If the endpoint matches Prometheus on OpenShift, configure TLS and token based auth
@@ -415,6 +410,15 @@ func enableMonitoringTab(tempo v1alpha1.TempoStack, jaegerQueryContainer corev1.
 			"--prometheus.token-file=/var/run/secrets/kubernetes.io/serviceaccount/token",
 			"--prometheus.token-override-from-context=false",
 			"--prometheus.tls.ca=/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt")
+	}
+
+	if tempo.Spec.Template.QueryFrontend.JaegerQuery.MonitorTab.REDMetricsNamespace != nil {
+		// NOTE: Jaeger 1.62 default namespace changed to "traces_span_metrics".
+		// Set .spec.template.queryFrontend.jaegerQuery.monitorTab.redMetricsNamespace explicitly to "" to disable the namespace.
+		// See https://github.com/jaegertracing/jaeger/pull/6007.
+		container.Args = append(container.Args,
+			fmt.Sprintf("--prometheus.query.namespace=%s", *tempo.Spec.Template.QueryFrontend.JaegerQuery.MonitorTab.REDMetricsNamespace),
+		)
 	}
 
 	err := mergo.Merge(&jaegerQueryContainer, container, mergo.WithAppendSlice)

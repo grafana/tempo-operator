@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.14.1
-    createdAt: "2024-11-06T14:25:14Z"
+    createdAt: "2024-12-02T11:40:40Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -1071,9 +1071,7 @@ spec:
         displayName: Prometheus endpoint
         path: template.queryFrontend.jaegerQuery.monitorTab.prometheusEndpoint
       - description: REDMetricsNamespace defines the a prefix used retrieve span rate,
-          error, and duration (RED) metrics. By default it is set to `traces.span.metrics`
-          following the default namespace of the OpenTelemetry Collector since Version
-          0.109.0.
+          error, and duration (RED) metrics.
         displayName: RED Metric Namespace
         path: template.queryFrontend.jaegerQuery.monitorTab.redMetricsNamespace
       - description: Resources defines resources for this component, this will override

@@ -621,9 +621,29 @@ func TestBuildQueryFrontendWithJaegerMonitorTab(t *testing.T) {
 							JaegerQuery: v1alpha1.JaegerQuerySpec{
 								Enabled: true,
 								MonitorTab: v1alpha1.JaegerQueryMonitor{
+									Enabled:            true,
+									PrometheusEndpoint: "http://prometheus:9091",
+								},
+							},
+						},
+					},
+				},
+			},
+			args: []string{"--query.base-path=/", "--span-storage.type=grpc", "--grpc-storage.server=localhost:7777", "--query.bearer-token-propagation=true"},
+			env:  []corev1.EnvVar{{Name: "METRICS_STORAGE_TYPE", Value: "prometheus"}, {Name: "PROMETHEUS_SERVER_URL", Value: "http://prometheus:9091"}},
+		},
+		{
+			name: "custom RED metrics namespace",
+			tempo: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+							JaegerQuery: v1alpha1.JaegerQuerySpec{
+								Enabled: true,
+								MonitorTab: v1alpha1.JaegerQueryMonitor{
 									Enabled:             true,
 									PrometheusEndpoint:  "http://prometheus:9091",
-									REDMetricsNamespace: "test",
+									REDMetricsNamespace: ptr.To("test"),
 								},
 							},
 						},
@@ -631,6 +651,27 @@ func TestBuildQueryFrontendWithJaegerMonitorTab(t *testing.T) {
 				},
 			},
 			args: []string{"--query.base-path=/", "--span-storage.type=grpc", "--grpc-storage.server=localhost:7777", "--query.bearer-token-propagation=true", "--prometheus.query.namespace=test"},
+			env:  []corev1.EnvVar{{Name: "METRICS_STORAGE_TYPE", Value: "prometheus"}, {Name: "PROMETHEUS_SERVER_URL", Value: "http://prometheus:9091"}},
+		},
+		{
+			name: "disable default RED metrics namespace",
+			tempo: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+							JaegerQuery: v1alpha1.JaegerQuerySpec{
+								Enabled: true,
+								MonitorTab: v1alpha1.JaegerQueryMonitor{
+									Enabled:             true,
+									PrometheusEndpoint:  "http://prometheus:9091",
+									REDMetricsNamespace: ptr.To(""),
+								},
+							},
+						},
+					},
+				},
+			},
+			args: []string{"--query.base-path=/", "--span-storage.type=grpc", "--grpc-storage.server=localhost:7777", "--query.bearer-token-propagation=true", "--prometheus.query.namespace="},
 			env:  []corev1.EnvVar{{Name: "METRICS_STORAGE_TYPE", Value: "prometheus"}, {Name: "PROMETHEUS_SERVER_URL", Value: "http://prometheus:9091"}},
 		},
 		{
@@ -658,7 +699,6 @@ func TestBuildQueryFrontendWithJaegerMonitorTab(t *testing.T) {
 				"--span-storage.type=grpc",
 				"--grpc-storage.server=localhost:7777",
 				"--query.bearer-token-propagation=true",
-				"--prometheus.query.namespace=",
 				"--prometheus.tls.enabled=true",
 				"--prometheus.token-file=/var/run/secrets/kubernetes.io/serviceaccount/token",
 				"--prometheus.token-override-from-context=false",
