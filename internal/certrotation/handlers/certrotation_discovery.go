@@ -9,7 +9,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	v1alpha1 "github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	v1alpha1 "github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 )
 
 const certRotationRequiredAtKey = "tempo.grafana.com/certRotationRequiredAt"
