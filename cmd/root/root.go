@@ -2,6 +2,7 @@ package root
 
 import (
 	"context"
+
 	grafanav1 "github.com/grafana/grafana-operator/v5/api/v1beta1"
 	configv1 "github.com/openshift/api/config/v1"
 	openshiftoperatorv1 "github.com/openshift/api/operator/v1"
