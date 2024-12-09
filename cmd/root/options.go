@@ -3,8 +3,6 @@ package root
 import (
 	"errors"
 	"fmt"
-	"net/http"
-	"net/http/pprof"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -65,22 +63,6 @@ func mergeOptionsFromFile(o manager.Options, cfg *configv1alpha1.ProjectConfig) 
 
 	if o.Metrics.BindAddress == "" && cfg.Metrics.BindAddress != "" {
 		o.Metrics.BindAddress = cfg.Metrics.BindAddress
-
-		endpoints := map[string]http.HandlerFunc{
-			"/debug/pprof/":        pprof.Index,
-			"/debug/pprof/cmdline": pprof.Cmdline,
-			"/debug/pprof/profile": pprof.Profile,
-			"/debug/pprof/symbol":  pprof.Symbol,
-			"/debug/pprof/trace":   pprof.Trace,
-		}
-
-		if o.Metrics.ExtraHandlers == nil {
-			o.Metrics.ExtraHandlers = map[string]http.Handler{}
-		}
-
-		for path, handler := range endpoints {
-			o.Metrics.ExtraHandlers[path] = handler
-		}
 	}
 
 	if o.HealthProbeBindAddress == "" && cfg.Health.HealthProbeBindAddress != "" {
