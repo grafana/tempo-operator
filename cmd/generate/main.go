@@ -15,8 +15,8 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
-	"github.com/grafana/tempo-operator/cmd"
+	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/cmd/root"
 	"github.com/grafana/tempo-operator/internal/manifests"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/webhooks"
@@ -105,7 +105,7 @@ func toYAMLManifest(scheme *runtime.Scheme, objects []client.Object, out io.Writ
 }
 
 func generate(c *cobra.Command, crPath string, outPath string, params manifestutils.Params) error {
-	rootCmdConfig := c.Context().Value(cmd.RootConfigKey{}).(cmd.RootConfig)
+	rootCmdConfig := c.Context().Value(root.RootConfigKey{}).(root.RootConfig)
 	options := rootCmdConfig.Options
 
 	var specReader io.Reader
@@ -176,7 +176,7 @@ func NewGenerateCommand() *cobra.Command {
 		Use:   "generate",
 		Short: "Generate YAML manifests from a Tempo CR",
 		RunE: func(c *cobra.Command, args []string) error {
-			rootCmdConfig := c.Context().Value(cmd.RootConfigKey{}).(cmd.RootConfig)
+			rootCmdConfig := c.Context().Value(root.RootConfigKey{}).(root.RootConfig)
 			params := manifestutils.Params{
 				CtrlConfig: rootCmdConfig.CtrlConfig,
 			}

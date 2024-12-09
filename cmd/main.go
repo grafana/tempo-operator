@@ -4,15 +4,15 @@ import (
 	"flag"
 	"os"
 
-	"github.com/grafana/tempo-operator/cmd"
 	"github.com/grafana/tempo-operator/cmd/generate"
+	"github.com/grafana/tempo-operator/cmd/root"
 	"github.com/grafana/tempo-operator/cmd/start"
 	"github.com/grafana/tempo-operator/cmd/version"
 	"github.com/grafana/tempo-operator/internal/logging"
 )
 
 func main() {
-	rootCmd := cmd.NewRootCommand()
+	rootCmd := root.NewRootCommand()
 	rootCmd.AddCommand(start.NewStartCommand())
 	rootCmd.AddCommand(generate.NewGenerateCommand())
 	rootCmd.AddCommand(version.NewVersionCommand())

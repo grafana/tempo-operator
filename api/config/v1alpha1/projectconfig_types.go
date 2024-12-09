@@ -4,7 +4,7 @@ import (
 	"os"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	cfg "sigs.k8s.io/controller-runtime/pkg/config/v1alpha1"
+	configv1alpha1 "k8s.io/component-base/config/v1alpha1"
 )
 
 const (
@@ -223,14 +223,76 @@ type FeatureGates struct {
 	GrafanaOperator bool `json:"grafanaOperator,omitempty"`
 }
 
+// ControllerManagerConfigurationSpec defines the desired state of GenericControllerManagerConfiguration.
+type ControllerManagerConfigurationSpec struct {
+	// LeaderElection is the LeaderElection config to be used when configuring
+	// the manager.Manager leader election
+	// +optional
+	LeaderElection *configv1alpha1.LeaderElectionConfiguration `json:"leaderElection,omitempty"`
+
+	// Metrics contains the controller metrics configuration
+	// +optional
+	Metrics ControllerMetrics `json:"metrics,omitempty"`
+
+	// Health contains the controller health configuration
+	// +optional
+	Health ControllerHealth `json:"health,omitempty"`
+
+	// Webhook contains the controllers webhook configuration
+	// +optional
+	Webhook ControllerWebhook `json:"webhook,omitempty"`
+}
+
+// ControllerMetrics defines the metrics configs.
+type ControllerMetrics struct {
+	// BindAddress is the TCP address that the controller should bind to
+	// for serving prometheus metrics.
+	// It can be set to "0" to disable the metrics serving.
+	// +optional
+	BindAddress string `json:"bindAddress,omitempty"`
+}
+
+// ControllerHealth defines the health configs.
+type ControllerHealth struct {
+	// HealthProbeBindAddress is the TCP address that the controller should bind to
+	// for serving health probes
+	// It can be set to "0" or "" to disable serving the health probe.
+	// +optional
+	HealthProbeBindAddress string `json:"healthProbeBindAddress,omitempty"`
+}
+
+// ControllerWebhook defines the webhook server for the controller.
+type ControllerWebhook struct {
+	// Port is the port that the webhook server serves at.
+	// It is used to set webhook.Server.Port.
+	// +optional
+	Port *int `json:"port,omitempty"`
+}
+
+//+kubebuilder:object:root=true
+
+// ControllerManagerConfiguration is the Schema for the GenericControllerManagerConfigurations API.
+type ControllerManagerConfiguration struct {
+	metav1.TypeMeta `json:",inline"`
+
+	// ControllerManagerConfiguration returns the configurations for controllers
+	ControllerManagerConfigurationSpec `json:",inline"`
+}
+
+// Complete returns the configuration for controller-runtime.
+func (c *ControllerManagerConfigurationSpec) Complete() (ControllerManagerConfigurationSpec, error) {
+	return *c, nil
+}
+
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 
 // ProjectConfig is the Schema for the projectconfigs API.
 type ProjectConfig struct {
 	metav1.TypeMeta `json:",inline"`
+
 	// ControllerManagerConfigurationSpec returns the configurations for controllers
-	cfg.ControllerManagerConfigurationSpec `json:",inline"`
+	ControllerManagerConfigurationSpec `json:",inline"`
 
 	// The images are read from environment variables and not from the configuration file
 	DefaultImages ImagesSpec

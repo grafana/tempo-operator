@@ -28,6 +28,13 @@ rules:
   - create
   - patch
 - apiGroups:
+  - ""
+  resources:
+  - persistentvolumeclaims
+  verbs:
+  - list
+  - watch
+- apiGroups:
   - apps
   resources:
   - deployments
@@ -61,13 +68,6 @@ rules:
   - dnses
   verbs:
   - get
-  - list
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - persistentvolumeclaims
-  verbs:
   - list
   - watch
 - apiGroups:
@@ -144,31 +144,6 @@ rules:
   - tempo.grafana.com
   resources:
   - tempomonolithics
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - tempo.grafana.com
-  resources:
-  - tempomonolithics/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - tempo.grafana.com
-  resources:
-  - tempomonolithics/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - tempo.grafana.com
-  resources:
   - tempostacks
   verbs:
   - create
@@ -181,12 +156,14 @@ rules:
 - apiGroups:
   - tempo.grafana.com
   resources:
+  - tempomonolithics/finalizers
   - tempostacks/finalizers
   verbs:
   - update
 - apiGroups:
   - tempo.grafana.com
   resources:
+  - tempomonolithics/status
   - tempostacks/status
   verbs:
   - get

@@ -13,8 +13,8 @@ import (
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
-	"github.com/grafana/tempo-operator/cmd"
+	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
+	"github.com/grafana/tempo-operator/cmd/root"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 )
 
@@ -69,7 +69,7 @@ metadata:
 }
 
 func TestGenerateCmdReadFromStdin(t *testing.T) {
-	c := cmd.NewRootCommand()
+	c := root.NewRootCommand()
 	c.AddCommand(NewGenerateCommand())
 
 	cr := `
@@ -113,7 +113,7 @@ metadata:
 }
 
 func TestGenerateCmdReadFromFile(t *testing.T) {
-	c := cmd.NewRootCommand()
+	c := root.NewRootCommand()
 	c.AddCommand(NewGenerateCommand())
 
 	out := &strings.Builder{}

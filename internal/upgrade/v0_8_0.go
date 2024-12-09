@@ -3,7 +3,7 @@ package upgrade
 import (
 	"context"
 
-	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 )
 
 // The .spec.storage.tls field from TempoStack CR changed from {caName: ""} to TLSSpec
