@@ -5,7 +5,7 @@ import (
 
 	"github.com/Masterminds/semver/v3"
 
-	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 )
 
 type upgradeTempoStackFn func(ctx context.Context, u Upgrade, tempo *v1alpha1.TempoStack) error

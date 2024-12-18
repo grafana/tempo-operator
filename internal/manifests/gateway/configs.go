@@ -7,7 +7,7 @@ import (
 	"math/rand"
 	"text/template"
 
-	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 )
 

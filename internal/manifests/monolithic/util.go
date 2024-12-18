@@ -1,6 +1,6 @@
 package monolithic
 
-import "github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+import "github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 
 func tlsSecretAndBundleEmptyGRPC(tempo v1alpha1.TempoMonolithic) bool {
 	if tempo.Spec.Ingestion != nil && tempo.Spec.Ingestion.OTLP != nil &&

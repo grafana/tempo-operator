@@ -1,8 +1,7 @@
-package cmd
+package root
 
 import (
 	"context"
-	"fmt"
 
 	grafanav1 "github.com/grafana/grafana-operator/v5/api/v1beta1"
 	configv1 "github.com/openshift/api/config/v1"
@@ -15,8 +14,8 @@ import (
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
 
-	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
-	tempov1alpha1 "github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
+	tempov1alpha1 "github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 )
 
 var (
@@ -47,23 +46,12 @@ func init() {
 
 func readConfig(cmd *cobra.Command, configFile string) error {
 	// default controller configuration
-	ctrlConfig := configv1alpha1.DefaultProjectConfig()
-
-	var err error
-	options := ctrl.Options{Scheme: scheme}
-	if configFile != "" {
-		options, err = options.AndFrom(ctrl.ConfigFile().AtPath(configFile).OfKind(&ctrlConfig))
-		if err != nil {
-			return fmt.Errorf("unable to load the config file: %w", err)
-		}
-	}
-
-	err = ctrlConfig.Validate()
+	ctrlCfg, options, err := LoadConfig(scheme, configFile)
 	if err != nil {
-		return fmt.Errorf("controller config validation failed: %w", err)
+		return err
 	}
 
-	cmd.SetContext(context.WithValue(cmd.Context(), RootConfigKey{}, RootConfig{options, ctrlConfig}))
+	cmd.SetContext(context.WithValue(cmd.Context(), RootConfigKey{}, RootConfig{options, *ctrlCfg}))
 	return nil
 }
 

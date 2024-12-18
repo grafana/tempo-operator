@@ -6,7 +6,7 @@ import (
 
 	openshiftconfigv1 "github.com/openshift/api/config/v1"
 
-	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
+	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
 )
 
 // ErrGetProfileFromCluster happens when failed to get the cluster security policy in openshift.

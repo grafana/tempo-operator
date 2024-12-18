@@ -31,6 +31,6 @@ configMapGenerator:
   - controller_manager_config.yaml
   name: manager-config
 
-patchesStrategicMerge:
-- metrics_service_tls_patch.yaml
-- manager_auth_proxy_tls_patch.yaml
+patches:
+- path: metrics_service_tls_patch.yaml
+- path: manager_auth_proxy_tls_patch.yaml

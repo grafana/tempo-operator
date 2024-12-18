@@ -8,7 +8,7 @@ import (
 	"github.com/openshift/library-go/pkg/crypto"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
+	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
 )
 
 // APIServerName is the apiserver resource name used to fetch it.
