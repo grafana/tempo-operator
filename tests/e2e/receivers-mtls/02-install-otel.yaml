@@ -5,15 +5,32 @@ metadata:
 data:
   tls.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUVWRENDQXp5Z0F3SUJBZ0lVUE9WcllCNWlKdnhNaVRMQnk0ckd6T1AxZ2o4d0RRWUpLb1pJaHZjTkFRRUwKQlFBd1BERUxNQWtHQTFVRUJoTUNXRmd4RlRBVEJnTlZCQWNNREVSbFptRjFiSFFnUTJsMGVURVdNQlFHQTFVRQpDZ3dOYjJKelpYSjJZV0pwYkdsMGVUQWdGdzB5TXpFeE1ESXdNelEzTlRKYUdBOHlNRFV4TURNeE9UQXpORGMxCk1sb3dJakVnTUI0R0ExVUVBd3dYYjNCbGJuUmxiR1Z0WlhSeWVTMWpiMnhzWldOMGIzSXdnZ0lpTUEwR0NTcUcKU0liM0RRRUJBUVVBQTRJQ0R3QXdnZ0lLQW9JQ0FRQzNieXhGNEkwSTVkeGcwbXhqdW9FcVFTNFNyRC9HNVFuMgozVnJqUkppMDEzK0NVU1djdFNuZDQvdEdvNHUyUEsxeTdiOTNHVHV5cE8xSWdlRksyYXM4cFNmTUFpWE1jU1dPCnFQQ29aTG83ZnRJY3NLTWk4OXI0T1kzZUF3Q0ZpeGVydWxyT3F4MEd2MGhTM29QaDlHSjVlSWx3UTV3TkQxSEsKbWxraHoxTkNJaGFTQWhJOEttek8yblZjeC9HZGtHL250NjJjUi85QVpaVktQN1drenMrRVJwUmduVTJsU3YrbAo5VHZCeG9VQzdYK0ZvL1Fjd0xYemNUaGlFaTJhd1V2MFNGWitNckxLa1JXRFFyUEhqMUFKdXhhU094TEN4dXVvClJHZTZSOEhrUHZvNENxMmFQb2xnSzJWM2FqcDlQT0pWTUVxUkQxeTFTY0FjZjNGNDZza0pLbjVtSFFnYjZzUUQKckxFcTF0ZTJlRWVBWUVOTnBOYisycFJ2bEdRRGQ4d2o5TW9LNXExQTYxMEE1cXBzSFFPZkEybE9pejRPd0ltRgpnQVFzc1hqc2NEUFdYM29vQkJZaXVvWnE3YzJsRHFERDhxN1BpY1NTTmFkRm80NTZabzBJVjNIeFN6WHQ1UlE5CnQ1Y0FzZWhmSC9ieUpSMFpudmRLWWgvbFczd01ISjhnYnJMYVBodUV6TUlZUnZOVTJoVnZWSzJScnV3OVNLaGkKSmZ0Q2tOK3dNTGh3c0pMMEM4VG92ekJ1cS83T1hiMEVsYjdabnhyU21QcnY5bjFaRm1DRnRPK0orZ2RXaGVLTAp1SXJ5aGJuVGlPZmxJUlRrcEVjWTlwNVBFM0tnbjNHRFdtS2t2NHE1bkcxSFJZQ0N3KzNjSnAxMDA3NFhNZTQwClNWbzlCN1BwM1FJREFRQUJvMll3WkRBaUJnTlZIUkVFR3pBWmdoZHZjR1Z1ZEdWc1pXMWxkSEo1TFdOdmJHeGwKWTNSdmNqQWRCZ05WSFE0RUZnUVVGYTBZUzBLRktCL01CSHduNlYyZ25HdS9laDB3SHdZRFZSMGpCQmd3Rm9BVQpzVU8ycFkxRTNacmZhSmZ0RnFXRDg5OWZmWWt3RFFZSktvWklodmNOQVFFTEJRQURnZ0VCQUJsanc4M1FTMS9SCjMvRllad0puNkpseURIRlpaUWhwUnU1Z09ZM0pNN0k5SnFDQmpVVVpCSkVrTnIyNG41amlvT1ZhcUMyVk1XOEwKUnRYb0YxZjN4Q1lOa25vc1h6VWZxdEFhd0lFN3FWTURFaEtnblV4ZUJsaFozai85aHk2OEtoNnRqSnJQVGFCZgpMTVRUNGdubkdWTE5CeS92WjBkUGlqekdqOWhvdmwwYS9HYUdRM1RVelU3VGRaR1NPRXBqdjM1UTNmSXhQYU9GClRNd016dzVrSzZ5eHdFM3NXbGFrMUlpMDU5b0hzUGNVbFE0eWx4Q0thREpLSmFURUF3b0FtTCtrVXUyU1FaMkoKQXRVaVF3QStNVlhPM2dIbzJNaTVtUWNXRmwyQ1JMK0FXaGVaZDJTWFcrNWkvdjVBZlcyTitFRmIxZXFJT2JzVgp2SlhSZjV2d1RjVT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
   tls.key: LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUpRZ0lCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQ1N3d2dna29BZ0VBQW9JQ0FRQzNieXhGNEkwSTVkeGcKMG14anVvRXFRUzRTckQvRzVRbjIzVnJqUkppMDEzK0NVU1djdFNuZDQvdEdvNHUyUEsxeTdiOTNHVHV5cE8xSQpnZUZLMmFzOHBTZk1BaVhNY1NXT3FQQ29aTG83ZnRJY3NLTWk4OXI0T1kzZUF3Q0ZpeGVydWxyT3F4MEd2MGhTCjNvUGg5R0o1ZUlsd1E1d05EMUhLbWxraHoxTkNJaGFTQWhJOEttek8yblZjeC9HZGtHL250NjJjUi85QVpaVksKUDdXa3pzK0VScFJnblUybFN2K2w5VHZCeG9VQzdYK0ZvL1Fjd0xYemNUaGlFaTJhd1V2MFNGWitNckxLa1JXRApRclBIajFBSnV4YVNPeExDeHV1b1JHZTZSOEhrUHZvNENxMmFQb2xnSzJWM2FqcDlQT0pWTUVxUkQxeTFTY0FjCmYzRjQ2c2tKS241bUhRZ2I2c1FEckxFcTF0ZTJlRWVBWUVOTnBOYisycFJ2bEdRRGQ4d2o5TW9LNXExQTYxMEEKNXFwc0hRT2ZBMmxPaXo0T3dJbUZnQVFzc1hqc2NEUFdYM29vQkJZaXVvWnE3YzJsRHFERDhxN1BpY1NTTmFkRgpvNDU2Wm8wSVYzSHhTelh0NVJROXQ1Y0FzZWhmSC9ieUpSMFpudmRLWWgvbFczd01ISjhnYnJMYVBodUV6TUlZClJ2TlUyaFZ2VksyUnJ1dzlTS2hpSmZ0Q2tOK3dNTGh3c0pMMEM4VG92ekJ1cS83T1hiMEVsYjdabnhyU21QcnYKOW4xWkZtQ0Z0TytKK2dkV2hlS0x1SXJ5aGJuVGlPZmxJUlRrcEVjWTlwNVBFM0tnbjNHRFdtS2t2NHE1bkcxSApSWUNDdyszY0pwMTAwNzRYTWU0MFNWbzlCN1BwM1FJREFRQUJBb0lDQUNEQ1FlM1l4RmNxZGNqMHkxYWtJQjBqCnRzNnU1RlRvNG5hcjRXZGxBTUNMRzhKeUszMW8vU2tiWmV5Zm1IdmJLajYwSnRWbU5Ec2JLU1Voek5KSlBVTi8KV3pRYnpoUk13S0JSbTJqM1ZDcjc0eG9za1hYVWh1NTltTkJsU05xUWxKR2Vua2o2Vmh5MlhId3dNTzFSYjZTeAoyaG1xZVZ2N3VHZXVXT3lvMGYybGlOSmFmRmN5WEd3MHAzRUNaQ3YzZDRTeVVOYndKSzJqZHAzajh0U1Qrb3RzCjcyS3h0UVFuK0sveXM5RlBXc0hER0ZzTmhMTDkxNEM2WDQ5a0g3RGJoRzBEM2k1N2IyS3R0bUhTcjdpYjUzZFYKYWhxRFlqNVd1QTg4NkNsa1YwUWoyeHZYREZuWGdVRWpmdU5zblRWd2doc2tuS3g3U2RzMmFKQ3VVZDErVUpoOApQQk9CUVdIelZSM0lHdjJ1R2FwbjFjRlhHWlJRNGZjRW1hOE81VXNNSFJDblZOcjFYejFHRDc0a0VyWFdHRlRFCjRpaU1mcUJMSjUwT3c0VHlzWVdJdlc4NjhPMjFtTGFlYzJqQnJDdEtiU2pEV3FSaDlpajNnU05XN004QVFLT2cKdVZvSTJOZ0h4QjJNd2EvUytlQlpiVVhtU0FGTmRTS0lSbXhHSUNlcGZxOXBvR1kwQ0c1ZWJHbkxzVlVSYnFpNApsRWNKVlpBaWhIS0hHdXNsZ21MRmduQ04yZVVRYkpSWEorNnFFMm1mWnA2dlZwZ0hpL3lRQkxGZDM4b2JwbnhQCm1aUCtCK21zdHB2elBabGpXN2FlREZhUnFZblJBbm1zdUR5Mmk1MmtHdVBqeGxObjI0T3UvTWpiaFJvRkt2Q1YKNlVwRkUrcE9hUnRZcmI1VzZ6d0JBb0lCQVFENnhZZWZOWkkvYnRKYnQzQ2YrbkhPcVVQSUN1OFhFZHFDMlA1eApxSzhqVjN0VzFKZ1RNaHQrTGRDZy9EMzR0b1pWTFFVZmVocUZudnhLckhpNExid1VDUG56WkU3aHIvS29IWE1oCm01OUQ5TWFHZDJRYWZXaW5XTE93SGRTQ2NxbjNjZnRZVnFqWVJFSXUybCtlK0VwUlRJSGwrdGlCcXhkakZ5bjIKSnZ6dlVuODk4MW9yS3JnYVAzdUJ6cmlrcDFhR2huamhxVHAvNHVOVGtuV0JhQTBUUTVVc3VTTnpHL0VIOWxkSgp0dk9mZ1p3bnVuTERYeEVJYVNxc1V5V0k4Z1lISUcwQ0h0TUpkTFd1T1Fqa2FIdWswbjd3a0p0eE1FWnZhOUF1Cm0rMDg0QXRIMi81NDBDVXRXcmdJZy9ycDVuZTVxOHh3MGNKK2p2T1hwQTlVdHpaOUFvSUJBUUM3UWp5RUE5QVYKa1Z6RjJPRUpZaEcxc0R2MnBhaXhWRWU0ZTM0L0tLYTNVWTdNWWp6aDlPQmVCcXp6bUVQL1BxOW0zYTFkbkNEUAoxQ0l0emtLZnZHWGE5eEVWZHgvY0Z5Mmo4NUpmRXNSZytPbWpiOFVacDkwanNqK0lXT1ZNazE4NFdFUkxBQ1cyCit1bDk1NU1sK1VoYTRReEE3ZkdOZnZISXhMMDRuV0FvYjVzNzgzbFQ0NStUcHdFSWNXazZiRXpLdC8yN1VCbzYKNzJHRnBkSWdKUW9CM3NPMkJISm5vUDA3eFVBY2FzVW9uY3BLTklreUZrNndOci9QSUdjWTRVblRlZjR1RVVxRAo4blZveHQvOE1vRE1aWEM3YzJsWE4zeEhkaTdIUW1ZTWR3djJUaVhnNlpLaEczeXU4ZWtYc0htVWN2ZFc0NWhlClFYZVppa2Qrb2Y3aEFvSUJBRW9RWlFua3JKa0hoaUdJZ0Q3L25QVklrTGhZWWwwUjdOT1FlelhlZUR1Yjd0V3EKWEcvdThLZkhxRUtqdlRuanpyRUJadTN4Qmp4SXhJTFpoWjRBQS9oMjNqdkFlSHUzbDVlSGV5V0Y3UGdKSjBrMwpvZDBoQlBQSUF1b1ZKVnFSdXhsV0ZNSDJkay9KZVRLVlZJQ0RISS8rWks4ajh5WDQvaU5LQ0I2blRUVHh6SnJqCmNOSW0vOURneHYyRHJJMFV6ejFVSWdla0Q1OE54ODQ3QjNGODViKzJ5aXczVWYwQlY2TGVZdEZtczNWOHRqNFYKbHllVXdGY1htSDdrMzhVZWxpRXN0b1ZWelVhUnJjY1RHVWs4Z3FnZmMxWmhuMGRDMXNxNXNQYlRIckpJQ1l6agpzTGpGNFBVUVFpSmh1STIwZjgvYXFicjRlTlVnSzFteUhzVUtoNUVDZ2dFQkFJN2U0SEVRdjZoVStlVnhyWENOClJGbk5GbEwrM1pBK2IySVB4cWpGaVQyQW1tVFI1d1cyNGFDYmswVmZ2VEYzVURnNWxkWkFFc0MrWnoxdmkyRjQKU25ZZjN3YnpsbmxEcmV6VEg3QXVEMnExUHYwVmY5b3RPd25MSzdJSnNSa1ZyNmE3b1k5ZmsyYmlWVmRjWWVhdApKVWxCUHlvaTRSTkY4WTl1bTdnZ1NvZFBiNjd6K25QSXphM0gwMy92bDR1ZHFaRlpnOXR3S0RNakJOTUZTeVovClcvMUZTeWtLaDRjTlMyaFkvS3N4d3k5VUJFMU5mQWVkQVhoc3JUZUl6MkFxTXp1SWJpZ1R4VGlhdW4yd2pxQksKbi81U3Z3b2w2ZzlESkMwWnZHTUhBL2txc3hPL1dDTWIwbVhkSk9vTlkveFJCdEgrVFR3YjlkcWtORzRQRkxGSApROEVDZ2dFQVBWbFc2M2pMT2d1Y2xFSzA0dm4wNWxtWlI5REk2QzAvWUpGWU9iWk1kUmcvU0JwdU9kSEc2VDNyCjJaZHJvbTVVUCtoQWd4YldaVUNwVlFpckpnRVBjc2dubFF2aWNRTkxtSCtKeTBJNVBxNnNzdmpRWE02L25BdnkKb2JDem9UY3RIK2xId2NSVG5WUWtLSGRoU3o0QmJHWmNrR3lBeXlTUlk1c1l3Q0w1czNwaTcwdHF2UWpvR0ZvVQpJd3F5RjFaTmZ6ZzRWWjZwOGtSUEk2QS9KdFcrNXh1WGlDNmVYT3ZCb0IvdlJ2M1lLTTZURTNCK0pkY00wRVYvCmx1cHhnN01jY21tK3ZRRjhuWFl5V0R6RUZlWG9vT1RuK1NBTjVseENIZHlJTTBaUElmNk1rODFTY2hLaWd1dEcKbjNqSGhvNVo4ZzloYTA2bUNTUFpkbkNTaVpBUEF3PT0KLS0tLS1FTkQgUFJJVkFURSBLRVktLS0tLQo=
+
 ---
-apiVersion: v1
-kind: ConfigMap
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
 metadata:
-  name: opentelemetry-collector-configmap
-data:
-  config: |
+  name: opentelemetry
+spec:
+  volumeMounts:
+    - mountPath: /var/run/tls/receiver/ca
+      name: custom-ca
+      readOnly: true
+    - mountPath: /var/run/tls/receiver/cert
+      name: opentelemetry-collector-cert
+      readOnly: true
+  volumes:
+    - configMap:
+        defaultMode: 420
+        name: custom-ca
+      name: custom-ca
+    - name: opentelemetry-collector-cert
+      secret:
+        defaultMode: 420
+        secretName: opentelemetry-collector-cert
+  config:
     exporters:
-      logging: {}
+      debug: {}
       otlp:
         endpoint: tempo-simplest-distributor:4317
         tls:
@@ -37,94 +54,6 @@ data:
         traces:
           exporters:
           - otlp
+          - debug
           receivers:
           - otlp
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: opentelemetry-collector
-  labels:
-    app.kubernetes.io/name: otelcol
-    app.kubernetes.io/instance: opentelemetry
-    component: standalone-collector
-spec:
-  replicas: 1
-  revisionHistoryLimit: 10
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: otelcol
-      app.kubernetes.io/instance: opentelemetry
-      component: standalone-collector
-  template:
-    metadata:
-      labels:
-        app.kubernetes.io/name: otelcol
-        app.kubernetes.io/instance: opentelemetry
-        component: standalone-collector
-    spec:
-      containers:
-        - name: opentelemetry-collector
-          command:
-            - /otelcol-contrib
-            - --config=/conf/config.yaml
-          image: "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.107.0"
-          ports:
-            - name: otlp
-              containerPort: 4317
-              protocol: TCP
-            - name: otlp-http
-              containerPort: 4318
-              protocol: TCP
-          livenessProbe:
-            httpGet:
-              path: /
-              port: 13133
-          readinessProbe:
-            httpGet:
-              path: /
-              port: 13133
-          resources:
-            limits:
-              memory: 200Mi
-          volumeMounts:
-            - mountPath: /conf
-              name: opentelemetry-collector-configmap
-            - mountPath: /var/run/tls/receiver/ca
-              name: custom-ca
-              readOnly: true
-            - mountPath: /var/run/tls/receiver/cert
-              name: opentelemetry-collector-cert
-              readOnly: true
-      volumes:
-        - configMap:
-            defaultMode: 420
-            name: custom-ca
-          name: custom-ca
-        - name: opentelemetry-collector-configmap
-          configMap:
-            name: opentelemetry-collector-configmap
-            items:
-              - key: config
-                path: config.yaml
-        - name: opentelemetry-collector-cert
-          secret:
-            defaultMode: 420
-            secretName: opentelemetry-collector-cert
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: opentelemetry-collector
-spec:
-  type: ClusterIP
-  ports:
-    - name: otlp
-      port: 4317
-      targetPort: 4317
-      protocol: TCP
-      appProtocol: grpc
-  selector:
-    app.kubernetes.io/name: otelcol
-    app.kubernetes.io/instance: opentelemetry
-    component: standalone-collector
