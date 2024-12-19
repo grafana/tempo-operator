@@ -12,7 +12,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
+	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
 )
 
 func TestGetTLSSecurityProfile(t *testing.T) {

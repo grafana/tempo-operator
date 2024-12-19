@@ -9,7 +9,7 @@ import (
 	"go.opentelemetry.io/otel/metric"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 )
 
 type tempoStackMetrics struct {

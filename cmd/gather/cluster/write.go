@@ -17,7 +17,7 @@ import (
 	cgocorev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	tempov1alpha1 "github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	tempov1alpha1 "github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 )
 
 func createTempoStackFolder(collectionDir string, tempoStack *tempov1alpha1.TempoStack) (string, error) {

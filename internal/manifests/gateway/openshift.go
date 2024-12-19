@@ -13,8 +13,8 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
-	configv1alpha1 "github.com/grafana/tempo-operator/apis/config/v1alpha1"
-	"github.com/grafana/tempo-operator/apis/tempo/v1alpha1"
+	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
+	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
 )
