@@ -1430,6 +1430,16 @@ spec:
                             - ""
                             type: string
                         type: object
+                      rbac:
+                        description: RBACSpec defines RBAC options.
+                        properties:
+                          enabled:
+                            description: Enabled defines if the query RBAC should
+                              be enabled.
+                            type: boolean
+                        required:
+                        - enabled
+                        type: object
                     required:
                     - enabled
                     type: object

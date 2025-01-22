@@ -591,6 +591,14 @@ type TempoGatewaySpec struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger gateway Ingress Settings"
 	Ingress IngressSpec `json:"ingress,omitempty"`
+
+	RBAC RBACSpec `json:"rbac,omitempty"`
+}
+
+// RBACSpec defines RBAC options.
+type RBACSpec struct {
+	// Enabled defines if the query RBAC should be enabled.
+	Enabled bool `json:"enabled"`
 }
 
 // TempoQueryFrontendSpec extends TempoComponentSpec with frontend specific parameters.

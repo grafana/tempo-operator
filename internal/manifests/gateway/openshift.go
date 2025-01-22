@@ -222,6 +222,7 @@ func NewOpaContainer(ctrlConfig configv1alpha1.ProjectConfig, tenants v1alpha1.T
 	var args = []string{
 		"--log.level=warn",
 		"--opa.admin-groups=system:cluster-admins,cluster-admin,dedicated-admin",
+		"--opa.matcher=kubernetes_namespace_name",
 		fmt.Sprintf("--web.listen=:%d", gatewayOPAHTTPPort),
 		fmt.Sprintf("--web.internal.listen=:%d", gatewayOPAInternalPort),
 		fmt.Sprintf("--web.healthchecks.url=http://localhost:%d", gatewayOPAHTTPPort),
