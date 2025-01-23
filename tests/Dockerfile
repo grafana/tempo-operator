@@ -1,6 +1,6 @@
 # The Dockerfile's resulting image is purpose-built for executing Tempo Operator e2e tests within the OpenShift release (https://github.com/openshift/release) using Prow CI. 
 
-FROM golang:1.22
+FROM golang:1.23
 
 # Copy the repository files
 COPY . /tmp/tempo-operator
@@ -16,7 +16,10 @@ RUN curl -LO https://github.com/kudobuilder/kuttl/releases/download/v0.15.0/kube
     && mv kubectl-kuttl_0.15.0_linux_x86_64 /usr/local/bin/kuttl
 
 # Install chainsaw
-RUN go install github.com/kyverno/chainsaw@v0.2.6
+RUN curl -L -o chainsaw.tar.gz https://github.com/kyverno/chainsaw/releases/download/v0.2.12/chainsaw_linux_amd64.tar.gz \
+    && tar -xvzf chainsaw.tar.gz \
+    && chmod +x chainsaw \
+    && mv chainsaw /usr/local/bin/
 
 # Install kubectl and oc
 RUN curl -L -o oc.tar.gz https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest/openshift-client-linux.tar.gz \
