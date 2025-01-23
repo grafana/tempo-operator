@@ -4,7 +4,8 @@ distribution: openshift
 health:
   healthProbeBindAddress: :8081
 metrics:
-  bindAddress: 127.0.0.1:8080
+  secure: true
+  bindAddress: ":8443"
 webhook:
   port: 9443
 leaderElection:

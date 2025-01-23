@@ -12,6 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/metrics/filters"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
 	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
@@ -65,6 +66,14 @@ func mergeOptionsFromFile(o manager.Options, cfg *configv1alpha1.ProjectConfig) 
 		o.Metrics.BindAddress = cfg.Metrics.BindAddress
 	}
 
+	o.Metrics.SecureServing = cfg.Metrics.Secure
+	if cfg.Metrics.Secure {
+		// FilterProvider is used to protect the metrics endpoint with authn/authz.
+		// These configurations ensure that only authorized users and service accounts
+		// can access the metrics endpoint. The RBAC are configured in 'config/rbac/kustomization.yaml'. More info:
+		// https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.19.1/pkg/metrics/filters#WithAuthenticationAndAuthorization
+		o.Metrics.FilterProvider = filters.WithAuthenticationAndAuthorization
+	}
 	if o.HealthProbeBindAddress == "" && cfg.Health.HealthProbeBindAddress != "" {
 		o.HealthProbeBindAddress = cfg.Health.HealthProbeBindAddress
 	}
