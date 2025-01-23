@@ -201,6 +201,7 @@ metrics:
   # for serving prometheus metrics.
   # It can be set to "0" to disable the metrics serving.
   bindAddress: ""
+  secure: false
 
 # Webhook contains the controllers webhook configuration
 webhook:
