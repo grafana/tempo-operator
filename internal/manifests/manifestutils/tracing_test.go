@@ -1,7 +1,8 @@
 package manifestutils
 
 import (
-	"net"
+	"errors"
+	"net/url"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -26,8 +27,8 @@ func Test_PatchTracingJaegerEnv(t *testing.T) {
 				Spec: v1alpha1.TempoStackSpec{
 					Observability: v1alpha1.ObservabilitySpec{
 						Tracing: v1alpha1.TracingConfigSpec{
-							SamplingFraction:    "1.0",
-							JaegerAgentEndpoint: "agent:1234",
+							SamplingFraction: "1.0",
+							OTLPHTTPEndpoint: "http://collector:4318",
 						},
 					},
 				},
@@ -69,19 +70,15 @@ func Test_PatchTracingJaegerEnv(t *testing.T) {
 									Value: "1234",
 								},
 								{
-									Name:  "JAEGER_AGENT_HOST",
-									Value: "agent",
+									Name:  "OTEL_EXPORTER_OTLP_ENDPOINT",
+									Value: "http://collector:4318",
 								},
 								{
-									Name:  "JAEGER_AGENT_PORT",
-									Value: "1234",
+									Name:  "OTEL_TRACES_SAMPLER",
+									Value: "parentbased_traceidratio",
 								},
 								{
-									Name:  "JAEGER_SAMPLER_TYPE",
-									Value: "const",
-								},
-								{
-									Name:  "JAEGER_SAMPLER_PARAM",
+									Name:  "OTEL_TRACES_SAMPLER_ARG",
 									Value: "1.0",
 								},
 							},
@@ -148,17 +145,18 @@ func Test_PatchTracingJaegerEnv(t *testing.T) {
 				Spec: v1alpha1.TempoStackSpec{
 					Observability: v1alpha1.ObservabilitySpec{
 						Tracing: v1alpha1.TracingConfigSpec{
-							SamplingFraction:    "0.5",
-							JaegerAgentEndpoint: "---invalid----",
+							SamplingFraction: "0.5",
+							OTLPHTTPEndpoint: "---invalid----",
 						},
 					},
 				},
 			},
 			inputPod:  corev1.PodTemplateSpec{},
 			expectPod: corev1.PodTemplateSpec{},
-			expectErr: &net.AddrError{
-				Addr: "---invalid----",
-				Err:  "missing port in address",
+			expectErr: &url.Error{
+				Op:  "parse",
+				URL: "---invalid----",
+				Err: errors.New("invalid URI for request"),
 			},
 		},
 	}

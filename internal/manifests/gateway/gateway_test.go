@@ -1,8 +1,9 @@
 package gateway
 
 import (
+	"errors"
 	"fmt"
-	"net"
+	"net/url"
 	"reflect"
 	"testing"
 
@@ -283,8 +284,8 @@ func TestPatchTracing(t *testing.T) {
 				Spec: v1alpha1.TempoStackSpec{
 					Observability: v1alpha1.ObservabilitySpec{
 						Tracing: v1alpha1.TracingConfigSpec{
-							SamplingFraction:    "1.0",
-							JaegerAgentEndpoint: "agent:1234",
+							SamplingFraction: "1.0",
+							OTLPHTTPEndpoint: "http://collector:4318",
 						},
 					},
 				},
@@ -319,8 +320,7 @@ func TestPatchTracing(t *testing.T) {
 							Name: containerNameTempoGateway,
 							Args: []string{
 								"--abc",
-								"--internal.tracing.endpoint=agent:1234",
-								"--internal.tracing.endpoint-type=agent",
+								"--internal.tracing.otlp-http-endpoint=http://collector:4318",
 								"--internal.tracing.sampling-fraction=1.0",
 							},
 						},
@@ -374,17 +374,18 @@ func TestPatchTracing(t *testing.T) {
 				Spec: v1alpha1.TempoStackSpec{
 					Observability: v1alpha1.ObservabilitySpec{
 						Tracing: v1alpha1.TracingConfigSpec{
-							SamplingFraction:    "0.5",
-							JaegerAgentEndpoint: "---invalid----",
+							SamplingFraction: "0.5",
+							OTLPHTTPEndpoint: "---invalid----",
 						},
 					},
 				},
 			},
 			inputPod:  corev1.PodTemplateSpec{},
 			expectPod: corev1.PodTemplateSpec{},
-			expectErr: &net.AddrError{
-				Addr: "---invalid----",
-				Err:  "missing port in address",
+			expectErr: &url.Error{
+				Op:  "parse",
+				URL: "---invalid----",
+				Err: errors.New("invalid URI for request"),
 			},
 		},
 	}

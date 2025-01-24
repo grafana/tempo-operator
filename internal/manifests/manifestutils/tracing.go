@@ -1,7 +1,7 @@
 package manifestutils
 
 import (
-	"net"
+	"net/url"
 
 	"github.com/imdario/mergo"
 	corev1 "k8s.io/api/core/v1"
@@ -9,13 +9,14 @@ import (
 	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 )
 
-// PatchTracingJaegerEnv adds configures jaeger-sdk via environment variables if
+// PatchTracingJaegerEnv adds configures OTEL SDK via environment variables if
 // operand observability settings exist.
 func PatchTracingJaegerEnv(tempo v1alpha1.TempoStack, pod corev1.PodTemplateSpec) (corev1.PodTemplateSpec, error) {
 	if tempo.Spec.Observability.Tracing.SamplingFraction == "" {
 		return pod, nil
 	}
-	host, port, err := net.SplitHostPort(tempo.Spec.Observability.Tracing.JaegerAgentEndpoint)
+
+	_, err := url.ParseRequestURI(tempo.Spec.Observability.Tracing.OTLPHTTPEndpoint)
 	if err != nil {
 		return corev1.PodTemplateSpec{}, err
 	}
@@ -23,19 +24,15 @@ func PatchTracingJaegerEnv(tempo v1alpha1.TempoStack, pod corev1.PodTemplateSpec
 	container := corev1.Container{
 		Env: []corev1.EnvVar{
 			{
-				Name:  "JAEGER_AGENT_HOST",
-				Value: host,
+				Name:  "OTEL_EXPORTER_OTLP_ENDPOINT",
+				Value: tempo.Spec.Observability.Tracing.OTLPHTTPEndpoint,
 			},
 			{
-				Name:  "JAEGER_AGENT_PORT",
-				Value: port,
+				Name:  "OTEL_TRACES_SAMPLER",
+				Value: "parentbased_traceidratio",
 			},
 			{
-				Name:  "JAEGER_SAMPLER_TYPE",
-				Value: "const",
-			},
-			{
-				Name:  "JAEGER_SAMPLER_PARAM",
+				Name:  "OTEL_TRACES_SAMPLER_ARG",
 				Value: tempo.Spec.Observability.Tracing.SamplingFraction,
 			},
 		},

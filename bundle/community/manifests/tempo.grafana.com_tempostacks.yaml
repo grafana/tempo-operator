@@ -293,7 +293,12 @@ spec:
                     properties:
                       jaeger_agent_endpoint:
                         default: localhost:6831
-                        description: JaegerAgentEndpoint defines the jaeger endpoint
+                        description: DEPRECATED. JaegerAgentEndpoint defines the jaeger
+                          endpoint data gets send to.
+                        type: string
+                      otlp_http_endpoint:
+                        default: localhost:4318
+                        description: OTLPHTTPEndpoint defines the OTLP/HTTP endpoint
                           data gets send to.
                         type: string
                       sampling_fraction:

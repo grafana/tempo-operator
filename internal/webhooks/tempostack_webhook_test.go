@@ -1712,22 +1712,22 @@ func TestValidatorObservabilityTracingConfig(t *testing.T) {
 			},
 		},
 		{
-			name: "invalid jaeger agent address",
+			name: "invalid OTLP HTTP endpoint address",
 			input: v1alpha1.TempoStack{
 				Spec: v1alpha1.TempoStackSpec{
 					Observability: v1alpha1.ObservabilitySpec{
 						Tracing: v1alpha1.TracingConfigSpec{
-							SamplingFraction:    "0.5",
-							JaegerAgentEndpoint: "--invalid--",
+							SamplingFraction: "0.5",
+							OTLPHTTPEndpoint: "--invalid--",
 						},
 					},
 				},
 			},
 			expected: field.ErrorList{
 				field.Invalid(
-					tracingBase.Child("jaeger_agent_endpoint"),
+					tracingBase.Child("otlp_http_endpoint"),
 					"--invalid--",
-					"address --invalid--: missing port in address",
+					"parse \"--invalid--\": invalid URI for request",
 				),
 			},
 		},
@@ -1737,8 +1737,8 @@ func TestValidatorObservabilityTracingConfig(t *testing.T) {
 				Spec: v1alpha1.TempoStackSpec{
 					Observability: v1alpha1.ObservabilitySpec{
 						Tracing: v1alpha1.TracingConfigSpec{
-							SamplingFraction:    "0.5",
-							JaegerAgentEndpoint: "agent:1234",
+							SamplingFraction: "0.5",
+							OTLPHTTPEndpoint: "agent:1234",
 						},
 					},
 				},
@@ -1749,7 +1749,8 @@ func TestValidatorObservabilityTracingConfig(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			v := &validator{ctrlConfig: tc.ctrlConfig}
-			assert.Equal(t, tc.expected, v.validateObservability(tc.input))
+			_, errors := v.validateObservability(tc.input)
+			assert.Equal(t, tc.expected, errors)
 		})
 	}
 }
@@ -1844,7 +1845,8 @@ func TestValidatorObservabilityGrafana(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			v := &validator{ctrlConfig: tc.ctrlConfig}
-			assert.Equal(t, tc.expected, v.validateObservability(tc.input))
+			_, errors := v.validateObservability(tc.input)
+			assert.Equal(t, tc.expected, errors)
 		})
 	}
 }

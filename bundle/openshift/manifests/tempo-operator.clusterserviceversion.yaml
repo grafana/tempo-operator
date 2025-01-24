@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.14.2
-    createdAt: "2025-01-16T09:58:39Z"
+    createdAt: "2025-01-24T16:17:11Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -757,10 +757,14 @@ spec:
       - description: Tracing defines a config for operands.
         displayName: Tracing Config
         path: observability.tracing
-      - description: JaegerAgentEndpoint defines the jaeger endpoint data gets send
-          to.
+      - description: DEPRECATED. JaegerAgentEndpoint defines the jaeger endpoint data
+          gets send to.
         displayName: Jaeger-Agent-Endpoint
         path: observability.tracing.jaeger_agent_endpoint
+      - description: OTLPHTTPEndpoint defines the OTLP/HTTP endpoint data gets send
+          to.
+        displayName: OTLP/HTTP Endpoint
+        path: observability.tracing.otlp_http_endpoint
       - description: SamplingFraction defines the sampling ratio. Valid values are
           0 to 1.
         displayName: Sampling Fraction

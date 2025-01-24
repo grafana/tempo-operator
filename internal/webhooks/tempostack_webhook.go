@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math"
-	"net"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -319,26 +319,26 @@ func (v *validator) validateGateway(tempo v1alpha1.TempoStack) field.ErrorList {
 	return nil
 }
 
-func (v *validator) validateObservability(tempo v1alpha1.TempoStack) field.ErrorList {
+func (v *validator) validateObservability(tempo v1alpha1.TempoStack) (admission.Warnings, field.ErrorList) {
 	observabilityBase := field.NewPath("spec").Child("observability")
 
 	metricsBase := observabilityBase.Child("metrics")
 	if tempo.Spec.Observability.Metrics.CreateServiceMonitors && !v.ctrlConfig.Gates.PrometheusOperator {
-		return field.ErrorList{
+		return nil, field.ErrorList{
 			field.Invalid(metricsBase.Child("createServiceMonitors"), tempo.Spec.Observability.Metrics.CreateServiceMonitors,
 				"the prometheusOperator feature gate must be enabled to create ServiceMonitors for Tempo components",
 			)}
 	}
 
 	if tempo.Spec.Observability.Metrics.CreatePrometheusRules && !v.ctrlConfig.Gates.PrometheusOperator {
-		return field.ErrorList{
+		return nil, field.ErrorList{
 			field.Invalid(metricsBase.Child("createPrometheusRules"), tempo.Spec.Observability.Metrics.CreatePrometheusRules,
 				"the prometheusOperator feature gate must be enabled to create PrometheusRules for Tempo components",
 			)}
 	}
 
 	if tempo.Spec.Observability.Metrics.CreatePrometheusRules && !tempo.Spec.Observability.Metrics.CreateServiceMonitors {
-		return field.ErrorList{
+		return nil, field.ErrorList{
 			field.Invalid(metricsBase.Child("createPrometheusRules"), tempo.Spec.Observability.Metrics.CreatePrometheusRules,
 				"the Prometheus rules alert based on collected metrics, therefore the createServiceMonitors feature must be enabled when enabling the createPrometheusRules feature",
 			)}
@@ -347,7 +347,7 @@ func (v *validator) validateObservability(tempo v1alpha1.TempoStack) field.Error
 	tracingBase := observabilityBase.Child("tracing")
 	if tempo.Spec.Observability.Tracing.SamplingFraction != "" {
 		if _, err := strconv.ParseFloat(tempo.Spec.Observability.Tracing.SamplingFraction, 64); err != nil {
-			return field.ErrorList{
+			return nil, field.ErrorList{
 				field.Invalid(
 					tracingBase.Child("sampling_fraction"),
 					tempo.Spec.Observability.Tracing.SamplingFraction,
@@ -357,12 +357,17 @@ func (v *validator) validateObservability(tempo v1alpha1.TempoStack) field.Error
 	}
 
 	if tempo.Spec.Observability.Tracing.JaegerAgentEndpoint != "" {
-		_, _, err := net.SplitHostPort(tempo.Spec.Observability.Tracing.JaegerAgentEndpoint)
+		return admission.Warnings{"The spec.observability.tracing.jaeger_agent_endpoint field is deprecated and ignored. " +
+			"Please migrate to the spec.observability.tracing.otlp_http_endpoint field."}, nil
+	}
+
+	if tempo.Spec.Observability.Tracing.OTLPHTTPEndpoint != "" {
+		_, err := url.ParseRequestURI(tempo.Spec.Observability.Tracing.OTLPHTTPEndpoint)
 		if err != nil {
-			return field.ErrorList{
+			return nil, field.ErrorList{
 				field.Invalid(
-					tracingBase.Child("jaeger_agent_endpoint"),
-					tempo.Spec.Observability.Tracing.JaegerAgentEndpoint,
+					tracingBase.Child("otlp_http_endpoint"),
+					tempo.Spec.Observability.Tracing.OTLPHTTPEndpoint,
 					err.Error(),
 				)}
 		}
@@ -370,21 +375,21 @@ func (v *validator) validateObservability(tempo v1alpha1.TempoStack) field.Error
 
 	grafanaBase := observabilityBase.Child("grafana")
 	if tempo.Spec.Observability.Grafana.CreateDatasource && !v.ctrlConfig.Gates.GrafanaOperator {
-		return field.ErrorList{
+		return nil, field.ErrorList{
 			field.Invalid(grafanaBase.Child("createDatasource"), tempo.Spec.Observability.Grafana.CreateDatasource,
 				"the grafanaOperator feature gate must be enabled to create a Datasource for Tempo",
 			)}
 	}
 
 	if tempo.Spec.Observability.Grafana.CreateDatasource && tempo.Spec.Template.Gateway.Enabled {
-		return field.ErrorList{field.Invalid(
+		return nil, field.ErrorList{field.Invalid(
 			grafanaBase.Child("createDatasource"),
 			tempo.Spec.Observability.Grafana.CreateDatasource,
 			"creating a data source for Tempo is not support if the gateway is enabled",
 		)}
 	}
 
-	return nil
+	return nil, nil
 }
 
 func (v *validator) validateTenantConfigs(tempo v1alpha1.TempoStack) field.ErrorList {
@@ -458,28 +463,26 @@ func (v *validator) validate(ctx context.Context, obj runtime.Object) (admission
 
 	allWarnings := admission.Warnings{}
 	allErrors := field.ErrorList{}
-	var warnings admission.Warnings
-	var errors field.ErrorList
+	addValidationResults := func(w admission.Warnings, e field.ErrorList) {
+		allWarnings = append(allWarnings, w...)
+		allErrors = append(allErrors, e...)
+	}
 
 	allErrors = append(allErrors, validateName(tempo.Name)...)
 	allErrors = append(allErrors, v.validateServiceAccount(ctx, *tempo)...)
-
-	warnings, errors = v.validateStorage(ctx, *tempo)
-	allWarnings = append(allWarnings, warnings...)
-	allErrors = append(allErrors, errors...)
+	addValidationResults(v.validateStorage(ctx, *tempo))
 
 	if tempo.Spec.ExtraConfig != nil && len(tempo.Spec.ExtraConfig.Tempo.Raw) > 0 {
 		allWarnings = append(allWarnings, admission.Warnings{
 			"override tempo configuration could potentially break the stack, use it carefully",
 		}...)
-
 	}
 
 	allErrors = append(allErrors, v.validateReplicationFactor(*tempo)...)
 	allErrors = append(allErrors, v.validateQueryFrontend(*tempo)...)
 	allErrors = append(allErrors, v.validateGateway(*tempo)...)
 	allErrors = append(allErrors, v.validateTenantConfigs(*tempo)...)
-	allErrors = append(allErrors, v.validateObservability(*tempo)...)
+	addValidationResults(v.validateObservability(*tempo))
 	allErrors = append(allErrors, v.validateDeprecatedFields(*tempo)...)
 	allErrors = append(allErrors, v.validateReceiverTLS(*tempo)...)
 	allErrors = append(allErrors, v.validateConflictWithMonolithic(ctx, tempo)...)

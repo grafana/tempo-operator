@@ -183,7 +183,15 @@ type TracingConfigSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Sampling Fraction"
 	SamplingFraction string `json:"sampling_fraction,omitempty"`
 
-	// JaegerAgentEndpoint defines the jaeger endpoint data gets send to.
+	// OTLPHTTPEndpoint defines the OTLP/HTTP endpoint data gets send to.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default:="localhost:4318"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="OTLP/HTTP Endpoint"
+	OTLPHTTPEndpoint string `json:"otlp_http_endpoint,omitempty"`
+
+	// DEPRECATED. JaegerAgentEndpoint defines the jaeger endpoint data gets send to.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional

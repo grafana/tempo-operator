@@ -686,10 +686,14 @@ spec:
       - description: Tracing defines a config for operands.
         displayName: Tracing Config
         path: observability.tracing
-      - description: JaegerAgentEndpoint defines the jaeger endpoint data gets send
-          to.
+      - description: DEPRECATED. JaegerAgentEndpoint defines the jaeger endpoint data
+          gets send to.
         displayName: Jaeger-Agent-Endpoint
         path: observability.tracing.jaeger_agent_endpoint
+      - description: OTLPHTTPEndpoint defines the OTLP/HTTP endpoint data gets send
+          to.
+        displayName: OTLP/HTTP Endpoint
+        path: observability.tracing.otlp_http_endpoint
       - description: SamplingFraction defines the sampling ratio. Valid values are
           0 to 1.
         displayName: Sampling Fraction
