@@ -75,7 +75,9 @@ func PatchStatefulSetForOauthProxy(
 	authSpec *v1alpha1.JaegerQueryAuthenticationSpec,
 	timeout time.Duration,
 	config configv1alpha1.ProjectConfig,
-	statefulSet *v1.StatefulSet) {
+	statefulSet *v1.StatefulSet,
+	defaultResources *corev1.ResourceRequirements,
+) {
 	statefulSet.Spec.Template.Spec.Volumes = append(statefulSet.Spec.Template.Spec.Volumes, corev1.Volume{
 		Name: getTLSSecretNameForFrontendService(tempo.Name),
 		VolumeSource: corev1.VolumeSource{
@@ -86,7 +88,8 @@ func PatchStatefulSetForOauthProxy(
 	})
 
 	statefulSet.Spec.Template.Spec.Containers = append(statefulSet.Spec.Template.Spec.Containers,
-		oAuthProxyContainer(tempo.Name, statefulSet.Spec.Template.Spec.ServiceAccountName, authSpec, timeout, config.DefaultImages.OauthProxy))
+		oAuthProxyContainer(tempo.Name, statefulSet.Spec.Template.Spec.ServiceAccountName, authSpec, timeout,
+			config.DefaultImages.OauthProxy, defaultResources))
 }
 
 // PatchDeploymentForOauthProxy returns a modified deployment with the oauth sidecar container and the right service account.
@@ -96,7 +99,9 @@ func PatchDeploymentForOauthProxy(
 	authSpec *v1alpha1.JaegerQueryAuthenticationSpec,
 	timeout time.Duration,
 	imageSpec configv1alpha1.ImagesSpec,
-	dep *v1.Deployment) {
+	dep *v1.Deployment,
+	defaultResources *corev1.ResourceRequirements,
+) {
 	dep.Spec.Template.Spec.Volumes = append(dep.Spec.Template.Spec.Volumes, corev1.Volume{
 		Name: getTLSSecretNameForFrontendService(tempo.Name),
 		VolumeSource: corev1.VolumeSource{
@@ -118,7 +123,9 @@ func PatchDeploymentForOauthProxy(
 			naming.Name(manifestutils.QueryFrontendComponentName, tempo.Name),
 			authSpec,
 			timeout,
-			oauthProxyImage))
+			oauthProxyImage,
+			defaultResources,
+		))
 }
 
 func getTLSSecretNameForFrontendService(tempoName string) string {
@@ -154,6 +161,7 @@ func oAuthProxyContainer(
 	authSpec *v1alpha1.JaegerQueryAuthenticationSpec,
 	timeout time.Duration,
 	oauthProxyImage string,
+	defaultResources *corev1.ResourceRequirements,
 ) corev1.Container {
 	args := proxyInitArguments(serviceAccountName, timeout)
 
@@ -163,7 +171,7 @@ func oAuthProxyContainer(
 
 	resources := authSpec.Resources
 	if resources == nil {
-		resources = &corev1.ResourceRequirements{}
+		resources = defaultResources
 	}
 
 	return corev1.Container{
