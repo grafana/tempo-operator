@@ -32,6 +32,8 @@ func start(c *cobra.Command, args []string) {
 	version := version.Get()
 
 	options.PprofBindAddress, _ = c.Flags().GetString("pprof-addr")
+	options.Metrics.CertName, _ = c.Flags().GetString("metrics-tls-cert-file")
+	options.Metrics.KeyName, _ = c.Flags().GetString("metrics-tls-private-key-file")
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), options)
 	if err != nil {
@@ -160,5 +162,7 @@ func NewStartCommand() *cobra.Command {
 		Run:   start,
 	}
 	cmd.Flags().String("pprof-addr", "", "The address the pprof server binds to. Default is empty string which disables the pprof server.")
+	cmd.Flags().String("metrics-tls-cert-file", "", "TLS certificate used by metrics server")
+	cmd.Flags().String("metrics-tls-private-key-file", "", "TLS key used by metrics server")
 	return cmd
 }

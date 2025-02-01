@@ -33,4 +33,6 @@ configMapGenerator:
 
 patches:
 - path: metrics_service_tls_patch.yaml
-- path: manager_auth_proxy_tls_patch.yaml
+- path: patch_tls_metrics_args.yaml
+  target:
+    kind: Deployment

@@ -250,6 +250,8 @@ type ControllerMetrics struct {
 	// It can be set to "0" to disable the metrics serving.
 	// +optional
 	BindAddress string `json:"bindAddress,omitempty"`
+
+	Secure bool `json:"secure,omitempty"`
 }
 
 // ControllerHealth defines the health configs.
