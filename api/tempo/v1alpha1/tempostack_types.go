@@ -185,7 +185,7 @@ type TracingConfigSpec struct {
 	SamplingFraction string `json:"sampling_fraction,omitempty"`
 
 	// JaegerAgentEndpoint defines the jaeger endpoint data gets send to.
-	// Deprecated: in favor of OTLPHttp.
+	// Deprecated: in favor of OTLPHttpEndpoint.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
@@ -193,7 +193,7 @@ type TracingConfigSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger-Agent-Endpoint"
 	JaegerAgentEndpoint string `json:"jaeger_agent_endpoint,omitempty"`
 
-	// OTLPHttp defines the OTLP/http endpoint data gets send to.
+	// OTLPHttpEndpoint defines the OTLP/http endpoint data gets send to.
 	// For example, "http://localhost:4320".
 	// The default OTLP/http port 4318 collides with the distributor ports, therefore it is recommended to use a different port
 	// on the sidecar injected to the Tempo (e.g. 4320).
@@ -202,7 +202,7 @@ type TracingConfigSpec struct {
 	// +kubebuilder:validation:Optional
 	// +kubebuilder:default:="http://localhost:4320"
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="OTLP-HTTP-Endpoint"
-	OTLPHttp string `json:"otlp_http,omitempty"`
+	OTLPHttpEndpoint string `json:"otlp_http_endpoint,omitempty"`
 }
 
 // GrafanaConfigSpec defines configuration for Grafana.

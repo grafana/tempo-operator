@@ -16,7 +16,7 @@ func PatchTracingEnvConfiguration(tempo v1alpha1.TempoStack, pod corev1.PodTempl
 	if tempo.Spec.Observability.Tracing.SamplingFraction == "" {
 		return pod, nil
 	}
-	_, err := url.ParseRequestURI(tempo.Spec.Observability.Tracing.OTLPHttp)
+	_, err := url.ParseRequestURI(tempo.Spec.Observability.Tracing.OTLPHttpEndpoint)
 	if err != nil {
 		return corev1.PodTemplateSpec{}, fmt.Errorf("invalid OTLP/http endpoint: %v", err)
 	}
@@ -29,7 +29,7 @@ func PatchTracingEnvConfiguration(tempo v1alpha1.TempoStack, pod corev1.PodTempl
 			},
 			{
 				Name:  "OTEL_EXPORTER_OTLP_ENDPOINT",
-				Value: tempo.Spec.Observability.Tracing.OTLPHttp,
+				Value: tempo.Spec.Observability.Tracing.OTLPHttpEndpoint,
 			},
 			{
 				Name:  "OTEL_TRACES_SAMPLER",

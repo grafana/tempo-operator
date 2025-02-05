@@ -283,7 +283,7 @@ func TestPatchTracing(t *testing.T) {
 					Observability: v1alpha1.ObservabilitySpec{
 						Tracing: v1alpha1.TracingConfigSpec{
 							SamplingFraction: "1.0",
-							OTLPHttp:         "http://collector:1234",
+							OTLPHttpEndpoint: "http://collector:1234",
 						},
 					},
 				},
@@ -373,7 +373,7 @@ func TestPatchTracing(t *testing.T) {
 					Observability: v1alpha1.ObservabilitySpec{
 						Tracing: v1alpha1.TracingConfigSpec{
 							SamplingFraction: "0.5",
-							OTLPHttp:         "---invalid----",
+							OTLPHttpEndpoint: "---invalid----",
 						},
 					},
 				},
