@@ -17,12 +17,12 @@ subtext: |
   Update Tempo to 2.7.0 https://github.com/grafana/tempo/releases/tag/v2.7.0
   The Tempo instrumentation changed from Jaeger to OpenTelemetry with OTLP/http exporter.
   
-  The `spec.observability.tracing.jaeger_agent_endpoint` is deprecated in favor of `spec.observability.tracing.otlp_http`.
+  The `spec.observability.tracing.jaeger_agent_endpoint` is deprecated in favor of `spec.observability.tracing.otlp_http_endpoint`.
   ```yaml
   spec:
     observability:
       tracing:
         jaeger_agent_endpoint: # Deprecated!
         sampling_fraction: "1"
-        otlp_http: http://localhost:4320
+        otlp_http_endpoint: http://localhost:4320
   ```
