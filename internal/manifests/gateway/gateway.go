@@ -369,7 +369,7 @@ func patchTracing(tempo v1alpha1.TempoStack, pod corev1.PodTemplateSpec) (corev1
 
 	container := corev1.Container{
 		Args: []string{
-			fmt.Sprintf("--internal.tracing.otlp-http-endpoint=%s", tempo.Spec.Observability.Tracing.OTLPHttp),
+			fmt.Sprintf("--internal.tracing.otlp-http-endpoint=%s", tempo.Spec.Observability.Tracing.OTLPHttpEndpoint),
 			fmt.Sprintf("--internal.tracing.sampling-fraction=%s", tempo.Spec.Observability.Tracing.SamplingFraction),
 		},
 	}
