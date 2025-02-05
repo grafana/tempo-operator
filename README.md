@@ -54,6 +54,10 @@ kind: TempoStack
 metadata:
   name: simplest
 spec:
+  observability:
+    tracing:
+      sampling_fraction: "1"
+      otlp_http: http://localhost:4320
   storage:
     secret:
       name: minio-test

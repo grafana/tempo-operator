@@ -1,24 +1,23 @@
 package manifestutils
 
 import (
-	"net"
+	"github.com/stretchr/testify/require"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 )
 
-func Test_PatchTracingJaegerEnv(t *testing.T) {
+func Test_PatchTracing(t *testing.T) {
 	tt := []struct {
 		name       string
 		inputTempo v1alpha1.TempoStack
 		inputPod   corev1.PodTemplateSpec
 		expectPod  corev1.PodTemplateSpec
-		expectErr  error
+		expectErr  string
 	}{
 		{
 			name: "valid settings",
@@ -26,8 +25,8 @@ func Test_PatchTracingJaegerEnv(t *testing.T) {
 				Spec: v1alpha1.TempoStackSpec{
 					Observability: v1alpha1.ObservabilitySpec{
 						Tracing: v1alpha1.TracingConfigSpec{
-							SamplingFraction:    "1.0",
-							JaegerAgentEndpoint: "agent:1234",
+							SamplingFraction: "1.0",
+							OTLPHttp:         "http://collector:1234",
 						},
 					},
 				},
@@ -69,19 +68,19 @@ func Test_PatchTracingJaegerEnv(t *testing.T) {
 									Value: "1234",
 								},
 								{
-									Name:  "JAEGER_AGENT_HOST",
-									Value: "agent",
+									Name:  "OTEL_TRACES_EXPORTER",
+									Value: "otlp",
 								},
 								{
-									Name:  "JAEGER_AGENT_PORT",
-									Value: "1234",
+									Name:  "OTEL_EXPORTER_OTLP_ENDPOINT",
+									Value: "http://collector:1234",
 								},
 								{
-									Name:  "JAEGER_SAMPLER_TYPE",
-									Value: "const",
+									Name:  "OTEL_TRACES_SAMPLER",
+									Value: "parentbased_traceidratio",
 								},
 								{
-									Name:  "JAEGER_SAMPLER_PARAM",
+									Name:  "OTEL_TRACES_SAMPLER_ARG",
 									Value: "1.0",
 								},
 							},
@@ -148,25 +147,24 @@ func Test_PatchTracingJaegerEnv(t *testing.T) {
 				Spec: v1alpha1.TempoStackSpec{
 					Observability: v1alpha1.ObservabilitySpec{
 						Tracing: v1alpha1.TracingConfigSpec{
-							SamplingFraction:    "0.5",
-							JaegerAgentEndpoint: "---invalid----",
+							SamplingFraction: "0.5",
+							OTLPHttp:         "---invalid----",
 						},
 					},
 				},
 			},
 			inputPod:  corev1.PodTemplateSpec{},
 			expectPod: corev1.PodTemplateSpec{},
-			expectErr: &net.AddrError{
-				Addr: "---invalid----",
-				Err:  "missing port in address",
-			},
+			expectErr: "invalid OTLP/http endpoint: parse \"---invalid----\": invalid URI for request",
 		},
 	}
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			pod, err := PatchTracingJaegerEnv(tc.inputTempo, tc.inputPod)
-			require.Equal(t, tc.expectErr, err)
+			pod, err := PatchTracingEnvConfiguration(tc.inputTempo, tc.inputPod)
+			if err != nil {
+				require.EqualError(t, err, tc.expectErr)
+			}
 			assert.Equal(t, tc.expectPod, pod)
 		})
 	}

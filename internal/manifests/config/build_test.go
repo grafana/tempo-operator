@@ -96,6 +96,7 @@ query_frontend:
   search:
     concurrent_jobs: 2000
     max_duration: 0s
+    max_spans_per_span_set: 0
 `
 	cfg, err := buildConfiguration(manifestutils.Params{
 		Tempo: v1alpha1.TempoStack{
@@ -220,6 +221,7 @@ query_frontend:
   search:
     concurrent_jobs: 2000
     max_duration: 0s
+    max_spans_per_span_set: 0
       `,
 		},
 		{
@@ -309,6 +311,7 @@ query_frontend:
   search:
     concurrent_jobs: 2000
     max_duration: 0s
+    max_spans_per_span_set: 0
       `,
 		},
 		{
@@ -397,6 +400,7 @@ query_frontend:
   search:
     concurrent_jobs: 2000
     max_duration: 0s
+    max_spans_per_span_set: 0
       `,
 		},
 		{
@@ -486,6 +490,7 @@ query_frontend:
   search:
     concurrent_jobs: 2000
     max_duration: 0s
+    max_spans_per_span_set: 0
       `,
 		},
 		{
@@ -575,6 +580,7 @@ query_frontend:
   search:
     concurrent_jobs: 2000
     max_duration: 0s
+    max_spans_per_span_set: 0
       `,
 		},
 		{
@@ -664,6 +670,7 @@ query_frontend:
   search:
     concurrent_jobs: 2000
     max_duration: 0s
+    max_spans_per_span_set: 0
       `,
 		},
 		{
@@ -753,6 +760,7 @@ query_frontend:
   search:
     concurrent_jobs: 2000
     max_duration: 0s
+    max_spans_per_span_set: 0
       `,
 		},
 		{
@@ -854,6 +862,7 @@ query_frontend:
   search:
     concurrent_jobs: 2000
     max_duration: 0s
+    max_spans_per_span_set: 0
       `,
 		},
 		{
@@ -953,6 +962,7 @@ query_frontend:
   search:
     concurrent_jobs: 2000
     max_duration: 0s
+    max_spans_per_span_set: 0
       `,
 		},
 	}
@@ -1114,6 +1124,7 @@ query_frontend:
     default_result_limit: 20
     concurrent_jobs: 2000
     max_duration: 0s
+    max_spans_per_span_set: 0
       `,
 		},
 	}
@@ -1228,6 +1239,7 @@ query_frontend:
   search:
     concurrent_jobs: 2000
     max_duration: 0s
+    max_spans_per_span_set: 0
       `
 
 	cfg, err := buildConfiguration(manifestutils.Params{
@@ -1335,6 +1347,7 @@ query_frontend:
   search:
     concurrent_jobs: 2000
     max_duration: 0s
+    max_spans_per_span_set: 0
 `
 	cfg, err := buildConfiguration(manifestutils.Params{
 		Tempo: v1alpha1.TempoStack{
@@ -1494,6 +1507,7 @@ query_frontend:
   search:
     concurrent_jobs: 2000
     max_duration: 0s
+    max_spans_per_span_set: 0
 ingester_client:
   grpc_client_config:
     tls_enabled: true
@@ -1612,6 +1626,7 @@ query_frontend:
   search:
     concurrent_jobs: 2000
     max_duration: 0s
+    max_spans_per_span_set: 0
 ingester_client:
   grpc_client_config:
     tls_enabled: true
@@ -1691,14 +1706,14 @@ distributor:
             cert_file: /var/run/tls/server/tls.crt
             client_ca_file: /var/run/ca/service-ca.crt
             key_file: /var/run/tls/server/tls.key
-            min_version: 1.2
+            min_version: "1.2"
         http:
           endpoint: "0.0.0.0:4318"
           tls:
             cert_file: /var/run/tls/server/tls.crt
             client_ca_file: /var/run/ca/service-ca.crt
             key_file: /var/run/tls/server/tls.key
-            min_version: 1.2
+            min_version: "1.2"
 
   ring:
     kvstore:
@@ -1777,6 +1792,7 @@ query_frontend:
   search:
     concurrent_jobs: 2000
     max_duration: 0s
+    max_spans_per_span_set: 0
 ingester_client:
   grpc_client_config:
     tls_enabled: true
@@ -1931,6 +1947,7 @@ query_frontend:
   search:
     concurrent_jobs: 2000
     max_duration: 0s
+    max_spans_per_span_set: 0
 `,
 		},
 		{
@@ -2039,6 +2056,7 @@ query_frontend:
   search:
     concurrent_jobs: 2000
     max_duration: 0s
+    max_spans_per_span_set: 0
 `,
 		},
 		{
@@ -2153,6 +2171,7 @@ query_frontend:
   search:
     concurrent_jobs: 2000
     max_duration: 0s
+    max_spans_per_span_set: 0
 `,
 		},
 	}
@@ -2287,6 +2306,7 @@ query_frontend:
   search:
     concurrent_jobs: 2000
     max_duration: 0s
+    max_spans_per_span_set: 0
 `,
 		},
 		{
@@ -2370,6 +2390,7 @@ query_frontend:
   search:
     concurrent_jobs: 2000
     max_duration: 0s
+    max_spans_per_span_set: 0
 `,
 		},
 	}
@@ -2494,6 +2515,7 @@ query_frontend:
   search:
     concurrent_jobs: 2000
     max_duration: 0s
+    max_spans_per_span_set: 0
 `
 	cfg, err := buildConfiguration(manifestutils.Params{
 		Tempo: v1alpha1.TempoStack{
@@ -2611,6 +2633,7 @@ query_frontend:
   search:
     concurrent_jobs: 2000
     max_duration: 0s
+    max_spans_per_span_set: 0
 `
 	cfg, err := buildConfiguration(manifestutils.Params{
 		Tempo: v1alpha1.TempoStack{

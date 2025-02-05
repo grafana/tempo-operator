@@ -2,7 +2,6 @@ package gateway
 
 import (
 	"fmt"
-	"net"
 	"reflect"
 	"testing"
 
@@ -275,7 +274,7 @@ func TestPatchTracing(t *testing.T) {
 		inputTempo v1alpha1.TempoStack
 		inputPod   corev1.PodTemplateSpec
 		expectPod  corev1.PodTemplateSpec
-		expectErr  error
+		expectErr  string
 	}{
 		{
 			name: "valid settings",
@@ -283,8 +282,8 @@ func TestPatchTracing(t *testing.T) {
 				Spec: v1alpha1.TempoStackSpec{
 					Observability: v1alpha1.ObservabilitySpec{
 						Tracing: v1alpha1.TracingConfigSpec{
-							SamplingFraction:    "1.0",
-							JaegerAgentEndpoint: "agent:1234",
+							SamplingFraction: "1.0",
+							OTLPHttp:         "http://collector:1234",
 						},
 					},
 				},
@@ -319,8 +318,7 @@ func TestPatchTracing(t *testing.T) {
 							Name: containerNameTempoGateway,
 							Args: []string{
 								"--abc",
-								"--internal.tracing.endpoint=agent:1234",
-								"--internal.tracing.endpoint-type=agent",
+								"--internal.tracing.otlp-http-endpoint=http://collector:1234",
 								"--internal.tracing.sampling-fraction=1.0",
 							},
 						},
@@ -374,25 +372,24 @@ func TestPatchTracing(t *testing.T) {
 				Spec: v1alpha1.TempoStackSpec{
 					Observability: v1alpha1.ObservabilitySpec{
 						Tracing: v1alpha1.TracingConfigSpec{
-							SamplingFraction:    "0.5",
-							JaegerAgentEndpoint: "---invalid----",
+							SamplingFraction: "0.5",
+							OTLPHttp:         "---invalid----",
 						},
 					},
 				},
 			},
 			inputPod:  corev1.PodTemplateSpec{},
 			expectPod: corev1.PodTemplateSpec{},
-			expectErr: &net.AddrError{
-				Addr: "---invalid----",
-				Err:  "missing port in address",
-			},
+			expectErr: "invalid OTLP/http endpoint: parse \"---invalid----\": invalid URI for request",
 		},
 	}
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			pod, err := patchTracing(tc.inputTempo, tc.inputPod)
-			require.Equal(t, tc.expectErr, err)
+			if err != nil {
+				require.EqualError(t, err, tc.expectErr)
+			}
 			assert.Equal(t, tc.expectPod, pod)
 		})
 	}

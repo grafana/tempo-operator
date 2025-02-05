@@ -289,12 +289,22 @@ spec:
                     properties:
                       jaeger_agent_endpoint:
                         default: localhost:6831
-                        description: JaegerAgentEndpoint defines the jaeger endpoint
-                          data gets send to.
+                        description: |-
+                          JaegerAgentEndpoint defines the jaeger endpoint data gets send to.
+                          Deprecated: in favor of OTLPHttp.
+                        type: string
+                      otlp_http:
+                        default: http://localhost:4320
+                        description: |-
+                          OTLPHttp defines the OTLP/http endpoint data gets send to.
+                          For example, "http://localhost:4320".
+                          The default OTLP/http port 4318 collides with the distributor ports, therefore it is recommended to use a different port
+                          on the sidecar injected to the Tempo (e.g. 4320).
                         type: string
                       sampling_fraction:
-                        description: SamplingFraction defines the sampling ratio.
-                          Valid values are 0 to 1.
+                        description: |-
+                          SamplingFraction defines the sampling ratio. Valid values are 0 to 1.
+                          The SamplingFraction has to be defined to enable tracing.
                         type: string
                     type: object
                 type: object
