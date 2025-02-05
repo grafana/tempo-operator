@@ -2,9 +2,10 @@ package manifestutils
 
 import (
 	"fmt"
+	"net/url"
+
 	"github.com/imdario/mergo"
 	corev1 "k8s.io/api/core/v1"
-	"net/url"
 
 	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 )
