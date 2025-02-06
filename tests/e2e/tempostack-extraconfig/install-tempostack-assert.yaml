@@ -444,6 +444,7 @@ data:
     query_frontend:
         max_retries: 3
         search:
+            max_spans_per_span_set: 0
             concurrent_jobs: 2000
             default_result_limit: 20
             max_duration: 0s

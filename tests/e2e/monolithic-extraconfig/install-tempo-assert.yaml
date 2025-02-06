@@ -87,8 +87,10 @@ data:
         receivers:
             otlp:
                 protocols:
-                    grpc: {}
-                    http: {}
+                    grpc:
+                        endpoint: 0.0.0.0:4317
+                    http:
+                        endpoint: 0.0.0.0:4318
     internal_server:
         enable: true
         http_listen_address: 0.0.0.0
@@ -97,7 +99,6 @@ data:
             query_timeout: 180s
     query_frontend:
         max_retries: 3
-        max_spans_per_span_set: 0
     server:
         http_listen_port: 3200
         http_server_read_timeout: 30s
