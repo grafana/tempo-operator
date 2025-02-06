@@ -39,6 +39,7 @@ distributor:
             min_version: "{{ .ReceiverTLS.MinTLSVersion }}"
 {{- end }}
     zipkin:
+      endpoint: 0.0.0.0:9411
 {{- if .ReceiverTLS.Enabled }}
       tls:
 {{- if .ReceiverTLS.ClientCAEnabled }}

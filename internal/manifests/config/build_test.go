@@ -41,6 +41,7 @@ distributor:
         grpc:
           endpoint: 0.0.0.0:14250
     zipkin:
+      endpoint: 0.0.0.0:9411
     otlp:
       protocols:
         grpc:
@@ -166,6 +167,7 @@ distributor:
         grpc:
           endpoint: 0.0.0.0:14250
     zipkin:
+      endpoint: 0.0.0.0:9411
     otlp:
       protocols:
         grpc:
@@ -254,6 +256,7 @@ distributor:
         grpc:
           endpoint: 0.0.0.0:14250
     zipkin:
+      endpoint: 0.0.0.0:9411
     otlp:
       protocols:
         grpc:
@@ -343,6 +346,7 @@ distributor:
         grpc:
           endpoint: 0.0.0.0:14250
     zipkin:
+      endpoint: 0.0.0.0:9411
     otlp:
       protocols:
         grpc:
@@ -433,6 +437,7 @@ distributor:
         grpc:
           endpoint: 0.0.0.0:14250
     zipkin:
+      endpoint: 0.0.0.0:9411
     otlp:
       protocols:
         grpc:
@@ -523,6 +528,7 @@ distributor:
         grpc:
           endpoint: 0.0.0.0:14250
     zipkin:
+      endpoint: 0.0.0.0:9411
     otlp:
       protocols:
         grpc:
@@ -613,6 +619,7 @@ distributor:
         grpc:
           endpoint: 0.0.0.0:14250
     zipkin:
+      endpoint: 0.0.0.0:9411
     otlp:
       protocols:
         grpc:
@@ -703,6 +710,7 @@ distributor:
         grpc:
           endpoint: 0.0.0.0:14250
     zipkin:
+      endpoint: 0.0.0.0:9411
     otlp:
       protocols:
         grpc:
@@ -800,6 +808,7 @@ distributor:
         grpc:
           endpoint: 0.0.0.0:14250
     zipkin:
+      endpoint: 0.0.0.0:9411
     otlp:
       protocols:
         grpc:
@@ -905,6 +914,7 @@ distributor:
         grpc:
           endpoint: 0.0.0.0:14250
     zipkin:
+      endpoint: 0.0.0.0:9411
     otlp:
       protocols:
         grpc:
@@ -1070,6 +1080,7 @@ distributor:
         grpc:
           endpoint: 0.0.0.0:14250
     zipkin:
+      endpoint: 0.0.0.0:9411
     otlp:
       protocols:
         grpc:
@@ -1186,6 +1197,7 @@ distributor:
         grpc:
           endpoint: 0.0.0.0:14250
     zipkin:
+      endpoint: 0.0.0.0:9411
     otlp:
       protocols:
         grpc:
@@ -1292,6 +1304,7 @@ distributor:
         grpc:
           endpoint: 0.0.0.0:14250
     zipkin:
+      endpoint: 0.0.0.0:9411
     otlp:
       protocols:
         grpc:
@@ -1424,6 +1437,7 @@ distributor:
         grpc:
           endpoint: 0.0.0.0:14250
     zipkin:
+      endpoint: 0.0.0.0:9411
     otlp:
       protocols:
         grpc:
@@ -1546,6 +1560,7 @@ distributor:
         grpc:
           endpoint: 0.0.0.0:14250
     zipkin:
+      endpoint: 0.0.0.0:9411
     otlp:
       protocols:
         grpc:
@@ -1892,6 +1907,7 @@ distributor:
         grpc:
           endpoint: 0.0.0.0:14250
     zipkin:
+      endpoint: 0.0.0.0:9411
     otlp:
       protocols:
         grpc:
@@ -1988,6 +2004,7 @@ distributor:
             key_file: /var/run/tls/receiver/tls.key
             min_version: VersionTLS13
     zipkin:
+       endpoint: 0.0.0.0:9411
        tls:
          cert_file: /var/run/tls/receiver/tls.crt
          key_file: /var/run/tls/receiver/tls.key
@@ -2100,6 +2117,7 @@ distributor:
             key_file: /var/run/tls/receiver/tls.key
             min_version: VersionTLS13
     zipkin:
+       endpoint: 0.0.0.0:9411
        tls:
          client_ca_file: /var/run/ca-receiver/service-ca.crt
          cert_file: /var/run/tls/receiver/tls.crt
@@ -2251,6 +2269,7 @@ distributor:
         grpc:
           endpoint: 0.0.0.0:14250
     zipkin:
+      endpoint: 0.0.0.0:9411
     otlp:
       protocols:
         grpc:
@@ -2334,6 +2353,7 @@ distributor:
         grpc:
           endpoint: 0.0.0.0:14250
     zipkin:
+      endpoint: 0.0.0.0:9411
     otlp:
       protocols:
         grpc:
@@ -2461,6 +2481,7 @@ distributor:
         grpc:
           endpoint: 0.0.0.0:14250
     zipkin:
+      endpoint: 0.0.0.0:9411
     otlp:
       protocols:
         grpc:
@@ -2575,6 +2596,7 @@ distributor:
         grpc:
           endpoint: 0.0.0.0:14250
     zipkin:
+      endpoint: 0.0.0.0:9411
     otlp:
       protocols:
         grpc:

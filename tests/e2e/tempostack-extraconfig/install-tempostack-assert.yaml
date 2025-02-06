@@ -400,7 +400,8 @@ data:
                         endpoint: 0.0.0.0:4317
                     http:
                         endpoint: 0.0.0.0:4318
-            zipkin: null
+            zipkin:
+              endpoint: 0.0.0.0:9411
         ring:
             kvstore:
                 store: memberlist
@@ -507,7 +508,8 @@ data:
                         endpoint: 0.0.0.0:4317
                     http:
                         endpoint: 0.0.0.0:4318
-            zipkin: null
+            zipkin:
+              endpoint: 0.0.0.0:9411
         ring:
             kvstore:
                 store: memberlist
