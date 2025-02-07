@@ -26,7 +26,7 @@ func BuildQuerier(params manifestutils.Params) ([]client.Object, error) {
 		return nil, err
 	}
 
-	d.Spec.Template, err = manifestutils.PatchTracingJaegerEnv(params.Tempo, d.Spec.Template)
+	d.Spec.Template, err = manifestutils.PatchTracingEnvConfiguration(params.Tempo, d.Spec.Template)
 	if err != nil {
 		return nil, err
 	}
