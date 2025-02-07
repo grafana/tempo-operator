@@ -173,7 +173,7 @@ func statefulSet(params manifestutils.Params) (*v1.StatefulSet, error) {
 		return nil, err
 	}
 
-	ss.Spec.Template, err = manifestutils.PatchTracingJaegerEnv(tempo, ss.Spec.Template)
+	ss.Spec.Template, err = manifestutils.PatchTracingEnvConfiguration(tempo, ss.Spec.Template)
 	if err != nil {
 		return nil, err
 	}

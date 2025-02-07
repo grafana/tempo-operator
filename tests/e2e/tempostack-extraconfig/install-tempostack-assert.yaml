@@ -400,7 +400,8 @@ data:
                         endpoint: 0.0.0.0:4317
                     http:
                         endpoint: 0.0.0.0:4318
-            zipkin: null
+            zipkin:
+                endpoint: 0.0.0.0:9411
         ring:
             kvstore:
                 store: memberlist
@@ -447,6 +448,7 @@ data:
             concurrent_jobs: 2000
             default_result_limit: 20
             max_duration: 0s
+            max_spans_per_span_set: 0
     server:
         grpc_server_max_recv_msg_size: 4194304
         grpc_server_max_send_msg_size: 4194304
@@ -506,7 +508,8 @@ data:
                         endpoint: 0.0.0.0:4317
                     http:
                         endpoint: 0.0.0.0:4318
-            zipkin: null
+            zipkin:
+                endpoint: 0.0.0.0:9411
         ring:
             kvstore:
                 store: memberlist
@@ -560,6 +563,7 @@ data:
             concurrent_jobs: 2000
             default_result_limit: 20
             max_duration: 0s
+            max_spans_per_span_set: 0
     server:
         grpc_server_max_recv_msg_size: 4194304
         grpc_server_max_send_msg_size: 4194304

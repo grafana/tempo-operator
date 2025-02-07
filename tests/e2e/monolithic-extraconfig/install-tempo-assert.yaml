@@ -87,8 +87,10 @@ data:
         receivers:
             otlp:
                 protocols:
-                    grpc: {}
-                    http: {}
+                    grpc:
+                        endpoint: 0.0.0.0:4317
+                    http:
+                        endpoint: 0.0.0.0:4318
     internal_server:
         enable: true
         http_listen_address: 0.0.0.0

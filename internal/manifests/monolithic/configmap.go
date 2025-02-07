@@ -255,6 +255,8 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 				if tempo.Spec.Multitenancy.IsGatewayEnabled() {
 					// all connections to tempo must go via gateway
 					config.Distributor.Receivers.OTLP.Protocols.GRPC.Endpoint = fmt.Sprintf("localhost:%d", manifestutils.PortOtlpGrpcServer)
+				} else {
+					config.Distributor.Receivers.OTLP.Protocols.GRPC.Endpoint = fmt.Sprintf("0.0.0.0:%d", manifestutils.PortOtlpGrpcServer)
 				}
 			}
 
@@ -272,6 +274,8 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 				if tempo.Spec.Multitenancy.IsGatewayEnabled() {
 					// all connections to tempo must go via gateway
 					config.Distributor.Receivers.OTLP.Protocols.HTTP.Endpoint = fmt.Sprintf("localhost:%d", manifestutils.PortOtlpHttp)
+				} else {
+					config.Distributor.Receivers.OTLP.Protocols.HTTP.Endpoint = fmt.Sprintf("0.0.0.0:%d", manifestutils.PortOtlpHttp)
 				}
 			}
 		}
