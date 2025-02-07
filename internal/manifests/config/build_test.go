@@ -2598,6 +2598,7 @@ distributor:
         grpc:
           endpoint: 0.0.0.0:14250
     zipkin:
+        endpoint: 0.0.0.0:9411
     otlp:
       protocols:
         grpc:
@@ -2653,6 +2654,7 @@ query_frontend:
   search:
     concurrent_jobs: 2000
     max_duration: 0s
+    max_spans_per_span_set: 0
 `
 	cfg, err := buildConfiguration(manifestutils.Params{
 		Tempo: v1alpha1.TempoStack{
