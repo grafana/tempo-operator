@@ -98,8 +98,10 @@ distributor:
   receivers:
     otlp:
       protocols:
-        grpc: {}
-        http: {}
+        grpc:
+          endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
 usage_report:
   reporting_enabled: false
 `,
@@ -132,8 +134,10 @@ distributor:
   receivers:
     otlp:
       protocols:
-        grpc: {}
-        http: {}
+        grpc:
+          endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
 usage_report:
   reporting_enabled: false
 `,
@@ -178,6 +182,7 @@ distributor:
     otlp:
       protocols:
         grpc:
+          endpoint: 0.0.0.0:4317
           tls:
             client_ca_file: /var/run/ca-receiver/grpc/service-ca.crt
             cert_file: /var/run/tls/receiver/grpc/tls.crt
@@ -227,6 +232,7 @@ distributor:
     otlp:
       protocols:
         http:
+          endpoint: 0.0.0.0:4318
           tls:
             client_ca_file: /var/run/ca-receiver/http/service-ca.crt
             cert_file: /var/run/tls/receiver/http/tls.crt
@@ -282,12 +288,14 @@ distributor:
     otlp:
       protocols:
         http:
+          endpoint: 0.0.0.0:4318
           tls:
             client_ca_file: /var/run/ca-receiver/http/service-ca.crt
             cert_file: /var/run/tls/receiver/http/tls.crt
             key_file: /var/run/tls/receiver/http/tls.key
             min_version: "1.3"
         grpc:
+          endpoint: 0.0.0.0:4317
           tls:
             client_ca_file: /var/run/ca-receiver/grpc/service-ca.crt
             cert_file: /var/run/tls/receiver/grpc/tls.crt
@@ -342,6 +350,7 @@ distributor:
     otlp:
       protocols:
         grpc:
+          endpoint: 0.0.0.0:4317
           tls:
             client_ca_file: /var/run/ca-receiver/grpc/service-ca.crt
             cert_file: /var/run/tls/receiver/grpc/tls.crt
@@ -403,8 +412,10 @@ distributor:
   receivers:
     otlp:
       protocols:
-        grpc: {}
-        http: {}
+        grpc:
+          endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
 usage_report:
   reporting_enabled: false
 `,
@@ -436,8 +447,10 @@ distributor:
   receivers:
     otlp:
       protocols:
-        grpc: {}
-        http: {}
+        grpc:
+          endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
 usage_report:
   reporting_enabled: false
 `,

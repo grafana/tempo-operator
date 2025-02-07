@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.14.2
-    createdAt: "2025-01-16T09:58:41Z"
+    createdAt: "2025-02-05T16:29:10Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -757,12 +757,21 @@ spec:
       - description: Tracing defines a config for operands.
         displayName: Tracing Config
         path: observability.tracing
-      - description: JaegerAgentEndpoint defines the jaeger endpoint data gets send
-          to.
+      - description: |-
+          JaegerAgentEndpoint defines the jaeger endpoint data gets send to.
+          Deprecated: in favor of OTLPHttpEndpoint.
         displayName: Jaeger-Agent-Endpoint
         path: observability.tracing.jaeger_agent_endpoint
-      - description: SamplingFraction defines the sampling ratio. Valid values are
-          0 to 1.
+      - description: |-
+          OTLPHttpEndpoint defines the OTLP/http endpoint data gets send to.
+          For example, "http://localhost:4320".
+          The default OTLP/http port 4318 collides with the distributor ports, therefore it is recommended to use a different port
+          on the sidecar injected to the Tempo (e.g. 4320).
+        displayName: OTLP-HTTP-Endpoint
+        path: observability.tracing.otlp_http_endpoint
+      - description: |-
+          SamplingFraction defines the sampling ratio. Valid values are 0 to 1.
+          The SamplingFraction has to be defined to enable tracing.
         displayName: Sampling Fraction
         path: observability.tracing.sampling_fraction
       - description: The replication factor is a configuration setting that determines
@@ -1493,11 +1502,11 @@ spec:
                 - --config=controller_manager_config.yaml
                 env:
                 - name: RELATED_IMAGE_TEMPO
-                  value: docker.io/grafana/tempo:2.6.1
+                  value: docker.io/grafana/tempo:2.7.0
                 - name: RELATED_IMAGE_JAEGER_QUERY
                   value: docker.io/jaegertracing/jaeger-query:1.62.0
                 - name: RELATED_IMAGE_TEMPO_QUERY
-                  value: docker.io/grafana/tempo-query:2.6.1
+                  value: docker.io/grafana/tempo-query:2.7.0
                 - name: RELATED_IMAGE_TEMPO_GATEWAY
                   value: quay.io/observatorium/api:main-2024-11-05-28e4c83
                 - name: RELATED_IMAGE_TEMPO_GATEWAY_OPA
@@ -1622,11 +1631,11 @@ spec:
   provider:
     name: Grafana Tempo Operator SIG
   relatedImages:
-  - image: docker.io/grafana/tempo:2.6.1
+  - image: docker.io/grafana/tempo:2.7.0
     name: tempo
   - image: docker.io/jaegertracing/jaeger-query:1.62.0
     name: jaeger-query
-  - image: docker.io/grafana/tempo-query:2.6.1
+  - image: docker.io/grafana/tempo-query:2.7.0
     name: tempo-query
   - image: quay.io/observatorium/api:main-2024-11-05-28e4c83
     name: tempo-gateway
