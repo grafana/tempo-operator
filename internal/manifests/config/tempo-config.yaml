@@ -260,7 +260,7 @@ storage:
       tls_key_path: {{ .S3StorageTLS.Key }}
     {{- end }}
     {{- end }}
-  {{- end }}
+    {{- end }}
     local:
       path: /var/tempo/traces
     wal:
