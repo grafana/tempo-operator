@@ -327,11 +327,13 @@ data:
                 cert_file: /var/run/tls/receiver/grpc/tls.crt
                 key_file: /var/run/tls/receiver/grpc/tls.key
                 min_version: "1.3"
+              endpoint: 0.0.0.0:4317
             http:
               tls:
                 cert_file: /var/run/tls/receiver/http/tls.crt
                 key_file: /var/run/tls/receiver/http/tls.key
                 min_version: "1.3"
+              endpoint: 0.0.0.0:4318
     usage_report:
       reporting_enabled: false
 kind: ConfigMap
