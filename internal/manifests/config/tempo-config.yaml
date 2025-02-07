@@ -21,7 +21,7 @@ distributor:
 {{- end }}
             cert_file: {{ .ReceiverTLS.Paths.Certificate }}
             key_file: {{ .ReceiverTLS.Paths.Key }}
-            min_version: {{ .ReceiverTLS.MinTLSVersion }}
+            min_version: "{{ .ReceiverTLS.MinTLSVersion }}"
 {{- end }}
         thrift_binary:
           endpoint: 0.0.0.0:6832
@@ -36,9 +36,10 @@ distributor:
 {{- end }}
             cert_file: {{ .ReceiverTLS.Paths.Certificate }}
             key_file: {{ .ReceiverTLS.Paths.Key }}
-            min_version: {{ .ReceiverTLS.MinTLSVersion }}
+            min_version: "{{ .ReceiverTLS.MinTLSVersion }}"
 {{- end }}
     zipkin:
+      endpoint: 0.0.0.0:9411
 {{- if .ReceiverTLS.Enabled }}
       tls:
 {{- if .ReceiverTLS.ClientCAEnabled }}
@@ -46,7 +47,7 @@ distributor:
 {{- end }}
         cert_file: {{ .ReceiverTLS.Paths.Certificate }}
         key_file: {{ .ReceiverTLS.Paths.Key }}
-        min_version: {{ .ReceiverTLS.MinTLSVersion }}
+        min_version: "{{ .ReceiverTLS.MinTLSVersion }}"
   {{- end }}
 {{- end }}
     otlp:
@@ -58,7 +59,7 @@ distributor:
             client_ca_file:  {{ .TLS.Paths.CA }}
             cert_file: {{ .TLS.Paths.Certificate }}
             key_file: {{ .TLS.Paths.Key }}
-            min_version: {{ .TLS.Profile.MinTLSVersionShort }}
+            min_version: "{{ .TLS.Profile.MinTLSVersionShort }}"
 {{- end }}
 {{- if .ReceiverTLS.Enabled }}
           tls:
@@ -67,7 +68,7 @@ distributor:
 {{- end }}
             cert_file: {{ .ReceiverTLS.Paths.Certificate }}
             key_file: {{ .ReceiverTLS.Paths.Key }}
-            min_version: {{ .ReceiverTLS.MinTLSVersion }}
+            min_version: "{{ .ReceiverTLS.MinTLSVersion }}"
 {{- end }}
         http:
           endpoint: 0.0.0.0:4318
@@ -76,7 +77,7 @@ distributor:
             client_ca_file:  {{ .TLS.Paths.CA }}
             cert_file: {{ .TLS.Paths.Certificate }}
             key_file: {{ .TLS.Paths.Key }}
-            min_version: {{ .TLS.Profile.MinTLSVersionShort }}
+            min_version: "{{ .TLS.Profile.MinTLSVersionShort }}"
 {{- end }}
 {{- if .ReceiverTLS.Enabled }}
           tls:
@@ -85,7 +86,7 @@ distributor:
 {{- end }}
             cert_file: {{ .ReceiverTLS.Paths.Certificate }}
             key_file: {{ .ReceiverTLS.Paths.Key }}
-            min_version: {{ .ReceiverTLS.MinTLSVersion }}
+            min_version: "{{ .ReceiverTLS.MinTLSVersion }}"
 {{- end }}
   ring:
     kvstore:
@@ -269,6 +270,7 @@ usage_report:
   reporting_enabled: false
 query_frontend:
   search:
+    max_spans_per_span_set: 0
 {{- if .Search.ConcurrentJobs }}
     concurrent_jobs: {{ .Search.ConcurrentJobs }}
 {{- end }}

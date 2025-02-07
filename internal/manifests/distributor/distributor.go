@@ -23,7 +23,7 @@ const openshiftServiceTLSAnnotation = "service.beta.openshift.io/serving-cert-se
 func BuildDistributor(params manifestutils.Params) ([]client.Object, error) {
 	dep := deployment(params)
 	var err error
-	dep.Spec.Template, err = manifestutils.PatchTracingJaegerEnv(params.Tempo, dep.Spec.Template)
+	dep.Spec.Template, err = manifestutils.PatchTracingEnvConfiguration(params.Tempo, dep.Spec.Template)
 
 	if err := memberlist.ConfigureHashRingEnv(&dep.Spec.Template.Spec, params.Tempo); err != nil {
 		return nil, err

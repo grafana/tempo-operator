@@ -4,7 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"net"
+	"net/url"
 	"path"
 
 	"github.com/imdario/mergo"
@@ -362,15 +362,14 @@ func patchTracing(tempo v1alpha1.TempoStack, pod corev1.PodTemplateSpec) (corev1
 		return pod, nil
 	}
 
-	host, port, err := net.SplitHostPort(tempo.Spec.Observability.Tracing.JaegerAgentEndpoint)
+	_, err := url.ParseRequestURI(tempo.Spec.Observability.Tracing.OTLPHttpEndpoint)
 	if err != nil {
-		return corev1.PodTemplateSpec{}, err
+		return corev1.PodTemplateSpec{}, fmt.Errorf("invalid OTLP/http endpoint: %v", err)
 	}
 
 	container := corev1.Container{
 		Args: []string{
-			fmt.Sprintf("--internal.tracing.endpoint=%s:%s", host, port),
-			"--internal.tracing.endpoint-type=agent",
+			fmt.Sprintf("--internal.tracing.otlp-http-endpoint=%s", tempo.Spec.Observability.Tracing.OTLPHttpEndpoint),
 			fmt.Sprintf("--internal.tracing.sampling-fraction=%s", tempo.Spec.Observability.Tracing.SamplingFraction),
 		},
 	}

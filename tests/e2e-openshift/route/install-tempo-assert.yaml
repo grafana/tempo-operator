@@ -46,6 +46,7 @@ data:
             grpc:
               endpoint: 0.0.0.0:14250
         zipkin:
+          endpoint: 0.0.0.0:9411
         otlp:
           protocols:
             grpc:
@@ -112,6 +113,7 @@ data:
       reporting_enabled: false
     query_frontend:
       search:
+        max_spans_per_span_set: 0
         concurrent_jobs: 2000
         max_duration: 0s
         default_result_limit: 20
@@ -150,6 +152,7 @@ data:
             grpc:
               endpoint: 0.0.0.0:14250
         zipkin:
+          endpoint: 0.0.0.0:9411
         otlp:
           protocols:
             grpc:
@@ -228,6 +231,7 @@ data:
       reporting_enabled: false
     query_frontend:
       search:
+        max_spans_per_span_set: 0
         concurrent_jobs: 2000
         max_duration: 0s
         default_result_limit: 20

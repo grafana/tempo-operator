@@ -278,8 +278,10 @@ data:
       receivers:
         otlp:
           protocols:
-            grpc: {}
-            http: {}
+            grpc:
+              endpoint: 0.0.0.0:4317
+            http:
+              endpoint: 0.0.0.0:4318
     usage_report:
       reporting_enabled: false
 kind: ConfigMap
