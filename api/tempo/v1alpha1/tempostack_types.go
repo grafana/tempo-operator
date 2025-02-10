@@ -589,9 +589,14 @@ type TempoGatewaySpec struct {
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger gateway Ingress Settings"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Gateway Ingress Settings"
 	Ingress IngressSpec `json:"ingress,omitempty"`
 
+	// RBAC defines RBAC options.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Query RBAC Settings"
 	RBAC RBACSpec `json:"rbac,omitempty"`
 }
 

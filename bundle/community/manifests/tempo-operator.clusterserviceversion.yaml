@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.14.2
-    createdAt: "2025-02-10T10:08:24Z"
+    createdAt: "2025-02-10T17:22:36Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -967,7 +967,7 @@ spec:
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
       - description: Ingress defines gateway Ingress options.
-        displayName: Jaeger gateway Ingress Settings
+        displayName: Gateway Ingress Settings
         path: template.gateway.ingress
       - description: Annotations defines the annotations of the Ingress object.
         displayName: Annotations
@@ -995,6 +995,9 @@ spec:
           all pods of this component.
         displayName: PodSecurityContext
         path: template.gateway.podSecurityContext
+      - description: RBAC defines RBAC options.
+        displayName: Query RBAC Settings
+        path: template.gateway.rbac
       - description: Replicas defines the number of replicas to be created for this
           component.
         displayName: Component Replicas

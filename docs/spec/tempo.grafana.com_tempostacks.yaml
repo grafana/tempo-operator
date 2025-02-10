@@ -206,7 +206,7 @@ spec:                                    # TempoStackSpec defines the desired st
         route:                           # Route defines the options for the OpenShift route.
           termination: ""                # Termination defines the termination type. The default is "edge".
         type: ""                         # Type defines the type of Ingress for the Jaeger Query UI. Currently ingress, route and none are supported.
-      rbac:                              # RBACSpec defines RBAC options.
+      rbac:                              # RBAC defines RBAC options.
         enabled: false                   # Enabled defines if the query RBAC should be enabled.
     ingester:                            # Ingester defines the ingester component spec.
       podSecurityContext:                # PodSecurityContext defines security context will be applied to all pods of this component.

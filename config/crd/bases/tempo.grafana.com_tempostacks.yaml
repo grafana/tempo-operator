@@ -1431,7 +1431,7 @@ spec:
                             type: string
                         type: object
                       rbac:
-                        description: RBACSpec defines RBAC options.
+                        description: RBAC defines RBAC options.
                         properties:
                           enabled:
                             description: Enabled defines if the query RBAC should
