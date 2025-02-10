@@ -117,6 +117,7 @@ func TestOauthProxyContainer(t *testing.T) {
 				params.Tempo.Spec.Template.QueryFrontend.JaegerQuery.Authentication,
 				time.Second*5,
 				customImage,
+				&corev1.ResourceRequirements{},
 			)
 			expected := corev1.Container{
 				Image: test.expectedImage,
@@ -346,7 +347,9 @@ func TestPatchDeploymentForOauthProxy(t *testing.T) {
 		params.Tempo.Spec.Template.QueryFrontend.JaegerQuery.Authentication,
 		time.Second*5,
 		params.Tempo.Spec.Images,
-		dep)
+		dep,
+		&corev1.ResourceRequirements{},
+	)
 
 	assert.Equal(t, 2, len(dep.Spec.Template.Spec.Containers))
 	assert.Equal(t, "oauth-proxy", dep.Spec.Template.Spec.Containers[1].Name)
@@ -485,7 +488,9 @@ func TestPatchStatefulSetForOauthProxy(t *testing.T) {
 		params.Tempo.Spec.Template.QueryFrontend.JaegerQuery.Authentication,
 		time.Second*5,
 		params.CtrlConfig,
-		statefulSet)
+		statefulSet,
+		&corev1.ResourceRequirements{},
+	)
 
 	assert.Equal(t, 2, len(statefulSet.Spec.Template.Spec.Containers))
 	assert.Equal(t, "oauth-proxy", statefulSet.Spec.Template.Spec.Containers[1].Name)

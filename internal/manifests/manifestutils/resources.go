@@ -24,13 +24,14 @@ var (
 		"jaeger-frontend": {cpu: 0.045, memory: 0.025},
 	}
 	resourcesMapWithGateway = map[string]componentResource{
-		"distributor":     {cpu: 0.26, memory: 0.11},
-		"ingester":        {cpu: 0.36, memory: 0.49},
-		"compactor":       {cpu: 0.15, memory: 0.17},
-		"querier":         {cpu: 0.09, memory: 0.14},
-		"query-frontend":  {cpu: 0.04, memory: 0.02},
-		"jaeger-frontend": {cpu: 0.04, memory: 0.02},
-		"gateway":         {cpu: 0.06, memory: 0.05},
+		"distributor":           {cpu: 0.26, memory: 0.11},
+		"ingester":              {cpu: 0.36, memory: 0.49},
+		"compactor":             {cpu: 0.15, memory: 0.17},
+		"querier":               {cpu: 0.09, memory: 0.14},
+		"query-frontend":        {cpu: 0.04, memory: 0.02},
+		"jaeger-frontend":       {cpu: 0.03, memory: 0.01},
+		"jaeger-frontend-proxy": {cpu: 0.01, memory: 0.01},
+		"gateway":               {cpu: 0.06, memory: 0.05},
 	}
 )
 

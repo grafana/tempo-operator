@@ -98,7 +98,9 @@ func BuildAll(opts Options) ([]client.Object, error) {
 					tempo.Spec.JaegerUI.Authentication,
 					tempo.Spec.Timeout.Duration,
 					opts.CtrlConfig,
-					statefulSet)
+					statefulSet,
+					tempo.Spec.Resources,
+				)
 				oauthproxy.PatchQueryFrontEndService(getJaegerUIService(services, tempo), tempo.Name)
 				if serviceAccount != nil {
 					oauthproxy.AddServiceAccountAnnotations(serviceAccount, route.Name)
