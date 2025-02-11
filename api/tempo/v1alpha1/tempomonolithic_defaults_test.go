@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -193,8 +194,9 @@ func TestMonolithicDefault(t *testing.T) {
 							Termination: TLSRouteTerminationTypeEdge,
 						},
 						Authentication: &JaegerQueryAuthenticationSpec{
-							Enabled: true,
-							SAR:     "{\"namespace\": \"testns\", \"resource\": \"pods\", \"verb\": \"get\"}",
+							Enabled:   true,
+							SAR:       "{\"namespace\": \"testns\", \"resource\": \"pods\", \"verb\": \"get\"}",
+							Resources: &corev1.ResourceRequirements{},
 						},
 						ServicesQueryDuration:        &defaultServicesDuration,
 						FindTracesConcurrentRequests: 2,
@@ -267,8 +269,9 @@ func TestMonolithicDefault(t *testing.T) {
 							Termination: TLSRouteTerminationTypeEdge,
 						},
 						Authentication: &JaegerQueryAuthenticationSpec{
-							Enabled: false,
-							SAR:     "{\"namespace\": \"testns\", \"resource\": \"pods\", \"verb\": \"get\"}",
+							Enabled:   false,
+							SAR:       "{\"namespace\": \"testns\", \"resource\": \"pods\", \"verb\": \"get\"}",
+							Resources: &corev1.ResourceRequirements{},
 						},
 						ServicesQueryDuration:        &defaultServicesDuration,
 						FindTracesConcurrentRequests: 2,
@@ -333,8 +336,9 @@ func TestMonolithicDefault(t *testing.T) {
 							Termination: TLSRouteTerminationTypeEdge,
 						},
 						Authentication: &JaegerQueryAuthenticationSpec{
-							Enabled: true,
-							SAR:     "{\"namespace\": \"testns\", \"resource\": \"pods\", \"verb\": \"get\"}",
+							Enabled:   true,
+							SAR:       "{\"namespace\": \"testns\", \"resource\": \"pods\", \"verb\": \"get\"}",
+							Resources: &corev1.ResourceRequirements{},
 						},
 						ServicesQueryDuration:        &defaultServicesDuration,
 						FindTracesConcurrentRequests: 2,
@@ -364,7 +368,8 @@ func TestMonolithicDefault(t *testing.T) {
 							Enabled: true,
 						},
 						Authentication: &JaegerQueryAuthenticationSpec{
-							Enabled: false,
+							Enabled:   false,
+							Resources: &corev1.ResourceRequirements{},
 						},
 					},
 				},
@@ -398,8 +403,9 @@ func TestMonolithicDefault(t *testing.T) {
 							Termination: TLSRouteTerminationTypeEdge,
 						},
 						Authentication: &JaegerQueryAuthenticationSpec{
-							Enabled: false,
-							SAR:     "{\"namespace\": \"testns\", \"resource\": \"pods\", \"verb\": \"get\"}",
+							Enabled:   false,
+							SAR:       "{\"namespace\": \"testns\", \"resource\": \"pods\", \"verb\": \"get\"}",
+							Resources: &corev1.ResourceRequirements{},
 						},
 						ServicesQueryDuration:        &defaultServicesDuration,
 						FindTracesConcurrentRequests: 2,
@@ -463,8 +469,9 @@ func TestMonolithicDefault(t *testing.T) {
 							Termination: TLSRouteTerminationTypeEdge,
 						},
 						Authentication: &JaegerQueryAuthenticationSpec{
-							Enabled: false,
-							SAR:     "{\"namespace\": \"testns\", \"resource\": \"pods\", \"verb\": \"get\"}",
+							Enabled:   false,
+							SAR:       "{\"namespace\": \"testns\", \"resource\": \"pods\", \"verb\": \"get\"}",
+							Resources: &corev1.ResourceRequirements{},
 						},
 						ServicesQueryDuration:        &v1.Duration{Duration: time.Duration(100 * 100)},
 						FindTracesConcurrentRequests: 40,
