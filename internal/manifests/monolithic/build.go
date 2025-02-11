@@ -93,13 +93,14 @@ func BuildAll(opts Options) ([]client.Object, error) {
 			}
 			manifests = append(manifests, route)
 			if tempo.Spec.JaegerUI.Authentication.Enabled && !tempo.Spec.Multitenancy.IsGatewayEnabled() {
+
 				oauthproxy.PatchStatefulSetForOauthProxy(
 					tempo.ObjectMeta,
 					tempo.Spec.JaegerUI.Authentication,
 					tempo.Spec.Timeout.Duration,
 					opts.CtrlConfig,
 					statefulSet,
-					tempo.Spec.Resources,
+					tempo.Spec.JaegerUI.Authentication.Resources,
 				)
 				oauthproxy.PatchQueryFrontEndService(getJaegerUIService(services, tempo), tempo.Name)
 				if serviceAccount != nil {

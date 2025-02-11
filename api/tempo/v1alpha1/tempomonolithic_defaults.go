@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/ptr"
@@ -83,6 +84,10 @@ func (r *TempoMonolithic) Default(ctrlConfig configv1alpha1.ProjectConfig) {
 			if len(strings.TrimSpace(r.Spec.JaegerUI.Authentication.SAR)) == 0 {
 				defaultSAR := fmt.Sprintf("{\"namespace\": \"%s\", \"resource\": \"pods\", \"verb\": \"get\"}", r.Namespace)
 				r.Spec.JaegerUI.Authentication.SAR = defaultSAR
+			}
+
+			if r.Spec.JaegerUI.Authentication.Resources == nil {
+				r.Spec.JaegerUI.Authentication.Resources = &corev1.ResourceRequirements{}
 			}
 		}
 
