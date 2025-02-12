@@ -200,11 +200,11 @@ spec:
       - name: jaeger-query
         resources:
           limits:
-            cpu: 80m
-            memory: "42949672"
+            cpu: 60m
+            memory: "21474836"
           requests:
-            cpu: 24m
-            memory: "12884902"
+            cpu: 18m
+            memory: "6442451"
       - name: tempo-query
         resources:
           limits:
