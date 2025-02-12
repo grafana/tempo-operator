@@ -896,7 +896,7 @@ spec:
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
       - description: Ingress defines gateway Ingress options.
-        displayName: Jaeger gateway Ingress Settings
+        displayName: Gateway Ingress Settings
         path: template.gateway.ingress
       - description: Annotations defines the annotations of the Ingress object.
         displayName: Annotations
@@ -924,6 +924,9 @@ spec:
           all pods of this component.
         displayName: PodSecurityContext
         path: template.gateway.podSecurityContext
+      - description: RBAC defines RBAC options.
+        displayName: Query RBAC Settings
+        path: template.gateway.rbac
       - description: Replicas defines the number of replicas to be created for this
           component.
         displayName: Component Replicas

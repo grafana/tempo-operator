@@ -25,6 +25,8 @@ spec:
   template:
     gateway:
       enabled: true
+      rbac:
+        enabled: true
     queryFrontend:
       jaegerQuery:
         enabled: true

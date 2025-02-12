@@ -121,6 +121,10 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 	if err != nil {
 		return nil, err
 	}
+	dep.Spec.Template, err = patchReadRBAC(params, dep.Spec.Template)
+	if err != nil {
+		return nil, err
+	}
 
 	dep.Spec.Template, err = patchTracing(params.Tempo, dep.Spec.Template)
 	if err != nil {
@@ -343,6 +347,27 @@ func patchTraceReadEndpoint(params manifestutils.Params, pod corev1.PodTemplateS
 			fmt.Sprintf("--traces.read.endpoint=%s://%s:%d", httpScheme(params.CtrlConfig.Gates.HTTPEncryption),
 				naming.ServiceFqdn(params.Tempo.Namespace, params.Tempo.Name, manifestutils.QueryFrontendComponentName), manifestutils.PortJaegerQuery), // Jaeger UI upstream
 		},
+	}
+
+	for i := range pod.Spec.Containers {
+		if pod.Spec.Containers[i].Name != containerNameTempoGateway {
+			continue
+		}
+		if err := mergo.Merge(&pod.Spec.Containers[i], container, mergo.WithAppendSlice); err != nil {
+			return corev1.PodTemplateSpec{}, err
+		}
+	}
+
+	return pod, nil
+}
+
+func patchReadRBAC(params manifestutils.Params, pod corev1.PodTemplateSpec) (corev1.PodTemplateSpec, error) {
+	if !params.Tempo.Spec.Template.Gateway.RBAC.Enabled {
+		return pod, nil
+	}
+
+	container := corev1.Container{
+		Args: []string{"--traces.query-rbac=true"},
 	}
 
 	for i := range pod.Spec.Containers {
