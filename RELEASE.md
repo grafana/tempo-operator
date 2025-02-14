@@ -14,7 +14,7 @@ A locally installed [CRC](https://github.com/crc-org/crc) cluster can be used fo
 
 Note: The e2e tests require [opentelemetry-operator](https://github.com/open-telemetry/opentelemetry-operator) and cluster monitoring operator (`crc config set enable-cluster-monitoring true`).
 
-```
+```bash
 kubectl create namespace openshift-tempo-operator
 IMG_PREFIX=docker.io/your_username OPERATOR_VERSION=x.y.z BUNDLE_VARIANT=openshift OPERATOR_NAMESPACE=openshift-tempo-operator make build docker-build docker-push bundle bundle-build bundle-push olm-deploy
 make e2e e2e-openshift
@@ -23,10 +23,9 @@ make e2e e2e-openshift
 ## Release Schedule
 We plan to release the operator monthly, **at the end of each month**.
 
-| Release Date | Version | Release Manager                                          |
-|--------------|---------| -------------------------------------------------------- |
-| Nov          | 0.15.0  | [Ruben Vargas](https://github.com/rubenvp8510)           |
-| Dec          | 0.16.0  | [Pavol Loffay](https://github.com/pavolloffay)           |
-| Jan          | 0.17.0  | [Andreas Gerstmayr](https://github.com/andreasgerstmayr) |
-| Feb          | 0.18.0  | [Israel Blancas](https://github.com/iblancasa)           |
-| Mar          | 0.19.0  | [Benedikt Bongartz](https://github.com/frzifus)          |
+| Version | Release Manager                                          |
+|---------| -------------------------------------------------------- |
+|  0.16.0 | [Ruben Vargas](https://github.com/rubenvp8510)           |
+|  0.17.0 | [Andreas Gerstmayr](https://github.com/andreasgerstmayr) |
+|  0.18.0 | [Benedikt Bongartz](https://github.com/frzifus)          |
+|  0.19.0 | [Pavol Loffay](https://github.com/pavolloffay)           |
