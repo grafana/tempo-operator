@@ -1437,8 +1437,6 @@ spec:
                             description: Enabled defines if the query RBAC should
                               be enabled.
                             type: boolean
-                        required:
-                        - enabled
                         type: object
                     required:
                     - enabled

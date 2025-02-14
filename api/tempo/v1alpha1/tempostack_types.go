@@ -603,6 +603,10 @@ type TempoGatewaySpec struct {
 // RBACSpec defines RBAC options.
 type RBACSpec struct {
 	// Enabled defines if the query RBAC should be enabled.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Query RBAC Enabled"
 	Enabled bool `json:"enabled"`
 }
 

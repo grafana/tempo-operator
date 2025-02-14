@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.14.2
-    createdAt: "2025-02-14T12:34:57Z"
+    createdAt: "2025-02-14T12:37:25Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -998,6 +998,9 @@ spec:
       - description: RBAC defines RBAC options.
         displayName: Query RBAC Settings
         path: template.gateway.rbac
+      - description: Enabled defines if the query RBAC should be enabled.
+        displayName: Query RBAC Enabled
+        path: template.gateway.rbac.enabled
       - description: Replicas defines the number of replicas to be created for this
           component.
         displayName: Component Replicas
