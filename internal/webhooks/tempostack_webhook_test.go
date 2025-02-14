@@ -1401,6 +1401,31 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 				),
 			},
 		},
+		{
+			name: "invalid configuration, rbac and jaeger ui enabled",
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+							JaegerQuery: v1alpha1.JaegerQuerySpec{
+								Enabled: true,
+							},
+						},
+						Gateway: v1alpha1.TempoGatewaySpec{
+							Enabled: true,
+							RBAC: v1alpha1.RBACSpec{
+								Enabled: true,
+							},
+						},
+					},
+				},
+			},
+			expected: field.ErrorList{
+				field.Invalid(path, true,
+					"cannot enable gateway and jaeger query at the same time. The Jaeger UI does not support query RBAC",
+				),
+			},
+		},
 	}
 
 	for _, test := range tests {

@@ -292,6 +292,12 @@ func (v *validator) validateGateway(tempo v1alpha1.TempoStack) field.ErrorList {
 					"cannot enable gateway and jaeger query ingress at the same time, please use the Jaeger UI from the gateway",
 				)}
 		}
+		if tempo.Spec.Template.Gateway.RBAC.Enabled && tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled {
+			return field.ErrorList{
+				field.Invalid(path, tempo.Spec.Template.Gateway.RBAC.Enabled,
+					"cannot enable gateway and jaeger query at the same time. The Jaeger UI does not support query RBAC",
+				)}
+		}
 
 		if tempo.Spec.Tenants == nil {
 			return field.ErrorList{

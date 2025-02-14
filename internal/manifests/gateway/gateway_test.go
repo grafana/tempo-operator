@@ -515,6 +515,128 @@ func TestPatchTraceReadEndpoint(t *testing.T) {
 	}
 }
 
+func TestPatchReadRBAC(t *testing.T) {
+	tt := []struct {
+		name        string
+		inputParams manifestutils.Params
+		inputPod    corev1.PodTemplateSpec
+		expectPod   corev1.PodTemplateSpec
+		expectErr   error
+	}{
+		{
+			name: "with read RBAC",
+			inputParams: manifestutils.Params{
+				Tempo: v1alpha1.TempoStack{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "name",
+						Namespace: "default",
+					},
+					Spec: v1alpha1.TempoStackSpec{
+						Template: v1alpha1.TempoTemplateSpec{
+							Gateway: v1alpha1.TempoGatewaySpec{
+								Enabled: true,
+								RBAC: v1alpha1.RBACSpec{
+									Enabled: true,
+								},
+							},
+						},
+					},
+				},
+			},
+			inputPod: corev1.PodTemplateSpec{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: containerNameTempoGateway,
+							Args: []string{
+								"--abc",
+							},
+						},
+						{
+							Name: "second",
+							Args: []string{
+								"--xyz",
+							},
+						},
+					},
+				},
+			},
+			expectPod: corev1.PodTemplateSpec{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: containerNameTempoGateway,
+							Args: []string{
+								"--abc",
+								"--traces.query-rbac=true",
+							},
+						},
+						{
+							Name: "second",
+							Args: []string{
+								"--xyz",
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "without trace read RBAC",
+			inputParams: manifestutils.Params{
+				Tempo: v1alpha1.TempoStack{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "name",
+						Namespace: "default",
+					},
+					Spec: v1alpha1.TempoStackSpec{
+						Template: v1alpha1.TempoTemplateSpec{
+							Gateway: v1alpha1.TempoGatewaySpec{
+								Enabled: true,
+								RBAC: v1alpha1.RBACSpec{
+									Enabled: false,
+								},
+							},
+						},
+					},
+				},
+			},
+			inputPod: corev1.PodTemplateSpec{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: containerNameTempoGateway,
+							Args: []string{
+								"--abc",
+							},
+						},
+					},
+				},
+			},
+			expectPod: corev1.PodTemplateSpec{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: containerNameTempoGateway,
+							Args: []string{
+								"--abc",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			pod, err := patchReadRBAC(tc.inputParams, tc.inputPod)
+			require.Equal(t, tc.expectErr, err)
+			assert.Equal(t, tc.expectPod, pod)
+		})
+	}
+}
+
 func TestTLSParameters(t *testing.T) {
 	tempo := v1alpha1.TempoStack{
 		ObjectMeta: metav1.ObjectMeta{

@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.14.2
-    createdAt: "2025-02-05T16:29:09Z"
+    createdAt: "2025-02-14T12:37:25Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -967,7 +967,7 @@ spec:
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
       - description: Ingress defines gateway Ingress options.
-        displayName: Jaeger gateway Ingress Settings
+        displayName: Gateway Ingress Settings
         path: template.gateway.ingress
       - description: Annotations defines the annotations of the Ingress object.
         displayName: Annotations
@@ -995,6 +995,12 @@ spec:
           all pods of this component.
         displayName: PodSecurityContext
         path: template.gateway.podSecurityContext
+      - description: RBAC defines RBAC options.
+        displayName: Query RBAC Settings
+        path: template.gateway.rbac
+      - description: Enabled defines if the query RBAC should be enabled.
+        displayName: Query RBAC Enabled
+        path: template.gateway.rbac.enabled
       - description: Replicas defines the number of replicas to be created for this
           component.
         displayName: Component Replicas
@@ -1520,7 +1526,7 @@ spec:
                 - name: RELATED_IMAGE_TEMPO_QUERY
                   value: docker.io/grafana/tempo-query:2.7.0
                 - name: RELATED_IMAGE_TEMPO_GATEWAY
-                  value: quay.io/observatorium/api:main-2024-11-05-28e4c83
+                  value: quay.io/observatorium/api:main-2025-02-12-0636771
                 - name: RELATED_IMAGE_TEMPO_GATEWAY_OPA
                   value: quay.io/observatorium/opa-openshift:main-2024-10-09-7237863
                 - name: RELATED_IMAGE_OAUTH_PROXY
@@ -1655,7 +1661,7 @@ spec:
     name: jaeger-query
   - image: docker.io/grafana/tempo-query:2.7.0
     name: tempo-query
-  - image: quay.io/observatorium/api:main-2024-11-05-28e4c83
+  - image: quay.io/observatorium/api:main-2025-02-12-0636771
     name: tempo-gateway
   - image: quay.io/observatorium/opa-openshift:main-2024-10-09-7237863
     name: tempo-gateway-opa
