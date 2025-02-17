@@ -170,7 +170,6 @@ spec:
         - --web.healthchecks.url=https://localhost:8080
         - --tls.client-auth-type=NoClientCert
         - --traces.read.endpoint=https://tempo-simplest-query-frontend.chainsaw-multitenancy.svc.cluster.local:16686
-        - --traces.query-rbac=true
         livenessProbe:
           failureThreshold: 10
           httpGet:
