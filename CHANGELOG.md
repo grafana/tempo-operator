@@ -3,6 +3,52 @@ Changes by Version
 
 <!-- next version -->
 
+## 0.15.0
+
+### 🛑 Breaking changes 🛑
+
+- `tempostack, tempomonolithic`: Update Tempo to 2.7.0 (#1110)
+  Update Tempo to 2.7.0 https://github.com/grafana/tempo/releases/tag/v2.7.0
+  The Tempo instrumentation changed from Jaeger to OpenTelemetry with OTLP/http exporter.
+  
+  The `spec.observability.tracing.jaeger_agent_endpoint` is deprecated in favor of `spec.observability.tracing.otlp_http_endpoint`.
+  ```yaml
+  spec:
+    observability:
+      tracing:
+        jaeger_agent_endpoint: # Deprecated!
+        sampling_fraction: "1"
+        otlp_http_endpoint: http://localhost:4320
+  ```
+  
+
+### 💡 Enhancements 💡
+
+- `tempostack`: Add support for query RBAC when Gateway/multitenancy is used. (#1100)
+  This feature allows users to apply query RBAC in the multitenancy mode.
+  The RBAC allows filtering span/resource/scope attributes and events based on the namespaces which a user querying the data can access.
+  For instance, a user can only see attributes from namespaces it can access.
+  
+  ```yaml
+  spec:
+    template:
+      gateway:
+        enabled: true
+        rbac:
+          enabled: true
+  ```
+  
+- `operator`: Remove kube-rbac-proxy (#1094)
+  The image won't be available and won't be mantained, switched to use WithAuthenticationAndAuthorization
+
+### 🧰 Bug fixes 🧰
+
+- `tempostack`: Include insecure option and tls options when STS S3 token is enabled (#1109)
+- `tempostack, tempomonolithic`: Assign a percentage of the resources to oauth-proxy if resources are not specified (#1107)
+
+### Components
+- Tempo: [v2.7.0](https://github.com/grafana/tempo/releases/tag/v2.7.0)
+
 ## 0.14.2
 
 ### 🧰 Bug fixes 🧰
