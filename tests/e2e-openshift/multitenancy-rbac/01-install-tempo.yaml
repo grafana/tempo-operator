@@ -2,8 +2,8 @@
 apiVersion: tempo.grafana.com/v1alpha1
 kind:  TempoStack
 metadata:
-  name: simplest
-  namespace: chainsaw-multitenancy
+  name: simplst
+  namespace: chainsaw-rbac
 spec:
   storage:
     secret:
@@ -25,14 +25,13 @@ spec:
   template:
     gateway:
       enabled: true
-    queryFrontend:
-      jaegerQuery:
+      rbac:
         enabled: true
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: tempostack-traces-reader
+  name: tempostack-traces-reader-rbac
 rules:
   - apiGroups:
       - 'tempo.grafana.com'
@@ -46,23 +45,23 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: tempostack-traces-reader
+  name: tempostack-traces-reader-rbac
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: tempostack-traces-reader
+  name: tempostack-traces-reader-rbac
 subjects:
   - kind: Group
     apiGroup: rbac.authorization.k8s.io
     name: system:authenticated
 ---
-# grant the default serviceaccount in the chainsaw-multitenancy namespace
-# access to view resource in chainsaw-multitenancy namespace
+# grant the default serviceaccount in the chainsaw-rbac namespace
+# access to view resource in chainsaw-rbac namespace
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: view
-  namespace: chainsaw-multitenancy
+  namespace: chainsaw-rbac
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -70,4 +69,4 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: default
-  namespace: chainsaw-multitenancy
+  namespace: chainsaw-rbac
