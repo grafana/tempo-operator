@@ -4,7 +4,7 @@ TOKEN=$(oc create token prometheus-user-workload -n openshift-user-workload-moni
 THANOS_QUERIER_HOST=$(oc get route thanos-querier -n openshift-monitoring -o json | jq -r '.spec.host')
 
 #Check metrics used in the prometheus rules created for TempoStack. Refer issue https://issues.redhat.com/browse/TRACING-3399 for skipped metrics.
-metrics="tempo_request_duration_seconds_count tempo_request_duration_seconds_sum tempo_request_duration_seconds_bucket tempo_build_info tempo_ingester_bytes_received_total tempo_ingester_flush_failed_retries_total tempo_ingester_failed_flushes_total tempo_ring_members"
+metrics="tempo_request_duration_seconds_count tempo_request_duration_seconds_sum tempo_request_duration_seconds_bucket tempo_build_info tempo_ingester_bytes_received_total tempo_ingester_flush_failed_retries_total tempo_ingester_failed_flushes_total tempo_ring_members tempo_operator_tempostack_managed tempo_operator_tempostack_storage_backend tempo_operator_tempostack_multi_tenancy"
 
 for metric in $metrics; do
 query="$metric"
