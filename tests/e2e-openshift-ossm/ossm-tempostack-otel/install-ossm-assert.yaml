@@ -72,19 +72,3 @@ status:
   - otlp-app
   - tracing-system
 
----
-apiVersion: v1
-kind: Pod
-metadata:
-  labels:
-    app: kiali
-    app.kubernetes.io/instance: kiali
-    app.kubernetes.io/name: kiali
-    app.kubernetes.io/part-of: kiali
-  namespace: istio-system
-status:
-  containerStatuses:
-  - name: kiali
-    ready: true
-    started: true
-  phase: Running
