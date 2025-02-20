@@ -4,6 +4,9 @@ metadata:
   name: kiali
   namespace: istio-system
 spec:
+  kiali_feature_flags:
+    certificates_information_indicators:
+      enabled: false
   external_services:
     tracing:
       query_timeout: 30
