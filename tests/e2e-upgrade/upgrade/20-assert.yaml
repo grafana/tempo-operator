@@ -23,6 +23,4 @@ metadata:
     control-plane: controller-manager
 status:
   containerStatuses:
-  # assert that the readiness probes of both containers (kube-rbac-proxy and tempo-operator) are successful
-  - ready: true
   - ready: true
