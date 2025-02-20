@@ -994,3 +994,289 @@ func TestStatefulsetGateway(t *testing.T) {
 		},
 	}, sts.Spec.Template.Spec.Containers[4])
 }
+
+func TestStatefulsetGatewayRBAC(t *testing.T) {
+	opts := Options{
+		CtrlConfig: configv1alpha1.ProjectConfig{
+			DefaultImages: configv1alpha1.ImagesSpec{
+				TempoGateway:    "quay.io/observatorium/api:x.y.z",
+				TempoGatewayOpa: "quay.io/observatorium/opa-openshift:x.y.z",
+			},
+			Gates: configv1alpha1.FeatureGates{
+				OpenShift: configv1alpha1.OpenShiftFeatureGates{
+					ServingCertsService: true,
+				},
+			},
+		},
+		Tempo: v1alpha1.TempoMonolithic{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "sample",
+				Namespace: "default",
+			},
+			Spec: v1alpha1.TempoMonolithicSpec{
+				Timeout: metav1.Duration{Duration: time.Second * 5},
+				Storage: &v1alpha1.MonolithicStorageSpec{
+					Traces: v1alpha1.MonolithicTracesStorageSpec{
+						Backend: "memory",
+					},
+				},
+				Ingestion: &v1alpha1.MonolithicIngestionSpec{
+					OTLP: &v1alpha1.MonolithicIngestionOTLPSpec{
+						GRPC: &v1alpha1.MonolithicIngestionOTLPProtocolsGRPCSpec{
+							Enabled: true,
+						},
+					},
+				},
+				JaegerUI: &v1alpha1.MonolithicJaegerUISpec{
+					Enabled: false,
+				},
+				Query: &v1alpha1.MonolithicQuerySpec{
+					RBAC: v1alpha1.RBACSpec{
+						Enabled: true,
+					},
+				},
+				Multitenancy: &v1alpha1.MonolithicMultitenancySpec{
+					Enabled: true,
+					TenantsSpec: v1alpha1.TenantsSpec{
+						Mode: v1alpha1.ModeOpenShift,
+						Authentication: []v1alpha1.AuthenticationSpec{
+							{
+								TenantName: "dev",
+								TenantID:   "1610b0c3-c509-4592-a256-a1871353dbfa",
+							},
+							{
+								TenantName: "prod",
+								TenantID:   "1610b0c3-c509-4592-a256-a1871353dbfb",
+							},
+						},
+					},
+					Resources: &corev1.ResourceRequirements{
+						Requests: corev1.ResourceList{
+							corev1.ResourceCPU:    resource.MustParse("1Gi"),
+							corev1.ResourceMemory: resource.MustParse("2Gi"),
+						},
+						Limits: corev1.ResourceList{
+							corev1.ResourceCPU:    resource.MustParse("3Gi"),
+							corev1.ResourceMemory: resource.MustParse("4Gi"),
+						},
+					},
+				},
+			},
+		},
+	}
+	sts, err := BuildTempoStatefulset(opts, map[string]string{})
+	require.NoError(t, err)
+
+	require.Equal(t, corev1.Container{
+		Name:  "tempo-gateway",
+		Image: "quay.io/observatorium/api:x.y.z",
+		Env:   proxy.ReadProxyVarsFromEnv(),
+		Args: []string{
+			"--web.listen=0.0.0.0:8080",
+			"--web.internal.listen=0.0.0.0:8081",
+			"--traces.tenant-header=x-scope-orgid",
+			"--traces.tempo.endpoint=http://localhost:3200",
+			"--traces.write-timeout=5s",
+			"--rbac.config=/etc/tempo-gateway/rbac/rbac.yaml",
+			"--tenants.config=/etc/tempo-gateway/tenants/tenants.yaml",
+			"--log.level=info",
+			"--grpc.listen=0.0.0.0:8090",
+			"--traces.write.otlpgrpc.endpoint=localhost:4317",
+			"--traces.write.otlphttp.endpoint=http://localhost:4318",
+			"--traces.query-rbac=true",
+			"--tls.server.cert-file=/etc/tempo-gateway/serving-cert/tls.crt",
+			"--tls.server.key-file=/etc/tempo-gateway/serving-cert/tls.key",
+			"--tls.healthchecks.server-ca-file=/etc/tempo-gateway/serving-ca/service-ca.crt",
+			"--tls.healthchecks.server-name=tempo-sample-gateway.default.svc.cluster.local",
+			"--web.healthchecks.url=https://localhost:8080",
+			"--tls.client-auth-type=NoClientCert",
+		},
+		Ports: []corev1.ContainerPort{
+			{
+				Name:          "public",
+				ContainerPort: 8080,
+				Protocol:      corev1.ProtocolTCP,
+			},
+			{
+				Name:          "internal",
+				ContainerPort: 8081,
+				Protocol:      corev1.ProtocolTCP,
+			},
+			{
+				Name:          "grpc-public",
+				ContainerPort: 8090,
+				Protocol:      corev1.ProtocolTCP,
+			},
+		},
+		LivenessProbe: &corev1.Probe{
+			ProbeHandler: corev1.ProbeHandler{
+				HTTPGet: &corev1.HTTPGetAction{
+					Path:   "/live",
+					Port:   intstr.FromString("internal"),
+					Scheme: corev1.URISchemeHTTP,
+				},
+			},
+			TimeoutSeconds:   2,
+			PeriodSeconds:    30,
+			FailureThreshold: 10,
+		},
+		ReadinessProbe: &corev1.Probe{
+			ProbeHandler: corev1.ProbeHandler{
+				HTTPGet: &corev1.HTTPGetAction{
+					Path:   "/ready",
+					Port:   intstr.FromString("internal"),
+					Scheme: corev1.URISchemeHTTP,
+				},
+			},
+			TimeoutSeconds:   1,
+			PeriodSeconds:    5,
+			FailureThreshold: 12,
+		},
+		VolumeMounts: []corev1.VolumeMount{
+			{
+				Name:      "gateway-rbac",
+				ReadOnly:  true,
+				MountPath: "/etc/tempo-gateway/rbac",
+			},
+			{
+				Name:      "gateway-tenants",
+				ReadOnly:  true,
+				MountPath: "/etc/tempo-gateway/tenants",
+			},
+			{
+				Name:      "tempo-sample-serving-cabundle",
+				ReadOnly:  true,
+				MountPath: "/etc/tempo-gateway/serving-ca",
+			},
+			{
+				Name:      "tempo-sample-gateway-serving-cert",
+				ReadOnly:  true,
+				MountPath: "/etc/tempo-gateway/serving-cert",
+			},
+		},
+		Resources: corev1.ResourceRequirements{
+			Requests: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("1Gi"),
+				corev1.ResourceMemory: resource.MustParse("2Gi"),
+			},
+			Limits: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("3Gi"),
+				corev1.ResourceMemory: resource.MustParse("4Gi"),
+			},
+		},
+		SecurityContext: manifestutils.TempoContainerSecurityContext(),
+	}, sts.Spec.Template.Spec.Containers[1])
+
+	require.Equal(t, []corev1.Volume{
+		{
+			Name: "gateway-rbac",
+			VolumeSource: corev1.VolumeSource{
+				ConfigMap: &corev1.ConfigMapVolumeSource{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: "tempo-sample-gateway",
+					},
+					Items: []corev1.KeyToPath{
+						{
+							Key:  "rbac.yaml",
+							Path: "rbac.yaml",
+						},
+					},
+				},
+			},
+		},
+		{
+			Name: "gateway-tenants",
+			VolumeSource: corev1.VolumeSource{
+				Secret: &corev1.SecretVolumeSource{
+					SecretName: "tempo-sample-gateway",
+					Items: []corev1.KeyToPath{
+						{
+							Key:  "tenants.yaml",
+							Path: "tenants.yaml",
+						},
+					},
+				},
+			},
+		},
+		{
+			Name: "tempo-sample-serving-cabundle",
+			VolumeSource: corev1.VolumeSource{
+				ConfigMap: &corev1.ConfigMapVolumeSource{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: "tempo-sample-serving-cabundle",
+					},
+				},
+			},
+		},
+		{
+			Name: "tempo-sample-gateway-serving-cert",
+			VolumeSource: corev1.VolumeSource{
+				Secret: &corev1.SecretVolumeSource{
+					SecretName: "tempo-sample-gateway-serving-cert",
+				},
+			},
+		},
+	}, sts.Spec.Template.Spec.Volumes[2:])
+
+	require.Equal(t, corev1.Container{
+		Name:  "tempo-gateway-opa",
+		Image: "quay.io/observatorium/opa-openshift:x.y.z",
+		Args: []string{
+			"--log.level=warn",
+			"--opa.admin-groups=system:cluster-admins,cluster-admin,dedicated-admin",
+			"--opa.matcher=kubernetes_namespace_name",
+			"--web.listen=:8082",
+			"--web.internal.listen=:8083",
+			"--web.healthchecks.url=http://localhost:8082",
+			"--opa.package=tempomonolithic",
+			"--openshift.mappings=dev=tempo.grafana.com",
+			"--openshift.mappings=prod=tempo.grafana.com",
+		},
+		Ports: []corev1.ContainerPort{
+			{
+				Name:          "public",
+				ContainerPort: 8082,
+				Protocol:      corev1.ProtocolTCP,
+			},
+			{
+				Name:          "opa-metrics",
+				ContainerPort: 8083,
+				Protocol:      corev1.ProtocolTCP,
+			},
+		},
+		LivenessProbe: &corev1.Probe{
+			ProbeHandler: corev1.ProbeHandler{
+				HTTPGet: &corev1.HTTPGetAction{
+					Path:   "/live",
+					Port:   intstr.FromInt(8083),
+					Scheme: corev1.URISchemeHTTP,
+				},
+			},
+			TimeoutSeconds:   2,
+			PeriodSeconds:    30,
+			FailureThreshold: 10,
+		},
+		ReadinessProbe: &corev1.Probe{
+			ProbeHandler: corev1.ProbeHandler{
+				HTTPGet: &corev1.HTTPGetAction{
+					Path:   "/ready",
+					Port:   intstr.FromInt(8083),
+					Scheme: corev1.URISchemeHTTP,
+				},
+			},
+			TimeoutSeconds:   1,
+			PeriodSeconds:    5,
+			FailureThreshold: 12,
+		},
+		Resources: corev1.ResourceRequirements{
+			Requests: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("1Gi"),
+				corev1.ResourceMemory: resource.MustParse("2Gi"),
+			},
+			Limits: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("3Gi"),
+				corev1.ResourceMemory: resource.MustParse("4Gi"),
+			},
+		},
+	}, sts.Spec.Template.Spec.Containers[2])
+}

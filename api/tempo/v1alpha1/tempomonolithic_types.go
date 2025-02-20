@@ -68,7 +68,24 @@ type TempoMonolithicSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Extra Configuration",xDescriptors="urn:alm:descriptor:com.tectonic.ui:advanced"
 	ExtraConfig *ExtraConfigSpec `json:"extraConfig,omitempty"`
 
+	// Query defines query configuration.
+	//
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Query Configuration",xDescriptors="urn:alm:descriptor:com.tectonic.ui:advanced"
+	Query *MonolithicQuerySpec `json:"query,omitempty"`
+
 	MonolithicSchedulerSpec `json:",inline"`
+}
+
+// MonolithicQuerySpec defines the query configuration.
+type MonolithicQuerySpec struct {
+	// RBAC defines query RBAC options.
+	// This option can be used only with multi-tenancy.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Query RBAC Settings"
+	RBAC RBACSpec `json:"rbac,omitempty"`
 }
 
 // MonolithicStorageSpec defines the storage for the Tempo deployment.

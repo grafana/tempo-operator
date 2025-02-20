@@ -1531,6 +1531,19 @@ spec:
                         type: object
                     type: object
                 type: object
+              query:
+                description: Query defines query configuration.
+                properties:
+                  rbac:
+                    description: |-
+                      RBAC defines query RBAC options.
+                      This option can be used only with multi-tenancy.
+                    properties:
+                      enabled:
+                        description: Enabled defines if the query RBAC should be enabled.
+                        type: boolean
+                    type: object
+                type: object
               resources:
                 description: Resources defines the compute resource requirements of
                   the Tempo container.
