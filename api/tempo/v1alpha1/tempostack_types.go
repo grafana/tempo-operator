@@ -592,7 +592,7 @@ type TempoGatewaySpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Gateway Ingress Settings"
 	Ingress IngressSpec `json:"ingress,omitempty"`
 
-	// RBAC defines RBAC options.
+	// RBAC defines query RBAC options.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional

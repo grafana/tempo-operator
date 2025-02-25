@@ -49,6 +49,7 @@ func TestMonolithicDefault(t *testing.T) {
 					},
 					Management: "Managed",
 					Timeout:    metav1.Duration{Duration: time.Second * 30},
+					Query:      &MonolithicQuerySpec{},
 				},
 			},
 		},
@@ -83,6 +84,7 @@ func TestMonolithicDefault(t *testing.T) {
 					},
 					Management: "Managed",
 					Timeout:    metav1.Duration{Duration: time.Second * 30},
+					Query:      &MonolithicQuerySpec{},
 				},
 			},
 		},
@@ -109,6 +111,7 @@ func TestMonolithicDefault(t *testing.T) {
 					},
 					Management: "Unmanaged",
 					Timeout:    metav1.Duration{Duration: time.Second * 30},
+					Query:      &MonolithicQuerySpec{},
 				},
 			},
 			expected: &TempoMonolithic{
@@ -131,6 +134,7 @@ func TestMonolithicDefault(t *testing.T) {
 					},
 					Management: "Unmanaged",
 					Timeout:    metav1.Duration{Duration: time.Second * 30},
+					Query:      &MonolithicQuerySpec{},
 				},
 			},
 		},
@@ -203,6 +207,7 @@ func TestMonolithicDefault(t *testing.T) {
 					},
 					Management: "Managed",
 					Timeout:    metav1.Duration{Duration: time.Second * 30},
+					Query:      &MonolithicQuerySpec{},
 				},
 			},
 		},
@@ -278,6 +283,7 @@ func TestMonolithicDefault(t *testing.T) {
 					},
 					Management: "Managed",
 					Timeout:    metav1.Duration{Duration: time.Second * 30},
+					Query:      &MonolithicQuerySpec{},
 				},
 			},
 		},
@@ -345,6 +351,7 @@ func TestMonolithicDefault(t *testing.T) {
 					},
 					Management: "Managed",
 					Timeout:    metav1.Duration{Duration: time.Second * 30},
+					Query:      &MonolithicQuerySpec{},
 				},
 			},
 		},
@@ -412,6 +419,7 @@ func TestMonolithicDefault(t *testing.T) {
 					},
 					Management: "Managed",
 					Timeout:    metav1.Duration{Duration: time.Second * 30},
+					Query:      &MonolithicQuerySpec{},
 				},
 			},
 		},
@@ -478,6 +486,60 @@ func TestMonolithicDefault(t *testing.T) {
 					},
 					Management: "Managed",
 					Timeout:    metav1.Duration{Duration: time.Hour},
+					Query:      &MonolithicQuerySpec{},
+				},
+			},
+		},
+		{
+			name: "query defined",
+			input: &TempoMonolithic{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      "test",
+					Namespace: "testns",
+				},
+				Spec: TempoMonolithicSpec{
+					Storage: &MonolithicStorageSpec{
+						Traces: MonolithicTracesStorageSpec{
+							Backend: "memory",
+							Size:    &twoGBQuantity,
+						},
+					},
+					Query: &MonolithicQuerySpec{
+						RBAC: RBACSpec{
+							Enabled: true,
+						},
+					},
+				},
+			},
+			expected: &TempoMonolithic{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      "test",
+					Namespace: "testns",
+				},
+				Spec: TempoMonolithicSpec{
+					Ingestion: &MonolithicIngestionSpec{
+						OTLP: &MonolithicIngestionOTLPSpec{
+							GRPC: &MonolithicIngestionOTLPProtocolsGRPCSpec{
+								Enabled: true,
+							},
+							HTTP: &MonolithicIngestionOTLPProtocolsHTTPSpec{
+								Enabled: true,
+							},
+						},
+					},
+					Storage: &MonolithicStorageSpec{
+						Traces: MonolithicTracesStorageSpec{
+							Backend: "memory",
+							Size:    &twoGBQuantity,
+						},
+					},
+					Management: "Managed",
+					Timeout:    metav1.Duration{Duration: time.Second * 30},
+					Query: &MonolithicQuerySpec{
+						RBAC: RBACSpec{
+							Enabled: true,
+						},
+					},
 				},
 			},
 		},

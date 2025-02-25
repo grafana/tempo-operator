@@ -102,4 +102,7 @@ func (r *TempoMonolithic) Default(ctrlConfig configv1alpha1.ProjectConfig) {
 	if r.Spec.Timeout.Duration == 0 {
 		r.Spec.Timeout = defaultTimeout
 	}
+	if r.Spec.Query == nil {
+		r.Spec.Query = &MonolithicQuerySpec{}
+	}
 }

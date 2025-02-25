@@ -148,6 +148,70 @@ func TestMonolithicValidate(t *testing.T) {
 				"spec.tenants.authorization should not be defined in openshift mode",
 			)},
 		},
+		{
+			name: "RBAC and jaeger UI enabled",
+			tempo: v1alpha1.TempoMonolithic{
+				Spec: v1alpha1.TempoMonolithicSpec{
+					Query: &v1alpha1.MonolithicQuerySpec{
+						RBAC: v1alpha1.RBACSpec{
+							Enabled: true,
+						},
+					},
+					JaegerUI: &v1alpha1.MonolithicJaegerUISpec{
+						Enabled: true,
+					},
+					Multitenancy: &v1alpha1.MonolithicMultitenancySpec{
+						Enabled: true,
+					},
+				},
+			},
+			warnings: admission.Warnings{},
+			errors: field.ErrorList{field.Invalid(
+				field.NewPath("spec", "rbac", "enabled"),
+				true,
+				"cannot enable RBAC and jaeger query at the same time. The Jaeger UI does not support query RBAC",
+			)},
+		},
+
+		{
+			name: "RBAC and multitenancy disabled",
+			tempo: v1alpha1.TempoMonolithic{
+				Spec: v1alpha1.TempoMonolithicSpec{
+					Query: &v1alpha1.MonolithicQuerySpec{
+						RBAC: v1alpha1.RBACSpec{
+							Enabled: true,
+						},
+					},
+					Multitenancy: &v1alpha1.MonolithicMultitenancySpec{
+						Enabled: false,
+					},
+				},
+			},
+			warnings: admission.Warnings{},
+			errors: field.ErrorList{field.Invalid(
+				field.NewPath("spec", "rbac", "enabled"),
+				true,
+				"RBAC can only be enabled if multi-tenancy is enabled",
+			)},
+		},
+		{
+			name: "RBAC and multitenancy nil",
+			tempo: v1alpha1.TempoMonolithic{
+				Spec: v1alpha1.TempoMonolithicSpec{
+					Query: &v1alpha1.MonolithicQuerySpec{
+						RBAC: v1alpha1.RBACSpec{
+							Enabled: true,
+						},
+					},
+				},
+			},
+			warnings: admission.Warnings{},
+			errors: field.ErrorList{field.Invalid(
+				field.NewPath("spec", "rbac", "enabled"),
+				true,
+				"RBAC can only be enabled if multi-tenancy is enabled",
+			)},
+		},
 
 		// observability
 		{

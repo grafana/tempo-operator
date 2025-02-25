@@ -111,6 +111,9 @@ spec:                                    # TempoMonolithicSpec defines the desir
         enabled: false                   # Enabled defines if PrometheusRule objects should be created for this Tempo deployment.
       serviceMonitors:                   # ServiceMonitors defines the ServiceMonitor configuration.
         enabled: false                   # Enabled defines if ServiceMonitor objects should be created for this Tempo deployment.
+  query:                                 # Query defines query configuration.
+    rbac:                                # RBAC defines query RBAC options. This option can be used only with multi-tenancy.
+      enabled: false                     # Enabled defines if the query RBAC should be enabled.
   serviceAccount: ""                     # ServiceAccount defines the Service Account to use for all Tempo components.
   storage:                               # Storage defines the storage configuration.
     traces:                              # Traces defines the storage configuration for traces.

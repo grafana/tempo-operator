@@ -431,6 +431,10 @@ func configureGateway(opts Options, sts *appsv1.StatefulSet) error {
 		args = append(args, fmt.Sprintf("--traces.read.endpoint=http://localhost:%d", manifestutils.PortJaegerQuery)) // Jaeger UI upstream
 	}
 
+	if tempo.Spec.Query != nil && tempo.Spec.Query.RBAC.Enabled {
+		args = append(args, "--traces.query-rbac=true")
+	}
+
 	if opts.CtrlConfig.Gates.OpenShift.ServingCertsService {
 		args = append(args, []string{
 			fmt.Sprintf("--tls.server.cert-file=%s", path.Join(servingCertDir, "tls.crt")), // TLS of public HTTP (8080) and gRPC (8090) server

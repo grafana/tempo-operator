@@ -141,11 +141,24 @@ func (v *monolithicValidator) validateJaegerUI(tempo tempov1alpha1.TempoMonolith
 			"the openshiftRoute feature gate must be enabled to create a route for Jaeger UI",
 		)}
 	}
+	if tempo.Spec.Query != nil && tempo.Spec.Query.RBAC.Enabled && tempo.Spec.JaegerUI.Enabled {
+		return field.ErrorList{
+			field.Invalid(field.NewPath("spec", "rbac", "enabled"), tempo.Spec.Query.RBAC.Enabled,
+				"cannot enable RBAC and jaeger query at the same time. The Jaeger UI does not support query RBAC",
+			)}
+	}
 
 	return nil
 }
 
 func (v *monolithicValidator) validateMultitenancy(tempo tempov1alpha1.TempoMonolithic) field.ErrorList {
+	if tempo.Spec.Query != nil && tempo.Spec.Query.RBAC.Enabled && (tempo.Spec.Multitenancy == nil || !tempo.Spec.Multitenancy.Enabled) {
+		return field.ErrorList{
+			field.Invalid(field.NewPath("spec", "rbac", "enabled"), tempo.Spec.Query.RBAC.Enabled,
+				"RBAC can only be enabled if multi-tenancy is enabled",
+			)}
+	}
+
 	if !tempo.Spec.Multitenancy.IsGatewayEnabled() {
 		return nil
 	}

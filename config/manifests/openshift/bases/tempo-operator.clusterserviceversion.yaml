@@ -388,6 +388,19 @@ spec:
       - description: ServiceMonitors defines the ServiceMonitor configuration.
         displayName: Service Monitors
         path: observability.metrics.serviceMonitors
+      - description: Query defines query configuration.
+        displayName: Query Configuration
+        path: query
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:advanced
+      - description: |-
+          RBAC defines query RBAC options.
+          This option can be used only with multi-tenancy.
+        displayName: Query RBAC Settings
+        path: query.rbac
+      - description: Enabled defines if the query RBAC should be enabled.
+        displayName: Query RBAC Enabled
+        path: query.rbac.enabled
       - description: ServiceAccount defines the Service Account to use for all Tempo
           components.
         displayName: Service Account
@@ -924,7 +937,7 @@ spec:
           all pods of this component.
         displayName: PodSecurityContext
         path: template.gateway.podSecurityContext
-      - description: RBAC defines RBAC options.
+      - description: RBAC defines query RBAC options.
         displayName: Query RBAC Settings
         path: template.gateway.rbac
       - description: Enabled defines if the query RBAC should be enabled.
