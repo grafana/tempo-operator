@@ -3,6 +3,26 @@ Changes by Version
 
 <!-- next version -->
 
+## 0.15.3
+
+### 💡 Enhancements 💡
+
+- `tempomonolithic`: Add support for query RBAC (#1131)
+  This feature allows users to apply query RBAC in the multitenancy mode.
+  The RBAC allows filtering span/resource/scope attributes and events based on the namespaces which a user querying the data can access.
+  For instance, a user can only see attributes from namespaces it can access.
+  
+  ```yaml
+  spec:
+    query:
+      rbac:
+        enabled: true
+  ```
+  
+
+### Components
+- Tempo: [v2.7.1](https://github.com/grafana/tempo/releases/tag/v2.7.1)
+
 ## 0.15.2
 
 ### Components
