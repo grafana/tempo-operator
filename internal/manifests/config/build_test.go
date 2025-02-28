@@ -1019,12 +1019,14 @@ query_frontend:
 	}
 }
 
-func TestBuildTenantsOverrides(t *testing.T) {
+func TestBuildTenantsOverrides_ingestion(t *testing.T) {
 	expectedCfg := `
 ---
 overrides:
   "mytenant":
-    ingestion_burst_size_bytes: 100
+    ingestion:
+      burst_size_bytes: 100
+    read:
 `
 	tempo := v1alpha1.TempoStack{
 		ObjectMeta: metav1.ObjectMeta{
@@ -1037,6 +1039,35 @@ overrides:
 						Ingestion: v1alpha1.IngestionLimitSpec{
 							IngestionBurstSizeBytes: intToPointer(100),
 						},
+					},
+				},
+			},
+		},
+	}
+	cfg, err := buildTenantOverrides(tempo)
+	require.NoError(t, err)
+	require.YAMLEq(t, expectedCfg, string(cfg))
+}
+
+func TestBuildTenantsOverrides_retention(t *testing.T) {
+	expectedCfg := `
+---
+overrides:
+  "mytenant":
+    ingestion:
+    read:
+    compaction:
+      block_retention: 24h0m0s
+`
+	tempo := v1alpha1.TempoStack{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "test",
+		},
+		Spec: v1alpha1.TempoStackSpec{
+			Retention: v1alpha1.RetentionSpec{
+				PerTenant: map[string]v1alpha1.RetentionConfig{
+					"mytenant": {
+						Traces: metav1.Duration{Duration: time.Hour * 24},
 					},
 				},
 			},
