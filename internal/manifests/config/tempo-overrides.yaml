@@ -1,22 +1,28 @@
 overrides:
-{{- range $name, $value := .RateLimits }}
+{{- range $name, $value := .TenantOverrides }}
   "{{ $name }}":
+    ingestion:
 {{- if $value.IngestionBurstSizeBytes }}
-    ingestion_burst_size_bytes: {{ $value.IngestionBurstSizeBytes }}
+      burst_size_bytes: {{ $value.IngestionBurstSizeBytes }}
 {{- end }}
 {{- if $value.IngestionRateLimitBytes }}
-    ingestion_rate_limit_bytes: {{ $value.IngestionRateLimitBytes }}
+      rate_limit_bytes: {{ $value.IngestionRateLimitBytes }}
 {{- end }}
 {{- if $value.MaxTracesPerUser }}
-    max_traces_per_user: {{ $value.MaxTracesPerUser }}
+      max_traces_per_user: {{ $value.MaxTracesPerUser }}
 {{- end }}
 {{- if $value.MaxBytesPerTrace }}
-    max_bytes_per_trace: {{ $value.MaxBytesPerTrace }}
+      max_bytes_per_trace: {{ $value.MaxBytesPerTrace }}
 {{- end }}
+    read:
 {{- if $value.MaxBytesPerTagValues }}
-    max_bytes_per_tag_values_query: {{ $value.MaxBytesPerTagValues }}
+      max_bytes_per_tag_values_query: {{ $value.MaxBytesPerTagValues }}
 {{- end }}
 {{- if ne $value.MaxSearchDuration "0s" }}
-    max_search_duration: {{ $value.MaxSearchDuration }}
+      max_search_duration: {{ $value.MaxSearchDuration }}
+{{- end }}
+{{- if $value.BlockRetention  }}
+    compaction:
+      block_retention: {{ $value.BlockRetention }}
 {{- end }}
 {{- end }}
