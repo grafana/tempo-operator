@@ -227,13 +227,13 @@ func TestBuildGateway_openshift(t *testing.T) {
 	obj = getObjectByTypeAndName(objects, "tempo-simplest-gateway", reflect.TypeOf(&corev1.ServiceAccount{}))
 	require.NotNil(t, obj)
 
-	obj = getObjectByTypeAndName(objects, "tempo-simplest-gateway", reflect.TypeOf(&rbacv1.ClusterRole{}))
+	obj = getObjectByTypeAndName(objects, "tempo-simplest-gateway-observability", reflect.TypeOf(&rbacv1.ClusterRole{}))
 	require.NotNil(t, obj)
 	clusterRole, ok := obj.(*rbacv1.ClusterRole)
 	require.True(t, ok)
 	assert.Equal(t, 2, len(clusterRole.Rules))
 
-	obj = getObjectByTypeAndName(objects, "tempo-simplest-gateway", reflect.TypeOf(&rbacv1.ClusterRoleBinding{}))
+	obj = getObjectByTypeAndName(objects, "tempo-simplest-gateway-observability", reflect.TypeOf(&rbacv1.ClusterRoleBinding{}))
 	require.NotNil(t, obj)
 	clusterRoleBinding, ok := obj.(*rbacv1.ClusterRoleBinding)
 	require.True(t, ok)
