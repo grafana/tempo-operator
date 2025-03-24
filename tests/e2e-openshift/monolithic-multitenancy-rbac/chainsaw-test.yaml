@@ -1,16 +1,10 @@
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
-  name: multitenancy-rbac
+  name: monolithic-multitenancy-rbac
 spec:
-  namespace: chainsaw-rbac
+  namespace: chainsaw-mmo-rbac
   steps:
-  - name: step-00
-    try:
-    - apply:
-        file: 00-install-storage.yaml
-    - assert:
-        file: 00-assert.yaml
   - name: step-01
     try:
     - apply:
@@ -29,13 +23,13 @@ spec:
         file: create-SAs-with-namespace-access.yaml
     - assert:
         file: assert-create-sas.yaml
-  - name: Generate traces from namespace chainsaw-test-rbac-1
+  - name: Generate traces from namespace chainsaw-mono-rbac-1
     try:
     - apply:
         file: tempo-rbac-sa-1-traces-gen.yaml
     - assert:
         file: assert-tempo-rbac-sa-1-traces-gen.yaml
-  - name: Generate traces from namespace chainsaw-test-rbac-2
+  - name: Generate traces from namespace chainsaw-mono-rbac-2
     try:
     - apply:
         file: tempo-rbac-sa-2-traces-gen.yaml
