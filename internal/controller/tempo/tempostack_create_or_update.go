@@ -8,6 +8,7 @@ import (
 	routev1 "github.com/openshift/api/route/v1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	networkingv1 "k8s.io/api/networking/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/validation/field"
@@ -89,6 +90,9 @@ func (r *TempoStackReconciler) findObjectsOwnedByTempoOperator(ctx context.Conte
 		Namespace:     tempo.GetNamespace(),
 		LabelSelector: labels.SelectorFromSet(manifestutils.CommonLabels(tempo.Name)),
 	}
+	clusterWideListOps := &client.ListOptions{
+		LabelSelector: labels.SelectorFromSet(manifestutils.CommonLabels(tempo.Name)),
+	}
 
 	// Add all resources where the operator can conditionally create an object.
 	// For example, Ingress and Route can be enabled or disabled in the CR.
@@ -100,6 +104,46 @@ func (r *TempoStackReconciler) findObjectsOwnedByTempoOperator(ctx context.Conte
 	}
 	for i := range ingressList.Items {
 		ownedObjects[ingressList.Items[i].GetUID()] = &ingressList.Items[i]
+	}
+
+	// metrics reader for Jaeger UI Monitor Tab
+	rolesList := &rbacv1.RoleList{}
+	err = r.List(ctx, rolesList, listOps)
+	if err != nil {
+		return nil, fmt.Errorf("error listing roles: %w", err)
+	}
+	for i := range rolesList.Items {
+		ownedObjects[rolesList.Items[i].GetUID()] = &rolesList.Items[i]
+	}
+
+	// metrics reader for Jaeger UI Monitor Tab
+	roleBindingList := &rbacv1.RoleBindingList{}
+	err = r.List(ctx, roleBindingList, listOps)
+	if err != nil {
+		return nil, fmt.Errorf("error listing role bindings: %w", err)
+	}
+	for i := range roleBindingList.Items {
+		ownedObjects[roleBindingList.Items[i].GetUID()] = &roleBindingList.Items[i]
+	}
+
+	// TokenReview and SubjectAccessReview when gateway is configured with multi-tenancy in OpenShift mode
+	clusterRoleList := &rbacv1.ClusterRoleList{}
+	err = r.List(ctx, clusterRoleList, clusterWideListOps)
+	if err != nil {
+		return nil, fmt.Errorf("error listing cluster roles: %w", err)
+	}
+	for i := range clusterRoleList.Items {
+		ownedObjects[clusterRoleList.Items[i].GetUID()] = &clusterRoleList.Items[i]
+	}
+
+	// TokenReview and SubjectAccessReview when gateway is configured with multi-tenancy in OpenShift mode
+	clusterRoleBindingList := &rbacv1.ClusterRoleBindingList{}
+	err = r.List(ctx, clusterRoleBindingList, clusterWideListOps)
+	if err != nil {
+		return nil, fmt.Errorf("error listing cluster role bindings: %w", err)
+	}
+	for i := range clusterRoleBindingList.Items {
+		ownedObjects[clusterRoleBindingList.Items[i].GetUID()] = &clusterRoleBindingList.Items[i]
 	}
 
 	if r.CtrlConfig.Gates.PrometheusOperator {

@@ -6,7 +6,6 @@ metadata:
     app.kubernetes.io/name: tempo-operator
     app.kubernetes.io/part-of: tempo-operator
     control-plane: controller-manager
-    olm.managed: "true"
   name: tempo-operator-controller-manager-metrics-service
   namespace: ($TEMPO_NAMESPACE)
 spec:

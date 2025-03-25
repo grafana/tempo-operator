@@ -52,18 +52,32 @@ status:
   readyReplicas: 1
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
+kind: Role
 metadata:
   labels:
     app.kubernetes.io/component: query-frontend
     app.kubernetes.io/instance: redmetrics
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
-  name: tempo-redmetrics-cluster-monitoring-view
+  name: tempo-redmetrics-metrics-reader
+rules:
+- apiGroups: [metrics.k8s.io]
+  resources: [pods]
+  verbs: [get, create]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/component: query-frontend
+    app.kubernetes.io/instance: redmetrics
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-redmetrics-metrics-reader
 roleRef:
   apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: cluster-monitoring-view
+  kind: Role
+  name: tempo-redmetrics-metrics-reader
 subjects:
 - kind: ServiceAccount
   name: tempo-redmetrics-query-frontend

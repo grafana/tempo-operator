@@ -91,6 +91,13 @@ rules:
   - update
   - watch
 - apiGroups:
+  - metrics.k8s.io
+  resources:
+  - pods
+  verbs:
+  - create
+  - get
+- apiGroups:
   - monitoring.coreos.com
   resources:
   - prometheusrules
@@ -128,6 +135,8 @@ rules:
   resources:
   - clusterrolebindings
   - clusterroles
+  - rolebindings
+  - roles
   verbs:
   - create
   - delete

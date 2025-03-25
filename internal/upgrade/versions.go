@@ -50,5 +50,9 @@ var (
 			upgradeTempoStack:      upgrade0_11_0,
 			upgradeTempoMonolithic: upgrade0_11_0_monolithic,
 		},
+		{
+			version:           *semver.MustParse("0.15.4"),
+			upgradeTempoStack: upgrade0_15_4,
+		},
 	}
 )

@@ -678,7 +678,8 @@ func TestBuildQueryFrontendWithJaegerMonitorTab(t *testing.T) {
 			name: "OpenShift user-workload monitoring",
 			tempo: v1alpha1.TempoStack{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "simplest",
+					Name:      "simplest",
+					Namespace: "observability",
 				},
 				Spec: v1alpha1.TempoStackSpec{
 					Template: v1alpha1.TempoTemplateSpec{
@@ -687,7 +688,7 @@ func TestBuildQueryFrontendWithJaegerMonitorTab(t *testing.T) {
 								Enabled: true,
 								MonitorTab: v1alpha1.JaegerQueryMonitor{
 									Enabled:            true,
-									PrometheusEndpoint: "https://thanos-querier.openshift-monitoring.svc.cluster.local:9091",
+									PrometheusEndpoint: "https://thanos-querier.openshift-monitoring.svc.cluster.local:9092",
 								},
 							},
 						},
@@ -703,10 +704,11 @@ func TestBuildQueryFrontendWithJaegerMonitorTab(t *testing.T) {
 				"--prometheus.token-file=/var/run/secrets/kubernetes.io/serviceaccount/token",
 				"--prometheus.token-override-from-context=false",
 				"--prometheus.tls.ca=/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt",
+				"--prometheus.query.extra-query-params=namespace=observability",
 			},
 			env: []corev1.EnvVar{
 				{Name: "METRICS_STORAGE_TYPE", Value: "prometheus"},
-				{Name: "PROMETHEUS_SERVER_URL", Value: "https://thanos-querier.openshift-monitoring.svc.cluster.local:9091"},
+				{Name: "PROMETHEUS_SERVER_URL", Value: "https://thanos-querier.openshift-monitoring.svc.cluster.local:9092"},
 			},
 		},
 	}
@@ -726,12 +728,13 @@ func TestBuildQueryFrontendWithJaegerMonitorTab(t *testing.T) {
 					Tempo: test.tempo,
 				})
 				require.NoError(t, err)
-				assert.Equal(t, 4, len(objects))
+				assert.Equal(t, 5, len(objects))
 
-				assert.Equal(t, "tempo-simplest-cluster-monitoring-view", objects[3].GetName())
-				crb := objects[3].(*rbacv1.ClusterRoleBinding)
-				assert.Equal(t, crb.Subjects[0].Kind, "ServiceAccount")
-				assert.Equal(t, dep.Spec.Template.Spec.ServiceAccountName, crb.Subjects[0].Name)
+				assert.Equal(t, "tempo-simplest-metrics-reader", objects[3].GetName())
+				assert.Equal(t, "tempo-simplest-metrics-reader", objects[4].GetName())
+				rb := objects[4].(*rbacv1.RoleBinding)
+				assert.Equal(t, rb.Subjects[0].Kind, "ServiceAccount")
+				assert.Equal(t, dep.Spec.Template.Spec.ServiceAccountName, rb.Subjects[0].Name)
 			}
 		})
 	}
