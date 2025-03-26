@@ -158,11 +158,50 @@ func getAzureParams(storageSecret corev1.Secret, path *field.Path) (*manifestuti
 }
 
 func validateGCSSecret(storageSecret corev1.Secret, path *field.Path) field.ErrorList {
-	secretFields := []string{
+	shortLivedFields := []string{
+		"bucketname",
+		"iam_sa",
+		"iam_sa_project_id",
+	}
+
+	longLivedFields := []string{
 		"bucketname",
 		"key.json",
 	}
-	return ensureNotEmpty(storageSecret, secretFields, path)
+
+	// ship bucketname as it is common for both
+	var isShortLived bool
+	for _, v := range shortLivedFields[1:] {
+		_, ok := storageSecret.Data[v]
+		if ok {
+			isShortLived = true
+		}
+	}
+	var isLongLived bool
+	for _, v := range longLivedFields[1:] {
+		_, ok := storageSecret.Data[v]
+		if ok {
+			isLongLived = true
+		}
+	}
+
+	if isShortLived && isLongLived {
+		return field.ErrorList{field.Invalid(
+			path,
+			storageSecret.Name,
+			"storage secret contains fields for long lived and short lived configuration",
+		)}
+	}
+
+	// check short-lived first
+	if storageSecret.Data["iam_sa"] != nil || storageSecret.Data["iam_sa_project_id"] != nil {
+		return ensureNotEmpty(storageSecret, shortLivedFields, path)
+	}
+
+	var allErrs field.ErrorList
+	allErrs = append(allErrs, ensureNotEmpty(storageSecret, longLivedFields, path)...)
+
+	return allErrs
 }
 
 // getGCSParams extracts GCS params from the storage secret.
@@ -170,6 +209,16 @@ func getGCSParams(storageSecret corev1.Secret, path *field.Path) (*manifestutils
 	errs := validateGCSSecret(storageSecret, path)
 	if len(errs) > 0 {
 		return nil, errs
+	}
+
+	if storageSecret.Data["iam_sa"] != nil && storageSecret.Data["iam_sa_project_id"] != nil {
+		return &manifestutils.GCS{
+			Bucket: string(storageSecret.Data["bucketname"]),
+			ShortLived: &manifestutils.GCSShortLived{
+				IAMServiceAccount: string(storageSecret.Data["iam_sa"]),
+				ProjectID:         string(storageSecret.Data["iam_sa_project_id"]),
+			},
+		}, nil
 	}
 
 	return &manifestutils.GCS{

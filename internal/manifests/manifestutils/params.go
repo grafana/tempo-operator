@@ -33,7 +33,15 @@ type AzureStorage struct {
 
 // GCS for Google Cloud Storage.
 type GCS struct {
-	Bucket string
+	Bucket     string
+	ShortLived *GCSShortLived
+}
+
+// GCSShortLived holds short-lived GCS configuration.
+// The short-lived GCS token uses Workload Identity Federation.
+type GCSShortLived struct {
+	IAMServiceAccount string
+	ProjectID         string
 }
 
 // S3 holds S3 configuration.

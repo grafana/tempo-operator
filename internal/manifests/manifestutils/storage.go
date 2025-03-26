@@ -47,36 +47,38 @@ func ConfigureAzureStorage(pod *corev1.PodSpec, containerName string, storageSec
 }
 
 // ConfigureGCS mounts the Google Cloud Storage credentials in a pod.
-func ConfigureGCS(pod *corev1.PodSpec, containerName string, storageSecretName string, tlsSpec *v1alpha1.TLSSpec) error {
-	secretVolumeName := "storage-gcs-key"      // nolint #nosec
-	secretDirectory := "/etc/storage/secrets/" // nolint #nosec
-	secretFile := path.Join(secretDirectory, "key.json")
+func ConfigureGCS(pod *corev1.PodSpec, containerName string, storageSecretName string, shortLived bool) error {
+	if !shortLived {
+		secretVolumeName := "storage-gcs-key"      // nolint #nosec
+		secretDirectory := "/etc/storage/secrets/" // nolint #nosec
+		secretFile := path.Join(secretDirectory, "key.json")
 
-	containerIdx, err := findContainerIndex(pod, containerName)
-	if err != nil {
-		return err
-	}
+		containerIdx, err := findContainerIndex(pod, containerName)
+		if err != nil {
+			return err
+		}
 
-	pod.Containers[containerIdx].Env = append(pod.Containers[containerIdx].Env, []corev1.EnvVar{
-		{
-			Name:  "GOOGLE_APPLICATION_CREDENTIALS",
-			Value: secretFile,
-		},
-	}...)
-
-	pod.Containers[containerIdx].VolumeMounts = append(pod.Containers[containerIdx].VolumeMounts, corev1.VolumeMount{
-		Name:      secretVolumeName,
-		ReadOnly:  true,
-		MountPath: secretDirectory,
-	})
-	pod.Volumes = append(pod.Volumes, corev1.Volume{
-		Name: secretVolumeName,
-		VolumeSource: corev1.VolumeSource{
-			Secret: &corev1.SecretVolumeSource{
-				SecretName: storageSecretName,
+		pod.Containers[containerIdx].Env = append(pod.Containers[containerIdx].Env, []corev1.EnvVar{
+			{
+				Name:  "GOOGLE_APPLICATION_CREDENTIALS",
+				Value: secretFile,
 			},
-		},
-	})
+		}...)
+
+		pod.Containers[containerIdx].VolumeMounts = append(pod.Containers[containerIdx].VolumeMounts, corev1.VolumeMount{
+			Name:      secretVolumeName,
+			ReadOnly:  true,
+			MountPath: secretDirectory,
+		})
+		pod.Volumes = append(pod.Volumes, corev1.Volume{
+			Name: secretVolumeName,
+			VolumeSource: corev1.VolumeSource{
+				Secret: &corev1.SecretVolumeSource{
+					SecretName: storageSecretName,
+				},
+			},
+		})
+	}
 	return nil
 }
 
@@ -136,7 +138,7 @@ func ConfigureStorage(storage StorageParams, tempo v1alpha1.TempoStack, pod *cor
 		case v1alpha1.ObjectStorageSecretAzure:
 			return ConfigureAzureStorage(pod, containerName, tempo.Spec.Storage.Secret.Name, &tempo.Spec.Storage.TLS)
 		case v1alpha1.ObjectStorageSecretGCS:
-			return ConfigureGCS(pod, containerName, tempo.Spec.Storage.Secret.Name, &tempo.Spec.Storage.TLS)
+			return ConfigureGCS(pod, containerName, tempo.Spec.Storage.Secret.Name, storage.GCS != nil && storage.GCS.ShortLived != nil)
 		case v1alpha1.ObjectStorageSecretS3:
 			return ConfigureS3Storage(pod, containerName, tempo.Spec.Storage.Secret.Name, &tempo.Spec.Storage.TLS, storage.S3)
 		}

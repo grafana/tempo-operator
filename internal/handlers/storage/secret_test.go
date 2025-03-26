@@ -60,3 +60,48 @@ func TestGetS3Params_short_lived(t *testing.T) {
 		Region:  "rrrr",
 	}, s3.ShortLived)
 }
+
+func TestGetGCSParams_short_lived(t *testing.T) {
+	storageSecret := corev1.Secret{
+		Data: map[string][]byte{
+			"bucketname":        []byte("testbucket"),
+			"iam_sa":            []byte("abc"),
+			"iam_sa_project_id": []byte("rrrr"),
+		},
+	}
+
+	gcs, errs := getGCSParams(storageSecret, nil)
+	require.Len(t, errs, 0)
+	require.Equal(t, &manifestutils.GCSShortLived{
+		IAMServiceAccount: "abc",
+		ProjectID:         "rrrr",
+	}, gcs.ShortLived)
+}
+
+func TestGetGCSParams_long_lived(t *testing.T) {
+	storageSecret := corev1.Secret{
+		Data: map[string][]byte{
+			"bucketname": []byte("testbucket"),
+			"key.json":   []byte("creds"),
+		},
+	}
+
+	gcs, errs := getGCSParams(storageSecret, nil)
+	require.Len(t, errs, 0)
+	require.Equal(t, "testbucket", gcs.Bucket)
+	require.Nil(t, gcs.ShortLived)
+}
+
+func TestGetGCSParams_both_tokens(t *testing.T) {
+	storageSecret := corev1.Secret{
+		Data: map[string][]byte{
+			"bucketname":        []byte("testbucket"),
+			"key.json":          []byte("creds"),
+			"iam_sa":            []byte("abc"),
+			"iam_sa_project_id": []byte("rrrr"),
+		},
+	}
+
+	_, errs := getGCSParams(storageSecret, nil)
+	require.Len(t, errs, 1)
+}
