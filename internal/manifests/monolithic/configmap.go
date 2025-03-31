@@ -232,7 +232,6 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 			config.Storage.Trace.Backend = "gcs"
 			config.Storage.Trace.GCS = &tempoGCSConfig{}
 			config.Storage.Trace.GCS.BucketName = opts.StorageParams.GCS.Bucket
-
 		default:
 			return nil, fmt.Errorf("invalid storage backend: '%s'", tempo.Spec.Storage.Traces.Backend)
 		}

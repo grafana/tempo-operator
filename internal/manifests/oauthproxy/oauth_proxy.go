@@ -41,6 +41,14 @@ func OAuthServiceAccount(params manifestutils.Params) *corev1.ServiceAccount {
 			annotations[k] = v
 		}
 	}
+
+	if params.StorageParams.GCS != nil && params.StorageParams.GCS.ShortLived != nil {
+		gcsAnnotations := manifestutils.GCSShortLiveTokenAnnotation(*params.StorageParams.GCS.ShortLived)
+		for k, v := range gcsAnnotations {
+			annotations[k] = v
+		}
+	}
+
 	return &corev1.ServiceAccount{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "v1",

@@ -277,7 +277,8 @@ func configureStorage(opts Options, sts *appsv1.StatefulSet) error {
 			return errors.New("please configure .spec.storage.traces.gcs")
 		}
 
-		err := manifestutils.ConfigureGCS(&sts.Spec.Template.Spec, "tempo", tempo.Spec.Storage.Traces.GCS.Secret, nil)
+		err := manifestutils.ConfigureGCS(&sts.Spec.Template.Spec, "tempo",
+			tempo.Spec.Storage.Traces.GCS.Secret, opts.StorageParams.GCS.ShortLived != nil)
 		if err != nil {
 			return err
 		}
