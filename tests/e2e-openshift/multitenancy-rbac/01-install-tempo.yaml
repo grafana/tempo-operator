@@ -1,4 +1,3 @@
-# based on config/samples/openshift/tempo_v1alpha1_multitenancy.yaml
 apiVersion: tempo.grafana.com/v1alpha1
 kind:  TempoStack
 metadata:
@@ -13,7 +12,7 @@ spec:
   resources:
     total:
       limits:
-        memory: 3Gi
+        memory: 4Gi
         cpu: 2000m
   tenants:
     mode: openshift
@@ -55,8 +54,6 @@ subjects:
     apiGroup: rbac.authorization.k8s.io
     name: system:authenticated
 ---
-# grant the default serviceaccount in the chainsaw-rbac namespace
-# access to view resource in chainsaw-rbac namespace
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:

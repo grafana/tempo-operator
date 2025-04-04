@@ -1,0 +1,207 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: verify-traces-traceql-grpc-sa-1
+  namespace: chainsaw-mono-rbac-1
+spec:
+  template:
+    spec:
+      serviceAccountName: tempo-rbac-sa-1
+      containers:
+        - name: verify-traces
+          image: ghcr.io/grafana/tempo-operator/test-utils:main
+          command:
+            - /bin/bash
+            - -eux
+            - -c
+          args:
+            - |
+              token=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+              curl \
+                -v -G \
+                --header "Authorization: Bearer $token" \
+                --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
+                https://tempo-mmo-rbac-gateway.chainsaw-mmo-rbac.svc:8080/api/traces/v1/dev/tempo/api/search \
+                --data-urlencode 'q={ resource.service.name="grpc-rbac-1" }' \
+                | tee /tmp/jaeger.out
+              num_traces=$(jq ".traces | length" /tmp/jaeger.out)
+              if [[ "$num_traces" != "2" ]]; then
+                echo && echo "The Jaeger API returned $num_traces instead of 2 traces."
+                exit 1
+              fi
+
+              echo "Fetch the first trace ID and store it in a variable"
+              traceID=$(curl -G --header "Authorization: Bearer $token" \
+                              --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
+                              https://tempo-mmo-rbac-gateway.chainsaw-mmo-rbac.svc:8080/api/traces/v1/dev/tempo/api/search \
+                              --data-urlencode 'q={ resource.service.name="grpc-rbac-1" }' | jq -r '.traces[0].traceID')
+
+              echo "Use the trace ID to fetch the complete trace"
+              traceOutput=$(curl -G --header "Authorization: Bearer $token" \
+                                    --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
+                                    https://tempo-mmo-rbac-gateway.chainsaw-mmo-rbac.svc:8080/api/traces/v1/dev/tempo/api/traces/$traceID)
+
+              echo "Check for the strings in the trace output"
+              stringsToSearch=(
+                  "\"key\":\"net.peer.ip\""
+                  "\"stringValue\":\"1.2.3.4\""
+                  "\"key\":\"peer.service\""
+                  "\"stringValue\":\"telemetrygen-client\""
+                  "\"key\":\"k8s.pod.ip\""
+                  "\"key\":\"k8s.container.name\""
+              )
+              for searchString in "${stringsToSearch[@]}"; do
+                  if echo "$traceOutput" | grep -q "$searchString"; then
+                      echo "Trace output for service grpc-rbac-1 contains: $searchString"
+                  else
+                      echo "Trace output for service grpc-rbac-1 does not contain: $searchString"
+                      exit 1
+                  fi
+              done
+
+              curl \
+                -v -G \
+                --header "Authorization: Bearer $token" \
+                --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
+                https://tempo-mmo-rbac-gateway.chainsaw-mmo-rbac.svc:8080/api/traces/v1/dev/tempo/api/search \
+                --data-urlencode 'q={ resource.service.name="grpc-rbac-2" }' \
+                | tee /tmp/jaeger.out
+              num_traces=$(jq ".traces | length" /tmp/jaeger.out)
+              if [[ "$num_traces" != "2" ]]; then
+                echo && echo "The Jaeger API returned $num_traces instead of 2 traces."
+                exit 1
+              fi
+
+              echo "Fetch the first trace ID and store it in a variable"
+              traceID=$(curl -G --header "Authorization: Bearer $token" \
+                              --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
+                              https://tempo-mmo-rbac-gateway.chainsaw-mmo-rbac.svc:8080/api/traces/v1/dev/tempo/api/search \
+                              --data-urlencode 'q={ resource.service.name="grpc-rbac-2" }' | jq -r '.traces[0].traceID')
+
+              echo "Use the trace ID to fetch the complete trace"
+              traceOutput=$(curl -G --header "Authorization: Bearer $token" \
+                                    --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
+                                    https://tempo-mmo-rbac-gateway.chainsaw-mmo-rbac.svc:8080/api/traces/v1/dev/tempo/api/traces/$traceID)
+
+              echo "Check for the strings in the trace output"
+              stringsToSearch=(
+                  "\"key\":\"net.peer.ip\""
+                  "\"stringValue\":\"1.2.3.4\""
+                  "\"key\":\"peer.service\""
+                  "\"stringValue\":\"telemetrygen-client\""
+                  "\"key\":\"k8s.pod.ip\""
+                  "\"key\":\"k8s.container.name\""
+              )
+              for searchString in "${stringsToSearch[@]}"; do
+                  if echo "$traceOutput" | grep -q "$searchString"; then
+                      echo "Trace output for service grpc-rbac-2 contains: $searchString"
+                      exit 1
+                  else
+                      echo "Trace output for service grpc-rbac-2 does not contain: $searchString"
+                  fi
+              done
+      restartPolicy: Never
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: verify-traces-traceql-http-sa-1
+  namespace: chainsaw-mono-rbac-1
+spec:
+  template:
+    spec:
+      serviceAccountName: tempo-rbac-sa-1
+      containers:
+        - name: verify-traces
+          image: ghcr.io/grafana/tempo-operator/test-utils:main
+          command:
+            - /bin/bash
+            - -eux
+            - -c
+          args:
+            - |
+              token=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+              curl \
+                -v -G \
+                --header "Authorization: Bearer $token" \
+                --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
+                https://tempo-mmo-rbac-gateway.chainsaw-mmo-rbac.svc:8080/api/traces/v1/dev/tempo/api/search \
+                --data-urlencode 'q={ resource.service.name="http-rbac-1" }' \
+                | tee /tmp/jaeger.out
+              num_traces=$(jq ".traces | length" /tmp/jaeger.out)
+              if [[ "$num_traces" != "2" ]]; then
+                echo && echo "The Jaeger API returned $num_traces instead of 2 traces."
+                exit 1
+              fi
+
+              echo "Fetch the first trace ID and store it in a variable"
+              traceID=$(curl -G --header "Authorization: Bearer $token" \
+                              --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
+                              https://tempo-mmo-rbac-gateway.chainsaw-mmo-rbac.svc:8080/api/traces/v1/dev/tempo/api/search \
+                              --data-urlencode 'q={ resource.service.name="http-rbac-1" }' | jq -r '.traces[0].traceID')
+
+              echo "Use the trace ID to fetch the complete trace"
+              traceOutput=$(curl -G --header "Authorization: Bearer $token" \
+                                    --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
+                                    https://tempo-mmo-rbac-gateway.chainsaw-mmo-rbac.svc:8080/api/traces/v1/dev/tempo/api/traces/$traceID)
+
+              echo "Check for the strings in the trace output"
+              stringsToSearch=(
+                  "\"key\":\"net.peer.ip\""
+                  "\"stringValue\":\"1.2.3.4\""
+                  "\"key\":\"peer.service\""
+                  "\"stringValue\":\"telemetrygen-client\""
+                  "\"key\":\"k8s.pod.ip\""
+                  "\"key\":\"k8s.container.name\""
+              )
+              for searchString in "${stringsToSearch[@]}"; do
+                  if echo "$traceOutput" | grep -q "$searchString"; then
+                      echo "Trace output for service http-rbac-1 contains: $searchString"
+                  else
+                      echo "Trace output for service http-rbac-1 does not contain: $searchString"
+                      exit 1
+                  fi
+              done
+
+              curl \
+                -v -G \
+                --header "Authorization: Bearer $token" \
+                --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
+                https://tempo-mmo-rbac-gateway.chainsaw-mmo-rbac.svc:8080/api/traces/v1/dev/tempo/api/search \
+                --data-urlencode 'q={ resource.service.name="http-rbac-2" }' \
+                | tee /tmp/jaeger.out
+              num_traces=$(jq ".traces | length" /tmp/jaeger.out)
+              if [[ "$num_traces" != "2" ]]; then
+                echo && echo "The Jaeger API returned $num_traces instead of 2 traces."
+                exit 1
+              fi
+
+              echo "Fetch the first trace ID and store it in a variable"
+              traceID=$(curl -G --header "Authorization: Bearer $token" \
+                              --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
+                              https://tempo-mmo-rbac-gateway.chainsaw-mmo-rbac.svc:8080/api/traces/v1/dev/tempo/api/search \
+                              --data-urlencode 'q={ resource.service.name="http-rbac-2" }' | jq -r '.traces[0].traceID')
+
+              echo "Use the trace ID to fetch the complete trace"
+              traceOutput=$(curl -G --header "Authorization: Bearer $token" \
+                                    --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
+                                    https://tempo-mmo-rbac-gateway.chainsaw-mmo-rbac.svc:8080/api/traces/v1/dev/tempo/api/traces/$traceID)
+
+              echo "Check for the strings in the trace output"
+              stringsToSearch=(
+                  "\"key\":\"net.peer.ip\""
+                  "\"stringValue\":\"1.2.3.4\""
+                  "\"key\":\"peer.service\""
+                  "\"stringValue\":\"telemetrygen-client\""
+                  "\"key\":\"k8s.pod.ip\""
+                  "\"key\":\"k8s.container.name\""
+              )
+              for searchString in "${stringsToSearch[@]}"; do
+                  if echo "$traceOutput" | grep -q "$searchString"; then
+                      echo "Trace output for service http-rbac-2 contains: $searchString"
+                      exit 1
+                  else
+                      echo "Trace output for service http-rbac-2 does not contain: $searchString"
+                  fi
+              done
+      restartPolicy: Never
