@@ -1,0 +1,52 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoMonolithic
+metadata:
+  name: mmo-rbac
+spec:
+  query:
+    rbac:
+      enabled: true
+  multitenancy:
+    enabled: true
+    mode: openshift
+    authentication:
+    - tenantName: dev
+      tenantId: "1610b0c3-c509-4592-a256-a1871353dbfa"
+    - tenantName: prod
+      tenantId: "1610b0c3-c509-4592-a256-a1871353dbfb"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: allow-read-traces-dev-tenant-rbac
+rules:
+- apiGroups: [tempo.grafana.com]
+  resources: [dev]
+  resourceNames: [traces]
+  verbs: [get]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: allow-read-traces-dev-tenant-rbac
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: allow-read-traces-dev-tenant-rbac
+subjects:
+  - kind: Group
+    apiGroup: rbac.authorization.k8s.io
+    name: system:authenticated
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: view
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: view
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: chainsaw-mmo-rbac

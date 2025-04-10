@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: tempo-mmo-rbac
+status:
+  readyReplicas: 1
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: tempo-mmo-rbac-0
+status:
+  containerStatuses:
+  - name: tempo
+    ready: true
+    started: true
+  - name: tempo-gateway
+    ready: true
+    started: true
+  - name: tempo-gateway-opa
+    ready: true
+    started: true
+  phase: Running
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tempo-mmo-rbac-gateway
+spec:
+  ports:
+  - name: public
+    port: 8080
+    protocol: TCP
+    targetPort: public
+  - name: internal
+    port: 8081
+    protocol: TCP
+    targetPort: internal
+  - name: otlp-grpc
+    port: 4317
+    protocol: TCP
+    targetPort: grpc-public
