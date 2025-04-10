@@ -433,8 +433,8 @@ func enableMonitoringTab(tempo v1alpha1.TempoStack, jaegerQueryContainer corev1.
 	return jaegerQueryContainer, nil
 }
 
-// Grant the jaeger-query container access to read metrics from the namespace of the Tempo instance
-// This is required to access the RED metrics in the Monitor tab of Jaeger UI
+// Grant the jaeger-query container access to read metrics from the namespace of the Tempo instance.
+// This is required to access the RED metrics in the Monitor tab of Jaeger UI.
 func openShiftMonitoringRBAC(tempo v1alpha1.TempoStack, d *appsv1.Deployment) []client.Object {
 	name := naming.Name("metrics-reader", tempo.Name)
 	labels := manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, tempo.Name)
