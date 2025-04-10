@@ -8,7 +8,7 @@ component: tempostack, tempomonolithic
 note: Ensure the operator does not grant additional permissions when enabling OpenShift tenancy mode (resolves CVE-2025-2786)
 
 # One or more tracking issues related to the change
-issues: []
+issues: [1145]
 
 # (Optional) One or more lines of additional information to render under the primary note.
 # These lines will be padded with 2 spaces and then inserted directly into the document.

@@ -6,6 +6,7 @@ import (
 
 	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
 	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	authorizationv1 "k8s.io/api/authorization/v1"

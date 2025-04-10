@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/grafana/tempo-operator/internal/manifests/gateway"
+
 	authenticationv1 "k8s.io/api/authentication/v1"
 	authorizationv1 "k8s.io/api/authorization/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
