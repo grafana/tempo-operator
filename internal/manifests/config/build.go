@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"io"
 	"path"
+	"time"
 
 	"k8s.io/utils/ptr"
 
@@ -30,21 +31,32 @@ var (
 	tempoQueryYAMLTmpl     = template.Must(template.ParseFS(tempoQueryYAMLTmplFile, "tempo-query.yaml"))
 )
 
-func fromRateLimitSpecToRateLimitOptions(spec v1alpha1.RateLimitSpec) rateLimitsOptions {
-	return rateLimitsOptions{
+func fromRateLimitSpecToTenantOverrides(spec v1alpha1.RateLimitSpec, retention *time.Duration) tenantOverrides {
+	return tenantOverrides{
 		IngestionRateLimitBytes: spec.Ingestion.IngestionRateLimitBytes,
 		IngestionBurstSizeBytes: spec.Ingestion.IngestionBurstSizeBytes,
 		MaxBytesPerTrace:        spec.Ingestion.MaxBytesPerTrace,
 		MaxTracesPerUser:        spec.Ingestion.MaxTracesPerUser,
 		MaxBytesPerTagValues:    spec.Query.MaxBytesPerTagValues,
 		MaxSearchDuration:       spec.Query.MaxSearchDuration.Duration.String(),
+		BlockRetention:          retention,
 	}
 }
 
-func fromRateLimitSpecToRateLimitOptionsMap(ratemaps map[string]v1alpha1.RateLimitSpec) map[string]rateLimitsOptions {
-	result := make(map[string]rateLimitsOptions, len(ratemaps))
-	for tenant, spec := range ratemaps {
-		result[tenant] = fromRateLimitSpecToRateLimitOptions(spec)
+func fromRateLimitSpecToRateLimitOptionsMap(rateLimits map[string]v1alpha1.RateLimitSpec, retentions map[string]v1alpha1.RetentionConfig) map[string]tenantOverrides {
+	result := make(map[string]tenantOverrides, len(rateLimits))
+	for tenant, spec := range rateLimits {
+		retentionsSpec, ok := retentions[tenant]
+		delete(retentions, tenant)
+		var retention *time.Duration
+		if ok {
+			retention = &retentionsSpec.Traces.Duration
+		}
+
+		result[tenant] = fromRateLimitSpecToTenantOverrides(spec, retention)
+	}
+	for tenant, spec := range retentions {
+		result[tenant] = fromRateLimitSpecToTenantOverrides(v1alpha1.RateLimitSpec{}, &spec.Traces.Duration)
 	}
 	return result
 }
@@ -79,7 +91,7 @@ func buildConfiguration(params manifestutils.Params) ([]byte, error) {
 			InstanceAddr: gossipRingInstanceAddr(tempo.Spec.HashRing),
 		},
 		QueryFrontendDiscovery: fmt.Sprintf("%s:%d", naming.Name("query-frontend-discovery", tempo.Name), manifestutils.PortGRPCServer),
-		GlobalRateLimits:       fromRateLimitSpecToRateLimitOptions(tempo.Spec.LimitSpec.Global),
+		GlobalRateLimits:       fromRateLimitSpecToTenantOverrides(tempo.Spec.LimitSpec.Global, nil),
 		Search:                 fromSearchSpecToOptions(tempo.Spec.SearchSpec),
 		ReplicationFactor:      tempo.Spec.ReplicationFactor,
 		Multitenancy:           tempo.Spec.Tenants != nil,
@@ -94,20 +106,20 @@ func buildConfiguration(params manifestutils.Params) ([]byte, error) {
 		Timeout:      params.Tempo.Spec.Timeout.Duration,
 	}
 
-	if isTenantOverridesConfigRequired(tempo.Spec.LimitSpec) {
+	if isTenantOverridesConfigRequired(tempo.Spec.LimitSpec, tempo.Spec.Retention) {
 		opts.TenantRateLimitsPath = tenantOverridesMountPath
 	}
 
 	return renderTemplate(opts)
 }
 
-func isTenantOverridesConfigRequired(limitSpec v1alpha1.LimitSpec) bool {
-	return len(limitSpec.PerTenant) > 0
+func isTenantOverridesConfigRequired(limitSpec v1alpha1.LimitSpec, retentionSpec v1alpha1.RetentionSpec) bool {
+	return len(limitSpec.PerTenant) > 0 || len(retentionSpec.PerTenant) > 0
 }
 
 func buildTenantOverrides(tempo v1alpha1.TempoStack) ([]byte, error) {
 	return renderTenantOverridesTemplate(tenantOptions{
-		RateLimits: fromRateLimitSpecToRateLimitOptionsMap(tempo.Spec.LimitSpec.PerTenant),
+		TenantOverrides: fromRateLimitSpecToRateLimitOptionsMap(tempo.Spec.LimitSpec.PerTenant, tempo.Spec.Retention.PerTenant),
 	})
 }
 

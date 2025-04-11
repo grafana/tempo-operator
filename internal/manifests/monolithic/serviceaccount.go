@@ -14,6 +14,16 @@ const (
 	componentName = "serviceaccount"
 )
 
+func copyAnnotations(source map[string]string, dest map[string]string) map[string]string {
+	if dest == nil {
+		dest = map[string]string{}
+	}
+	for k, v := range source {
+		dest[k] = v
+	}
+	return dest
+}
+
 // BuildServiceAccount creates a Kubernetes service account for Tempo.
 func BuildServiceAccount(opts Options) *corev1.ServiceAccount {
 	tempo := opts.Tempo
@@ -25,13 +35,14 @@ func BuildServiceAccount(opts Options) *corev1.ServiceAccount {
 
 	if opts.StorageParams.S3 != nil && opts.StorageParams.S3.ShortLived != nil {
 		awsAnnotations := manifestutils.S3AWSSTSAnnotations(*opts.StorageParams.S3.ShortLived)
-		if annotations == nil {
-			annotations = map[string]string{}
-		}
-		for k, v := range awsAnnotations {
-			annotations[k] = v
-		}
+		annotations = copyAnnotations(awsAnnotations, annotations)
 	}
+
+	if opts.StorageParams.GCS != nil && opts.StorageParams.GCS.ShortLived != nil {
+		gcsAnnotations := manifestutils.S3AWSSTSAnnotations(*opts.StorageParams.S3.ShortLived)
+		annotations = copyAnnotations(gcsAnnotations, annotations)
+	}
+
 	return &corev1.ServiceAccount{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        naming.DefaultServiceAccountName(tempo.Name),

@@ -5,6 +5,19 @@ metadata:
   name: simplest
   namespace: chainsaw-multitenancy
 spec:
+  retention:
+    global:
+      traces: 20h
+    perTenant:
+      dev:
+        traces: 10h
+  limits:
+    perTenant:
+      dev:
+        ingestion:
+          ingestionBurstSizeBytes: 1000000
+        query:
+          maxSearchDuration: 1h
   storage:
     secret:
       name: minio

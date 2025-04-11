@@ -69,7 +69,7 @@ func TestGetGCSStorage(t *testing.T) {
 		},
 	}
 
-	assert.NoError(t, ConfigureGCS(&pod, "ingester", tempo.Spec.Storage.Secret.Name, &tempo.Spec.Storage.TLS))
+	assert.NoError(t, ConfigureGCS(&pod, "ingester", tempo.Spec.Storage.Secret.Name, false))
 	assert.Len(t, pod.Containers[0].Env, 1)
 	assert.NoError(t, findEnvVar("GOOGLE_APPLICATION_CREDENTIALS", &pod.Containers[0].Env))
 
@@ -258,4 +258,29 @@ func TestConfigureStorage(t *testing.T) {
 		})
 	}
 
+}
+
+func TestGetCGSStorage_short_lived(t *testing.T) {
+	tempo := v1alpha1.TempoStack{
+		Spec: v1alpha1.TempoStackSpec{
+			Storage: v1alpha1.ObjectStorageSpec{
+				Secret: v1alpha1.ObjectStorageSecretSpec{
+					Name: "test",
+					Type: v1alpha1.ObjectStorageSecretGCS,
+				},
+			},
+		},
+	}
+
+	pod := corev1.PodSpec{
+		Containers: []corev1.Container{
+			{
+				Name: "ingester",
+			},
+		},
+	}
+
+	assert.NoError(t, ConfigureGCS(&pod, "ingester", tempo.Spec.Storage.Secret.Name, true))
+	assert.Len(t, pod.Containers[0].Env, 0)
+	assert.Len(t, pod.Containers[0].Args, 0)
 }

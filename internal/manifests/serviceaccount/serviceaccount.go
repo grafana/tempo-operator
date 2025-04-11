@@ -19,6 +19,11 @@ func BuildDefaultServiceAccount(params manifestutils.Params) *corev1.ServiceAcco
 	if params.StorageParams.S3 != nil && params.StorageParams.S3.ShortLived != nil {
 		annotations = manifestutils.S3AWSSTSAnnotations(*params.StorageParams.S3.ShortLived)
 	}
+
+	if params.StorageParams.GCS != nil && params.StorageParams.GCS.ShortLived != nil {
+		annotations = manifestutils.GCSShortLiveTokenAnnotation(*params.StorageParams.GCS.ShortLived)
+	}
+
 	return &corev1.ServiceAccount{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        naming.DefaultServiceAccountName(params.Tempo.Name),

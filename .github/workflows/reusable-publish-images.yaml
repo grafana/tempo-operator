@@ -69,11 +69,10 @@ jobs:
           labels: ${{ steps.docker_meta.outputs.labels }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
-      -
+      - name: Move cache
         # Temp fix
         # https://github.com/docker/build-push-action/issues/252
         # https://github.com/moby/buildkit/issues/1896
-        name: Move cache
         run: |
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
@@ -85,8 +84,25 @@ jobs:
         env:
           IMG_PREFIX: ghcr.io/${{ github.repository }}
 
-      - name: Publish must-gather image
+      - name: Build and push must-gather image
         if: ${{ inputs.publish_bundle }}
-        run: make container-must-gather container-must-gather-push
-        env:
-          IMG_PREFIX: ghcr.io/${{ github.repository }}
+        uses: docker/build-push-action@v6
+        with:
+          context: ./cmd/gather
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64,linux/s390x,linux/ppc64le
+          push: ${{ inputs.push }}
+          tags: ${{ github.repository }}/must-gather:${{ inputs.version_tag }}
+          labels: ${{ steps.docker_meta.outputs.labels }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+
+      - name: Move cache again for must-gather
+        # Temp fix
+        # https://github.com/docker/build-push-action/issues/252
+        # https://github.com/moby/buildkit/issues/1896
+        if: ${{ inputs.publish_bundle }}
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+        shell: bash

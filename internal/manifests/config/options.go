@@ -12,7 +12,7 @@ type options struct {
 	GlobalRetention        string
 	QueryFrontendDiscovery string
 	StorageParams          manifestutils.StorageParams
-	GlobalRateLimits       rateLimitsOptions
+	GlobalRateLimits       tenantOverrides
 	TenantRateLimitsPath   string
 	TLS                    tlsOptions
 	MemberList             memberlistOptions
@@ -42,16 +42,17 @@ type featureGates struct {
 }
 
 type tenantOptions struct {
-	RateLimits map[string]rateLimitsOptions
+	TenantOverrides map[string]tenantOverrides
 }
 
-type rateLimitsOptions struct {
+type tenantOverrides struct {
 	IngestionBurstSizeBytes *int
 	IngestionRateLimitBytes *int
 	MaxBytesPerTrace        *int
 	MaxTracesPerUser        *int
 	MaxBytesPerTagValues    *int
 	MaxSearchDuration       string
+	BlockRetention          *time.Duration
 }
 
 type searchOptions struct {
