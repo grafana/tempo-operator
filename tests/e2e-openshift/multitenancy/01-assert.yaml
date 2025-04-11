@@ -117,6 +117,7 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: tempo-simplest-gateway
+    namespace: chainsaw-multitenancy
 ---
 apiVersion: apps/v1
 kind: Deployment

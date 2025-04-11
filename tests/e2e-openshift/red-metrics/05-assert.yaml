@@ -3,4 +3,4 @@ kind: Job
 metadata:
   name: hotrod-curl
 status:
-  active: 1
+  succeeded: 1

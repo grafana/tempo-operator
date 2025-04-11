@@ -27,7 +27,7 @@ import (
 const (
 	grpclbPortName                   = "grpclb"
 	portGRPCLBServer                 = 9096
-	thanosQuerierOpenShiftMonitoring = "https://thanos-querier.openshift-monitoring.svc.cluster.local:9091"
+	thanosQuerierOpenShiftMonitoring = "https://thanos-querier.openshift-monitoring.svc.cluster.local:9092"
 )
 
 const (
@@ -113,8 +113,8 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 
 	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled && tempo.Spec.Template.QueryFrontend.JaegerQuery.MonitorTab.Enabled &&
 		tempo.Spec.Template.QueryFrontend.JaegerQuery.MonitorTab.PrometheusEndpoint == thanosQuerierOpenShiftMonitoring {
-		clusterRoleBinding := openShiftMonitoringClusterRoleBinding(tempo, d)
-		manifests = append(manifests, &clusterRoleBinding)
+		rbac := openShiftMonitoringRBAC(tempo, d)
+		manifests = append(manifests, rbac...)
 	}
 
 	return manifests, nil
@@ -412,7 +412,9 @@ func enableMonitoringTab(tempo v1alpha1.TempoStack, jaegerQueryContainer corev1.
 			// enabled bearer token propagation, overrides the settings and token from the context (incoming) request is used.
 			"--prometheus.token-file=/var/run/secrets/kubernetes.io/serviceaccount/token",
 			"--prometheus.token-override-from-context=false",
-			"--prometheus.tls.ca=/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt")
+			"--prometheus.tls.ca=/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt",
+			fmt.Sprintf("--prometheus.query.extra-query-params=namespace=%s", tempo.Namespace),
+		)
 	}
 
 	if tempo.Spec.Template.QueryFrontend.JaegerQuery.MonitorTab.REDMetricsNamespace != nil {
@@ -431,12 +433,33 @@ func enableMonitoringTab(tempo v1alpha1.TempoStack, jaegerQueryContainer corev1.
 	return jaegerQueryContainer, nil
 }
 
-func openShiftMonitoringClusterRoleBinding(tempo v1alpha1.TempoStack, d *appsv1.Deployment) rbacv1.ClusterRoleBinding {
+// Grant the jaeger-query container access to read metrics from the namespace of the Tempo instance.
+// This is required to access the RED metrics in the Monitor tab of Jaeger UI.
+func openShiftMonitoringRBAC(tempo v1alpha1.TempoStack, d *appsv1.Deployment) []client.Object {
+	name := naming.Name("metrics-reader", tempo.Name)
 	labels := manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, tempo.Name)
-	return rbacv1.ClusterRoleBinding{
+
+	// Same role as https://github.com/openshift/cluster-monitoring-operator/pull/2475
+	// The pod-metrics-reader role is available since OCP 4.18
+	role := &rbacv1.Role{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:   naming.Name("cluster-monitoring-view", tempo.Name),
-			Labels: labels,
+			Name:      name,
+			Namespace: tempo.Namespace,
+			Labels:    labels,
+		},
+		Rules: []rbacv1.PolicyRule{{
+			APIGroups: []string{"metrics.k8s.io"},
+			Resources: []string{"pods"},
+			// 'create' is required because the Prometheus client uses POST for queries
+			Verbs: []string{"get", "create"},
+		}},
+	}
+
+	roleBinding := &rbacv1.RoleBinding{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: tempo.Namespace,
+			Labels:    labels,
 		},
 		Subjects: []rbacv1.Subject{
 			{
@@ -447,10 +470,12 @@ func openShiftMonitoringClusterRoleBinding(tempo v1alpha1.TempoStack, d *appsv1.
 		},
 		RoleRef: rbacv1.RoleRef{
 			APIGroup: "rbac.authorization.k8s.io",
-			Kind:     "ClusterRole",
-			Name:     "cluster-monitoring-view",
+			Kind:     "Role",
+			Name:     name,
 		},
 	}
+
+	return []client.Object{role, roleBinding}
 }
 
 func services(params manifestutils.Params) []*corev1.Service {
