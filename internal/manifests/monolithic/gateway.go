@@ -1,6 +1,8 @@
 package monolithic
 
 import (
+	"fmt"
+
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
@@ -58,12 +60,14 @@ func BuildGatewayObjects(opts Options) ([]client.Object, map[string]string, erro
 
 	if tempo.Spec.Multitenancy.TenantsSpec.Mode == v1alpha1.ModeOpenShift {
 		manifests = append(manifests, gateway.NewAccessReviewClusterRole(
-			gatewayObjectName,
+			// ClusterRole is a cluster scoped resource, therefore we need to add the namespace to the name
+			fmt.Sprintf("%s-%s", gatewayObjectName, tempo.Namespace),
 			ComponentLabels(manifestutils.GatewayComponentName, tempo.Name),
 		))
 
 		manifests = append(manifests, gateway.NewAccessReviewClusterRoleBinding(
-			gatewayObjectName,
+			// ClusterRole is a cluster scoped resource, therefore we need to add the namespace to the name
+			fmt.Sprintf("%s-%s", gatewayObjectName, tempo.Namespace),
 			ComponentLabels(manifestutils.GatewayComponentName, tempo.Name),
 			tempo.Namespace,
 			naming.DefaultServiceAccountName(tempo.Name),

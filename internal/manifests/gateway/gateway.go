@@ -81,11 +81,13 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 
 		objs = append(objs, []client.Object{
 			NewAccessReviewClusterRole(
-				gatewayObjectName,
+				// ClusterRole is a cluster scoped resource, therefore we need to add the namespace to the name
+				fmt.Sprintf("%s-%s", gatewayObjectName, tempo.Namespace),
 				manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name),
 			),
 			NewAccessReviewClusterRoleBinding(
-				gatewayObjectName,
+				// ClusterRole is a cluster scoped resource, therefore we need to add the namespace to the name
+				fmt.Sprintf("%s-%s", gatewayObjectName, tempo.Namespace),
 				manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name),
 				tempo.Namespace,
 				gatewayObjectName,

@@ -48,3 +48,45 @@ spec:
     port: 4317
     protocol: TCP
     targetPort: grpc-public
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/component: gateway
+    app.kubernetes.io/instance: monolithic-multitenancy-openshift
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo-monolithic
+  name: tempo-monolithic-multitenancy-openshift-gateway-chainsaw-monolithic-multitenancy
+rules:
+- apiGroups:
+    - authentication.k8s.io
+  resources:
+    - tokenreviews
+  verbs:
+    - create
+- apiGroups:
+    - authorization.k8s.io
+  resources:
+    - subjectaccessreviews
+  verbs:
+    - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/component: gateway
+    app.kubernetes.io/instance: monolithic-multitenancy-openshift
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo-monolithic
+  name: tempo-monolithic-multitenancy-openshift-gateway-chainsaw-monolithic-multitenancy
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: tempo-monolithic-multitenancy-openshift-gateway-chainsaw-monolithic-multitenancy
+subjects:
+- kind: ServiceAccount
+  name: tempo-monolithic-multitenancy-openshift
+  namespace: chainsaw-monolithic-multitenancy
