@@ -4,20 +4,23 @@ import (
 	"context"
 	"testing"
 
+	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
+	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	authorizationv1 "k8s.io/api/authorization/v1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
-
-	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
-	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 )
 
 func TestMonolithicValidate(t *testing.T) {
+	ctx := admission.NewContextWithRequest(context.Background(), admission.Request{})
+
 	tests := []struct {
 		name       string
 		ctrlConfig configv1alpha1.ProjectConfig
@@ -405,13 +408,19 @@ func TestMonolithicValidate(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			client := &k8sFake{}
+			client := &k8sFake{
+				subjectAccessReview: &authorizationv1.SubjectAccessReview{
+					Status: authorizationv1.SubjectAccessReviewStatus{
+						Allowed: true,
+					},
+				},
+			}
 			v := &monolithicValidator{
 				client:     client,
 				ctrlConfig: test.ctrlConfig,
 			}
 
-			warnings, errors := v.validateTempoMonolithic(context.Background(), test.tempo)
+			warnings, errors := v.validateTempoMonolithic(ctx, test.tempo)
 			require.Equal(t, test.warnings, warnings)
 			require.Equal(t, test.errors, errors)
 		})

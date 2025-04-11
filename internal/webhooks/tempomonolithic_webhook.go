@@ -92,7 +92,7 @@ func (v *monolithicValidator) validateTempoMonolithic(ctx context.Context, tempo
 	errors = append(errors, validateName(tempo.Name)...)
 	addValidationResults(v.validateStorage(ctx, tempo))
 	errors = append(errors, v.validateJaegerUI(tempo)...)
-	errors = append(errors, v.validateMultitenancy(tempo)...)
+	errors = append(errors, v.validateMultitenancy(ctx, tempo)...)
 	errors = append(errors, v.validateObservability(tempo)...)
 	errors = append(errors, v.validateServiceAccount(ctx, tempo)...)
 	errors = append(errors, v.validateConflictWithTempoStack(ctx, tempo)...)
@@ -151,7 +151,7 @@ func (v *monolithicValidator) validateJaegerUI(tempo tempov1alpha1.TempoMonolith
 	return nil
 }
 
-func (v *monolithicValidator) validateMultitenancy(tempo tempov1alpha1.TempoMonolithic) field.ErrorList {
+func (v *monolithicValidator) validateMultitenancy(ctx context.Context, tempo tempov1alpha1.TempoMonolithic) field.ErrorList {
 	if tempo.Spec.Query != nil && tempo.Spec.Query.RBAC.Enabled && (tempo.Spec.Multitenancy == nil || !tempo.Spec.Multitenancy.Enabled) {
 		return field.ErrorList{
 			field.Invalid(field.NewPath("spec", "rbac", "enabled"), tempo.Spec.Query.RBAC.Enabled,
@@ -164,6 +164,17 @@ func (v *monolithicValidator) validateMultitenancy(tempo tempov1alpha1.TempoMono
 	}
 
 	multitenancyBase := field.NewPath("spec", "multitenancy")
+
+	if tempo.Spec.Multitenancy != nil && tempo.Spec.Multitenancy.Mode == v1alpha1.ModeOpenShift {
+		err := validateGatewayOpenShiftModeRBAC(ctx, v.client)
+		if err != nil {
+			return field.ErrorList{field.Invalid(
+				multitenancyBase.Child("mode"),
+				tempo.Spec.Multitenancy.Mode,
+				fmt.Sprintf("Cannot enable OpenShift tenancy mode: %v", err),
+			)}
+		}
+	}
 
 	err := ValidateTenantConfigs(&tempo.Spec.Multitenancy.TenantsSpec, tempo.Spec.Multitenancy.IsGatewayEnabled())
 	if err != nil {
