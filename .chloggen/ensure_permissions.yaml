@@ -19,3 +19,6 @@ subtext: |
   when enabling OpenShift tenancy mode.
 
   To enable the OpenShift tenancy mode, the user must have permissions to create `TokenReview` and `SubjectAccessReview`.
+
+  This breaking change does not affect existing Tempo instances in the cluster.
+  However, the required permissions are now mandatory when creating or modifying a TempoStack or TempoMonolithic CR.
