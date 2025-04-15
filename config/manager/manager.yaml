@@ -42,7 +42,7 @@ spec:
         - name: RELATED_IMAGE_TEMPO
           value: docker.io/grafana/tempo:2.7.2
         - name: RELATED_IMAGE_JAEGER_QUERY
-          value: docker.io/jaegertracing/jaeger-query:1.66.0
+          value: docker.io/jaegertracing/jaeger-query:1.68.0
         - name: RELATED_IMAGE_TEMPO_QUERY
           value: docker.io/grafana/tempo-query:2.7.2
         - name: RELATED_IMAGE_TEMPO_GATEWAY
