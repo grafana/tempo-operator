@@ -18,7 +18,7 @@ spec:
 
     exporters:
       otlp:
-        endpoint: tempo-monolithic-multitenancy-openshift-gateway.chainsaw-monolithic-multitenancy.svc.cluster.local:4317
+        endpoint: tempo-mmo-gateway.chainsaw-monolithic-multitenancy.svc.cluster.local:4317
         tls:
           ca_file: /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt
         auth:
@@ -26,7 +26,7 @@ spec:
         headers:
           X-Scope-OrgID: dev  # tenantName
       otlphttp:
-        endpoint: https://tempo-monolithic-multitenancy-openshift-gateway.chainsaw-monolithic-multitenancy.svc.cluster.local:8080/api/traces/v1/dev
+        endpoint: https://tempo-mmo-gateway.chainsaw-monolithic-multitenancy.svc.cluster.local:8080/api/traces/v1/dev
         tls:
           ca_file: /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt
         auth:

@@ -3,4 +3,4 @@ kind: Job
 metadata:
   name: generate-traces
 status:
-  succeeded: 1
+  active: 1

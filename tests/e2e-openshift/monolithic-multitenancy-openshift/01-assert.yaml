@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: tempo-monolithic-multitenancy-openshift
+  name: tempo-mmo
 status:
   readyReplicas: 1
 
@@ -9,7 +9,7 @@ status:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: tempo-monolithic-multitenancy-openshift-0
+  name: tempo-mmo-0
 status:
   containerStatuses:
   - name: jaeger-query
@@ -33,7 +33,7 @@ status:
 apiVersion: v1
 kind: Service
 metadata:
-  name: tempo-monolithic-multitenancy-openshift-gateway
+  name: tempo-mmo-gateway
 spec:
   ports:
   - name: public
@@ -55,10 +55,10 @@ kind: ClusterRole
 metadata:
   labels:
     app.kubernetes.io/component: gateway
-    app.kubernetes.io/instance: monolithic-multitenancy-openshift
+    app.kubernetes.io/instance: mmo
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo-monolithic
-  name: tempo-monolithic-multitenancy-openshift-gateway-chainsaw-monolithic-multitenancy
+  name: tempo-mmo-gateway-chainsaw-monolithic-multitenancy
 rules:
 - apiGroups:
     - authentication.k8s.io
@@ -78,15 +78,15 @@ kind: ClusterRoleBinding
 metadata:
   labels:
     app.kubernetes.io/component: gateway
-    app.kubernetes.io/instance: monolithic-multitenancy-openshift
+    app.kubernetes.io/instance: mmo
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo-monolithic
-  name: tempo-monolithic-multitenancy-openshift-gateway-chainsaw-monolithic-multitenancy
+  name: tempo-mmo-gateway-chainsaw-monolithic-multitenancy
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: tempo-monolithic-multitenancy-openshift-gateway-chainsaw-monolithic-multitenancy
+  name: tempo-mmo-gateway-chainsaw-monolithic-multitenancy
 subjects:
 - kind: ServiceAccount
-  name: tempo-monolithic-multitenancy-openshift
+  name: tempo-mmo
   namespace: chainsaw-monolithic-multitenancy

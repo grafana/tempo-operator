@@ -86,7 +86,7 @@ metadata:
     app.kubernetes.io/instance: simplst
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
-  name: tempo-simplst-gateway
+  name: tempo-simplst-gateway-chainsaw-rbac
 rules:
   - apiGroups:
       - authentication.k8s.io
@@ -109,11 +109,11 @@ metadata:
     app.kubernetes.io/instance: simplst
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
-  name: tempo-simplst-gateway
+  name: tempo-simplst-gateway-chainsaw-rbac
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: tempo-simplst-gateway
+  name: tempo-simplst-gateway-chainsaw-rbac
 subjects:
   - kind: ServiceAccount
     name: tempo-simplst-gateway
