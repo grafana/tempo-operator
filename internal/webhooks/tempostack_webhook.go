@@ -283,7 +283,7 @@ func (v *validator) validateQueryFrontend(tempo v1alpha1.TempoStack) field.Error
 	return nil
 }
 
-func (v *validator) validateGateway(tempo v1alpha1.TempoStack) field.ErrorList {
+func (v *validator) validateGateway(ctx context.Context, tempo v1alpha1.TempoStack) field.ErrorList {
 	path := field.NewPath("spec").Child("template").Child("gateway").Child("enabled")
 	if tempo.Spec.Template.Gateway.Enabled {
 		if tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type != v1alpha1.IngressTypeNone {
@@ -320,6 +320,17 @@ func (v *validator) validateGateway(tempo v1alpha1.TempoStack) field.ErrorList {
 				tempo.Spec.Template.Gateway.Enabled,
 				"Cannot enable gateway and distributor TLS at the same time",
 			)}
+		}
+
+		if tempo.Spec.Tenants != nil && tempo.Spec.Tenants.Mode == v1alpha1.ModeOpenShift {
+			err := validateGatewayOpenShiftModeRBAC(ctx, v.client)
+			if err != nil {
+				return field.ErrorList{field.Invalid(
+					field.NewPath("spec").Child("tenants").Child("mode"),
+					tempo.Spec.Tenants.Mode,
+					fmt.Sprintf("Cannot enable OpenShift tenancy mode: %v", err),
+				)}
+			}
 		}
 	}
 	return nil
@@ -483,7 +494,7 @@ func (v *validator) validate(ctx context.Context, obj runtime.Object) (admission
 
 	allErrors = append(allErrors, v.validateReplicationFactor(*tempo)...)
 	allErrors = append(allErrors, v.validateQueryFrontend(*tempo)...)
-	allErrors = append(allErrors, v.validateGateway(*tempo)...)
+	allErrors = append(allErrors, v.validateGateway(ctx, *tempo)...)
 	allErrors = append(allErrors, v.validateTenantConfigs(*tempo)...)
 	allErrors = append(allErrors, v.validateObservability(*tempo)...)
 	allErrors = append(allErrors, v.validateDeprecatedFields(*tempo)...)
