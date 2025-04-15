@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	authorizationv1 "k8s.io/api/authorization/v1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -1431,7 +1432,7 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			validator := &validator{ctrlConfig: configv1alpha1.ProjectConfig{}}
-			errs := validator.validateGateway(test.input)
+			errs := validator.validateGateway(context.Background(), test.input)
 			assert.Equal(t, test.expected, errs)
 		})
 	}
@@ -2170,7 +2171,7 @@ func TestValidateReceiverTLSAndGateway(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			validator := &validator{ctrlConfig: configv1alpha1.ProjectConfig{}}
-			errs := validator.validateGateway(test.input)
+			errs := validator.validateGateway(context.Background(), test.input)
 			assert.Equal(t, test.expected, errs)
 		})
 	}
@@ -2284,11 +2285,23 @@ func TestWarning(t *testing.T) {
 }
 
 type k8sFake struct {
-	secret          *corev1.Secret
-	configmap       *corev1.ConfigMap
-	tempoStack      *v1alpha1.TempoStack
-	tempoMonolithic *v1alpha1.TempoMonolithic
+	secret              *corev1.Secret
+	configmap           *corev1.ConfigMap
+	tempoStack          *v1alpha1.TempoStack
+	tempoMonolithic     *v1alpha1.TempoMonolithic
+	subjectAccessReview *authorizationv1.SubjectAccessReview
 	client.Client
+}
+
+func (k *k8sFake) Create(ctx context.Context, obj client.Object, opts ...client.CreateOption) error {
+	switch typed := obj.(type) {
+	case *authorizationv1.SubjectAccessReview:
+		if k.subjectAccessReview != nil {
+			k.subjectAccessReview.DeepCopyInto(typed)
+			return nil
+		}
+	}
+	return fmt.Errorf("mock: fails always")
 }
 
 func (k *k8sFake) Get(ctx context.Context, key client.ObjectKey, obj client.Object, opts ...client.GetOption) error {
