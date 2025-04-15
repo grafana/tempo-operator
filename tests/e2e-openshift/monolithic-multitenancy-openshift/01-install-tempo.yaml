@@ -1,7 +1,7 @@
 apiVersion: tempo.grafana.com/v1alpha1
 kind: TempoMonolithic
 metadata:
-  name: monolithic-multitenancy-openshift
+  name: mmo
 spec:
   jaegerui:
     enabled: true

@@ -86,7 +86,7 @@ metadata:
     app.kubernetes.io/instance: cmpreps
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
-  name: tempo-cmpreps-gateway
+  name: tempo-cmpreps-gateway-chainsaw-replicas
 rules:
   - apiGroups:
       - authentication.k8s.io
@@ -109,11 +109,11 @@ metadata:
     app.kubernetes.io/instance: cmpreps
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
-  name: tempo-cmpreps-gateway
+  name: tempo-cmpreps-gateway-chainsaw-replicas
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: tempo-cmpreps-gateway
+  name: tempo-cmpreps-gateway-chainsaw-replicas
 subjects:
   - kind: ServiceAccount
     name: tempo-cmpreps-gateway
