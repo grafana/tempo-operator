@@ -16,8 +16,8 @@ require (
 	github.com/openshift/library-go v0.0.0-20220622115547-84d884f4c9f6
 	github.com/operator-framework/api v0.23.0
 	github.com/operator-framework/operator-lib v0.13.0
-	github.com/prometheus/client_golang v1.19.1
-	github.com/prometheus/common v0.55.0
+	github.com/prometheus/client_golang v1.22.0
+	github.com/prometheus/common v0.62.0
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5
 	go.opentelemetry.io/otel v1.28.0
@@ -40,7 +40,7 @@ require (
 require (
 	github.com/openshift/api v3.9.0+incompatible // release-4.14
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.73.2
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/utils v0.0.0-20240310230437-4693a0247e57
 )
