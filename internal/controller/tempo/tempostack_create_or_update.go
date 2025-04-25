@@ -91,7 +91,7 @@ func (r *TempoStackReconciler) findObjectsOwnedByTempoOperator(ctx context.Conte
 		LabelSelector: labels.SelectorFromSet(manifestutils.CommonLabels(tempo.Name)),
 	}
 	clusterWideListOps := &client.ListOptions{
-		LabelSelector: labels.SelectorFromSet(manifestutils.CommonLabels(tempo.Name)),
+		LabelSelector: labels.SelectorFromSet(manifestutils.ClusterScopedCommonLabels(tempo.ObjectMeta)),
 	}
 
 	// Add all resources where the operator can conditionally create an object.
