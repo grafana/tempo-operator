@@ -28,7 +28,7 @@ func ClusterScopedCommonLabels(instance metav1.ObjectMeta) map[string]string {
 	})
 }
 
-// ClusterScopedCommonLabels returns common labels for cluster-scoped resouces (e.g. ClusterRole)
+// ClusterScopedComponentLabels returns common labels for cluster-scoped resouces (e.g. ClusterRole)
 // including the app.kubernetes.io/component:<component> label.
 func ClusterScopedComponentLabels(instance metav1.ObjectMeta, component string) map[string]string {
 	return labels.Merge(ClusterScopedCommonLabels(instance), map[string]string{
