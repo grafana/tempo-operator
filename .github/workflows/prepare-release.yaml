@@ -30,7 +30,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          repository: ${{ OPERATOR_BOT_USER }}/${{ github.event.repository.name }}
+          repository: ${{ env.OPERATOR_BOT_USER }}/${{ github.event.repository.name }}
           token: ${{ secrets.TEMPOOPERATORBOT_GITHUB_TOKEN }}
           persist-credentials: false
 
