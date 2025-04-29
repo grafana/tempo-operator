@@ -21,6 +21,9 @@ on:
     secrets:
       TEMPOOPERATORBOT_GITHUB_TOKEN:
         required: true
+
+permissions: {}
+
 jobs:
   create-operator-pull-request:
     runs-on: ubuntu-latest
@@ -28,12 +31,14 @@ jobs:
       - name: Sync fork
         env:
           GH_TOKEN: ${{ secrets.TEMPOOPERATORBOT_GITHUB_TOKEN }}
+          ORG: ${{ inputs.org }}
+          REPO: ${{ inputs.repo }}
         run: |
           # synchronizing the fork is fast, and avoids the need to fetch the full upstream repo
           # (fetching the upstream repo with "--depth 1" would lead to "shallow update not allowed"
           #  error when pushing back to the origin repo)
-          gh repo sync tempooperatorbot/${{ inputs.repo }} \
-              --source ${{ inputs.org }}/${{ inputs.repo }} \
+          gh repo sync tempooperatorbot/${REPO} \
+              --source ${ORG}/${REPO} \
               --force
 
       - name: Checkout operatorhub repo
@@ -41,6 +46,7 @@ jobs:
         with:
           repository: tempooperatorbot/${{ inputs.repo }}
           token: ${{ secrets.TEMPOOPERATORBOT_GITHUB_TOKEN }}
+          persist-credentials: false
 
       - name: Checkout tempo-operator to tmp/ directory
         uses: actions/checkout@v4
@@ -48,6 +54,7 @@ jobs:
           repository: ${{ inputs.oprepo }}
           token: ${{ secrets.TEMPOOPERATORBOT_GITHUB_TOKEN }}
           path: tmp/
+          persist-credentials: false
 
       - name: Determine operator version to release
         id: operator-version
@@ -71,6 +78,8 @@ jobs:
         env:
           VERSION: ${{ steps.operator-version.outputs.version }}
           GH_TOKEN: ${{ secrets.TEMPOOPERATORBOT_GITHUB_TOKEN }}
+          ORG: ${{ inputs.org }}
+          REPO: ${{ inputs.repo }}
         run: |
           message="Update the tempo to $VERSION"
           body="Release tempo-operator \`$VERSION\`.
@@ -89,5 +98,5 @@ jobs:
           git push -f --set-upstream origin $branch
           gh pr create --title "$message" \
                        --body "$body" \
-                       --repo ${{ inputs.org }}/${{ inputs.repo }} \
+                       --repo ${ORG}/${REPO} \
                        --base main

@@ -6,6 +6,8 @@ on:
     paths:
       - CHANGELOG.md
 
+permissions: {}
+
 jobs:
   release:
     runs-on: ubuntu-22.04
@@ -17,6 +19,7 @@ jobs:
       with:
         ref: main
         token: ${{ secrets.GITHUB_TOKEN }}
+        persist-credentials: false
 
     - name: Determine operator version to release
       id: operator-version
