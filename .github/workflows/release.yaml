@@ -17,6 +17,7 @@ jobs:
       with:
         ref: main
         token: ${{ secrets.GITHUB_TOKEN }}
+        persist-credentials: false
 
     - name: Determine operator version to release
       id: operator-version
