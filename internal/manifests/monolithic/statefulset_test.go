@@ -739,9 +739,8 @@ func TestStatefulsetGateway(t *testing.T) {
 						Backend: "memory",
 					},
 				},
-				Query: &v1alpha1.MonolithicQuerySpec{
-					RBAC: v1alpha1.RBACSpec{},
-				},
+				// Fix nil pointer dereference
+				Query: &v1alpha1.MonolithicQuerySpec{},
 				Ingestion: &v1alpha1.MonolithicIngestionSpec{
 					OTLP: &v1alpha1.MonolithicIngestionOTLPSpec{
 						GRPC: &v1alpha1.MonolithicIngestionOTLPProtocolsGRPCSpec{
