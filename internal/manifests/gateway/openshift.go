@@ -208,7 +208,7 @@ func patchOCPServiceAccount(tempo v1alpha1.TempoStack, dep *v1.Deployment) *v1.D
 
 func patchOCPOPAContainer(params manifestutils.Params, dep *v1.Deployment) (*v1.Deployment, error) {
 	pod := corev1.PodSpec{
-		Containers: []corev1.Container{NewOpaContainer(params.CtrlConfig, *params.Tempo.Spec.Tenants, "tempostack", corev1.ResourceRequirements{})},
+		Containers: []corev1.Container{NewOpaContainer(params.CtrlConfig, *params.Tempo.Spec.Tenants, params.Tempo.Spec.Template.Gateway.RBAC.Enabled, "tempostack", corev1.ResourceRequirements{})},
 	}
 	err := mergo.Merge(&dep.Spec.Template.Spec, pod, mergo.WithAppendSlice)
 	if err != nil {
@@ -218,15 +218,17 @@ func patchOCPOPAContainer(params manifestutils.Params, dep *v1.Deployment) (*v1.
 }
 
 // NewOpaContainer creates an OPA (https://github.com/observatorium/opa-openshift) container.
-func NewOpaContainer(ctrlConfig configv1alpha1.ProjectConfig, tenants v1alpha1.TenantsSpec, opaPackage string, resources corev1.ResourceRequirements) corev1.Container {
+func NewOpaContainer(ctrlConfig configv1alpha1.ProjectConfig, tenants v1alpha1.TenantsSpec, rbac bool, opaPackage string, resources corev1.ResourceRequirements) corev1.Container {
 	var args = []string{
 		"--log.level=warn",
 		"--opa.admin-groups=system:cluster-admins,cluster-admin,dedicated-admin",
-		"--opa.matcher=kubernetes_namespace_name",
 		fmt.Sprintf("--web.listen=:%d", gatewayOPAHTTPPort),
 		fmt.Sprintf("--web.internal.listen=:%d", gatewayOPAInternalPort),
 		fmt.Sprintf("--web.healthchecks.url=http://localhost:%d", gatewayOPAHTTPPort),
 		fmt.Sprintf("--opa.package=%s", opaPackage),
+	}
+	if rbac {
+		args = append(args, "--opa.matcher=kubernetes_namespace_name")
 	}
 	for _, t := range tenants.Authentication {
 		args = append(args, fmt.Sprintf("--openshift.mappings=%s=%s", t.TenantName, "tempo.grafana.com"))

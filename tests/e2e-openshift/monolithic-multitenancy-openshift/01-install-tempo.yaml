@@ -5,6 +5,8 @@ metadata:
 spec:
   jaegerui:
     enabled: true
+    route:
+      enabled: true
   multitenancy:
     enabled: true
     mode: openshift
