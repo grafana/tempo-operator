@@ -27,7 +27,7 @@ import (
 
 func start(c *cobra.Command, args []string) {
 	rootCmdConfig := c.Context().Value(root.RootConfigKey{}).(root.RootConfig)
-	ctrlConfig, options := rootCmdConfig.CtrlConfig, rootCmdConfig.Options
+	ctrlConfig, options, tokenCCOAuth := rootCmdConfig.CtrlConfig, rootCmdConfig.Options, rootCmdConfig.TokenCCOAuth
 	setupLog := ctrl.Log.WithName("setup")
 	version := version.Get()
 
@@ -64,22 +64,24 @@ func start(c *cobra.Command, args []string) {
 	}
 
 	if err = (&controllers.TempoStackReconciler{
-		Client:     mgr.GetClient(),
-		Scheme:     mgr.GetScheme(),
-		Recorder:   mgr.GetEventRecorderFor("tempostack-controller"),
-		CtrlConfig: ctrlConfig,
-		Version:    version,
+		Client:       mgr.GetClient(),
+		Scheme:       mgr.GetScheme(),
+		Recorder:     mgr.GetEventRecorderFor("tempostack-controller"),
+		CtrlConfig:   ctrlConfig,
+		Version:      version,
+		TokenCCOAuth: *tokenCCOAuth,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "TempoStack")
 		os.Exit(1)
 	}
 
 	if err = (&controllers.TempoMonolithicReconciler{
-		Client:     mgr.GetClient(),
-		Scheme:     mgr.GetScheme(),
-		Recorder:   mgr.GetEventRecorderFor("tempomonolithic-controller"),
-		CtrlConfig: ctrlConfig,
-		Version:    version,
+		Client:       mgr.GetClient(),
+		Scheme:       mgr.GetScheme(),
+		Recorder:     mgr.GetEventRecorderFor("tempomonolithic-controller"),
+		CtrlConfig:   ctrlConfig,
+		Version:      version,
+		TokenCCOAuth: *tokenCCOAuth,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "TempoMonolithic")
 		os.Exit(1)

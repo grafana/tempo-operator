@@ -7,6 +7,7 @@ import (
 	configv1 "github.com/openshift/api/config/v1"
 	openshiftoperatorv1 "github.com/openshift/api/operator/v1"
 	routev1 "github.com/openshift/api/route/v1"
+	cloudcredentialv1 "github.com/openshift/cloud-credential-operator/pkg/apis/cloudcredential/v1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -16,6 +17,7 @@ import (
 
 	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
 	tempov1alpha1 "github.com/grafana/tempo-operator/api/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 )
 
 var (
@@ -27,8 +29,9 @@ type RootConfigKey struct{}
 
 // RootConfig contains configuration relevant for all commands.
 type RootConfig struct {
-	Options    ctrl.Options
-	CtrlConfig configv1alpha1.ProjectConfig
+	Options      ctrl.Options
+	CtrlConfig   configv1alpha1.ProjectConfig
+	TokenCCOAuth *manifestutils.TokenCCOAuthConfig
 }
 
 func init() {
@@ -37,6 +40,7 @@ func init() {
 	utilruntime.Must(tempov1alpha1.AddToScheme(scheme))
 	utilruntime.Must(configv1alpha1.AddToScheme(scheme))
 	utilruntime.Must(routev1.Install(scheme))
+	utilruntime.Must(cloudcredentialv1.Install(scheme))
 	utilruntime.Must(openshiftoperatorv1.Install(scheme))
 	utilruntime.Must(configv1.Install(scheme))
 	utilruntime.Must(monitoringv1.AddToScheme(scheme))
@@ -46,12 +50,12 @@ func init() {
 
 func readConfig(cmd *cobra.Command, configFile string) error {
 	// default controller configuration
-	ctrlCfg, options, err := LoadConfig(scheme, configFile)
+	ctrlCfg, options, tokenCCOAuth, err := LoadConfig(scheme, configFile)
 	if err != nil {
 		return err
 	}
 
-	cmd.SetContext(context.WithValue(cmd.Context(), RootConfigKey{}, RootConfig{options, *ctrlCfg}))
+	cmd.SetContext(context.WithValue(cmd.Context(), RootConfigKey{}, RootConfig{options, *ctrlCfg, &tokenCCOAuth}))
 	return nil
 }
 

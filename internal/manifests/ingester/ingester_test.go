@@ -109,8 +109,9 @@ func TestBuildIngester(t *testing.T) {
 					ServiceAccount: "tempo-test-serviceaccount",
 					Storage: v1alpha1.ObjectStorageSpec{
 						Secret: v1alpha1.ObjectStorageSecretSpec{
-							Name: "test-storage-secret",
-							Type: "s3",
+							CredentialMode: v1alpha1.CredentialModeStatic,
+							Name:           "test-storage-secret",
+							Type:           "s3",
 						},
 					},
 					StorageSize:      resource.MustParse("10Gi"),
@@ -317,8 +318,9 @@ func TestOverrideResources(t *testing.T) {
 			ServiceAccount: "tempo-test-serviceaccount",
 			Storage: v1alpha1.ObjectStorageSpec{
 				Secret: v1alpha1.ObjectStorageSecretSpec{
-					Name: "test-storage-secret",
-					Type: "s3",
+					CredentialMode: v1alpha1.CredentialModeStatic,
+					Name:           "test-storage-secret",
+					Type:           "s3",
 				},
 			},
 			StorageSize: resource.MustParse("10Gi"),

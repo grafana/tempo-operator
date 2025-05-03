@@ -134,6 +134,14 @@ type MonolithicTracesStorageSpec struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Google Cloud Storage"
 	GCS *MonolithicTracesObjectStorageSpec `json:"gcs,omitempty"`
+
+	// CredentialMode can be used to set the desired credential mode for authenticating with the object storage.
+	// If this is not set, then the operator tries to infer the credential mode from the provided secret and its
+	// own configuration.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	CredentialMode CredentialMode `json:"credentialMode,omitempty"`
 }
 
 // MonolithicTracesStorageBackend defines the backend storage for traces.

@@ -15,13 +15,15 @@ type Params struct {
 	TLSProfile          tlsprofile.TLSProfileOptions
 	GatewayTenantSecret []*GatewayTenantOIDCSecret
 	GatewayTenantsData  []*GatewayTenantsData
+	TokenCCOAuth        TokenCCOAuthConfig
 }
 
 // StorageParams holds storage configuration from the storage secret, except the credentials.
 type StorageParams struct {
-	AzureStorage *AzureStorage
-	GCS          *GCS
-	S3           *S3
+	AzureStorage   *AzureStorage
+	GCS            *GCS
+	S3             *S3
+	CredentialMode v1alpha1.CredentialMode
 }
 
 // AzureStorage for Azure Storage.
@@ -33,39 +35,19 @@ type AzureStorage struct {
 
 // GCS for Google Cloud Storage.
 type GCS struct {
-	Bucket     string
-	ShortLived *GCSShortLived
-}
-
-// GCSShortLived holds short-lived GCS configuration.
-// The short-lived GCS token uses Workload Identity Federation.
-type GCSShortLived struct {
+	Bucket            string
 	IAMServiceAccount string
 	ProjectID         string
 }
 
 // S3 holds S3 configuration.
 type S3 struct {
-	LongLived  *S3LongLived
-	ShortLived *S3ShortLived
-	Insecure   bool
-}
-
-// S3LongLived holds long-lived S3 configuration.
-// The long-lived token uses access key and secret.
-type S3LongLived struct {
-	// Endpoint without http/https
 	Endpoint string
-	Bucket   string
 	TLS      StorageTLS
-}
-
-// S3ShortLived holds short-lived S3 configuration.
-// The short-lived S3 token uses AWS STS.
-type S3ShortLived struct {
-	Bucket  string
-	RoleARN string
-	Region  string
+	Bucket   string
+	RoleARN  string
+	Region   string
+	Insecure bool
 }
 
 // StorageTLS holds StorageTLS configuration.

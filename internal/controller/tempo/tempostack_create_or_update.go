@@ -12,20 +12,29 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/validation/field"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/handlers/storage"
 	"github.com/grafana/tempo-operator/internal/manifests"
+	"github.com/grafana/tempo-operator/internal/manifests/cloudcredentials"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/status"
 	"github.com/grafana/tempo-operator/internal/tlsprofile"
 )
 
+// CreateOrUpdate is a wrapper around controller-runtime CreateOrUpdate.
+func (r *TempoStackReconciler) CreateOrUpdate(ctx context.Context, obj client.Object, f controllerutil.MutateFn) (controllerutil.OperationResult, error) {
+	return ctrl.CreateOrUpdate(ctx, r.Client, obj, f)
+}
+
 func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, tempo v1alpha1.TempoStack) error {
 	params := manifestutils.Params{
-		Tempo:      tempo,
-		CtrlConfig: r.CtrlConfig,
+		Tempo:        tempo,
+		CtrlConfig:   r.CtrlConfig,
+		TokenCCOAuth: r.TokenCCOAuth,
 	}
 
 	var errs field.ErrorList
@@ -34,6 +43,19 @@ func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, tempo v1alpha
 		return &status.ConfigurationError{
 			Reason:  v1alpha1.ReasonInvalidStorageConfig,
 			Message: listFieldErrors(errs),
+		}
+	}
+
+	if r.CtrlConfig.Gates.OpenShift.TokenCCOAuthEnv {
+		if err := cloudcredentials.CreateUpdateDeleteCredentialsRequest(ctx, r.Scheme, cloudcredentials.CredentialRequestOptions{
+			TokenCCOAuth:   r.TokenCCOAuth,
+			Controlled:     &tempo,
+			ServiceAccount: tempo.Spec.ServiceAccount,
+			// We can use this before inferred, as COO mode cannot be inferred and need to be set explicit
+			// if is not set at this point, we need to clean up resources.
+			CredentialMode: tempo.Spec.Storage.Secret.CredentialMode,
+		}, r); err != nil {
+			return err
 		}
 	}
 

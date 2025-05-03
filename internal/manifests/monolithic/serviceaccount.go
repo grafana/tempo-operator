@@ -33,13 +33,13 @@ func BuildServiceAccount(opts Options) *corev1.ServiceAccount {
 		annotations = gateway.BuildServiceAccountAnnotations(tempo.Spec.Multitenancy.TenantsSpec, naming.Name("jaegerui", tempo.Name))
 	}
 
-	if opts.StorageParams.S3 != nil && opts.StorageParams.S3.ShortLived != nil {
-		awsAnnotations := manifestutils.S3AWSSTSAnnotations(*opts.StorageParams.S3.ShortLived)
+	if opts.StorageParams.S3 != nil && opts.StorageParams.CredentialMode == v1alpha1.CredentialModeToken {
+		awsAnnotations := manifestutils.S3AWSSTSAnnotations(*opts.StorageParams.S3)
 		annotations = copyAnnotations(awsAnnotations, annotations)
 	}
 
-	if opts.StorageParams.GCS != nil && opts.StorageParams.GCS.ShortLived != nil {
-		gcsAnnotations := manifestutils.S3AWSSTSAnnotations(*opts.StorageParams.S3.ShortLived)
+	if opts.StorageParams.GCS != nil && opts.StorageParams.CredentialMode == v1alpha1.CredentialModeToken {
+		gcsAnnotations := manifestutils.S3AWSSTSAnnotations(*opts.StorageParams.S3)
 		annotations = copyAnnotations(gcsAnnotations, annotations)
 	}
 

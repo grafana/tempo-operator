@@ -6,6 +6,7 @@ import (
 
 	grafanav1 "github.com/grafana/grafana-operator/v5/api/v1beta1"
 	routev1 "github.com/openshift/api/route/v1"
+	cloudcredentialv1 "github.com/openshift/cloud-credential-operator/pkg/apis/cloudcredential/v1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -19,10 +20,13 @@ import (
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
 	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/handlers/storage"
+	"github.com/grafana/tempo-operator/internal/manifests/cloudcredentials"
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/manifests/monolithic"
 	"github.com/grafana/tempo-operator/internal/status"
 	"github.com/grafana/tempo-operator/internal/tlsprofile"
@@ -33,10 +37,11 @@ import (
 // TempoMonolithicReconciler reconciles a TempoMonolithic object.
 type TempoMonolithicReconciler struct {
 	client.Client
-	Scheme     *runtime.Scheme
-	Recorder   record.EventRecorder
-	CtrlConfig configv1alpha1.ProjectConfig
-	Version    version.Version
+	Scheme       *runtime.Scheme
+	Recorder     record.EventRecorder
+	CtrlConfig   configv1alpha1.ProjectConfig
+	Version      version.Version
+	TokenCCOAuth manifestutils.TokenCCOAuthConfig
 }
 
 //+kubebuilder:rbac:groups=tempo.grafana.com,resources=tempomonolithics,verbs=get;list;watch;create;update;patch;delete
@@ -91,6 +96,19 @@ func (r *TempoMonolithicReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	// Apply ephemeral defaults after upgrade.
 	// The ephemeral defaults should not be written back to the cluster.
 	tempo.Default(r.CtrlConfig)
+
+	if r.CtrlConfig.Gates.OpenShift.TokenCCOAuthEnv {
+		if err := cloudcredentials.CreateUpdateDeleteCredentialsRequest(ctx, r.Scheme, cloudcredentials.CredentialRequestOptions{
+			TokenCCOAuth:   r.TokenCCOAuth,
+			Controlled:     &tempo,
+			ServiceAccount: tempo.Spec.ServiceAccount,
+			// We can use this before inferred, as COO mode cannot be inferred and need to be set explicit
+			// if is not set at this point, we need to clean up resources.
+			CredentialMode: tempo.Spec.Storage.Traces.CredentialMode,
+		}, r); err != nil {
+			return ctrl.Result{}, status.HandleTempoMonolithicStatus(ctx, r.Client, tempo, err)
+		}
+	}
 
 	err := r.createOrUpdate(ctx, tempo)
 	if err != nil {
@@ -298,5 +316,14 @@ func (r *TempoMonolithicReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		builder = builder.Owns(&grafanav1.GrafanaDatasource{})
 	}
 
+	if r.CtrlConfig.Gates.OpenShift.TokenCCOAuthEnv {
+		builder = builder.Owns(&cloudcredentialv1.CredentialsRequest{})
+	}
+
 	return builder.Complete(r)
+}
+
+// CreateOrUpdate is a wrapper around controller-runtime CreateOrUpdate.
+func (r *TempoMonolithicReconciler) CreateOrUpdate(ctx context.Context, obj client.Object, f controllerutil.MutateFn) (controllerutil.OperationResult, error) {
+	return ctrl.CreateOrUpdate(ctx, r.Client, obj, f)
 }

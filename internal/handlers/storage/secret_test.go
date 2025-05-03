@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 
+	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 )
 
@@ -19,11 +20,12 @@ func TestGetS3ParamsInsecure(t *testing.T) {
 		},
 	}
 
-	s3, errs := getS3Params(storageSecret, nil)
+	s3, errs := getS3Params(storageSecret, nil, v1alpha1.CredentialModeStatic)
+
 	require.Len(t, errs, 0)
-	require.Equal(t, "minio:9000", s3.LongLived.Endpoint)
+	require.Equal(t, "minio:9000", s3.Endpoint)
 	require.True(t, s3.Insecure)
-	require.Equal(t, "testbucket", s3.LongLived.Bucket)
+	require.Equal(t, "testbucket", s3.Bucket)
 }
 
 func TestGetS3ParamsSecure(t *testing.T) {
@@ -36,11 +38,12 @@ func TestGetS3ParamsSecure(t *testing.T) {
 		},
 	}
 
-	s3, errs := getS3Params(storageSecret, nil)
+	s3, errs := getS3Params(storageSecret, nil, v1alpha1.CredentialModeStatic)
+
 	require.Len(t, errs, 0)
-	require.Equal(t, "minio:9000", s3.LongLived.Endpoint)
+	require.Equal(t, "minio:9000", s3.Endpoint)
 	require.False(t, s3.Insecure)
-	require.Equal(t, "testbucket", s3.LongLived.Bucket)
+	require.Equal(t, "testbucket", s3.Bucket)
 }
 
 func TestGetS3Params_short_lived(t *testing.T) {
@@ -52,13 +55,14 @@ func TestGetS3Params_short_lived(t *testing.T) {
 		},
 	}
 
-	s3, errs := getS3Params(storageSecret, nil)
+	s3, errs := getS3Params(storageSecret, nil, v1alpha1.CredentialModeToken)
+
 	require.Len(t, errs, 0)
-	require.Equal(t, &manifestutils.S3ShortLived{
+	require.Equal(t, &manifestutils.S3{
 		Bucket:  "testbucket",
 		RoleARN: "abc",
 		Region:  "rrrr",
-	}, s3.ShortLived)
+	}, s3)
 }
 
 func TestGetGCSParams_short_lived(t *testing.T) {
@@ -69,13 +73,14 @@ func TestGetGCSParams_short_lived(t *testing.T) {
 			"iam_sa_project_id": []byte("rrrr"),
 		},
 	}
+	gcs, errs := getGCSParams(storageSecret, nil, v1alpha1.CredentialModeToken)
 
-	gcs, errs := getGCSParams(storageSecret, nil)
 	require.Len(t, errs, 0)
-	require.Equal(t, &manifestutils.GCSShortLived{
+	require.Equal(t, &manifestutils.GCS{
+		Bucket:            "testbucket",
 		IAMServiceAccount: "abc",
 		ProjectID:         "rrrr",
-	}, gcs.ShortLived)
+	}, gcs)
 }
 
 func TestGetGCSParams_long_lived(t *testing.T) {
@@ -86,10 +91,12 @@ func TestGetGCSParams_long_lived(t *testing.T) {
 		},
 	}
 
-	gcs, errs := getGCSParams(storageSecret, nil)
+	gcs, errs := getGCSParams(storageSecret, nil, v1alpha1.CredentialModeStatic)
+
 	require.Len(t, errs, 0)
-	require.Equal(t, "testbucket", gcs.Bucket)
-	require.Nil(t, gcs.ShortLived)
+	require.Equal(t, &manifestutils.GCS{
+		Bucket: "testbucket",
+	}, gcs)
 }
 
 func TestGetGCSParams_both_tokens(t *testing.T) {
@@ -102,6 +109,6 @@ func TestGetGCSParams_both_tokens(t *testing.T) {
 		},
 	}
 
-	_, errs := getGCSParams(storageSecret, nil)
+	_, errs := discoverGCSCredentialType(storageSecret, nil)
 	require.Len(t, errs, 1)
 }

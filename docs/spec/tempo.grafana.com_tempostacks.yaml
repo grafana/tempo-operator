@@ -70,6 +70,7 @@ spec:                                    # TempoStackSpec defines the desired st
   serviceAccount: ""                     # ServiceAccount defines the service account to use for all tempo components.
   storage:                               # Storage defines the spec for the object storage endpoint to store traces. User is required to create secret and supply it.
     secret:                              # Secret for object storage authentication. Name of a secret in the same namespace as the TempoStack custom resource.
+      credentialMode: ""                 # CredentialMode can be used to set the desired credential mode for authenticating with the object storage. If this is not set, then the operator tries to infer the credential mode from the provided secret and its own configuration.
       name: ""                           # Name of a secret in the namespace configured for object storage secrets.
       type: ""                           # Type of object storage that should be used
     tls:                                 # TLS configuration for reaching the object storage endpoint.

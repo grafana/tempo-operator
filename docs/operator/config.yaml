@@ -131,6 +131,10 @@ featureGates:
     #   - If the gateway is disabled and TLS is enabled on the distributor but no caName and certName are specified
     servingCertsService: false
 
+    # TokenCCOAuthEnv is true when OpenShift-functions are enabled and the operator has detected
+    # that it is running with some kind of "workload identity" (AWS STS) enabled.
+    tokenCCOAuthEnv: false
+
   # PrometheusOperator defines whether the Prometheus Operator CRD exists in the cluster.
   # This CRD is part of prometheus-operator.
   prometheusOperator: false

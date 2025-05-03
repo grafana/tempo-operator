@@ -26,22 +26,58 @@ func GetStorageParamsForTempoStack(ctx context.Context, client client.Client, te
 	storageParams := manifestutils.StorageParams{}
 	switch tempo.Spec.Storage.Secret.Type {
 	case v1alpha1.ObjectStorageSecretS3:
-		storageParams.S3, errs = getS3Params(storageSecret, secretNamePath)
+		credentialMode := tempo.Spec.Storage.Secret.CredentialMode
+
+		if credentialMode == "" {
+			credentialMode, errs = discoverS3CredentialType(storageSecret, secretNamePath)
+			if len(errs) > 0 {
+				return manifestutils.StorageParams{}, errs
+			}
+			storageParams.CredentialMode = credentialMode
+		}
+
+		if credentialMode == v1alpha1.CredentialModeTokenCCO {
+			_, errs := getSecret(ctx, client, tempo.Namespace, tempo.Spec.Storage.Secret.Name, secretNamePath)
+			if len(errs) > 0 {
+				return manifestutils.StorageParams{}, errs
+			}
+		}
+
+		storageParams.S3, errs = getS3Params(storageSecret, secretNamePath, credentialMode)
+
 		if len(errs) > 0 {
 			return manifestutils.StorageParams{}, errs
 		}
 
 		storageParams.S3.Insecure = !tempo.Spec.Storage.TLS.Enabled
 
-		if tempo.Spec.Storage.TLS.Enabled && storageParams.S3.LongLived != nil {
-			storageParams.S3.LongLived.TLS, errs = getTLSParams(ctx, client, tempo.Namespace, tempo.Spec.Storage.TLS, tlsPath.Child("caName"))
+		if tempo.Spec.Storage.TLS.Enabled {
+			storageParams.S3.TLS, errs = getTLSParams(ctx, client, tempo.Namespace, tempo.Spec.Storage.TLS, tlsPath.Child("caName"))
 			if len(errs) > 0 {
 				return manifestutils.StorageParams{}, errs
 			}
 		}
 
 	case v1alpha1.ObjectStorageSecretAzure:
-		storageParams.AzureStorage, errs = getAzureParams(storageSecret, secretNamePath)
+		credentialMode := tempo.Spec.Storage.Secret.CredentialMode
+
+		if credentialMode == "" {
+			credentialMode, errs = discoverAzureCredentialType(storageSecret, secretNamePath)
+			if len(errs) > 0 {
+				return manifestutils.StorageParams{}, errs
+			}
+			storageParams.CredentialMode = credentialMode
+		}
+
+		if credentialMode == v1alpha1.CredentialModeTokenCCO {
+			_, errs := getSecret(ctx, client, tempo.Namespace, tempo.Spec.Storage.Secret.Name, secretNamePath)
+			if len(errs) > 0 {
+				return manifestutils.StorageParams{}, errs
+			}
+		}
+
+		storageParams.AzureStorage, errs = getAzureParams(storageSecret, secretNamePath, credentialMode)
+
 		if len(errs) > 0 {
 			return manifestutils.StorageParams{}, errs
 		}
@@ -55,7 +91,25 @@ func GetStorageParamsForTempoStack(ctx context.Context, client client.Client, te
 		}
 
 	case v1alpha1.ObjectStorageSecretGCS:
-		storageParams.GCS, errs = getGCSParams(storageSecret, secretNamePath)
+		credentialMode := tempo.Spec.Storage.Secret.CredentialMode
+
+		if credentialMode == "" {
+			credentialMode, errs = discoverGCSCredentialType(storageSecret, secretNamePath)
+			if len(errs) > 0 {
+				return manifestutils.StorageParams{}, errs
+			}
+			storageParams.CredentialMode = credentialMode
+		}
+
+		if credentialMode == v1alpha1.CredentialModeTokenCCO {
+			_, errs := getSecret(ctx, client, tempo.Namespace, tempo.Spec.Storage.Secret.Name, secretNamePath)
+			if len(errs) > 0 {
+				return manifestutils.StorageParams{}, errs
+			}
+		}
+
+		storageParams.GCS, errs = getGCSParams(storageSecret, secretNamePath, credentialMode)
+
 		if len(errs) > 0 {
 			return manifestutils.StorageParams{}, errs
 		}
@@ -110,14 +164,32 @@ func GetStorageParamsForTempoMonolithic(ctx context.Context, client client.Clien
 			return manifestutils.StorageParams{}, errs
 		}
 
-		storageParams.S3, errs = getS3Params(storageSecret, secretNamePath)
+		credentialMode := tempo.Spec.Storage.Traces.CredentialMode
+
+		if credentialMode == "" {
+			credentialMode, errs = discoverS3CredentialType(storageSecret, secretNamePath)
+			if len(errs) > 0 {
+				return manifestutils.StorageParams{}, errs
+			}
+			storageParams.CredentialMode = credentialMode
+		}
+
+		if credentialMode == v1alpha1.CredentialModeTokenCCO {
+			_, errs := getSecret(ctx, client, tempo.Namespace, tempo.Spec.Storage.Traces.S3.Secret, secretNamePath)
+			if len(errs) > 0 {
+				return manifestutils.StorageParams{}, errs
+			}
+		}
+
+		storageParams.S3, errs = getS3Params(storageSecret, secretNamePath, credentialMode)
+
 		if len(errs) > 0 {
 			return manifestutils.StorageParams{}, errs
 		}
 
 		if tempo.Spec.Storage.Traces.S3.TLS != nil && tempo.Spec.Storage.Traces.S3.TLS.Enabled {
 			caPath := tracesPath.Child("s3", "tls", "caName")
-			storageParams.S3.LongLived.TLS, errs = getTLSParams(ctx, client, tempo.Namespace, *tempo.Spec.Storage.Traces.S3.TLS, caPath)
+			storageParams.S3.TLS, errs = getTLSParams(ctx, client, tempo.Namespace, *tempo.Spec.Storage.Traces.S3.TLS, caPath)
 			if len(errs) > 0 {
 				return manifestutils.StorageParams{}, errs
 			}
@@ -134,7 +206,31 @@ func GetStorageParamsForTempoMonolithic(ctx context.Context, client client.Clien
 			return manifestutils.StorageParams{}, errs
 		}
 
-		storageParams.AzureStorage, errs = getAzureParams(storageSecret, secretNamePath)
+		credentialMode := tempo.Spec.Storage.Traces.CredentialMode
+
+		if credentialMode == "" {
+			credentialMode, errs = discoverAzureCredentialType(storageSecret, secretNamePath)
+			if len(errs) > 0 {
+				return manifestutils.StorageParams{}, errs
+			}
+			storageParams.CredentialMode = credentialMode
+		}
+
+		if credentialMode == v1alpha1.CredentialModeTokenCCO {
+			_, errs := getSecret(ctx, client, tempo.Namespace, tempo.Spec.Storage.Traces.S3.Secret, secretNamePath)
+			if len(errs) > 0 {
+				return manifestutils.StorageParams{}, errs
+			}
+		}
+
+		if credentialMode == v1alpha1.CredentialModeTokenCCO {
+			_, errs := getSecret(ctx, client, tempo.Namespace, tempo.Spec.Storage.Traces.S3.Secret, secretNamePath)
+			if len(errs) > 0 {
+				return manifestutils.StorageParams{}, errs
+			}
+		}
+
+		storageParams.AzureStorage, errs = getAzureParams(storageSecret, secretNamePath, credentialMode)
 		if len(errs) > 0 {
 			return manifestutils.StorageParams{}, errs
 		}
@@ -150,7 +246,24 @@ func GetStorageParamsForTempoMonolithic(ctx context.Context, client client.Clien
 			return manifestutils.StorageParams{}, errs
 		}
 
-		storageParams.GCS, errs = getGCSParams(storageSecret, secretNamePath)
+		credentialMode := tempo.Spec.Storage.Traces.CredentialMode
+
+		if credentialMode == "" {
+			credentialMode, errs = discoverGCSCredentialType(storageSecret, secretNamePath)
+			if len(errs) > 0 {
+				return manifestutils.StorageParams{}, errs
+			}
+			storageParams.CredentialMode = credentialMode
+		}
+
+		if credentialMode == v1alpha1.CredentialModeTokenCCO {
+			_, errs := getSecret(ctx, client, tempo.Namespace, tempo.Spec.Storage.Traces.S3.Secret, secretNamePath)
+			if len(errs) > 0 {
+				return manifestutils.StorageParams{}, errs
+			}
+		}
+
+		storageParams.GCS, errs = getGCSParams(storageSecret, secretNamePath, credentialMode)
 		if len(errs) > 0 {
 			return manifestutils.StorageParams{}, errs
 		}

@@ -81,8 +81,9 @@ func TestGetS3Storage(t *testing.T) {
 		Spec: v1alpha1.TempoStackSpec{
 			Storage: v1alpha1.ObjectStorageSpec{
 				Secret: v1alpha1.ObjectStorageSecretSpec{
-					Name: "test",
-					Type: v1alpha1.ObjectStorageSecretAzure,
+					CredentialMode: v1alpha1.CredentialModeStatic,
+					Name:           "test",
+					Type:           v1alpha1.ObjectStorageSecretAzure,
 				},
 			},
 		},
@@ -96,7 +97,7 @@ func TestGetS3Storage(t *testing.T) {
 		},
 	}
 
-	assert.NoError(t, ConfigureS3Storage(&pod, "ingester", tempo.Spec.Storage.Secret.Name, &tempo.Spec.Storage.TLS, &S3{}))
+	assert.NoError(t, ConfigureS3Storage(&pod, "ingester", tempo.Spec.Storage.Secret.Name, &tempo.Spec.Storage.TLS, tempo.Spec.Storage.Secret.CredentialMode, ""))
 	assert.Len(t, pod.Containers[0].Env, 2)
 	assert.NoError(t, findEnvVar("S3_SECRET_KEY", &pod.Containers[0].Env))
 	assert.NoError(t, findEnvVar("S3_ACCESS_KEY", &pod.Containers[0].Env))
@@ -111,8 +112,9 @@ func TestGetS3Storage_short_lived(t *testing.T) {
 		Spec: v1alpha1.TempoStackSpec{
 			Storage: v1alpha1.ObjectStorageSpec{
 				Secret: v1alpha1.ObjectStorageSecretSpec{
-					Name: "test",
-					Type: v1alpha1.ObjectStorageSecretAzure,
+					CredentialMode: v1alpha1.CredentialModeToken,
+					Name:           "test",
+					Type:           v1alpha1.ObjectStorageSecretAzure,
 				},
 			},
 		},
@@ -126,7 +128,7 @@ func TestGetS3Storage_short_lived(t *testing.T) {
 		},
 	}
 
-	assert.NoError(t, ConfigureS3Storage(&pod, "ingester", tempo.Spec.Storage.Secret.Name, &tempo.Spec.Storage.TLS, &S3{ShortLived: &S3ShortLived{}}))
+	assert.NoError(t, ConfigureS3Storage(&pod, "ingester", tempo.Spec.Storage.Secret.Name, &tempo.Spec.Storage.TLS, tempo.Spec.Storage.Secret.CredentialMode, ""))
 	assert.Len(t, pod.Containers[0].Env, 0)
 	assert.Len(t, pod.Containers[0].Args, 0)
 }
@@ -155,7 +157,7 @@ func TestGetS3StorageWithCA(t *testing.T) {
 		},
 	}
 
-	assert.NoError(t, ConfigureS3Storage(&pod, "ingester", tempo.Spec.Storage.Secret.Name, &tempo.Spec.Storage.TLS, &S3{}))
+	assert.NoError(t, ConfigureS3Storage(&pod, "ingester", tempo.Spec.Storage.Secret.Name, &tempo.Spec.Storage.TLS, tempo.Spec.Storage.Secret.CredentialMode, ""))
 	assert.Equal(t, []corev1.Volume{
 		{
 			Name: "customca",
@@ -283,4 +285,37 @@ func TestGetCGSStorage_short_lived(t *testing.T) {
 	assert.NoError(t, ConfigureGCS(&pod, "ingester", tempo.Spec.Storage.Secret.Name, true))
 	assert.Len(t, pod.Containers[0].Env, 0)
 	assert.Len(t, pod.Containers[0].Args, 0)
+}
+
+func TestConfigureStorageWithS3CCO(t *testing.T) {
+	tempo := v1alpha1.TempoStack{
+		Spec: v1alpha1.TempoStackSpec{
+			Storage: v1alpha1.ObjectStorageSpec{
+				Secret: v1alpha1.ObjectStorageSecretSpec{
+					CredentialMode: v1alpha1.CredentialModeTokenCCO,
+					Name:           "test",
+					Type:           v1alpha1.ObjectStorageSecretS3,
+				},
+			},
+		},
+	}
+
+	pod := corev1.PodSpec{
+		Containers: []corev1.Container{
+			{
+				Name: "ingester",
+			},
+		},
+	}
+
+	assert.NoError(t, ConfigureS3Storage(&pod, "ingester", tempo.Spec.Storage.Secret.Name, &tempo.Spec.Storage.TLS, tempo.Spec.Storage.Secret.CredentialMode, ""))
+	assert.Len(t, pod.Containers[0].Env, 2)
+	assert.NoError(t, findEnvVar("AWS_SHARED_CREDENTIALS_FILE", &pod.Containers[0].Env))
+	assert.NoError(t, findEnvVar("AWS_SDK_LOAD_CONFIG", &pod.Containers[0].Env))
+	assert.Len(t, pod.Containers[0].VolumeMounts, 1)
+	assert.Len(t, pod.Volumes, 1)
+	assert.Equal(t, tokenAuthConfigVolumeName, pod.Containers[0].VolumeMounts[0].Name)
+	assert.Equal(t, tokenAuthConfigVolumeName, pod.Volumes[0].Name)
+	assert.NotContains(t, pod.Containers[0].Args, "--storage.trace.s3.secret_key=$(S3_SECRET_KEY)")
+	assert.NotContains(t, pod.Containers[0].Args, "--storage.trace.s3.access_key=$(S3_ACCESS_KEY)")
 }
