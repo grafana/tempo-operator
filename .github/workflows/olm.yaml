@@ -2,6 +2,8 @@ name: "Publish to operatorHUB"
 on:
   workflow_dispatch:
 
+permissions: {}
+
 jobs:
   operator-hub-prod-release:
     uses: ./.github/workflows/reusable-operator-hub-release.yaml
