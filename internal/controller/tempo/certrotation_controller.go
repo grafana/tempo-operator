@@ -88,6 +88,7 @@ func (r *CertRotationReconciler) Reconcile(ctx context.Context, req ctrl.Request
 // SetupWithManager sets up the controller with the Manager.
 func (r *CertRotationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
+		Named("certrotation").
 		For(&v1alpha1.TempoStack{}).
 		Owns(&corev1.Secret{}).
 		Complete(r)
