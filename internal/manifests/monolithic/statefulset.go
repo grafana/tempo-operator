@@ -511,6 +511,7 @@ func configureGateway(opts Options, sts *appsv1.StatefulSet) error {
 		opaContainer := gateway.NewOpaContainer(
 			opts.CtrlConfig,
 			tempo.Spec.Multitenancy.TenantsSpec,
+			tempo.Spec.Query.RBAC.Enabled,
 			opaPackage,
 			ptr.Deref(opts.Tempo.Spec.Multitenancy.Resources, corev1.ResourceRequirements{}),
 		)

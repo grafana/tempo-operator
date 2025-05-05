@@ -43,7 +43,6 @@ func TestPatchOPAContainer(t *testing.T) {
 	assert.Equal(t, []string{
 		"--log.level=warn",
 		"--opa.admin-groups=system:cluster-admins,cluster-admin,dedicated-admin",
-		"--opa.matcher=kubernetes_namespace_name",
 		"--web.listen=:8082", "--web.internal.listen=:8083",
 		"--web.healthchecks.url=http://localhost:8082",
 		"--opa.package=tempostack",
