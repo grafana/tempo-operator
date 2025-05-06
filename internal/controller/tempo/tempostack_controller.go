@@ -201,6 +201,7 @@ func (r *TempoStackReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	}
 
 	builder := ctrl.NewControllerManagedBy(mgr).
+		Named("tempostack").
 		For(&v1alpha1.TempoStack{}).
 		Owns(&corev1.ConfigMap{}).
 		Owns(&corev1.ServiceAccount{}).
