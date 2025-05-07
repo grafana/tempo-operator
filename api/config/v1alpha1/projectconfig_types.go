@@ -107,10 +107,6 @@ type OpenShiftFeatureGates struct {
 
 	// OauthProxy define options for the oauth proxy feature.
 	OauthProxy OauthProxyFeatureGates `json:"oAuthProxy,omitempty"`
-
-	// TokenCCOAuthEnv is true when OpenShift-functions are enabled and the operator has detected
-	// that it is running with some kind of "workload identity" (AWS STS) enabled.
-	TokenCCOAuthEnv bool `json:"tokenCCOAuthEnv,omitempty"`
 }
 
 // TLSProfileType is a TLS security profile based on the Mozilla definitions:

@@ -100,8 +100,9 @@ func (r *TempoMonolithicReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	// Apply ephemeral defaults after upgrade.
 	// The ephemeral defaults should not be written back to the cluster.
 	tempo.Default(r.CtrlConfig)
+	tokenCCOAuthEnv := cloudcredentials.DiscoverTokenCCOAuthConfig()
 
-	if r.CtrlConfig.Gates.OpenShift.TokenCCOAuthEnv {
+	if tokenCCOAuthEnv != nil {
 		if err := cloudcredentials.CreateUpdateDeleteCredentialsRequest(ctx, r.Scheme, cloudcredentials.CredentialRequestOptions{
 			TokenCCOAuth:   r.TokenCCOAuth,
 			Controlled:     &tempo,
@@ -352,7 +353,8 @@ func (r *TempoMonolithicReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		builder = builder.Owns(&grafanav1.GrafanaDatasource{})
 	}
 
-	if r.CtrlConfig.Gates.OpenShift.TokenCCOAuthEnv {
+	tokenCCOAuthEnv := cloudcredentials.DiscoverTokenCCOAuthConfig()
+	if tokenCCOAuthEnv != nil {
 		builder = builder.Owns(&cloudcredentialv1.CredentialsRequest{})
 	}
 

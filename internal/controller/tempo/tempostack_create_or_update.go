@@ -46,7 +46,9 @@ func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, tempo v1alpha
 		}
 	}
 
-	if r.CtrlConfig.Gates.OpenShift.TokenCCOAuthEnv {
+	tokenCCOAuthEnv := cloudcredentials.DiscoverTokenCCOAuthConfig()
+
+	if tokenCCOAuthEnv != nil {
 		if err := cloudcredentials.CreateUpdateDeleteCredentialsRequest(ctx, r.Scheme, cloudcredentials.CredentialRequestOptions{
 			TokenCCOAuth:   r.TokenCCOAuth,
 			Controlled:     &tempo,

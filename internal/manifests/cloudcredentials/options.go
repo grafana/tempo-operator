@@ -7,18 +7,18 @@ import (
 )
 
 // DiscoverTokenCCOAuthConfig return a token config based on the env variables.
-func DiscoverTokenCCOAuthConfig() (manifestutils.TokenCCOAuthConfig, bool) {
+func DiscoverTokenCCOAuthConfig() *manifestutils.TokenCCOAuthConfig {
 	// AWS
 	roleARN := os.Getenv("ROLEARN")
 
 	switch {
 	case roleARN != "":
-		return manifestutils.TokenCCOAuthConfig{
+		return &manifestutils.TokenCCOAuthConfig{
 			AWS: &manifestutils.TokenCCOAWSEnvironment{
 				RoleARN: roleARN,
 			},
-		}, true
+		}
 	}
 
-	return manifestutils.TokenCCOAuthConfig{}, false
+	return nil
 }

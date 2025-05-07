@@ -30,6 +30,7 @@ import (
 	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
 	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/certrotation/handlers"
+	"github.com/grafana/tempo-operator/internal/manifests/cloudcredentials"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/status"
 	"github.com/grafana/tempo-operator/internal/upgrade"
@@ -236,7 +237,8 @@ func (r *TempoStackReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		builder = builder.Owns(&grafanav1.GrafanaDatasource{})
 	}
 
-	if r.CtrlConfig.Gates.OpenShift.TokenCCOAuthEnv {
+	tokenCCOAuthEnv := cloudcredentials.DiscoverTokenCCOAuthConfig()
+	if tokenCCOAuthEnv != nil {
 		builder = builder.Owns(&cloudcredentialv1.CredentialsRequest{})
 	}
 

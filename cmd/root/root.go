@@ -17,7 +17,6 @@ import (
 
 	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
 	tempov1alpha1 "github.com/grafana/tempo-operator/api/tempo/v1alpha1"
-	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 )
 
 var (
@@ -29,9 +28,8 @@ type RootConfigKey struct{}
 
 // RootConfig contains configuration relevant for all commands.
 type RootConfig struct {
-	Options      ctrl.Options
-	CtrlConfig   configv1alpha1.ProjectConfig
-	TokenCCOAuth *manifestutils.TokenCCOAuthConfig
+	Options    ctrl.Options
+	CtrlConfig configv1alpha1.ProjectConfig
 }
 
 func init() {
@@ -50,12 +48,12 @@ func init() {
 
 func readConfig(cmd *cobra.Command, configFile string) error {
 	// default controller configuration
-	ctrlCfg, options, tokenCCOAuth, err := LoadConfig(scheme, configFile)
+	ctrlCfg, options, err := LoadConfig(scheme, configFile)
 	if err != nil {
 		return err
 	}
 
-	cmd.SetContext(context.WithValue(cmd.Context(), RootConfigKey{}, RootConfig{options, *ctrlCfg, &tokenCCOAuth}))
+	cmd.SetContext(context.WithValue(cmd.Context(), RootConfigKey{}, RootConfig{options, *ctrlCfg}))
 	return nil
 }
 

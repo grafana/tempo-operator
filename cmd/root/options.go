@@ -17,8 +17,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
 	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
-	"github.com/grafana/tempo-operator/internal/manifests/cloudcredentials"
-	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 )
 
 var errConfigFileLoading = errors.New("could not read file at path")
@@ -40,32 +38,27 @@ func loadConfigFile(scheme *runtime.Scheme, outConfig *configv1alpha1.ProjectCon
 
 // LoadConfig initializes the controller configuration, optionally overriding the defaults
 // from a provided configuration file.
-func LoadConfig(scheme *runtime.Scheme, configFile string) (*configv1alpha1.ProjectConfig, ctrl.Options, manifestutils.TokenCCOAuthConfig, error) {
+func LoadConfig(scheme *runtime.Scheme, configFile string) (*configv1alpha1.ProjectConfig, ctrl.Options, error) {
 	options := ctrl.Options{Scheme: scheme}
 	ctrlConfig := configv1alpha1.DefaultProjectConfig()
 
 	if configFile == "" {
-		return &ctrlConfig, options, manifestutils.TokenCCOAuthConfig{}, nil
+		return &ctrlConfig, options, nil
 	}
 
 	err := loadConfigFile(scheme, &ctrlConfig, configFile)
 	if err != nil {
-		return nil, options, manifestutils.TokenCCOAuthConfig{}, fmt.Errorf("failed to parse controller manager config file: %w", err)
+		return nil, options, fmt.Errorf("failed to parse controller manager config file: %w", err)
 	}
 
 	err = ctrlConfig.Validate()
 	if err != nil {
-		return nil, options, manifestutils.TokenCCOAuthConfig{}, fmt.Errorf("controller config validation failed: %w", err)
+		return nil, options, fmt.Errorf("controller config validation failed: %w", err)
 	}
-
-	tokenCCOAuth, hasCOOAuthEnv := cloudcredentials.DiscoverTokenCCOAuthConfig()
-
-	// If CCO environment was discovered, override the openshift gateway flag.
-	ctrlConfig.Gates.OpenShift.TokenCCOAuthEnv = hasCOOAuthEnv
 
 	options = mergeOptionsFromFile(options, &ctrlConfig)
 
-	return &ctrlConfig, options, tokenCCOAuth, nil
+	return &ctrlConfig, options, nil
 }
 
 func mergeOptionsFromFile(o manager.Options, cfg *configv1alpha1.ProjectConfig) manager.Options {
