@@ -19,8 +19,12 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
 	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
@@ -178,7 +182,7 @@ func (r *TempoMonolithicReconciler) getOwnedObjects(ctx context.Context, tempo v
 		LabelSelector: labels.SelectorFromSet(monolithic.CommonLabels(tempo.Name)),
 	}
 	clusterWideListOps := &client.ListOptions{
-		LabelSelector: labels.SelectorFromSet(monolithic.CommonLabels(tempo.Name)),
+		LabelSelector: labels.SelectorFromSet(monolithic.ClusterScopedCommonLabels(tempo.ObjectMeta)),
 	}
 
 	// Add all resources where the operator can conditionally create an object.
@@ -287,6 +291,33 @@ func (r *TempoMonolithicReconciler) getOwnedObjects(ctx context.Context, tempo v
 	return ownedObjects, nil
 }
 
+func (r *TempoMonolithicReconciler) findTempoMonolithicForStorageSecret(ctx context.Context, secret client.Object) []reconcile.Request {
+	monolithics := &v1alpha1.TempoMonolithicList{}
+
+	err := r.List(ctx, monolithics, &client.ListOptions{
+		Namespace: secret.GetNamespace(),
+	})
+
+	if err != nil {
+		return []reconcile.Request{}
+	}
+
+	var requests []reconcile.Request
+
+	for _, tempomonolithic := range monolithics.Items {
+		if matchTempoMonolithicStorageSecret(tempomonolithic, secret.GetName()) {
+			requests = append(requests, reconcile.Request{
+				NamespacedName: types.NamespacedName{
+					Name:      tempomonolithic.GetName(),
+					Namespace: tempomonolithic.GetNamespace(),
+				},
+			})
+		}
+	}
+
+	return requests
+}
+
 // SetupWithManager sets up the controller with the Manager.
 func (r *TempoMonolithicReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	builder := ctrl.NewControllerManagedBy(mgr).
@@ -301,7 +332,12 @@ func (r *TempoMonolithicReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&rbacv1.ClusterRole{}).
 		Owns(&rbacv1.ClusterRoleBinding{}).
 		Owns(&rbacv1.Role{}).
-		Owns(&rbacv1.RoleBinding{})
+		Owns(&rbacv1.RoleBinding{}).
+		Watches(
+			&corev1.Secret{},
+			handler.EnqueueRequestsFromMapFunc(r.findTempoMonolithicForStorageSecret),
+			builder.WithPredicates(predicate.ResourceVersionChangedPredicate{}),
+		)
 
 	if r.CtrlConfig.Gates.OpenShift.OpenShiftRoute {
 		builder = builder.Owns(&routev1.Route{})
@@ -326,4 +362,14 @@ func (r *TempoMonolithicReconciler) SetupWithManager(mgr ctrl.Manager) error {
 // CreateOrUpdate is a wrapper around controller-runtime CreateOrUpdate.
 func (r *TempoMonolithicReconciler) CreateOrUpdate(ctx context.Context, obj client.Object, f controllerutil.MutateFn) (controllerutil.OperationResult, error) {
 	return ctrl.CreateOrUpdate(ctx, r.Client, obj, f)
+}
+
+func matchTempoMonolithicStorageSecret(item v1alpha1.TempoMonolithic, secretName string) bool {
+	if item.Spec.Storage == nil {
+		return false
+	}
+	storageConfig := item.Spec.Storage.Traces
+	return (storageConfig.S3 != nil && storageConfig.S3.Secret == secretName) ||
+		(storageConfig.Azure != nil && storageConfig.Azure.Secret == secretName) ||
+		(storageConfig.GCS != nil && storageConfig.GCS.Secret == secretName)
 }
