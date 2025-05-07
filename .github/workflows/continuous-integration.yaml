@@ -45,6 +45,9 @@ jobs:
   security:
     name: Security
     runs-on: ubuntu-22.04
+    permissions:
+      actions: read
+      security-events: write # write CodeQL alerts
     steps:
       - name: Checkout
         uses: actions/checkout@v4
