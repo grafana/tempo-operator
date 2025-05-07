@@ -6,7 +6,9 @@ on:
     paths:
       - CHANGELOG.md
 
-permissions: {}
+permissions:
+  contents: read
+  packages: write
 
 jobs:
   release:

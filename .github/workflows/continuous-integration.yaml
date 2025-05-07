@@ -46,8 +46,9 @@ jobs:
     name: Security
     runs-on: ubuntu-22.04
     permissions:
-      security-events: write
+      contents: read
       actions: read
+      security-events: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
