@@ -6,9 +6,7 @@ on:
     paths:
       - CHANGELOG.md
 
-permissions:
-  contents: read
-  packages: write
+permissions: {}
 
 jobs:
   release:
@@ -52,6 +50,9 @@ jobs:
   publish-images:
     needs: release
     uses: ./.github/workflows/reusable-publish-images.yaml
+    permissions:
+      contents: read
+      packages: write # push container image
     with:
       publish_bundle: true
       version_tag: v${{ needs.release.outputs.operator_version }}
