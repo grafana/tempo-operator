@@ -160,7 +160,7 @@ func (r *TempoMonolithicReconciler) getOwnedObjects(ctx context.Context, tempo v
 		LabelSelector: labels.SelectorFromSet(monolithic.CommonLabels(tempo.Name)),
 	}
 	clusterWideListOps := &client.ListOptions{
-		LabelSelector: labels.SelectorFromSet(monolithic.CommonLabels(tempo.Name)),
+		LabelSelector: labels.SelectorFromSet(monolithic.ClusterScopedCommonLabels(tempo.ObjectMeta)),
 	}
 
 	// Add all resources where the operator can conditionally create an object.

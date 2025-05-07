@@ -50,4 +50,13 @@ func TestGateway(t *testing.T) {
 
 	require.Contains(t, annotations, "tempo.grafana.com/rbacConfig.hash")
 	require.Contains(t, annotations, "tempo.grafana.com/tenantsConfig.hash")
+
+	require.Equal(t, "tempo-sample-gateway-default", objs[2].GetName())
+	require.Equal(t, map[string]string{
+		"app.kubernetes.io/component":  "gateway",
+		"app.kubernetes.io/instance":   "sample",
+		"app.kubernetes.io/managed-by": "tempo-operator",
+		"app.kubernetes.io/name":       "tempo-monolithic",
+		"app.kubernetes.io/namespace":  "default",
+	}, objs[2].GetLabels())
 }

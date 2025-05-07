@@ -86,6 +86,7 @@ metadata:
     app.kubernetes.io/instance: simplest
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
+    app.kubernetes.io/namespace: chainsaw-multitenancy
   name: tempo-simplest-gateway-chainsaw-multitenancy
 rules:
   - apiGroups:
@@ -109,6 +110,7 @@ metadata:
     app.kubernetes.io/instance: simplest
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
+    app.kubernetes.io/namespace: chainsaw-multitenancy
   name: tempo-simplest-gateway-chainsaw-multitenancy
 roleRef:
   apiGroup: rbac.authorization.k8s.io

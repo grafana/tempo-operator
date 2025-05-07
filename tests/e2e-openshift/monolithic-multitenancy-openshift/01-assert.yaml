@@ -58,6 +58,7 @@ metadata:
     app.kubernetes.io/instance: mmo
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo-monolithic
+    app.kubernetes.io/namespace: chainsaw-monolithic-multitenancy
   name: tempo-mmo-gateway-chainsaw-monolithic-multitenancy
 rules:
 - apiGroups:
@@ -81,6 +82,7 @@ metadata:
     app.kubernetes.io/instance: mmo
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo-monolithic
+    app.kubernetes.io/namespace: chainsaw-monolithic-multitenancy
   name: tempo-mmo-gateway-chainsaw-monolithic-multitenancy
 roleRef:
   apiGroup: rbac.authorization.k8s.io
