@@ -51,7 +51,6 @@ jobs:
     needs: release
     uses: ./.github/workflows/reusable-publish-images.yaml
     permissions:
-      contents: read
       packages: write # push container image
     with:
       publish_bundle: true

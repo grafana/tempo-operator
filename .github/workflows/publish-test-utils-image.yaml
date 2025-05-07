@@ -18,7 +18,6 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: read
   packages: write # push container image
 
 jobs:
