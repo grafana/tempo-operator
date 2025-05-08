@@ -6,15 +6,14 @@ import (
 
 	grafanav1 "github.com/grafana/grafana-operator/v5/api/v1beta1"
 	routev1 "github.com/openshift/api/route/v1"
+	cloudcredentialv1 "github.com/openshift/cloud-credential-operator/pkg/apis/cloudcredential/v1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/validation/field"
-	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/handlers/storage"
@@ -25,39 +24,55 @@ import (
 	"github.com/grafana/tempo-operator/internal/tlsprofile"
 )
 
-// CreateOrUpdate is a wrapper around controller-runtime CreateOrUpdate.
-func (r *TempoStackReconciler) CreateOrUpdate(ctx context.Context, obj client.Object, f controllerutil.MutateFn) (controllerutil.OperationResult, error) {
-	return ctrl.CreateOrUpdate(ctx, r.Client, obj, f)
-}
-
 func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, tempo v1alpha1.TempoStack) error {
 	params := manifestutils.Params{
-		Tempo:        tempo,
-		CtrlConfig:   r.CtrlConfig,
-		TokenCCOAuth: r.TokenCCOAuth,
-	}
-
-	var errs field.ErrorList
-	params.StorageParams, errs = storage.GetStorageParamsForTempoStack(ctx, r.Client, tempo)
-	if len(errs) > 0 {
-		return &status.ConfigurationError{
-			Reason:  v1alpha1.ReasonInvalidStorageConfig,
-			Message: listFieldErrors(errs),
-		}
+		Tempo:      tempo,
+		CtrlConfig: r.CtrlConfig,
 	}
 
 	tokenCCOAuthEnv := cloudcredentials.DiscoverTokenCCOAuthConfig()
 
-	if tokenCCOAuthEnv != nil {
-		if err := cloudcredentials.CreateUpdateDeleteCredentialsRequest(ctx, r.Scheme, cloudcredentials.CredentialRequestOptions{
-			TokenCCOAuth:   r.TokenCCOAuth,
-			Controlled:     &tempo,
-			ServiceAccount: tempo.Spec.ServiceAccount,
-			// We can use this before inferred, as COO mode cannot be inferred and need to be set explicit
-			// if is not set at this point, we need to clean up resources.
-			CredentialMode: tempo.Spec.Storage.Secret.CredentialMode,
-		}, r); err != nil {
+	// We can use this before inferred, as COO mode cannot be inferred and need to be set explicit
+	// if is not set at this point, we need to clean up resources.
+	if tokenCCOAuthEnv != nil && tempo.Spec.Storage.Secret.CredentialMode == v1alpha1.CredentialModeTokenCCO {
+
+		ccoObjects, err := cloudcredentials.BuildCredentialsRequest(&tempo, tempo.Spec.ServiceAccount, tokenCCOAuthEnv)
+		if err != nil {
 			return err
+		}
+
+		ownedCCOObjects, err := r.findCCOOwnedByTempoOperator(ctx, tempo)
+		if err != nil {
+			return err
+		}
+
+		err = reconcileManagedObjects(ctx, r.Client, &tempo, r.Scheme, ccoObjects, ownedCCOObjects)
+
+		if err != nil {
+			return err
+		}
+	} else if tokenCCOAuthEnv == nil && tempo.Spec.Storage.Secret.CredentialMode == v1alpha1.CredentialModeTokenCCO {
+		return &status.ConfigurationError{
+			Reason: v1alpha1.ReasonInvalidStorageConfig,
+			Message: listFieldErrors(
+				field.ErrorList{
+					field.Invalid(
+						field.NewPath("spec", "storage").Child("credentialMode"),
+						v1alpha1.CredentialModeTokenCCO,
+						"cannot configure tempo in CCO mode without CCO environment",
+					),
+				}),
+		}
+	}
+
+	var errs field.ErrorList
+	params.StorageParams, errs = storage.GetStorageParamsForTempoStack(ctx, r.Client, tempo)
+	params.StorageParams.CloudCredentials.Environment = tokenCCOAuthEnv
+
+	if len(errs) > 0 {
+		return &status.ConfigurationError{
+			Reason:  v1alpha1.ReasonInvalidStorageConfig,
+			Message: listFieldErrors(errs),
 		}
 	}
 
@@ -106,6 +121,25 @@ func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, tempo v1alpha
 	}
 
 	return nil
+}
+
+func (r *TempoStackReconciler) findCCOOwnedByTempoOperator(ctx context.Context, tempo v1alpha1.TempoStack) (map[types.UID]client.Object, error) {
+	ownedObjects := map[types.UID]client.Object{}
+	listOps := &client.ListOptions{
+		Namespace:     tempo.GetNamespace(),
+		LabelSelector: labels.SelectorFromSet(manifestutils.CommonLabels(tempo.Name)),
+	}
+
+	credentialRequestsList := &cloudcredentialv1.CredentialsRequestList{}
+	err := r.List(ctx, credentialRequestsList, listOps)
+	if err != nil {
+		return nil, fmt.Errorf("error listing ingress: %w", err)
+	}
+	for i := range credentialRequestsList.Items {
+		ownedObjects[credentialRequestsList.Items[i].GetUID()] = &credentialRequestsList.Items[i]
+	}
+
+	return ownedObjects, nil
 }
 
 func (r *TempoStackReconciler) findObjectsOwnedByTempoOperator(ctx context.Context, tempo v1alpha1.TempoStack) (map[types.UID]client.Object, error) {

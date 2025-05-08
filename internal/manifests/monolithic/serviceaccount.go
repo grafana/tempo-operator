@@ -39,7 +39,7 @@ func BuildServiceAccount(opts Options) *corev1.ServiceAccount {
 	}
 
 	if opts.StorageParams.GCS != nil && opts.StorageParams.CredentialMode == v1alpha1.CredentialModeToken {
-		gcsAnnotations := manifestutils.S3AWSSTSAnnotations(*opts.StorageParams.S3)
+		gcsAnnotations := manifestutils.GCSShortLiveTokenAnnotation(*opts.StorageParams.GCS)
 		annotations = copyAnnotations(gcsAnnotations, annotations)
 	}
 

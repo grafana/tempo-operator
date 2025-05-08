@@ -17,6 +17,11 @@ var s3ShortLivedFields = []string{
 	"role_arn",
 }
 
+var s3CCOShortLivedFields = []string{
+	"bucket",
+	"region",
+}
+
 var s3LongLivedFields = []string{
 	"bucket",
 	"endpoint",
@@ -77,7 +82,7 @@ func validateS3Secret(storageSecret corev1.Secret, path *field.Path, credentialM
 	case v1alpha1.CredentialModeToken:
 		return ensureNotEmpty(storageSecret, s3ShortLivedFields, path)
 	case v1alpha1.CredentialModeTokenCCO:
-		return ensureNotEmpty(storageSecret, s3ShortLivedFields, path)
+		return ensureNotEmpty(storageSecret, s3CCOShortLivedFields, path)
 	}
 
 	return field.ErrorList{}

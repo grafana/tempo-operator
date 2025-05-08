@@ -15,15 +15,21 @@ type Params struct {
 	TLSProfile          tlsprofile.TLSProfileOptions
 	GatewayTenantSecret []*GatewayTenantOIDCSecret
 	GatewayTenantsData  []*GatewayTenantsData
-	TokenCCOAuth        TokenCCOAuthConfig
 }
 
 // StorageParams holds storage configuration from the storage secret, except the credentials.
 type StorageParams struct {
-	AzureStorage   *AzureStorage
-	GCS            *GCS
-	S3             *S3
-	CredentialMode v1alpha1.CredentialMode
+	AzureStorage     *AzureStorage
+	GCS              *GCS
+	S3               *S3
+	CredentialMode   v1alpha1.CredentialMode
+	CloudCredentials CloudCredentials
+}
+
+// CloudCredentials secret details.
+type CloudCredentials struct {
+	ContentHash string
+	Environment *TokenCCOAuthConfig
 }
 
 // AzureStorage for Azure Storage.

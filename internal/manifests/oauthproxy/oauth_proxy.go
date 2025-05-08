@@ -35,7 +35,7 @@ func OAuthServiceAccount(params manifestutils.Params) *corev1.ServiceAccount {
 	annotations := map[string]string{
 		serviceAccountRedirectAnnotation: getOAuthRedirectReference(naming.Name(manifestutils.QueryFrontendComponentName, params.Tempo.Name)),
 	}
-	if params.StorageParams.S3 != nil {
+	if params.StorageParams.S3 != nil && params.StorageParams.CredentialMode == v1alpha1.CredentialModeToken {
 		awsAnnotations := manifestutils.S3AWSSTSAnnotations(*params.StorageParams.S3)
 		for k, v := range awsAnnotations {
 			annotations[k] = v

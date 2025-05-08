@@ -123,10 +123,10 @@ spec:                                    # TempoMonolithicSpec defines the desir
       azure:                             # Azure defines the configuration for Azure Storage.
         secret: ""                       # Secret is the name of a Secret containing credentials for accessing object storage. It needs to be in the same namespace as the TempoMonolithic custom resource.
       backend: "memory"                  # Backend defines the backend for storing traces. Default: memory.
-      credentialMode: ""                 # CredentialMode can be used to set the desired credential mode for authenticating with the object storage. If this is not set, then the operator tries to infer the credential mode from the provided secret and its own configuration.
       gcs:                               # GCP defines the configuration for Google Cloud Storage.
         secret: ""                       # Secret is the name of a Secret containing credentials for accessing object storage. It needs to be in the same namespace as the TempoMonolithic custom resource.
       s3:                                # S3 defines the configuration for Amazon S3.
+        credentialMode: ""               # CredentialMode can be used to set the desired credential mode for authenticating with the object storage. If this is not set, then the operator tries to infer the credential mode from the provided secret and its own configuration.
         secret: ""                       # Secret is the name of a Secret containing credentials for accessing object storage. It needs to be in the same namespace as the TempoMonolithic custom resource.
         tls:                             # TLS defines the TLS configuration for Amazon S3.
           enabled: false                 # Enabled defines if TLS is enabled.

@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	grafanav1 "github.com/grafana/grafana-operator/v5/api/v1beta1"
@@ -21,7 +22,6 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -41,11 +41,10 @@ import (
 // TempoMonolithicReconciler reconciles a TempoMonolithic object.
 type TempoMonolithicReconciler struct {
 	client.Client
-	Scheme       *runtime.Scheme
-	Recorder     record.EventRecorder
-	CtrlConfig   configv1alpha1.ProjectConfig
-	Version      version.Version
-	TokenCCOAuth manifestutils.TokenCCOAuthConfig
+	Scheme     *runtime.Scheme
+	Recorder   record.EventRecorder
+	CtrlConfig configv1alpha1.ProjectConfig
+	Version    version.Version
 }
 
 //+kubebuilder:rbac:groups=tempo.grafana.com,resources=tempomonolithics,verbs=get;list;watch;create;update;patch;delete
@@ -100,19 +99,31 @@ func (r *TempoMonolithicReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	// Apply ephemeral defaults after upgrade.
 	// The ephemeral defaults should not be written back to the cluster.
 	tempo.Default(r.CtrlConfig)
+
+	// Discover CCO Environment configured (if any)
 	tokenCCOAuthEnv := cloudcredentials.DiscoverTokenCCOAuthConfig()
 
-	if tokenCCOAuthEnv != nil {
-		if err := cloudcredentials.CreateUpdateDeleteCredentialsRequest(ctx, r.Scheme, cloudcredentials.CredentialRequestOptions{
-			TokenCCOAuth:   r.TokenCCOAuth,
-			Controlled:     &tempo,
-			ServiceAccount: tempo.Spec.ServiceAccount,
-			// We can use this before inferred, as COO mode cannot be inferred and need to be set explicit
-			// if is not set at this point, we need to clean up resources.
-			CredentialMode: tempo.Spec.Storage.Traces.CredentialMode,
-		}, r); err != nil {
+	// We can use this before inferred, as COO mode cannot be inferred and need to be set explicit
+	// if is not set at this point, we need to clean up resources.
+	if tokenCCOAuthEnv != nil && r.getCredentialMode(tempo) == v1alpha1.CredentialModeTokenCCO {
+		ccoObjects, err := cloudcredentials.BuildCredentialsRequest(&tempo, tempo.Spec.ServiceAccount, tokenCCOAuthEnv)
+		if err != nil {
 			return ctrl.Result{}, status.HandleTempoMonolithicStatus(ctx, r.Client, tempo, err)
 		}
+
+		ownedCCOObjects, err := r.getCCOOwnedObjects(ctx, tempo)
+		if err != nil {
+			return ctrl.Result{}, status.HandleTempoMonolithicStatus(ctx, r.Client, tempo, err)
+		}
+
+		err = reconcileManagedObjects(ctx, r.Client, &tempo, r.Scheme, ccoObjects, ownedCCOObjects)
+
+		if err != nil {
+			return ctrl.Result{}, status.HandleTempoMonolithicStatus(ctx, r.Client, tempo, err)
+		}
+	} else if tokenCCOAuthEnv == nil && r.getCredentialMode(tempo) == v1alpha1.CredentialModeTokenCCO {
+		return ctrl.Result{}, status.HandleTempoMonolithicStatus(ctx, r.Client, tempo,
+			errors.New("cannot configure tempo in CCO mode without CCO environment"))
 	}
 
 	err := r.createOrUpdate(ctx, tempo)
@@ -124,6 +135,15 @@ func (r *TempoMonolithicReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	// Result.Requeue and Result.RequeueAfter are only respected if err == nil
 	// https://github.com/kubernetes-sigs/controller-runtime/blob/v0.15.0/pkg/internal/controller/controller.go#L315-L341
 	return ctrl.Result{}, status.HandleTempoMonolithicStatus(ctx, r.Client, tempo, nil)
+}
+
+func (r *TempoMonolithicReconciler) getCredentialMode(tempo v1alpha1.TempoMonolithic) v1alpha1.CredentialMode {
+	if tempo.Spec.Storage.Traces.Backend == v1alpha1.MonolithicTracesStorageBackendS3 {
+		return tempo.Spec.Storage.Traces.S3.CredentialMode
+	}
+
+	// We only support inference mode for others, so return empty string
+	return ""
 }
 
 func (r *TempoMonolithicReconciler) createOrUpdate(ctx context.Context, tempo v1alpha1.TempoMonolithic) error {
@@ -174,6 +194,22 @@ func (r *TempoMonolithicReconciler) createOrUpdate(ctx context.Context, tempo v1
 	}
 
 	return reconcileManagedObjects(ctx, r.Client, &tempo, r.Scheme, managedObjects, ownedObjects)
+}
+func (r *TempoMonolithicReconciler) getCCOOwnedObjects(ctx context.Context, tempo v1alpha1.TempoMonolithic) (map[types.UID]client.Object, error) {
+	ownedObjects := map[types.UID]client.Object{}
+	listOps := &client.ListOptions{
+		Namespace:     tempo.GetNamespace(),
+		LabelSelector: labels.SelectorFromSet(monolithic.CommonLabels(tempo.Name)),
+	}
+	credentialRequestsList := &cloudcredentialv1.CredentialsRequestList{}
+	err := r.List(ctx, credentialRequestsList, listOps)
+	if err != nil {
+		return nil, fmt.Errorf("error listing cloud credential requests: %w", err)
+	}
+	for i := range credentialRequestsList.Items {
+		ownedObjects[credentialRequestsList.Items[i].GetUID()] = &credentialRequestsList.Items[i]
+	}
+	return ownedObjects, nil
 }
 
 func (r *TempoMonolithicReconciler) getOwnedObjects(ctx context.Context, tempo v1alpha1.TempoMonolithic) (map[types.UID]client.Object, error) {
@@ -316,6 +352,22 @@ func (r *TempoMonolithicReconciler) findTempoMonolithicForStorageSecret(ctx cont
 		}
 	}
 
+	ccoStack := v1alpha1.TempoStack{}
+	err = r.Get(ctx, client.ObjectKey{Namespace: secret.GetNamespace(),
+		Name: manifestutils.TempoFromManagerCredentialSecretName(secret.GetName())}, &ccoStack)
+
+	if err != nil {
+		if !apierrors.IsNotFound(err) {
+			return requests
+		}
+	} else {
+		requests = append(requests, reconcile.Request{
+			NamespacedName: types.NamespacedName{
+				Name:      ccoStack.GetName(),
+				Namespace: ccoStack.GetNamespace(),
+			},
+		})
+	}
 	return requests
 }
 
@@ -359,11 +411,6 @@ func (r *TempoMonolithicReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	}
 
 	return builder.Complete(r)
-}
-
-// CreateOrUpdate is a wrapper around controller-runtime CreateOrUpdate.
-func (r *TempoMonolithicReconciler) CreateOrUpdate(ctx context.Context, obj client.Object, f controllerutil.MutateFn) (controllerutil.OperationResult, error) {
-	return ctrl.CreateOrUpdate(ctx, r.Client, obj, f)
 }
 
 func matchTempoMonolithicStorageSecret(item v1alpha1.TempoMonolithic, secretName string) bool {

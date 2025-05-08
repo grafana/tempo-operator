@@ -42,7 +42,6 @@ func TestPatchOPAContainer(t *testing.T) {
 	require.Equal(t, 1, len(dep.Spec.Template.Spec.Containers))
 	assert.Equal(t, []string{
 		"--log.level=warn",
-		"--opa.admin-groups=system:cluster-admins,cluster-admin,dedicated-admin",
 		"--web.listen=:8082", "--web.internal.listen=:8083",
 		"--web.healthchecks.url=http://localhost:8082",
 		"--opa.package=tempostack",
