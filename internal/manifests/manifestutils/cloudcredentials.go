@@ -7,6 +7,6 @@ type TokenCCOAWSEnvironment struct {
 
 // TokenCCOAuthConfig CCO token config.
 type TokenCCOAuthConfig struct {
-	HasCCOEnvironment bool
-	AWS               *TokenCCOAWSEnvironment
+	SecretHash string
+	AWS        *TokenCCOAWSEnvironment
 }

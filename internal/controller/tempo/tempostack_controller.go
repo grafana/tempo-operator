@@ -44,11 +44,10 @@ const (
 // TempoStackReconciler reconciles a TempoStack object.
 type TempoStackReconciler struct {
 	client.Client
-	Scheme       *runtime.Scheme
-	Recorder     record.EventRecorder
-	CtrlConfig   configv1alpha1.ProjectConfig
-	Version      version.Version
-	TokenCCOAuth manifestutils.TokenCCOAuthConfig
+	Scheme     *runtime.Scheme
+	Recorder   record.EventRecorder
+	CtrlConfig configv1alpha1.ProjectConfig
+	Version    version.Version
 }
 
 // +kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch
@@ -272,7 +271,7 @@ func (r *TempoStackReconciler) findTempoStackForStorageSecret(ctx context.Contex
 
 	if err != nil {
 		if !apierrors.IsNotFound(err) {
-			return []reconcile.Request{}
+			return requests
 		}
 	} else {
 		requests = append(requests, reconcile.Request{

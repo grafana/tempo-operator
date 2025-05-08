@@ -24,3 +24,12 @@ func GCSShortLiveTokenAnnotation(secret GCS) map[string]string {
 			secret.IAMServiceAccount, secret.ProjectID),
 	}
 }
+
+// StorageSecretHash return annotations for secret storage content hashes.
+func StorageSecretHash(params StorageParams, annotations map[string]string) map[string]string {
+	if params.CloudCredentials.ContentHash != "" {
+		annotations["tempo.grafana.com/token.cco.auth.hash"] = params.CloudCredentials.ContentHash
+	}
+
+	return annotations
+}

@@ -28,6 +28,7 @@ var (
 func BuildTempoStatefulset(opts Options, extraAnnotations map[string]string) (*appsv1.StatefulSet, error) {
 	tempo := opts.Tempo
 	labels := ComponentLabels(manifestutils.TempoMonolithComponentName, tempo.Name)
+	annotations := manifestutils.StorageSecretHash(opts.StorageParams, extraAnnotations)
 
 	sts := &appsv1.StatefulSet{
 		TypeMeta: metav1.TypeMeta{
@@ -54,7 +55,7 @@ func BuildTempoStatefulset(opts Options, extraAnnotations map[string]string) (*a
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels:      labels,
-					Annotations: extraAnnotations,
+					Annotations: annotations,
 				},
 				Spec: corev1.PodSpec{
 					ServiceAccountName: serviceAccountName(tempo),

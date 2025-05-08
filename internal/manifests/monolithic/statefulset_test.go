@@ -939,7 +939,6 @@ func TestStatefulsetGateway(t *testing.T) {
 		Image: "quay.io/observatorium/opa-openshift:x.y.z",
 		Args: []string{
 			"--log.level=warn",
-			"--opa.admin-groups=system:cluster-admins,cluster-admin,dedicated-admin",
 			"--web.listen=:8082",
 			"--web.internal.listen=:8083",
 			"--web.healthchecks.url=http://localhost:8082",
@@ -1224,7 +1223,6 @@ func TestStatefulsetGatewayRBAC(t *testing.T) {
 		Image: "quay.io/observatorium/opa-openshift:x.y.z",
 		Args: []string{
 			"--log.level=warn",
-			"--opa.admin-groups=system:cluster-admins,cluster-admin,dedicated-admin",
 			"--web.listen=:8082",
 			"--web.internal.listen=:8083",
 			"--web.healthchecks.url=http://localhost:8082",

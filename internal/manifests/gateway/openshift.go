@@ -221,7 +221,6 @@ func patchOCPOPAContainer(params manifestutils.Params, dep *v1.Deployment) (*v1.
 func NewOpaContainer(ctrlConfig configv1alpha1.ProjectConfig, tenants v1alpha1.TenantsSpec, rbac bool, opaPackage string, resources corev1.ResourceRequirements) corev1.Container {
 	var args = []string{
 		"--log.level=warn",
-		"--opa.admin-groups=system:cluster-admins,cluster-admin,dedicated-admin",
 		fmt.Sprintf("--web.listen=:%d", gatewayOPAHTTPPort),
 		fmt.Sprintf("--web.internal.listen=:%d", gatewayOPAInternalPort),
 		fmt.Sprintf("--web.healthchecks.url=http://localhost:%d", gatewayOPAHTTPPort),

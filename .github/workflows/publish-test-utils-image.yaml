@@ -17,11 +17,12 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
-permissions: {}
+permissions:
+  packages: write # push container image
 
 jobs:
   test-utils:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout
