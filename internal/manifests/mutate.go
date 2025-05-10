@@ -9,6 +9,7 @@ import (
 	grafanav1 "github.com/grafana/grafana-operator/v5/api/v1beta1"
 	"github.com/imdario/mergo"
 	routev1 "github.com/openshift/api/route/v1"
+	cloudcredentialv1 "github.com/openshift/cloud-credential-operator/pkg/apis/cloudcredential/v1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -132,7 +133,10 @@ func MutateFuncFor(existing, desired client.Object) controllerutil.MutateFn {
 			ds := existing.(*grafanav1.GrafanaDatasource)
 			wantDs := desired.(*grafanav1.GrafanaDatasource)
 			mutateGrafanaDatasource(ds, wantDs)
-
+		case *cloudcredentialv1.CredentialsRequest:
+			ds := existing.(*cloudcredentialv1.CredentialsRequest)
+			wantDs := desired.(*cloudcredentialv1.CredentialsRequest)
+			mutateCredentialsRequest(ds, wantDs)
 		default:
 			t := reflect.TypeOf(existing).String()
 			return kverrors.New("missing mutate implementation for resource type", "type", t)
@@ -235,6 +239,12 @@ func mutatePrometheusRule(existing, desired *monitoringv1.PrometheusRule) {
 }
 
 func mutateGrafanaDatasource(existing, desired *grafanav1.GrafanaDatasource) {
+	existing.Annotations = desired.Annotations
+	existing.Labels = desired.Labels
+	existing.Spec = desired.Spec
+}
+
+func mutateCredentialsRequest(existing, desired *cloudcredentialv1.CredentialsRequest) {
 	existing.Annotations = desired.Annotations
 	existing.Labels = desired.Labels
 	existing.Spec = desired.Spec

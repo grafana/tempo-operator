@@ -199,13 +199,13 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 		case v1alpha1.MonolithicTracesStorageBackendS3:
 			config.Storage.Trace.Backend = "s3"
 			config.Storage.Trace.S3 = &tempoS3Config{}
-			if opts.StorageParams.S3.LongLived != nil {
-				config.Storage.Trace.S3.Endpoint = opts.StorageParams.S3.LongLived.Endpoint
+			if opts.StorageParams.CredentialMode == v1alpha1.CredentialModeStatic {
+				config.Storage.Trace.S3.Endpoint = opts.StorageParams.S3.Endpoint
 				config.Storage.Trace.S3.Insecure = opts.StorageParams.S3.Insecure
-				config.Storage.Trace.S3.Bucket = opts.StorageParams.S3.LongLived.Bucket
+				config.Storage.Trace.S3.Bucket = opts.StorageParams.S3.Bucket
 				if tempo.Spec.Storage.Traces.S3 != nil && tempo.Spec.Storage.Traces.S3.TLS != nil && tempo.Spec.Storage.Traces.S3.TLS.Enabled {
 					if tempo.Spec.Storage.Traces.S3.TLS.CA != "" {
-						config.Storage.Trace.S3.TLSCAPath = path.Join(manifestutils.StorageTLSCADir, opts.StorageParams.S3.LongLived.TLS.CAFilename)
+						config.Storage.Trace.S3.TLSCAPath = path.Join(manifestutils.StorageTLSCADir, opts.StorageParams.S3.TLS.CAFilename)
 					}
 					if tempo.Spec.Storage.Traces.S3.TLS.Cert != "" {
 						config.Storage.Trace.S3.TLSCertPath = path.Join(manifestutils.StorageTLSCertDir, manifestutils.TLSCertFilename)
@@ -218,9 +218,9 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 					}
 					config.Storage.Trace.S3.TLSCipherSuites = opts.TLSProfile.TLSCipherSuites()
 				}
-			} else if opts.StorageParams.S3.ShortLived != nil {
-				config.Storage.Trace.S3.Bucket = opts.StorageParams.S3.ShortLived.Bucket
-				config.Storage.Trace.S3.Endpoint = fmt.Sprintf("s3.%s.amazonaws.com", opts.StorageParams.S3.ShortLived.Region)
+			} else if opts.StorageParams.CredentialMode == v1alpha1.CredentialModeToken || opts.StorageParams.CredentialMode == v1alpha1.CredentialModeTokenCCO {
+				config.Storage.Trace.S3.Bucket = opts.StorageParams.S3.Bucket
+				config.Storage.Trace.S3.Endpoint = fmt.Sprintf("s3.%s.amazonaws.com", opts.StorageParams.S3.Region)
 			}
 
 		case v1alpha1.MonolithicTracesStorageBackendAzure:

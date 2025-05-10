@@ -41,10 +41,9 @@ func TestBuildDefaultServiceAccount_aws_sts(t *testing.T) {
 			},
 		},
 		StorageParams: manifestutils.StorageParams{
+			CredentialMode: v1alpha1.CredentialModeToken,
 			S3: &manifestutils.S3{
-				ShortLived: &manifestutils.S3ShortLived{
-					RoleARN: "arn:aws:iam::123456777012:role/aws-service-role",
-				},
+				RoleARN: "arn:aws:iam::123456777012:role/aws-service-role",
 			},
 		}})
 

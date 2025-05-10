@@ -7,7 +7,7 @@ import (
 )
 
 func TestGCSShortLiveTokenAnnotation(t *testing.T) {
-	annotations := GCSShortLiveTokenAnnotation(GCSShortLived{
+	annotations := GCSShortLiveTokenAnnotation(GCS{
 		IAMServiceAccount: "test-sa",
 		ProjectID:         "test-project",
 	})

@@ -228,10 +228,10 @@ storage:
     gcs:
       bucket_name: {{ .Bucket }}
     {{- end }}
-    {{- if and .StorageParams.S3 .StorageParams.S3.LongLived }}
+    {{- if and .StorageParams.S3 (eq .StorageParams.CredentialMode "static") }}
     s3:
-      endpoint: {{ .StorageParams.S3.LongLived.Endpoint }}
-      bucket: {{ .StorageParams.S3.LongLived.Bucket }}
+      endpoint: {{ .StorageParams.S3.Endpoint }}
+      bucket: {{ .StorageParams.S3.Bucket }}
       insecure: {{ .StorageParams.S3.Insecure }}
     {{- if .S3StorageTLS.Enabled }}
     {{- if .S3StorageTLS.CA }}
@@ -245,10 +245,10 @@ storage:
     {{- end }}
     {{- end }}
   {{- end }}
-    {{- if and .StorageParams.S3 .StorageParams.S3.ShortLived }}
+    {{- if and .StorageParams.S3 (or (eq .StorageParams.CredentialMode "token") (eq .StorageParams.CredentialMode "token-cco")) }}
     s3:
-      bucket: {{ .StorageParams.S3.ShortLived.Bucket }}
-      endpoint: s3.{{ .StorageParams.S3.ShortLived.Region }}.amazonaws.com
+      bucket: {{ .StorageParams.S3.Bucket }}
+      endpoint: s3.{{ .StorageParams.S3.Region }}.amazonaws.com
       insecure: {{ .StorageParams.S3.Insecure }}
     {{- if .S3StorageTLS.Enabled }}
     {{- if .S3StorageTLS.CA }}

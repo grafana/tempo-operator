@@ -203,7 +203,7 @@ func TestOAuthProxyServiceAccount_aws_sts(t *testing.T) {
 		},
 	}
 
-	service := OAuthServiceAccount(manifestutils.Params{Tempo: tempo, StorageParams: manifestutils.StorageParams{S3: &manifestutils.S3{ShortLived: &manifestutils.S3ShortLived{RoleARN: "foobar"}}}})
+	service := OAuthServiceAccount(manifestutils.Params{Tempo: tempo, StorageParams: manifestutils.StorageParams{S3: &manifestutils.S3{RoleARN: "foobar"}}})
 
 	assert.Equal(t,
 		naming.Name(manifestutils.QueryFrontendComponentName, "testoauthsecret"), service.Name)

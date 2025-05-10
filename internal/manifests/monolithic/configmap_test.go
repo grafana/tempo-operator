@@ -381,11 +381,10 @@ usage_report:
 					Ciphers:       []string{"abc", "def"},
 				},
 				StorageParams: manifestutils.StorageParams{
+					CredentialMode: v1alpha1.CredentialModeStatic,
 					S3: &manifestutils.S3{
-						LongLived: &manifestutils.S3LongLived{
-							Endpoint: "minio",
-							Bucket:   "tempo",
-						},
+						Endpoint: "minio",
+						Bucket:   "tempo",
 					},
 				},
 			},

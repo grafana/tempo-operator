@@ -1,11 +1,18 @@
 package manifestutils
 
 import (
+	"fmt"
 	"path"
+	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 
 	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
+)
+
+const (
+	tokenAuthConfigVolumeName = "token-auth-config"       //#nosec G101 -- False positive
+	tokenAuthConfigDirectory  = "/etc/storage/token-auth" //#nosec G101 -- False positive
 )
 
 // ConfigureAzureStorage mounts the Azure Storage credentials in a pod.
@@ -81,18 +88,30 @@ func ConfigureGCS(pod *corev1.PodSpec, containerName string, storageSecretName s
 	}
 	return nil
 }
+func configureS3StorageWithCOOAuth(pod *corev1.PodSpec, containerIdx int, tempo string) {
 
-// ConfigureS3Storage mounts the Amazon S3 credentials and TLS certs in a pod.
-func ConfigureS3Storage(pod *corev1.PodSpec, containerName string, storageSecretName string, tlsSpec *v1alpha1.TLSSpec, s3 *S3) error {
-	if s3 != nil && s3.ShortLived != nil {
-		return nil
-	}
+	pod.Containers[containerIdx].Env = append(pod.Containers[containerIdx].Env, []corev1.EnvVar{
+		{
+			Name:  "AWS_SHARED_CREDENTIALS_FILE",
+			Value: path.Join(tokenAuthConfigDirectory, "credentials"),
+		},
+		{
+			Name:  "AWS_SDK_LOAD_CONFIG",
+			Value: "true",
+		},
+	}...)
 
-	containerIdx, err := findContainerIndex(pod, containerName)
-	if err != nil {
-		return err
-	}
+	// Define volume with credentials
+	pod.Volumes = append(pod.Volumes, tokenCCOAuthConfigVolume(tempo))
 
+	// Mount volume
+	pod.Containers[containerIdx].VolumeMounts = append(pod.Containers[containerIdx].VolumeMounts, corev1.VolumeMount{
+		Name:      tokenAuthConfigVolumeName,
+		MountPath: tokenAuthConfigDirectory,
+	})
+}
+
+func configureS3StorageStatic(pod *corev1.PodSpec, containerIdx int, storageSecretName string) {
 	pod.Containers[containerIdx].Env = append(pod.Containers[containerIdx].Env, []corev1.EnvVar{
 		{
 			Name: "S3_SECRET_KEY",
@@ -121,6 +140,26 @@ func ConfigureS3Storage(pod *corev1.PodSpec, containerName string, storageSecret
 		"--storage.trace.s3.secret_key=$(S3_SECRET_KEY)",
 		"--storage.trace.s3.access_key=$(S3_ACCESS_KEY)",
 	}...)
+}
+
+// ConfigureS3Storage mounts the Amazon S3 credentials and TLS certs in a pod.
+func ConfigureS3Storage(pod *corev1.PodSpec, containerName string, storageSecretName string,
+	tlsSpec *v1alpha1.TLSSpec, credentialMode v1alpha1.CredentialMode, tempoName string) error {
+
+	if credentialMode == v1alpha1.CredentialModeToken {
+		return nil
+	}
+
+	containerIdx, err := findContainerIndex(pod, containerName)
+	if err != nil {
+		return err
+	}
+
+	if credentialMode == v1alpha1.CredentialModeTokenCCO {
+		configureS3StorageWithCOOAuth(pod, containerIdx, tempoName)
+	} else {
+		configureS3StorageStatic(pod, containerIdx, storageSecretName)
+	}
 
 	if tlsSpec != nil && tlsSpec.Enabled {
 		err := MountTLSSpecVolumes(pod, containerName, *tlsSpec, StorageTLSCADir, StorageTLSCertDir)
@@ -138,10 +177,32 @@ func ConfigureStorage(storage StorageParams, tempo v1alpha1.TempoStack, pod *cor
 		case v1alpha1.ObjectStorageSecretAzure:
 			return ConfigureAzureStorage(pod, containerName, tempo.Spec.Storage.Secret.Name, &tempo.Spec.Storage.TLS)
 		case v1alpha1.ObjectStorageSecretGCS:
-			return ConfigureGCS(pod, containerName, tempo.Spec.Storage.Secret.Name, storage.GCS != nil && storage.GCS.ShortLived != nil)
+			return ConfigureGCS(pod, containerName, tempo.Spec.Storage.Secret.Name,
+				storage.GCS != nil && storage.CredentialMode != v1alpha1.CredentialModeStatic)
 		case v1alpha1.ObjectStorageSecretS3:
-			return ConfigureS3Storage(pod, containerName, tempo.Spec.Storage.Secret.Name, &tempo.Spec.Storage.TLS, storage.S3)
+			return ConfigureS3Storage(pod, containerName, tempo.Spec.Storage.Secret.Name, &tempo.Spec.Storage.TLS, tempo.Spec.Storage.Secret.CredentialMode, tempo.Name)
 		}
 	}
 	return nil
+}
+
+func tokenCCOAuthConfigVolume(tempo string) corev1.Volume {
+	return corev1.Volume{
+		Name: tokenAuthConfigVolumeName,
+		VolumeSource: corev1.VolumeSource{
+			Secret: &corev1.SecretVolumeSource{
+				SecretName: ManagedCredentialsSecretName(tempo),
+			},
+		},
+	}
+}
+
+// ManagedCredentialsSecretName secret name with credentials.
+func ManagedCredentialsSecretName(stackName string) string {
+	return fmt.Sprintf("%s-managed-credentials", stackName)
+}
+
+// TempoFromManagerCredentialSecretName tempo stack from secret name.
+func TempoFromManagerCredentialSecretName(secretName string) string {
+	return strings.TrimSuffix(secretName, "-managed-credentials")
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/go-logr/logr"
 	grafanav1 "github.com/grafana/grafana-operator/v5/api/v1beta1"
 	routev1 "github.com/openshift/api/route/v1"
+	cloudcredentialv1 "github.com/openshift/cloud-credential-operator/pkg/apis/cloudcredential/v1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -29,6 +30,7 @@ import (
 	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
 	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/certrotation/handlers"
+	"github.com/grafana/tempo-operator/internal/manifests/cloudcredentials"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/status"
 	"github.com/grafana/tempo-operator/internal/upgrade"
@@ -69,6 +71,7 @@ type TempoStackReconciler struct {
 //+kubebuilder:rbac:groups=tempo.grafana.com,resources=tempostacks,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=tempo.grafana.com,resources=tempostacks/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=tempo.grafana.com,resources=tempostacks/finalizers,verbs=update
+// +kubebuilder:rbac:groups=cloudcredential.openshift.io,resources=credentialsrequests,verbs=get;list;watch;create;update;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -233,6 +236,11 @@ func (r *TempoStackReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		builder = builder.Owns(&grafanav1.GrafanaDatasource{})
 	}
 
+	tokenCCOAuthEnv := cloudcredentials.DiscoverTokenCCOAuthConfig()
+	if tokenCCOAuthEnv != nil {
+		builder = builder.Owns(&cloudcredentialv1.CredentialsRequest{})
+	}
+
 	return builder.Complete(r)
 }
 
@@ -256,6 +264,24 @@ func (r *TempoStackReconciler) findTempoStackForStorageSecret(ctx context.Contex
 			},
 		}
 	}
+
+	ccoStack := v1alpha1.TempoStack{}
+	err = r.Get(ctx, client.ObjectKey{Namespace: secret.GetNamespace(),
+		Name: manifestutils.TempoFromManagerCredentialSecretName(secret.GetName())}, &ccoStack)
+
+	if err != nil {
+		if !apierrors.IsNotFound(err) {
+			return requests
+		}
+	} else {
+		requests = append(requests, reconcile.Request{
+			NamespacedName: types.NamespacedName{
+				Name:      ccoStack.GetName(),
+				Namespace: ccoStack.GetNamespace(),
+			},
+		})
+	}
+
 	return requests
 }
 
