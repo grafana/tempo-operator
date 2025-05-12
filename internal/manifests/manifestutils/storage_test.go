@@ -39,7 +39,7 @@ func TestConfigureAzureStorage(t *testing.T) {
 		},
 	}
 
-	assert.NoError(t, ConfigureAzureStorage(&pod, "ingester", tempo.Spec.Storage.Secret.Name, &tempo.Spec.Storage.TLS))
+	assert.NoError(t, ConfigureAzureStorage(&pod, &AzureStorage{}, "ingester", tempo.Spec.Storage.Secret.Name, v1alpha1.CredentialModeStatic))
 	assert.Len(t, pod.Containers[0].Env, 2)
 	assert.NoError(t, findEnvVar("AZURE_ACCOUNT_NAME", &pod.Containers[0].Env))
 	assert.NoError(t, findEnvVar("AZURE_ACCOUNT_KEY", &pod.Containers[0].Env))
@@ -329,4 +329,47 @@ func TestConfigureStorageWithS3CCO(t *testing.T) {
 	assert.Equal(t, tokenAuthConfigVolumeName, pod.Volumes[0].Name)
 	assert.NotContains(t, pod.Containers[0].Args, "--storage.trace.s3.secret_key=$(S3_SECRET_KEY)")
 	assert.NotContains(t, pod.Containers[0].Args, "--storage.trace.s3.access_key=$(S3_ACCESS_KEY)")
+}
+
+func TestAzureStorage_short_lived(t *testing.T) {
+	tempo := v1alpha1.TempoStack{
+		Spec: v1alpha1.TempoStackSpec{
+			Storage: v1alpha1.ObjectStorageSpec{
+				Secret: v1alpha1.ObjectStorageSecretSpec{
+					Name:           "test",
+					Type:           v1alpha1.ObjectStorageSecretAzure,
+					CredentialMode: v1alpha1.CredentialModeToken,
+				},
+			},
+		},
+	}
+
+	pod := corev1.PodSpec{
+		Containers: []corev1.Container{
+			{
+				Name: "ingester",
+			},
+		},
+	}
+
+	params := StorageParams{
+		CredentialMode: tempo.Spec.Storage.Secret.CredentialMode,
+		AzureStorage: &AzureStorage{
+			TenantID:  "test-tenant",
+			ClientID:  "test-client",
+			Container: "tempo",
+		},
+	}
+	assert.NoError(t, ConfigureStorage(params, tempo, &pod, "ingester"))
+	assert.Len(t, pod.Containers[0].Env, 4)
+	assert.NoError(t, findEnvVar("AZURE_ACCOUNT_NAME", &pod.Containers[0].Env))
+	assert.NoError(t, findEnvVar("AZURE_CLIENT_ID", &pod.Containers[0].Env))
+	assert.NoError(t, findEnvVar("AZURE_TENANT_ID", &pod.Containers[0].Env))
+	assert.NoError(t, findEnvVar("AZURE_FEDERATED_TOKEN_FILE", &pod.Containers[0].Env))
+	assert.Len(t, pod.Containers[0].VolumeMounts, 1)
+	assert.Len(t, pod.Volumes, 1)
+	assert.Equal(t, saTokenVolumeName, pod.Containers[0].VolumeMounts[0].Name)
+	assert.Equal(t, saTokenVolumeName, pod.Volumes[0].Name)
+	assert.Contains(t, pod.Containers[0].Args, "--storage.trace.azure.storage_account_name=$(AZURE_ACCOUNT_NAME)")
+
 }

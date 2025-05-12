@@ -34,9 +34,11 @@ type CloudCredentials struct {
 
 // AzureStorage for Azure Storage.
 type AzureStorage struct {
-	Container   string
-	AccountName string
-	AccountKey  string
+	Container  string
+	AccountKey string
+	ClientID   string
+	TenantID   string
+	Audience   string
 }
 
 // GCS for Google Cloud Storage.
