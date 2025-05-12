@@ -272,8 +272,8 @@ func configureStorage(opts Options, sts *appsv1.StatefulSet) error {
 		if tempo.Spec.Storage.Traces.Azure == nil {
 			return errors.New("please configure .spec.storage.traces.azure")
 		}
-
-		err := manifestutils.ConfigureAzureStorage(&sts.Spec.Template.Spec, "tempo", tempo.Spec.Storage.Traces.Azure.Secret, nil)
+		err := manifestutils.ConfigureAzureStorage(&sts.Spec.Template.Spec, opts.StorageParams.AzureStorage, "tempo",
+			tempo.Spec.Storage.Traces.Azure.Secret, opts.StorageParams.CredentialMode)
 		if err != nil {
 			return err
 		}

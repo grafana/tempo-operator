@@ -25,6 +25,14 @@ func GCSShortLiveTokenAnnotation(secret GCS) map[string]string {
 	}
 }
 
+// AzureShortLiveTokenAnnotation returns service account annotations required by GCS Short Live Token.
+func AzureShortLiveTokenAnnotation(secret AzureStorage) map[string]string {
+	return map[string]string{
+		"azure.workload.identity/client-id":  secret.ClientID,
+		"azure.workload.identity/tenantt-id": secret.TenantID,
+	}
+}
+
 // StorageSecretHash return annotations for secret storage content hashes.
 func StorageSecretHash(params StorageParams, annotations map[string]string) map[string]string {
 	if params.CloudCredentials.ContentHash != "" {

@@ -39,7 +39,7 @@ func TestConfigureAzureStorage(t *testing.T) {
 		},
 	}
 
-	assert.NoError(t, ConfigureAzureStorage(&pod, "ingester", tempo.Spec.Storage.Secret.Name, &tempo.Spec.Storage.TLS))
+	assert.NoError(t, ConfigureAzureStorage(&pod, &AzureStorage{}, "ingester", tempo.Spec.Storage.Secret.Name, v1alpha1.CredentialModeStatic))
 	assert.Len(t, pod.Containers[0].Env, 2)
 	assert.NoError(t, findEnvVar("AZURE_ACCOUNT_NAME", &pod.Containers[0].Env))
 	assert.NoError(t, findEnvVar("AZURE_ACCOUNT_KEY", &pod.Containers[0].Env))
@@ -216,9 +216,8 @@ func TestConfigureStorage(t *testing.T) {
 				Spec: v1alpha1.TempoStackSpec{
 					Storage: v1alpha1.ObjectStorageSpec{
 						Secret: v1alpha1.ObjectStorageSecretSpec{
-							Name:           "test",
-							Type:           v1alpha1.ObjectStorageSecretGCS,
-							CredentialMode: v1alpha1.CredentialModeStatic,
+							Name: "test",
+							Type: v1alpha1.ObjectStorageSecretGCS,
 						},
 					},
 				},
@@ -230,6 +229,7 @@ func TestConfigureStorage(t *testing.T) {
 					},
 				},
 			},
+
 			envName: "GOOGLE_APPLICATION_CREDENTIALS",
 		},
 		{
@@ -238,9 +238,8 @@ func TestConfigureStorage(t *testing.T) {
 				Spec: v1alpha1.TempoStackSpec{
 					Storage: v1alpha1.ObjectStorageSpec{
 						Secret: v1alpha1.ObjectStorageSecretSpec{
-							Name:           "test",
-							Type:           v1alpha1.ObjectStorageSecretS3,
-							CredentialMode: v1alpha1.CredentialModeStatic,
+							Name: "test",
+							Type: v1alpha1.ObjectStorageSecretS3,
 						},
 					},
 				},
@@ -252,15 +251,14 @@ func TestConfigureStorage(t *testing.T) {
 					},
 				},
 			},
+
 			envName: "S3_SECRET_KEY",
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			assert.NoError(t, ConfigureStorage(StorageParams{
-				CredentialMode: test.tempo.Spec.Storage.Secret.CredentialMode,
-			}, test.tempo, &test.pod, "ingester"))
+			assert.NoError(t, ConfigureStorage(StorageParams{}, test.tempo, &test.pod, "ingester"))
 			assert.NoError(t, findEnvVar(test.envName, &test.pod.Containers[0].Env))
 		})
 	}
