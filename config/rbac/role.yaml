@@ -185,13 +185,8 @@ rules:
   - tempo.grafana.com
   resources:
   - tempomonolithics/finalizers
-  - tempostacks/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - tempo.grafana.com
-  resources:
   - tempomonolithics/status
+  - tempostacks/finalizers
   - tempostacks/status
   verbs:
   - get

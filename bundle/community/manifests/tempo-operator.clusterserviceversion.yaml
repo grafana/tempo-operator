@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.15.3
-    createdAt: "2025-05-09T05:09:49Z"
+    createdAt: "2025-05-15T15:45:24Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -1483,13 +1483,8 @@ spec:
           - tempo.grafana.com
           resources:
           - tempomonolithics/finalizers
-          - tempostacks/finalizers
-          verbs:
-          - update
-        - apiGroups:
-          - tempo.grafana.com
-          resources:
           - tempomonolithics/status
+          - tempostacks/finalizers
           - tempostacks/status
           verbs:
           - get
