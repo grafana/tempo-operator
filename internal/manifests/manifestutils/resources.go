@@ -23,15 +23,25 @@ var (
 		"query-frontend":  {cpu: 0.045, memory: 0.025},
 		"jaeger-frontend": {cpu: 0.045, memory: 0.025},
 	}
+
+	resourcesMapNoGatewayWithProxy = map[string]componentResource{
+		"distributor":          {cpu: 0.27, memory: 0.12},
+		"ingester":             {cpu: 0.38, memory: 0.5},
+		"compactor":            {cpu: 0.16, memory: 0.18},
+		"querier":              {cpu: 0.1, memory: 0.15},
+		"query-frontend":       {cpu: 0.045, memory: 0.025},
+		"query-frontend-proxy": {cpu: 0.01, memory: 0.01},
+		"jaeger-frontend":      {cpu: 0.035, memory: 0.015},
+	}
+
 	resourcesMapWithGateway = map[string]componentResource{
-		"distributor":           {cpu: 0.26, memory: 0.11},
-		"ingester":              {cpu: 0.36, memory: 0.49},
-		"compactor":             {cpu: 0.15, memory: 0.17},
-		"querier":               {cpu: 0.09, memory: 0.14},
-		"query-frontend":        {cpu: 0.04, memory: 0.02},
-		"jaeger-frontend":       {cpu: 0.03, memory: 0.01},
-		"jaeger-frontend-proxy": {cpu: 0.01, memory: 0.01},
-		"gateway":               {cpu: 0.06, memory: 0.05},
+		"distributor":     {cpu: 0.26, memory: 0.11},
+		"ingester":        {cpu: 0.36, memory: 0.49},
+		"compactor":       {cpu: 0.15, memory: 0.17},
+		"querier":         {cpu: 0.09, memory: 0.14},
+		"query-frontend":  {cpu: 0.04, memory: 0.02},
+		"jaeger-frontend": {cpu: 0.04, memory: 0.02},
+		"gateway":         {cpu: 0.06, memory: 0.05},
 	}
 )
 
@@ -41,6 +51,12 @@ func Resources(tempo v1alpha1.TempoStack, component string, replicas *int32) cor
 	resourcesMap := resourcesMapNoGateway
 	if tempo.Spec.Template.Gateway.Enabled {
 		resourcesMap = resourcesMapWithGateway
+	}
+
+	auth := tempo.Spec.Template.QueryFrontend.JaegerQuery.Authentication
+
+	if auth != nil && auth.Enabled {
+		resourcesMap = resourcesMapNoGatewayWithProxy
 	}
 
 	componentResources, ok := resourcesMap[component]
