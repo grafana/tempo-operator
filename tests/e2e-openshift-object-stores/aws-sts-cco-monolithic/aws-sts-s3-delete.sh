@@ -1,12 +1,11 @@
 #!/bin/bash
 set -euo pipefail
 
-# This script is meant to be run from OpenShift CI environment
 # Run the script with ./aws-sts-s3-delete.sh TEMPO_NAME TEMPO_NAMESPACE
 
 # Check if OPENSHIFT_BUILD_NAMESPACE is unset or empty
 if [ -z "${OPENSHIFT_BUILD_NAMESPACE+x}" ]; then
-    OPENSHIFT_BUILD_NAMESPACE="cioptmmono"
+    OPENSHIFT_BUILD_NAMESPACE="cioptmonocco"
     export OPENSHIFT_BUILD_NAMESPACE
 fi
 

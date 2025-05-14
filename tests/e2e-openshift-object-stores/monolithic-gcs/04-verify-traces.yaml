@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: verify-traces
+spec:
+  template:
+    spec:
+      containers:
+      - name: verify-traces
+        image: ghcr.io/grafana/tempo-operator/test-utils:main
+        command:
+        - /bin/bash
+        - -eux
+        - -c
+        args:
+        - |
+          curl \
+            -v -G \
+            http://tempo-simplest:3200/api/search \
+            --data-urlencode "q={}" \
+            | tee /tmp/tempo.out
+          num_traces=$(jq ".traces | length" /tmp/tempo.out)
+          if [[ "$num_traces" -ne 10 ]]; then
+            echo && echo "The Tempo API returned $num_traces instead of 10 traces."
+            exit 1
+          fi
+      restartPolicy: Never

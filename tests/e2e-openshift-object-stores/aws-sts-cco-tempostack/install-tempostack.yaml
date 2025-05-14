@@ -1,0 +1,23 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoStack
+metadata:
+  name: tmcco
+  namespace: chainsaw-awscco-tempo
+spec:
+  storage:
+    secret:
+      name: aws-sts
+      type: s3
+      credentialMode: token-cco
+  storageSize: 10Gi
+  resources:
+    total:
+      limits:
+        memory: 4Gi
+        cpu: 2000m
+  template:
+    queryFrontend:
+      jaegerQuery:
+        enabled: true
+        ingress:
+          type: route
