@@ -99,12 +99,6 @@ func (r *TempoStackReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return ctrl.Result{}, nil
 	}
 
-	if tempo.Spec.ManagementState != v1alpha1.ManagementStateManaged {
-		log.Info("Skipping reconciliation for unmanaged TempoStack resource", "name", req.String())
-		// Stop requeueing for unmanaged TempoStack custom resources
-		return ctrl.Result{}, nil
-	}
-
 	// We have a deletion, short circuit and let the deletion happen
 	if deletionTimestamp := tempo.GetDeletionTimestamp(); deletionTimestamp != nil {
 		if controllerutil.ContainsFinalizer(&tempo, tempoFinalizer) {
@@ -124,6 +118,12 @@ func (r *TempoStackReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 			}
 		}
 
+		return ctrl.Result{}, nil
+	}
+
+	if tempo.Spec.ManagementState != v1alpha1.ManagementStateManaged {
+		log.Info("Skipping reconciliation for unmanaged TempoStack resource", "name", req.String())
+		// Stop requeueing for unmanaged TempoStack custom resources
 		return ctrl.Result{}, nil
 	}
 

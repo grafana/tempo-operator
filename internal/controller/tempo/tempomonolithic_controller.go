@@ -76,11 +76,6 @@ func (r *TempoMonolithicReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return ctrl.Result{}, nil
 	}
 
-	if tempo.Spec.Management == v1alpha1.ManagementStateUnmanaged {
-		log.Info("Skipping reconciliation for unmanaged TempoMonolithic resource", "name", req.String())
-		return ctrl.Result{}, nil
-	}
-
 	// We have a deletion, short circuit and let the deletion happen
 	if deletionTimestamp := tempo.GetDeletionTimestamp(); deletionTimestamp != nil {
 		if controllerutil.ContainsFinalizer(&tempo, tempoFinalizer) {
@@ -100,6 +95,11 @@ func (r *TempoMonolithicReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 			}
 		}
 
+		return ctrl.Result{}, nil
+	}
+
+	if tempo.Spec.Management == v1alpha1.ManagementStateUnmanaged {
+		log.Info("Skipping reconciliation for unmanaged TempoMonolithic resource", "name", req.String())
 		return ctrl.Result{}, nil
 	}
 
