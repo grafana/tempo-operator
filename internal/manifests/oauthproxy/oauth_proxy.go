@@ -176,7 +176,6 @@ func oAuthProxyContainer(
 	if len(strings.TrimSpace(authSpec.SAR)) > 0 {
 		args = append(args, fmt.Sprintf("--openshift-sar=%s", authSpec.SAR))
 	}
-
 	resources := authSpec.Resources
 	if resources == nil {
 		resources = defaultResources

@@ -91,6 +91,7 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 
 			if jaegerUIAuthentication != nil && jaegerUIAuthentication.Enabled {
 				defaultOauthProxyResources := manifestutils.Resources(tempo, manifestutils.QueryFrontendOauthProxyComponentName, tempo.Spec.Template.QueryFrontend.Replicas)
+
 				oauthproxy.PatchDeploymentForOauthProxy(
 					tempo.ObjectMeta,
 					params.CtrlConfig,
