@@ -13,7 +13,8 @@ on:
         type: boolean
         required: true
 
-permissions: {}
+permissions:
+  packages: write # push container image
 
 jobs:
   publish:
