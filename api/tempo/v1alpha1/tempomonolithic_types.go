@@ -174,6 +174,14 @@ type MonolithicTracesStorageS3Spec struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="TLS"
 	TLS *TLSSpec `json:"tls,omitempty"`
+
+	// CredentialMode can be used to set the desired credential mode for authenticating with the object storage.
+	// If this is not set, then the operator tries to infer the credential mode from the provided secret and its
+	// own configuration.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	CredentialMode CredentialMode `json:"credentialMode,omitempty"`
 }
 
 // MonolithicIngestionSpec defines the ingestion settings.

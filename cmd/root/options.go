@@ -3,6 +3,7 @@ package root
 import (
 	"errors"
 	"fmt"
+
 	"os"
 	"path/filepath"
 	"reflect"
@@ -56,6 +57,7 @@ func LoadConfig(scheme *runtime.Scheme, configFile string) (*configv1alpha1.Proj
 	}
 
 	options = mergeOptionsFromFile(options, &ctrlConfig)
+
 	return &ctrlConfig, options, nil
 }
 

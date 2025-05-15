@@ -120,12 +120,11 @@ query_frontend:
 			},
 		},
 		StorageParams: manifestutils.StorageParams{
+			CredentialMode: v1alpha1.CredentialModeStatic,
 			S3: &manifestutils.S3{
 				Insecure: true,
-				LongLived: &manifestutils.S3LongLived{
-					Endpoint: "minio:9000",
-					Bucket:   "tempo",
-				},
+				Endpoint: "minio:9000",
+				Bucket:   "tempo",
 			},
 		},
 		TLSProfile: tlsprofile.TLSProfileOptions{
@@ -1001,12 +1000,11 @@ query_frontend:
 					},
 				},
 				StorageParams: manifestutils.StorageParams{
+					CredentialMode: v1alpha1.CredentialModeStatic,
 					S3: &manifestutils.S3{
 						Insecure: true,
-						LongLived: &manifestutils.S3LongLived{
-							Endpoint: "minio:9000",
-							Bucket:   "tempo",
-						},
+						Endpoint: "minio:9000",
+						Bucket:   "tempo",
 					},
 				},
 				TLSProfile: tlsprofile.TLSProfileOptions{
@@ -1415,12 +1413,11 @@ query_frontend:
 			},
 		},
 		StorageParams: manifestutils.StorageParams{
+			CredentialMode: v1alpha1.CredentialModeStatic,
 			S3: &manifestutils.S3{
 				Insecure: true,
-				LongLived: &manifestutils.S3LongLived{
-					Endpoint: "minio:9000",
-					Bucket:   "tempo",
-				},
+				Endpoint: "minio:9000",
+				Bucket:   "tempo",
 			},
 		},
 		TLSProfile: tlsprofile.TLSProfileOptions{
@@ -1711,12 +1708,11 @@ ingester_client:
 					},
 				},
 				StorageParams: manifestutils.StorageParams{
+					CredentialMode: v1alpha1.CredentialModeStatic,
 					S3: &manifestutils.S3{
 						Insecure: true,
-						LongLived: &manifestutils.S3LongLived{
-							Endpoint: "minio:9000",
-							Bucket:   "tempo",
-						},
+						Endpoint: "minio:9000",
+						Bucket:   "tempo",
 					},
 				},
 				TLSProfile: tc.options,
@@ -1877,12 +1873,11 @@ ingester_client:
 			},
 		},
 		StorageParams: manifestutils.StorageParams{
+			CredentialMode: v1alpha1.CredentialModeStatic,
 			S3: &manifestutils.S3{
 				Insecure: true,
-				LongLived: &manifestutils.S3LongLived{
-					Endpoint: "minio:9000",
-					Bucket:   "tempo",
-				},
+				Endpoint: "minio:9000",
+				Bucket:   "tempo",
 			},
 		},
 		TLSProfile: tlsprofile.TLSProfileOptions{
@@ -2251,12 +2246,11 @@ query_frontend:
 					},
 				},
 				StorageParams: manifestutils.StorageParams{
+					CredentialMode: v1alpha1.CredentialModeStatic,
 					S3: &manifestutils.S3{
 						Insecure: true,
-						LongLived: &manifestutils.S3LongLived{
-							Endpoint: "minio:9000",
-							Bucket:   "tempo",
-						},
+						Endpoint: "minio:9000",
+						Bucket:   "tempo",
 					},
 				},
 				TLSProfile: tlsprofile.TLSProfileOptions{
@@ -2474,12 +2468,11 @@ query_frontend:
 					},
 				},
 				StorageParams: manifestutils.StorageParams{
+					CredentialMode: v1alpha1.CredentialModeStatic,
 					S3: &manifestutils.S3{
 						Insecure: true,
-						LongLived: &manifestutils.S3LongLived{
-							Endpoint: "minio:9000",
-							Bucket:   "tempo",
-						},
+						Endpoint: "minio:9000",
+						Bucket:   "tempo",
 					},
 				},
 			})
@@ -2591,12 +2584,11 @@ query_frontend:
 			},
 		},
 		StorageParams: manifestutils.StorageParams{
+			CredentialMode: v1alpha1.CredentialModeToken,
 			S3: &manifestutils.S3{
 				Insecure: true,
-				ShortLived: &manifestutils.S3ShortLived{
-					Bucket: "tempo",
-					Region: "us-east-2",
-				},
+				Bucket:   "tempo",
+				Region:   "us-east-2",
 			},
 		},
 		TLSProfile: tlsprofile.TLSProfileOptions{
@@ -2708,12 +2700,11 @@ query_frontend:
 			},
 		},
 		StorageParams: manifestutils.StorageParams{
+			CredentialMode: v1alpha1.CredentialModeToken,
 			S3: &manifestutils.S3{
 				Insecure: false,
-				ShortLived: &manifestutils.S3ShortLived{
-					Bucket: "tempo",
-					Region: "us-east-2",
-				},
+				Bucket:   "tempo",
+				Region:   "us-east-2",
 			},
 		},
 		TLSProfile: tlsprofile.TLSProfileOptions{
@@ -2833,11 +2824,10 @@ query_frontend:
 			},
 		},
 		StorageParams: manifestutils.StorageParams{
+			CredentialMode: v1alpha1.CredentialModeStatic,
 			S3: &manifestutils.S3{
-				LongLived: &manifestutils.S3LongLived{
-					Endpoint: "minio:9000",
-					Bucket:   "tempo",
-				},
+				Endpoint: "minio:9000",
+				Bucket:   "tempo",
 				Insecure: true,
 			},
 		},
