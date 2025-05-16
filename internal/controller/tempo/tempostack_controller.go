@@ -23,6 +23,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -97,6 +98,30 @@ func (r *TempoStackReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return ctrl.Result{}, nil
 	}
 
+	// We have a deletion, short circuit and let the deletion happen
+	if deletionTimestamp := tempo.GetDeletionTimestamp(); deletionTimestamp != nil {
+		if controllerutil.ContainsFinalizer(&tempo, v1alpha1.TempoFinalizer) {
+			// If the finalization logic fails, don't remove the finalizer so
+			// that we can retry during the next reconciliation.
+			if err := finalize(ctx, r.Client, log, manifestutils.ClusterScopedCommonLabels(tempo.ObjectMeta)); err != nil {
+				log.Error(err, "failed to finalize, re-reconciling")
+				return ctrl.Result{}, err
+			}
+
+			// Once all finalizers have been
+			// removed, the object will be deleted.
+			if controllerutil.RemoveFinalizer(&tempo, v1alpha1.TempoFinalizer) {
+				err := r.Update(ctx, &tempo)
+				if err != nil {
+					log.Error(err, "failed to remove finalizer, re-reconciling")
+					return ctrl.Result{}, err
+				}
+			}
+		}
+
+		return ctrl.Result{}, nil
+	}
+
 	if tempo.Spec.ManagementState != v1alpha1.ManagementStateManaged {
 		log.Info("Skipping reconciliation for unmanaged TempoStack resource", "name", req.String())
 		// Stop requeueing for unmanaged TempoStack custom resources
@@ -123,6 +148,16 @@ func (r *TempoStackReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		err := handlers.CreateOrRotateCertificates(ctx, log, req, r.Client, r.Scheme, r.CtrlConfig.Gates)
 		if err != nil {
 			return r.handleReconcileStatus(ctx, log, tempo, fmt.Errorf("built in cert manager error: %w", err))
+		}
+	}
+
+	// Add finalizer for this CR
+	if !controllerutil.ContainsFinalizer(&tempo, v1alpha1.TempoFinalizer) {
+		if controllerutil.AddFinalizer(&tempo, v1alpha1.TempoFinalizer) {
+			err := r.Update(ctx, &tempo)
+			if err != nil {
+				return ctrl.Result{}, err
+			}
 		}
 	}
 
