@@ -10,6 +10,7 @@ import (
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
+	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -19,6 +20,7 @@ import (
 	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 
 	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
@@ -191,6 +193,22 @@ func (v *validator) ValidateCreate(ctx context.Context, obj runtime.Object) (adm
 }
 
 func (v *validator) ValidateUpdate(ctx context.Context, oldObj, newObj runtime.Object) (admission.Warnings, error) {
+	oldTempo, ok := oldObj.(*v1alpha1.TempoStack)
+	if !ok {
+		return nil, apierrors.NewBadRequest(fmt.Sprintf("expected a TempoStack object but got %T", oldObj))
+	}
+	newTempo, ok := newObj.(*v1alpha1.TempoStack)
+	if !ok {
+		return nil, apierrors.NewBadRequest(fmt.Sprintf("expected a TempoStack object but got %T", newObj))
+	}
+	if controllerutil.ContainsFinalizer(oldTempo, v1alpha1.TempoFinalizer) && !controllerutil.ContainsFinalizer(newTempo, v1alpha1.TempoFinalizer) &&
+		apiequality.Semantic.DeepEqual(oldTempo.Spec, newTempo.Spec) {
+		// Do not validate if the specs are the same and only finalizer was removed
+		// This is to avoid a situation when kubectl delete -f file.yaml is run and the file contains
+		// Tempo CR and custom SA or storage secret. The reconcile loop will remove the finalizer and trigger the webhook which would fail.
+		return nil, nil
+	}
+
 	return v.validate(ctx, newObj)
 }
 

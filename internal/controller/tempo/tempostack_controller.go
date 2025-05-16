@@ -40,7 +40,6 @@ import (
 
 const (
 	storageSecretField = ".spec.storage.secret.name" // nolint #nosec
-	tempoFinalizer     = "tempo.grafana.com/finalizer"
 )
 
 // TempoStackReconciler reconciles a TempoStack object.
@@ -101,18 +100,20 @@ func (r *TempoStackReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	// We have a deletion, short circuit and let the deletion happen
 	if deletionTimestamp := tempo.GetDeletionTimestamp(); deletionTimestamp != nil {
-		if controllerutil.ContainsFinalizer(&tempo, tempoFinalizer) {
+		if controllerutil.ContainsFinalizer(&tempo, v1alpha1.TempoFinalizer) {
 			// If the finalization logic fails, don't remove the finalizer so
 			// that we can retry during the next reconciliation.
 			if err := finalize(ctx, r.Client, log, manifestutils.ClusterScopedCommonLabels(tempo.ObjectMeta)); err != nil {
+				log.Error(err, "failed to finalize, re-reconciling")
 				return ctrl.Result{}, err
 			}
 
 			// Once all finalizers have been
 			// removed, the object will be deleted.
-			if controllerutil.RemoveFinalizer(&tempo, tempoFinalizer) {
+			if controllerutil.RemoveFinalizer(&tempo, v1alpha1.TempoFinalizer) {
 				err := r.Update(ctx, &tempo)
 				if err != nil {
+					log.Error(err, "failed to remove finalizer, re-reconciling")
 					return ctrl.Result{}, err
 				}
 			}
@@ -151,8 +152,8 @@ func (r *TempoStackReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	// Add finalizer for this CR
-	if !controllerutil.ContainsFinalizer(&tempo, tempoFinalizer) {
-		if controllerutil.AddFinalizer(&tempo, tempoFinalizer) {
+	if !controllerutil.ContainsFinalizer(&tempo, v1alpha1.TempoFinalizer) {
+		if controllerutil.AddFinalizer(&tempo, v1alpha1.TempoFinalizer) {
 			err := r.Update(ctx, &tempo)
 			if err != nil {
 				return ctrl.Result{}, err
