@@ -1,0 +1,44 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: aws-sts-monolithic
+  labels:
+    type: aws-sts
+spec:
+  description: Test Tempo Monolithic support for AWS S3 using STS. This test is meant to be run from OpenShift CI as it uses the CI provided secrets.
+  namespace: chainsaw-awssts-mono
+  steps:
+  - name: Create AWS S3 bucket, IAM policy and role required for STS
+    try:
+    - script:
+        timeout: 2m
+        content: ./aws-sts-s3-create.sh tmmono chainsaw-awssts-mono
+    - assert:
+        file: aws-sts-s3-create-assert.yaml
+  - name: Install Tempo Monolithic
+    try:
+    - apply:
+        file: install-monolithic.yaml
+    - assert:
+        file: install-monolithic-assert.yaml
+  - name: Wait for the TempoStack to be ready
+    try:
+    - script:
+        timeout: 5m
+        content: oc get --namespace chainsaw-awssts-mono tempomonolithic tmmono -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' | grep True
+  - name: Generate traces
+    try:
+    - apply:
+        file: generate-traces.yaml
+    - assert:
+        file: generate-traces-assert.yaml
+  - name: Verify traces
+    try:
+    - apply:
+        file: verify-traces.yaml
+    - assert:
+        file: verify-traces-assert.yaml
+    cleanup:
+    - script:
+        timeout: 2m
+        content: ./aws-sts-s3-delete.sh tmmono chainsaw-awssts-mono
