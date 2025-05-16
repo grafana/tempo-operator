@@ -1,7 +1,6 @@
 name: "Publish operator"
 
-permissions:
-  packages: write # push container image
+permissions: {}
 
 on:
   push:
