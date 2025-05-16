@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	corev1 "k8s.io/api/core/v1"
-	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -57,8 +56,8 @@ func (v *monolithicValidator) ValidateUpdate(ctx context.Context, oldObj, newObj
 	if !ok {
 		return nil, apierrors.NewBadRequest(fmt.Sprintf("expected a TempoMonolithic object but got %T", newObj))
 	}
-	if controllerutil.ContainsFinalizer(oldTempo, v1alpha1.TempoFinalizer) && !controllerutil.ContainsFinalizer(newTempo, v1alpha1.TempoFinalizer) &&
-		apiequality.Semantic.DeepEqual(oldTempo.Spec, newTempo.Spec) {
+	if newTempo.GetDeletionTimestamp() != nil &&
+		controllerutil.ContainsFinalizer(oldTempo, v1alpha1.TempoFinalizer) && !controllerutil.ContainsFinalizer(newTempo, v1alpha1.TempoFinalizer) {
 		// Do not validate if the specs are the same and only finalizer was removed
 		// This is to avoid a situation when kubectl delete -f file.yaml is run and the file contains
 		// Tempo CR and custom SA or storage secret. The reconcile loop will remove the finalizer and trigger the webhook which would fail.
