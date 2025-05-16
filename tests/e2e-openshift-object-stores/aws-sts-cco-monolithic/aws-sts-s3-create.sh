@@ -1,12 +1,11 @@
 #!/bin/bash
 set -euo pipefail
 
-# This script is meant to be run from OpenShift CI environment
 # Run the script with ./aws-sts-s3-create.sh TEMPO_NAME TEMPO_NAMESPACE
 
 # Check if OPENSHIFT_BUILD_NAMESPACE is unset or empty
 if [ -z "${OPENSHIFT_BUILD_NAMESPACE+x}" ]; then
-    OPENSHIFT_BUILD_NAMESPACE="cioptmstack"
+    OPENSHIFT_BUILD_NAMESPACE="cioptmonocco"
     export OPENSHIFT_BUILD_NAMESPACE
 fi
 
@@ -78,3 +77,26 @@ oc -n $tempo_ns create secret generic aws-sts \
   --from-literal=bucket="$bucket_name" \
   --from-literal=region="$region" \
   --from-literal=role_arn="$role_arn"
+
+# Get the Tempo Operator namespace
+TEMPO_OPERATOR_NAMESPACE=$(oc get pods -A \
+    -l control-plane=controller-manager \
+    -l app.kubernetes.io/name=tempo-operator \
+    -o jsonpath='{.items[0].metadata.namespace}')
+
+# Get the Tempo Operator subscription
+TEMPO_OPERATOR_SUB=$(oc get subscription -n "$TEMPO_OPERATOR_NAMESPACE" \
+    -o jsonpath='{.items[0].metadata.name}')
+
+# Patch the Tempo Operator subscription with rolearn env.
+oc patch subscription "$TEMPO_OPERATOR_SUB" -n "$TEMPO_OPERATOR_NAMESPACE" \
+    --type='merge' -p '{"spec": {"config": {"env": [{"name": "ROLEARN", "value": "'"$role_arn"'"}]}}}'
+
+# Wait for the operator to reconcile
+sleep 60
+if oc -n "$TEMPO_OPERATOR_NAMESPACE" describe csv --selector=operators.coreos.com/tempo-operator.openshift-tempo-operator= | tail -n 1 | grep -qi "InstallSucceeded"; then
+    echo "CSV updated successfully, continuing script execution..."
+else
+    echo "Operator CSV update failed, exiting with error."
+    exit 1
+fi
