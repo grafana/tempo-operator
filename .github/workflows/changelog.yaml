@@ -1,8 +1,8 @@
 # This was original taken from: https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/main/.github/workflows/changelog.yaml
 # This action requires that any PR targeting the main branch should add a
 # yaml file to the ./.chloggen/ directory. If a CHANGELOG entry is not required,
-# or if performing maintance on the Changelog, add either \"[chore]\" to the title of
-# the pull request or add the \"Skip Changelog\" label to disable this action.
+# or if performing maintance on the Changelog, add either "[chore]" to the title of
+# the pull request or add the "Skip Changelog" label to disable this action.
 
 name: changelog
 

@@ -13,13 +13,14 @@ on:
         type: boolean
         required: true
 
-permissions:
-  packages: write # push container image
+permissions: {}
 
 jobs:
   publish:
     name: Publish container images
     runs-on: ubuntu-22.04
+    permissions:
+      packages: write # push container image
     steps:
       - name: Checkout
         uses: actions/checkout@v4
