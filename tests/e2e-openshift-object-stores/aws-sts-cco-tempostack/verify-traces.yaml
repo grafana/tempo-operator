@@ -1,0 +1,36 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: verify-traces
+  namespace: chainsaw-awscco-tempo
+spec:
+  template:
+    spec:
+      containers:
+      - name: verify-traces
+        image: ghcr.io/grafana/tempo-operator/test-utils:main
+        command:
+        - /bin/bash
+        - -eux
+        - -c
+        args:
+        - |
+          # The query frontend must be accessible via HTTP (no mTLS) to enable connections from Grafana
+          curl \
+            -v -G \
+            http://tempo-tmcco-query-frontend.chainsaw-awscco-tempo.svc:3200/api/search \
+            --data-urlencode "q={}" \
+            | tee /tmp/tempo.out
+          num_traces=$(jq ".traces | length" /tmp/tempo.out)
+          if [[ "$num_traces" -ne 10 ]]; then
+            echo && echo "The Tempo API returned $num_traces instead of 10 traces."
+            exit 1
+          fi
+
+          curl -v -G http://tempo-tmcco-query-frontend.chainsaw-awscco-tempo.svc:16686/api/traces --data-urlencode "service=telemetrygen" | tee /tmp/jaeger.out
+          num_traces=$(jq ".data | length" /tmp/jaeger.out)
+          if [[ "$num_traces" -ne 10 ]]; then
+            echo && echo "The Jaeger API returned $num_traces instead of 10 traces."
+            exit 1
+          fi
+      restartPolicy: Never

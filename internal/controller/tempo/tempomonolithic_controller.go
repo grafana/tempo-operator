@@ -22,6 +22,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -75,6 +76,28 @@ func (r *TempoMonolithicReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return ctrl.Result{}, nil
 	}
 
+	// We have a deletion, short circuit and let the deletion happen
+	if deletionTimestamp := tempo.GetDeletionTimestamp(); deletionTimestamp != nil {
+		if controllerutil.ContainsFinalizer(&tempo, v1alpha1.TempoFinalizer) {
+			// If the finalization logic fails, don't remove the finalizer so
+			// that we can retry during the next reconciliation.
+			if err := finalize(ctx, r.Client, log, monolithic.ClusterScopedCommonLabels(tempo.ObjectMeta)); err != nil {
+				return ctrl.Result{}, err
+			}
+
+			// Once all finalizers have been
+			// removed, the object will be deleted.
+			if controllerutil.RemoveFinalizer(&tempo, v1alpha1.TempoFinalizer) {
+				err := r.Update(ctx, &tempo)
+				if err != nil {
+					return ctrl.Result{}, err
+				}
+			}
+		}
+
+		return ctrl.Result{}, nil
+	}
+
 	if tempo.Spec.Management == v1alpha1.ManagementStateUnmanaged {
 		log.Info("Skipping reconciliation for unmanaged TempoMonolithic resource", "name", req.String())
 		return ctrl.Result{}, nil
@@ -94,6 +117,16 @@ func (r *TempoMonolithicReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 			return ctrl.Result{}, status.HandleTempoMonolithicStatus(ctx, r.Client, tempo, err)
 		}
 		tempo = *upgraded.(*v1alpha1.TempoMonolithic)
+	}
+
+	// Add finalizer for this CR
+	if !controllerutil.ContainsFinalizer(&tempo, v1alpha1.TempoFinalizer) {
+		if controllerutil.AddFinalizer(&tempo, v1alpha1.TempoFinalizer) {
+			err := r.Update(ctx, &tempo)
+			if err != nil {
+				return ctrl.Result{}, err
+			}
+		}
 	}
 
 	// Apply ephemeral defaults after upgrade.
