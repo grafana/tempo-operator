@@ -156,6 +156,8 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	manifestutils.SettGoMemLimit("tempo", &d.Spec.Template.Spec)
 	return d, nil
 }
 

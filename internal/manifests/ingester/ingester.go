@@ -178,6 +178,7 @@ func statefulSet(params manifestutils.Params) (*v1.StatefulSet, error) {
 		return nil, err
 	}
 
+	manifestutils.SettGoMemLimit("tempo", &ss.Spec.Template.Spec)
 	return ss, nil
 }
 

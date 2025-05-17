@@ -336,6 +336,8 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 		},
 	}
 
+	manifestutils.SettGoMemLimit(containerNameTempoGateway, &dep.Spec.Template.Spec)
+
 	return dep
 }
 

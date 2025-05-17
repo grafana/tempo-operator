@@ -111,6 +111,8 @@ func BuildTempoStatefulset(opts Options, extraAnnotations map[string]string) (*a
 		},
 	}
 
+	manifestutils.SettGoMemLimit("tempo", &sts.Spec.Template.Spec)
+
 	err := configureStorage(opts, sts)
 	if err != nil {
 		return nil, err
@@ -142,6 +144,7 @@ func BuildTempoStatefulset(opts Options, extraAnnotations map[string]string) (*a
 
 	if tempo.Spec.JaegerUI != nil && tempo.Spec.JaegerUI.Enabled {
 		configureJaegerUI(opts, sts)
+
 	}
 
 	if tempo.Spec.Multitenancy.IsGatewayEnabled() {
@@ -383,6 +386,10 @@ func configureJaegerUI(opts Options, sts *appsv1.StatefulSet) {
 	sts.Spec.Template.Spec.Containers = append(sts.Spec.Template.Spec.Containers, jaegerQueryContainer)
 	sts.Spec.Template.Spec.Containers = append(sts.Spec.Template.Spec.Containers, tempoQuery)
 	sts.Spec.Template.Spec.Volumes = append(sts.Spec.Template.Spec.Volumes, tempoQueryVolume)
+
+	manifestutils.SettGoMemLimit("jaeger-query", &sts.Spec.Template.Spec)
+	manifestutils.SettGoMemLimit("tempo-query", &sts.Spec.Template.Spec)
+
 }
 
 func configureGateway(opts Options, sts *appsv1.StatefulSet) error {
