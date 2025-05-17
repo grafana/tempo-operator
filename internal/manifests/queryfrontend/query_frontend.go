@@ -57,10 +57,10 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 	}
 	gates := params.CtrlConfig.Gates
 	tempo := params.Tempo
+	targets := []string{containerNameTempo, containerNameJaegerQuery, containerNameTempoQuery}
 
 	if gates.HTTPEncryption || gates.GRPCEncryption {
 		caBundleName := naming.SigningCABundleName(tempo.Name)
-		targets := []string{containerNameTempo, containerNameJaegerQuery, containerNameTempoQuery}
 		if err := manifestutils.ConfigureServiceCAByContainerName(&d.Spec.Template.Spec, caBundleName, targets...); err != nil {
 			return nil, err
 		}
@@ -69,6 +69,10 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 		if err != nil {
 			return nil, err
 		}
+	}
+
+	for _, target := range targets {
+		manifestutils.SettGoMemLimit(target, &d.Spec.Template.Spec)
 	}
 
 	svcs := services(params)
