@@ -70,3 +70,24 @@ type JaegerQueryAuthenticationSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Resources",xDescriptors="urn:alm:descriptor:com.tectonic.ui:resourceRequirements"
 	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 }
+
+// CredentialMode represents the type of authentication used for accessing the object storage.
+//
+// +kubebuilder:validation:Enum=static;token;token-cco
+type CredentialMode string
+
+const (
+	// CredentialModeStatic represents the usage of static, long-lived credentials stored in a Secret.
+	// This is the default authentication mode and available for all supported object storage types.
+	CredentialModeStatic CredentialMode = "static"
+	// CredentialModeToken represents the usage of short-lived tokens retrieved from a credential source.
+	// In this mode the static configuration does not contain credentials needed for the object storage.
+	// Instead, they are generated during runtime using a service, which allows for shorter-lived credentials and
+	// much more granular control. This authentication mode is not supported for all object storage types.
+	CredentialModeToken CredentialMode = "token"
+	// CredentialModeTokenCCO represents the usage of short-lived tokens retrieved from a credential source.
+	// This mode is similar to CredentialModeToken, but instead of having a user-configured credential source,
+	// it is configured by the environment and the operator relies on the Cloud Credential Operator to provide
+	// a secret. This mode is only supported for certain object storage types in certain runtime environments.
+	CredentialModeTokenCCO CredentialMode = "token-cco"
+)

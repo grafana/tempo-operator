@@ -411,7 +411,13 @@ type ObjectStorageSecretSpec struct {
 	// +kubebuilder:validation:Required
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors={"urn:alm:descriptor:com.tectonic.ui:select:azure","urn:alm:descriptor:com.tectonic.ui:select:gcs","urn:alm:descriptor:com.tectonic.ui:select:s3"},displayName="Object Storage Secret Type"
 	Type ObjectStorageSecretType `json:"type"`
-
+	// CredentialMode can be used to set the desired credential mode for authenticating with the object storage.
+	// If this is not set, then the operator tries to infer the credential mode from the provided secret and its
+	// own configuration.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	CredentialMode CredentialMode `json:"credentialMode,omitempty"`
 	// Name of a secret in the namespace configured for object storage secrets.
 	//
 	// +required

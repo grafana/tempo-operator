@@ -1,0 +1,16 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoMonolithic
+metadata:
+  name: tmonocco
+  namespace: chainsaw-awscco-mono
+spec:
+  storage:
+    traces:
+      backend: s3
+      s3:
+        secret: aws-sts
+        credentialMode: token-cco
+  jaegerui:
+    enabled: true
+    route:
+      enabled: true

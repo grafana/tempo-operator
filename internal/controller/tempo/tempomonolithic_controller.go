@@ -2,10 +2,12 @@ package controllers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	grafanav1 "github.com/grafana/grafana-operator/v5/api/v1beta1"
 	routev1 "github.com/openshift/api/route/v1"
+	cloudcredentialv1 "github.com/openshift/cloud-credential-operator/pkg/apis/cloudcredential/v1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -20,6 +22,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -27,6 +30,8 @@ import (
 	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
 	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/handlers/storage"
+	"github.com/grafana/tempo-operator/internal/manifests/cloudcredentials"
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/manifests/monolithic"
 	"github.com/grafana/tempo-operator/internal/status"
 	"github.com/grafana/tempo-operator/internal/tlsprofile"
@@ -71,6 +76,28 @@ func (r *TempoMonolithicReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return ctrl.Result{}, nil
 	}
 
+	// We have a deletion, short circuit and let the deletion happen
+	if deletionTimestamp := tempo.GetDeletionTimestamp(); deletionTimestamp != nil {
+		if controllerutil.ContainsFinalizer(&tempo, v1alpha1.TempoFinalizer) {
+			// If the finalization logic fails, don't remove the finalizer so
+			// that we can retry during the next reconciliation.
+			if err := finalize(ctx, r.Client, log, monolithic.ClusterScopedCommonLabels(tempo.ObjectMeta)); err != nil {
+				return ctrl.Result{}, err
+			}
+
+			// Once all finalizers have been
+			// removed, the object will be deleted.
+			if controllerutil.RemoveFinalizer(&tempo, v1alpha1.TempoFinalizer) {
+				err := r.Update(ctx, &tempo)
+				if err != nil {
+					return ctrl.Result{}, err
+				}
+			}
+		}
+
+		return ctrl.Result{}, nil
+	}
+
 	if tempo.Spec.Management == v1alpha1.ManagementStateUnmanaged {
 		log.Info("Skipping reconciliation for unmanaged TempoMonolithic resource", "name", req.String())
 		return ctrl.Result{}, nil
@@ -92,9 +119,45 @@ func (r *TempoMonolithicReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		tempo = *upgraded.(*v1alpha1.TempoMonolithic)
 	}
 
+	// Add finalizer for this CR
+	if !controllerutil.ContainsFinalizer(&tempo, v1alpha1.TempoFinalizer) {
+		if controllerutil.AddFinalizer(&tempo, v1alpha1.TempoFinalizer) {
+			err := r.Update(ctx, &tempo)
+			if err != nil {
+				return ctrl.Result{}, err
+			}
+		}
+	}
+
 	// Apply ephemeral defaults after upgrade.
 	// The ephemeral defaults should not be written back to the cluster.
 	tempo.Default(r.CtrlConfig)
+
+	// Discover CCO Environment configured (if any)
+	tokenCCOAuthEnv := cloudcredentials.DiscoverTokenCCOAuthConfig()
+
+	// We can use this before inferred, as COO mode cannot be inferred and need to be set explicit
+	// if is not set at this point, we need to clean up resources.
+	if tokenCCOAuthEnv != nil && r.getCredentialMode(tempo) == v1alpha1.CredentialModeTokenCCO {
+		ccoObjects, err := cloudcredentials.BuildCredentialsRequest(&tempo, tempo.Spec.ServiceAccount, tokenCCOAuthEnv)
+		if err != nil {
+			return ctrl.Result{}, status.HandleTempoMonolithicStatus(ctx, r.Client, tempo, err)
+		}
+
+		ownedCCOObjects, err := r.getCCOOwnedObjects(ctx, tempo)
+		if err != nil {
+			return ctrl.Result{}, status.HandleTempoMonolithicStatus(ctx, r.Client, tempo, err)
+		}
+
+		err = reconcileManagedObjects(ctx, r.Client, &tempo, r.Scheme, ccoObjects, ownedCCOObjects)
+
+		if err != nil {
+			return ctrl.Result{}, status.HandleTempoMonolithicStatus(ctx, r.Client, tempo, err)
+		}
+	} else if tokenCCOAuthEnv == nil && r.getCredentialMode(tempo) == v1alpha1.CredentialModeTokenCCO {
+		return ctrl.Result{}, status.HandleTempoMonolithicStatus(ctx, r.Client, tempo,
+			errors.New("cannot configure tempo in CCO mode without CCO environment"))
+	}
 
 	err := r.createOrUpdate(ctx, tempo)
 	if err != nil {
@@ -105,6 +168,15 @@ func (r *TempoMonolithicReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	// Result.Requeue and Result.RequeueAfter are only respected if err == nil
 	// https://github.com/kubernetes-sigs/controller-runtime/blob/v0.15.0/pkg/internal/controller/controller.go#L315-L341
 	return ctrl.Result{}, status.HandleTempoMonolithicStatus(ctx, r.Client, tempo, nil)
+}
+
+func (r *TempoMonolithicReconciler) getCredentialMode(tempo v1alpha1.TempoMonolithic) v1alpha1.CredentialMode {
+	if tempo.Spec.Storage.Traces.Backend == v1alpha1.MonolithicTracesStorageBackendS3 {
+		return tempo.Spec.Storage.Traces.S3.CredentialMode
+	}
+
+	// We only support inference mode for others, so return empty string
+	return ""
 }
 
 func (r *TempoMonolithicReconciler) createOrUpdate(ctx context.Context, tempo v1alpha1.TempoMonolithic) error {
@@ -155,6 +227,22 @@ func (r *TempoMonolithicReconciler) createOrUpdate(ctx context.Context, tempo v1
 	}
 
 	return reconcileManagedObjects(ctx, r.Client, &tempo, r.Scheme, managedObjects, ownedObjects)
+}
+func (r *TempoMonolithicReconciler) getCCOOwnedObjects(ctx context.Context, tempo v1alpha1.TempoMonolithic) (map[types.UID]client.Object, error) {
+	ownedObjects := map[types.UID]client.Object{}
+	listOps := &client.ListOptions{
+		Namespace:     tempo.GetNamespace(),
+		LabelSelector: labels.SelectorFromSet(monolithic.CommonLabels(tempo.Name)),
+	}
+	credentialRequestsList := &cloudcredentialv1.CredentialsRequestList{}
+	err := r.List(ctx, credentialRequestsList, listOps)
+	if err != nil {
+		return nil, fmt.Errorf("error listing cloud credential requests: %w", err)
+	}
+	for i := range credentialRequestsList.Items {
+		ownedObjects[credentialRequestsList.Items[i].GetUID()] = &credentialRequestsList.Items[i]
+	}
+	return ownedObjects, nil
 }
 
 func (r *TempoMonolithicReconciler) getOwnedObjects(ctx context.Context, tempo v1alpha1.TempoMonolithic) (map[types.UID]client.Object, error) {
@@ -297,6 +385,22 @@ func (r *TempoMonolithicReconciler) findTempoMonolithicForStorageSecret(ctx cont
 		}
 	}
 
+	ccoStack := v1alpha1.TempoStack{}
+	err = r.Get(ctx, client.ObjectKey{Namespace: secret.GetNamespace(),
+		Name: manifestutils.TempoFromManagerCredentialSecretName(secret.GetName())}, &ccoStack)
+
+	if err != nil {
+		if !apierrors.IsNotFound(err) {
+			return requests
+		}
+	} else {
+		requests = append(requests, reconcile.Request{
+			NamespacedName: types.NamespacedName{
+				Name:      ccoStack.GetName(),
+				Namespace: ccoStack.GetNamespace(),
+			},
+		})
+	}
 	return requests
 }
 
@@ -332,6 +436,11 @@ func (r *TempoMonolithicReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	if r.CtrlConfig.Gates.GrafanaOperator {
 		builder = builder.Owns(&grafanav1.GrafanaDatasource{})
+	}
+
+	tokenCCOAuthEnv := cloudcredentials.DiscoverTokenCCOAuthConfig()
+	if tokenCCOAuthEnv != nil {
+		builder = builder.Owns(&cloudcredentialv1.CredentialsRequest{})
 	}
 
 	return builder.Complete(r)

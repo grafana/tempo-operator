@@ -1,0 +1,7 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: generate-traces
+  namespace: chainsaw-awscco-mono
+status:
+  succeeded: 1

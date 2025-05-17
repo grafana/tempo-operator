@@ -8,6 +8,7 @@ import (
 	"github.com/go-logr/logr"
 	grafanav1 "github.com/grafana/grafana-operator/v5/api/v1beta1"
 	routev1 "github.com/openshift/api/route/v1"
+	cloudcredentialv1 "github.com/openshift/cloud-credential-operator/pkg/apis/cloudcredential/v1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -22,6 +23,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -29,6 +31,7 @@ import (
 	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
 	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/certrotation/handlers"
+	"github.com/grafana/tempo-operator/internal/manifests/cloudcredentials"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/status"
 	"github.com/grafana/tempo-operator/internal/upgrade"
@@ -69,6 +72,7 @@ type TempoStackReconciler struct {
 //+kubebuilder:rbac:groups=tempo.grafana.com,resources=tempostacks,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=tempo.grafana.com,resources=tempostacks/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=tempo.grafana.com,resources=tempostacks/finalizers,verbs=update
+// +kubebuilder:rbac:groups=cloudcredential.openshift.io,resources=credentialsrequests,verbs=get;list;watch;create;update;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -91,6 +95,30 @@ func (r *TempoStackReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		// we'll ignore not-found errors, since they can't be fixed by an immediate
 		// requeue (we'll need to wait for a new notification), and we can get them
 		// on deleted requests.
+		return ctrl.Result{}, nil
+	}
+
+	// We have a deletion, short circuit and let the deletion happen
+	if deletionTimestamp := tempo.GetDeletionTimestamp(); deletionTimestamp != nil {
+		if controllerutil.ContainsFinalizer(&tempo, v1alpha1.TempoFinalizer) {
+			// If the finalization logic fails, don't remove the finalizer so
+			// that we can retry during the next reconciliation.
+			if err := finalize(ctx, r.Client, log, manifestutils.ClusterScopedCommonLabels(tempo.ObjectMeta)); err != nil {
+				log.Error(err, "failed to finalize, re-reconciling")
+				return ctrl.Result{}, err
+			}
+
+			// Once all finalizers have been
+			// removed, the object will be deleted.
+			if controllerutil.RemoveFinalizer(&tempo, v1alpha1.TempoFinalizer) {
+				err := r.Update(ctx, &tempo)
+				if err != nil {
+					log.Error(err, "failed to remove finalizer, re-reconciling")
+					return ctrl.Result{}, err
+				}
+			}
+		}
+
 		return ctrl.Result{}, nil
 	}
 
@@ -120,6 +148,16 @@ func (r *TempoStackReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		err := handlers.CreateOrRotateCertificates(ctx, log, req, r.Client, r.Scheme, r.CtrlConfig.Gates)
 		if err != nil {
 			return r.handleReconcileStatus(ctx, log, tempo, fmt.Errorf("built in cert manager error: %w", err))
+		}
+	}
+
+	// Add finalizer for this CR
+	if !controllerutil.ContainsFinalizer(&tempo, v1alpha1.TempoFinalizer) {
+		if controllerutil.AddFinalizer(&tempo, v1alpha1.TempoFinalizer) {
+			err := r.Update(ctx, &tempo)
+			if err != nil {
+				return ctrl.Result{}, err
+			}
 		}
 	}
 
@@ -233,6 +271,11 @@ func (r *TempoStackReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		builder = builder.Owns(&grafanav1.GrafanaDatasource{})
 	}
 
+	tokenCCOAuthEnv := cloudcredentials.DiscoverTokenCCOAuthConfig()
+	if tokenCCOAuthEnv != nil {
+		builder = builder.Owns(&cloudcredentialv1.CredentialsRequest{})
+	}
+
 	return builder.Complete(r)
 }
 
@@ -256,6 +299,24 @@ func (r *TempoStackReconciler) findTempoStackForStorageSecret(ctx context.Contex
 			},
 		}
 	}
+
+	ccoStack := v1alpha1.TempoStack{}
+	err = r.Get(ctx, client.ObjectKey{Namespace: secret.GetNamespace(),
+		Name: manifestutils.TempoFromManagerCredentialSecretName(secret.GetName())}, &ccoStack)
+
+	if err != nil {
+		if !apierrors.IsNotFound(err) {
+			return requests
+		}
+	} else {
+		requests = append(requests, reconcile.Request{
+			NamespacedName: types.NamespacedName{
+				Name:      ccoStack.GetName(),
+				Namespace: ccoStack.GetNamespace(),
+			},
+		})
+	}
+
 	return requests
 }
 

@@ -28,6 +28,7 @@ var (
 func BuildTempoStatefulset(opts Options, extraAnnotations map[string]string) (*appsv1.StatefulSet, error) {
 	tempo := opts.Tempo
 	labels := ComponentLabels(manifestutils.TempoMonolithComponentName, tempo.Name)
+	annotations := manifestutils.StorageSecretHash(opts.StorageParams, extraAnnotations)
 
 	sts := &appsv1.StatefulSet{
 		TypeMeta: metav1.TypeMeta{
@@ -54,7 +55,7 @@ func BuildTempoStatefulset(opts Options, extraAnnotations map[string]string) (*a
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels:      labels,
-					Annotations: extraAnnotations,
+					Annotations: annotations,
 				},
 				Spec: corev1.PodSpec{
 					ServiceAccountName: serviceAccountName(tempo),
@@ -260,7 +261,9 @@ func configureStorage(opts Options, sts *appsv1.StatefulSet) error {
 			return errors.New("please configure .spec.storage.traces.s3")
 		}
 
-		err := manifestutils.ConfigureS3Storage(&sts.Spec.Template.Spec, "tempo", tempo.Spec.Storage.Traces.S3.Secret, tempo.Spec.Storage.Traces.S3.TLS, opts.StorageParams.S3)
+		err := manifestutils.ConfigureS3Storage(&sts.Spec.Template.Spec,
+			"tempo", tempo.Spec.Storage.Traces.S3.Secret,
+			tempo.Spec.Storage.Traces.S3.TLS, opts.StorageParams.CredentialMode, tempo.Name, opts.StorageParams.CloudCredentials.Environment)
 		if err != nil {
 			return err
 		}
@@ -281,7 +284,7 @@ func configureStorage(opts Options, sts *appsv1.StatefulSet) error {
 		}
 
 		err := manifestutils.ConfigureGCS(&sts.Spec.Template.Spec, "tempo",
-			tempo.Spec.Storage.Traces.GCS.Secret, opts.StorageParams.GCS.ShortLived != nil)
+			tempo.Spec.Storage.Traces.GCS.Secret, v1alpha1.CredentialModeStatic)
 		if err != nil {
 			return err
 		}
