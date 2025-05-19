@@ -17,12 +17,13 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
-permissions:
-  packages: write # push container image
+permissions: {}
 
 jobs:
   test-utils:
     runs-on: ubuntu-22.04
+    permissions:
+      packages: write # push container image
 
     steps:
       - name: Checkout
@@ -50,7 +51,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push
-        uses: docker/build-push-action@14487ce63c7a62a4a324b0bfb37086795e31c6c1 #v6.16.0
+        uses: docker/build-push-action@1dc73863535b631f98b2378be8619f83b136f4a0 #v6.17.0
         with:
           context: tests/
           file: tests/Dockerfile.utils
