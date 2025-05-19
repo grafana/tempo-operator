@@ -72,7 +72,7 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 	}
 
 	for _, target := range targets {
-		manifestutils.SettGoMemLimit(target, &d.Spec.Template.Spec)
+		manifestutils.SetGoMemLimit(target, &d.Spec.Template.Spec)
 	}
 
 	svcs := services(params)

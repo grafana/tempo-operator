@@ -112,7 +112,7 @@ func BuildTempoStatefulset(opts Options, extraAnnotations map[string]string) (*a
 		},
 	}
 
-	manifestutils.SettGoMemLimit("tempo", &sts.Spec.Template.Spec)
+	manifestutils.SetGoMemLimit("tempo", &sts.Spec.Template.Spec)
 
 	err := configureStorage(opts, sts)
 	if err != nil {
@@ -390,8 +390,8 @@ func configureJaegerUI(opts Options, sts *appsv1.StatefulSet) {
 	sts.Spec.Template.Spec.Containers = append(sts.Spec.Template.Spec.Containers, tempoQuery)
 	sts.Spec.Template.Spec.Volumes = append(sts.Spec.Template.Spec.Volumes, tempoQueryVolume)
 
-	manifestutils.SettGoMemLimit("jaeger-query", &sts.Spec.Template.Spec)
-	manifestutils.SettGoMemLimit("tempo-query", &sts.Spec.Template.Spec)
+	manifestutils.SetGoMemLimit("jaeger-query", &sts.Spec.Template.Spec)
+	manifestutils.SetGoMemLimit("tempo-query", &sts.Spec.Template.Spec)
 
 }
 

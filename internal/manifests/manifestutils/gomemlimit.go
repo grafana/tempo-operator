@@ -6,8 +6,8 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
-// SettGoMemLimit sets GOMEMLIMIT env var to 80% memory of the container if it's defined.
-func SettGoMemLimit(containerName string, pod *v1.PodSpec) {
+// SetGoMemLimit sets GOMEMLIMIT env var to 80% memory of the container if it's defined.
+func SetGoMemLimit(containerName string, pod *v1.PodSpec) {
 	index, _ := findContainerIndex(pod, containerName)
 
 	if index == -1 {
