@@ -50,6 +50,8 @@ jobs:
   publish-images:
     needs: release
     uses: ./.github/workflows/reusable-publish-images.yaml
+    permissions:
+      packages: write # push container image
     with:
       publish_bundle: true
       version_tag: v${{ needs.release.outputs.operator_version }}
