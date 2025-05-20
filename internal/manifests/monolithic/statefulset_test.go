@@ -60,6 +60,13 @@ func TestStatefulsetMemoryStorage(t *testing.T) {
 	require.NoError(t, err)
 
 	labels := ComponentLabels(manifestutils.TempoMonolithComponentName, "sample")
+
+	proxyEnv := proxy.ReadProxyVarsFromEnv()
+	proxyEnv = append(proxyEnv, corev1.EnvVar{
+		Name:  "GOMEMLIMIT",
+		Value: "3435973836",
+	})
+
 	require.Equal(t, &appsv1.StatefulSet{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "apps/v1",
@@ -89,7 +96,7 @@ func TestStatefulsetMemoryStorage(t *testing.T) {
 						{
 							Name:  "tempo",
 							Image: "docker.io/grafana/tempo:x.y.z",
-							Env:   proxy.ReadProxyVarsFromEnv(),
+							Env:   proxyEnv,
 							Args: []string{
 								"-config.file=/conf/tempo.yaml",
 								"-mem-ballast-size-mbs=1024",

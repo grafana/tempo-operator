@@ -14,7 +14,7 @@ func SetGoMemLimit(containerName string, pod *v1.PodSpec) {
 		return
 	}
 
-	container := pod.Containers[index]
+	container := &pod.Containers[index]
 
 	memory := container.Resources.Limits.Memory()
 	if memory != nil && !memory.IsZero() {

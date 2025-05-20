@@ -176,7 +176,12 @@ func TestBuildDistributor(t *testing.T) {
 					MountPath: manifestutils.TmpTempoStoragePath,
 				},
 			},
-			expectedContainerEnvVars: []corev1.EnvVar{},
+			expectedContainerEnvVars: []corev1.EnvVar{
+				{
+					Name:  "GOMEMLIMIT",
+					Value: "206158425",
+				},
+			},
 		},
 		{
 			name:            "Receiver TLS enable",
@@ -351,7 +356,12 @@ func TestBuildDistributor(t *testing.T) {
 					ReadOnly:  true,
 				},
 			},
-			expectedContainerEnvVars: []corev1.EnvVar{},
+			expectedContainerEnvVars: []corev1.EnvVar{
+				{
+					Name:  "GOMEMLIMIT",
+					Value: "206158425",
+				},
+			},
 		},
 		{
 			name:            "Receiver TLS enable with ServingCertsService feature enabled",
@@ -527,7 +537,12 @@ func TestBuildDistributor(t *testing.T) {
 					ReadOnly:  true,
 				},
 			},
-			expectedContainerEnvVars: []corev1.EnvVar{},
+			expectedContainerEnvVars: []corev1.EnvVar{
+				{
+					Name:  "GOMEMLIMIT",
+					Value: "206158425",
+				},
+			},
 		},
 		{
 			name:          "Receiver TLS enable with ServingCertsService feature enabled no custom certs",
@@ -705,7 +720,12 @@ func TestBuildDistributor(t *testing.T) {
 					ReadOnly:  true,
 				},
 			},
-			expectedContainerEnvVars: []corev1.EnvVar{},
+			expectedContainerEnvVars: []corev1.EnvVar{
+				{
+					Name:  "GOMEMLIMIT",
+					Value: "206158425",
+				},
+			},
 		},
 		{
 			name:            "Gateway enable",
@@ -792,7 +812,12 @@ func TestBuildDistributor(t *testing.T) {
 					MountPath: manifestutils.TmpTempoStoragePath,
 				},
 			},
-			expectedContainerEnvVars: []corev1.EnvVar{},
+			expectedContainerEnvVars: []corev1.EnvVar{
+				{
+					Name:  "GOMEMLIMIT",
+					Value: "188978560",
+				},
+			},
 		},
 		{
 			name:            "set InstanceAddrType to PodIP",
@@ -943,6 +968,10 @@ func TestBuildDistributor(t *testing.T) {
 							FieldPath:  "status.podIP",
 						},
 					},
+				},
+				{
+					Name:  "GOMEMLIMIT",
+					Value: "206158425",
 				},
 			},
 			instanceAddrType: v1alpha1.InstanceAddrPodIP,

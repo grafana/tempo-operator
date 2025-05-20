@@ -148,7 +148,12 @@ func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 						{
 							Name:  "tempo",
 							Image: "docker.io/grafana/tempo:1.5.0",
-							Env:   []corev1.EnvVar{},
+							Env: []corev1.EnvVar{
+								{
+									Name:  "GOMEMLIMIT",
+									Value: "42949673",
+								},
+							},
 							Args: []string{
 								"-target=query-frontend",
 								"-config.file=/conf/tempo-query-frontend.yaml",
@@ -220,7 +225,12 @@ func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 		jaegerQueryContainer := corev1.Container{
 			Name:  "jaeger-query",
 			Image: "docker.io/jaegertracing/jaeger-query:1.60",
-			Env:   []corev1.EnvVar{},
+			Env: []corev1.EnvVar{
+				{
+					Name:  "GOMEMLIMIT",
+					Value: "42949673",
+				},
+			},
 			Args: []string{
 				"--query.base-path=/",
 				"--span-storage.type=grpc",
@@ -272,7 +282,12 @@ func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 		tempoQueryContainer := corev1.Container{
 			Name:  "tempo-query",
 			Image: "docker.io/grafana/tempo-query:1.5.0",
-			Env:   []corev1.EnvVar{},
+			Env: []corev1.EnvVar{
+				{
+					Name:  "GOMEMLIMIT",
+					Value: "42949673",
+				},
+			},
 			Args: []string{
 				"-config=/conf/tempo-query.yaml",
 			},

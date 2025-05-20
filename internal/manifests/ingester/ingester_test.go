@@ -48,6 +48,10 @@ func TestBuildIngester(t *testing.T) {
 						},
 					},
 				},
+				{
+					Name:  "GOMEMLIMIT",
+					Value: "858993459",
+				},
 			},
 		},
 		{
@@ -74,6 +78,10 @@ func TestBuildIngester(t *testing.T) {
 							},
 						},
 					},
+				},
+				{
+					Name:  "GOMEMLIMIT",
+					Value: "858993459",
 				},
 				{
 					Name: "HASH_RING_INSTANCE_ADDR",

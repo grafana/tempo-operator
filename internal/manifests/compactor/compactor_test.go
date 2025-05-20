@@ -26,12 +26,21 @@ func TestBuildCompactor(t *testing.T) {
 		expectedContainerEnvVars []corev1.EnvVar
 	}{
 		{
-			name:                     "default",
-			expectedContainerEnvVars: []corev1.EnvVar{},
+			name: "default",
+			expectedContainerEnvVars: []corev1.EnvVar{
+				{
+					Name:  "GOMEMLIMIT",
+					Value: "154618828",
+				},
+			},
 		},
 		{
 			name: "set InstanceAddrType to PodIP",
 			expectedContainerEnvVars: []corev1.EnvVar{
+				{
+					Name:  "GOMEMLIMIT",
+					Value: "154618828",
+				},
 				{
 					Name: "HASH_RING_INSTANCE_ADDR",
 					ValueFrom: &corev1.EnvVarSource{
