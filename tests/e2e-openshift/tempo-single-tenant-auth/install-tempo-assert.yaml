@@ -66,6 +66,8 @@ spec:
             secretKeyRef:
               key: access_key_id
               name: minio
+        - name: GOMEMLIMIT
+          value: "85899347"
         name: tempo
         ports:
         - containerPort: 3200
