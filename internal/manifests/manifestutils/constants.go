@@ -170,4 +170,6 @@ const (
 	saTokenVolumeMountPath          = "/var/run/secrets/storage/serviceaccount" //#nosec G101 -- False positive
 	// ServiceAccountTokenFilePath path for token STS.
 	ServiceAccountTokenFilePath = saTokenVolumeMountPath + "/token"
+	// AzureDefaultAudience default azure audience.
+	AzureDefaultAudience = "api://AzureADTokenExchange"
 )

@@ -24,6 +24,9 @@ func BuildDefaultServiceAccount(params manifestutils.Params) *corev1.ServiceAcco
 	if params.StorageParams.GCS != nil && params.StorageParams.CredentialMode == v1alpha1.CredentialModeToken {
 		annotations = manifestutils.GCSShortLiveTokenAnnotation(*params.StorageParams.GCS)
 	}
+	if params.StorageParams.AzureStorage != nil && params.StorageParams.CredentialMode == v1alpha1.CredentialModeToken {
+		annotations = manifestutils.AzureShortLiveTokenAnnotation(*params.StorageParams.AzureStorage)
+	}
 
 	return &corev1.ServiceAccount{
 		ObjectMeta: metav1.ObjectMeta{
