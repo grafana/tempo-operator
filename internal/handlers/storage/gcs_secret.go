@@ -1,6 +1,9 @@
 package storage
 
 import (
+	"encoding/json"
+	"errors"
+
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 
@@ -8,59 +11,82 @@ import (
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 )
 
-var (
-	gcsShortLivedFields = []string{
-		"bucketname",
-		"iam_sa",
-		"iam_sa_project_id",
-	}
-
-	gcsLongLivedFields = []string{
-		"bucketname",
-		"key.json",
-	}
+const (
+	bucketNameKey          = "bucketname"
+	authFileKey            = "key.json"
+	gcpAccountTypeExternal = "external_account"
 )
 
-func discoverGCSCredentialType(storageSecret corev1.Secret, path *field.Path) (v1alpha1.CredentialMode, field.ErrorList) {
-	// ship bucketname as it is common for both
-	var isShortLived bool
-	for _, v := range gcsShortLivedFields[1:] {
-		_, ok := storageSecret.Data[v]
-		if ok {
-			isShortLived = true
-		}
-	}
-	var isLongLived bool
-	for _, v := range gcsLongLivedFields[1:] {
-		_, ok := storageSecret.Data[v]
-		if ok {
-			isLongLived = true
-		}
+func extractGoogleCredentialSource(secret *corev1.Secret) (sourceFile, sourceType string, err error) {
+	keyJSON := secret.Data["key.json"]
+	if len(keyJSON) == 0 {
+		return "", "", errors.New("missing secret field key.json")
 	}
 
-	if isShortLived && isLongLived {
+	credentialsFile := struct {
+		CredentialsType   string `json:"type"`
+		CredentialsSource struct {
+			File string `json:"file"`
+		} `json:"credential_source"`
+	}{}
+
+	err = json.Unmarshal(keyJSON, &credentialsFile)
+	if err != nil {
+		return "", "", errors.New("gcp storage secret cannot be parsed from JSON content")
+	}
+
+	return credentialsFile.CredentialsSource.File, credentialsFile.CredentialsType, nil
+}
+
+func discoverGCSCredentialType(storageSecret corev1.Secret, path *field.Path) (v1alpha1.CredentialMode, field.ErrorList) {
+	// Check if correct credential source is used
+	_, credentialType, err := extractGoogleCredentialSource(&storageSecret)
+	if err != nil {
 		return "", field.ErrorList{field.Invalid(
 			path,
 			storageSecret.Name,
-			"storage secret contains fields for long lived and short lived configuration",
+			err.Error(),
 		)}
 	}
 
-	if isShortLived {
+	if credentialType == gcpAccountTypeExternal {
 		return v1alpha1.CredentialModeToken, nil
 	}
 
 	return v1alpha1.CredentialModeStatic, nil
+
 }
 
 func validateGCSSecret(storageSecret corev1.Secret, path *field.Path, credentialMode v1alpha1.CredentialMode) field.ErrorList {
 	switch credentialMode {
 	case v1alpha1.CredentialModeStatic:
-		return ensureNotEmpty(storageSecret, gcsLongLivedFields, path)
 	case v1alpha1.CredentialModeToken:
-		return ensureNotEmpty(storageSecret, gcsShortLivedFields, path)
+		err := ensureNotEmpty(storageSecret, []string{bucketNameKey, authFileKey}, path)
+		if err != nil {
+			return err
+		}
+		credentialSource, _, errr := extractGoogleCredentialSource(&storageSecret)
+		if errr != nil {
+			return field.ErrorList{field.Invalid(
+				path,
+				storageSecret.Name,
+				errr.Error(),
+			)}
+		}
+
+		if credentialSource != manifestutils.ServiceAccountTokenFilePath {
+			return field.ErrorList{field.Invalid(
+				path,
+				storageSecret.Name,
+				"credential source in secret needs to point to token file",
+			)}
+		}
 	case v1alpha1.CredentialModeTokenCCO:
-		return ensureNotEmpty(storageSecret, gcsShortLivedFields, path)
+		return field.ErrorList{field.Invalid(
+			path,
+			credentialMode,
+			"credential mode not supported for GCS",
+		)}
 	}
 	return field.ErrorList{}
 }
@@ -73,10 +99,16 @@ func getGCSParams(storageSecret corev1.Secret, path *field.Path, mode v1alpha1.C
 	}
 
 	if mode == v1alpha1.CredentialModeToken {
+		audience := manifestutils.GcpDefaultAudience
+		if aud, ok := storageSecret.Data["audience"]; ok {
+			audience = string(aud)
+		}
+
 		return &manifestutils.GCS{
 			Bucket:            string(storageSecret.Data["bucketname"]),
 			IAMServiceAccount: string(storageSecret.Data["iam_sa"]),
 			ProjectID:         string(storageSecret.Data["iam_sa_project_id"]),
+			Audience:          audience,
 		}, nil
 	}
 

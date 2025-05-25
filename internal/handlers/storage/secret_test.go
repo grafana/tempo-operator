@@ -71,6 +71,7 @@ func TestGetGCSParams_short_lived(t *testing.T) {
 			"bucketname":        []byte("testbucket"),
 			"iam_sa":            []byte("abc"),
 			"iam_sa_project_id": []byte("rrrr"),
+			"key.json":          []byte("{\"type\": \"external_account\", \"credential_source\": {\"file\": \"/var/run/secrets/storage/serviceaccount/token\"}}"),
 		},
 	}
 	gcs, errs := getGCSParams(storageSecret, nil, v1alpha1.CredentialModeToken)
@@ -80,6 +81,7 @@ func TestGetGCSParams_short_lived(t *testing.T) {
 		Bucket:            "testbucket",
 		IAMServiceAccount: "abc",
 		ProjectID:         "rrrr",
+		Audience:          "openshift",
 	}, gcs)
 }
 

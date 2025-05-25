@@ -172,4 +172,6 @@ const (
 	ServiceAccountTokenFilePath = saTokenVolumeMountPath + "/token"
 	// AzureDefaultAudience default azure audience.
 	AzureDefaultAudience = "api://AzureADTokenExchange"
+	// GcpDefaultAudience default gcp audience for short token.
+	GcpDefaultAudience = "openshift"
 )
