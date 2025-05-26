@@ -361,11 +361,39 @@ func TestAzureStorage_short_lived(t *testing.T) {
 		},
 	}
 	assert.NoError(t, ConfigureStorage(params, tempo, &pod, "ingester"))
-	assert.Len(t, pod.Containers[0].Env, 4)
-	assert.NoError(t, findEnvVar("AZURE_ACCOUNT_NAME", &pod.Containers[0].Env))
-	assert.NoError(t, findEnvVar("AZURE_CLIENT_ID", &pod.Containers[0].Env))
-	assert.NoError(t, findEnvVar("AZURE_TENANT_ID", &pod.Containers[0].Env))
-	assert.NoError(t, findEnvVar("AZURE_FEDERATED_TOKEN_FILE", &pod.Containers[0].Env))
+	assert.Equal(t, pod.Containers[0].Env, []corev1.EnvVar{
+		{
+			Name: "AZURE_ACCOUNT_NAME",
+			ValueFrom: &corev1.EnvVarSource{SecretKeyRef: &corev1.SecretKeySelector{
+				Key: "account_name",
+				LocalObjectReference: corev1.LocalObjectReference{
+					Name: "test",
+				},
+			}},
+		},
+		{
+			Name: "AZURE_CLIENT_ID",
+			ValueFrom: &corev1.EnvVarSource{SecretKeyRef: &corev1.SecretKeySelector{
+				Key: "client_id",
+				LocalObjectReference: corev1.LocalObjectReference{
+					Name: "test",
+				},
+			}},
+		},
+		{
+			Name: "AZURE_TENANT_ID",
+			ValueFrom: &corev1.EnvVarSource{SecretKeyRef: &corev1.SecretKeySelector{
+				Key: "tenant_id",
+				LocalObjectReference: corev1.LocalObjectReference{
+					Name: "test",
+				},
+			}},
+		},
+		{
+			Name:  "AZURE_FEDERATED_TOKEN_FILE",
+			Value: "/var/run/secrets/storage/serviceaccount/token",
+		},
+	})
 	assert.Len(t, pod.Containers[0].VolumeMounts, 1)
 	assert.Len(t, pod.Volumes, 1)
 	assert.Equal(t, saTokenVolumeName, pod.Containers[0].VolumeMounts[0].Name)
