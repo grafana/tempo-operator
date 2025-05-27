@@ -223,6 +223,9 @@ storage:
     {{- with .StorageParams.AzureStorage }}
     azure:
       container_name: {{ .Container }}
+      {{- if (eq $.StorageParams.CredentialMode "token") }}
+      use_federated_token: true
+      {{- end }}
     {{- end }}
     {{- with .StorageParams.GCS }}
     gcs:

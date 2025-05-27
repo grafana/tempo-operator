@@ -61,3 +61,34 @@ func TestBuildDefaultServiceAccount_aws_sts(t *testing.T) {
 		},
 	}, serviceAccount)
 }
+
+func TestBuildDefaultServiceAccount_azure_sts(t *testing.T) {
+	serviceAccount := BuildDefaultServiceAccount(manifestutils.Params{
+		Tempo: v1alpha1.TempoStack{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test",
+				Namespace: "ns1",
+			},
+		},
+		StorageParams: manifestutils.StorageParams{
+			CredentialMode: v1alpha1.CredentialModeToken,
+			AzureStorage: &manifestutils.AzureStorage{
+				ClientID: "client1",
+				TenantID: "tenant1",
+			},
+		}})
+
+	labels := manifestutils.ComponentLabels("serviceaccount", "test")
+	require.NotNil(t, serviceAccount)
+	assert.Equal(t, &v1.ServiceAccount{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "tempo-test",
+			Namespace: "ns1",
+			Labels:    labels,
+			Annotations: map[string]string{
+				"azure.workload.identity/client-id": "client1",
+				"azure.workload.identity/tenant-id": "tenant1",
+			},
+		},
+	}, serviceAccount)
+}
