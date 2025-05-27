@@ -13,4 +13,13 @@ issues: [1206]
 # (Optional) One or more lines of additional information to render under the primary note.
 # These lines will be padded with 2 spaces and then inserted directly into the document.
 # Use pipe (|) for multiline entries.
-subtext:
+subtext: |
+  For use short live token on Azure, the secret should contain the following configuration:
+    ```
+  data:
+    container:         # Azure blob storage container name
+    account_name:      # Azure blob storage account name
+    client_id:         # Azure managed identity clientID
+    tenant_id:         # Azure tenant ID in which the managed identity lives.
+    audience:          # (optional) Audience of the token, default to api://AzureADTokenExchange
+  ```
