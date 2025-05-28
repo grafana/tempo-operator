@@ -1,0 +1,15 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoMonolithic
+metadata:
+  name: gcpwifmn
+  namespace: chainsaw-gcpwif-mono
+spec:
+  storage:
+    traces:
+      backend: gcs
+      gcs:
+        secret: gcs-secret
+  jaegerui:
+    enabled: true
+    route:
+      enabled: true
