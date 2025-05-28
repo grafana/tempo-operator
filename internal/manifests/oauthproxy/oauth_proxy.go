@@ -42,13 +42,6 @@ func OAuthServiceAccount(params manifestutils.Params) *corev1.ServiceAccount {
 		}
 	}
 
-	if params.StorageParams.GCS != nil && params.StorageParams.CredentialMode == v1alpha1.CredentialModeToken {
-		gcsAnnotations := manifestutils.GCSShortLiveTokenAnnotation(*params.StorageParams.GCS)
-		for k, v := range gcsAnnotations {
-			annotations[k] = v
-		}
-	}
-
 	return &corev1.ServiceAccount{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "v1",

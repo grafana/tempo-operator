@@ -118,16 +118,18 @@ func ConfigureAzureStorage(podTemplate *corev1.PodSpec, params *AzureStorage, co
 }
 
 // ConfigureGCS mounts the Google Cloud Storage credentials in a pod.
-func ConfigureGCS(pod *corev1.PodSpec, containerName string, storageSecretName string, credentialMode v1alpha1.CredentialMode) error {
-	if credentialMode == v1alpha1.CredentialModeStatic {
-		secretVolumeName := "storage-gcs-key"      // nolint #nosec
-		secretDirectory := "/etc/storage/secrets/" // nolint #nosec
-		secretFile := path.Join(secretDirectory, "key.json")
+func ConfigureGCS(pod *corev1.PodSpec, containerName string, storageSecretName string, audience string, credentialMode v1alpha1.CredentialMode) error {
+	secretVolumeName := "storage-gcs-key"      // nolint #nosec
+	secretDirectory := "/etc/storage/secrets/" // nolint #nosec
+	secretFile := path.Join(secretDirectory, "key.json")
 
-		containerIdx, err := findContainerIndex(pod, containerName)
-		if err != nil {
-			return err
-		}
+	containerIdx, err := findContainerIndex(pod, containerName)
+
+	if err != nil {
+		return err
+	}
+
+	if credentialMode == v1alpha1.CredentialModeStatic || credentialMode == v1alpha1.CredentialModeToken {
 
 		pod.Containers[containerIdx].Env = append(pod.Containers[containerIdx].Env, []corev1.EnvVar{
 			{
@@ -150,8 +152,19 @@ func ConfigureGCS(pod *corev1.PodSpec, containerName string, storageSecretName s
 			},
 		})
 	}
+
+	if credentialMode == v1alpha1.CredentialModeToken {
+		pod.Volumes = append(pod.Volumes, saTokenVolume(audience))
+
+		pod.Containers[containerIdx].VolumeMounts = append(pod.Containers[containerIdx].VolumeMounts, corev1.VolumeMount{
+			Name:      saTokenVolumeName,
+			MountPath: saTokenVolumeMountPath,
+		})
+
+	}
 	return nil
 }
+
 func configureS3StorageWithCOOAuth(pod *corev1.PodSpec, containerIdx int, tempo string, config *TokenCCOAuthConfig) {
 
 	pod.Containers[containerIdx].Env = append(pod.Containers[containerIdx].Env, []corev1.EnvVar{
@@ -255,7 +268,8 @@ func ConfigureStorage(storage StorageParams, tempo v1alpha1.TempoStack, pod *cor
 		case v1alpha1.ObjectStorageSecretAzure:
 			return ConfigureAzureStorage(pod, storage.AzureStorage, containerName, tempo.Spec.Storage.Secret.Name, storage.CredentialMode)
 		case v1alpha1.ObjectStorageSecretGCS:
-			return ConfigureGCS(pod, containerName, tempo.Spec.Storage.Secret.Name, storage.CredentialMode)
+			return ConfigureGCS(pod, containerName, tempo.Spec.Storage.Secret.Name, storage.GCS.Audience,
+				storage.CredentialMode)
 		case v1alpha1.ObjectStorageSecretS3:
 			return ConfigureS3Storage(pod, containerName, tempo.Spec.Storage.Secret.Name, &tempo.Spec.Storage.TLS,
 				storage.CredentialMode, tempo.Name, storage.CloudCredentials.Environment)
