@@ -6,17 +6,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGCSShortLiveTokenAnnotation(t *testing.T) {
-	annotations := GCSShortLiveTokenAnnotation(GCS{
-		IAMServiceAccount: "test-sa",
-		ProjectID:         "test-project",
-	})
-
-	assert.Equal(t, annotations["iam.gke.io/gcp-service-account"],
-		"test-sa@test-project.iam.gserviceaccount.com")
-
-}
-
 func TestAzureShortLiveTokenAnnotation(t *testing.T) {
 	annotations := AzureShortLiveTokenAnnotation(AzureStorage{
 		TenantID: "test-tenant",

@@ -38,11 +38,6 @@ func BuildServiceAccount(opts Options) *corev1.ServiceAccount {
 		annotations = copyAnnotations(awsAnnotations, annotations)
 	}
 
-	if opts.StorageParams.GCS != nil && opts.StorageParams.CredentialMode == v1alpha1.CredentialModeToken {
-		gcsAnnotations := manifestutils.GCSShortLiveTokenAnnotation(*opts.StorageParams.GCS)
-		annotations = copyAnnotations(gcsAnnotations, annotations)
-	}
-
 	return &corev1.ServiceAccount{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        naming.DefaultServiceAccountName(tempo.Name),
