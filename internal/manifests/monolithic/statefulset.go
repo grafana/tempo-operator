@@ -284,7 +284,7 @@ func configureStorage(opts Options, sts *appsv1.StatefulSet) error {
 		}
 
 		err := manifestutils.ConfigureGCS(&sts.Spec.Template.Spec, "tempo",
-			tempo.Spec.Storage.Traces.GCS.Secret, opts.StorageParams.GCS.Audience, v1alpha1.CredentialModeStatic)
+			tempo.Spec.Storage.Traces.GCS.Secret, opts.StorageParams.GCS.Audience, opts.StorageParams.CredentialMode)
 		if err != nil {
 			return err
 		}
