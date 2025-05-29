@@ -3,6 +3,4 @@ kind: Job
 metadata:
   name: verify-traces-jaeger
 status:
-  conditions:
-    - status: "True"
-      type: Complete
+  succeeded: 1

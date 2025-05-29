@@ -35,3 +35,8 @@ spec:
         file: 04-verify-traces.yaml
     - assert:
         file: 04-assert.yaml
+  - name: Delete bucket
+    try:
+    - script:
+        timeout: 5m
+        content: ./delete-bucket.sh

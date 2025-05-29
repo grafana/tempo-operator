@@ -1,0 +1,6 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: azure-secret
+  namespace: chainsaw-azurewif-tempo
+type: Opaque
