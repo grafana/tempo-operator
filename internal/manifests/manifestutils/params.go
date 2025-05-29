@@ -46,6 +46,7 @@ type GCS struct {
 	Bucket            string
 	IAMServiceAccount string
 	ProjectID         string
+	Audience          string
 }
 
 // S3 holds S3 configuration.

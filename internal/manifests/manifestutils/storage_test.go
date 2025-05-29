@@ -69,7 +69,8 @@ func TestGetGCSStorage(t *testing.T) {
 		},
 	}
 
-	assert.NoError(t, ConfigureGCS(&pod, "ingester", tempo.Spec.Storage.Secret.Name, v1alpha1.CredentialModeStatic))
+	assert.NoError(t, ConfigureGCS(&pod, "ingester", tempo.Spec.Storage.Secret.Name, "audience",
+		v1alpha1.CredentialModeStatic))
 	assert.Len(t, pod.Containers[0].Env, 1)
 	assert.NoError(t, findEnvVar("GOOGLE_APPLICATION_CREDENTIALS", &pod.Containers[0].Env))
 
@@ -260,6 +261,9 @@ func TestConfigureStorage(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			assert.NoError(t, ConfigureStorage(StorageParams{
 				CredentialMode: test.tempo.Spec.Storage.Secret.CredentialMode,
+				GCS: &GCS{
+					Audience: "openshift",
+				},
 			}, test.tempo, &test.pod, "ingester"))
 			assert.NoError(t, findEnvVar(test.envName, &test.pod.Containers[0].Env))
 		})
@@ -288,8 +292,9 @@ func TestGetCGSStorage_short_lived(t *testing.T) {
 		},
 	}
 
-	assert.NoError(t, ConfigureGCS(&pod, "ingester", tempo.Spec.Storage.Secret.Name, v1alpha1.CredentialModeToken))
-	assert.Len(t, pod.Containers[0].Env, 0)
+	assert.NoError(t, ConfigureGCS(&pod, "ingester", tempo.Spec.Storage.Secret.Name, "audiente",
+		v1alpha1.CredentialModeToken))
+	assert.Len(t, pod.Containers[0].Env, 1)
 	assert.Len(t, pod.Containers[0].Args, 0)
 }
 
