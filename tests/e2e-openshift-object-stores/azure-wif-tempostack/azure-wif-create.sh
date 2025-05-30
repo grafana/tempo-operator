@@ -5,7 +5,7 @@ set -e
 # Create Azure storage bucket
 AZURE_RESOURCE_GROUP_NAME=ikanse-tempostack-azure-wif
 AZURE_RESOURCE_GROUP_LOCATION=eastus
-AZURE_STORAGE_AZURE_ACCOUNTNAME="ikansetempo"
+AZURE_STORAGE_AZURE_ACCOUNTNAME="ikansetempowif"
 SECRETNAME="azure-secret"
 AZURE_ENV="AzureGlobal"
 

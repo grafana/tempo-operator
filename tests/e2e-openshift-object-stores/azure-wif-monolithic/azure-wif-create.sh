@@ -5,7 +5,7 @@ set -e
 # Create Azure storage bucket
 AZURE_RESOURCE_GROUP_NAME=ikanse-monolithic-azure-wif
 AZURE_RESOURCE_GROUP_LOCATION=eastus
-AZURE_STORAGE_AZURE_ACCOUNTNAME="ikansemono"
+AZURE_STORAGE_AZURE_ACCOUNTNAME="ikansemonowif"
 SECRETNAME="azure-secret"
 AZURE_ENV="AzureGlobal"
 
