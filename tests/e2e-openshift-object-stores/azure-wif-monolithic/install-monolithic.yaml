@@ -1,0 +1,15 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoMonolithic
+metadata:
+  name: azurewifmn
+  namespace: chainsaw-azurewif-mono
+spec:
+  storage:
+    traces:
+      backend: azure
+      azure:
+        secret: azure-secret
+  jaegerui:
+    enabled: true
+    route:
+      enabled: true
