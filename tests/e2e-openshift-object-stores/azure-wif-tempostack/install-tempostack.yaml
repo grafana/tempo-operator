@@ -1,0 +1,22 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoStack
+metadata:
+  name: azurewiftm
+  namespace: chainsaw-azurewif-tempo
+spec:
+  storage:
+    secret:
+      name: azure-secret
+      type: azure
+  storageSize: 10Gi
+  resources:
+    total:
+      limits:
+        memory: 4Gi
+        cpu: 2000m
+  template:
+    queryFrontend:
+      jaegerQuery:
+        enabled: true
+        ingress:
+          type: route

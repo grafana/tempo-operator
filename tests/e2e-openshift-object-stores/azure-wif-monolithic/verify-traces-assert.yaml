@@ -1,6 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: generate-traces
+  name: verify-traces
+  namespace: chainsaw-azurewif-mono
 status:
   succeeded: 1

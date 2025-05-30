@@ -1,0 +1,45 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: azure-wif-tempostack
+  labels:
+    type: azure-wif
+spec:
+  description: Test TempoStack support for Azure WIF using STS.
+  namespace: chainsaw-azurewif-tempo
+  steps:
+  - name: Create Azure WIF bucket
+    try:
+    - script:
+        timeout: 2m
+        content: ./azure-wif-create.sh
+    - assert:
+        file: azure-wif-create-assert.yaml
+  - name: Install TempoStack
+    try:
+    - apply:
+        file: install-tempostack.yaml
+    - assert:
+        file: install-tempostack-assert.yaml
+  - name: Wait for the TempoStack to be ready
+    try:
+    - script:
+        timeout: 5m
+        content: oc get --namespace chainsaw-azurewif-tempo tempo azurewiftm -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' | grep True
+  - name: Generate traces
+    try:
+    - apply:
+        file: generate-traces.yaml
+    - assert:
+        file: generate-traces-assert.yaml
+  - name: Verify traces
+    try:
+    - apply:
+        file: verify-traces.yaml
+    - assert:
+        file: verify-traces-assert.yaml
+  - name: Delete resource group
+    try:
+    - script:
+        timeout: 5m
+        content: ./azure-wif-delete.sh
