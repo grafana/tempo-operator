@@ -46,7 +46,7 @@ jobs:
         with:
           repository: tempooperatorbot/${{ inputs.repo }}
           token: ${{ secrets.TEMPOOPERATORBOT_GITHUB_TOKEN }}
-          persist-credentials: false
+          persist-credentials: true
 
       - name: Checkout tempo-operator to tmp/ directory
         uses: actions/checkout@v4
@@ -96,7 +96,4 @@ jobs:
           git add -A
           git commit -s -m "$message"
           git push -f --set-upstream origin $branch
-          gh pr create --title "$message" \
-                       --body "$body" \
-                       --repo ${ORG}/${REPO} \
-                       --base main
+          gh pr create --title "$message" --body "$body" --repo ${ORG}/${REPO} --base main

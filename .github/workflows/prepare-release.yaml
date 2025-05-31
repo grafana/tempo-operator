@@ -32,7 +32,7 @@ jobs:
         with:
           repository: ${{ env.OPERATOR_BOT_USER }}/${{ github.event.repository.name }}
           token: ${{ secrets.TEMPOOPERATORBOT_GITHUB_TOKEN }}
-          persist-credentials: false
+          persist-credentials: true
 
 
       - name: Set up Go
@@ -65,10 +65,7 @@ jobs:
           git add -A
           git commit -m "Prepare Release ${VERSION}" --author="${ACTOR} <${ACTOR}@users.noreply.github.com>"
           git push -f --set-upstream origin releases/${VERSION}
-          gh pr create \
-              --title='Prepare release v${VERSION}' \
-              --body='v${VERSION}'\
-              --repo ${{ github.repository }}
+          gh pr create --title="Prepare release v${VERSION}" --body=v${VERSION} --repo ${{ github.repository }}
 
         env:
           GITHUB_TOKEN: ${{ secrets.TEMPOOPERATORBOT_GITHUB_TOKEN }}
