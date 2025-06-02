@@ -3,6 +3,119 @@ Changes by Version
 
 <!-- next version -->
 
+## 0.16.0
+
+### 🛑 Breaking changes 🛑
+
+- `tempostack, tempomonolithic`: Ensure the operator does not grant additional permissions when enabling OpenShift tenancy mode (resolves CVE-2025-2786) (#1145)
+  Ensure the permissions the operator is granting to the Tempo Service Account
+  do not exceed the permissions of the user creating (or modifying) the Tempo instance
+  when enabling OpenShift tenancy mode.
+  
+  To enable the OpenShift tenancy mode, the user must have permissions to create `TokenReview` and `SubjectAccessReview`.
+  
+  This breaking change does not affect existing Tempo instances in the cluster.
+  However, the required permissions are now mandatory when creating or modifying a TempoStack or TempoMonolithic CR.
+  
+
+### 💡 Enhancements 💡
+
+- `tempostack, tempomonolithic`: Add short live token authentication for Azure Blob Storage (#1206)
+  For use short live token on Azure, the secret should contain the following configuration:
+    ```
+  data:
+    container:         # Azure blob storage container name
+    account_name:      # Azure blob storage account name
+    client_id:         # Azure managed identity clientID
+    tenant_id:         # Azure tenant ID in which the managed identity lives.
+    audience:          # (optional) Audience of the token, default to api://AzureADTokenExchange
+  ```
+  
+- `tempostack, tempomonolithic`: Support for AWS STS via cloudcredential operator (#1159)
+- `tempostack, tempomonolithic`: Add support for GCS Shot Live Token authentication. (#1141)
+  Now storage secret for GCS can contain
+  ```
+  data:
+    bucketname:         # Bucket name
+    iam_sa:             # a name for your the Google IAM service account
+    iam_sa_project_id:  # The project ID for your IAM service account.
+  ```
+  
+- `tempostack, tempomonolithic`: Set GOMEMLIMIT to 80% of memory limit, if any (#1196)
+  This golang variable indicate to GoLang GC to be more aggressive when it is reaching out the
+  memory limits. This is a soft limit, so still can produce OOM, but reduces the possibility. 
+  
+- `operator`: Kubernetes 1.32 enablement (#1157)
+- `tempomonolithic`: Watch storage secrets for tempo monolithic (#1181)
+
+### 🧰 Bug fixes 🧰
+
+- `tempostack, tempomonolithic`: Add parameter to set audience in ID token for GCP Workload Identity Federation (#1209)
+  Now that GCS token allow to set the audience, the secret configuration required channged, now it will require
+  the following:
+  ```
+  data:
+    bucketname:    # GCS Bucket  name
+    audience:      # (Optional) default to openshift
+    key.json:      # Credential file generated using gclient
+  ```
+  
+  File key.json can be created using :
+  
+  ```
+  gcloud iam workload-identity-pools create-cred-config \
+    "projects/<PROJECT_NUMBER>/locations/global/workloadIdentityPools/<POOL_ID>/providers/<PROVIDER_ID>" \
+    --service-account="<SERVICE_ACCOUNT_EMAIL>" \
+    --credential-source-file=/var/run/secrets/storage/serviceaccount/token \
+    --credential-source-type=text \
+    --output-file="/tmp/key.json"
+  ```
+  credential-source-file= Should be pointing to `/var/run/secrets/storage/serviceaccount/token` which is the locationn
+  operator mounts the projected volume.
+  
+- `tempostack, tempomonolithic`: Add namespace suffix to ClusterRole and ClusterRoleBinding of gateway (#1146)
+  This resolves a naming conflict of the ClusterRole and ClusterRoleBinding when two TempoStack/TempoMonolithic instances with the same name, but in different namespaces are created.
+  Only relevant when using multi-tenancy with OpenShift mode.
+  
+- `tempostack, tempomonolithic`: Fix pruning of cluster-scoped resources (#1168)
+  Previously, when a non-multitenant TempoStack instance was created using the same name as an existing multitenant TempoStack instance, the operator erroneously deleted the Gateway ClusterRole and ClusterRoleBinding associated with the multitenant instance.
+  
+  With this change, cluster-scoped resources get an additional label `app.kubernetes.io/namespace` to signify the namespace of the TempoStack owning this cluster-scoped resource.
+  
+- `tempostack, tempomonolithic`: Cleanup gateway cluster roles and bindings after deleting tempo instance (#1190)
+  Now the operator uses finalizer to clean up the cluster roles and bindings after deleting the tempo instance.
+  
+- `tempostack, tempomonolithic`: Allow OpenShift cluster admins to see all attributes when RBAC is enabled. (#1185)
+  This change removes `--opa.admin-groups=system:cluster-admins,cluster-admin,dedicated-admin`
+  from the OpenShift OPA configuration. This configures the OPA to always return
+  all user's accessible namespaces required by the RBAC feature.
+  
+- `tempostack, tempomonolithic`: Don't set --opa.matcher=kubernetes_namespace_name when query RBAC is disabled (#1176)
+- `tempostack`: Fix unimplemented per tenant retention and fix per tenant overrides after tempo 2.3 (#1134)
+  In tempo 2.3 https://github.com/grafana/tempo/blob/main/CHANGELOG.md#v230--2023-10-30 they changes the overrides config
+  which was not properly implemented in the operator.
+  
+  This patch also adds support for per tenant retention which was not implemented.
+  
+- `tempostack, tempomonolithic`: Assign a percentage of the resources to oauth-proxy if resources are not specified, fixed the name (#1107)
+- `tempostack`: Limit granted permissions of the Tempo Service Account when enabling the Jaeger UI Monitor tab on OpenShift (resolves CVE-2025-2842) (#1144)
+  Previously, the operator assigned the `cluster-monitoring-view` ClusterRole to the Tempo Service Account
+  when the Prometheus endpoint of the Jaeger UI Monitor tab is set to the Thanos Querier on OpenShift.
+  
+  With this change, the operator limits the granted permissions to only view metrics of the namespace of the Tempo instance.
+  Additionally, the recommended port of the Thanos Querier service changed from `9091` to `9092` (tenancy-aware port):
+  `.spec.template.queryFrontend.jaegerQuery.monitorTab.prometheusEndpoint: https://thanos-querier.openshift-monitoring.svc.cluster.local:9092`.
+  
+  All existing installations, which have the Thanos Querier configured at port 9091, will be upgraded automatically to use port 9092.
+  
+- `tempostack, tempomonolithic`: Update Tempo to 2.7.2 (#1149)
+
+### Components
+- Tempo: [v2.7.2](https://github.com/grafana/tempo/releases/tag/v2.7.2)
+
+### Support
+This release supports Kubernetes 1.25 to 1.32.
+
 ## 0.15.3
 
 ### 💡 Enhancements 💡
