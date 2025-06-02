@@ -454,6 +454,54 @@ usage_report:
   reporting_enabled: false
 `,
 		},
+		{
+			name: "azure federated token",
+			spec: v1alpha1.TempoMonolithicSpec{
+				Storage: &v1alpha1.MonolithicStorageSpec{
+					Traces: v1alpha1.MonolithicTracesStorageSpec{
+						Backend: v1alpha1.MonolithicTracesStorageBackendAzure,
+						Azure: &v1alpha1.MonolithicTracesObjectStorageSpec{
+							Secret: "azure-sts-secret",
+						},
+					},
+				},
+			},
+			opts: Options{
+				StorageParams: manifestutils.StorageParams{
+					CredentialMode: v1alpha1.CredentialModeToken,
+					AzureStorage: &manifestutils.AzureStorage{
+						Container: "minio",
+					},
+				},
+			},
+			expected: `
+server:
+  http_listen_port: 3200
+  http_server_read_timeout: 30s
+  http_server_write_timeout: 30s
+internal_server:
+  enable: true
+  http_listen_address: 0.0.0.0
+storage:
+  trace:
+    backend: azure
+    wal:
+      path: /var/tempo/wal
+    azure:
+      container_name: minio
+      use_federated_token: true
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
+usage_report:
+  reporting_enabled: false
+`,
+		},
 	}
 
 	for _, test := range tests {

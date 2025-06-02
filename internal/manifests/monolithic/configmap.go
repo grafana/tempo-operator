@@ -44,7 +44,8 @@ type tempoS3Config struct {
 	TLSCipherSuites string `yaml:"tls_cipher_suites,omitempty"`
 }
 type tempoAzureConfig struct {
-	ContainerName string `yaml:"container_name"`
+	ContainerName     string `yaml:"container_name"`
+	UseFederatedToken bool   `yaml:"use_federated_token,omitempty"`
 }
 type tempoGCSConfig struct {
 	BucketName string `yaml:"bucket_name"`
@@ -227,6 +228,7 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 			config.Storage.Trace.Backend = "azure"
 			config.Storage.Trace.Azure = &tempoAzureConfig{}
 			config.Storage.Trace.Azure.ContainerName = opts.StorageParams.AzureStorage.Container
+			config.Storage.Trace.Azure.UseFederatedToken = opts.StorageParams.CredentialMode == v1alpha1.CredentialModeToken
 
 		case v1alpha1.MonolithicTracesStorageBackendGCS:
 			config.Storage.Trace.Backend = "gcs"
