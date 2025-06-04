@@ -5,6 +5,7 @@ on:
       - 'main'
     paths:
       - CHANGELOG.md
+  workflow_dispatch:
 
 permissions: {}
 
