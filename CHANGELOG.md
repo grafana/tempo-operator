@@ -3,6 +3,14 @@ Changes by Version
 
 <!-- next version -->
 
+## 0.101.0
+
+### Components
+- Tempo: [v2.7.2](https://github.com/grafana/tempo/releases/tag/v2.7.2)
+
+### Support
+This release supports Kubernetes 1.25 to 1.32.
+
 ## 0.16.0
 
 ### 🛑 Breaking changes 🛑
