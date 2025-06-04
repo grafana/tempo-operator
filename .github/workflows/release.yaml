@@ -10,6 +10,8 @@ permissions: {}
 
 jobs:
   release:
+    permissions:
+      contents: write
     runs-on: ubuntu-22.04
     outputs:
       operator_version: ${{ steps.operator-version.outputs.version }}
