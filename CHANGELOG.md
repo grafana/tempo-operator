@@ -21,7 +21,7 @@ Changes by Version
 ### 💡 Enhancements 💡
 
 - `tempostack, tempomonolithic`: Add short live token authentication for Azure Blob Storage (#1206)
-  For use short live token on Azure, the secret should contain the following configuration:
+  For use short live token on Azure, the secret should contain the following configuration: 
     ```
   data:
     container:         # Azure blob storage container name
