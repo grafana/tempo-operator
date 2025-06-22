@@ -131,6 +131,12 @@ spec:
         path: jaegerui.resources
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:resourceRequirements
+      - description: Resources defines the compute resource requirements of the Tempo
+          Query container.
+        displayName: Resources
+        path: jaegerui.tempoQueryResources
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:resourceRequirements
       - description: |-
           Size defines the size of the volume where traces are stored.
           For in-memory storage, this defines the size of the tmpfs volume.
