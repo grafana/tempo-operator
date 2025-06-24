@@ -25,4 +25,4 @@ while [[ $count -eq 0 ]]; do
     echo "Metric '$metric' with value is present."
     fi
   done
-done
+done 

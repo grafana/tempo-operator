@@ -7,6 +7,12 @@ spec:
     enabled: true
     route:
       enabled: true
+  observability:
+    metrics:
+      prometheusRules:
+        enabled: true
+      serviceMonitors:
+        enabled: true
   multitenancy:
     enabled: true
     mode: openshift

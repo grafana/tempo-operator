@@ -2,11 +2,19 @@
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
+  creationTimestamp: null
   name: monolithic-multitenancy-openshift
 spec:
-  # this test must use a known namespace because of the CN field of the TLS certificate and the ClusterRoleBinding
+  # Avoid running this test case in parallel to prevent the deletion of shared resources used by multiple tests, specifically in the context of OpenShift user workload monitoring.
+  concurrent: false
   namespace: chainsaw-monolithic-multitenancy
   steps:
+  - name: step-00-workload-monitoring
+    try:
+    - apply:
+        file: 00-workload-monitoring.yaml
+    - assert:
+        file: 00-workload-monitoring-assert.yaml
   - name: step-01
     try:
     - apply:
@@ -41,3 +49,8 @@ spec:
         tail: 50
     - podLogs:
         selector: app.kubernetes.io/name=tempo-monolithic
+  - name: step-05-check-metrics
+    try:
+    - script:
+        timeout: 5m
+        content: ./check_metrics.sh

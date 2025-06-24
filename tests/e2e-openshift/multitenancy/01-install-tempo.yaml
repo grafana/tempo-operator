@@ -5,6 +5,10 @@ metadata:
   name: simplest
   namespace: chainsaw-multitenancy
 spec:
+  observability:
+    metrics:
+      createPrometheusRules: true
+      createServiceMonitors: true
   retention:
     global:
       traces: 20h
