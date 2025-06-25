@@ -393,9 +393,11 @@ deploy-minio:
 .PHONY: prepare-e2e
 prepare-e2e: chainsaw start-kind cert-manager set-test-image-vars build docker-build load-image-operator deploy olm-install otel-deploy
 
+TEST_DIR ?= ./tests/e2e
+
 .PHONY: e2e
 e2e:
-	$(CHAINSAW) test --test-dir ./tests/e2e
+	$(CHAINSAW) test --test-dir $(TEST_DIR)
 
 .PHONY: test-operator-metrics
 test-operator-metrics:
@@ -425,7 +427,7 @@ set-image-controller: manifests kustomize
 
 .PHONY: load-image-operator
 load-image-operator:
-	kind load docker-image local/tempo-operator:e2e
+	$(VECHO)$(KIND) load docker-image local/tempo-operator:e2e
 
 .PHONY: operator-sdk
 operator-sdk: $(OPERATOR_SDK) ## Download operator-sdk locally if necessary.
