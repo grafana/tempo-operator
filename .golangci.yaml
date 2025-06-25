@@ -1,48 +1,51 @@
-version: "2"
+run:
+  timeout: 5m
+
+# all available settings of specific linters
+linters-settings:
+  # Disable goheader for now, we can introduce this later
+  #  goheader:
+  #    template-path: header.txt
+  goimports:
+    local-prefixes: github.com/grafana/tempo-operator
+  misspell:
+    locale: US
+  govet:
+    disable-all: true
+  revive:
+    rules:
+      - name: exported
+        arguments:
+          - disableStutteringCheck
+
 linters:
   enable:
+    # Disable for now, we can introduce this later
+    # - goheader
+    - goimports
+    - misspell
+    - gosec
+    - govet
     - exhaustive
     - godot
-    - gosec
-    - misspell
-    - revive
     - unparam
-  settings:
-    govet:
-      disable-all: true
-    misspell:
-      locale: US
-    revive:
-      rules:
-        - name: exported
-          arguments:
-            - disableStutteringCheck
-  exclusions:
-    generated: lax
-    rules:
-      - linters:
-          - gosec
-        path: _test\.go
-      - path: cmd/root.go
-        text: 'SA1019: options.AndFrom is deprecated'
-      - path: cmd/root.go
-        text: 'SA1019: ctrl.ConfigFile is deprecated'
-      - path: apis/config/v1alpha1/projectconfig_types.go
-        text: 'SA1019: "sigs.k8s.io/controller-runtime/pkg/config/v1alpha1" is deprecated'
-    paths:
-      - third_party$
-      - builtin$
-      - examples$
-formatters:
-  enable:
-    - goimports
-  settings:
-    goimports:
-      local-prefixes:
-        - github.com/grafana/tempo-operator
-  exclusions:
-    generated: lax
-    paths:
-      - third_party$
-      - builtin$
-      - examples$
+    - revive
+
+issues:
+  exclude-use-default: false
+  # Excluding configuration per-path, per-linter, per-text and per-source
+  exclude-rules:
+    # Exclude some linters from running on tests files.
+    - path: _test\.go
+      linters:
+        - gosec
+
+    # TODO (andreasgerstmayr): remove once we remove ComponentConfiguration
+    # https://github.com/kubernetes-sigs/kubebuilder/issues/3457
+    # https://github.com/kubernetes-sigs/controller-runtime/issues/895
+    - path: cmd/root.go
+      text: "SA1019: options.AndFrom is deprecated"
+    - path: cmd/root.go
+      text: "SA1019: ctrl.ConfigFile is deprecated"
+    - path: apis/config/v1alpha1/projectconfig_types.go
+      text: 'SA1019: "sigs.k8s.io/controller-runtime/pkg/config/v1alpha1" is deprecated'
