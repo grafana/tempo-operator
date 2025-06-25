@@ -1,0 +1,15 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: verify-traces-kubeadmin-grpc
+  namespace: chainsaw-rbac
+status:
+  succeeded: 1
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: verify-traces-kubeadmin-http
+  namespace: chainsaw-rbac
+status:
+  succeeded: 1 
