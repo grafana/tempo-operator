@@ -1,10 +1,10 @@
 # OpenShift Upgrade Tests
 
 ## Prerequisites
-* OpenShift cluster must be available
+* OpenShift cluster version > 4.12
 * OLM must be installed
 * tempo-operator must not be installed
-* File-based catalog (FBC) image for upgrade must be available
+* File-based catalog (FBC) image for upgrade must be available.
 * The following values must be provided when running the test:
   - `upgrade_fbc_image`: FBC image containing the operator version to upgrade to
   - `upgrade_operator_version`: Target operator version for upgrade
@@ -13,7 +13,7 @@
 
 ## Test Steps
 * Install operators from marketplace
-* Set up storage required for TempoStack
+* Set up Minio storage required for TempoStack
 * Install multitenant TempoStack with RBAC
 * Install multitenant TempoMonolithic with RBAC
 * Install OpenTelemetry Collector for both TempoStack and TempoMonolithic
