@@ -1,0 +1,41 @@
+apiVersion: config.openshift.io/v1
+kind: ImageDigestMirrorSet
+metadata:
+  name: tempo-idms
+spec:
+  imageDigestMirrors:
+  - source: registry.redhat.io/rhosdt/tempo-rhel8-operator
+    mirrors:
+      - quay.io/redhat-user-workloads/rhosdt-tenant/tempo/tempo-operator
+  - source: registry.redhat.io/rhosdt/tempo-rhel8
+    mirrors:
+      - quay.io/redhat-user-workloads/rhosdt-tenant/tempo/tempo
+  - source: registry.redhat.io/rhosdt/tempo-query-rhel8
+    mirrors:
+      - quay.io/redhat-user-workloads/rhosdt-tenant/tempo/tempo-query
+  - source: registry.redhat.io/rhosdt/tempo-jaeger-query-rhel8
+    mirrors:
+      - quay.io/redhat-user-workloads/rhosdt-tenant/tempo/tempo-jaeger-query
+  - source: registry.redhat.io/rhosdt/tempo-gateway-rhel8
+    mirrors:
+      - quay.io/redhat-user-workloads/rhosdt-tenant/tempo/tempo-gateway
+  - source: registry.redhat.io/rhosdt/tempo-gateway-opa-rhel8
+    mirrors:
+      - quay.io/redhat-user-workloads/rhosdt-tenant/tempo/tempo-opa
+  - source: registry.redhat.io/rhosdt/tempo-operator-bundle
+    mirrors:
+      - quay.io/redhat-user-workloads/rhosdt-tenant/tempo/tempo-bundle
+
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: tempo-registry
+  namespace: openshift-marketplace
+spec:
+  sourceType: grpc
+  image: ($upgrade_fbc_image)
+  publisher: Openshift QE
+  updateStrategy:
+    registryPoll:
+      interval: 10m0s 
