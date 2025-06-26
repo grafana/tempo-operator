@@ -48,6 +48,16 @@ spec:                                    # TempoMonolithicSpec defines the desir
       host: ""                           # Host defines the hostname of the Route object.
       termination: ""                    # Termination specifies the termination type.
     servicesQueryDuration: ""            # ServicesQueryDuration defines how long the services will be available in the services list
+    tempoQueryResources:                 # Resources defines the compute resource requirements of the Tempo Query container.
+      claims:                            # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.  This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.  This field is immutable. It can only be set for containers.
+      - name: ""                         # Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.
+        request: ""                      # Request is the name chosen for a request in the referenced claim. If empty, everything from the claim is made available, otherwise only the result of this request.
+      limits:                            # Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+        cpu: "750m"
+        memory: "2Gi"
+      requests:                          # Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. Requests cannot exceed Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+        cpu: "500m"
+        memory: "1Gi"
     resources:                           # Resources defines the compute resource requirements of the Jaeger UI container.
       claims:                            # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.  This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.  This field is immutable. It can only be set for containers.
       - name: ""                         # Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.

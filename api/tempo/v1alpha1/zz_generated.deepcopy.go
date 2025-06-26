@@ -585,6 +585,11 @@ func (in *MonolithicJaegerUISpec) DeepCopyInto(out *MonolithicJaegerUISpec) {
 		*out = new(v1.ResourceRequirements)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.TempoQueryResources != nil {
+		in, out := &in.TempoQueryResources, &out.TempoQueryResources
+		*out = new(v1.ResourceRequirements)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.Ingress != nil {
 		in, out := &in.Ingress, &out.Ingress
 		*out = new(MonolithicJaegerUIIngressSpec)

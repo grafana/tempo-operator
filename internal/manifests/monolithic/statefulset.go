@@ -352,6 +352,7 @@ func configureJaegerUI(opts Options, sts *appsv1.StatefulSet) {
 			},
 		},
 		SecurityContext: manifestutils.TempoContainerSecurityContext(),
+		Resources:       ptr.Deref(opts.Tempo.Spec.JaegerUI.Resources, corev1.ResourceRequirements{}),
 	}
 
 	tempoQuery := corev1.Container{
@@ -368,7 +369,7 @@ func configureJaegerUI(opts Options, sts *appsv1.StatefulSet) {
 				Protocol:      corev1.ProtocolTCP,
 			},
 		},
-		Resources: ptr.Deref(opts.Tempo.Spec.JaegerUI.Resources, corev1.ResourceRequirements{}),
+		Resources: ptr.Deref(opts.Tempo.Spec.JaegerUI.TempoQueryResources, corev1.ResourceRequirements{}),
 		VolumeMounts: []corev1.VolumeMount{
 			{
 				Name:      manifestutils.ConfigVolumeName,
