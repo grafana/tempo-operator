@@ -1286,3 +1286,66 @@ func TestStatefulsetGatewayRBAC(t *testing.T) {
 		},
 	}, sts.Spec.Template.Spec.Containers[2])
 }
+
+func TestStatefulsetCustomStorageClass(t *testing.T) {
+	opts := Options{
+		CtrlConfig: configv1alpha1.ProjectConfig{
+			DefaultImages: configv1alpha1.ImagesSpec{
+				Tempo: "docker.io/grafana/tempo:x.y.z",
+			},
+		},
+		Tempo: v1alpha1.TempoMonolithic{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "sample",
+				Namespace: "default",
+			},
+			Spec: v1alpha1.TempoMonolithicSpec{
+				Storage: &v1alpha1.MonolithicStorageSpec{
+					Traces: v1alpha1.MonolithicTracesStorageSpec{
+						Backend:          "pv",
+						Size:             &tenGBQuantity,
+						StorageClassName: ptr.To("custom-storage-class"),
+					},
+				},
+			},
+		},
+	}
+	sts, err := BuildTempoStatefulset(opts, map[string]string{})
+	require.NoError(t, err)
+
+	require.Equal(t, ptr.To("custom-storage-class"), sts.Spec.VolumeClaimTemplates[0].Spec.StorageClassName)
+}
+
+func TestStatefulsetPodSecurityContext(t *testing.T) {
+	opts := Options{
+		CtrlConfig: configv1alpha1.ProjectConfig{
+			DefaultImages: configv1alpha1.ImagesSpec{
+				Tempo: "docker.io/grafana/tempo:x.y.z",
+			},
+		},
+		Tempo: v1alpha1.TempoMonolithic{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "sample",
+				Namespace: "default",
+			},
+			Spec: v1alpha1.TempoMonolithicSpec{
+				Storage: &v1alpha1.MonolithicStorageSpec{
+					Traces: v1alpha1.MonolithicTracesStorageSpec{
+						Backend: "memory",
+					},
+				},
+				PodSecurityContext: &corev1.PodSecurityContext{
+					RunAsUser:  ptr.To(int64(10001)),
+					RunAsGroup: ptr.To(int64(10001)),
+				},
+			},
+		},
+	}
+	sts, err := BuildTempoStatefulset(opts, map[string]string{})
+	require.NoError(t, err)
+
+	require.Equal(t, &corev1.PodSecurityContext{
+		RunAsUser:  ptr.To(int64(10001)),
+		RunAsGroup: ptr.To(int64(10001)),
+	}, sts.Spec.Template.Spec.SecurityContext)
+}

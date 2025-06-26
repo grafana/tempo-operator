@@ -1,0 +1,31 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoMonolithic
+metadata:
+  name: simplest
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: tempo-simplest
+  labels:
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo-monolithic
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: simplest
+      app.kubernetes.io/managed-by: tempo-operator
+      app.kubernetes.io/name: tempo-monolithic
+  template:
+    spec:
+      securityContext:
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+  volumeClaimTemplates:
+    - spec:
+        storageClassName: "my-custom-storage"
+        resources:
+          requests:
+            storage: 5Gi

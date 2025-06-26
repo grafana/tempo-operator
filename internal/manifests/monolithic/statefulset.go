@@ -95,6 +95,7 @@ func BuildTempoStatefulset(opts Options, extraAnnotations map[string]string) (*a
 							Resources:       ptr.Deref(tempo.Spec.Resources, corev1.ResourceRequirements{}),
 						},
 					},
+					SecurityContext: tempo.Spec.PodSecurityContext,
 					Volumes: []corev1.Volume{
 						{
 							Name: manifestutils.ConfigVolumeName,
@@ -247,7 +248,8 @@ func configureStorage(opts Options, sts *appsv1.StatefulSet) error {
 						corev1.ResourceStorage: ptr.Deref(tempo.Spec.Storage.Traces.Size, tenGBQuantity),
 					},
 				},
-				VolumeMode: ptr.To(corev1.PersistentVolumeFilesystem),
+				StorageClassName: tempo.Spec.Storage.Traces.StorageClassName,
+				VolumeMode:       ptr.To(corev1.PersistentVolumeFilesystem),
 			},
 		})
 	}

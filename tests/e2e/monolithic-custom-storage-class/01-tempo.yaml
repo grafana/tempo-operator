@@ -1,0 +1,14 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoMonolithic
+metadata:
+  name: simplest
+spec:
+  storage:
+    traces:
+      backend: pv
+      storageClassName: my-custom-storage
+      size: 5Gi
+  podSecurityContext:
+    runAsUser: 10001
+    runAsGroup: 10001
+    fsGroup: 10001

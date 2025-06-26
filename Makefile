@@ -393,9 +393,11 @@ deploy-minio:
 .PHONY: prepare-e2e
 prepare-e2e: chainsaw start-kind cert-manager set-test-image-vars build docker-build load-image-operator deploy olm-install otel-deploy
 
+TEST_DIR ?= ./tests/e2e
+
 .PHONY: e2e
 e2e:
-	$(CHAINSAW) test --test-dir ./tests/e2e
+	$(CHAINSAW) test --test-dir $(TEST_DIR)
 
 .PHONY: test-operator-metrics
 test-operator-metrics:
