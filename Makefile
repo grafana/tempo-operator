@@ -427,7 +427,7 @@ set-image-controller: manifests kustomize
 
 .PHONY: load-image-operator
 load-image-operator:
-	$(VECHO)$(KIND) load docker-image local/tempo-operator:e2e
+	kind load docker-image local/tempo-operator:e2e
 
 .PHONY: operator-sdk
 operator-sdk: $(OPERATOR_SDK) ## Download operator-sdk locally if necessary.
