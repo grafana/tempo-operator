@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.16.0
-    createdAt: "2025-06-22T05:43:57Z"
+    createdAt: "2025-06-26T09:20:27Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -224,6 +224,10 @@ spec:
       - description: Ingress defines the Ingress configuration for the Jaeger UI.
         displayName: Ingress
         path: jaegerui.ingress
+      - description: StorageClassName for the PVC used by the Tempo Pod. Defaults
+          to nil (uses the default storage class in the cluster).
+        displayName: Storage Class
+        path: storage.traces.storageClassName
       - description: Route defines the OpenShift route configuration for the Jaeger
           UI.
         displayName: Route
@@ -465,6 +469,10 @@ spec:
       - description: ServiceMonitors defines the ServiceMonitor configuration.
         displayName: Service Monitors
         path: observability.metrics.serviceMonitors
+      - description: PodSecurityContext defines the security context that will be
+          applied to the Tempo Pod.
+        displayName: PodSecurityContext
+        path: podSecurityContext
       - description: Query defines query configuration.
         displayName: Query Configuration
         path: query
