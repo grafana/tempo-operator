@@ -439,8 +439,6 @@ data:
                 tls_server_name: tempo-simplest-query-frontend.chainsaw-tempoextcfg.svc.cluster.local
         max_concurrent_queries: 20
         search:
-            external_hedge_requests_at: 8s
-            external_hedge_requests_up_to: 2
             query_timeout: 180s
     query_frontend:
         max_retries: 3
@@ -554,8 +552,6 @@ data:
                 tls_server_name: tempo-simplest-query-frontend.chainsaw-tempoextcfg.svc.cluster.local
         max_concurrent_queries: 20
         search:
-            external_hedge_requests_at: 8s
-            external_hedge_requests_up_to: 2
             query_timeout: 180s
     query_frontend:
         max_retries: 3

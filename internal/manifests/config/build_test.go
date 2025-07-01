@@ -67,8 +67,6 @@ multitenancy_enabled: false
 querier:
   max_concurrent_queries: 20
   search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:
@@ -192,8 +190,6 @@ multitenancy_enabled: false
 querier:
   max_concurrent_queries: 20
   search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:
@@ -283,8 +279,6 @@ overrides:
 querier:
   max_concurrent_queries: 20
   search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:
@@ -373,8 +367,6 @@ overrides:
 querier:
   max_concurrent_queries: 20
   search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:
@@ -464,8 +456,6 @@ overrides:
 querier:
   max_concurrent_queries: 20
   search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:
@@ -555,8 +545,6 @@ overrides:
 querier:
   max_concurrent_queries: 20
   search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:
@@ -646,8 +634,6 @@ overrides:
 querier:
   max_concurrent_queries: 20
   search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:
@@ -737,8 +723,6 @@ overrides:
 querier:
   max_concurrent_queries: 20
   search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:
@@ -840,8 +824,6 @@ overrides:
 querier:
   max_concurrent_queries: 20
   search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:
@@ -941,8 +923,6 @@ overrides:
 querier:
   max_concurrent_queries: 20
   search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:
@@ -1135,8 +1115,6 @@ multitenancy_enabled: false
 querier:
   max_concurrent_queries: 20
   search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:
@@ -1252,8 +1230,6 @@ multitenancy_enabled: false
 querier:
   max_concurrent_queries: 20
   search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:
@@ -1359,8 +1335,6 @@ multitenancy_enabled: true
 querier:
   max_concurrent_queries: 20
   search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:
@@ -1491,8 +1465,6 @@ multitenancy_enabled: false
 querier:
   max_concurrent_queries: 20
   search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
     grpc_client_config:
@@ -1614,8 +1586,6 @@ multitenancy_enabled: false
 querier:
   max_concurrent_queries: 20
   search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
     grpc_client_config:
@@ -1776,8 +1746,6 @@ multitenancy_enabled: false
 querier:
   max_concurrent_queries: 20
   search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
     grpc_client_config:
@@ -1959,8 +1927,6 @@ multitenancy_enabled: false
 querier:
   max_concurrent_queries: 20
   search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:
@@ -2069,8 +2035,6 @@ multitenancy_enabled: false
 querier:
   max_concurrent_queries: 20
   search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:
@@ -2185,8 +2149,6 @@ multitenancy_enabled: false
 querier:
   max_concurrent_queries: 20
   search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:
@@ -2320,8 +2282,6 @@ multitenancy_enabled: false
 querier:
   max_concurrent_queries: 20
   search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:
@@ -2405,8 +2365,6 @@ multitenancy_enabled: false
 querier:
   max_concurrent_queries: 20
   search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:
@@ -2531,8 +2489,6 @@ multitenancy_enabled: false
 querier:
   max_concurrent_queries: 20
   search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:
@@ -2647,8 +2603,6 @@ multitenancy_enabled: false
 querier:
   max_concurrent_queries: 20
   search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:
@@ -2766,8 +2720,6 @@ multitenancy_enabled: false
 querier:
   max_concurrent_queries: 20
   search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:

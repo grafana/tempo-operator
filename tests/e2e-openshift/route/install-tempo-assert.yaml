@@ -81,8 +81,6 @@ data:
           tls_server_name: tempo-simplest-query-frontend.chainsaw-route.svc.cluster.local
           tls_min_version: VersionTLS13
       search:
-        external_hedge_requests_at: 8s
-        external_hedge_requests_up_to: 2
     server:
       grpc_server_max_recv_msg_size: 4194304
       grpc_server_max_send_msg_size: 4194304
@@ -187,8 +185,6 @@ data:
           tls_server_name: tempo-simplest-query-frontend.chainsaw-route.svc.cluster.local
           tls_min_version: VersionTLS13
       search:
-        external_hedge_requests_at: 8s
-        external_hedge_requests_up_to: 2
     internal_server:
       enable: true
       http_listen_address: ""
