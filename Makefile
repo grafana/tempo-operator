@@ -1,10 +1,12 @@
 # Current Operator version
 OPERATOR_VERSION ?= 0.16.0
-TEMPO_VERSION ?= 2.7.2
+TEMPO_VERSION ?= 2.8.1
 JAEGER_QUERY_VERSION ?= 1.68.0
 TEMPO_QUERY_VERSION ?= $(TEMPO_VERSION)
-TEMPO_GATEWAY_VERSION ?= main-2025-05-28-ebbaf26
-TEMPO_GATEWAY_OPA_VERSION ?= main-2025-05-26-4860be8
+# https://quay.io/repository/observatorium/api
+TEMPO_GATEWAY_VERSION ?= main-2025-06-16-5265085
+# https://quay.io/repository/observatorium/opa-openshift
+TEMPO_GATEWAY_OPA_VERSION ?= main-2025-06-16-ecdeca0
 OAUTH_PROXY_VERSION=4.14
 
 MIN_KUBERNETES_VERSION ?= 1.25.0
