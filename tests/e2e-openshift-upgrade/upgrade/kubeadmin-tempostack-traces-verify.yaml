@@ -1,0 +1,201 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: verify-traces-kubeadmin-grpc
+  namespace: chainsaw-rbac
+spec:
+  template:
+    spec:
+      serviceAccountName: tempo-rbac-cluster-admin
+      containers:
+        - name: verify-traces
+          image: ghcr.io/grafana/tempo-operator/test-utils:main
+          command:
+            - /bin/bash
+            - -eux
+            - -c
+          args:
+            - |
+              # Get the cluster-admin service account token
+              token=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+              
+              # First, verify traces from chainsaw-test-rbac-1 (grpc-rbac-1 service)
+              curl \
+                -G \
+                --header "Authorization: Bearer $token" \
+                --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
+                https://tempo-simplst-gateway.chainsaw-rbac.svc:8080/api/traces/v1/dev/tempo/api/search \
+                --data-urlencode 'q={ resource.service.name="grpc-rbac-1" }' \
+                | tee /tmp/jaeger-rbac-1.out
+              num_traces=$(jq ".traces | length" /tmp/jaeger-rbac-1.out)
+              if [[ "$num_traces" != "2" ]]; then
+                echo && echo "The Jaeger API returned $num_traces instead of 2 traces for grpc-rbac-1."
+                exit 1
+              fi
+
+              echo "Fetch the first trace ID and store it in a variable"
+              traceID=$(curl -G --header "Authorization: Bearer $token" \
+                              --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
+                              https://tempo-simplst-gateway.chainsaw-rbac.svc:8080/api/traces/v1/dev/tempo/api/search \
+                              --data-urlencode 'q={ resource.service.name="grpc-rbac-1" }' | jq -r '.traces[0].traceID')
+
+              echo "Use the trace ID to fetch the complete trace"
+              traceOutput=$(curl -G --header "Authorization: Bearer $token" \
+                                    --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
+                                    https://tempo-simplst-gateway.chainsaw-rbac.svc:8080/api/traces/v1/dev/tempo/api/traces/$traceID)
+
+              echo "Check for the strings in the trace output - cluster-admin should see complete traces"
+              stringsToSearch=(
+                  "\"key\":\"net.peer.ip\""
+                  "\"stringValue\":\"1.2.3.4\""
+                  "\"key\":\"peer.service\""
+                  "\"stringValue\":\"telemetrygen-client\""
+                  "\"key\":\"k8s.pod.ip\""
+                  "\"key\":\"k8s.container.name\""
+              )
+              for searchString in "${stringsToSearch[@]}"; do
+                  if echo "$traceOutput" | grep -q "$searchString"; then
+                      echo "Cluster-admin: Trace output for service grpc-rbac-1 contains: $searchString"
+                  else
+                      echo "Cluster-admin: Trace output for service grpc-rbac-1 does not contain: $searchString"
+                      exit 1
+                  fi
+              done
+
+              # Now verify traces from chainsaw-test-rbac-2 (grpc-rbac-2 service)
+              # cluster-admin should be able to see complete traces from this project too
+              curl \
+                -G \
+                --header "Authorization: Bearer $token" \
+                --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
+                https://tempo-simplst-gateway.chainsaw-rbac.svc:8080/api/traces/v1/dev/tempo/api/search \
+                --data-urlencode 'q={ resource.service.name="grpc-rbac-2" }' \
+                | tee /tmp/jaeger-rbac-2.out
+              num_traces=$(jq ".traces | length" /tmp/jaeger-rbac-2.out)
+              if [[ "$num_traces" != "2" ]]; then
+                echo && echo "The Jaeger API returned $num_traces instead of 2 traces for grpc-rbac-2."
+                exit 1
+              fi
+
+              echo "Fetch the first trace ID and store it in a variable"
+              traceID=$(curl -G --header "Authorization: Bearer $token" \
+                              --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
+                              https://tempo-simplst-gateway.chainsaw-rbac.svc:8080/api/traces/v1/dev/tempo/api/search \
+                              --data-urlencode 'q={ resource.service.name="grpc-rbac-2" }' | jq -r '.traces[0].traceID')
+
+              echo "Use the trace ID to fetch the complete trace"
+              traceOutput=$(curl -G --header "Authorization: Bearer $token" \
+                                    --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
+                                    https://tempo-simplst-gateway.chainsaw-rbac.svc:8080/api/traces/v1/dev/tempo/api/traces/$traceID)
+
+              echo "Check for the strings in the trace output - cluster-admin should see complete traces"
+              for searchString in "${stringsToSearch[@]}"; do
+                  if echo "$traceOutput" | grep -q "$searchString"; then
+                      echo "Cluster-admin: Trace output for service grpc-rbac-2 contains: $searchString"
+                  else
+                      echo "Cluster-admin: Trace output for service grpc-rbac-2 does not contain: $searchString"
+                      exit 1
+                  fi
+              done
+      restartPolicy: Never
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: verify-traces-kubeadmin-http
+  namespace: chainsaw-rbac
+spec:
+  template:
+    spec:
+      serviceAccountName: tempo-rbac-cluster-admin
+      containers:
+        - name: verify-traces
+          image: ghcr.io/grafana/tempo-operator/test-utils:main
+          command:
+            - /bin/bash
+            - -eux
+            - -c
+          args:
+            - |
+              # Get the cluster-admin service account token
+              token=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+              
+              # First, verify traces from chainsaw-test-rbac-1 (http-rbac-1 service)
+              curl \
+                -G \
+                --header "Authorization: Bearer $token" \
+                --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
+                https://tempo-simplst-gateway.chainsaw-rbac.svc:8080/api/traces/v1/dev/tempo/api/search \
+                --data-urlencode 'q={ resource.service.name="http-rbac-1" }' \
+                | tee /tmp/jaeger-rbac-1.out
+              num_traces=$(jq ".traces | length" /tmp/jaeger-rbac-1.out)
+              if [[ "$num_traces" != "2" ]]; then
+                echo && echo "The Jaeger API returned $num_traces instead of 2 traces for http-rbac-1."
+                exit 1
+              fi
+
+              echo "Fetch the first trace ID and store it in a variable"
+              traceID=$(curl -G --header "Authorization: Bearer $token" \
+                              --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
+                              https://tempo-simplst-gateway.chainsaw-rbac.svc:8080/api/traces/v1/dev/tempo/api/search \
+                              --data-urlencode 'q={ resource.service.name="http-rbac-1" }' | jq -r '.traces[0].traceID')
+
+              echo "Use the trace ID to fetch the complete trace"
+              traceOutput=$(curl -G --header "Authorization: Bearer $token" \
+                                    --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
+                                    https://tempo-simplst-gateway.chainsaw-rbac.svc:8080/api/traces/v1/dev/tempo/api/traces/$traceID)
+
+              echo "Check for the strings in the trace output - cluster-admin should see complete traces"
+              stringsToSearch=(
+                  "\"key\":\"net.peer.ip\""
+                  "\"stringValue\":\"1.2.3.4\""
+                  "\"key\":\"peer.service\""
+                  "\"stringValue\":\"telemetrygen-client\""
+                  "\"key\":\"k8s.pod.ip\""
+                  "\"key\":\"k8s.container.name\""
+              )
+              for searchString in "${stringsToSearch[@]}"; do
+                  if echo "$traceOutput" | grep -q "$searchString"; then
+                      echo "Cluster-admin: Trace output for service http-rbac-1 contains: $searchString"
+                  else
+                      echo "Cluster-admin: Trace output for service http-rbac-1 does not contain: $searchString"
+                      exit 1
+                  fi
+              done
+
+              # Now verify traces from chainsaw-test-rbac-2 (http-rbac-2 service)
+              # cluster-admin should be able to see complete traces from this project too
+              curl \
+                -G \
+                --header "Authorization: Bearer $token" \
+                --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
+                https://tempo-simplst-gateway.chainsaw-rbac.svc:8080/api/traces/v1/dev/tempo/api/search \
+                --data-urlencode 'q={ resource.service.name="http-rbac-2" }' \
+                | tee /tmp/jaeger-rbac-2.out
+              num_traces=$(jq ".traces | length" /tmp/jaeger-rbac-2.out)
+              if [[ "$num_traces" != "2" ]]; then
+                echo && echo "The Jaeger API returned $num_traces instead of 2 traces for http-rbac-2."
+                exit 1
+              fi
+
+              echo "Fetch the first trace ID and store it in a variable"
+              traceID=$(curl -G --header "Authorization: Bearer $token" \
+                              --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
+                              https://tempo-simplst-gateway.chainsaw-rbac.svc:8080/api/traces/v1/dev/tempo/api/search \
+                              --data-urlencode 'q={ resource.service.name="http-rbac-2" }' | jq -r '.traces[0].traceID')
+
+              echo "Use the trace ID to fetch the complete trace"
+              traceOutput=$(curl -G --header "Authorization: Bearer $token" \
+                                    --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
+                                    https://tempo-simplst-gateway.chainsaw-rbac.svc:8080/api/traces/v1/dev/tempo/api/traces/$traceID)
+
+              echo "Check for the strings in the trace output - cluster-admin should see complete traces"
+              for searchString in "${stringsToSearch[@]}"; do
+                  if echo "$traceOutput" | grep -q "$searchString"; then
+                      echo "Cluster-admin: Trace output for service http-rbac-2 contains: $searchString"
+                  else
+                      echo "Cluster-admin: Trace output for service http-rbac-2 does not contain: $searchString"
+                      exit 1
+                  fi
+              done
+      restartPolicy: Never 

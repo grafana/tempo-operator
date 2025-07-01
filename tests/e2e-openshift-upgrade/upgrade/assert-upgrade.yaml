@@ -1,0 +1,50 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: tempo-product
+  namespace: openshift-tempo-operator
+status:
+  state: AtLatestKnown
+  installedCSV: ($upgrade_operator_csv_name)
+
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: InstallPlan
+metadata:
+  namespace: openshift-tempo-operator
+  ownerReferences:
+  - apiVersion: operators.coreos.com/v1alpha1
+    kind: Subscription
+    name: tempo-product
+status:
+  phase: Complete
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/name: tempo-operator
+  namespace: openshift-tempo-operator
+status:
+  readyReplicas: 1 
+
+---
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoStack
+metadata:
+  name: simplst
+  namespace: chainsaw-rbac
+status:
+  operatorVersion: ($upgrade_operator_version)
+  tempoVersion: ($upgrade_tempo_version)
+
+---
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoMonolithic
+metadata:
+  name: mmo-rbac
+  namespace: chainsaw-mmo-rbac
+status:
+  operatorVersion: ($upgrade_operator_version)
+  tempoVersion: ($upgrade_tempo_version)

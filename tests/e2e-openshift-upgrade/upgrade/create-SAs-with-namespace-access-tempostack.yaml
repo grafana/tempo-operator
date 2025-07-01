@@ -1,0 +1,91 @@
+apiVersion: project.openshift.io/v1
+kind: Project
+metadata:
+  name: chainsaw-test-rbac-1
+spec: {}
+
+---
+apiVersion: project.openshift.io/v1
+kind: Project
+metadata:
+  name: chainsaw-test-rbac-2
+spec: {}
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: tempo-rbac-sa-1
+  namespace: chainsaw-test-rbac-1
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: tempo-rbac-sa-2
+  namespace: chainsaw-test-rbac-2
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: tempo-rbac-cluster-admin
+  namespace: chainsaw-rbac
+
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: chainsaw-test-rbac-1-admin
+  namespace: chainsaw-test-rbac-1
+subjects:
+  - kind: ServiceAccount
+    name: tempo-rbac-sa-1
+    namespace: chainsaw-test-rbac-1
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: admin
+
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: chainsaw-test-rbac-2-admin
+  namespace: chainsaw-test-rbac-2
+subjects:
+  - kind: ServiceAccount
+    name: tempo-rbac-sa-2
+    namespace: chainsaw-test-rbac-2
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: admin
+
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: tempo-rbac-cluster-admin-binding
+subjects:
+  - kind: ServiceAccount
+    name: tempo-rbac-cluster-admin
+    namespace: chainsaw-rbac
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: chainsaw-test-rbac-1-testuser
+  namespace: chainsaw-test-rbac-1
+subjects:
+  - kind: User
+    name: testuser-0
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: admin
