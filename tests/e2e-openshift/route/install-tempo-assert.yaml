@@ -80,7 +80,6 @@ data:
           tls_ca_path: /var/run/ca/service-ca.crt
           tls_server_name: tempo-simplest-query-frontend.chainsaw-route.svc.cluster.local
           tls_min_version: VersionTLS13
-      search:
     server:
       grpc_server_max_recv_msg_size: 4194304
       grpc_server_max_send_msg_size: 4194304
@@ -184,7 +183,6 @@ data:
           tls_ca_path: /var/run/ca/service-ca.crt
           tls_server_name: tempo-simplest-query-frontend.chainsaw-route.svc.cluster.local
           tls_min_version: VersionTLS13
-      search:
     internal_server:
       enable: true
       http_listen_address: ""

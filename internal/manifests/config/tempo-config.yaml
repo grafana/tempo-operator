@@ -166,8 +166,8 @@ querier:
 {{- end }}
       tls_min_version: {{ .TLS.Profile.MinTLSVersion }}
 {{- end }}
-  search:
 {{- if .Search.QueryTimeout }}
+  search:
     query_timeout: {{ .Search.QueryTimeout }}
 {{- end }}
 {{- if .Gates.HTTPEncryption }}
