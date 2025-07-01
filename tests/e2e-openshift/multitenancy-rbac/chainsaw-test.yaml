@@ -47,3 +47,9 @@ spec:
         file: tempo-rbac-sa-1-traces-verify.yaml
     - assert:
         file: assert-tempo-rbac-sa-1-traces-verify.yaml
+  - name: Verify kubeadmin can view traces from all projects
+    try:
+    - apply:
+        file: kubeadmin-traces-verify.yaml
+    - assert:
+        file: assert-kubeadmin-traces-verify.yaml
