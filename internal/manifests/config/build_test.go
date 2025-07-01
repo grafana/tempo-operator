@@ -82,7 +82,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -207,7 +206,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -298,7 +296,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -388,7 +385,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -479,7 +475,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -570,7 +565,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -661,7 +655,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -752,7 +745,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -855,7 +847,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -956,7 +947,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -1150,7 +1140,6 @@ storage:
   trace:
     backend: gcs
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     gcs:
@@ -1267,7 +1256,6 @@ storage:
   trace:
     backend: azure
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     azure:
@@ -1374,7 +1362,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -1534,7 +1521,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -1654,7 +1640,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -1819,7 +1804,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -1974,7 +1958,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -2084,7 +2067,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -2200,7 +2182,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -2335,7 +2316,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -2420,7 +2400,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -2546,7 +2525,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -2662,7 +2640,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -2781,7 +2758,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:

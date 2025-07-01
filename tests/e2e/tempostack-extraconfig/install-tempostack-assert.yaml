@@ -466,7 +466,6 @@ data:
         trace:
             backend: s3
             blocklist_poll: 5m
-            cache: none
             local:
                 path: /var/tempo/traces
             s3:
@@ -586,7 +585,6 @@ data:
         trace:
             backend: s3
             blocklist_poll: 5m
-            cache: none
             local:
                 path: /var/tempo/traces
             s3:
