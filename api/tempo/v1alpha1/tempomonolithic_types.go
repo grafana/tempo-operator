@@ -262,6 +262,12 @@ type MonolithicJaegerUISpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Resources",order=2,xDescriptors="urn:alm:descriptor:com.tectonic.ui:resourceRequirements"
 	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 
+	// Resources defines the compute resource requirements of the Tempo Query container.
+	//
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Resources",order=2,xDescriptors="urn:alm:descriptor:com.tectonic.ui:resourceRequirements"
+	TempoQueryResources *corev1.ResourceRequirements `json:"tempoQueryResources,omitempty"`
+
 	// Ingress defines the Ingress configuration for the Jaeger UI.
 	//
 	// +kubebuilder:validation:Optional

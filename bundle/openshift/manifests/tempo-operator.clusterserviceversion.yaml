@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.16.0
-    createdAt: "2025-06-02T16:53:07Z"
+    createdAt: "2025-06-22T05:43:55Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -200,6 +200,12 @@ spec:
           UI container.
         displayName: Resources
         path: jaegerui.resources
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:resourceRequirements
+      - description: Resources defines the compute resource requirements of the Tempo
+          Query container.
+        displayName: Resources
+        path: jaegerui.tempoQueryResources
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:resourceRequirements
       - description: |-
