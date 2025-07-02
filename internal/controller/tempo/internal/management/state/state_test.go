@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 	tempov1alpha1 "github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/controller/tempo/internal/management/state"
 
@@ -35,7 +34,7 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 
-	if err := v1alpha1.AddToScheme(testScheme); err != nil {
+	if err := tempov1alpha1.AddToScheme(testScheme); err != nil {
 		fmt.Printf("failed to register scheme: %v", err)
 		os.Exit(1)
 	}

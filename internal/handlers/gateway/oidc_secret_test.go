@@ -104,7 +104,7 @@ func TestGetTenantSecrets(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			tc.tempo.Namespace = strings.Replace(tc.name, " ", "-", -1)
+			tc.tempo.Namespace = strings.ReplaceAll(tc.name, " ", "-")
 			_ = createNamespace(t, tc.tempo.Namespace)
 
 			if tc.clientID != nil {

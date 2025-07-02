@@ -16,7 +16,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 
 	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
-	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 	tempov1alpha1 "github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/handlers/storage"
 	"github.com/grafana/tempo-operator/internal/status"
@@ -48,16 +47,16 @@ func (v *monolithicValidator) ValidateCreate(ctx context.Context, obj runtime.Ob
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type.
 func (v *monolithicValidator) ValidateUpdate(ctx context.Context, oldObj, newObj runtime.Object) (admission.Warnings, error) {
-	oldTempo, ok := oldObj.(*v1alpha1.TempoMonolithic)
+	oldTempo, ok := oldObj.(*tempov1alpha1.TempoMonolithic)
 	if !ok {
 		return nil, apierrors.NewBadRequest(fmt.Sprintf("expected a TempoMonolithic object but got %T", oldObj))
 	}
-	newTempo, ok := newObj.(*v1alpha1.TempoMonolithic)
+	newTempo, ok := newObj.(*tempov1alpha1.TempoMonolithic)
 	if !ok {
 		return nil, apierrors.NewBadRequest(fmt.Sprintf("expected a TempoMonolithic object but got %T", newObj))
 	}
 	if newTempo.GetDeletionTimestamp() != nil &&
-		controllerutil.ContainsFinalizer(oldTempo, v1alpha1.TempoFinalizer) && !controllerutil.ContainsFinalizer(newTempo, v1alpha1.TempoFinalizer) {
+		controllerutil.ContainsFinalizer(oldTempo, tempov1alpha1.TempoFinalizer) && !controllerutil.ContainsFinalizer(newTempo, tempov1alpha1.TempoFinalizer) {
 		// Do not validate if the specs are the same and only finalizer was removed
 		// This is to avoid a situation when kubectl delete -f file.yaml is run and the file contains
 		// Tempo CR and custom SA or storage secret. The reconcile loop will remove the finalizer and trigger the webhook which would fail.
@@ -181,7 +180,7 @@ func (v *monolithicValidator) validateMultitenancy(ctx context.Context, tempo te
 
 	multitenancyBase := field.NewPath("spec", "multitenancy")
 
-	if tempo.Spec.Multitenancy != nil && tempo.Spec.Multitenancy.Mode == v1alpha1.ModeOpenShift {
+	if tempo.Spec.Multitenancy != nil && tempo.Spec.Multitenancy.Mode == tempov1alpha1.ModeOpenShift {
 		err := validateGatewayOpenShiftModeRBAC(ctx, v.client)
 		if err != nil {
 			return field.ErrorList{field.Invalid(
@@ -267,7 +266,7 @@ func (v *monolithicValidator) validateServiceAccount(ctx context.Context, tempo 
 		return nil
 	}
 
-	if tempo.Spec.Multitenancy.IsGatewayEnabled() && tempo.Spec.Multitenancy.Mode == v1alpha1.ModeOpenShift {
+	if tempo.Spec.Multitenancy.IsGatewayEnabled() && tempo.Spec.Multitenancy.Mode == tempov1alpha1.ModeOpenShift {
 		return field.ErrorList{field.Invalid(
 			field.NewPath("spec").Child("serviceAccount"),
 			tempo.Spec.ServiceAccount,
@@ -295,9 +294,9 @@ func (v *monolithicValidator) validateExtraConfig(tempo tempov1alpha1.TempoMonol
 	return nil
 }
 
-func (v *monolithicValidator) validateConflictWithTempoStack(ctx context.Context, tempo v1alpha1.TempoMonolithic) field.ErrorList {
+func (v *monolithicValidator) validateConflictWithTempoStack(ctx context.Context, tempo tempov1alpha1.TempoMonolithic) field.ErrorList {
 	return validateTempoNameConflict(func() error {
-		stack := &v1alpha1.TempoStack{}
+		stack := &tempov1alpha1.TempoStack{}
 		return v.client.Get(ctx, types.NamespacedName{Namespace: tempo.Namespace, Name: tempo.Name}, stack)
 	},
 		tempo.Name, "TempoMonolithic", "TempoStack",
