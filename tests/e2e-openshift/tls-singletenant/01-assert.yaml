@@ -280,7 +280,6 @@ data:
       trace:
         backend: s3
         blocklist_poll: 5m
-        cache: none
         s3:
           endpoint: minio:9000
           bucket: tempo
@@ -415,7 +414,6 @@ data:
       trace:
         backend: s3
         blocklist_poll: 5m
-        cache: none
         s3:
           endpoint: minio:9000
           bucket: tempo

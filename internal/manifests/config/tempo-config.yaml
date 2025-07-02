@@ -213,7 +213,6 @@ storage:
   trace:
     backend: {{ .StorageType }}
     blocklist_poll: 5m
-    cache: none
     {{- with .StorageParams.AzureStorage }}
     azure:
       container_name: {{ .Container }}
