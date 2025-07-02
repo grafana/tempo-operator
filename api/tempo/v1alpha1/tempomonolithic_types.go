@@ -44,6 +44,12 @@ type TempoMonolithicSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Resources",order=5,xDescriptors="urn:alm:descriptor:com.tectonic.ui:resourceRequirements"
 	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 
+	// PodSecurityContext defines the security context that will be applied to the Tempo Pod.
+	//
+	// +optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="PodSecurityContext"
+	PodSecurityContext *corev1.PodSecurityContext `json:"podSecurityContext,omitempty"`
+
 	// Timeout configures the same timeout on all components starting at ingress down to the ingestor/querier.
 	// Timeout configuration on a specific component has a higher precedence.
 	// Default is 30 seconds.
@@ -116,6 +122,12 @@ type MonolithicTracesStorageSpec struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Size",order=2,xDescriptors="urn:alm:descriptor:com.tectonic.ui:text"
 	Size *resource.Quantity `json:"size,omitempty"`
+
+	// StorageClassName for the PVC used by the Tempo Pod. Defaults to nil (uses the default storage class in the cluster).
+	//
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Storage Class",order=3
+	StorageClassName *string `json:"storageClassName,omitempty"`
 
 	// S3 defines the configuration for Amazon S3.
 	//
@@ -261,6 +273,12 @@ type MonolithicJaegerUISpec struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Resources",order=2,xDescriptors="urn:alm:descriptor:com.tectonic.ui:resourceRequirements"
 	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
+
+	// Resources defines the compute resource requirements of the Tempo Query container.
+	//
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Resources",order=2,xDescriptors="urn:alm:descriptor:com.tectonic.ui:resourceRequirements"
+	TempoQueryResources *corev1.ResourceRequirements `json:"tempoQueryResources,omitempty"`
 
 	// Ingress defines the Ingress configuration for the Jaeger UI.
 	//

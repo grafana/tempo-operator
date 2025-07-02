@@ -95,6 +95,7 @@ func BuildTempoStatefulset(opts Options, extraAnnotations map[string]string) (*a
 							Resources:       ptr.Deref(tempo.Spec.Resources, corev1.ResourceRequirements{}),
 						},
 					},
+					SecurityContext: tempo.Spec.PodSecurityContext,
 					Volumes: []corev1.Volume{
 						{
 							Name: manifestutils.ConfigVolumeName,
@@ -247,7 +248,8 @@ func configureStorage(opts Options, sts *appsv1.StatefulSet) error {
 						corev1.ResourceStorage: ptr.Deref(tempo.Spec.Storage.Traces.Size, tenGBQuantity),
 					},
 				},
-				VolumeMode: ptr.To(corev1.PersistentVolumeFilesystem),
+				StorageClassName: tempo.Spec.Storage.Traces.StorageClassName,
+				VolumeMode:       ptr.To(corev1.PersistentVolumeFilesystem),
 			},
 		})
 	}
@@ -352,6 +354,7 @@ func configureJaegerUI(opts Options, sts *appsv1.StatefulSet) {
 			},
 		},
 		SecurityContext: manifestutils.TempoContainerSecurityContext(),
+		Resources:       ptr.Deref(opts.Tempo.Spec.JaegerUI.Resources, corev1.ResourceRequirements{}),
 	}
 
 	tempoQuery := corev1.Container{
@@ -368,7 +371,7 @@ func configureJaegerUI(opts Options, sts *appsv1.StatefulSet) {
 				Protocol:      corev1.ProtocolTCP,
 			},
 		},
-		Resources: ptr.Deref(opts.Tempo.Spec.JaegerUI.Resources, corev1.ResourceRequirements{}),
+		Resources: ptr.Deref(opts.Tempo.Spec.JaegerUI.TempoQueryResources, corev1.ResourceRequirements{}),
 		VolumeMounts: []corev1.VolumeMount{
 			{
 				Name:      manifestutils.ConfigVolumeName,

@@ -8,7 +8,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
 )
@@ -150,7 +149,7 @@ func TestMonolithicDefault(t *testing.T) {
 				},
 			},
 			input: &TempoMonolithic{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test",
 					Namespace: "testns",
 				},
@@ -170,7 +169,7 @@ func TestMonolithicDefault(t *testing.T) {
 				},
 			},
 			expected: &TempoMonolithic{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test",
 					Namespace: "testns",
 				},
@@ -223,7 +222,7 @@ func TestMonolithicDefault(t *testing.T) {
 				},
 			},
 			input: &TempoMonolithic{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test",
 					Namespace: "testns",
 				},
@@ -246,7 +245,7 @@ func TestMonolithicDefault(t *testing.T) {
 				},
 			},
 			expected: &TempoMonolithic{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test",
 					Namespace: "testns",
 				},
@@ -290,7 +289,7 @@ func TestMonolithicDefault(t *testing.T) {
 		{
 			name: "no touch jaeger ui oauth when feature gate is disabled (true case)",
 			input: &TempoMonolithic{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test",
 					Namespace: "testns",
 				},
@@ -314,7 +313,7 @@ func TestMonolithicDefault(t *testing.T) {
 				},
 			},
 			expected: &TempoMonolithic{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test",
 					Namespace: "testns",
 				},
@@ -358,7 +357,7 @@ func TestMonolithicDefault(t *testing.T) {
 		{
 			name: "no touch jaeger ui oauth when feature gate is disabled (false case)",
 			input: &TempoMonolithic{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test",
 					Namespace: "testns",
 				},
@@ -382,7 +381,7 @@ func TestMonolithicDefault(t *testing.T) {
 				},
 			},
 			expected: &TempoMonolithic{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test",
 					Namespace: "testns",
 				},
@@ -426,7 +425,7 @@ func TestMonolithicDefault(t *testing.T) {
 		{
 			name: "define custom duration for services list, timeout and find traces",
 			input: &TempoMonolithic{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test",
 					Namespace: "testns",
 				},
@@ -442,14 +441,14 @@ func TestMonolithicDefault(t *testing.T) {
 						Route: &MonolithicJaegerUIRouteSpec{
 							Enabled: true,
 						},
-						ServicesQueryDuration:        &v1.Duration{Duration: time.Duration(100 * 100)},
+						ServicesQueryDuration:        &metav1.Duration{Duration: time.Duration(100 * 100)},
 						FindTracesConcurrentRequests: 40,
 					},
 					Timeout: metav1.Duration{Duration: time.Hour},
 				},
 			},
 			expected: &TempoMonolithic{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test",
 					Namespace: "testns",
 				},
@@ -481,7 +480,7 @@ func TestMonolithicDefault(t *testing.T) {
 							SAR:       "{\"namespace\": \"testns\", \"resource\": \"pods\", \"verb\": \"get\"}",
 							Resources: &corev1.ResourceRequirements{},
 						},
-						ServicesQueryDuration:        &v1.Duration{Duration: time.Duration(100 * 100)},
+						ServicesQueryDuration:        &metav1.Duration{Duration: time.Duration(100 * 100)},
 						FindTracesConcurrentRequests: 40,
 					},
 					Management: "Managed",
@@ -493,7 +492,7 @@ func TestMonolithicDefault(t *testing.T) {
 		{
 			name: "query defined",
 			input: &TempoMonolithic{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test",
 					Namespace: "testns",
 				},
@@ -512,7 +511,7 @@ func TestMonolithicDefault(t *testing.T) {
 				},
 			},
 			expected: &TempoMonolithic{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test",
 					Namespace: "testns",
 				},

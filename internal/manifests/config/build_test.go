@@ -66,9 +66,6 @@ memberlist:
 multitenancy_enabled: false
 querier:
   max_concurrent_queries: 20
-  search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:
@@ -82,7 +79,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -191,9 +187,6 @@ memberlist:
 multitenancy_enabled: false
 querier:
   max_concurrent_queries: 20
-  search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:
@@ -207,7 +200,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -282,9 +274,6 @@ overrides:
   ingestion_rate_limit_bytes: 100
 querier:
   max_concurrent_queries: 20
-  search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:
@@ -298,7 +287,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -372,9 +360,6 @@ overrides:
   ingestion_burst_size_bytes: 100
 querier:
   max_concurrent_queries: 20
-  search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:
@@ -388,7 +373,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -463,9 +447,6 @@ overrides:
   max_bytes_per_trace: 100
 querier:
   max_concurrent_queries: 20
-  search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:
@@ -479,7 +460,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -554,9 +534,6 @@ overrides:
   max_traces_per_user: 100
 querier:
   max_concurrent_queries: 20
-  search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:
@@ -570,7 +547,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -645,9 +621,6 @@ overrides:
   max_bytes_per_tag_values_query: 100
 querier:
   max_concurrent_queries: 20
-  search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:
@@ -661,7 +634,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -736,9 +708,6 @@ overrides:
   max_search_duration: 24h0m0s
 querier:
   max_concurrent_queries: 20
-  search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:
@@ -752,7 +721,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -839,9 +807,6 @@ overrides:
   max_search_duration: 24h0m0s
 querier:
   max_concurrent_queries: 20
-  search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:
@@ -855,7 +820,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -940,9 +904,6 @@ overrides:
   per_tenant_override_config: /conf/overrides.yaml
 querier:
   max_concurrent_queries: 20
-  search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:
@@ -956,7 +917,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -1134,9 +1094,6 @@ memberlist:
 multitenancy_enabled: false
 querier:
   max_concurrent_queries: 20
-  search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:
@@ -1150,7 +1107,6 @@ storage:
   trace:
     backend: gcs
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     gcs:
@@ -1251,9 +1207,6 @@ memberlist:
 multitenancy_enabled: false
 querier:
   max_concurrent_queries: 20
-  search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:
@@ -1267,7 +1220,6 @@ storage:
   trace:
     backend: azure
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     azure:
@@ -1358,9 +1310,6 @@ memberlist:
 multitenancy_enabled: true
 querier:
   max_concurrent_queries: 20
-  search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:
@@ -1374,7 +1323,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -1490,9 +1438,6 @@ memberlist:
 multitenancy_enabled: false
 querier:
   max_concurrent_queries: 20
-  search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
     grpc_client_config:
@@ -1534,7 +1479,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -1613,9 +1557,6 @@ memberlist:
 multitenancy_enabled: false
 querier:
   max_concurrent_queries: 20
-  search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
     grpc_client_config:
@@ -1654,7 +1595,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -1775,9 +1715,6 @@ memberlist:
 multitenancy_enabled: false
 querier:
   max_concurrent_queries: 20
-  search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
     grpc_client_config:
@@ -1819,7 +1756,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -1958,9 +1894,6 @@ memberlist:
 multitenancy_enabled: false
 querier:
   max_concurrent_queries: 20
-  search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:
@@ -1974,7 +1907,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -2068,9 +2000,6 @@ memberlist:
 multitenancy_enabled: false
 querier:
   max_concurrent_queries: 20
-  search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:
@@ -2084,7 +2013,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -2184,9 +2112,6 @@ memberlist:
 multitenancy_enabled: false
 querier:
   max_concurrent_queries: 20
-  search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:
@@ -2200,7 +2125,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -2319,9 +2243,6 @@ memberlist:
 multitenancy_enabled: false
 querier:
   max_concurrent_queries: 20
-  search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:
@@ -2335,7 +2256,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -2404,9 +2324,6 @@ memberlist:
 multitenancy_enabled: false
 querier:
   max_concurrent_queries: 20
-  search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:
@@ -2420,7 +2337,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -2530,9 +2446,6 @@ memberlist:
 multitenancy_enabled: false
 querier:
   max_concurrent_queries: 20
-  search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:
@@ -2546,7 +2459,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -2646,9 +2558,6 @@ memberlist:
 multitenancy_enabled: false
 querier:
   max_concurrent_queries: 20
-  search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:
@@ -2662,7 +2571,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:
@@ -2765,9 +2673,6 @@ memberlist:
 multitenancy_enabled: false
 querier:
   max_concurrent_queries: 20
-  search:
-    external_hedge_requests_at: 8s
-    external_hedge_requests_up_to: 2
   frontend_worker:
     frontend_address: "tempo-test-query-frontend-discovery:9095"
 server:
@@ -2781,7 +2686,6 @@ storage:
   trace:
     backend: s3
     blocklist_poll: 5m
-    cache: none
     local:
       path: /var/tempo/traces
     s3:

@@ -240,11 +240,9 @@ func fromSearchSpecToOptions(spec v1alpha1.SearchSpec) searchOptions {
 	options := searchOptions{
 		// Those are recommended defaults taken from: https://grafana.com/docs/tempo/latest/operations/backend_search/
 		// some of them could depend on the volumen and retention of the data, need to figure out how to set it.
-		ExternalHedgeRequestsUpTo: 2,
-		ConcurrentJobs:            2000,
-		MaxConcurrentQueries:      20,
-		ExternalHedgeRequestsAt:   "8s",
-		MaxResultLimit:            spec.MaxResultLimit,
+		ConcurrentJobs:       2000,
+		MaxConcurrentQueries: 20,
+		MaxResultLimit:       spec.MaxResultLimit,
 		// If not specified, will be zero,  means disable limit by default
 		MaxDuration: spec.MaxDuration.Duration.String(),
 	}

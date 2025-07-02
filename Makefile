@@ -1,10 +1,12 @@
 # Current Operator version
 OPERATOR_VERSION ?= 0.16.0
-TEMPO_VERSION ?= 2.7.2
+TEMPO_VERSION ?= 2.8.1
 JAEGER_QUERY_VERSION ?= 1.68.0
 TEMPO_QUERY_VERSION ?= $(TEMPO_VERSION)
-TEMPO_GATEWAY_VERSION ?= main-2025-05-28-ebbaf26
-TEMPO_GATEWAY_OPA_VERSION ?= main-2025-05-26-4860be8
+# https://quay.io/repository/observatorium/api
+TEMPO_GATEWAY_VERSION ?= main-2025-06-16-5265085
+# https://quay.io/repository/observatorium/opa-openshift
+TEMPO_GATEWAY_OPA_VERSION ?= main-2025-06-16-ecdeca0
 OAUTH_PROXY_VERSION=4.14
 
 MIN_KUBERNETES_VERSION ?= 1.25.0
@@ -393,9 +395,11 @@ deploy-minio:
 .PHONY: prepare-e2e
 prepare-e2e: chainsaw start-kind cert-manager set-test-image-vars build docker-build load-image-operator deploy olm-install otel-deploy
 
+TEST_DIR ?= ./tests/e2e
+
 .PHONY: e2e
 e2e:
-	$(CHAINSAW) test --test-dir ./tests/e2e
+	$(CHAINSAW) test --test-dir $(TEST_DIR)
 
 .PHONY: test-operator-metrics
 test-operator-metrics:

@@ -14,7 +14,6 @@ import (
 	networkingv1 "k8s.io/api/networking/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
@@ -935,10 +934,10 @@ func TestOpenShiftMode_finalizer(t *testing.T) {
 	// the cluster role should be deleted
 	err = k8sClient.Get(context.Background(), types.NamespacedName{Name: fmt.Sprintf("tempo-%s-gateway-%s", tempoName, namespaceName), Namespace: "default"}, gatewayClusterRole)
 	require.Error(t, err)
-	assert.True(t, k8serrors.IsNotFound(err))
+	assert.True(t, apierrors.IsNotFound(err))
 	err = k8sClient.Get(context.Background(), types.NamespacedName{Name: fmt.Sprintf("tempo-%s-gateway-%s", tempoName, namespaceName), Namespace: "default"}, gatewayClusterRoleBinding)
 	require.Error(t, err)
-	assert.True(t, k8serrors.IsNotFound(err))
+	assert.True(t, apierrors.IsNotFound(err))
 }
 
 func TestReconcileManifestsValidateModes(t *testing.T) {

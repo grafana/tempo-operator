@@ -585,6 +585,11 @@ func (in *MonolithicJaegerUISpec) DeepCopyInto(out *MonolithicJaegerUISpec) {
 		*out = new(v1.ResourceRequirements)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.TempoQueryResources != nil {
+		in, out := &in.TempoQueryResources, &out.TempoQueryResources
+		*out = new(v1.ResourceRequirements)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.Ingress != nil {
 		in, out := &in.Ingress, &out.Ingress
 		*out = new(MonolithicJaegerUIIngressSpec)
@@ -867,6 +872,11 @@ func (in *MonolithicTracesStorageSpec) DeepCopyInto(out *MonolithicTracesStorage
 		in, out := &in.Size, &out.Size
 		x := (*in).DeepCopy()
 		*out = &x
+	}
+	if in.StorageClassName != nil {
+		in, out := &in.StorageClassName, &out.StorageClassName
+		*out = new(string)
+		**out = **in
 	}
 	if in.S3 != nil {
 		in, out := &in.S3, &out.S3
@@ -1402,6 +1412,11 @@ func (in *TempoMonolithicSpec) DeepCopyInto(out *TempoMonolithicSpec) {
 	if in.Resources != nil {
 		in, out := &in.Resources, &out.Resources
 		*out = new(v1.ResourceRequirements)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.PodSecurityContext != nil {
+		in, out := &in.PodSecurityContext, &out.PodSecurityContext
+		*out = new(v1.PodSecurityContext)
 		(*in).DeepCopyInto(*out)
 	}
 	out.Timeout = in.Timeout

@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -43,14 +42,14 @@ func TestSetComponentsStatus_WhenListReturnError_ReturnError(t *testing.T) {
 				if tc.componentNotFound == componentName {
 					return nil, apierrors.NewNotFound(schema.GroupResource{}, "something wasn't found")
 				}
-				pods := v1.PodList{
-					Items: []v1.Pod{
+				pods := corev1.PodList{
+					Items: []corev1.Pod{
 						{
 							ObjectMeta: metav1.ObjectMeta{
 								Name: "pod-a",
 							},
-							Status: v1.PodStatus{
-								Phase: v1.PodPending,
+							Status: corev1.PodStatus{
+								Phase: corev1.PodPending,
 							},
 						},
 					},
@@ -68,22 +67,22 @@ func TestSetComponentsStatus_WhenSomePodPending(t *testing.T) {
 	k := &statusClientStub{}
 
 	k.GetPodsComponentStub = func(ctx context.Context, componentName string, stack v1alpha1.TempoStack) (*corev1.PodList, error) {
-		pods := v1.PodList{
-			Items: []v1.Pod{
+		pods := corev1.PodList{
+			Items: []corev1.Pod{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "pod-a",
 					},
-					Status: v1.PodStatus{
-						Phase: v1.PodPending,
+					Status: corev1.PodStatus{
+						Phase: corev1.PodPending,
 					},
 				},
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "pod-b",
 					},
-					Status: v1.PodStatus{
-						Phase: v1.PodRunning,
+					Status: corev1.PodStatus{
+						Phase: corev1.PodRunning,
 					},
 				},
 			},
@@ -136,22 +135,22 @@ func TestSetComponentsStatus_WhenSomePodFailed(t *testing.T) {
 	k := &statusClientStub{}
 
 	k.GetPodsComponentStub = func(ctx context.Context, componentName string, stack v1alpha1.TempoStack) (*corev1.PodList, error) {
-		pods := v1.PodList{
-			Items: []v1.Pod{
+		pods := corev1.PodList{
+			Items: []corev1.Pod{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "pod-a",
 					},
-					Status: v1.PodStatus{
-						Phase: v1.PodFailed,
+					Status: corev1.PodStatus{
+						Phase: corev1.PodFailed,
 					},
 				},
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "pod-b",
 					},
-					Status: v1.PodStatus{
-						Phase: v1.PodRunning,
+					Status: corev1.PodStatus{
+						Phase: corev1.PodRunning,
 					},
 				},
 			},
@@ -204,22 +203,22 @@ func TestSetComponentsStatus_WhenSomePodUnknow(t *testing.T) {
 	k := &statusClientStub{}
 
 	k.GetPodsComponentStub = func(ctx context.Context, componentName string, stack v1alpha1.TempoStack) (*corev1.PodList, error) {
-		pods := v1.PodList{
-			Items: []v1.Pod{
+		pods := corev1.PodList{
+			Items: []corev1.Pod{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "pod-a",
 					},
-					Status: v1.PodStatus{
-						Phase: v1.PodUnknown,
+					Status: corev1.PodStatus{
+						Phase: corev1.PodUnknown,
 					},
 				},
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "pod-b",
 					},
-					Status: v1.PodStatus{
-						Phase: v1.PodRunning,
+					Status: corev1.PodStatus{
+						Phase: corev1.PodRunning,
 					},
 				},
 			},
@@ -272,22 +271,22 @@ func TestSetComponentsStatus_WhenAllReady(t *testing.T) {
 	k := &statusClientStub{}
 
 	k.GetPodsComponentStub = func(ctx context.Context, componentName string, stack v1alpha1.TempoStack) (*corev1.PodList, error) {
-		pods := v1.PodList{
-			Items: []v1.Pod{
+		pods := corev1.PodList{
+			Items: []corev1.Pod{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "pod-a",
 					},
-					Status: v1.PodStatus{
-						Phase: v1.PodRunning,
+					Status: corev1.PodStatus{
+						Phase: corev1.PodRunning,
 					},
 				},
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "pod-b",
 					},
-					Status: v1.PodStatus{
-						Phase: v1.PodRunning,
+					Status: corev1.PodStatus{
+						Phase: corev1.PodRunning,
 					},
 				},
 			},
