@@ -56,15 +56,13 @@ type tenantOverrides struct {
 }
 
 type searchOptions struct {
-	MaxDuration               string
-	QueryTimeout              string
-	ExternalHedgeRequestsAt   string
-	ExternalHedgeRequestsUpTo int
-	ConcurrentJobs            int
-	MaxConcurrentQueries      int
-	DefaultResultLimit        int
-	MaxResultLimit            int
-	Enabled                   bool
+	MaxDuration          string
+	QueryTimeout         string
+	ConcurrentJobs       int
+	MaxConcurrentQueries int
+	DefaultResultLimit   int
+	MaxResultLimit       int
+	Enabled              bool
 }
 
 type tlsOptions struct {

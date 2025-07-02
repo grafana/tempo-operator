@@ -166,15 +166,9 @@ querier:
 {{- end }}
       tls_min_version: {{ .TLS.Profile.MinTLSVersion }}
 {{- end }}
-  search:
 {{- if .Search.QueryTimeout }}
+  search:
     query_timeout: {{ .Search.QueryTimeout }}
-{{- end }}
-{{- if .Search.ExternalHedgeRequestsAt }}
-    external_hedge_requests_at: {{ .Search.ExternalHedgeRequestsAt }}
-{{- end }}
-{{- if .Search.ExternalHedgeRequestsUpTo }}
-    external_hedge_requests_up_to: {{ .Search.ExternalHedgeRequestsUpTo }}
 {{- end }}
 {{- if .Gates.HTTPEncryption }}
 internal_server:
