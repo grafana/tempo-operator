@@ -3,12 +3,16 @@ kind: ClusterRole
 metadata:
   name: metrics-auth-role
 rules:
+# Required for the operator to grant the TokenReview role to the gateway ServiceAcount, which needs to verify the groups of a service account token.
 - apiGroups:
   - authentication.k8s.io
   resources:
   - tokenreviews
   verbs:
   - create
+# Required for the operator to check permissions of the user creating TempoStack or TempoMonolithic CRs.
+# The operator will verify if the user creating/modifying TempoStack or TempoMonolithic CRs already has the TokenReview permission.
+# https://github.com/grafana/tempo-operator/pull/1145
 - apiGroups:
   - authorization.k8s.io
   resources:
