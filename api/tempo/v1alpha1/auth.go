@@ -10,7 +10,7 @@ const (
 	// ModeStatic mode asserts the Authorization Spec's Roles and RoleBindings
 	// using an in-process OpenPolicyAgent Rego authorizer.
 	ModeStatic ModeType = "static"
-	// ModeOpenShift mode uses TokenReview API for authentication and subject access review for authorization.
+	// ModeOpenShift mode uses TokenReview API for authentication and SelfSubjectAccessReview for authorization.
 	ModeOpenShift ModeType = "openshift"
 )
 

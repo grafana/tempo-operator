@@ -25,7 +25,7 @@ const (
 // additionally, if mode=openshift
 // * a tempo-gateway-opa container is added to the StatefulSet
 // * the ServiceAccount will get additional annotations (serviceaccounts.openshift.io/oauth-redirectreference.$tenantName)
-// * a ClusterRole (tokenreviews/create and subjectaccessreviews/create) and ClusterRoleBinding will be created for the ServiceAccount.
+// * a ClusterRole (tokenreviews/create) and ClusterRoleBinding will be created for the ServiceAccount.
 func BuildGatewayObjects(opts Options) ([]client.Object, map[string]string, error) {
 	tempo := opts.Tempo
 	manifests := []client.Object{}
