@@ -3,6 +3,28 @@ Changes by Version
 
 <!-- next version -->
 
+## 0.17.0
+
+### 💡 Enhancements 💡
+
+- `tempomonolithic`: Add attribute for configure tempo-query resources request and limits (#1227)
+- `tempomonolithic`: Add `storageClassName` and `podSecurityContext` configuration options (#1231)
+- `tempostack, tempomonolithic`: Update Tempo to 2.8.1 (#1238)
+  Update Tempo to 2.8.1.
+  Changelog: https://github.com/grafana/tempo/releases/tag/v2.8.0 and https://github.com/grafana/tempo/releases/tag/v2.8.1
+  
+- `tempostack, tempomonolithic`: Use SelfSubjectAccessReview instead of SubjectAccessReview when OpenShift multi-tenancy mode is enabled (#1241)
+
+### 🧰 Bug fixes 🧰
+
+- `tempostack`: Remove deprecated `storage.trace.cache` setting (#1136)
+
+### Components
+- Tempo: [v2.8.1](https://github.com/grafana/tempo/releases/tag/v2.8.1)
+
+### Support
+This release supports Kubernetes 1.25 to 1.32.
+
 ## 0.16.0
 
 ### 🛑 Breaking changes 🛑
