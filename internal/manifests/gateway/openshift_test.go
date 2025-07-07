@@ -45,6 +45,7 @@ func TestPatchOPAContainer(t *testing.T) {
 		"--web.listen=:8082", "--web.internal.listen=:8083",
 		"--web.healthchecks.url=http://localhost:8082",
 		"--opa.package=tempostack",
+		"--opa.ssar",
 		"--openshift.mappings=dev=tempo.grafana.com",
 		"--openshift.mappings=prod=tempo.grafana.com",
 	}, dep.Spec.Template.Spec.Containers[0].Args)

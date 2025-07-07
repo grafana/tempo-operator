@@ -52,7 +52,7 @@ func serviceAccount(tempo v1alpha1.TempoStack) *corev1.ServiceAccount {
 	}
 }
 
-// NewAccessReviewClusterRole creates a ClusterRole for tokenreviews and subjectaccessreviews.
+// NewAccessReviewClusterRole creates a ClusterRole for tokenreviews.
 func NewAccessReviewClusterRole(name string, labels labels.Set) *rbacv1.ClusterRole {
 	return &rbacv1.ClusterRole{
 		ObjectMeta: metav1.ObjectMeta{
@@ -63,11 +63,6 @@ func NewAccessReviewClusterRole(name string, labels labels.Set) *rbacv1.ClusterR
 			{
 				APIGroups: []string{"authentication.k8s.io"},
 				Resources: []string{"tokenreviews"},
-				Verbs:     []string{"create"},
-			},
-			{
-				APIGroups: []string{"authorization.k8s.io"},
-				Resources: []string{"subjectaccessreviews"},
 				Verbs:     []string{"create"},
 			},
 		},
@@ -225,6 +220,7 @@ func NewOpaContainer(ctrlConfig configv1alpha1.ProjectConfig, tenants v1alpha1.T
 		fmt.Sprintf("--web.internal.listen=:%d", gatewayOPAInternalPort),
 		fmt.Sprintf("--web.healthchecks.url=http://localhost:%d", gatewayOPAHTTPPort),
 		fmt.Sprintf("--opa.package=%s", opaPackage),
+		"--opa.ssar",
 	}
 	if rbac {
 		args = append(args, "--opa.matcher=kubernetes_namespace_name")

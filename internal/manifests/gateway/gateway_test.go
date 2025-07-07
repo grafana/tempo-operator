@@ -231,7 +231,7 @@ func TestBuildGateway_openshift(t *testing.T) {
 	require.NotNil(t, obj)
 	clusterRole, ok := obj.(*rbacv1.ClusterRole)
 	require.True(t, ok)
-	assert.Equal(t, 2, len(clusterRole.Rules))
+	assert.Equal(t, 1, len(clusterRole.Rules))
 
 	obj = getObjectByTypeAndName(objects, "tempo-simplest-gateway-observability", reflect.TypeOf(&rbacv1.ClusterRoleBinding{}))
 	require.NotNil(t, obj)
