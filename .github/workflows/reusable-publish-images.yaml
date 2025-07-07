@@ -81,5 +81,5 @@ jobs:
           file: ./cmd/gather/Dockerfile
           platforms: linux/amd64,linux/arm64,linux/s390x,linux/ppc64le
           push: ${{ inputs.push }}
-          tags: ${{ github.repository }}/must-gather:${{ inputs.version_tag }}
+          tags: ghcr.io/${{ github.repository }}/must-gather:${{ inputs.version_tag }}
           labels: ${{ steps.docker_meta.outputs.labels }}
