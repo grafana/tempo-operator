@@ -3,6 +3,20 @@ Changes by Version
 
 <!-- next version -->
 
+## 0.17.1
+
+### 🧰 Bug fixes 🧰
+
+- `github action`: Fix release workflow (#1243)
+  Fix the image tag of the must-gather image.
+  
+
+### Components
+- Tempo: [v2.8.1](https://github.com/grafana/tempo/releases/tag/v2.8.1)
+
+### Support
+This release supports Kubernetes 1.25 to 1.32.
+
 ## 0.17.0
 
 ### 💡 Enhancements 💡
