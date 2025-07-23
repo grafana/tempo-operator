@@ -1,27 +1,25 @@
 package networking
 
 import (
-	"errors"
 	"os"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 )
 
-func GenerateOperatorPolicies() ([]client.Object, error) {
-	if true {
-		return nil, nil
-	}
-	ns, err := os.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
-	if err != nil {
-		return nil, errors.New("Unable to generate Operator Network Policy. Can not determine namespace.")
-	}
-	namespace := string(ns)
-	const instanceName = "tempo-operator"
-
-	return []client.Object{
-		policyDenyAll(instanceName, namespace),
-		policyIngressToMetrics(instanceName, namespace),
-		policyEgressAllowDNS(instanceName, namespace),
+// GenerateOperatorPolicies to limit network access.
+func GenerateOperatorPolicies(namespace string) []client.Object {
+	const instanceName = "operator"
+	labels := manifestutils.CommonOperatorLabels()
+	objs := []client.Object{
+		policyDenyAll(instanceName, namespace, labels),
+		policyIngressToMetrics(instanceName, namespace, labels),
+		policyEgressAllowDNS(instanceName, namespace, labels),
 		policyAPIServer(instanceName, namespace),
-	}, nil
+	}
+	if os.Getenv("ENABLE_WEBHOOKS") != "false" {
+		objs = append(objs, policyWebhook(instanceName, namespace))
+	}
+	return objs
 }

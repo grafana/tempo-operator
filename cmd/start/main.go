@@ -5,18 +5,13 @@ import (
 	"fmt"
 	"os"
 	"runtime"
-	"time"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
 
-	"github.com/go-logr/logr"
 	"github.com/spf13/cobra"
-	k8sUtilVersion "k8s.io/apimachinery/pkg/util/version"
-	"k8s.io/client-go/discovery"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
@@ -24,7 +19,6 @@ import (
 	"github.com/grafana/tempo-operator/cmd/root"
 	controllers "github.com/grafana/tempo-operator/internal/controller/tempo"
 	"github.com/grafana/tempo-operator/internal/crdmetrics"
-	"github.com/grafana/tempo-operator/internal/manifests/networking"
 	"github.com/grafana/tempo-operator/internal/version"
 	"github.com/grafana/tempo-operator/internal/webhooks"
 	//+kubebuilder:scaffold:imports
@@ -132,36 +126,6 @@ func start(c *cobra.Command, args []string) {
 		"go-os", runtime.GOOS,
 	)
 
-	if ctrlConfig.Gates.NetworkPolicies {
-		objs, err := networking.GenerateOperatorPolicies()
-		if err != nil {
-			setupLog.Error(err, "unable to generate network policies for operator")
-			os.Exit(1)
-		}
-		vd, err := discovery.NewDiscoveryClientForConfig(ctrl.GetConfigOrDie())
-		if err != nil {
-			setupLog.Error(err, "unable to create discovery client")
-			os.Exit(1)
-		}
-		k8sVersion, err := vd.ServerVersion()
-		if err != nil {
-			setupLog.Error(err, "unable to fetch k8s server version")
-			os.Exit(1)
-		}
-		const minVersion = "1.31" // NOTE: OpenShift 4.19.
-		discovered := k8sUtilVersion.MustParse(fmt.Sprintf("%s.%s", k8sVersion.Major, k8sVersion.Minor))
-		minimum := k8sUtilVersion.MustParse(minVersion)
-
-		if discovered.AtLeast(minimum) {
-			for _, obj := range objs {
-				applyOrDie(setupLog, mgr.GetClient(), obj)
-			}
-		} else {
-			msg := fmt.Sprintf("Kubernetes version is < %s — skipping NetworkPolicies", minVersion)
-			setupLog.V(0).Info(msg)
-		}
-	}
-
 	if err := crdmetrics.Bootstrap(mgr.GetClient()); err != nil {
 		setupLog.Error(err, "problem init crd metrics")
 		os.Exit(1)
@@ -173,20 +137,12 @@ func start(c *cobra.Command, args []string) {
 	}
 }
 
-func applyOrDie(setupLog logr.Logger, cl client.Client, obj client.Object) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
-	if err := cl.Create(ctx, obj); err != nil {
-		setupLog.Error(err, "unable to apply network policy for operator", "name", obj.GetName())
-		os.Exit(1)
-	}
-}
-
 func addDependencies(mgr ctrl.Manager, ctrlConfig configv1alpha1.ProjectConfig) error {
 	err := mgr.Add(manager.RunnableFunc(func(ctx context.Context) error {
 		reconciler := &controllers.OperatorReconciler{
 			Client: mgr.GetClient(),
 			Scheme: mgr.GetScheme(),
+			Config: mgr.GetConfig(),
 		}
 
 		// log error but do not fail operator startup if operator reconcile fails

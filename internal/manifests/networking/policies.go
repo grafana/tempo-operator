@@ -15,8 +15,12 @@ import (
 
 func policyAPIServer(instanceName, namespace string) *networkingv1.NetworkPolicy {
 	return &networkingv1.NetworkPolicy{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "NetworkPolicy",
+			APIVersion: "networking.k8s.io/v1",
+		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      fmt.Sprintf("%s-egress-to-apiserver", instanceName),
+			Name:      fmt.Sprintf("%s-egress-to-apiserver", naming.Name("", instanceName)),
 			Namespace: namespace,
 			Labels:    manifestutils.CommonOperatorLabels(),
 		},
@@ -41,16 +45,52 @@ func policyAPIServer(instanceName, namespace string) *networkingv1.NetworkPolicy
 	}
 }
 
-func policyDenyAll(instanceName, namespace string) *networkingv1.NetworkPolicy {
+func policyWebhook(instanceName, namespace string) *networkingv1.NetworkPolicy {
 	return &networkingv1.NetworkPolicy{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "NetworkPolicy",
+			APIVersion: "networking.k8s.io/v1",
+		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      fmt.Sprintf("%s-deny", naming.Name("", instanceName)),
+			Name:      fmt.Sprintf("%s-ingress-webhook", naming.Name("", instanceName)),
 			Namespace: namespace,
-			Labels:    manifestutils.CommonLabels(instanceName),
+			Labels:    manifestutils.CommonOperatorLabels(),
 		},
 		Spec: networkingv1.NetworkPolicySpec{
 			PodSelector: metav1.LabelSelector{
-				MatchLabels: manifestutils.CommonLabels(instanceName),
+				MatchLabels: manifestutils.CommonOperatorLabels(),
+			},
+			PolicyTypes: []networkingv1.PolicyType{
+				networkingv1.PolicyTypeIngress,
+			},
+			Ingress: []networkingv1.NetworkPolicyIngressRule{
+				{
+					Ports: []networkingv1.NetworkPolicyPort{
+						{
+							Protocol: ptr.To(corev1.ProtocolTCP),
+							Port:     ptr.To(intstr.FromInt(443)),
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func policyDenyAll(instanceName, namespace string, labels map[string]string) *networkingv1.NetworkPolicy {
+	return &networkingv1.NetworkPolicy{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "NetworkPolicy",
+			APIVersion: "networking.k8s.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      fmt.Sprintf("%s-deny-all", naming.Name("", instanceName)),
+			Namespace: namespace,
+			Labels:    labels,
+		},
+		Spec: networkingv1.NetworkPolicySpec{
+			PodSelector: metav1.LabelSelector{
+				MatchLabels: labels,
 			},
 			PolicyTypes: []networkingv1.PolicyType{
 				networkingv1.PolicyTypeIngress,
@@ -60,16 +100,20 @@ func policyDenyAll(instanceName, namespace string) *networkingv1.NetworkPolicy {
 	}
 }
 
-func policyIngressToMetrics(instanceName, namespace string) *networkingv1.NetworkPolicy {
+func policyIngressToMetrics(instanceName, namespace string, labels map[string]string) *networkingv1.NetworkPolicy {
 	return &networkingv1.NetworkPolicy{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "NetworkPolicy",
+			APIVersion: "networking.k8s.io/v1",
+		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf("%s-ingress-to-metrics", naming.Name("", instanceName)),
 			Namespace: namespace,
-			Labels:    manifestutils.CommonLabels(instanceName),
+			Labels:    labels,
 		},
 		Spec: networkingv1.NetworkPolicySpec{
 			PodSelector: metav1.LabelSelector{
-				MatchLabels: manifestutils.CommonLabels(instanceName),
+				MatchLabels: labels,
 			},
 			PolicyTypes: []networkingv1.PolicyType{
 				networkingv1.PolicyTypeIngress,
@@ -94,16 +138,20 @@ func policyIngressToMetrics(instanceName, namespace string) *networkingv1.Networ
 	}
 }
 
-func policyEgressAllowDNS(instanceName, namespace string) *networkingv1.NetworkPolicy {
+func policyEgressAllowDNS(instanceName, namespace string, labels map[string]string) *networkingv1.NetworkPolicy {
 	return &networkingv1.NetworkPolicy{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "NetworkPolicy",
+			APIVersion: "networking.k8s.io/v1",
+		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf("%s-allow-dns", naming.Name("", instanceName)),
 			Namespace: namespace,
-			Labels:    manifestutils.CommonLabels(instanceName),
+			Labels:    labels,
 		},
 		Spec: networkingv1.NetworkPolicySpec{
 			PodSelector: metav1.LabelSelector{
-				MatchLabels: manifestutils.CommonLabels(instanceName),
+				MatchLabels: labels,
 			},
 			PolicyTypes: []networkingv1.PolicyType{
 				networkingv1.PolicyTypeEgress,
@@ -124,7 +172,7 @@ func policyEgressAllowDNS(instanceName, namespace string) *networkingv1.NetworkP
 						{
 							NamespaceSelector: &metav1.LabelSelector{
 								MatchLabels: map[string]string{
-									"kubernetes.io/metadata.name:": "openshift-dns",
+									"kubernetes.io/metadata.name": "openshift-dns",
 								},
 							},
 							PodSelector: &metav1.LabelSelector{
