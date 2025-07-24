@@ -23,10 +23,12 @@ func BuildAll(featureGates configv1alpha1.FeatureGates, namespace, k8sVersion st
 		return nil, err
 	}
 
-	const minVersion = "1.31" // NOTE: OpenShift 4.19.
+	const minVersion = "1.32" // NOTE: Start support on OpenShift 4.19.
 	minimum := version.MustParse(minVersion)
+	// NOTE: This feature is always enabled on OpenShift.
+	isOpenShift := featureGates.OpenShift.ServingCertsService
 
-	if featureGates.NetworkPolicies && discovered.AtLeast(minimum) {
+	if featureGates.NetworkPolicies && (!isOpenShift || discovered.AtLeast(minimum)) {
 		manifests = append(manifests, networking.GenerateOperatorPolicies(namespace)...)
 	}
 
