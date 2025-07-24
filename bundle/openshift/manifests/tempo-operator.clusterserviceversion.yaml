@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.17.1
-    createdAt: "2025-07-08T18:20:52Z"
+    createdAt: "2025-07-23T09:16:24Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -756,6 +756,13 @@ spec:
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:select:Managed
         - urn:alm:descriptor:com.tectonic.ui:select:Unmanaged
+      - description: NetworkingSpec defines how networking configs are handled.
+        displayName: Networking
+        path: networking
+      - description: Enabled determines whether network policies are generated for
+          the operands.
+        displayName: Enable Networkpolicies
+        path: networking.enabled
       - description: ObservabilitySpec defines how telemetry data gets handled.
         displayName: Observability
         path: observability

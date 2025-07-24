@@ -13,6 +13,7 @@ import (
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/manifests/memberlist"
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
+	"github.com/grafana/tempo-operator/internal/manifests/networking"
 	"github.com/grafana/tempo-operator/internal/manifests/querier"
 	"github.com/grafana/tempo-operator/internal/manifests/queryfrontend"
 	"github.com/grafana/tempo-operator/internal/manifests/serviceaccount"
@@ -52,6 +53,7 @@ func BuildAll(params manifestutils.Params) ([]client.Object, error) {
 	}
 
 	var manifests []client.Object
+	manifests = append(manifests, networking.GenerateOperandPolicies(params.Tempo)...)
 	manifests = append(manifests, configMaps)
 	if params.Tempo.Spec.ServiceAccount == naming.DefaultServiceAccountName(params.Tempo.Name) {
 		manifests = append(manifests, serviceaccount.BuildDefaultServiceAccount(params))
