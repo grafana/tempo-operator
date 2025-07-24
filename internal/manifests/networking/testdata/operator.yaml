@@ -70,6 +70,12 @@ spec:
       podSelector:
         matchLabels:
           dns.operator.openshift.io/daemonset-dns: default
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
   podSelector:
     matchLabels:
       app.kubernetes.io/managed-by: operator-lifecycle-manager
