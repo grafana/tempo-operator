@@ -68,7 +68,7 @@ func policyWebhook(instanceName, namespace string) *networkingv1.NetworkPolicy {
 					Ports: []networkingv1.NetworkPolicyPort{
 						{
 							Protocol: ptr.To(corev1.ProtocolTCP),
-							Port:     ptr.To(intstr.FromInt(443)),
+							Port:     ptr.To(intstr.FromInt(9443)),
 						},
 					},
 				},
