@@ -90,6 +90,9 @@ featureGates:
   # by mTLS, and the Gateway itself won´t be, as it will be the only public face component.
   httpEncryption: false
 
+  # NetworkPolicies enables creating network policy objects.
+  networkPolicies: false
+
   # Observability configures observability features of the operator.
   observability:
 

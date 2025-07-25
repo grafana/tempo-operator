@@ -1173,6 +1173,48 @@ func TestGetMutateFunc_MutateRoute(t *testing.T) {
 	require.Exactly(t, got.Spec, want.Spec)
 }
 
+func TestGetMutateFunc_MutateNetworkPolicy(t *testing.T) {
+	got := &networkingv1.NetworkPolicy{
+		ObjectMeta: metav1.ObjectMeta{
+			Labels: map[string]string{
+				"test": "test",
+			},
+			Annotations: map[string]string{
+				"test": "test",
+			},
+		},
+	}
+
+	want := &networkingv1.NetworkPolicy{
+		ObjectMeta: metav1.ObjectMeta{
+			Labels: map[string]string{
+				"test":  "test",
+				"other": "label",
+			},
+			Annotations: map[string]string{
+				"test":  "test",
+				"other": "annotation",
+			},
+		},
+		Spec: networkingv1.NetworkPolicySpec{
+			PodSelector: metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					"x": "y",
+				},
+			},
+		},
+	}
+
+	f := manifests.MutateFuncFor(got, want)
+	err := f()
+	require.NoError(t, err)
+
+	// Partial mutation checks
+	require.Exactly(t, got.Labels, want.Labels)
+	require.Exactly(t, got.Annotations, want.Annotations)
+	require.Exactly(t, got.Spec, want.Spec)
+}
+
 func TestMutateServiceAccount(t *testing.T) {
 	existing := corev1.ServiceAccount{
 		ObjectMeta: metav1.ObjectMeta{

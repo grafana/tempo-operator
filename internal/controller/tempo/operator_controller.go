@@ -10,6 +10,8 @@ import (
 	v1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/discovery"
+	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -22,6 +24,7 @@ import (
 // OperatorReconciler reconciles the operator configuration.
 type OperatorReconciler struct {
 	client.Client
+	Config *rest.Config
 	Scheme *runtime.Scheme
 }
 
@@ -61,7 +64,21 @@ func (r *OperatorReconciler) Reconcile(ctx context.Context, ctrlConfig configv1a
 		return fmt.Errorf("failed to get operator deployment: %w", err)
 	}
 
-	managedObjects, err := operator.BuildAll(ctrlConfig.Gates, operatorDeployment.Namespace)
+	vd, err := discovery.NewDiscoveryClientForConfig(r.Config)
+	if err != nil {
+		return fmt.Errorf("unable to create discovery client: %w", err)
+	}
+
+	k8sVersion, err := vd.ServerVersion()
+	if err != nil {
+		return fmt.Errorf("unable to fetch k8s server version: %w", err)
+	}
+
+	managedObjects, err := operator.BuildAll(
+		ctrlConfig.Gates,
+		operatorDeployment.Namespace,
+		fmt.Sprintf("%s.%s", k8sVersion.Major, k8sVersion.Minor),
+	)
 	if err != nil {
 		return fmt.Errorf("error building manifests: %w", err)
 	}

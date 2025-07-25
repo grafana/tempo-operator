@@ -1,7 +1,11 @@
 package controllers
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
+	"io"
+	"net/http"
 	"testing"
 
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
@@ -11,6 +15,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/version"
+	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
@@ -51,6 +57,35 @@ func createOperatorDeployment(t *testing.T, nsn types.NamespacedName) {
 	require.NoError(t, err)
 }
 
+type mockK8SVersionRoundTripper struct{}
+
+func (m *mockK8SVersionRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	info := version.Info{
+		Major:        "1",
+		Minor:        "22",
+		GitVersion:   "v1.22.0",
+		GitCommit:    "abc123",
+		GitTreeState: "clean",
+		BuildDate:    "2025-07-24T00:00:00Z",
+		GoVersion:    "go1.24.4",
+		Compiler:     "gc",
+		Platform:     "linux/amd64",
+	}
+
+	infoJson, err := json.Marshal(info)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := &http.Response{
+		StatusCode: http.StatusOK,
+		Request:    req,
+		Header:     http.Header{"Content-Type": []string{"application/json"}},
+		Body:       io.NopCloser(bytes.NewBuffer(infoJson)),
+	}
+	return resp, nil
+}
+
 func TestReconcileOperator(t *testing.T) {
 	nsn := types.NamespacedName{Name: "reconcile-operator", Namespace: "default"}
 	createOperatorDeployment(t, nsn)
@@ -58,6 +93,9 @@ func TestReconcileOperator(t *testing.T) {
 	reconciler := OperatorReconciler{
 		Client: k8sClient,
 		Scheme: testScheme,
+		Config: &rest.Config{
+			Transport: &mockK8SVersionRoundTripper{},
+		},
 	}
 	err := reconciler.Reconcile(context.Background(), configv1alpha1.ProjectConfig{
 		Gates: configv1alpha1.FeatureGates{
