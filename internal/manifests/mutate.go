@@ -137,6 +137,10 @@ func MutateFuncFor(existing, desired client.Object) controllerutil.MutateFn {
 			ds := existing.(*cloudcredentialv1.CredentialsRequest)
 			wantDs := desired.(*cloudcredentialv1.CredentialsRequest)
 			mutateCredentialsRequest(ds, wantDs)
+		case *networkingv1.NetworkPolicy:
+			ds := existing.(*networkingv1.NetworkPolicy)
+			wantDs := desired.(*networkingv1.NetworkPolicy)
+			mutateNetworkPolicy(ds, wantDs)
 		default:
 			t := reflect.TypeOf(existing).String()
 			return kverrors.New("missing mutate implementation for resource type", "type", t)
@@ -256,6 +260,12 @@ func mutateService(existing, desired *corev1.Service) error {
 		return err
 	}
 	return nil
+}
+
+func mutateNetworkPolicy(existing, desired *networkingv1.NetworkPolicy) {
+	existing.Annotations = desired.Annotations
+	existing.Labels = desired.Labels
+	existing.Spec = desired.Spec
 }
 
 func mutateDeployment(existing, desired *appsv1.Deployment) error {
