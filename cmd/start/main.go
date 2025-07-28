@@ -9,9 +9,8 @@ import (
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
 
-	_ "k8s.io/client-go/plugin/pkg/client/auth"
-
 	"github.com/spf13/cobra"
+	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -121,6 +120,7 @@ func start(c *cobra.Command, args []string) {
 		"default-tempo-query-image", rootCmdConfig.CtrlConfig.DefaultImages.TempoQuery,
 		"default-tempo-gateway-image", rootCmdConfig.CtrlConfig.DefaultImages.TempoGateway,
 		"default-tempo-gateway-opa-image", rootCmdConfig.CtrlConfig.DefaultImages.TempoGatewayOpa,
+		"default-network-policies", ctrlConfig.Gates.NetworkPolicies,
 		"go-version", version.GoVersion,
 		"go-arch", runtime.GOARCH,
 		"go-os", runtime.GOOS,
@@ -142,6 +142,7 @@ func addDependencies(mgr ctrl.Manager, ctrlConfig configv1alpha1.ProjectConfig) 
 		reconciler := &controllers.OperatorReconciler{
 			Client: mgr.GetClient(),
 			Scheme: mgr.GetScheme(),
+			Config: mgr.GetConfig(),
 		}
 
 		// log error but do not fail operator startup if operator reconcile fails

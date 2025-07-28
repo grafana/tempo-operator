@@ -1,0 +1,134 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: operator-lifecycle-manager
+    app.kubernetes.io/name: tempo-operator
+    app.kubernetes.io/part-of: tempo-operator
+    control-plane: controller-manager
+  name: tempo-operator-egress-to-apiserver
+  namespace: ($TEMPO_NAMESPACE)
+spec:
+  egress:
+  - ports:
+    - port: 6443
+      protocol: TCP
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/managed-by: operator-lifecycle-manager
+      app.kubernetes.io/name: tempo-operator
+      app.kubernetes.io/part-of: tempo-operator
+      control-plane: controller-manager
+  policyTypes:
+  - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: operator-lifecycle-manager
+    app.kubernetes.io/name: tempo-operator
+    app.kubernetes.io/part-of: tempo-operator
+    control-plane: controller-manager
+  name: tempo-operator-deny-all
+  namespace: ($TEMPO_NAMESPACE)
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/managed-by: operator-lifecycle-manager
+      app.kubernetes.io/name: tempo-operator
+      app.kubernetes.io/part-of: tempo-operator
+      control-plane: controller-manager
+  policyTypes:
+  - Ingress
+  - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: operator-lifecycle-manager
+    app.kubernetes.io/name: tempo-operator
+    app.kubernetes.io/part-of: tempo-operator
+    control-plane: controller-manager
+  name: tempo-operator-ingress-to-metrics
+  namespace: ($TEMPO_NAMESPACE)
+spec:
+  ingress:
+  - from:
+    - namespaceSelector: {}
+      podSelector: {}
+    ports:
+    - port: metrics
+      protocol: TCP
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/managed-by: operator-lifecycle-manager
+      app.kubernetes.io/name: tempo-operator
+      app.kubernetes.io/part-of: tempo-operator
+      control-plane: controller-manager
+  policyTypes:
+  - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: operator-lifecycle-manager
+    app.kubernetes.io/name: tempo-operator
+    app.kubernetes.io/part-of: tempo-operator
+    control-plane: controller-manager
+  name: tempo-operator-allow-dns
+  namespace: ($TEMPO_NAMESPACE)
+spec:
+  egress:
+  - ports:
+    - port: 53
+      protocol: TCP
+    - port: 53
+      protocol: UDP
+    to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: openshift-dns
+      podSelector:
+        matchLabels:
+          dns.operator.openshift.io/daemonset-dns: default
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/managed-by: operator-lifecycle-manager
+      app.kubernetes.io/name: tempo-operator
+      app.kubernetes.io/part-of: tempo-operator
+      control-plane: controller-manager
+  policyTypes:
+  - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: operator-lifecycle-manager
+    app.kubernetes.io/name: tempo-operator
+    app.kubernetes.io/part-of: tempo-operator
+    control-plane: controller-manager
+  name: tempo-operator-ingress-webhook
+  namespace: ($TEMPO_NAMESPACE)
+spec:
+  ingress:
+  - ports:
+    - port: 9443
+      protocol: TCP
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/managed-by: operator-lifecycle-manager
+      app.kubernetes.io/name: tempo-operator
+      app.kubernetes.io/part-of: tempo-operator
+      control-plane: controller-manager
+  policyTypes:
+  - Ingress

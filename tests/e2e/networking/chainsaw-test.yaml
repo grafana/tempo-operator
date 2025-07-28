@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/kyverno/chainsaw/main/.schemas/json/test-chainsaw-v1alpha1.json
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  creationTimestamp: null
+  name: operator-networking
+spec:
+  steps:
+  - name: step-00
+    try:
+    - command:
+        entrypoint: oc
+        args:
+        - get
+        - pods
+        - -A
+        - -l control-plane=controller-manager
+        - -l app.kubernetes.io/name=tempo-operator
+        - -o 
+        - jsonpath={.items[0].metadata.namespace}
+        outputs:
+        - name: TEMPO_NAMESPACE
+          value: ($stdout)
+    - assert:
+        file: 00-asserts.yaml
+
