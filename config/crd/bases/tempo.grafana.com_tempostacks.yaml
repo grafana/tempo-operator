@@ -216,6 +216,15 @@ spec:
                 - Managed
                 - Unmanaged
                 type: string
+              networking:
+                description: NetworkingSpec defines how networking configs are handled.
+                properties:
+                  enabled:
+                    default: true
+                    description: Enabled determines whether network policies are generated
+                      for the operands.
+                    type: boolean
+                type: object
               observability:
                 description: ObservabilitySpec defines how telemetry data gets handled.
                 properties:
