@@ -7,7 +7,7 @@ metadata:
     app.kubernetes.io/part-of: tempo-operator
     control-plane: controller-manager
   name: tempo-operator-egress-to-apiserver
-  namespace: tempo-operator-system
+  namespace: ($TEMPO_NAMESPACE)
 spec:
   egress:
   - ports:
@@ -31,7 +31,7 @@ metadata:
     app.kubernetes.io/part-of: tempo-operator
     control-plane: controller-manager
   name: tempo-operator-deny-all
-  namespace: tempo-operator-system
+  namespace: ($TEMPO_NAMESPACE)
 spec:
   podSelector:
     matchLabels:
@@ -52,7 +52,7 @@ metadata:
     app.kubernetes.io/part-of: tempo-operator
     control-plane: controller-manager
   name: tempo-operator-ingress-to-metrics
-  namespace: tempo-operator-system
+  namespace: ($TEMPO_NAMESPACE)
 spec:
   ingress:
   - from:
@@ -79,7 +79,7 @@ metadata:
     app.kubernetes.io/part-of: tempo-operator
     control-plane: controller-manager
   name: tempo-operator-allow-dns
-  namespace: tempo-operator-system
+  namespace: ($TEMPO_NAMESPACE)
 spec:
   egress:
   - ports:
@@ -118,7 +118,7 @@ metadata:
     app.kubernetes.io/part-of: tempo-operator
     control-plane: controller-manager
   name: tempo-operator-ingress-webhook
-  namespace: tempo-operator-system
+  namespace: ($TEMPO_NAMESPACE)
 spec:
   ingress:
   - ports:

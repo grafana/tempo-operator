@@ -18,7 +18,7 @@ func TestGenerateOperatorPolicies(t *testing.T) {
 	//nolint:errcheck
 	defer os.Unsetenv("ENABLE_WEBHOOKS")
 
-	namespace := "tempo-operator-system"
+	namespace := "($TEMPO_NAMESPACE)"
 
 	policies := GenerateOperatorPolicies(namespace)
 
