@@ -46,3 +46,4 @@ featureGates:
     metrics:
       createServiceMonitors: false
       createPrometheusRules: false
+  networkPolicies: true

@@ -5,6 +5,8 @@ metadata:
   creationTimestamp: null
   name: operator-networking
 spec:
+  timeouts:
+    assert: 120s
   steps:
   - name: step-00
     try:
