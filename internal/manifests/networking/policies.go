@@ -138,6 +138,10 @@ func policyIngressToMetrics(instanceName, namespace string, labels map[string]st
 	}
 }
 
+// policyEgressAllowDNS is used on the operands.
+// TODO: remove nolint:unused once implemented.
+// https://github.com/grafana/tempo-operator/pull/1246
+// nolint:unused
 func policyEgressAllowDNS(instanceName, namespace string, labels map[string]string) *networkingv1.NetworkPolicy {
 	return &networkingv1.NetworkPolicy{
 		TypeMeta: metav1.TypeMeta{
