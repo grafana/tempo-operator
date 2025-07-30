@@ -49,6 +49,7 @@ data:
         metrics:
           createServiceMonitors: false
           createPrometheusRules: false
+      networkPolicies: true
 kind: ConfigMap
 metadata:
   labels:

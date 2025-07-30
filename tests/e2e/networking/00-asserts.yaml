@@ -59,7 +59,7 @@ spec:
     - namespaceSelector: {}
       podSelector: {}
     ports:
-    - port: metrics
+    - port: 8443
       protocol: TCP
   podSelector:
     matchLabels:

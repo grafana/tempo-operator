@@ -129,7 +129,7 @@ func policyIngressToMetrics(instanceName, namespace string, labels map[string]st
 					Ports: []networkingv1.NetworkPolicyPort{
 						{
 							Protocol: ptr.To(corev1.ProtocolTCP),
-							Port:     ptr.To(intstr.FromString("metrics")),
+							Port:     ptr.To(intstr.FromInt(8443)),
 						},
 					},
 				},
