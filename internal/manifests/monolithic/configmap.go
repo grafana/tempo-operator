@@ -177,8 +177,9 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 	config.Server.HttpServerReadTimeout = opts.Tempo.Spec.Timeout.Duration
 	config.Server.HttpServerWriteTimeout = opts.Tempo.Spec.Timeout.Duration
 	if tempo.Spec.Multitenancy.IsGatewayEnabled() {
+		// We need this to scrap metrics.
+		config.Server.HTTPListenAddress = "0.0.0.0"
 		// all connections to tempo must go via gateway
-		config.Server.HTTPListenAddress = "localhost"
 		config.Server.GRPCListenAddress = "localhost"
 	}
 
