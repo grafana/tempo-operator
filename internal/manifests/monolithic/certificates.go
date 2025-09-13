@@ -1,4 +1,4 @@
-package handlers
+package monolithic
 
 import (
 	"context"
@@ -6,7 +6,6 @@ import (
 
 	"github.com/ViaQ/logerr/v2/kverrors"
 	"github.com/go-logr/logr"
-
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -14,8 +13,9 @@ import (
 	ctrlutil "sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
-	v1alpha1 "github.com/grafana/tempo-operator/api/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/certrotation"
+	"github.com/grafana/tempo-operator/internal/certrotation/handlers"
 	"github.com/grafana/tempo-operator/internal/manifests"
 )
 
@@ -24,23 +24,25 @@ import (
 // error if building the manifests fails for any reason.
 func CreateOrRotateCertificates(ctx context.Context, log logr.Logger,
 	req ctrl.Request, k client.Client, s *runtime.Scheme, fg configv1alpha1.FeatureGates) error {
-	ll := log.WithValues("tempostacks", req.String(), "event", "createOrRotateCerts")
-	var stack v1alpha1.TempoStack
+	ll := log.WithValues("monolithic", req.String(), "event", "createOrRotateCerts")
+	var stack v1alpha1.TempoMonolithic
+
 	if err := k.Get(ctx, req.NamespacedName, &stack); err != nil {
 		if apierrors.IsNotFound(err) {
 			// maybe the user deleted it before we could react? Either way this isn't an issue
-			ll.Error(err, "could not find the requested tempo tempostacks", "name", req.String())
+			ll.Error(err, "could not find the requested tempo tempomonolithic", "name", req.String())
 			return nil
 		}
-		return kverrors.Wrap(err, "failed to lookup tempostacks", "name", req.String())
+		return kverrors.Wrap(err, "failed to lookup tempomonolithic", "name", req.String())
 	}
 
-	opts, err := GetOptions(ctx, k, req)
+	opts, err := handlers.GetOptions(ctx, k, req)
 	if err != nil {
 		return kverrors.Wrap(err, "failed to lookup certificates secrets", "name", req.String())
 	}
 
-	if optErr := certrotation.ApplyDefaultSettings(&opts, fg.BuiltInCertManagement, certrotation.ComponentCertSecretNames(opts.StackName)); optErr != nil {
+	if optErr := certrotation.ApplyDefaultSettings(&opts, fg.BuiltInCertManagement,
+		certrotation.MonolithicComponentCertSecretNames(opts.StackName)); optErr != nil {
 		ll.Error(optErr, "failed to conform options to build settings")
 		return kverrors.Wrap(err, "failed to conform options to build settings", "name", req.String())
 	}

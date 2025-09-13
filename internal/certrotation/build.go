@@ -14,7 +14,7 @@ var defaultUserInfo = &user.DefaultInfo{Name: "system:tempostacks", Groups: []st
 
 // BuildAll builds all secrets and configmaps containing
 // CA certificates, CA bundles and client certificates for
-// a TempoStack.
+// a Tempo CR.
 func BuildAll(opts Options) ([]client.Object, error) {
 	res := make([]client.Object, 0)
 
@@ -40,7 +40,7 @@ func BuildAll(opts Options) ([]client.Object, error) {
 }
 
 // ApplyDefaultSettings merges the default options with the ones we give.
-func ApplyDefaultSettings(opts *Options, cfg configv1alpha1.BuiltInCertManagement) error {
+func ApplyDefaultSettings(opts *Options, cfg configv1alpha1.BuiltInCertManagement, components map[string]string) error {
 	rotation, err := ParseRotation(cfg)
 	if err != nil {
 		return err
@@ -55,7 +55,7 @@ func ApplyDefaultSettings(opts *Options, cfg configv1alpha1.BuiltInCertManagemen
 	if opts.Certificates == nil {
 		opts.Certificates = make(map[string]SelfSignedCertKey)
 	}
-	for service, name := range ComponentCertSecretNames(opts.StackName) {
+	for service, name := range components {
 		r := certificateRotation{
 			Clock:    clock,
 			UserInfo: defaultUserInfo,

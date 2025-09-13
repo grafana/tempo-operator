@@ -29,7 +29,7 @@ func TestBuildAll(t *testing.T) {
 		StackName:      "dev",
 		StackNamespace: "ns",
 	}
-	err := ApplyDefaultSettings(&opts, cfg)
+	err := ApplyDefaultSettings(&opts, cfg, ComponentCertSecretNames(opts.StackName))
 	require.NoError(t, err)
 
 	objs, err := BuildAll(opts)
@@ -69,7 +69,7 @@ func TestApplyDefaultSettings_EmptySecrets(t *testing.T) {
 		StackNamespace: "ns",
 	}
 
-	err := ApplyDefaultSettings(&opts, cfg)
+	err := ApplyDefaultSettings(&opts, cfg, ComponentCertSecretNames(opts.StackName))
 	require.NoError(t, err)
 
 	cs := ComponentCertSecretNames(opts.StackName)
@@ -131,7 +131,7 @@ func TestApplyDefaultSettings_ExistingSecrets(t *testing.T) {
 		}
 	}
 
-	err := ApplyDefaultSettings(&opts, cfg)
+	err := ApplyDefaultSettings(&opts, cfg, ComponentCertSecretNames(opts.StackName))
 	require.NoError(t, err)
 
 	for service, name := range cs {

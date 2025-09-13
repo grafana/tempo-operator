@@ -35,7 +35,7 @@ func CheckCertExpiry(ctx context.Context, log logr.Logger, req ctrl.Request, k c
 		return kverrors.Wrap(err, "failed to lookup certificates secrets", "name", req.String())
 	}
 
-	if optErr := certrotation.ApplyDefaultSettings(&opts, fg.BuiltInCertManagement); optErr != nil {
+	if optErr := certrotation.ApplyDefaultSettings(&opts, fg.BuiltInCertManagement, certrotation.ComponentCertSecretNames(opts.StackName)); optErr != nil {
 		ll.Error(optErr, "failed to conform options to build settings")
 		return optErr
 	}

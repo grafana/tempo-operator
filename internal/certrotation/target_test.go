@@ -55,7 +55,7 @@ func TestCertificatesExpired(t *testing.T) {
 		},
 		RawCACerts: rawCA.Config.Certs,
 	}
-	err = ApplyDefaultSettings(&opts, cfg)
+	err = ApplyDefaultSettings(&opts, cfg, ComponentCertSecretNames(opts.StackName))
 	require.NoError(t, err)
 
 	for _, name := range ComponentCertSecretNames(stackName) {
@@ -106,7 +106,7 @@ func TestBuildTargetCertKeyPairSecrets_Create(t *testing.T) {
 		RawCACerts: rawCA.Config.Certs,
 	}
 
-	err := ApplyDefaultSettings(&opts, cfg)
+	err := ApplyDefaultSettings(&opts, cfg, ComponentCertSecretNames(opts.StackName))
 	require.NoError(t, err)
 
 	objs, err := buildTargetCertKeyPairSecrets(opts)
@@ -154,7 +154,7 @@ func TestBuildTargetCertKeyPairSecrets_Rotate(t *testing.T) {
 			},
 		},
 	}
-	err := ApplyDefaultSettings(&opts, cfg)
+	err := ApplyDefaultSettings(&opts, cfg, ComponentCertSecretNames(opts.StackName))
 	require.NoError(t, err)
 
 	objs, err := buildTargetCertKeyPairSecrets(opts)

@@ -119,6 +119,13 @@ func (r *TempoMonolithicReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		tempo = *upgraded.(*v1alpha1.TempoMonolithic)
 	}
 
+	if r.CtrlConfig.Gates.BuiltInCertManagement.Enabled {
+		err := monolithic.CreateOrRotateCertificates(ctx, log, req, r.Client, r.Scheme, r.CtrlConfig.Gates)
+		if err != nil {
+			return ctrl.Result{}, status.HandleTempoMonolithicStatus(ctx, r.Client, tempo, fmt.Errorf("built in cert manager error: %w", err))
+		}
+	}
+
 	// Add finalizer for this CR
 	if !controllerutil.ContainsFinalizer(&tempo, v1alpha1.TempoFinalizer) {
 		if controllerutil.AddFinalizer(&tempo, v1alpha1.TempoFinalizer) {
