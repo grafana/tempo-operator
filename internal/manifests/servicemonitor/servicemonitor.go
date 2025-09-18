@@ -35,14 +35,14 @@ func BuildServiceMonitors(params manifestutils.Params) []client.Object {
 
 func buildServiceMonitor(params manifestutils.Params, component string, port string) *monitoringv1.ServiceMonitor {
 	labels := manifestutils.ComponentLabels(component, params.Tempo.Name)
-	return NewServiceMonitor(params.Tempo.Namespace, params.Tempo.Name, labels, params.CtrlConfig.Gates.HTTPEncryption, component, port)
+	return NewServiceMonitor(params.Tempo.Namespace, params.Tempo.Name, labels, params.CtrlConfig.Gates.HTTPEncryption, component, []string{port})
 }
 
 func buildFrontEndServiceMonitor(params manifestutils.Params, port string) *monitoringv1.ServiceMonitor {
 	labels := manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, params.Tempo.Name)
 	tls := params.CtrlConfig.Gates.HTTPEncryption && params.Tempo.Spec.Template.Gateway.Enabled
 	return NewServiceMonitor(params.Tempo.Namespace, params.Tempo.Name, labels, tls,
-		manifestutils.QueryFrontendComponentName, port)
+		manifestutils.QueryFrontendComponentName, []string{port})
 }
 
 // NewServiceMonitor creates a ServiceMonitor.
@@ -52,7 +52,7 @@ func NewServiceMonitor(
 	labels labels.Set,
 	tls bool,
 	component string,
-	port string,
+	ports []string,
 ) *monitoringv1.ServiceMonitor {
 	scheme := "http"
 	var tlsConfig *monitoringv1.TLSConfig
@@ -91,6 +91,30 @@ func NewServiceMonitor(
 		}
 	}
 
+	var endpoints []monitoringv1.Endpoint
+
+	for _, port := range ports {
+		endpoints = append(endpoints, monitoringv1.Endpoint{
+			Scheme:    scheme,
+			Port:      port,
+			Path:      "/metrics",
+			TLSConfig: tlsConfig,
+			// Custom relabel configs to be compatible with predefined Tempo dashboards:
+			// https://grafana.com/docs/tempo/latest/operations/monitoring/#dashboards
+			RelabelConfigs: []*monitoringv1.RelabelConfig{
+				{
+					SourceLabels: []monitoringv1.LabelName{"__meta_kubernetes_service_label_app_kubernetes_io_instance"},
+					TargetLabel:  "cluster",
+				},
+				{
+					SourceLabels: []monitoringv1.LabelName{"__meta_kubernetes_namespace", "__meta_kubernetes_service_label_app_kubernetes_io_component"},
+					Separator:    ptr.To("/"),
+					TargetLabel:  "job",
+				},
+			},
+		})
+	}
+
 	return &monitoringv1.ServiceMonitor{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: monitoringv1.SchemeGroupVersion.String(),
@@ -102,25 +126,7 @@ func NewServiceMonitor(
 			Labels:    labels,
 		},
 		Spec: monitoringv1.ServiceMonitorSpec{
-			Endpoints: []monitoringv1.Endpoint{{
-				Scheme:    scheme,
-				Port:      port,
-				Path:      "/metrics",
-				TLSConfig: tlsConfig,
-				// Custom relabel configs to be compatible with predefined Tempo dashboards:
-				// https://grafana.com/docs/tempo/latest/operations/monitoring/#dashboards
-				RelabelConfigs: []*monitoringv1.RelabelConfig{
-					{
-						SourceLabels: []monitoringv1.LabelName{"__meta_kubernetes_service_label_app_kubernetes_io_instance"},
-						TargetLabel:  "cluster",
-					},
-					{
-						SourceLabels: []monitoringv1.LabelName{"__meta_kubernetes_namespace", "__meta_kubernetes_service_label_app_kubernetes_io_component"},
-						Separator:    ptr.To("/"),
-						TargetLabel:  "job",
-					},
-				},
-			}},
+			Endpoints: endpoints,
 			NamespaceSelector: monitoringv1.NamespaceSelector{
 				MatchNames: []string{namespace},
 			},
