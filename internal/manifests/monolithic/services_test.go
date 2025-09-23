@@ -270,6 +270,12 @@ func TestBuildServices(t *testing.T) {
 								TargetPort: intstr.FromString("internal"),
 							},
 							{
+								Name:       "http",
+								Protocol:   corev1.ProtocolTCP,
+								Port:       3200,
+								TargetPort: intstr.FromString("http"),
+							},
+							{
 								Name:       "otlp-grpc",
 								Protocol:   corev1.ProtocolTCP,
 								Port:       4317,
