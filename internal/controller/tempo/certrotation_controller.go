@@ -60,7 +60,8 @@ func (r *CertRotationReconciler) Reconcile(ctx context.Context, req ctrl.Request
 
 	var expired *certrotation.CertExpiredError
 
-	err = handlers.CheckCertExpiry(ctx, log, req, r.Client, r.FeatureGates)
+	err = handlers.CheckCertExpiry("tempostack", ctx, log, req, r.Client, r.FeatureGates,
+		certrotation.TempoStackComponentCertSecretNames(req.Name))
 	switch {
 	case errors.As(err, &expired):
 		log.Info("Certificate expired", "msg", expired.Error())
@@ -74,7 +75,7 @@ func (r *CertRotationReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	}
 
 	log.Error(err, "TempoStack certificates expired", "name", req.String())
-	err = handlers.AnnotateForRequiredCertRotation(ctx, r.Client, req.Name, req.Namespace)
+	err = handlers.AnnotateTemnpoStackForRequiredCertRotation(ctx, r.Client, req.Name, req.Namespace)
 	if err != nil {
 		log.Error(err, "failed to annotate required cert rotation", "name", req.String())
 		return ctrl.Result{}, err

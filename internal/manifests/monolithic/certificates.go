@@ -23,7 +23,7 @@ import (
 // including the signing CA and a ca bundle or else returns an error. It returns only a degrade-condition-worthy
 // error if building the manifests fails for any reason.
 func CreateOrRotateCertificates(ctx context.Context, log logr.Logger,
-	req ctrl.Request, k client.Client, s *runtime.Scheme, fg configv1alpha1.FeatureGates) error {
+	req ctrl.Request, k client.Client, s *runtime.Scheme, fg configv1alpha1.FeatureGates, cs map[string]string) error {
 	ll := log.WithValues("monolithic", req.String(), "event", "createOrRotateCerts")
 	var stack v1alpha1.TempoMonolithic
 
@@ -36,7 +36,7 @@ func CreateOrRotateCertificates(ctx context.Context, log logr.Logger,
 		return kverrors.Wrap(err, "failed to lookup tempomonolithic", "name", req.String())
 	}
 
-	opts, err := handlers.GetOptions(ctx, k, req)
+	opts, err := handlers.GetOptions(ctx, k, req, cs)
 	if err != nil {
 		return kverrors.Wrap(err, "failed to lookup certificates secrets", "name", req.String())
 	}

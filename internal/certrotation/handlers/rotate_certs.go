@@ -23,7 +23,7 @@ import (
 // including the signing CA and a ca bundle or else returns an error. It returns only a degrade-condition-worthy
 // error if building the manifests fails for any reason.
 func CreateOrRotateCertificates(ctx context.Context, log logr.Logger,
-	req ctrl.Request, k client.Client, s *runtime.Scheme, fg configv1alpha1.FeatureGates) error {
+	req ctrl.Request, k client.Client, s *runtime.Scheme, fg configv1alpha1.FeatureGates, cs map[string]string) error {
 	ll := log.WithValues("tempostacks", req.String(), "event", "createOrRotateCerts")
 	var stack v1alpha1.TempoStack
 	if err := k.Get(ctx, req.NamespacedName, &stack); err != nil {
@@ -35,12 +35,12 @@ func CreateOrRotateCertificates(ctx context.Context, log logr.Logger,
 		return kverrors.Wrap(err, "failed to lookup tempostacks", "name", req.String())
 	}
 
-	opts, err := GetOptions(ctx, k, req)
+	opts, err := GetOptions(ctx, k, req, cs)
 	if err != nil {
 		return kverrors.Wrap(err, "failed to lookup certificates secrets", "name", req.String())
 	}
 
-	if optErr := certrotation.ApplyDefaultSettings(&opts, fg.BuiltInCertManagement, certrotation.ComponentCertSecretNames(opts.StackName)); optErr != nil {
+	if optErr := certrotation.ApplyDefaultSettings(&opts, fg.BuiltInCertManagement, certrotation.TempoStackComponentCertSecretNames(opts.StackName)); optErr != nil {
 		ll.Error(optErr, "failed to conform options to build settings")
 		return kverrors.Wrap(err, "failed to conform options to build settings", "name", req.String())
 	}

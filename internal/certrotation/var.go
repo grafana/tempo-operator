@@ -33,8 +33,8 @@ func CABundleName(stackName string) string {
 	return fmt.Sprintf("tempo-%s-ca-bundle", stackName)
 }
 
-// ComponentCertSecretNames returns a map, with the key as the service name, and the value the secret name.
-func ComponentCertSecretNames(stackName string) map[string]string {
+// TempoStackComponentCertSecretNames returns a map, with the key as the service name, and the value the secret name.
+func TempoStackComponentCertSecretNames(stackName string) map[string]string {
 	return map[string]string{
 		naming.Name(manifestutils.DistributorComponentName, stackName):   naming.TLSSecretName(manifestutils.DistributorComponentName, stackName),
 		naming.Name(manifestutils.IngesterComponentName, stackName):      naming.TLSSecretName(manifestutils.IngesterComponentName, stackName),

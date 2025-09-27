@@ -40,14 +40,14 @@ func (r *CertRotationMonolithicReconciler) Reconcile(ctx context.Context, req ct
 	log.V(1).Info("starting reconcile loop")
 	defer log.V(1).Info("finished reconcile loop")
 
-	var stack v1alpha1.TempoMonolithic
-	if err := r.Get(ctx, req.NamespacedName, &stack); err != nil {
+	var monolithic v1alpha1.TempoMonolithic
+	if err := r.Get(ctx, req.NamespacedName, &monolithic); err != nil {
 		if apierrors.IsNotFound(err) {
 			return ctrl.Result{}, nil
 		}
 		return ctrl.Result{}, kverrors.Wrap(err, "failed to lookup tempostack", "name", req.NamespacedName)
 	}
-	managed := stack.Spec.Management == v1alpha1.ManagementStateManaged
+	managed := monolithic.Spec.Management == v1alpha1.ManagementStateManaged
 
 	if !managed {
 		log.Info("Skipping reconciliation for unmanaged TempoMonolithic resource", "name", req.String())
@@ -65,7 +65,8 @@ func (r *CertRotationMonolithicReconciler) Reconcile(ctx context.Context, req ct
 
 	var expired *certrotation.CertExpiredError
 
-	err = handlers.CheckCertExpiry(ctx, log, req, r.Client, r.FeatureGates)
+	err = handlers.CheckCertExpiry("tempomonolithic", ctx, log, req, r.Client, r.FeatureGates,
+		certrotation.MonolithicComponentCertSecretNames(req.Name))
 	switch {
 	case errors.As(err, &expired):
 		log.Info("Certificate expired", "msg", expired.Error())
@@ -79,7 +80,7 @@ func (r *CertRotationMonolithicReconciler) Reconcile(ctx context.Context, req ct
 	}
 
 	log.Error(err, "TempoMonolithic certificates expired", "name", req.String())
-	err = handlers.AnnotateForRequiredCertRotation(ctx, r.Client, req.Name, req.Namespace)
+	err = handlers.AnnotateMonolithicForRequiredCertRotation(ctx, r.Client, req.Name, req.Namespace)
 	if err != nil {
 		log.Error(err, "failed to annotate required cert rotation", "name", req.String())
 		return ctrl.Result{}, err

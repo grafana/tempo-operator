@@ -29,6 +29,7 @@ import (
 
 	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
 	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/internal/certrotation"
 	"github.com/grafana/tempo-operator/internal/handlers/storage"
 	"github.com/grafana/tempo-operator/internal/manifests/cloudcredentials"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
@@ -120,7 +121,7 @@ func (r *TempoMonolithicReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	}
 
 	if r.CtrlConfig.Gates.BuiltInCertManagement.Enabled {
-		err := monolithic.CreateOrRotateCertificates(ctx, log, req, r.Client, r.Scheme, r.CtrlConfig.Gates)
+		err := monolithic.CreateOrRotateCertificates(ctx, log, req, r.Client, r.Scheme, r.CtrlConfig.Gates, certrotation.MonolithicComponentCertSecretNames(req.Name))
 		if err != nil {
 			return ctrl.Result{}, status.HandleTempoMonolithicStatus(ctx, r.Client, tempo, fmt.Errorf("built in cert manager error: %w", err))
 		}
