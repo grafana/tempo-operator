@@ -137,7 +137,9 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 	return objs, nil
 }
 
-func httpScheme(tls bool) string {
+// HttpScheme determines the HTTP scheme based on the provided TLS flag.
+// If TLS is true, it returns "https". Otherwise, it returns "http".
+func HttpScheme(tls bool) string {
 	if tls {
 		return "https"
 	}
@@ -253,9 +255,9 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 								fmt.Sprintf("--web.listen=0.0.0.0:%d", manifestutils.GatewayPortHTTPServer),                                                                                                                                                         // proxies Tempo API and optionally Jaeger UI
 								fmt.Sprintf("--web.internal.listen=0.0.0.0:%d", manifestutils.GatewayPortInternalHTTPServer),                                                                                                                                        // serves health checks
 								fmt.Sprintf("--traces.write.otlpgrpc.endpoint=%s:%d", naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.DistributorComponentName), manifestutils.PortOtlpGrpcServer),                                                    // Tempo Distributor gRPC upstream
-								fmt.Sprintf("--traces.write.otlphttp.endpoint=%s://%s:%d", httpScheme(params.CtrlConfig.Gates.HTTPEncryption), naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.DistributorComponentName), manifestutils.PortOtlpHttp), // Tempo Distributor HTTP upstream
+								fmt.Sprintf("--traces.write.otlphttp.endpoint=%s://%s:%d", HttpScheme(params.CtrlConfig.Gates.HTTPEncryption), naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.DistributorComponentName), manifestutils.PortOtlpHttp), // Tempo Distributor HTTP upstream
 								fmt.Sprintf("--traces.write-timeout=%s", params.Tempo.Spec.Timeout.Duration.String()),
-								fmt.Sprintf("--traces.tempo.endpoint=%s://%s:%d", httpScheme(params.CtrlConfig.Gates.HTTPEncryption),
+								fmt.Sprintf("--traces.tempo.endpoint=%s://%s:%d", HttpScheme(params.CtrlConfig.Gates.HTTPEncryption),
 									naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.QueryFrontendComponentName), manifestutils.PortHTTPServer), // Tempo API upstream
 								fmt.Sprintf("--grpc.listen=0.0.0.0:%d", manifestutils.GatewayPortGRPCServer), // proxies Tempo Distributor gRPC
 								fmt.Sprintf("--rbac.config=%s", path.Join(tempoGatewayMountDir, "cm", manifestutils.GatewayRBACFileName)),
@@ -348,7 +350,7 @@ func patchTraceReadEndpoint(params manifestutils.Params, pod corev1.PodTemplateS
 
 	container := corev1.Container{
 		Args: []string{
-			fmt.Sprintf("--traces.read.endpoint=%s://%s:%d", httpScheme(params.CtrlConfig.Gates.HTTPEncryption),
+			fmt.Sprintf("--traces.read.endpoint=%s://%s:%d", HttpScheme(params.CtrlConfig.Gates.HTTPEncryption),
 				naming.ServiceFqdn(params.Tempo.Namespace, params.Tempo.Name, manifestutils.QueryFrontendComponentName), manifestutils.PortJaegerQuery), // Jaeger UI upstream
 		},
 	}

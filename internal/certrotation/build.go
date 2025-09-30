@@ -60,6 +60,7 @@ func ApplyDefaultSettings(opts *Options, cfg configv1alpha1.BuiltInCertManagemen
 			Clock:    clock,
 			UserInfo: defaultUserInfo,
 			Hostnames: []string{
+				"localhost",
 				fmt.Sprintf("%s.%s.svc.cluster.local", service, opts.StackNamespace),
 				fmt.Sprintf("%s.%s.svc", service, opts.StackNamespace),
 			},

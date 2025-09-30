@@ -48,7 +48,6 @@ func TempoStackComponentCertSecretNames(stackName string) map[string]string {
 // MonolithicComponentCertSecretNames returns a map of component names to their respective TLS secret names based on input name.
 func MonolithicComponentCertSecretNames(name string) map[string]string {
 	return map[string]string{
-		naming.Name(manifestutils.GatewayComponentName, name):       naming.TLSSecretName(manifestutils.GatewayComponentName, name),
 		naming.Name(manifestutils.TempoMonolithComponentName, name): naming.TLSSecretName(manifestutils.TempoMonolithComponentName, name),
 	}
 }
