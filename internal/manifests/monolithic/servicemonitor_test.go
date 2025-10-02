@@ -100,7 +100,7 @@ func TestBuildServiceMonitorGateway(t *testing.T) {
 			Kind:       "ServiceMonitor",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "tempo-sample-gateway",
+			Name:      "tempo-sample",
 			Namespace: "default",
 			Labels:    labels,
 		},
