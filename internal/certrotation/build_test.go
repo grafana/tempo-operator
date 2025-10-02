@@ -80,6 +80,7 @@ func TestApplyDefaultSettings_EmptySecrets(t *testing.T) {
 		require.NotEmpty(t, cert.Rotation)
 
 		hostnames := []string{
+			"localhost",
 			fmt.Sprintf("%s.%s.svc.cluster.local", service, opts.StackNamespace),
 			fmt.Sprintf("%s.%s.svc", service, opts.StackNamespace),
 		}
@@ -140,6 +141,7 @@ func TestApplyDefaultSettings_ExistingSecrets(t *testing.T) {
 		require.NotEmpty(t, cert.Rotation)
 
 		hostnames := []string{
+			"localhost",
 			fmt.Sprintf("%s.%s.svc.cluster.local", service, opts.StackNamespace),
 			fmt.Sprintf("%s.%s.svc", service, opts.StackNamespace),
 		}
