@@ -5,7 +5,7 @@ change_type: bug_fix
 component: tempomonolithic
 
 # A brief description of the change. Surround your text with quotes ("") if it needs to start with a backtick (`).
-note: Scrap tempo metrics for monolithic.
+note: Scrape tempo metrics for monolithic.
 
 # One or more tracking issues related to the change
 issues: [1275]
