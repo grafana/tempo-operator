@@ -77,24 +77,32 @@ spec:
         file: tempostack-rbac-sa-1-traces-gen.yaml
     - assert:
         file: assert-tempostack-rbac-sa-1-traces-gen.yaml
+    - delete:
+        file: tempostack-rbac-sa-1-traces-gen.yaml
   - name: Generate traces from namespace chainsaw-mono-rbac-1 for TempoMonolithic
     try:
     - apply:
         file: tempo-mono-rbac-sa-1-traces-gen.yaml
     - assert:
         file: assert-tempo-mono-rbac-sa-1-traces-gen.yaml
+    - delete:
+        file: tempo-mono-rbac-sa-1-traces-gen.yaml
   - name: Generate traces from namespace chainsaw-test-rbac-2 for TempoStack
     try:
     - apply:
         file: tempostack-rbac-sa-2-traces-gen.yaml
     - assert:
         file: assert-tempostack-rbac-sa-2-traces-gen.yaml
+    - delete:
+        file: tempostack-rbac-sa-2-traces-gen.yaml
   - name: Generate traces from namespace chainsaw-mono-rbac-2 for TempoMonolithic
     try:
     - apply:
         file: tempo-mono-rbac-sa-2-traces-gen.yaml
     - assert:
         file: assert-tempo-mono-rbac-sa-2-traces-gen.yaml
+    - delete:
+        file: tempo-mono-rbac-sa-2-traces-gen.yaml
   - name: Verify tracess using RBAC for TempoStack
     try:
     - apply:
@@ -197,6 +205,18 @@ spec:
         kind: StatefulSet
         namespace: chainsaw-mmo-rbac
         format: yaml
+  - name: Generate traces from namespace chainsaw-mono-rbac-1 for TempoMonolithic after upgrade
+    try:
+    - apply:
+        file: tempo-mono-rbac-sa-1-traces-gen.yaml
+    - assert:
+        file: assert-tempo-mono-rbac-sa-1-traces-gen.yaml
+  - name: Generate traces from namespace chainsaw-mono-rbac-2 for TempoMonolithic after upgrade
+    try:
+    - apply:
+        file: tempo-mono-rbac-sa-2-traces-gen.yaml
+    - assert:
+        file: assert-tempo-mono-rbac-sa-2-traces-gen.yaml
   - name: Verify tracess using RBAC for TempoStack after upgrade
     try:
     - create:

@@ -3,6 +3,22 @@ Changes by Version
 
 <!-- next version -->
 
+## 0.18.0
+
+### 💡 Enhancements 💡
+
+- `operator`: Add feature gate to enable reconcile of Operator's default network policies. (#1248)
+- `tempostack, tempomonolithic`: Update Tempo to 2.8.2 (#1276)
+  Update Tempo to 2.8.2.
+  Changelog: https://github.com/grafana/tempo/releases/tag/v2.8.2
+  
+
+### Components
+- Tempo: [v2.8.2](https://github.com/grafana/tempo/releases/tag/v2.8.2)
+
+### Support
+This release supports Kubernetes 1.25 to 1.32.
+
 ## 0.17.1
 
 ### 🧰 Bug fixes 🧰

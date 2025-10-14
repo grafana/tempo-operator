@@ -42,11 +42,6 @@ spec:
           insecure: true
     
     service:
-      # Expose internal telemetry of the collector
-      # It exposes Prometheus /metrics endpoint for internal telemetry
-      telemetry:
-        metrics:
-          address: 0.0.0.0:8888
       pipelines:
         traces:
           receivers: [otlp]
