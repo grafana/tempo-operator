@@ -75,7 +75,7 @@ func (r *CertRotationReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	}
 
 	log.Error(err, "TempoStack certificates expired", "name", req.String())
-	err = handlers.AnnotateTemnpoStackForRequiredCertRotation(ctx, r.Client, req.Name, req.Namespace)
+	err = handlers.AnnotateTempoStackForRequiredCertRotation(ctx, r.Client, req.Name, req.Namespace)
 	if err != nil {
 		log.Error(err, "failed to annotate required cert rotation", "name", req.String())
 		return ctrl.Result{}, err

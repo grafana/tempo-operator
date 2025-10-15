@@ -14,10 +14,10 @@ import (
 
 const certRotationRequiredAtKey = "tempo.grafana.com/certRotationRequiredAt"
 
-// AnnotateTemnpoStackForRequiredCertRotation adds/updates the `tempo.grafana.com/certRotationRequiredAt` annotation
+// AnnotateTempoStackForRequiredCertRotation adds/updates the `tempo.grafana.com/certRotationRequiredAt` annotation
 // to the named TempoStack if any of the managed client/serving/ca certificates expired. If no TempoStack
 // is found, then skip reconciliation.
-func AnnotateTemnpoStackForRequiredCertRotation(ctx context.Context, k client.Client, name, namespace string) error {
+func AnnotateTempoStackForRequiredCertRotation(ctx context.Context, k client.Client, name, namespace string) error {
 	var s v1alpha1.TempoStack
 	key := client.ObjectKey{Name: name, Namespace: namespace}
 
