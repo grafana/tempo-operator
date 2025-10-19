@@ -29,7 +29,7 @@ func TestBuildAll(t *testing.T) {
 		StackName:      "dev",
 		StackNamespace: "ns",
 	}
-	err := ApplyDefaultSettings(&opts, cfg)
+	err := ApplyDefaultSettings(&opts, cfg, TempoStackComponentCertSecretNames(opts.StackName))
 	require.NoError(t, err)
 
 	objs, err := BuildAll(opts)
@@ -69,10 +69,10 @@ func TestApplyDefaultSettings_EmptySecrets(t *testing.T) {
 		StackNamespace: "ns",
 	}
 
-	err := ApplyDefaultSettings(&opts, cfg)
+	err := ApplyDefaultSettings(&opts, cfg, TempoStackComponentCertSecretNames(opts.StackName))
 	require.NoError(t, err)
 
-	cs := ComponentCertSecretNames(opts.StackName)
+	cs := TempoStackComponentCertSecretNames(opts.StackName)
 
 	for service, name := range cs {
 		cert, ok := opts.Certificates[name]
@@ -80,6 +80,7 @@ func TestApplyDefaultSettings_EmptySecrets(t *testing.T) {
 		require.NotEmpty(t, cert.Rotation)
 
 		hostnames := []string{
+			"localhost",
 			fmt.Sprintf("%s.%s.svc.cluster.local", service, opts.StackNamespace),
 			fmt.Sprintf("%s.%s.svc", service, opts.StackNamespace),
 		}
@@ -114,7 +115,7 @@ func TestApplyDefaultSettings_ExistingSecrets(t *testing.T) {
 		Certificates:   ComponentCertificates{},
 	}
 
-	cs := ComponentCertSecretNames(opts.StackName)
+	cs := TempoStackComponentCertSecretNames(opts.StackName)
 
 	for _, name := range cs {
 		opts.Certificates[name] = SelfSignedCertKey{
@@ -131,7 +132,7 @@ func TestApplyDefaultSettings_ExistingSecrets(t *testing.T) {
 		}
 	}
 
-	err := ApplyDefaultSettings(&opts, cfg)
+	err := ApplyDefaultSettings(&opts, cfg, TempoStackComponentCertSecretNames(opts.StackName))
 	require.NoError(t, err)
 
 	for service, name := range cs {
@@ -140,6 +141,7 @@ func TestApplyDefaultSettings_ExistingSecrets(t *testing.T) {
 		require.NotEmpty(t, cert.Rotation)
 
 		hostnames := []string{
+			"localhost",
 			fmt.Sprintf("%s.%s.svc.cluster.local", service, opts.StackNamespace),
 			fmt.Sprintf("%s.%s.svc", service, opts.StackNamespace),
 		}

@@ -100,7 +100,7 @@ func TestBuildServiceMonitorGateway(t *testing.T) {
 			Kind:       "ServiceMonitor",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "tempo-sample-gateway",
+			Name:      "tempo-sample",
 			Namespace: "default",
 			Labels:    labels,
 		},
@@ -120,7 +120,23 @@ func TestBuildServiceMonitorGateway(t *testing.T) {
 						TargetLabel:  "job",
 					},
 				},
-			}},
+			}, {
+				Scheme: "http",
+				Port:   "http",
+				Path:   "/metrics",
+				RelabelConfigs: []*monitoringv1.RelabelConfig{
+					{
+						SourceLabels: []monitoringv1.LabelName{"__meta_kubernetes_service_label_app_kubernetes_io_instance"},
+						TargetLabel:  "cluster",
+					},
+					{
+						SourceLabels: []monitoringv1.LabelName{"__meta_kubernetes_namespace", "__meta_kubernetes_service_label_app_kubernetes_io_component"},
+						Separator:    ptr.To("/"),
+						TargetLabel:  "job",
+					},
+				},
+			},
+			},
 			NamespaceSelector: monitoringv1.NamespaceSelector{
 				MatchNames: []string{"default"},
 			},

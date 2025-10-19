@@ -7,9 +7,7 @@ TOKEN=$(oc create token e2e-test-metrics-reader -n $NAMESPACE)
 THANOS_QUERIER_HOST=$(oc get route thanos-querier -n openshift-monitoring -o json | jq -r '.spec.host')
 
 #Check TempoMonolithc metircs
-# Tempo component metrics not exposed due to bug. https://issues.redhat.com/browse/TRACING-5472
-#metrics="tempo_query_frontend_queries_total tempo_distributor_bytes_received_total tempo_distributor_spans_received_total tempo_ingester_bytes_received_total tempo_distributor_traces_per_batch_count tempo_build_info"
-metrics="http_request_duration_seconds_bucket"
+metrics="tempo_query_frontend_queries_total tempo_distributor_bytes_received_total tempo_distributor_spans_received_total tempo_ingester_bytes_received_total tempo_distributor_traces_per_batch_count tempo_build_info"
 
 for metric in $metrics; do
 query="$metric"
