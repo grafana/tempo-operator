@@ -197,14 +197,12 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 		config.Server.GRPCListenAddress = "localhost"
 
 		if opts.CtrlConfig.Gates.HTTPEncryption {
-
 			config.Server.HTTPTLSConfig = &tempoHTTPTLSConfig{
 				CertFile:       path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSCertFilename),
 				KeyFile:        path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSKeyFilename),
 				ClientCAFile:   path.Join(manifestutils.TempoInternalTLSCADir, manifestutils.TLSCAFilename),
 				ClientAuthType: "RequireAndVerifyClientCert",
 			}
-
 		}
 
 	}
@@ -268,23 +266,34 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 
 	if tempo.Spec.Ingestion != nil {
 		if tempo.Spec.Ingestion.OTLP != nil {
-			if tempo.Spec.Ingestion.OTLP.GRPC != nil && tempo.Spec.Ingestion.OTLP.GRPC.Enabled {
-				receiverTLS, err := configureReceiverTLS(tempo.Spec.Ingestion.OTLP.GRPC.TLS, opts.TLSProfile,
-					manifestutils.ReceiverGRPCTLSCADir, manifestutils.ReceiverGRPCTLSCertDir)
-
-				if err != nil {
-					return nil, err
-				}
-
+			// It seems like the gateway try to report grpc using mTLS even if only HTTP encryption is enabled.
+			if tempo.Spec.Multitenancy.IsGatewayEnabled() && opts.CtrlConfig.Gates.HTTPEncryption {
 				config.Distributor.Receivers.OTLP.Protocols.GRPC = &tempoReceiverConfig{
-					TLS: receiverTLS,
+					TLS: tempoReceiverTLSConfig{
+						CertFile: path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSCertFilename),
+						CAFile:   path.Join(manifestutils.TempoInternalTLSCADir, manifestutils.TLSCAFilename),
+						KeyFile:  path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSKeyFilename),
+					},
 				}
+			} else {
+				if tempo.Spec.Ingestion.OTLP.GRPC != nil && tempo.Spec.Ingestion.OTLP.GRPC.Enabled {
+					receiverTLS, err := configureReceiverTLS(tempo.Spec.Ingestion.OTLP.GRPC.TLS, opts.TLSProfile,
+						manifestutils.ReceiverGRPCTLSCADir, manifestutils.ReceiverGRPCTLSCertDir)
 
-				if tempo.Spec.Multitenancy.IsGatewayEnabled() {
-					// all connections to tempo must go via gateway
-					config.Distributor.Receivers.OTLP.Protocols.GRPC.Endpoint = fmt.Sprintf("localhost:%d", manifestutils.PortOtlpGrpcServer)
-				} else {
-					config.Distributor.Receivers.OTLP.Protocols.GRPC.Endpoint = fmt.Sprintf("0.0.0.0:%d", manifestutils.PortOtlpGrpcServer)
+					if err != nil {
+						return nil, err
+					}
+
+					config.Distributor.Receivers.OTLP.Protocols.GRPC = &tempoReceiverConfig{
+						TLS: receiverTLS,
+					}
+
+					if tempo.Spec.Multitenancy.IsGatewayEnabled() {
+						// all connections to tempo must go via gateway
+						config.Distributor.Receivers.OTLP.Protocols.GRPC.Endpoint = fmt.Sprintf("localhost:%d", manifestutils.PortOtlpGrpcServer)
+					} else {
+						config.Distributor.Receivers.OTLP.Protocols.GRPC.Endpoint = fmt.Sprintf("0.0.0.0:%d", manifestutils.PortOtlpGrpcServer)
+					}
 				}
 			}
 
