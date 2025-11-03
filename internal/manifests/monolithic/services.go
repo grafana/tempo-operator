@@ -146,6 +146,12 @@ func buildGatewayService(opts Options) *corev1.Service {
 			Port:       manifestutils.GatewayPortInternalHTTPServer,
 			TargetPort: intstr.FromString(manifestutils.GatewayInternalHttpPortName),
 		},
+		{
+			Name:       manifestutils.HttpPortName,
+			Protocol:   corev1.ProtocolTCP,
+			Port:       manifestutils.PortHTTPServer,
+			TargetPort: intstr.FromString(manifestutils.HttpPortName),
+		},
 	}
 
 	if tempo.Spec.Ingestion != nil && tempo.Spec.Ingestion.OTLP != nil &&

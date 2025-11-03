@@ -151,6 +151,35 @@ func BuildTempoStatefulset(opts Options, extraAnnotations map[string]string) (*a
 
 	if tempo.Spec.Multitenancy.IsGatewayEnabled() {
 		err = configureGateway(opts, sts)
+
+		if opts.CtrlConfig.Gates.HTTPEncryption || opts.CtrlConfig.Gates.GRPCEncryption {
+			ids := []int{0}
+			for index, container := range sts.Spec.Template.Spec.Containers {
+				if container.Name == "tempo-gateway" {
+					ids = append(ids, index)
+				}
+
+				if container.Name == "jaeger-query" {
+					ids = append(ids, index)
+				}
+
+				if container.Name == "tempo-query" {
+					ids = append(ids, index)
+				}
+			}
+
+			caBundleName := naming.SigningCABundleName(opts.Tempo.Name)
+			if err := manifestutils.ConfigureServiceCA(&sts.Spec.Template.Spec, caBundleName, ids...); err != nil {
+				return nil, err
+			}
+
+			err := manifestutils.ConfigureServicePKI(opts.Tempo.Name, manifestutils.TempoMonolithComponentName,
+				&sts.Spec.Template.Spec, ids...)
+			if err != nil {
+				return nil, err
+			}
+		}
+
 		if err != nil {
 			return nil, err
 		}
@@ -411,12 +440,24 @@ func configureGateway(opts Options, sts *appsv1.StatefulSet) error {
 		fmt.Sprintf("--web.listen=0.0.0.0:%d", manifestutils.GatewayPortHTTPServer),                  // proxies Tempo API and optionally Jaeger UI
 		fmt.Sprintf("--web.internal.listen=0.0.0.0:%d", manifestutils.GatewayPortInternalHTTPServer), // serves health checks
 		fmt.Sprintf("--traces.tenant-header=%s", manifestutils.TenantHeader),
-		fmt.Sprintf("--traces.tempo.endpoint=http://localhost:%d", manifestutils.PortHTTPServer), // Tempo API upstream
+		fmt.Sprintf("--traces.tempo.endpoint=%s://localhost:%d", gateway.HttpScheme(opts.CtrlConfig.Gates.HTTPEncryption), manifestutils.PortHTTPServer), // Tempo API upstream
 		fmt.Sprintf("--traces.write-timeout=%s", opts.Tempo.Spec.Timeout.Duration.String()),
 		fmt.Sprintf("--rbac.config=%s", path.Join(gatewayMountDir, "rbac", manifestutils.GatewayRBACFileName)),
 		fmt.Sprintf("--tenants.config=%s", path.Join(gatewayMountDir, "tenants", manifestutils.GatewayTenantFileName)),
 		"--log.level=info",
 	}
+
+	if opts.CtrlConfig.Gates.HTTPEncryption {
+		args = append(args, []string{
+			fmt.Sprintf("--tls.internal.server.key-file=%s", path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSKeyFilename)),
+			fmt.Sprintf("--tls.internal.server.cert-file=%s", path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSCertFilename)),
+			fmt.Sprintf("--traces.tls.key-file=%s", path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSKeyFilename)),
+			fmt.Sprintf("--traces.tls.cert-file=%s", path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSCertFilename)),
+			fmt.Sprintf("--traces.tls.ca-file=%s", path.Join(manifestutils.TempoInternalTLSCADir, manifestutils.TLSCAFilename)),
+			"--traces.tls.watch-certs=true",
+		}...)
+	}
+
 	ports := []corev1.ContainerPort{
 		{
 			Name:          manifestutils.GatewayHttpPortName,
@@ -466,8 +507,8 @@ func configureGateway(opts Options, sts *appsv1.StatefulSet) error {
 		Env:            proxy.ReadProxyVarsFromEnv(),
 		Args:           args,
 		Ports:          ports,
-		LivenessProbe:  gateway.LivenessProbe(false),
-		ReadinessProbe: gateway.ReadinessProbe(false),
+		LivenessProbe:  gateway.LivenessProbe(opts.CtrlConfig.Gates.HTTPEncryption),
+		ReadinessProbe: gateway.ReadinessProbe(opts.CtrlConfig.Gates.HTTPEncryption),
 		VolumeMounts: []corev1.VolumeMount{
 			{
 				Name:      "gateway-rbac",

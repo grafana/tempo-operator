@@ -38,6 +38,10 @@ spec:
     port: 8081
     protocol: TCP
     targetPort: internal
+  - name: http
+    port: 3200
+    protocol: TCP
+    targetPort: http
   - name: otlp-grpc
     port: 4317
     protocol: TCP

@@ -60,6 +60,15 @@ func start(c *cobra.Command, args []string) {
 			setupLog.Error(err, "unable to create controller", "controller", "certrotation")
 			os.Exit(1)
 		}
+
+		if err = (&controllers.CertRotationMonolithicReconciler{
+			Client:       mgr.GetClient(),
+			Scheme:       mgr.GetScheme(),
+			FeatureGates: ctrlConfig.Gates,
+		}).SetupWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create controller", "controller", "certrotationmonolithic")
+			os.Exit(1)
+		}
 	}
 
 	if err = (&controllers.TempoStackReconciler{

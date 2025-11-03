@@ -9,6 +9,7 @@ import (
 	"gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/ptr"
 
 	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 	tempoStackConfig "github.com/grafana/tempo-operator/internal/manifests/config"
@@ -50,16 +51,22 @@ type tempoAzureConfig struct {
 type tempoGCSConfig struct {
 	BucketName string `yaml:"bucket_name"`
 }
-
+type tempoHTTPTLSConfig struct {
+	CertFile       string `yaml:"cert_file,omitempty"`
+	KeyFile        string `yaml:"key_file,omitempty"`
+	ClientAuthType string `yaml:"client_auth_type,omitempty"`
+	ClientCAFile   string `yaml:"client_ca_file,omitempty"`
+}
 type tempoConfig struct {
 	MultitenancyEnabled bool `yaml:"multitenancy_enabled,omitempty"`
 
 	Server struct {
-		HTTPListenAddress      string        `yaml:"http_listen_address,omitempty"`
-		HttpListenPort         int           `yaml:"http_listen_port,omitempty"`
-		GRPCListenAddress      string        `yaml:"grpc_listen_address,omitempty"`
-		HttpServerReadTimeout  time.Duration `yaml:"http_server_read_timeout,omitempty"`
-		HttpServerWriteTimeout time.Duration `yaml:"http_server_write_timeout,omitempty"`
+		HTTPListenAddress      string              `yaml:"http_listen_address,omitempty"`
+		HttpListenPort         int                 `yaml:"http_listen_port,omitempty"`
+		GRPCListenAddress      string              `yaml:"grpc_listen_address,omitempty"`
+		HttpServerReadTimeout  time.Duration       `yaml:"http_server_read_timeout,omitempty"`
+		HttpServerWriteTimeout time.Duration       `yaml:"http_server_write_timeout,omitempty"`
+		HTTPTLSConfig          *tempoHTTPTLSConfig `yaml:"http_tls_config,omitempty"`
 	} `yaml:"server"`
 
 	InternalServer struct {
@@ -102,6 +109,11 @@ type tempoQueryConfig struct {
 	TenantHeaderKey              string        `yaml:"tenant_header_key"`
 	ServicesQueryDuration        time.Duration `yaml:"services_query_duration"`
 	FindTracesConcurrentRequests int           `yaml:"find_traces_concurrent_requests"`
+	TLSEnabled                   bool          `yaml:"tls_enabled,omitempty"`
+	TLSCertPath                  *string       `yaml:"tls_cert_path,omitempty"`
+	TLSKeyPath                   *string       `yaml:"tls_key_path,omitempty"`
+	TLSCAPath                    *string       `yaml:"tls_ca_path,omitempty"`
+	TLSInsecureSkipVerify        *bool         `yaml:"tls_insecure_skip_verify,omitempty"`
 }
 
 // BuildConfigMap creates the Tempo ConfigMap for a monolithic deployment.
@@ -134,7 +146,9 @@ func BuildConfigMap(opts Options) (*corev1.ConfigMap, map[string]string, error) 
 	extraAnnotations["tempo.grafana.com/tempoConfig.hash"] = fmt.Sprintf("%x", h)
 
 	if tempo.Spec.JaegerUI != nil && tempo.Spec.JaegerUI.Enabled {
-		tempoQueryConfig, err := buildTempoQueryConfig(tempo.Spec.JaegerUI)
+
+		enableTLS := tempo.Spec.Multitenancy.IsGatewayEnabled() && opts.CtrlConfig.Gates.HTTPEncryption
+		tempoQueryConfig, err := buildTempoQueryConfig(tempo.Spec.JaegerUI, enableTLS)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -177,9 +191,20 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 	config.Server.HttpServerReadTimeout = opts.Tempo.Spec.Timeout.Duration
 	config.Server.HttpServerWriteTimeout = opts.Tempo.Spec.Timeout.Duration
 	if tempo.Spec.Multitenancy.IsGatewayEnabled() {
+		// We need this to scrap metrics.
+		config.Server.HTTPListenAddress = "0.0.0.0"
 		// all connections to tempo must go via gateway
-		config.Server.HTTPListenAddress = "localhost"
 		config.Server.GRPCListenAddress = "localhost"
+
+		if opts.CtrlConfig.Gates.HTTPEncryption {
+			config.Server.HTTPTLSConfig = &tempoHTTPTLSConfig{
+				CertFile:       path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSCertFilename),
+				KeyFile:        path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSKeyFilename),
+				ClientCAFile:   path.Join(manifestutils.TempoInternalTLSCADir, manifestutils.TLSCAFilename),
+				ClientAuthType: "RequireAndVerifyClientCert",
+			}
+		}
+
 	}
 
 	// The internal server is required because if the gateway is enabled,
@@ -241,23 +266,34 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 
 	if tempo.Spec.Ingestion != nil {
 		if tempo.Spec.Ingestion.OTLP != nil {
-			if tempo.Spec.Ingestion.OTLP.GRPC != nil && tempo.Spec.Ingestion.OTLP.GRPC.Enabled {
-				receiverTLS, err := configureReceiverTLS(tempo.Spec.Ingestion.OTLP.GRPC.TLS, opts.TLSProfile,
-					manifestutils.ReceiverGRPCTLSCADir, manifestutils.ReceiverGRPCTLSCertDir)
-
-				if err != nil {
-					return nil, err
-				}
-
+			// It seems like the gateway try to report grpc using mTLS even if only HTTP encryption is enabled.
+			if tempo.Spec.Multitenancy.IsGatewayEnabled() && opts.CtrlConfig.Gates.HTTPEncryption {
 				config.Distributor.Receivers.OTLP.Protocols.GRPC = &tempoReceiverConfig{
-					TLS: receiverTLS,
+					TLS: tempoReceiverTLSConfig{
+						CertFile: path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSCertFilename),
+						CAFile:   path.Join(manifestutils.TempoInternalTLSCADir, manifestutils.TLSCAFilename),
+						KeyFile:  path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSKeyFilename),
+					},
 				}
+			} else {
+				if tempo.Spec.Ingestion.OTLP.GRPC != nil && tempo.Spec.Ingestion.OTLP.GRPC.Enabled {
+					receiverTLS, err := configureReceiverTLS(tempo.Spec.Ingestion.OTLP.GRPC.TLS, opts.TLSProfile,
+						manifestutils.ReceiverGRPCTLSCADir, manifestutils.ReceiverGRPCTLSCertDir)
 
-				if tempo.Spec.Multitenancy.IsGatewayEnabled() {
-					// all connections to tempo must go via gateway
-					config.Distributor.Receivers.OTLP.Protocols.GRPC.Endpoint = fmt.Sprintf("localhost:%d", manifestutils.PortOtlpGrpcServer)
-				} else {
-					config.Distributor.Receivers.OTLP.Protocols.GRPC.Endpoint = fmt.Sprintf("0.0.0.0:%d", manifestutils.PortOtlpGrpcServer)
+					if err != nil {
+						return nil, err
+					}
+
+					config.Distributor.Receivers.OTLP.Protocols.GRPC = &tempoReceiverConfig{
+						TLS: receiverTLS,
+					}
+
+					if tempo.Spec.Multitenancy.IsGatewayEnabled() {
+						// all connections to tempo must go via gateway
+						config.Distributor.Receivers.OTLP.Protocols.GRPC.Endpoint = fmt.Sprintf("localhost:%d", manifestutils.PortOtlpGrpcServer)
+					} else {
+						config.Distributor.Receivers.OTLP.Protocols.GRPC.Endpoint = fmt.Sprintf("0.0.0.0:%d", manifestutils.PortOtlpGrpcServer)
+					}
 				}
 			}
 
@@ -294,12 +330,19 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 	}
 }
 
-func buildTempoQueryConfig(jaegerUISpec *v1alpha1.MonolithicJaegerUISpec) ([]byte, error) {
+func buildTempoQueryConfig(jaegerUISpec *v1alpha1.MonolithicJaegerUISpec, enableTLS bool) ([]byte, error) {
 	config := tempoQueryConfig{}
 	config.Address = fmt.Sprintf("0.0.0.0:%d", manifestutils.PortTempoGRPCQuery)
 	config.Backend = fmt.Sprintf("localhost:%d", manifestutils.PortHTTPServer)
 	config.TenantHeaderKey = manifestutils.TenantHeader
 	config.ServicesQueryDuration = jaegerUISpec.ServicesQueryDuration.Duration
 	config.FindTracesConcurrentRequests = jaegerUISpec.FindTracesConcurrentRequests
+	if enableTLS {
+		config.TLSEnabled = true
+		config.TLSCertPath = ptr.To(path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSCertFilename))
+		config.TLSKeyPath = ptr.To(path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSKeyFilename))
+		config.TLSCAPath = ptr.To(path.Join(manifestutils.TempoInternalTLSCADir, manifestutils.TLSCAFilename))
+		config.TLSInsecureSkipVerify = ptr.To(false)
+	}
 	return yaml.Marshal(&config)
 }

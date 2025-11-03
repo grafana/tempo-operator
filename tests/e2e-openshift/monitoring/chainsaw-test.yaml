@@ -42,6 +42,7 @@ spec:
           value: ($TEMPO_NAMESPACE)
         entrypoint: oc
         args:
+        - --overwrite=true
         - label
         - namespace
         - $temponamespace 

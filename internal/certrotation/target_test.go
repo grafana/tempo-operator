@@ -55,10 +55,10 @@ func TestCertificatesExpired(t *testing.T) {
 		},
 		RawCACerts: rawCA.Config.Certs,
 	}
-	err = ApplyDefaultSettings(&opts, cfg)
+	err = ApplyDefaultSettings(&opts, cfg, TempoStackComponentCertSecretNames(opts.StackName))
 	require.NoError(t, err)
 
-	for _, name := range ComponentCertSecretNames(stackName) {
+	for _, name := range TempoStackComponentCertSecretNames(stackName) {
 		cert := opts.Certificates[name]
 		cert.Secret = &corev1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
@@ -106,7 +106,7 @@ func TestBuildTargetCertKeyPairSecrets_Create(t *testing.T) {
 		RawCACerts: rawCA.Config.Certs,
 	}
 
-	err := ApplyDefaultSettings(&opts, cfg)
+	err := ApplyDefaultSettings(&opts, cfg, TempoStackComponentCertSecretNames(opts.StackName))
 	require.NoError(t, err)
 
 	objs, err := buildTargetCertKeyPairSecrets(opts)
@@ -154,7 +154,7 @@ func TestBuildTargetCertKeyPairSecrets_Rotate(t *testing.T) {
 			},
 		},
 	}
-	err := ApplyDefaultSettings(&opts, cfg)
+	err := ApplyDefaultSettings(&opts, cfg, TempoStackComponentCertSecretNames(opts.StackName))
 	require.NoError(t, err)
 
 	objs, err := buildTargetCertKeyPairSecrets(opts)

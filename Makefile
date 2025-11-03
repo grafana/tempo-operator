@@ -83,9 +83,6 @@ ifeq ($(USE_IMAGE_DIGESTS), true)
 	BUNDLE_GEN_FLAGS += --use-image-digests
 endif
 
-# ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by setup-envtest binary.
-ENVTEST_K8S_VERSION = 1.24.2
-
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
 GOBIN=$(shell go env GOPATH)/bin
@@ -237,11 +234,14 @@ $(LOCALBIN):
 KUSTOMIZE_VERSION ?= v5.0.3
 CONTROLLER_GEN_VERSION ?= v0.16.5
 GEN_API_DOCS_VERSION ?= v0.6.0
-ENVTEST_VERSION ?= latest
 OPERATOR_SDK_VERSION ?= 1.36.0
 OLM_VERSION ?= v0.28.0
 CERTMANAGER_VERSION ?= 1.9.1
 CHAINSAW_VERSION ?= v0.2.12
+#ENVTEST_VERSION is the version of controller-runtime release branch to fetch the envtest setup script (i.e. release-0.20)
+ENVTEST_VERSION ?= $(shell go list -m -f "{{ .Version }}" sigs.k8s.io/controller-runtime | awk -F'[v.]' '{printf "release-%d.%d", $$2, $$3}')
+#ENVTEST_K8S_VERSION is the version of Kubernetes to use for setting up ENVTEST binaries (i.e. 1.31)
+ENVTEST_K8S_VERSION ?= $(shell go list -m -f "{{ .Version }}" k8s.io/api | awk -F'[v.]' '{printf "1.%d", $$3}')
 
 ## Tool Binaries
 KUSTOMIZE ?= $(LOCALBIN)/kustomize-$(KUSTOMIZE_VERSION)

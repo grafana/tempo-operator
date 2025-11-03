@@ -30,26 +30,6 @@ status:
   phase: Running
 
 ---
-apiVersion: v1
-kind: Service
-metadata:
-  name: tempo-mmo-gateway
-spec:
-  ports:
-  - name: public
-    port: 8080
-    protocol: TCP
-    targetPort: public
-  - name: internal
-    port: 8081
-    protocol: TCP
-    targetPort: internal
-  - name: otlp-grpc
-    port: 4317
-    protocol: TCP
-    targetPort: grpc-public
-
----
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -88,6 +68,30 @@ subjects:
   namespace: chainsaw-monolithic-multitenancy
 
 ---
+apiVersion: v1
+kind: Service
+metadata:
+    name: tempo-mmo-gateway
+spec:
+    ports:
+    - name: public
+      protocol: TCP
+      port: 8080
+      targetPort: public
+    - name: internal
+      protocol: TCP
+      port: 8081
+      targetPort: internal
+    - name: http
+      protocol: TCP
+      port: 3200
+      targetPort: http
+    - name: otlp-grpc
+      protocol: TCP
+      port: 4317
+      targetPort: grpc-public
+---
+
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -96,7 +100,7 @@ metadata:
     app.kubernetes.io/instance: mmo
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo-monolithic
-  name: tempo-mmo-gateway
+  name: tempo-mmo
   namespace: chainsaw-monolithic-multitenancy
 spec:
   endpoints:
@@ -113,7 +117,48 @@ spec:
       - __meta_kubernetes_namespace
       - __meta_kubernetes_service_label_app_kubernetes_io_component
       targetLabel: job
-    scheme: http
+    scheme: https
+    tlsConfig:
+      ca:
+        configMap:
+          key: service-ca.crt
+          name: tempo-mmo-ca-bundle
+      cert:
+        secret:
+          key: tls.crt
+          name: tempo-mmo-mtls
+      keySecret:
+        key: tls.key
+        name: tempo-mmo-mtls
+      serverName: tempo-mmo.chainsaw-monolithic-multitenancy.svc.cluster.local
+  - path: /metrics
+    port: http
+    relabelings:
+      - action: replace
+        sourceLabels:
+          - __meta_kubernetes_service_label_app_kubernetes_io_instance
+        targetLabel: cluster
+      - action: replace
+        separator: /
+        sourceLabels:
+          - __meta_kubernetes_namespace
+          - __meta_kubernetes_service_label_app_kubernetes_io_component
+        targetLabel: job
+    scheme: https
+    tlsConfig:
+      ca:
+        configMap:
+          key: service-ca.crt
+          name: tempo-mmo-ca-bundle
+      cert:
+        secret:
+          key: tls.crt
+          name: tempo-mmo-mtls
+      keySecret:
+          key: tls.key
+          name: tempo-mmo-mtls
+      serverName: tempo-mmo.chainsaw-monolithic-multitenancy.svc.cluster.local
+
   namespaceSelector:
     matchNames:
     - chainsaw-monolithic-multitenancy
