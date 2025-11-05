@@ -207,13 +207,13 @@ spec:
         format: yaml
   - name: Generate traces from namespace chainsaw-mono-rbac-1 for TempoMonolithic after upgrade
     try:
-    - apply:
+    - create:
         file: tempo-mono-rbac-sa-1-traces-gen.yaml
     - assert:
         file: assert-tempo-mono-rbac-sa-1-traces-gen.yaml
   - name: Generate traces from namespace chainsaw-mono-rbac-2 for TempoMonolithic after upgrade
     try:
-    - apply:
+    - create:
         file: tempo-mono-rbac-sa-2-traces-gen.yaml
     - assert:
         file: assert-tempo-mono-rbac-sa-2-traces-gen.yaml
@@ -223,18 +223,18 @@ spec:
         file: tempostack-rbac-sa-1-traces-verify.yaml
     - assert:
         file: assert-tempostack-rbac-sa-1-traces-verify.yaml
-  - name: Verify kubeadmin can view traces from all projects for TempoStack after upgrade
-    try:
-    - create:
-        file: kubeadmin-tempostack-traces-verify.yaml
-    - assert:
-        file: assert-kubeadmin-tempostack-traces-verify.yaml
   - name: Verify tracess using RBAC for TempoMonolithic after upgrade
     try:
     - create:
         file: tempo-mono-rbac-sa-1-traces-verify.yaml
     - assert:
         file: assert-tempo-mono-rbac-sa-1-traces-verify.yaml
+  - name: Verify kubeadmin can view traces from all projects for TempoStack after upgrade
+    try:
+    - create:
+        file: kubeadmin-tempostack-traces-verify.yaml
+    - assert:
+        file: assert-kubeadmin-tempostack-traces-verify.yaml
   - name: Verify kubeadmin can view traces from all projects for TempoMonolithic after upgrade
     try:
     - create:
