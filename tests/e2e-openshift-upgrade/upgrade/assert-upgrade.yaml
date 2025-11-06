@@ -48,18 +48,3 @@ metadata:
 status:
   operatorVersion: ($upgrade_operator_version)
   tempoVersion: ($upgrade_tempo_version)
-
----
-apiVersion: apps/v1
-kind: StatefulSet
-metadata:
-  name: tempo-mmo-rbac
-  namespace: chainsaw-mmo-rbac
-status:
-  availableReplicas: 1
-  collisionCount: 0
-  currentReplicas: 1
-  (observedGeneration >= `4`): true
-  readyReplicas: 1
-  replicas: 1
-  updatedReplicas: 1

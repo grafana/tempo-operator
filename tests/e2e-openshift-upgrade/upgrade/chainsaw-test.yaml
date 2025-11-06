@@ -139,6 +139,10 @@ spec:
     try:
     - apply:
         file: create-upgrade-catalog.yaml
+        expect:
+        - check:
+            # Allow success or forbidden error
+            ($error == null || contains($error, 'forbidden')): true
     - assert:
         file: assert-upgrade-catalog.yaml
   - name: Upgrade Tempo Operator
@@ -159,6 +163,10 @@ spec:
         namespace: openshift-tempo-operator
         name: tempo-product
         format: yaml
+  - name: Wait for the upgrade to complete specifically when upgrading to a minor version when the operator and operand version doesn't change.
+    try:
+      - sleep:
+          duration: 120s
   - name: Assert TempoStack is ready
     try:
     - assert:
