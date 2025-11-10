@@ -107,7 +107,7 @@ func CreateOrRotateCertificates(ctx context.Context, log logr.Logger,
 	return nil
 }
 
-// addCertificateHashAnnotations adds certificate hash annotations to trigger pod restart after certificate rotation
+// addCertificateHashAnnotations adds certificate hash annotations to trigger pod restart after certificate rotation.
 func addCertificateHashAnnotations(ctx context.Context, k client.Client, stack *v1alpha1.TempoStack, opts certrotation.Options) error {
 	if stack.Annotations == nil {
 		stack.Annotations = make(map[string]string)
