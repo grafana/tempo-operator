@@ -2,6 +2,7 @@ package monolithic
 
 import (
 	"context"
+	"crypto/sha256"
 	"fmt"
 
 	"github.com/ViaQ/logerr/v2/kverrors"
@@ -95,8 +96,35 @@ func CreateOrRotateCertificates(ctx context.Context, log logr.Logger,
 	}
 
 	if errCount > 0 {
-		return kverrors.New("failed to create or rotate TempoStack certificates", "name", req.String())
+		return kverrors.New("failed to create or rotate TempoMonolithic certificates", "name", req.String())
 	}
 
+	// Add certificate hash annotations to trigger pod restart after successful certificate rotation
+	if err := addCertificateHashAnnotationsMonolithic(ctx, k, &stack, opts); err != nil {
+		ll.Error(err, "failed to add certificate hash annotations after certificate rotation")
+		return kverrors.Wrap(err, "failed to add certificate hash annotations", "name", req.String())
+	}
+
+	ll.Info("certificate rotation completed successfully, hash annotations added")
 	return nil
+}
+
+// addCertificateHashAnnotationsMonolithic adds certificate hash annotations to trigger pod restart after certificate rotation
+func addCertificateHashAnnotationsMonolithic(ctx context.Context, k client.Client, stack *v1alpha1.TempoMonolithic, opts certrotation.Options) error {
+	if stack.Annotations == nil {
+		stack.Annotations = make(map[string]string)
+	}
+
+	// Calculate and add certificate hashes to annotations
+	for name, cert := range opts.Certificates {
+		if cert.Secret != nil && cert.Secret.Data != nil {
+			if certData, exists := cert.Secret.Data["tls.crt"]; exists {
+				hash := fmt.Sprintf("%x", sha256.Sum256(certData))
+				annotationKey := fmt.Sprintf("tempo.grafana.com/cert-hash-%s", name)
+				stack.Annotations[annotationKey] = hash
+			}
+		}
+	}
+
+	return k.Update(ctx, stack)
 }

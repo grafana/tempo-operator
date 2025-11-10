@@ -59,6 +59,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 	tempo := params.Tempo
 	labels := manifestutils.ComponentLabels(manifestutils.QuerierComponentName, tempo.Name)
 	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
+	annotations = manifestutils.PodRestartAnnotations(tempo.GetAnnotations(), annotations)
 	cfg := tempo.Spec.Template.Querier
 	image := tempo.Spec.Images.Tempo
 	if image == "" {
