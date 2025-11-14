@@ -76,7 +76,7 @@ func TestPodRestartAnnotations(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := PodRestartAnnotations(tt.crAnnotations, tt.existing)
+			result := AddCertificateHashAnnotations(tt.crAnnotations, tt.existing)
 			assert.Equal(t, tt.expected, result)
 		})
 	}

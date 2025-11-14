@@ -4,7 +4,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tempo-simplest-compactor
-  generation: 2
+  generation: 3
 status:
   readyReplicas: 1
 ---

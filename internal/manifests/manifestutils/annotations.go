@@ -40,8 +40,8 @@ func StorageSecretHash(params StorageParams, annotations map[string]string) map[
 	return annotations
 }
 
-// PodRestartAnnotations adds restart-related annotations from TempoStack CR to trigger pod restarts.
-func PodRestartAnnotations(crAnnotations map[string]string, annotations map[string]string) map[string]string {
+// AddCertificateHashAnnotations adds restart-related annotations from TempoStack CR to trigger pod restarts.
+func AddCertificateHashAnnotations(crAnnotations map[string]string, annotations map[string]string) map[string]string {
 	if annotations == nil {
 		annotations = make(map[string]string)
 	}
