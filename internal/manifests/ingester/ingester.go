@@ -54,6 +54,7 @@ func statefulSet(params manifestutils.Params) (*v1.StatefulSet, error) {
 	labels := manifestutils.ComponentLabels(manifestutils.IngesterComponentName, tempo.Name)
 	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
 	annotations = manifestutils.StorageSecretHash(params.StorageParams, annotations)
+	annotations = manifestutils.AddCertificateHashAnnotations(tempo.GetAnnotations(), annotations)
 
 	filesystem := corev1.PersistentVolumeFilesystem
 	cfg := tempo.Spec.Template.Ingester

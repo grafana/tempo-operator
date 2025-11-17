@@ -201,6 +201,7 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 	tempo := params.Tempo
 	labels := manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name)
 	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
+	annotations = manifestutils.AddCertificateHashAnnotations(tempo.GetAnnotations(), annotations)
 	annotations["tempo.grafana.com/rbacConfig.hash"] = rbacCfgHash
 	annotations["tempo.grafana.com/tenantsConfig.hash"] = tenantsCfgHash
 

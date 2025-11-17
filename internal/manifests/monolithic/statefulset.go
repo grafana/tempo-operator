@@ -29,6 +29,7 @@ func BuildTempoStatefulset(opts Options, extraAnnotations map[string]string) (*a
 	tempo := opts.Tempo
 	labels := ComponentLabels(manifestutils.TempoMonolithComponentName, tempo.Name)
 	annotations := manifestutils.StorageSecretHash(opts.StorageParams, extraAnnotations)
+	annotations = manifestutils.AddCertificateHashAnnotations(tempo.GetAnnotations(), annotations)
 
 	sts := &appsv1.StatefulSet{
 		TypeMeta: metav1.TypeMeta{
