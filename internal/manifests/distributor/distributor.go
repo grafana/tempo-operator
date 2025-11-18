@@ -159,6 +159,7 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 	tempo := params.Tempo
 	labels := manifestutils.ComponentLabels(manifestutils.DistributorComponentName, tempo.Name)
 	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
+	annotations = manifestutils.AddCertificateHashAnnotations(tempo.GetAnnotations(), annotations)
 	cfg := tempo.Spec.Template.Distributor
 	image := tempo.Spec.Images.Tempo
 	if image == "" {

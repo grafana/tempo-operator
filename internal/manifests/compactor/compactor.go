@@ -58,6 +58,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 	labels := manifestutils.ComponentLabels(manifestutils.CompactorComponentName, tempo.Name)
 	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
 	annotations = manifestutils.StorageSecretHash(params.StorageParams, annotations)
+	annotations = manifestutils.AddCertificateHashAnnotations(tempo.GetAnnotations(), annotations)
 	cfg := tempo.Spec.Template.Compactor
 	image := tempo.Spec.Images.Tempo
 	if image == "" {

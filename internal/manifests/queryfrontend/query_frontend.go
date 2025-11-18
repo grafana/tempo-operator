@@ -160,6 +160,7 @@ func deployment(params manifestutils.Params) (*appsv1.Deployment, error) {
 	tempo := params.Tempo
 	labels := manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, tempo.Name)
 	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
+	annotations = manifestutils.AddCertificateHashAnnotations(tempo.GetAnnotations(), annotations)
 	cfg := tempo.Spec.Template.QueryFrontend
 	tempoImage := tempo.Spec.Images.Tempo
 	if tempoImage == "" {

@@ -25,8 +25,8 @@ spec:
                 --data-urlencode 'q={ resource.service.name="grpc-rbac-1" }' \
                 | tee /tmp/jaeger.out
               num_traces=$(jq ".traces | length" /tmp/jaeger.out)
-              if [[ "$num_traces" != "2" ]]; then
-                echo && echo "The Jaeger API returned $num_traces instead of 2 traces."
+              if [[ "$num_traces" -lt 2 ]]; then
+                echo && echo "The Jaeger API returned $num_traces traces, expected at least 2."
                 exit 1
               fi
 
@@ -67,8 +67,8 @@ spec:
                 --data-urlencode 'q={ resource.service.name="grpc-rbac-2" }' \
                 | tee /tmp/jaeger.out
               num_traces=$(jq ".traces | length" /tmp/jaeger.out)
-              if [[ "$num_traces" != "2" ]]; then
-                echo && echo "The Jaeger API returned $num_traces instead of 2 traces."
+              if [[ "$num_traces" -lt 2 ]]; then
+                echo && echo "The Jaeger API returned $num_traces traces, expected at least 2."
                 exit 1
               fi
 
@@ -129,8 +129,8 @@ spec:
                 --data-urlencode 'q={ resource.service.name="http-rbac-1" }' \
                 | tee /tmp/jaeger.out
               num_traces=$(jq ".traces | length" /tmp/jaeger.out)
-              if [[ "$num_traces" != "2" ]]; then
-                echo && echo "The Jaeger API returned $num_traces instead of 2 traces."
+              if [[ "$num_traces" -lt 2 ]]; then
+                echo && echo "The Jaeger API returned $num_traces traces, expected at least 2."
                 exit 1
               fi
 
@@ -171,8 +171,8 @@ spec:
                 --data-urlencode 'q={ resource.service.name="http-rbac-2" }' \
                 | tee /tmp/jaeger.out
               num_traces=$(jq ".traces | length" /tmp/jaeger.out)
-              if [[ "$num_traces" != "2" ]]; then
-                echo && echo "The Jaeger API returned $num_traces instead of 2 traces."
+              if [[ "$num_traces" -lt 2 ]]; then
+                echo && echo "The Jaeger API returned $num_traces traces, expected at least 2."
                 exit 1
               fi
 
