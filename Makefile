@@ -1,6 +1,6 @@
 # Current Operator version
 OPERATOR_VERSION ?= 0.18.0
-TEMPO_VERSION ?= 2.8.2
+TEMPO_VERSION ?= 2.9.0
 JAEGER_QUERY_VERSION ?= 1.68.0
 TEMPO_QUERY_VERSION ?= $(TEMPO_VERSION)
 # https://quay.io/repository/observatorium/api
