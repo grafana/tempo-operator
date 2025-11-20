@@ -25,7 +25,7 @@ We plan to release the operator monthly, **at the end of each month**.
 
 | Version | Release Manager                                          |
 |---------| -------------------------------------------------------- |
-|  0.19.0 | [Benedikt Bongartz](https://github.com/frzifus)          |
+|  0.19.0 | [Ruben Vargas](https://github.com/rubenvp8510)           |
 |  0.20.0 | [Pavol Loffay](https://github.com/pavolloffay)           |
-|  0.21.0 | [Ruben Vargas](https://github.com/rubenvp8510)           |
+|  0.21.0 | [Benedikt Bongartz](https://github.com/frzifus)          |
 |  0.22.0 | [Andreas Gerstmayr](https://github.com/andreasgerstmayr) |
