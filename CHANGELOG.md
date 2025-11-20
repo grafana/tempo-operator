@@ -3,6 +3,23 @@ Changes by Version
 
 <!-- next version -->
 
+## 0.19.0
+
+### 💡 Enhancements 💡
+
+- `tempostack, tempomonolithic`: Update Tempo to 2.9.0 (#1308)
+
+### 🧰 Bug fixes 🧰
+
+- `tempomonolithic`: Scrape tempo metrics for monolithic. (#1275)
+- `tempostack`: Restart pods when certificates are re-generated. (#1301)
+
+### Components
+- Tempo: [v2.9.0](https://github.com/grafana/tempo/releases/tag/v2.9.0)
+
+### Support
+This release supports Kubernetes 1.25 to 1.32.
+
 ## 0.18.0
 
 ### 💡 Enhancements 💡
