@@ -2,13 +2,14 @@ package handlers
 
 import (
 	"context"
-	"crypto/sha256"
 	"fmt"
 
 	"github.com/ViaQ/logerr/v2/kverrors"
 	"github.com/go-logr/logr"
 
+	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -18,6 +19,7 @@ import (
 	v1alpha1 "github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/certrotation"
 	"github.com/grafana/tempo-operator/internal/manifests"
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 )
 
 // CreateOrRotateCertificates handles the TempoStack client and serving certificate creation and rotation
@@ -109,20 +111,11 @@ func CreateOrRotateCertificates(ctx context.Context, log logr.Logger,
 
 // addCertificateHashAnnotations adds certificate hash annotations to trigger pod restart after certificate rotation.
 func addCertificateHashAnnotations(ctx context.Context, k client.Client, stack *v1alpha1.TempoStack, opts certrotation.Options) error {
-	if stack.Annotations == nil {
-		stack.Annotations = make(map[string]string)
-	}
-
-	// Calculate and add certificate hashes to annotations
+	certSecrets := make(map[string]*corev1.Secret, len(opts.Certificates))
 	for name, cert := range opts.Certificates {
-		if cert.Secret != nil && cert.Secret.Data != nil {
-			if certData, exists := cert.Secret.Data["tls.crt"]; exists {
-				hash := fmt.Sprintf("%x", sha256.Sum256(certData))
-				annotationKey := fmt.Sprintf("tempo.grafana.com/cert-hash-%s", name)
-				stack.Annotations[annotationKey] = hash
-			}
-		}
+		certSecrets[name] = cert.Secret
 	}
 
+	stack.Annotations = labels.Merge(stack.Annotations, manifestutils.CertificateHashAnnotations(certSecrets))
 	return k.Update(ctx, stack)
 }
