@@ -28,7 +28,7 @@ jobs:
               --force
 
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           repository: ${{ env.OPERATOR_BOT_USER }}/${{ github.event.repository.name }}
           token: ${{ secrets.TEMPOOPERATORBOT_GITHUB_TOKEN }}
