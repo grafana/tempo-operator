@@ -11,11 +11,6 @@ REQUIRED_ITEMS=(
   "event-filter.html"
   "timestamp"
   "*sha*/deployment-tempo-operator-controller.yaml"
-  "*sha*/olm/installplan-install-*"
-  "*sha*/olm/clusterserviceversion-tempo-operator-*.yaml"
-  "*sha*/olm/operator-opentelemetry-product-openshift-opentelemetry-operator.yaml"
-  "*sha*/olm/operator-*-tempo-operator.yaml"
-  "*sha*/olm/subscription-tempo-*.yaml"
   "*sha*/namespaces/chainsaw-route/tempostack/simplest/service-tempo-simplest-distributor.yaml"
   "*sha*/namespaces/chainsaw-route/tempostack/simplest/service-tempo-simplest-ingester.yaml"
   "*sha*/namespaces/chainsaw-route/tempostack/simplest/deployment-tempo-simplest-distributor.yaml"
@@ -37,11 +32,29 @@ REQUIRED_ITEMS=(
   "*sha*/tempo-operator-controller-*"
 )
 
+# Define optional OLM-related items (only present when operator is deployed via OLM)
+OPTIONAL_ITEMS=(
+  "*sha*/olm/installplan-install-*"
+  "*sha*/olm/clusterserviceversion-tempo-operator-*.yaml"
+  "*sha*/olm/operator-opentelemetry-product-openshift-opentelemetry-operator.yaml"
+  "*sha*/olm/operator-*-tempo-operator.yaml"
+  "*sha*/olm/subscription-tempo-*.yaml"
+)
+
 # Verify each required item
 for item in "${REQUIRED_ITEMS[@]}"; do
   if ! find "$MUST_GATHER_DIR" -path "$MUST_GATHER_DIR/$item" -print -quit | grep -q .; then
-    echo "Missing: $item"
+    echo "Missing required: $item"
     exit 1
+  else
+    echo "Found: $item"
+  fi
+done
+
+# Verify optional items (don't fail if missing)
+for item in "${OPTIONAL_ITEMS[@]}"; do
+  if ! find "$MUST_GATHER_DIR" -path "$MUST_GATHER_DIR/$item" -print -quit | grep -q .; then
+    echo "Missing optional: $item (OK - operator may not be deployed via OLM)"
   else
     echo "Found: $item"
   fi

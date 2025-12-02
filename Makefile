@@ -51,7 +51,7 @@ OPERATOR_NAMESPACE ?= tempo-operator-system
 
 # OpenTelemetry operator installation vars
 OTEL_OPERATOR_NAMESPACE ?= otel-operator-system
-OTEL_BUNDLE_IMG ?= "ghcr.io/open-telemetry/opentelemetry-operator/operator-bundle:v0.136.0"
+OTEL_BUNDLE_IMG ?= "ghcr.io/open-telemetry/opentelemetry-operator/operator-bundle:v0.140.0"
 
 # CHANNELS define the bundle channels used in the bundle.
 # Add a new line here if you would like to change its default config. (E.g CHANNELS = "candidate,fast,stable")
