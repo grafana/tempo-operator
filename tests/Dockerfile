@@ -16,7 +16,7 @@ RUN curl -LO https://github.com/kudobuilder/kuttl/releases/download/v0.15.0/kube
     && mv kubectl-kuttl_0.15.0_linux_x86_64 /usr/local/bin/kuttl
 
 # Install chainsaw
-RUN curl -L -o chainsaw.tar.gz https://github.com/kyverno/chainsaw/releases/download/v0.2.12/chainsaw_linux_amd64.tar.gz \
+RUN curl -L -o chainsaw.tar.gz https://github.com/kyverno/chainsaw/releases/download/v0.2.13/chainsaw_linux_amd64.tar.gz \
     && tar -xvzf chainsaw.tar.gz \
     && chmod +x chainsaw \
     && mv chainsaw /usr/local/bin/

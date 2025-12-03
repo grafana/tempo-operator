@@ -237,7 +237,7 @@ GEN_API_DOCS_VERSION ?= v0.6.0
 OPERATOR_SDK_VERSION ?= 1.36.0
 OLM_VERSION ?= v0.28.0
 CERTMANAGER_VERSION ?= 1.9.1
-CHAINSAW_VERSION ?= v0.2.12
+CHAINSAW_VERSION ?= v0.2.13
 #ENVTEST_VERSION is the version of controller-runtime release branch to fetch the envtest setup script (i.e. release-0.20)
 ENVTEST_VERSION ?= $(shell go list -m -f "{{ .Version }}" sigs.k8s.io/controller-runtime | awk -F'[v.]' '{printf "release-%d.%d", $$2, $$3}')
 #ENVTEST_K8S_VERSION is the version of Kubernetes to use for setting up ENVTEST binaries (i.e. 1.31)
