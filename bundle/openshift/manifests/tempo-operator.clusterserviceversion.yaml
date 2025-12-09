@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.19.0
-    createdAt: "2025-11-20T16:37:25Z"
+    createdAt: "2025-12-04T20:37:21Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -479,6 +479,17 @@ spec:
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:advanced
       - description: |-
+          MCPServer defines the MCP (Model Context Protocol) server configuration.
+          The MCP server allows AI assistants to query tracing data.
+        displayName: MCP Server Settings
+        path: query.mcpServer
+      - description: Enabled defines if the MCP (Model Context Protocol) server should
+          be enabled.
+        displayName: Enable MCP Server
+        path: query.mcpServer.enabled
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
+      - description: |-
           RBAC defines query RBAC options.
           This option can be used only with multi-tenancy.
         displayName: Query RBAC Settings
@@ -486,6 +497,8 @@ spec:
       - description: Enabled defines if the query RBAC should be enabled.
         displayName: Query RBAC Enabled
         path: query.rbac.enabled
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
       - description: ServiceAccount defines the Service Account to use for all Tempo
           components.
         displayName: Service Account
@@ -1028,6 +1041,8 @@ spec:
       - description: Enabled defines if the query RBAC should be enabled.
         displayName: Query RBAC Enabled
         path: template.gateway.rbac.enabled
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
       - description: Replicas defines the number of replicas to be created for this
           component.
         displayName: Component Replicas
@@ -1177,6 +1192,17 @@ spec:
           the calculated resources derived from total
         displayName: Resources
         path: template.queryFrontend.jaegerQuery.tempoQuery.resources
+      - description: |-
+          MCPServer defines the MCP (Model Context Protocol) server configuration.
+          The MCP server allows AI assistants to query tracing data.
+        displayName: MCP Server Settings
+        path: template.queryFrontend.mcpServer
+      - description: Enabled defines if the MCP (Model Context Protocol) server should
+          be enabled.
+        displayName: Enable MCP Server
+        path: template.queryFrontend.mcpServer.enabled
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
       - description: NodeSelector defines the simple form of the node-selection constraint.
         displayName: Node Selector
         path: template.queryFrontend.nodeSelector
