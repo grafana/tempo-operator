@@ -19,9 +19,14 @@ func GenerateOperandPolicies(params manifestutils.Params) []client.Object {
 	policies := []client.Object{
 		policyDenyAll(tempo.Name, tempo.Namespace, labels),
 		policyIngressToMetrics(tempo.Name, tempo.Namespace, labels),
-		policyEgressAllowDNS(tempo.Name, tempo.Namespace, labels),
-		policyEgressAllowDNSOpenShift(tempo.Name, tempo.Namespace, labels),
 		policyTempoGossip(tempo.Name, tempo.Namespace, labels),
+	}
+
+	// Add platform-specific DNS policy
+	if params.CtrlConfig.Distribution == "openshift" {
+		policies = append(policies, policyEgressAllowDNSOpenShift(tempo.Name, tempo.Namespace, labels))
+	} else {
+		policies = append(policies, policyEgressAllowDNS(tempo.Name, tempo.Namespace, labels))
 	}
 
 	policies = append(policies, generatePolicyFor(params, manifestutils.DistributorComponentName))
