@@ -1,6 +1,7 @@
 package networkpolicies
 
 import (
+	"sort"
 	"strconv"
 	"strings"
 
@@ -31,7 +32,15 @@ func generatePolicyFor(params manifestutils.Params, componentName string) *netwo
 	}
 
 	rels := componentRelations(params)[componentName]
-	for target, ports := range rels {
+	// Sort target names to ensure deterministic ordering
+	var targets []string
+	for target := range rels {
+		targets = append(targets, target)
+	}
+	sort.Strings(targets)
+
+	for _, target := range targets {
+		ports := rels[target]
 		for _, conn := range ports {
 			peer := policyPeerFor(target, tempo)
 			np.Spec.Egress = append(np.Spec.Egress, networkingv1.NetworkPolicyEgressRule{
@@ -46,11 +55,27 @@ func generatePolicyFor(params manifestutils.Params, componentName string) *netwo
 	}
 
 	reverse := reverseRelations(componentRelations(params))
-	for source, ports := range reverse {
-		for target, conn := range ports {
-			if source != componentName {
-				continue
-			}
+	// Sort source names to ensure deterministic ordering
+	var sources []string
+	for source := range reverse {
+		sources = append(sources, source)
+	}
+	sort.Strings(sources)
+
+	for _, source := range sources {
+		if source != componentName {
+			continue
+		}
+		ports := reverse[source]
+		// Sort target names within each source
+		var ingressTargets []string
+		for target := range ports {
+			ingressTargets = append(ingressTargets, target)
+		}
+		sort.Strings(ingressTargets)
+
+		for _, target := range ingressTargets {
+			conn := ports[target]
 			peer := policyPeerFor(target, tempo)
 			np.Spec.Ingress = append(np.Spec.Ingress, networkingv1.NetworkPolicyIngressRule{
 				Ports: conn,
