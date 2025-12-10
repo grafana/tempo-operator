@@ -29,6 +29,7 @@ func BuildPrometheusRule(params manifestutils.Params) ([]client.Object, error) {
 	}, nil
 }
 
+// NewPrometheusRule build a PrometheusRule.
 func NewPrometheusRule(stackName, namespace string, labels k8slabels.Set) (*monitoringv1.PrometheusRule, error) {
 	promRulelabels := map[string]string{
 		"openshift.io/prometheus-rule-evaluation-scope": "leaf-prometheus",

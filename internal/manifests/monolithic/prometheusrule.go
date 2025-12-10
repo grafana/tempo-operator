@@ -1,9 +1,10 @@
 package monolithic
 
 import (
-	"github.com/grafana/tempo-operator/internal/manifests/alerts"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	k8slabels "k8s.io/apimachinery/pkg/labels"
+
+	"github.com/grafana/tempo-operator/internal/manifests/alerts"
 )
 
 // BuildPrometheusRules creates a PrometheusRule object.
