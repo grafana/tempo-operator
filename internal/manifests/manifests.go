@@ -76,7 +76,7 @@ func BuildAll(params manifestutils.Params) ([]client.Object, error) {
 	}
 
 	if params.Tempo.Spec.Observability.Metrics.CreatePrometheusRules {
-		prometheusRuleObjs, err := alerts.BuildPrometheusRule(params.Tempo.Name, params.Tempo.Namespace)
+		prometheusRuleObjs, err := alerts.BuildPrometheusRule(params)
 		if err != nil {
 			return nil, err
 		}

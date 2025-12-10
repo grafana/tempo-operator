@@ -35,13 +35,15 @@ func BuildServiceMonitors(params manifestutils.Params) []client.Object {
 
 func buildServiceMonitor(params manifestutils.Params, component string, port string) *monitoringv1.ServiceMonitor {
 	labels := manifestutils.ComponentLabels(component, params.Tempo.Name)
-	return NewServiceMonitor(params.Tempo.Namespace, params.Tempo.Name, labels, params.CtrlConfig.Gates.HTTPEncryption, component, []string{port})
+	extraLabels := params.Tempo.Spec.Observability.Metrics.ExtraServiceMonitorLabels
+	return NewServiceMonitor(params.Tempo.Namespace, params.Tempo.Name, labels, extraLabels, params.CtrlConfig.Gates.HTTPEncryption, component, []string{port})
 }
 
 func buildFrontEndServiceMonitor(params manifestutils.Params, port string) *monitoringv1.ServiceMonitor {
 	labels := manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, params.Tempo.Name)
+	extraLabels := params.Tempo.Spec.Observability.Metrics.ExtraServiceMonitorLabels
 	tls := params.CtrlConfig.Gates.HTTPEncryption && params.Tempo.Spec.Template.Gateway.Enabled
-	return NewServiceMonitor(params.Tempo.Namespace, params.Tempo.Name, labels, tls,
+	return NewServiceMonitor(params.Tempo.Namespace, params.Tempo.Name, labels, extraLabels, tls,
 		manifestutils.QueryFrontendComponentName, []string{port})
 }
 
@@ -49,7 +51,8 @@ func buildFrontEndServiceMonitor(params manifestutils.Params, port string) *moni
 func NewServiceMonitor(
 	namespace string,
 	name string,
-	labels labels.Set,
+	selectorLabels labels.Set,
+	extraLabels labels.Set,
 	tls bool,
 	component string,
 	ports []string,
@@ -123,7 +126,7 @@ func NewServiceMonitor(
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: namespace,
 			Name:      naming.Name(component, name),
-			Labels:    labels,
+			Labels:    labels.Merge(extraLabels, selectorLabels),
 		},
 		Spec: monitoringv1.ServiceMonitorSpec{
 			Endpoints: endpoints,
@@ -131,7 +134,7 @@ func NewServiceMonitor(
 				MatchNames: []string{namespace},
 			},
 			Selector: metav1.LabelSelector{
-				MatchLabels: labels,
+				MatchLabels: selectorLabels,
 			},
 		},
 	}
