@@ -3,7 +3,7 @@ apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
   creationTimestamp: null
-  name: operator-networking
+  name: operator-networkpolicies
 spec:
   timeouts:
     assert: 120s

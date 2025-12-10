@@ -13,7 +13,7 @@ import (
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/manifests/memberlist"
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
-	"github.com/grafana/tempo-operator/internal/manifests/networking"
+	"github.com/grafana/tempo-operator/internal/manifests/networkpolicies"
 	"github.com/grafana/tempo-operator/internal/manifests/querier"
 	"github.com/grafana/tempo-operator/internal/manifests/queryfrontend"
 	"github.com/grafana/tempo-operator/internal/manifests/serviceaccount"
@@ -89,7 +89,7 @@ func BuildAll(params manifestutils.Params) ([]client.Object, error) {
 	}
 
 	if params.Tempo.Spec.NetworkPolicy.Enabled {
-		manifests = append(manifests, networking.GenerateOperandPolicies(params)...)
+		manifests = append(manifests, networkpolicies.GenerateOperandPolicies(params)...)
 	}
 
 	return manifests, nil
