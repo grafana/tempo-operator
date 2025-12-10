@@ -25,7 +25,7 @@ jobs:
           - name: min
             kube-version: "1.25"
           - name: max
-            kube-version: "1.32"
+            kube-version: "1.34"
 
     steps:
     - name: Checkout
@@ -56,7 +56,7 @@ jobs:
       matrix:
         include:
           - name: max
-            kube-version: "1.30"
+            kube-version: "1.34"
 
     steps:
     - name: Checkout
