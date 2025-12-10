@@ -406,6 +406,8 @@ spec:                                    # TempoStackSpec defines the desired st
           requests:                      # Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. Requests cannot exceed Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
             cpu: "500m"
             memory: "1Gi"
+      mcpServer:                         # MCPServer defines the MCP (Model Context Protocol) server configuration. The MCP server allows AI assistants to query tracing data.
+        enabled: false                   # Enabled defines if the MCP (Model Context Protocol) server should be enabled.
   tenants:                               # Tenants defines the per-tenant authentication and authorization spec.
     authentication:                      # Authentication defines the tempo-gateway component authentication configuration spec per tenant.
     - oidc:                              # OIDC defines the spec for the OIDC tenant's authentication.

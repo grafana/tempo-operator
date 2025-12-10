@@ -502,6 +502,45 @@ usage_report:
   reporting_enabled: false
 `,
 		},
+		{
+			name: "MCP server enabled",
+			spec: v1alpha1.TempoMonolithicSpec{
+				Query: &v1alpha1.MonolithicQuerySpec{
+					MCPServer: &v1alpha1.MCPServerSpec{
+						Enabled: true,
+					},
+				},
+			},
+			expected: `
+server:
+  http_listen_port: 3200
+  http_server_read_timeout: 30s
+  http_server_write_timeout: 30s
+internal_server:
+  enable: true
+  http_listen_address: 0.0.0.0
+storage:
+  trace:
+    backend: local
+    wal:
+      path: /var/tempo/wal
+    local:
+      path: /var/tempo/blocks
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
+query_frontend:
+  mcp_server:
+    enabled: true
+usage_report:
+  reporting_enabled: false
+`,
+		},
 	}
 
 	for _, test := range tests {

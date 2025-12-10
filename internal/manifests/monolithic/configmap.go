@@ -98,6 +98,12 @@ type tempoConfig struct {
 		} `yaml:"receivers,omitempty"`
 	} `yaml:"distributor,omitempty"`
 
+	QueryFrontend struct {
+		MCPServer struct {
+			Enabled bool `yaml:"enabled,omitempty"`
+		} `yaml:"mcp_server,omitempty"`
+	} `yaml:"query_frontend,omitempty"`
+
 	UsageReport struct {
 		ReportingEnabled bool `yaml:"reporting_enabled"`
 	} `yaml:"usage_report"`
@@ -316,6 +322,10 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 				}
 			}
 		}
+	}
+
+	if tempo.Spec.Query != nil && tempo.Spec.Query.MCPServer != nil && tempo.Spec.Query.MCPServer.Enabled {
+		config.QueryFrontend.MCPServer.Enabled = true
 	}
 
 	generatedYaml, err := yaml.Marshal(config)
