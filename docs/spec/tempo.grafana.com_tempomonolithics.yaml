@@ -122,8 +122,10 @@ spec:                                    # TempoMonolithicSpec defines the desir
     metrics:                             # Metrics defines the metric configuration of the Tempo deployment.
       prometheusRules:                   # ServiceMonitors defines the PrometheusRule configuration.
         enabled: false                   # Enabled defines if PrometheusRule objects should be created for this Tempo deployment.
+        extraLabels: {}                  # ExtraLabels defines additional labels for the PrometheusRules objects.
       serviceMonitors:                   # ServiceMonitors defines the ServiceMonitor configuration.
         enabled: false                   # Enabled defines if ServiceMonitor objects should be created for this Tempo deployment.
+        extraLabels: {}                  # ExtraLabels defines additional labels for the ServiceMonitor objects.
   podSecurityContext:                    # PodSecurityContext defines the security context that will be applied to the Tempo Pod.
     appArmorProfile:                     # appArmorProfile is the AppArmor options to use by the containers in this pod. Note that this field cannot be set when spec.os.name is windows.
       localhostProfile: ""               # localhostProfile indicates a profile loaded on the node that should be used. The profile must be preconfigured on the node to work. Must match the loaded name of the profile. Must be set if and only if type is "Localhost".

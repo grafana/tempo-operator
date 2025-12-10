@@ -395,9 +395,17 @@ spec:
       - description: ServiceMonitors defines the PrometheusRule configuration.
         displayName: Prometheus Rules
         path: observability.metrics.prometheusRules
+      - description: ExtraLabels defines additional labels for the PrometheusRules
+          objects.
+        displayName: Extra Labels
+        path: observability.metrics.prometheusRules.extraLabels
       - description: ServiceMonitors defines the ServiceMonitor configuration.
         displayName: Service Monitors
         path: observability.metrics.serviceMonitors
+      - description: ExtraLabels defines additional labels for the ServiceMonitor
+          objects.
+        displayName: Extra Labels
+        path: observability.metrics.serviceMonitors.extraLabels
       - description: PodSecurityContext defines the security context that will be
           applied to the Tempo Pod.
         displayName: PodSecurityContext
@@ -710,6 +718,14 @@ spec:
           created for Tempo components.
         displayName: Create ServiceMonitors for Tempo components
         path: observability.metrics.createServiceMonitors
+      - description: ExtraPrometheusRuleLabels defines additional labels for the PrometheusRule
+          objects.
+        displayName: Extra PrometheusRule Labels
+        path: observability.metrics.extraPrometheusRuleLabels
+      - description: ExtraServiceMonitorLabels defines additional labels for the ServiceMonitor
+          objects.
+        displayName: Extra ServiceMonitor Labels
+        path: observability.metrics.extraServiceMonitorLabels
       - description: Tracing defines a config for operands.
         displayName: Tracing Config
         path: observability.tracing

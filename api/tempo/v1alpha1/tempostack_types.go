@@ -166,12 +166,24 @@ type MetricsConfigSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Create ServiceMonitors for Tempo components"
 	CreateServiceMonitors bool `json:"createServiceMonitors,omitempty"`
 
+	// ExtraServiceMonitorLabels defines additional labels for the ServiceMonitor objects.
+	//
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Extra ServiceMonitor Labels"
+	ExtraServiceMonitorLabels map[string]string `json:"extraServiceMonitorLabels,omitempty"`
+
 	// CreatePrometheusRules specifies if Prometheus rules for alerts should be created for Tempo components.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Create PrometheusRules for Tempo components"
 	CreatePrometheusRules bool `json:"createPrometheusRules,omitempty"`
+
+	// ExtraPrometheusRuleLabels defines additional labels for the PrometheusRule objects.
+	//
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Extra PrometheusRule Labels"
+	ExtraPrometheusRuleLabels map[string]string `json:"extraPrometheusRuleLabels,omitempty"`
 }
 
 // TracingConfigSpec defines a tracing config including endpoints and sampling.

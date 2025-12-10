@@ -1626,6 +1626,12 @@ spec:
                             description: Enabled defines if PrometheusRule objects
                               should be created for this Tempo deployment.
                             type: boolean
+                          extraLabels:
+                            additionalProperties:
+                              type: string
+                            description: ExtraLabels defines additional labels for
+                              the PrometheusRules objects.
+                            type: object
                         required:
                         - enabled
                         type: object
@@ -1636,6 +1642,12 @@ spec:
                             description: Enabled defines if ServiceMonitor objects
                               should be created for this Tempo deployment.
                             type: boolean
+                          extraLabels:
+                            additionalProperties:
+                              type: string
+                            description: ExtraLabels defines additional labels for
+                              the ServiceMonitor objects.
+                            type: object
                         required:
                         - enabled
                         type: object
