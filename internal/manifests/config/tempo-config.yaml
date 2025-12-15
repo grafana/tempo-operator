@@ -279,6 +279,10 @@ query_frontend:
 {{- if .Search.MaxResultLimit }}
     max_result_limit: {{ .Search.MaxResultLimit }}
 {{- end }}
+{{- if .MCPServer.Enabled }}
+  mcp_server:
+    enabled: true
+{{- end }}
 {{- if .Gates.GRPCEncryption }}
 ingester_client:
   grpc_client_config:

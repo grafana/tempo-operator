@@ -24,6 +24,7 @@ type options struct {
 	ReceiverTLS            receiverTLSOptions
 	S3StorageTLS           storageTLSOptions
 	Timeout                time.Duration
+	MCPServer              mcpserverOptions
 }
 
 type tempoQueryOptions struct {
@@ -76,6 +77,10 @@ type memberlistOptions struct {
 	JoinMembers  []string
 	EnableIPv6   bool
 	InstanceAddr string
+}
+
+type mcpserverOptions struct {
+	Enabled bool
 }
 
 type receiverTLSOptions struct {
