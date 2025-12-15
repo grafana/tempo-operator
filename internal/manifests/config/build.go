@@ -104,6 +104,9 @@ func buildConfiguration(params manifestutils.Params) ([]byte, error) {
 		ReceiverTLS:  buildReceiverTLSConfig(tempo),
 		S3StorageTLS: buildS3StorageTLSConfig(params),
 		Timeout:      params.Tempo.Spec.Timeout.Duration,
+		MCPServer: mcpserverOptions{
+			Enabled: tempo.Spec.Template.QueryFrontend.MCPServer.Enabled,
+		},
 	}
 
 	if isTenantOverridesConfigRequired(tempo.Spec.LimitSpec, tempo.Spec.Retention) {
