@@ -3024,6 +3024,16 @@ spec:
                                 type: object
                             type: object
                         type: object
+                      mcpServer:
+                        description: |-
+                          MCPServer defines the MCP (Model Context Protocol) server configuration.
+                          The MCP server allows AI assistants to query tracing data.
+                        properties:
+                          enabled:
+                            description: Enabled defines if the MCP (Model Context
+                              Protocol) server should be enabled.
+                            type: boolean
+                        type: object
                     type: object
                 type: object
               tenants:

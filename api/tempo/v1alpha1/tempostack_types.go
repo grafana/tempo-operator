@@ -624,8 +624,18 @@ type RBACSpec struct {
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Query RBAC Enabled"
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Query RBAC Enabled",xDescriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
 	Enabled bool `json:"enabled"`
+}
+
+// MCPServerSpec defines the MCP server configuration.
+type MCPServerSpec struct {
+	// Enabled defines if the MCP (Model Context Protocol) server should be enabled.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enable MCP Server",xDescriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
+	Enabled bool `json:"enabled,omitempty"`
 }
 
 // TempoQueryFrontendSpec extends TempoComponentSpec with frontend specific parameters.
@@ -645,6 +655,14 @@ type TempoQueryFrontendSpec struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Jaeger Query Settings"
 	JaegerQuery JaegerQuerySpec `json:"jaegerQuery"`
+
+	// MCPServer defines the MCP (Model Context Protocol) server configuration.
+	// The MCP server allows AI assistants to query tracing data.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="MCP Server Settings"
+	MCPServer MCPServerSpec `json:"mcpServer,omitempty"`
 }
 
 // JaegerQuerySpec defines Jaeger Query options.

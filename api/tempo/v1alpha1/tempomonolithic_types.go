@@ -92,6 +92,13 @@ type MonolithicQuerySpec struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Query RBAC Settings"
 	RBAC RBACSpec `json:"rbac,omitempty"`
+
+	// MCPServer defines the MCP (Model Context Protocol) server configuration.
+	// The MCP server allows AI assistants to query tracing data.
+	//
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="MCP Server Settings"
+	MCPServer *MCPServerSpec `json:"mcpServer,omitempty"`
 }
 
 // MonolithicStorageSpec defines the storage for the Tempo deployment.

@@ -1893,6 +1893,16 @@ spec:
               query:
                 description: Query defines query configuration.
                 properties:
+                  mcpServer:
+                    description: |-
+                      MCPServer defines the MCP (Model Context Protocol) server configuration.
+                      The MCP server allows AI assistants to query tracing data.
+                    properties:
+                      enabled:
+                        description: Enabled defines if the MCP (Model Context Protocol)
+                          server should be enabled.
+                        type: boolean
+                    type: object
                   rbac:
                     description: |-
                       RBAC defines query RBAC options.

@@ -32,7 +32,7 @@ jobs:
         run: make ci
 
       - name: "upload coverage report"
-        uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7 # v5.5.1
+        uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
         with:
           files: cover.out
           flags: unittests
@@ -55,15 +55,15 @@ jobs:
           persist-credentials: false
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@0499de31b99561a6d14a36a5f662c2a54f91beee # v3
+        uses: github/codeql-action/init@1b168cd39490f61582a9beae412bb7057a6b2c4e # v4.31.8
         with:
           languages: go
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@0499de31b99561a6d14a36a5f662c2a54f91beee # v3
+        uses: github/codeql-action/autobuild@1b168cd39490f61582a9beae412bb7057a6b2c4e # v4.31.8
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@0499de31b99561a6d14a36a5f662c2a54f91beee # v3
+        uses: github/codeql-action/analyze@1b168cd39490f61582a9beae412bb7057a6b2c4e # v4.31.8
 
   lint:
     name: Code standards (linting)
@@ -75,7 +75,7 @@ jobs:
           persist-credentials: false
 
       - name: Lint
-        uses: golangci/golangci-lint-action@e7fa5ac41e1cf5b7d48e45e42232ce7ada589601 # v9.1.0
+        uses: golangci/golangci-lint-action@1e7e51e771db61008b38414a730f564565cf7c20 # v9.2.0
         with:
           args: -v
           version: v2.2.1
