@@ -289,6 +289,18 @@ spec:
                         description: CreateServiceMonitors specifies if ServiceMonitors
                           should be created for Tempo components.
                         type: boolean
+                      extraPrometheusRuleLabels:
+                        additionalProperties:
+                          type: string
+                        description: ExtraPrometheusRuleLabels defines additional
+                          labels for the PrometheusRule objects.
+                        type: object
+                      extraServiceMonitorLabels:
+                        additionalProperties:
+                          type: string
+                        description: ExtraServiceMonitorLabels defines additional
+                          labels for the ServiceMonitor objects.
+                        type: object
                     type: object
                   tracing:
                     description: Tracing defines a config for operands.

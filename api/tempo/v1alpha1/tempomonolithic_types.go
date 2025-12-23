@@ -465,6 +465,12 @@ type MonolithicObservabilityMetricsServiceMonitorsSpec struct {
 	// +kubebuilder:validation:Required
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enabled",order=1,xDescriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
 	Enabled bool `json:"enabled"`
+
+	// ExtraLabels defines additional labels for the ServiceMonitor objects.
+	//
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Extra Labels"
+	ExtraLabels map[string]string `json:"extraLabels,omitempty"`
 }
 
 // MonolithicObservabilityMetricsPrometheusRulesSpec defines the PrometheusRules settings.
@@ -474,6 +480,12 @@ type MonolithicObservabilityMetricsPrometheusRulesSpec struct {
 	// +kubebuilder:validation:Required
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enabled",order=1,xDescriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
 	Enabled bool `json:"enabled"`
+
+	// ExtraLabels defines additional labels for the PrometheusRules objects.
+	//
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Extra Labels"
+	ExtraLabels map[string]string `json:"extraLabels,omitempty"`
 }
 
 // MonolithicObservabilityGrafanaSpec defines the Grafana configuration of the Tempo deployment.

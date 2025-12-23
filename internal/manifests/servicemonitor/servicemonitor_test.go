@@ -289,3 +289,44 @@ func TestBuildGatewayServiceMonitorsTLS(t *testing.T) {
 		},
 	}, objects[5])
 }
+
+func TestBuildServiceMonitorsWithExtraLabels(t *testing.T) {
+	extraLabels := map[string]string{
+		"monitoring": "enabled",
+		"team":       "platform",
+	}
+	objects := BuildServiceMonitors(manifestutils.Params{Tempo: v1alpha1.TempoStack{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test",
+			Namespace: "project1",
+		},
+		Spec: v1alpha1.TempoStackSpec{
+			Observability: v1alpha1.ObservabilitySpec{
+				Metrics: v1alpha1.MetricsConfigSpec{
+					ExtraServiceMonitorLabels: extraLabels,
+				},
+			},
+		},
+	}})
+
+	assert.Len(t, objects, 5)
+	sm := objects[0].(*monitoringv1.ServiceMonitor)
+
+	selectorLabels := map[string]string{
+		"app.kubernetes.io/component":  "compactor",
+		"app.kubernetes.io/instance":   "test",
+		"app.kubernetes.io/managed-by": "tempo-operator",
+		"app.kubernetes.io/name":       "tempo",
+	}
+	assert.Equal(t, selectorLabels, sm.Spec.Selector.MatchLabels)
+
+	expectedLabels := map[string]string{
+		"app.kubernetes.io/component":  "compactor",
+		"app.kubernetes.io/instance":   "test",
+		"app.kubernetes.io/managed-by": "tempo-operator",
+		"app.kubernetes.io/name":       "tempo",
+		"monitoring":                   "enabled",
+		"team":                         "platform",
+	}
+	assert.Equal(t, expectedLabels, sm.ObjectMeta.Labels)
+}

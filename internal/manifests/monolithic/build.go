@@ -122,7 +122,7 @@ func BuildAll(opts Options) ([]client.Object, error) {
 				if err != nil {
 					return nil, err
 				}
-				manifests = append(manifests, prometheusRules...)
+				manifests = append(manifests, prometheusRules)
 			}
 		}
 
