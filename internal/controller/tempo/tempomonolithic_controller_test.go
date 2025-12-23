@@ -24,6 +24,18 @@ import (
 	"github.com/grafana/tempo-operator/internal/version"
 )
 
+var mockDefaultImages = configv1alpha1.ImagesSpec{
+	Tempo:           "docker.io/grafana/tempo:x.y.z",
+	TempoGateway:    "quay.io/observatorium/api:x.y.z",
+	TempoGatewayOpa: "quay.io/observatorium/opa-openshift:x.y.z",
+}
+
+func mockProjectConfig() configv1alpha1.ProjectConfig {
+	cfg := configv1alpha1.DefaultProjectConfig()
+	cfg.DefaultImages = mockDefaultImages
+	return cfg
+}
+
 func TestReconcileMonolithic(t *testing.T) {
 	nsn := types.NamespacedName{Name: "sample", Namespace: "default"}
 	tempo := &v1alpha1.TempoMonolithic{
@@ -38,11 +50,11 @@ func TestReconcileMonolithic(t *testing.T) {
 	reconciler := TempoMonolithicReconciler{
 		Client:     k8sClient,
 		Scheme:     testScheme,
-		CtrlConfig: configv1alpha1.DefaultProjectConfig(),
+		CtrlConfig: mockProjectConfig(),
 	}
 	reconcile, err := reconciler.Reconcile(context.Background(), ctrl.Request{NamespacedName: nsn})
 	require.NoError(t, err)
-	assert.Equal(t, false, reconcile.Requeue)
+	assert.Equal(t, time.Duration(0), reconcile.RequeueAfter)
 
 	// Check if objects of specific types were created and are managed by the operator
 	opts := []client.ListOption{
@@ -116,9 +128,7 @@ func TestOpenShiftModeMonolithic_finalizer(t *testing.T) {
 		Scheme:   testScheme,
 		Recorder: record.NewFakeRecorder(1),
 		CtrlConfig: configv1alpha1.ProjectConfig{
-			DefaultImages: configv1alpha1.ImagesSpec{
-				TempoGatewayOpa: "opa:latest",
-			},
+			DefaultImages: mockDefaultImages,
 			Gates: configv1alpha1.FeatureGates{
 				OpenShift: configv1alpha1.OpenShiftFeatureGates{
 					BaseDomain: "localhost",
@@ -150,7 +160,7 @@ func TestOpenShiftModeMonolithic_finalizer(t *testing.T) {
 	}
 	reconcile, err := reconciler.Reconcile(context.Background(), req)
 	require.NoError(t, err)
-	assert.Equal(t, false, reconcile.Requeue)
+	assert.Equal(t, time.Duration(0), reconcile.RequeueAfter)
 
 	gatewayClusterRole := &rbacv1.ClusterRole{}
 	err = k8sClient.Get(context.Background(), types.NamespacedName{Name: fmt.Sprintf("tempo-%s-gateway-%s", tempoName, namespaceName), Namespace: "default"}, gatewayClusterRole)
@@ -163,7 +173,7 @@ func TestOpenShiftModeMonolithic_finalizer(t *testing.T) {
 	require.NoError(t, err)
 	reconcile, err = reconciler.Reconcile(context.Background(), req)
 	require.NoError(t, err)
-	assert.Equal(t, false, reconcile.Requeue)
+	assert.Equal(t, time.Duration(0), reconcile.RequeueAfter)
 
 	// the cluster role should be deleted
 	err = k8sClient.Get(context.Background(), types.NamespacedName{Name: fmt.Sprintf("tempo-%s-gateway-%s", tempoName, namespaceName), Namespace: "default"}, gatewayClusterRole)
