@@ -138,4 +138,4 @@ replace github.com/bradfitz/gomemcache => github.com/themihai/gomemcache v0.0.0-
 // This is a temporary solution while a new configuration design is discussed for the collector (ref: https://github.com/open-telemetry/opentelemetry-collector/issues/3482).
 replace go.opentelemetry.io/collector => github.com/grafana/opentelemetry-collector v0.4.1-0.20220315084747-b05fe1477960
 
-replace github.com/openshift/api => github.com/openshift/api v0.0.0-20230223193310-d964c7a58d75
+replace github.com/openshift/api => github.com/openshift/api d2ec16864f86
