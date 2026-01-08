@@ -114,7 +114,7 @@ spec:                                    # TempoStackSpec defines the desired st
       replicas: 0                        # Replicas defines the number of replicas to be created for this component.
       nodeSelector: {}                   # NodeSelector defines the simple form of the node-selection constraint.
       resources:                         # Resources defines resources for this component, this will override the calculated resources derived from total
-        claims:                          # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.  This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.  This field is immutable. It can only be set for containers.
+        claims:                          # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.  This field depends on the DynamicResourceAllocation feature gate.  This field is immutable. It can only be set for containers.
         - name: ""                       # Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.
           request: ""                    # Request is the name chosen for a request in the referenced claim. If empty, everything from the claim is made available, otherwise only the result of this request.
         limits:                          # Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
@@ -158,7 +158,7 @@ spec:                                    # TempoStackSpec defines the desired st
         replicas: 0                      # Replicas defines the number of replicas to be created for this component.
         nodeSelector: {}                 # NodeSelector defines the simple form of the node-selection constraint.
         resources:                       # Resources defines resources for this component, this will override the calculated resources derived from total
-          claims:                        # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.  This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.  This field is immutable. It can only be set for containers.
+          claims:                        # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.  This field depends on the DynamicResourceAllocation feature gate.  This field is immutable. It can only be set for containers.
           - name: ""                     # Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.
             request: ""                  # Request is the name chosen for a request in the referenced claim. If empty, everything from the claim is made available, otherwise only the result of this request.
           limits:                        # Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
@@ -208,7 +208,7 @@ spec:                                    # TempoStackSpec defines the desired st
         replicas: 0                      # Replicas defines the number of replicas to be created for this component.
         nodeSelector: {}                 # NodeSelector defines the simple form of the node-selection constraint.
         resources:                       # Resources defines resources for this component, this will override the calculated resources derived from total
-          claims:                        # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.  This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.  This field is immutable. It can only be set for containers.
+          claims:                        # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.  This field depends on the DynamicResourceAllocation feature gate.  This field is immutable. It can only be set for containers.
           - name: ""                     # Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.
             request: ""                  # Request is the name chosen for a request in the referenced claim. If empty, everything from the claim is made available, otherwise only the result of this request.
           limits:                        # Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
@@ -260,7 +260,7 @@ spec:                                    # TempoStackSpec defines the desired st
       replicas: 0                        # Replicas defines the number of replicas to be created for this component.
       nodeSelector: {}                   # NodeSelector defines the simple form of the node-selection constraint.
       resources:                         # Resources defines resources for this component, this will override the calculated resources derived from total
-        claims:                          # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.  This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.  This field is immutable. It can only be set for containers.
+        claims:                          # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.  This field depends on the DynamicResourceAllocation feature gate.  This field is immutable. It can only be set for containers.
         - name: ""                       # Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.
           request: ""                    # Request is the name chosen for a request in the referenced claim. If empty, everything from the claim is made available, otherwise only the result of this request.
         limits:                          # Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
@@ -303,7 +303,7 @@ spec:                                    # TempoStackSpec defines the desired st
       replicas: 0                        # Replicas defines the number of replicas to be created for this component.
       nodeSelector: {}                   # NodeSelector defines the simple form of the node-selection constraint.
       resources:                         # Resources defines resources for this component, this will override the calculated resources derived from total
-        claims:                          # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.  This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.  This field is immutable. It can only be set for containers.
+        claims:                          # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.  This field depends on the DynamicResourceAllocation feature gate.  This field is immutable. It can only be set for containers.
         - name: ""                       # Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.
           request: ""                    # Request is the name chosen for a request in the referenced claim. If empty, everything from the claim is made available, otherwise only the result of this request.
         limits:                          # Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
@@ -347,7 +347,7 @@ spec:                                    # TempoStackSpec defines the desired st
         replicas: 0                      # Replicas defines the number of replicas to be created for this component.
         nodeSelector: {}                 # NodeSelector defines the simple form of the node-selection constraint.
         resources:                       # Resources defines resources for this component, this will override the calculated resources derived from total
-          claims:                        # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.  This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.  This field is immutable. It can only be set for containers.
+          claims:                        # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.  This field depends on the DynamicResourceAllocation feature gate.  This field is immutable. It can only be set for containers.
           - name: ""                     # Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.
             request: ""                  # Request is the name chosen for a request in the referenced claim. If empty, everything from the claim is made available, otherwise only the result of this request.
           limits:                        # Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
@@ -363,7 +363,7 @@ spec:                                    # TempoStackSpec defines the desired st
           enabled: false                 # Defines if the authentication will be enabled for jaeger UI.
           sar: ""                        # SAR defines the SAR to be used in the oauth-proxy default is "{"namespace": "<tempo_stack_namespace>", "resource": "pods", "verb": "get"}
           resources:                     # Resources defines the compute resource requirements of the OAuth Proxy container. The OAuth Proxy performs authentication and authorization of incoming requests to Jaeger UI when multi-tenancy is disabled.
-            claims:                      # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.  This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.  This field is immutable. It can only be set for containers.
+            claims:                      # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.  This field depends on the DynamicResourceAllocation feature gate.  This field is immutable. It can only be set for containers.
             - name: ""                   # Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.
               request: ""                # Request is the name chosen for a request in the referenced claim. If empty, everything from the claim is made available, otherwise only the result of this request.
             limits:                      # Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
@@ -387,7 +387,7 @@ spec:                                    # TempoStackSpec defines the desired st
         servicesQueryDuration: ""        # ServicesQueryDuration defines how long the services will be available in the services list
         tempoQuery:                      # TempoQuery defines options specific to the Tempoo Query component.
           resources:                     # Resources defines resources for this component, this will override the calculated resources derived from total
-            claims:                      # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.  This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.  This field is immutable. It can only be set for containers.
+            claims:                      # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.  This field depends on the DynamicResourceAllocation feature gate.  This field is immutable. It can only be set for containers.
             - name: ""                   # Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.
               request: ""                # Request is the name chosen for a request in the referenced claim. If empty, everything from the claim is made available, otherwise only the result of this request.
             limits:                      # Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
@@ -397,7 +397,7 @@ spec:                                    # TempoStackSpec defines the desired st
               cpu: "500m"
               memory: "1Gi"
         resources:                       # Resources defines resources for this component, this will override the calculated resources derived from total
-          claims:                        # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.  This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.  This field is immutable. It can only be set for containers.
+          claims:                        # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.  This field depends on the DynamicResourceAllocation feature gate.  This field is immutable. It can only be set for containers.
           - name: ""                     # Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.
             request: ""                  # Request is the name chosen for a request in the referenced claim. If empty, everything from the claim is made available, otherwise only the result of this request.
           limits:                        # Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
@@ -439,7 +439,7 @@ spec:                                    # TempoStackSpec defines the desired st
   timeout: ""                            # Timeout configures the same timeout on all components starting at ingress down to the ingestor/querier. Timeout configuration on a specific component has a higher precedence. Defaults to 30 seconds.
   resources:                             # Resources defines resources configuration.
     total:                               # The total amount of resources for Tempo instance. The operator autonomously splits resources between deployed Tempo components. Only limits are supported, the operator calculates requests automatically. See http://github.com/grafana/tempo/issues/1540.
-      claims:                            # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.  This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.  This field is immutable. It can only be set for containers.
+      claims:                            # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.  This field depends on the DynamicResourceAllocation feature gate.  This field is immutable. It can only be set for containers.
       - name: ""                         # Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.
         request: ""                      # Request is the name chosen for a request in the referenced claim. If empty, everything from the claim is made available, otherwise only the result of this request.
       limits:                            # Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
