@@ -50,6 +50,7 @@ data:
           createServiceMonitors: false
           createPrometheusRules: false
       networkPolicies: true
+      defaultPodSecurityContext: true
 kind: ConfigMap
 metadata:
   labels:
