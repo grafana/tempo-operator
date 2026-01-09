@@ -42,6 +42,13 @@ featureGates:
     # CertValidity defines the total duration of the validity for all Tempo certificates.
     certValidity: 0h
 
+  # DefaultPodSecurityContext defines whether the operator should set a default fsGroup (10001)
+  # for all pod security contexts when none is specified. This ensures volume permissions work
+  # correctly with certain CSI drivers (AWS EBS, DigitalOcean, etc.) that mount volumes with
+  # root:root ownership.
+  # On OpenShift, SCCs manage the fsGroup automatically, so this should be disabled.
+  defaultPodSecurityContext: false
+
   # GrafanaOperator defines whether the Grafana Operator CRD exists in the cluster.
   # This CRD is part of grafana-operator.
   grafanaOperator: false
