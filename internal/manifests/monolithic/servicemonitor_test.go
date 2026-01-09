@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/ptr"
@@ -145,4 +146,48 @@ func TestBuildServiceMonitorGateway(t *testing.T) {
 			},
 		},
 	}, sm)
+}
+
+func TestBuildServiceMonitorWithExtraLabels(t *testing.T) {
+	extraLabels := map[string]string{
+		"monitoring": "enabled",
+		"team":       "platform",
+	}
+	opts := Options{
+		Tempo: v1alpha1.TempoMonolithic{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "sample",
+				Namespace: "default",
+			},
+			Spec: v1alpha1.TempoMonolithicSpec{
+				Observability: &v1alpha1.MonolithicObservabilitySpec{
+					Metrics: &v1alpha1.MonolithicObservabilityMetricsSpec{
+						ServiceMonitors: &v1alpha1.MonolithicObservabilityMetricsServiceMonitorsSpec{
+							Enabled:     true,
+							ExtraLabels: extraLabels,
+						},
+					},
+				},
+			},
+		},
+	}
+	sm := BuildServiceMonitor(opts)
+
+	selectorLabels := map[string]string{
+		"app.kubernetes.io/component":  "tempo",
+		"app.kubernetes.io/instance":   "sample",
+		"app.kubernetes.io/managed-by": "tempo-operator",
+		"app.kubernetes.io/name":       "tempo-monolithic",
+	}
+	assert.Equal(t, map[string]string(selectorLabels), sm.Spec.Selector.MatchLabels)
+
+	expectedLabels := map[string]string{
+		"app.kubernetes.io/component":  "tempo",
+		"app.kubernetes.io/instance":   "sample",
+		"app.kubernetes.io/managed-by": "tempo-operator",
+		"app.kubernetes.io/name":       "tempo-monolithic",
+		"monitoring":                   "enabled",
+		"team":                         "platform",
+	}
+	assert.Equal(t, expectedLabels, sm.ObjectMeta.Labels)
 }
