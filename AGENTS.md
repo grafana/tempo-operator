@@ -38,9 +38,7 @@ make fmt                # Format Go code
 
 ### Code Generation
 ```bash
-make generate           # Generate DeepCopy methods
-make manifests          # Generate CRDs, RBAC, webhooks manifests
-make generate-all       # Update all generated files
+make reset              # Update all generated files
 ```
 
 ### Development Deployment
@@ -55,11 +53,11 @@ make run
 IMG_PREFIX=quay.io/${USER} OPERATOR_VERSION=$(date +%s).0.0 make docker-build docker-push deploy reset
 
 # Build a custom image and deploy it to an OpenShift cluster
-kubectl create namespace tempo-operator-system
-IMG_PREFIX=quay.io/${USER} OPERATOR_VERSION=$(date +%s).0.0 BUNDLE_VARIANT=openshift make docker-build docker-push bundle bundle-build bundle-push olm-deploy reset
+kubectl create namespace openshift-tempo-operator
+IMG_PREFIX=quay.io/${USER} OPERATOR_VERSION=$(date +%s).0.0 BUNDLE_VARIANT=openshift OPERATOR_NAMESPACE=openshift-tempo-operator make build docker-build docker-push bundle bundle-build bundle-push olm-deploy reset
 
 # Build a custom image and upgrade the operator in the OpenShift cluster
-IMG_PREFIX=quay.io/${USER} OPERATOR_VERSION=$(date +%s).0.0 BUNDLE_VARIANT=openshift make docker-build docker-push bundle bundle-build bundle-push olm-upgrade reset
+IMG_PREFIX=quay.io/${USER} OPERATOR_VERSION=$(date +%s).0.0 BUNDLE_VARIANT=openshift OPERATOR_NAMESPACE=openshift-tempo-operator make build docker-build docker-push bundle bundle-build bundle-push olm-upgrade reset
 ```
 
 ### Testing
@@ -67,11 +65,21 @@ IMG_PREFIX=quay.io/${USER} OPERATOR_VERSION=$(date +%s).0.0 BUNDLE_VARIANT=opens
 # Unit tests
 make test
 
+# Run end-to-end tests. These run on Kubernetes and OpenShift.
+make e2e
+
 # Upgrade tests
 make e2e-upgrade
 
-# OpenShift-specific tests
+# Run OpenShift-specific tests.
+# This command may run up to 30 minutes, adjust the command timeout accordingly.
 make e2e-openshift
+
+# Run a single e2e test
+chainsaw test --test-dir ./tests/e2e/reconcile
+
+# Run a single e2e test and keep the objects to allow debugging
+chainsaw test --test-dir ./tests/e2e/reconcile --skip-delete
 
 # Single test execution example
 go test ./internal/manifests/... -run TestManifests
