@@ -27,7 +27,7 @@ spec:                                    # TempoMonolithicSpec defines the desir
       enabled: false                     # Defines if the authentication will be enabled for jaeger UI.
       sar: ""                            # SAR defines the SAR to be used in the oauth-proxy default is "{"namespace": "<tempo_stack_namespace>", "resource": "pods", "verb": "get"}
       resources:                         # Resources defines the compute resource requirements of the OAuth Proxy container. The OAuth Proxy performs authentication and authorization of incoming requests to Jaeger UI when multi-tenancy is disabled.
-        claims:                          # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.  This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.  This field is immutable. It can only be set for containers.
+        claims:                          # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.  This field depends on the DynamicResourceAllocation feature gate.  This field is immutable. It can only be set for containers.
         - name: ""                       # Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.
           request: ""                    # Request is the name chosen for a request in the referenced claim. If empty, everything from the claim is made available, otherwise only the result of this request.
         limits:                          # Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
@@ -49,7 +49,7 @@ spec:                                    # TempoMonolithicSpec defines the desir
       termination: ""                    # Termination specifies the termination type.
     servicesQueryDuration: ""            # ServicesQueryDuration defines how long the services will be available in the services list
     tempoQueryResources:                 # Resources defines the compute resource requirements of the Tempo Query container.
-      claims:                            # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.  This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.  This field is immutable. It can only be set for containers.
+      claims:                            # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.  This field depends on the DynamicResourceAllocation feature gate.  This field is immutable. It can only be set for containers.
       - name: ""                         # Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.
         request: ""                      # Request is the name chosen for a request in the referenced claim. If empty, everything from the claim is made available, otherwise only the result of this request.
       limits:                            # Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
@@ -59,7 +59,7 @@ spec:                                    # TempoMonolithicSpec defines the desir
         cpu: "500m"
         memory: "1Gi"
     resources:                           # Resources defines the compute resource requirements of the Jaeger UI container.
-      claims:                            # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.  This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.  This field is immutable. It can only be set for containers.
+      claims:                            # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.  This field depends on the DynamicResourceAllocation feature gate.  This field is immutable. It can only be set for containers.
       - name: ""                         # Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.
         request: ""                      # Request is the name chosen for a request in the referenced claim. If empty, everything from the claim is made available, otherwise only the result of this request.
       limits:                            # Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
@@ -99,7 +99,7 @@ spec:                                    # TempoMonolithicSpec defines the desir
         - ""
     mode: "static"                       # Mode defines the multitenancy mode.
     resources:                           # Resources defines the compute resource requirements of the gateway container. The gateway performs authentication and authorization of incoming requests when multi-tenancy is enabled.
-      claims:                            # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.  This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.  This field is immutable. It can only be set for containers.
+      claims:                            # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.  This field depends on the DynamicResourceAllocation feature gate.  This field is immutable. It can only be set for containers.
       - name: ""                         # Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.
         request: ""                      # Request is the name chosen for a request in the referenced claim. If empty, everything from the claim is made available, otherwise only the result of this request.
       limits:                            # Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
@@ -185,7 +185,7 @@ spec:                                    # TempoMonolithicSpec defines the desir
     podAntiAffinity: {}                  # Describes pod anti-affinity scheduling rules (e.g. avoid putting this pod in the same node, zone, etc. as some other pod(s)).
   nodeSelector: {}                       # NodeSelector defines which labels are required by a node to schedule the pod onto it.
   resources:                             # Resources defines the compute resource requirements of the Tempo container.
-    claims:                              # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.  This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.  This field is immutable. It can only be set for containers.
+    claims:                              # Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.  This field depends on the DynamicResourceAllocation feature gate.  This field is immutable. It can only be set for containers.
     - name: ""                           # Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.
       request: ""                        # Request is the name chosen for a request in the referenced claim. If empty, everything from the claim is made available, otherwise only the result of this request.
     limits:                              # Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/

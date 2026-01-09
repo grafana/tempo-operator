@@ -14,6 +14,7 @@ import (
 	networkingv1 "k8s.io/api/networking/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
@@ -82,6 +83,7 @@ func createTempoCR(t *testing.T, nsn types.NamespacedName, storageSecret *corev1
 					Type: "s3",
 				},
 			},
+			StorageSize: resource.MustParse("10Gi"),
 		},
 	}
 	err := k8sClient.Create(context.Background(), tempo)
@@ -109,7 +111,7 @@ func TestReconcile(t *testing.T) {
 	}
 	reconcile, err := reconciler.Reconcile(context.Background(), req)
 	require.NoError(t, err)
-	assert.Equal(t, false, reconcile.Requeue)
+	assert.Equal(t, time.Duration(0), reconcile.RequeueAfter)
 
 	// Check if objects of specific types were created and are managed by the operator
 	opts := []client.ListOption{
@@ -179,7 +181,7 @@ func TestReadyToConfigurationError(t *testing.T) {
 	}
 	reconcileResult, err := reconciler.Reconcile(context.Background(), req)
 	require.NoError(t, err)
-	assert.Equal(t, false, reconcileResult.Requeue)
+	assert.Equal(t, time.Duration(0), reconcileResult.RequeueAfter)
 
 	// Verify status conditions: Ready=true
 	updatedTempo1 := v1alpha1.TempoStack{}
@@ -325,7 +327,7 @@ func TestConfigurationErrorToReady(t *testing.T) {
 	}
 	reconcileResult, err := reconciler.Reconcile(context.Background(), req)
 	require.ErrorContains(t, err, "terminal error")
-	assert.Equal(t, false, reconcileResult.Requeue)
+	assert.Equal(t, time.Duration(0), reconcileResult.RequeueAfter)
 
 	// Verify status conditions: ConfigurationError=true
 	updatedTempo1 := v1alpha1.TempoStack{}
@@ -350,7 +352,7 @@ func TestConfigurationErrorToReady(t *testing.T) {
 	// Reconcile
 	reconcileResult, err = reconciler.Reconcile(context.Background(), req)
 	require.NoError(t, err)
-	assert.Equal(t, false, reconcileResult.Requeue)
+	assert.Equal(t, time.Duration(0), reconcileResult.RequeueAfter)
 
 	// Verify status conditions: Ready=true, ConfigurationError=false
 	updatedTempo2 := v1alpha1.TempoStack{}
@@ -457,6 +459,7 @@ func TestStorageCustomCA(t *testing.T) {
 					CA:      "custom-ca",
 				},
 			},
+			StorageSize: resource.MustParse("10Gi"),
 		},
 	}
 	err := k8sClient.Create(context.Background(), tempo)
@@ -564,7 +567,7 @@ func TestTLSEnable(t *testing.T) {
 	}
 	reconcile, err := reconciler.Reconcile(context.Background(), req)
 	require.NoError(t, err)
-	assert.Equal(t, false, reconcile.Requeue)
+	assert.Equal(t, time.Duration(0), reconcile.RequeueAfter)
 	opts := []client.ListOption{
 		client.InNamespace(nsn.Namespace),
 		client.MatchingLabels(map[string]string{
@@ -629,6 +632,7 @@ func TestPruneIngress(t *testing.T) {
 					Type: "s3",
 				},
 			},
+			StorageSize: resource.MustParse("10Gi"),
 			Template: v1alpha1.TempoTemplateSpec{
 				QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
 					JaegerQuery: v1alpha1.JaegerQuerySpec{
@@ -662,7 +666,7 @@ func TestPruneIngress(t *testing.T) {
 	}
 	reconcileResult, err := reconciler.Reconcile(context.Background(), req)
 	require.NoError(t, err)
-	assert.Equal(t, false, reconcileResult.Requeue)
+	assert.Equal(t, time.Duration(0), reconcileResult.RequeueAfter)
 
 	// Verify Ingress is created
 	ingressNsn := types.NamespacedName{Name: "tempo-prune-ingress-test-query-frontend", Namespace: "default"}
@@ -680,7 +684,7 @@ func TestPruneIngress(t *testing.T) {
 	// Reconcile
 	reconcileResult, err = reconciler.Reconcile(context.Background(), req)
 	require.NoError(t, err)
-	assert.Equal(t, false, reconcileResult.Requeue)
+	assert.Equal(t, time.Duration(0), reconcileResult.RequeueAfter)
 
 	// Verify Ingress got deleted
 	err = k8sClient.Get(context.Background(), ingressNsn, &ingress)
@@ -729,6 +733,7 @@ func TestK8SGatewaySecret(t *testing.T) {
 					Type: "s3",
 				},
 			},
+			StorageSize: resource.MustParse("10Gi"),
 			Tenants: &v1alpha1.TenantsSpec{
 				Mode: v1alpha1.ModeStatic,
 				Authentication: []v1alpha1.AuthenticationSpec{
@@ -810,7 +815,7 @@ func TestK8SGatewaySecret(t *testing.T) {
 	}
 	reconcile, err := reconciler.Reconcile(context.Background(), req)
 	require.NoError(t, err)
-	assert.Equal(t, false, reconcile.Requeue)
+	assert.Equal(t, time.Duration(0), reconcile.RequeueAfter)
 	gwnsn := types.NamespacedName{Name: fmt.Sprintf("tempo-%s-gateway", nsn.Name), Namespace: "default"}
 	got := &corev1.Secret{}
 	err = k8sClient.Get(context.Background(), gwnsn, got)
@@ -869,6 +874,7 @@ func TestOpenShiftMode_finalizer(t *testing.T) {
 					Type: "s3",
 				},
 			},
+			StorageSize: resource.MustParse("10Gi"),
 			Tenants: &v1alpha1.TenantsSpec{
 				Mode: v1alpha1.ModeOpenShift,
 			},
@@ -916,7 +922,7 @@ func TestOpenShiftMode_finalizer(t *testing.T) {
 	}
 	reconcile, err := reconciler.Reconcile(context.Background(), req)
 	require.NoError(t, err)
-	assert.Equal(t, false, reconcile.Requeue)
+	assert.Equal(t, time.Duration(0), reconcile.RequeueAfter)
 
 	gatewayClusterRole := &rbacv1.ClusterRole{}
 	err = k8sClient.Get(context.Background(), types.NamespacedName{Name: fmt.Sprintf("tempo-%s-gateway-%s", tempoName, namespaceName), Namespace: "default"}, gatewayClusterRole)
@@ -929,7 +935,7 @@ func TestOpenShiftMode_finalizer(t *testing.T) {
 	require.NoError(t, err)
 	reconcile, err = reconciler.Reconcile(context.Background(), req)
 	require.NoError(t, err)
-	assert.Equal(t, false, reconcile.Requeue)
+	assert.Equal(t, time.Duration(0), reconcile.RequeueAfter)
 
 	// the cluster role should be deleted
 	err = k8sClient.Get(context.Background(), types.NamespacedName{Name: fmt.Sprintf("tempo-%s-gateway-%s", tempoName, namespaceName), Namespace: "default"}, gatewayClusterRole)
@@ -1047,7 +1053,7 @@ func TestUpgrade(t *testing.T) {
 	}
 	reconcile, err := reconciler.Reconcile(context.Background(), req)
 	require.NoError(t, err)
-	assert.Equal(t, false, reconcile.Requeue)
+	assert.Equal(t, time.Duration(0), reconcile.RequeueAfter)
 
 	// Upgrade process of first reconcile detected an empty operator version in the status field of the CR
 	// and updated the version to the current operator version (0.0.0)
@@ -1063,7 +1069,7 @@ func TestUpgrade(t *testing.T) {
 	// Reconcile should perform all upgrade steps until latest version
 	reconcile, err = reconciler.Reconcile(context.Background(), req)
 	require.NoError(t, err)
-	assert.Equal(t, false, reconcile.Requeue)
+	assert.Equal(t, time.Duration(0), reconcile.RequeueAfter)
 
 	// Verify CR is at latest version
 	err = k8sClient.Get(context.Background(), nsn, &updatedTempo)
