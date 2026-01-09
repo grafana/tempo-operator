@@ -21,6 +21,8 @@ var (
 	defaultFindTracesConcurrentRequests = 2
 )
 
+const defaultFSGroup = int64(10001)
+
 // Default sets all default values in a central place, instead of setting it at every place where the value is accessed.
 // NOTE: This function is called inside the Reconcile loop, NOT in the webhook.
 // We want to keep the CR as minimal as the user configures it, and not modify it in any way (except for upgrades).
@@ -104,5 +106,14 @@ func (r *TempoMonolithic) Default(ctrlConfig configv1alpha1.ProjectConfig) {
 	}
 	if r.Spec.Query == nil {
 		r.Spec.Query = &MonolithicQuerySpec{}
+	}
+
+	// Set default fsGroup to ensure volume permissions are correct
+	if r.Spec.PodSecurityContext == nil {
+		r.Spec.PodSecurityContext = &corev1.PodSecurityContext{
+			FSGroup: ptr.To(defaultFSGroup),
+		}
+	} else if r.Spec.PodSecurityContext.FSGroup == nil {
+		r.Spec.PodSecurityContext.FSGroup = ptr.To(defaultFSGroup)
 	}
 }

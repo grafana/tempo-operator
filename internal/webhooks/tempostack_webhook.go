@@ -37,6 +37,18 @@ var (
 	defaultTimeout          = metav1.Duration{Duration: time.Second * 30}
 )
 
+const defaultFSGroup = int64(10001)
+
+func setDefaultPodSecurityContext(psc **corev1.PodSecurityContext) {
+	if *psc == nil {
+		*psc = &corev1.PodSecurityContext{
+			FSGroup: ptr.To(defaultFSGroup),
+		}
+	} else if (*psc).FSGroup == nil {
+		(*psc).FSGroup = ptr.To(defaultFSGroup)
+	}
+}
+
 // TempoStackWebhook provides webhooks for TempoStack CR.
 type TempoStackWebhook struct {
 }
@@ -176,6 +188,14 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 	if r.Spec.Timeout.Duration == 0 {
 		r.Spec.Timeout = defaultTimeout
 	}
+
+	// Set default fsGroup for all components to ensure volume permissions are correct
+	setDefaultPodSecurityContext(&r.Spec.Template.Ingester.PodSecurityContext)
+	setDefaultPodSecurityContext(&r.Spec.Template.Distributor.PodSecurityContext)
+	setDefaultPodSecurityContext(&r.Spec.Template.Compactor.PodSecurityContext)
+	setDefaultPodSecurityContext(&r.Spec.Template.Querier.PodSecurityContext)
+	setDefaultPodSecurityContext(&r.Spec.Template.QueryFrontend.PodSecurityContext)
+	setDefaultPodSecurityContext(&r.Spec.Template.Gateway.PodSecurityContext)
 
 	return nil
 }

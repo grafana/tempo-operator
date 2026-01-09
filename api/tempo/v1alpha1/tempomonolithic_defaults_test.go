@@ -8,12 +8,16 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/ptr"
 
 	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
 )
 
 var (
-	twentyGBQuantity = resource.MustParse("20Gi")
+	twentyGBQuantity          = resource.MustParse("20Gi")
+	defaultPodSecurityContext = &corev1.PodSecurityContext{
+		FSGroup: ptr.To(int64(10001)),
+	}
 )
 
 func TestMonolithicDefault(t *testing.T) {
@@ -46,9 +50,10 @@ func TestMonolithicDefault(t *testing.T) {
 							},
 						},
 					},
-					Management: "Managed",
-					Timeout:    metav1.Duration{Duration: time.Second * 30},
-					Query:      &MonolithicQuerySpec{},
+					Management:         "Managed",
+					Timeout:            metav1.Duration{Duration: time.Second * 30},
+					Query:              &MonolithicQuerySpec{},
+					PodSecurityContext: defaultPodSecurityContext,
 				},
 			},
 		},
@@ -81,9 +86,10 @@ func TestMonolithicDefault(t *testing.T) {
 							},
 						},
 					},
-					Management: "Managed",
-					Timeout:    metav1.Duration{Duration: time.Second * 30},
-					Query:      &MonolithicQuerySpec{},
+					Management:         "Managed",
+					Timeout:            metav1.Duration{Duration: time.Second * 30},
+					Query:              &MonolithicQuerySpec{},
+					PodSecurityContext: defaultPodSecurityContext,
 				},
 			},
 		},
@@ -131,9 +137,10 @@ func TestMonolithicDefault(t *testing.T) {
 							},
 						},
 					},
-					Management: "Unmanaged",
-					Timeout:    metav1.Duration{Duration: time.Second * 30},
-					Query:      &MonolithicQuerySpec{},
+					Management:         "Unmanaged",
+					Timeout:            metav1.Duration{Duration: time.Second * 30},
+					Query:              &MonolithicQuerySpec{},
+					PodSecurityContext: defaultPodSecurityContext,
 				},
 			},
 		},
@@ -204,9 +211,10 @@ func TestMonolithicDefault(t *testing.T) {
 						ServicesQueryDuration:        &defaultServicesDuration,
 						FindTracesConcurrentRequests: 2,
 					},
-					Management: "Managed",
-					Timeout:    metav1.Duration{Duration: time.Second * 30},
-					Query:      &MonolithicQuerySpec{},
+					Management:         "Managed",
+					Timeout:            metav1.Duration{Duration: time.Second * 30},
+					Query:              &MonolithicQuerySpec{},
+					PodSecurityContext: defaultPodSecurityContext,
 				},
 			},
 		},
@@ -280,9 +288,10 @@ func TestMonolithicDefault(t *testing.T) {
 						ServicesQueryDuration:        &defaultServicesDuration,
 						FindTracesConcurrentRequests: 2,
 					},
-					Management: "Managed",
-					Timeout:    metav1.Duration{Duration: time.Second * 30},
-					Query:      &MonolithicQuerySpec{},
+					Management:         "Managed",
+					Timeout:            metav1.Duration{Duration: time.Second * 30},
+					Query:              &MonolithicQuerySpec{},
+					PodSecurityContext: defaultPodSecurityContext,
 				},
 			},
 		},
@@ -348,9 +357,10 @@ func TestMonolithicDefault(t *testing.T) {
 						ServicesQueryDuration:        &defaultServicesDuration,
 						FindTracesConcurrentRequests: 2,
 					},
-					Management: "Managed",
-					Timeout:    metav1.Duration{Duration: time.Second * 30},
-					Query:      &MonolithicQuerySpec{},
+					Management:         "Managed",
+					Timeout:            metav1.Duration{Duration: time.Second * 30},
+					Query:              &MonolithicQuerySpec{},
+					PodSecurityContext: defaultPodSecurityContext,
 				},
 			},
 		},
@@ -416,9 +426,10 @@ func TestMonolithicDefault(t *testing.T) {
 						ServicesQueryDuration:        &defaultServicesDuration,
 						FindTracesConcurrentRequests: 2,
 					},
-					Management: "Managed",
-					Timeout:    metav1.Duration{Duration: time.Second * 30},
-					Query:      &MonolithicQuerySpec{},
+					Management:         "Managed",
+					Timeout:            metav1.Duration{Duration: time.Second * 30},
+					Query:              &MonolithicQuerySpec{},
+					PodSecurityContext: defaultPodSecurityContext,
 				},
 			},
 		},
@@ -483,9 +494,10 @@ func TestMonolithicDefault(t *testing.T) {
 						ServicesQueryDuration:        &metav1.Duration{Duration: time.Duration(100 * 100)},
 						FindTracesConcurrentRequests: 40,
 					},
-					Management: "Managed",
-					Timeout:    metav1.Duration{Duration: time.Hour},
-					Query:      &MonolithicQuerySpec{},
+					Management:         "Managed",
+					Timeout:            metav1.Duration{Duration: time.Hour},
+					Query:              &MonolithicQuerySpec{},
+					PodSecurityContext: defaultPodSecurityContext,
 				},
 			},
 		},
@@ -538,6 +550,82 @@ func TestMonolithicDefault(t *testing.T) {
 						RBAC: RBACSpec{
 							Enabled: true,
 						},
+					},
+					PodSecurityContext: defaultPodSecurityContext,
+				},
+			},
+		},
+		{
+			name: "user-specified fsGroup is preserved",
+			input: &TempoMonolithic{
+				Spec: TempoMonolithicSpec{
+					PodSecurityContext: &corev1.PodSecurityContext{
+						FSGroup: ptr.To(int64(65534)),
+					},
+				},
+			},
+			expected: &TempoMonolithic{
+				Spec: TempoMonolithicSpec{
+					Storage: &MonolithicStorageSpec{
+						Traces: MonolithicTracesStorageSpec{
+							Backend: "memory",
+							Size:    &twoGBQuantity,
+						},
+					},
+					Ingestion: &MonolithicIngestionSpec{
+						OTLP: &MonolithicIngestionOTLPSpec{
+							GRPC: &MonolithicIngestionOTLPProtocolsGRPCSpec{
+								Enabled: true,
+							},
+							HTTP: &MonolithicIngestionOTLPProtocolsHTTPSpec{
+								Enabled: true,
+							},
+						},
+					},
+					Management: "Managed",
+					Timeout:    metav1.Duration{Duration: time.Second * 30},
+					Query:      &MonolithicQuerySpec{},
+					PodSecurityContext: &corev1.PodSecurityContext{
+						FSGroup: ptr.To(int64(65534)),
+					},
+				},
+			},
+		},
+		{
+			name: "fsGroup is added when PodSecurityContext has other fields set",
+			input: &TempoMonolithic{
+				Spec: TempoMonolithicSpec{
+					PodSecurityContext: &corev1.PodSecurityContext{
+						RunAsUser:    ptr.To(int64(1000)),
+						RunAsNonRoot: ptr.To(true),
+					},
+				},
+			},
+			expected: &TempoMonolithic{
+				Spec: TempoMonolithicSpec{
+					Storage: &MonolithicStorageSpec{
+						Traces: MonolithicTracesStorageSpec{
+							Backend: "memory",
+							Size:    &twoGBQuantity,
+						},
+					},
+					Ingestion: &MonolithicIngestionSpec{
+						OTLP: &MonolithicIngestionOTLPSpec{
+							GRPC: &MonolithicIngestionOTLPProtocolsGRPCSpec{
+								Enabled: true,
+							},
+							HTTP: &MonolithicIngestionOTLPProtocolsHTTPSpec{
+								Enabled: true,
+							},
+						},
+					},
+					Management: "Managed",
+					Timeout:    metav1.Duration{Duration: time.Second * 30},
+					Query:      &MonolithicQuerySpec{},
+					PodSecurityContext: &corev1.PodSecurityContext{
+						RunAsUser:    ptr.To(int64(1000)),
+						RunAsNonRoot: ptr.To(true),
+						FSGroup:      ptr.To(int64(10001)),
 					},
 				},
 			},
