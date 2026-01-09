@@ -52,6 +52,8 @@ spec:                                    # TempoStackSpec defines the desired st
     metrics:                             # Metrics defines the metrics configuration for operands.
       createPrometheusRules: false       # CreatePrometheusRules specifies if Prometheus rules for alerts should be created for Tempo components.
       createServiceMonitors: false       # CreateServiceMonitors specifies if ServiceMonitors should be created for Tempo components.
+      extraPrometheusRuleLabels: {}      # ExtraPrometheusRuleLabels defines additional labels for the PrometheusRule objects.
+      extraServiceMonitorLabels: {}      # ExtraServiceMonitorLabels defines additional labels for the ServiceMonitor objects.
     tracing:                             # Tracing defines a config for operands.
       jaeger_agent_endpoint: "localhost:6831" # JaegerAgentEndpoint defines the jaeger endpoint data gets send to. Deprecated: in favor of OTLPHttpEndpoint.
       otlp_http_endpoint: "http://localhost:4320" # OTLPHttpEndpoint defines the OTLP/http endpoint data gets send to. For example, "http://localhost:4320". The default OTLP/http port 4318 collides with the distributor ports, therefore it is recommended to use a different port on the sidecar injected to the Tempo (e.g. 4320).
