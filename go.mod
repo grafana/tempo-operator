@@ -3,7 +3,7 @@ module github.com/grafana/tempo-operator
 go 1.24.2
 
 require (
-	github.com/Masterminds/semver/v3 v3.3.1
+	github.com/Masterminds/semver/v3 v3.4.0
 	github.com/ViaQ/logerr/v2 v2.1.0
 	github.com/go-logr/logr v1.4.3
 	github.com/go-logr/zapr v1.3.0
