@@ -224,6 +224,13 @@ type FeatureGates struct {
 	// GrafanaOperator defines whether the Grafana Operator CRD exists in the cluster.
 	// This CRD is part of grafana-operator.
 	GrafanaOperator bool `json:"grafanaOperator,omitempty"`
+
+	// DefaultPodSecurityContext defines whether the operator should set a default fsGroup (10001)
+	// for all pod security contexts when none is specified. This ensures volume permissions work
+	// correctly with certain CSI drivers (AWS EBS, DigitalOcean, etc.) that mount volumes with
+	// root:root ownership.
+	// On OpenShift, SCCs manage the fsGroup automatically, so this should be disabled.
+	DefaultPodSecurityContext bool `json:"defaultPodSecurityContext,omitempty"`
 }
 
 // ControllerManagerConfigurationSpec defines the desired state of GenericControllerManagerConfiguration.

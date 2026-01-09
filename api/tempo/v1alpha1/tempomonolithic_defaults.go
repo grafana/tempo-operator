@@ -109,11 +109,13 @@ func (r *TempoMonolithic) Default(ctrlConfig configv1alpha1.ProjectConfig) {
 	}
 
 	// Set default fsGroup to ensure volume permissions are correct
-	if r.Spec.PodSecurityContext == nil {
-		r.Spec.PodSecurityContext = &corev1.PodSecurityContext{
-			FSGroup: ptr.To(defaultFSGroup),
+	if ctrlConfig.Gates.DefaultPodSecurityContext {
+		if r.Spec.PodSecurityContext == nil {
+			r.Spec.PodSecurityContext = &corev1.PodSecurityContext{
+				FSGroup: ptr.To(defaultFSGroup),
+			}
+		} else if r.Spec.PodSecurityContext.FSGroup == nil {
+			r.Spec.PodSecurityContext.FSGroup = ptr.To(defaultFSGroup)
 		}
-	} else if r.Spec.PodSecurityContext.FSGroup == nil {
-		r.Spec.PodSecurityContext.FSGroup = ptr.To(defaultFSGroup)
 	}
 }

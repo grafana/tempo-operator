@@ -36,6 +36,9 @@ func TestDefault(t *testing.T) {
 			OauthProxy:      "docker.io/observatorium/oauth-proxy:1.2.3",
 		},
 		Distribution: "upstream",
+		Gates: configv1alpha1.FeatureGates{
+			DefaultPodSecurityContext: true,
+		},
 	}
 
 	defaultDefaultResultLimit := 20
@@ -421,6 +424,7 @@ func TestDefault(t *testing.T) {
 							DefaultEnabled: true,
 						},
 					},
+					DefaultPodSecurityContext: true,
 				},
 				Distribution: "upstream",
 			},
@@ -526,6 +530,7 @@ func TestDefault(t *testing.T) {
 							DefaultEnabled: true,
 						},
 					},
+					DefaultPodSecurityContext: true,
 				},
 				Distribution: "upstream",
 			},

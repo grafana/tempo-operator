@@ -190,12 +190,14 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 	}
 
 	// Set default fsGroup for all components to ensure volume permissions are correct
-	setDefaultPodSecurityContext(&r.Spec.Template.Ingester.PodSecurityContext)
-	setDefaultPodSecurityContext(&r.Spec.Template.Distributor.PodSecurityContext)
-	setDefaultPodSecurityContext(&r.Spec.Template.Compactor.PodSecurityContext)
-	setDefaultPodSecurityContext(&r.Spec.Template.Querier.PodSecurityContext)
-	setDefaultPodSecurityContext(&r.Spec.Template.QueryFrontend.PodSecurityContext)
-	setDefaultPodSecurityContext(&r.Spec.Template.Gateway.PodSecurityContext)
+	if d.ctrlConfig.Gates.DefaultPodSecurityContext {
+		setDefaultPodSecurityContext(&r.Spec.Template.Ingester.PodSecurityContext)
+		setDefaultPodSecurityContext(&r.Spec.Template.Distributor.PodSecurityContext)
+		setDefaultPodSecurityContext(&r.Spec.Template.Compactor.PodSecurityContext)
+		setDefaultPodSecurityContext(&r.Spec.Template.Querier.PodSecurityContext)
+		setDefaultPodSecurityContext(&r.Spec.Template.QueryFrontend.PodSecurityContext)
+		setDefaultPodSecurityContext(&r.Spec.Template.Gateway.PodSecurityContext)
+	}
 
 	return nil
 }
