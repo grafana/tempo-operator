@@ -8,15 +8,26 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/ptr"
 
 	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
 )
 
 var (
-	twentyGBQuantity = resource.MustParse("20Gi")
+	twentyGBQuantity          = resource.MustParse("20Gi")
+	defaultPodSecurityContext = &corev1.PodSecurityContext{
+		FSGroup: ptr.To(int64(10001)),
+	}
 )
 
 func TestMonolithicDefault(t *testing.T) {
+	// Default ctrlConfig with DefaultPodSecurityContext enabled (community distribution behavior)
+	defaultCtrlConfig := configv1alpha1.ProjectConfig{
+		Gates: configv1alpha1.FeatureGates{
+			DefaultPodSecurityContext: defaultPodSecurityContext,
+		},
+	}
+
 	tests := []struct {
 		name       string
 		ctrlConfig configv1alpha1.ProjectConfig
@@ -24,7 +35,8 @@ func TestMonolithicDefault(t *testing.T) {
 		expected   *TempoMonolithic
 	}{
 		{
-			name: "empty spec, set memory backend and enable OTLP/gRPC and OTLP/HTTP",
+			name:       "empty spec, set memory backend and enable OTLP/gRPC and OTLP/HTTP",
+			ctrlConfig: defaultCtrlConfig,
 			input: &TempoMonolithic{
 				Spec: TempoMonolithicSpec{},
 			},
@@ -46,14 +58,16 @@ func TestMonolithicDefault(t *testing.T) {
 							},
 						},
 					},
-					Management: "Managed",
-					Timeout:    metav1.Duration{Duration: time.Second * 30},
-					Query:      &MonolithicQuerySpec{},
+					Management:         "Managed",
+					Timeout:            metav1.Duration{Duration: time.Second * 30},
+					Query:              &MonolithicQuerySpec{},
+					PodSecurityContext: defaultPodSecurityContext,
 				},
 			},
 		},
 		{
-			name: "pv backend, set 10Gi default pv size",
+			name:       "pv backend, set 10Gi default pv size",
+			ctrlConfig: defaultCtrlConfig,
 			input: &TempoMonolithic{
 				Spec: TempoMonolithicSpec{
 					Storage: &MonolithicStorageSpec{
@@ -81,14 +95,16 @@ func TestMonolithicDefault(t *testing.T) {
 							},
 						},
 					},
-					Management: "Managed",
-					Timeout:    metav1.Duration{Duration: time.Second * 30},
-					Query:      &MonolithicQuerySpec{},
+					Management:         "Managed",
+					Timeout:            metav1.Duration{Duration: time.Second * 30},
+					Query:              &MonolithicQuerySpec{},
+					PodSecurityContext: defaultPodSecurityContext,
 				},
 			},
 		},
 		{
-			name: "do not change already set values",
+			name:       "do not change already set values",
+			ctrlConfig: defaultCtrlConfig,
 			input: &TempoMonolithic{
 				Spec: TempoMonolithicSpec{
 					Storage: &MonolithicStorageSpec{
@@ -131,9 +147,10 @@ func TestMonolithicDefault(t *testing.T) {
 							},
 						},
 					},
-					Management: "Unmanaged",
-					Timeout:    metav1.Duration{Duration: time.Second * 30},
-					Query:      &MonolithicQuerySpec{},
+					Management:         "Unmanaged",
+					Timeout:            metav1.Duration{Duration: time.Second * 30},
+					Query:              &MonolithicQuerySpec{},
+					PodSecurityContext: defaultPodSecurityContext,
 				},
 			},
 		},
@@ -146,6 +163,7 @@ func TestMonolithicDefault(t *testing.T) {
 							DefaultEnabled: true,
 						},
 					},
+					DefaultPodSecurityContext: defaultPodSecurityContext,
 				},
 			},
 			input: &TempoMonolithic{
@@ -204,9 +222,10 @@ func TestMonolithicDefault(t *testing.T) {
 						ServicesQueryDuration:        &defaultServicesDuration,
 						FindTracesConcurrentRequests: 2,
 					},
-					Management: "Managed",
-					Timeout:    metav1.Duration{Duration: time.Second * 30},
-					Query:      &MonolithicQuerySpec{},
+					Management:         "Managed",
+					Timeout:            metav1.Duration{Duration: time.Second * 30},
+					Query:              &MonolithicQuerySpec{},
+					PodSecurityContext: defaultPodSecurityContext,
 				},
 			},
 		},
@@ -219,6 +238,7 @@ func TestMonolithicDefault(t *testing.T) {
 							DefaultEnabled: true,
 						},
 					},
+					DefaultPodSecurityContext: defaultPodSecurityContext,
 				},
 			},
 			input: &TempoMonolithic{
@@ -280,14 +300,16 @@ func TestMonolithicDefault(t *testing.T) {
 						ServicesQueryDuration:        &defaultServicesDuration,
 						FindTracesConcurrentRequests: 2,
 					},
-					Management: "Managed",
-					Timeout:    metav1.Duration{Duration: time.Second * 30},
-					Query:      &MonolithicQuerySpec{},
+					Management:         "Managed",
+					Timeout:            metav1.Duration{Duration: time.Second * 30},
+					Query:              &MonolithicQuerySpec{},
+					PodSecurityContext: defaultPodSecurityContext,
 				},
 			},
 		},
 		{
-			name: "no touch jaeger ui oauth when feature gate is disabled (true case)",
+			name:       "no touch jaeger ui oauth when feature gate is disabled (true case)",
+			ctrlConfig: defaultCtrlConfig,
 			input: &TempoMonolithic{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test",
@@ -348,14 +370,16 @@ func TestMonolithicDefault(t *testing.T) {
 						ServicesQueryDuration:        &defaultServicesDuration,
 						FindTracesConcurrentRequests: 2,
 					},
-					Management: "Managed",
-					Timeout:    metav1.Duration{Duration: time.Second * 30},
-					Query:      &MonolithicQuerySpec{},
+					Management:         "Managed",
+					Timeout:            metav1.Duration{Duration: time.Second * 30},
+					Query:              &MonolithicQuerySpec{},
+					PodSecurityContext: defaultPodSecurityContext,
 				},
 			},
 		},
 		{
-			name: "no touch jaeger ui oauth when feature gate is disabled (false case)",
+			name:       "no touch jaeger ui oauth when feature gate is disabled (false case)",
+			ctrlConfig: defaultCtrlConfig,
 			input: &TempoMonolithic{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test",
@@ -416,14 +440,16 @@ func TestMonolithicDefault(t *testing.T) {
 						ServicesQueryDuration:        &defaultServicesDuration,
 						FindTracesConcurrentRequests: 2,
 					},
-					Management: "Managed",
-					Timeout:    metav1.Duration{Duration: time.Second * 30},
-					Query:      &MonolithicQuerySpec{},
+					Management:         "Managed",
+					Timeout:            metav1.Duration{Duration: time.Second * 30},
+					Query:              &MonolithicQuerySpec{},
+					PodSecurityContext: defaultPodSecurityContext,
 				},
 			},
 		},
 		{
-			name: "define custom duration for services list, timeout and find traces",
+			name:       "define custom duration for services list, timeout and find traces",
+			ctrlConfig: defaultCtrlConfig,
 			input: &TempoMonolithic{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test",
@@ -483,14 +509,16 @@ func TestMonolithicDefault(t *testing.T) {
 						ServicesQueryDuration:        &metav1.Duration{Duration: time.Duration(100 * 100)},
 						FindTracesConcurrentRequests: 40,
 					},
-					Management: "Managed",
-					Timeout:    metav1.Duration{Duration: time.Hour},
-					Query:      &MonolithicQuerySpec{},
+					Management:         "Managed",
+					Timeout:            metav1.Duration{Duration: time.Hour},
+					Query:              &MonolithicQuerySpec{},
+					PodSecurityContext: defaultPodSecurityContext,
 				},
 			},
 		},
 		{
-			name: "query defined",
+			name:       "query defined",
+			ctrlConfig: defaultCtrlConfig,
 			input: &TempoMonolithic{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test",
@@ -539,6 +567,119 @@ func TestMonolithicDefault(t *testing.T) {
 							Enabled: true,
 						},
 					},
+					PodSecurityContext: defaultPodSecurityContext,
+				},
+			},
+		},
+		{
+			name:       "user-specified fsGroup is preserved",
+			ctrlConfig: defaultCtrlConfig,
+			input: &TempoMonolithic{
+				Spec: TempoMonolithicSpec{
+					PodSecurityContext: &corev1.PodSecurityContext{
+						FSGroup: ptr.To(int64(65534)),
+					},
+				},
+			},
+			expected: &TempoMonolithic{
+				Spec: TempoMonolithicSpec{
+					Storage: &MonolithicStorageSpec{
+						Traces: MonolithicTracesStorageSpec{
+							Backend: "memory",
+							Size:    &twoGBQuantity,
+						},
+					},
+					Ingestion: &MonolithicIngestionSpec{
+						OTLP: &MonolithicIngestionOTLPSpec{
+							GRPC: &MonolithicIngestionOTLPProtocolsGRPCSpec{
+								Enabled: true,
+							},
+							HTTP: &MonolithicIngestionOTLPProtocolsHTTPSpec{
+								Enabled: true,
+							},
+						},
+					},
+					Management: "Managed",
+					Timeout:    metav1.Duration{Duration: time.Second * 30},
+					Query:      &MonolithicQuerySpec{},
+					PodSecurityContext: &corev1.PodSecurityContext{
+						FSGroup: ptr.To(int64(65534)),
+					},
+				},
+			},
+		},
+		{
+			name:       "fsGroup is added when PodSecurityContext has other fields set",
+			ctrlConfig: defaultCtrlConfig,
+			input: &TempoMonolithic{
+				Spec: TempoMonolithicSpec{
+					PodSecurityContext: &corev1.PodSecurityContext{
+						RunAsUser:    ptr.To(int64(1000)),
+						RunAsNonRoot: ptr.To(true),
+					},
+				},
+			},
+			expected: &TempoMonolithic{
+				Spec: TempoMonolithicSpec{
+					Storage: &MonolithicStorageSpec{
+						Traces: MonolithicTracesStorageSpec{
+							Backend: "memory",
+							Size:    &twoGBQuantity,
+						},
+					},
+					Ingestion: &MonolithicIngestionSpec{
+						OTLP: &MonolithicIngestionOTLPSpec{
+							GRPC: &MonolithicIngestionOTLPProtocolsGRPCSpec{
+								Enabled: true,
+							},
+							HTTP: &MonolithicIngestionOTLPProtocolsHTTPSpec{
+								Enabled: true,
+							},
+						},
+					},
+					Management: "Managed",
+					Timeout:    metav1.Duration{Duration: time.Second * 30},
+					Query:      &MonolithicQuerySpec{},
+					PodSecurityContext: &corev1.PodSecurityContext{
+						RunAsUser:    ptr.To(int64(1000)),
+						RunAsNonRoot: ptr.To(true),
+						FSGroup:      ptr.To(int64(10001)),
+					},
+				},
+			},
+		},
+		{
+			name: "OpenShift mode: no fsGroup is set when DefaultPodSecurityContext is nil",
+			ctrlConfig: configv1alpha1.ProjectConfig{
+				Gates: configv1alpha1.FeatureGates{
+					DefaultPodSecurityContext: nil,
+				},
+			},
+			input: &TempoMonolithic{
+				Spec: TempoMonolithicSpec{},
+			},
+			expected: &TempoMonolithic{
+				Spec: TempoMonolithicSpec{
+					Storage: &MonolithicStorageSpec{
+						Traces: MonolithicTracesStorageSpec{
+							Backend: "memory",
+							Size:    &twoGBQuantity,
+						},
+					},
+					Ingestion: &MonolithicIngestionSpec{
+						OTLP: &MonolithicIngestionOTLPSpec{
+							GRPC: &MonolithicIngestionOTLPProtocolsGRPCSpec{
+								Enabled: true,
+							},
+							HTTP: &MonolithicIngestionOTLPProtocolsHTTPSpec{
+								Enabled: true,
+							},
+						},
+					},
+					Management: "Managed",
+					Timeout:    metav1.Duration{Duration: time.Second * 30},
+					Query:      &MonolithicQuerySpec{},
+					// PodSecurityContext is nil - no fsGroup set
 				},
 			},
 		},

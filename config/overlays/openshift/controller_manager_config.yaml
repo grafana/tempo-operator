@@ -47,3 +47,4 @@ featureGates:
       createServiceMonitors: true
       createPrometheusRules: true
   networkPolicies: true
+  defaultPodSecurityContext: {}
