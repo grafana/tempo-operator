@@ -3,6 +3,7 @@ package v1alpha1
 import (
 	"os"
 
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	configv1alpha1 "k8s.io/component-base/config/v1alpha1"
 )
@@ -225,12 +226,13 @@ type FeatureGates struct {
 	// This CRD is part of grafana-operator.
 	GrafanaOperator bool `json:"grafanaOperator,omitempty"`
 
-	// DefaultPodSecurityContext defines whether the operator should set a default fsGroup (10001)
-	// for all pod security contexts when none is specified. This ensures volume permissions work
-	// correctly with certain CSI drivers (AWS EBS, DigitalOcean, etc.) that mount volumes with
-	// root:root ownership.
-	// On OpenShift, SCCs manage the fsGroup automatically, so this should be disabled.
-	DefaultPodSecurityContext bool `json:"defaultPodSecurityContext,omitempty"`
+	// DefaultPodSecurityContext defines the default pod security context to apply to all pods
+	// when specific fields are not set. Fields from this default are merged into pod security
+	// contexts that have nil values for those fields.
+	// For Community distributions, set fsGroup: 10001 to ensure volume permissions work correctly
+	// with certain CSI drivers (AWS EBS, DigitalOcean, etc.) that mount volumes with root:root ownership.
+	// On OpenShift, SCCs manage security contexts automatically, so this should be set to an empty object {}.
+	DefaultPodSecurityContext *corev1.PodSecurityContext `json:"defaultPodSecurityContext,omitempty"`
 }
 
 // ControllerManagerConfigurationSpec defines the desired state of GenericControllerManagerConfiguration.

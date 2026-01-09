@@ -47,4 +47,5 @@ featureGates:
       createServiceMonitors: false
       createPrometheusRules: false
   networkPolicies: true
-  defaultPodSecurityContext: true
+  defaultPodSecurityContext:
+    fsGroup: 10001

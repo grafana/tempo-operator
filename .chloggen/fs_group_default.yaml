@@ -5,7 +5,7 @@ change_type: enhancement
 component: tempostack, tempomonolithic
 
 # A brief description of the change. Surround your text with quotes ("") if it needs to start with a backtick (`).
-note: Add defaultPodSecurityContext feature flag to control fsGroup default (10001)
+note: Add configurable defaultPodSecurityContext to operator config
 
 # One or more tracking issues related to the change
 issues: [1240]
@@ -14,8 +14,9 @@ issues: [1240]
 # These lines will be padded with 2 spaces and then inserted directly into the document.
 # Use pipe (|) for multiline entries.
 subtext: |
-  Certain CSI drivers (AWS EBS, DigitalOcean) mount volumes with root:root ownership and 755 permissions,
-  causing permission denied errors when Tempo tries to write to /var/tempo/wal.
-  The defaultPodSecurityContext feature flag controls whether the operator sets a default fsGroup (10001)
-  for all pod security contexts when none is specified. This flag is enabled by default for community
-  distribution and disabled for OpenShift (where SCCs manage the fsGroup automatically).
+  The operator now supports a configurable defaultPodSecurityContext in the feature gates.
+  This allows setting default pod security context fields (fsGroup, runAsUser, etc.) that are
+  merged into pod security contexts when specific fields are not set by the user.
+  For Community distributions, fsGroup is set to 10001 to ensure volume permissions work correctly
+  with certain CSI drivers (AWS EBS, DigitalOcean, etc.) that mount volumes with root:root ownership.
+  For OpenShift, this is set to an empty object {} as SCCs manage security contexts automatically.

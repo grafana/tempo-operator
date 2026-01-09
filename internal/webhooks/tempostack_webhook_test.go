@@ -27,6 +27,9 @@ import (
 )
 
 func TestDefault(t *testing.T) {
+	defaultPodSecurityContext := &corev1.PodSecurityContext{
+		FSGroup: ptr.To(int64(10001)),
+	}
 	defaultCfgConfig := configv1alpha1.ProjectConfig{
 		DefaultImages: configv1alpha1.ImagesSpec{
 			Tempo:           "docker.io/grafana/tempo:x.y.z",
@@ -37,14 +40,11 @@ func TestDefault(t *testing.T) {
 		},
 		Distribution: "upstream",
 		Gates: configv1alpha1.FeatureGates{
-			DefaultPodSecurityContext: true,
+			DefaultPodSecurityContext: defaultPodSecurityContext,
 		},
 	}
 
 	defaultDefaultResultLimit := 20
-	defaultPodSecurityContext := &corev1.PodSecurityContext{
-		FSGroup: ptr.To(int64(10001)),
-	}
 
 	tests := []struct {
 		input      *v1alpha1.TempoStack
@@ -424,7 +424,7 @@ func TestDefault(t *testing.T) {
 							DefaultEnabled: true,
 						},
 					},
-					DefaultPodSecurityContext: true,
+					DefaultPodSecurityContext: defaultPodSecurityContext,
 				},
 				Distribution: "upstream",
 			},
@@ -530,7 +530,7 @@ func TestDefault(t *testing.T) {
 							DefaultEnabled: true,
 						},
 					},
-					DefaultPodSecurityContext: true,
+					DefaultPodSecurityContext: defaultPodSecurityContext,
 				},
 				Distribution: "upstream",
 			},

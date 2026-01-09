@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/imdario/mergo"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -37,16 +38,19 @@ var (
 	defaultTimeout          = metav1.Duration{Duration: time.Second * 30}
 )
 
-const defaultFSGroup = int64(10001)
-
-func setDefaultPodSecurityContext(psc **corev1.PodSecurityContext) {
-	if *psc == nil {
-		*psc = &corev1.PodSecurityContext{
-			FSGroup: ptr.To(defaultFSGroup),
-		}
-	} else if (*psc).FSGroup == nil {
-		(*psc).FSGroup = ptr.To(defaultFSGroup)
+// applyDefaultPodSecurityContext merges fields from defaultPSC into the target psc.
+// If psc is nil, it creates a new PodSecurityContext with the defaults.
+// If psc has nil fields, it fills them with values from defaultPSC.
+func applyDefaultPodSecurityContext(psc **corev1.PodSecurityContext, defaultPSC *corev1.PodSecurityContext) {
+	if defaultPSC == nil {
+		return
 	}
+	if *psc == nil {
+		*psc = defaultPSC.DeepCopy()
+		return
+	}
+	// Merge default values into existing PSC (only fills nil/zero fields)
+	_ = mergo.Merge(*psc, defaultPSC)
 }
 
 // TempoStackWebhook provides webhooks for TempoStack CR.
@@ -189,15 +193,14 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 		r.Spec.Timeout = defaultTimeout
 	}
 
-	// Set default fsGroup for all components to ensure volume permissions are correct
-	if d.ctrlConfig.Gates.DefaultPodSecurityContext {
-		setDefaultPodSecurityContext(&r.Spec.Template.Ingester.PodSecurityContext)
-		setDefaultPodSecurityContext(&r.Spec.Template.Distributor.PodSecurityContext)
-		setDefaultPodSecurityContext(&r.Spec.Template.Compactor.PodSecurityContext)
-		setDefaultPodSecurityContext(&r.Spec.Template.Querier.PodSecurityContext)
-		setDefaultPodSecurityContext(&r.Spec.Template.QueryFrontend.PodSecurityContext)
-		setDefaultPodSecurityContext(&r.Spec.Template.Gateway.PodSecurityContext)
-	}
+	// Apply default pod security context from config to all components
+	defaultPSC := d.ctrlConfig.Gates.DefaultPodSecurityContext
+	applyDefaultPodSecurityContext(&r.Spec.Template.Ingester.PodSecurityContext, defaultPSC)
+	applyDefaultPodSecurityContext(&r.Spec.Template.Distributor.PodSecurityContext, defaultPSC)
+	applyDefaultPodSecurityContext(&r.Spec.Template.Compactor.PodSecurityContext, defaultPSC)
+	applyDefaultPodSecurityContext(&r.Spec.Template.Querier.PodSecurityContext, defaultPSC)
+	applyDefaultPodSecurityContext(&r.Spec.Template.QueryFrontend.PodSecurityContext, defaultPSC)
+	applyDefaultPodSecurityContext(&r.Spec.Template.Gateway.PodSecurityContext, defaultPSC)
 
 	return nil
 }

@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/imdario/mergo"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -20,8 +21,6 @@ var (
 	defaultTimeout                      = metav1.Duration{Duration: time.Second * 30}
 	defaultFindTracesConcurrentRequests = 2
 )
-
-const defaultFSGroup = int64(10001)
 
 // Default sets all default values in a central place, instead of setting it at every place where the value is accessed.
 // NOTE: This function is called inside the Reconcile loop, NOT in the webhook.
@@ -108,14 +107,12 @@ func (r *TempoMonolithic) Default(ctrlConfig configv1alpha1.ProjectConfig) {
 		r.Spec.Query = &MonolithicQuerySpec{}
 	}
 
-	// Set default fsGroup to ensure volume permissions are correct
-	if ctrlConfig.Gates.DefaultPodSecurityContext {
+	// Apply default pod security context from config
+	if defaultPSC := ctrlConfig.Gates.DefaultPodSecurityContext; defaultPSC != nil {
 		if r.Spec.PodSecurityContext == nil {
-			r.Spec.PodSecurityContext = &corev1.PodSecurityContext{
-				FSGroup: ptr.To(defaultFSGroup),
-			}
-		} else if r.Spec.PodSecurityContext.FSGroup == nil {
-			r.Spec.PodSecurityContext.FSGroup = ptr.To(defaultFSGroup)
+			r.Spec.PodSecurityContext = defaultPSC.DeepCopy()
+		} else {
+			_ = mergo.Merge(r.Spec.PodSecurityContext, defaultPSC)
 		}
 	}
 }

@@ -24,7 +24,7 @@ func TestMonolithicDefault(t *testing.T) {
 	// Default ctrlConfig with DefaultPodSecurityContext enabled (community distribution behavior)
 	defaultCtrlConfig := configv1alpha1.ProjectConfig{
 		Gates: configv1alpha1.FeatureGates{
-			DefaultPodSecurityContext: true,
+			DefaultPodSecurityContext: defaultPodSecurityContext,
 		},
 	}
 
@@ -163,7 +163,7 @@ func TestMonolithicDefault(t *testing.T) {
 							DefaultEnabled: true,
 						},
 					},
-					DefaultPodSecurityContext: true,
+					DefaultPodSecurityContext: defaultPodSecurityContext,
 				},
 			},
 			input: &TempoMonolithic{
@@ -238,7 +238,7 @@ func TestMonolithicDefault(t *testing.T) {
 							DefaultEnabled: true,
 						},
 					},
-					DefaultPodSecurityContext: true,
+					DefaultPodSecurityContext: defaultPodSecurityContext,
 				},
 			},
 			input: &TempoMonolithic{
@@ -649,10 +649,10 @@ func TestMonolithicDefault(t *testing.T) {
 			},
 		},
 		{
-			name: "OpenShift mode: no fsGroup is set when DefaultPodSecurityContext is false",
+			name: "OpenShift mode: no fsGroup is set when DefaultPodSecurityContext is nil",
 			ctrlConfig: configv1alpha1.ProjectConfig{
 				Gates: configv1alpha1.FeatureGates{
-					DefaultPodSecurityContext: false,
+					DefaultPodSecurityContext: nil,
 				},
 			},
 			input: &TempoMonolithic{
