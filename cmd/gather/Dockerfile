@@ -1,5 +1,5 @@
 # Build the manager binary
-FROM golang:1.24 as builder
+FROM golang:1.24@sha256:a61b432ba08dc45cc81d572932fa4cc3a8e3cb2321282f73891db455e735b507 as builder
 
 WORKDIR /workspace
 # Cache tool dependencies
@@ -18,7 +18,7 @@ COPY . .
 RUN make must-gather
 
 
-FROM registry.access.redhat.com/ubi9-minimal:9.2
+FROM registry.access.redhat.com/ubi9-minimal:9.2@sha256:c8c7a06ce1c5fa23c1cbd7a0fd891eacd099bc232aa9985ddb183cfe98d1deaf
 
 RUN INSTALL_PKGS=" \
   rsync \

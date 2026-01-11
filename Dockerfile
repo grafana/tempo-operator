@@ -1,5 +1,5 @@
 # Build the manager binary
-FROM golang:1.24 as builder
+FROM golang:1.24@sha256:a61b432ba08dc45cc81d572932fa4cc3a8e3cb2321282f73891db455e735b507 as builder
 
 WORKDIR /workspace
 # Cache tool dependencies
@@ -23,7 +23,7 @@ RUN make build
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
-FROM gcr.io/distroless/static:nonroot
+FROM gcr.io/distroless/static:nonroot@sha256:cba10d7abd3e203428e86f5b2d7fd5eb7d8987c387864ae4996cf97191b33764
 WORKDIR /
 COPY --from=builder /workspace/bin/manager .
 USER 65532:65532
