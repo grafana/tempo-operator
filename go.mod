@@ -11,8 +11,8 @@ require (
 	github.com/grafana/grafana-operator/v5 v5.9.0
 	github.com/imdario/mergo v0.3.16
 	github.com/novln/docker-parser v1.0.0
-	github.com/onsi/ginkgo/v2 v2.23.4
-	github.com/onsi/gomega v1.37.0
+	github.com/onsi/ginkgo/v2 v2.27.4
+	github.com/onsi/gomega v1.38.2
 	github.com/openshift/cloud-credential-operator v0.0.0-20250417173756-8ff60a024ed9
 	github.com/openshift/library-go v0.0.0-20230620084201-504ca4bd5a83
 	github.com/operator-framework/api v0.31.0
@@ -106,11 +106,11 @@ require (
 	go.opentelemetry.io/otel/sdk v1.39.0 // indirect
 	go.opentelemetry.io/otel/trace v1.39.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.5.0 // indirect
-	go.uber.org/automaxprocs v1.6.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56 // indirect
+	golang.org/x/mod v0.28.0 // indirect
 	golang.org/x/net v0.46.0 // indirect
 	golang.org/x/oauth2 v0.32.0 // indirect
 	golang.org/x/sync v0.17.0 // indirect
