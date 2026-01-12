@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/imdario/mergo"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -104,5 +105,14 @@ func (r *TempoMonolithic) Default(ctrlConfig configv1alpha1.ProjectConfig) {
 	}
 	if r.Spec.Query == nil {
 		r.Spec.Query = &MonolithicQuerySpec{}
+	}
+
+	// Apply default pod security context from config
+	if defaultPSC := ctrlConfig.Gates.DefaultPodSecurityContext; defaultPSC != nil {
+		if r.Spec.PodSecurityContext == nil {
+			r.Spec.PodSecurityContext = defaultPSC.DeepCopy()
+		} else {
+			_ = mergo.Merge(r.Spec.PodSecurityContext, defaultPSC)
+		}
 	}
 }
