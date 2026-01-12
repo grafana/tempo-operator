@@ -125,8 +125,8 @@ github.com/onsi/ginkgo/v2 v2.23.4 h1:ktYTpKJAVZnDT4VjxSbiBenUjmlL/5QkBEocaWXiQus
 github.com/onsi/ginkgo/v2 v2.23.4/go.mod h1:Bt66ApGPBFzHyR+JO10Zbt0Gsp4uWxu5mIOTusL46e8=
 github.com/onsi/gomega v1.37.0 h1:CdEG8g0S133B4OswTDC/5XPSzE1OeP29QOioj2PID2Y=
 github.com/onsi/gomega v1.37.0/go.mod h1:8D9+Txp43QWKhM24yyOBEdpkzN8FvJyAwecBgsU4KU0=
-github.com/openshift/api v0.0.0-20230223193310-d964c7a58d75 h1:OQJsfiach1cKBI1xUSNXKzuqi8nTpDRccR8gMGFkTIU=
-github.com/openshift/api v0.0.0-20230223193310-d964c7a58d75/go.mod h1:ctXNyWanKEjGj8sss1KjjHQ3ENKFm33FFnS5BKaIPh4=
+github.com/openshift/api v0.0.0-20260112003852-92b92bfb5020 h1:zP7Yc7LNoeBakkm9C6Z4/FtEz58nh94meOdizR2wPZM=
+github.com/openshift/api v0.0.0-20260112003852-92b92bfb5020/go.mod h1:d5uzF0YN2nQQFA0jIEWzzOZ+edmo6wzlGLvx5Fhz4uY=
 github.com/openshift/cloud-credential-operator v0.0.0-20250417173756-8ff60a024ed9 h1:J+IRohkwLBnB1K+BTAxynqYAQalJOAN10F0t9fteXeM=
 github.com/openshift/cloud-credential-operator v0.0.0-20250417173756-8ff60a024ed9/go.mod h1:6YMhc3w1DCW9NAZyLmoeTBnpUPTu50RhDutljqJesb8=
 github.com/openshift/library-go v0.0.0-20230620084201-504ca4bd5a83 h1:z7tTnbZ2bzPtXjVnWHWCtUCBYrZYeKJitkV1rffmMY8=
