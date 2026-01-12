@@ -14,7 +14,7 @@ issues: [1240]
 # These lines will be padded with 2 spaces and then inserted directly into the document.
 # Use pipe (|) for multiline entries.
 subtext: |
-  The operator now supports a configurable defaultPodSecurityContext in the feature gates.
+  The operator now supports a configurable defaultPodSecurityContext in the operator configuration.
   This allows setting default pod security context fields (fsGroup, runAsUser, etc.) that are
   merged into pod security contexts when specific fields are not set by the user.
   For Community distributions, fsGroup is set to 10001 to ensure volume permissions work correctly
