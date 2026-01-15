@@ -1,0 +1,44 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoStack
+metadata:
+  name: pico
+status:
+  conditions:
+    - reason: Ready
+      status: "True"
+      type: Ready
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-pico-distributor
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-pico-querier
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-pico-query-frontend
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-pico-compactor
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: tempo-pico-ingester
+status:
+  readyReplicas: 1
