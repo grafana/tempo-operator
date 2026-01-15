@@ -222,3 +222,131 @@ func TestResources(t *testing.T) {
 		})
 	}
 }
+
+func TestResourcesWithSize(t *testing.T) {
+	tests := []struct {
+		name      string
+		tempo     v1alpha1.TempoStack
+		component string
+		want      corev1.ResourceRequirements
+	}{
+		{
+			name: "size extra-small returns correct resources for distributor",
+			tempo: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Size: v1alpha1.SizeExtraSmall,
+				},
+			},
+			component: DistributorComponentName,
+			want: corev1.ResourceRequirements{
+				Requests: corev1.ResourceList{
+					corev1.ResourceCPU:    resource.MustParse("200m"),
+					corev1.ResourceMemory: resource.MustParse("128Mi"),
+				},
+			},
+		},
+		{
+			name: "size extra-small returns correct resources for ingester",
+			tempo: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Size: v1alpha1.SizeExtraSmall,
+				},
+			},
+			component: IngesterComponentName,
+			want: corev1.ResourceRequirements{
+				Requests: corev1.ResourceList{
+					corev1.ResourceCPU:    resource.MustParse("1500m"),
+					corev1.ResourceMemory: resource.MustParse("8Gi"),
+				},
+			},
+		},
+		{
+			name: "size demo returns empty resources",
+			tempo: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Size: v1alpha1.SizeDemo,
+				},
+			},
+			component: DistributorComponentName,
+			want:      corev1.ResourceRequirements{},
+		},
+		{
+			name: "size takes precedence over resources.total",
+			tempo: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Size: v1alpha1.SizeSmall,
+					Resources: v1alpha1.Resources{
+						Total: &corev1.ResourceRequirements{
+							Limits: map[corev1.ResourceName]resource.Quantity{
+								corev1.ResourceMemory: resource.MustParse("2Gi"),
+								corev1.ResourceCPU:    resource.MustParse("1000m"),
+							},
+						},
+					},
+				},
+			},
+			component: DistributorComponentName,
+			want: corev1.ResourceRequirements{
+				Requests: corev1.ResourceList{
+					corev1.ResourceCPU:    resource.MustParse("600m"),
+					corev1.ResourceMemory: resource.MustParse("128Mi"),
+				},
+			},
+		},
+		{
+			name: "size demo takes precedence over resources.total (returns empty)",
+			tempo: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Size: v1alpha1.SizeDemo,
+					Resources: v1alpha1.Resources{
+						Total: &corev1.ResourceRequirements{
+							Limits: map[corev1.ResourceName]resource.Quantity{
+								corev1.ResourceMemory: resource.MustParse("2Gi"),
+								corev1.ResourceCPU:    resource.MustParse("1000m"),
+							},
+						},
+					},
+				},
+			},
+			component: DistributorComponentName,
+			want:      corev1.ResourceRequirements{},
+		},
+		{
+			name: "size small returns correct resources for gateway",
+			tempo: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Size: v1alpha1.SizeSmall,
+				},
+			},
+			component: GatewayComponentName,
+			want: corev1.ResourceRequirements{
+				Requests: corev1.ResourceList{
+					corev1.ResourceCPU:    resource.MustParse("800m"),
+					corev1.ResourceMemory: resource.MustParse("192Mi"),
+				},
+			},
+		},
+		{
+			name: "size small returns correct resources for jaeger-frontend",
+			tempo: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Size: v1alpha1.SizeSmall,
+				},
+			},
+			component: JaegerFrontendComponentName,
+			want: corev1.ResourceRequirements{
+				Requests: corev1.ResourceList{
+					corev1.ResourceCPU:    resource.MustParse("800m"),
+					corev1.ResourceMemory: resource.MustParse("192Mi"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := Resources(tt.tempo, tt.component, nil)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}

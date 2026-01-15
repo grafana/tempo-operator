@@ -27,6 +27,7 @@ import (
 	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/autodetect"
 	"github.com/grafana/tempo-operator/internal/handlers/storage"
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
 	"github.com/grafana/tempo-operator/internal/status"
 )
@@ -144,8 +145,18 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 	}
 
 	// Default replication factor if not specified.
+	// If size is specified, use size's default RF, otherwise use 1.
 	if r.Spec.ReplicationFactor == 0 {
-		r.Spec.ReplicationFactor = defaultReplicationFactor
+		if r.Spec.Size != "" {
+			sizeRF := manifestutils.ReplicationFactorForSize(r.Spec.Size)
+			if sizeRF > 0 {
+				r.Spec.ReplicationFactor = sizeRF
+			} else {
+				r.Spec.ReplicationFactor = defaultReplicationFactor
+			}
+		} else {
+			r.Spec.ReplicationFactor = defaultReplicationFactor
+		}
 	}
 
 	// if tenant mode is Openshift, ingress type should be route by default.
@@ -532,6 +543,13 @@ func (v *validator) validate(ctx context.Context, obj runtime.Object) (admission
 			"override tempo configuration could potentially break the stack, use it carefully",
 		}...)
 
+	}
+
+	// Warn if both size and resources.total are specified (size takes precedence)
+	if tempo.Spec.Size != "" && tempo.Spec.Resources.Total != nil {
+		allWarnings = append(allWarnings, admission.Warnings{
+			"both spec.size and spec.resources.total are specified; spec.size takes precedence for resource allocation",
+		}...)
 	}
 
 	allErrors = append(allErrors, v.validateReplicationFactor(*tempo)...)

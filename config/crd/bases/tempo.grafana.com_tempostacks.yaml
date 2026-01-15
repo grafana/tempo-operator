@@ -446,6 +446,19 @@ spec:
                 description: ServiceAccount defines the service account to use for
                   all tempo components.
                 type: string
+              size:
+                description: |-
+                  Size defines a predefined deployment size profile for this TempoStack.
+                  The operator will apply pre-tested resource configurations based on the selected size.
+                  When not set, resources are determined by spec.resources.total or component-level overrides.
+                  Size also sets a default replication factor (1 for demo, 2 for others) if not explicitly specified.
+                enum:
+                - 1x.demo
+                - 1x.pico
+                - 1x.extra-small
+                - 1x.small
+                - 1x.medium
+                type: string
               storage:
                 description: |-
                   Storage defines the spec for the object storage endpoint to store traces.
