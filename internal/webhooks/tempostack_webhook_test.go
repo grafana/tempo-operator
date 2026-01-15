@@ -132,7 +132,7 @@ func TestDefault(t *testing.T) {
 							TLS: v1alpha1.TLSSpec{},
 						},
 						Ingester: v1alpha1.TempoComponentSpec{
-							Replicas:           ptr.To(int32(1)),
+							Replicas:           ptr.To(int32(2)), // RF=2 requires at least 2 ingester replicas
 							PodSecurityContext: defaultPodSecurityContext,
 						},
 						Querier: v1alpha1.TempoComponentSpec{
@@ -616,7 +616,7 @@ func TestDefault(t *testing.T) {
 							TLS: v1alpha1.TLSSpec{},
 						},
 						Ingester: v1alpha1.TempoComponentSpec{
-							Replicas:           ptr.To(int32(1)),
+							Replicas:           ptr.To(int32(2)), // RF=2 requires at least 2 ingester replicas
 							PodSecurityContext: defaultPodSecurityContext,
 						},
 						Querier: v1alpha1.TempoComponentSpec{

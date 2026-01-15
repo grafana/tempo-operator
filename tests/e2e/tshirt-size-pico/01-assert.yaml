@@ -13,6 +13,7 @@ kind: StatefulSet
 metadata:
   name: tempo-pico-ingester
 spec:
+  replicas: 2
   template:
     spec:
       containers:
@@ -22,7 +23,7 @@ spec:
               cpu: 500m
               memory: 3Gi
 status:
-  readyReplicas: 1
+  readyReplicas: 2
 ---
 apiVersion: apps/v1
 kind: Deployment

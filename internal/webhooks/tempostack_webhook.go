@@ -122,9 +122,32 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 	defaultComponentReplicas := ptr.To(int32(1))
 	defaultReplicationFactor := 1
 
+	// Default replication factor if not specified.
+	// If size is specified, use size's default RF, otherwise use 1.
+	// We need to determine the RF first to set the correct ingester replicas.
+	effectiveRF := defaultReplicationFactor
+	if r.Spec.ReplicationFactor == 0 {
+		if r.Spec.Size != "" {
+			sizeRF := manifestutils.ReplicationFactorForSize(r.Spec.Size)
+			if sizeRF > 0 {
+				effectiveRF = sizeRF
+			}
+		}
+	} else {
+		effectiveRF = r.Spec.ReplicationFactor
+	}
+
+	// Calculate minimum ingester replicas needed for the replication factor.
+	// Quorum = floor(RF/2) + 1, and we need at least quorum replicas.
+	minIngesterReplicas := int32(math.Floor(float64(effectiveRF)/2.0) + 1)
+
 	// Default replicas for all components if not specified.
 	if r.Spec.Template.Ingester.Replicas == nil {
-		r.Spec.Template.Ingester.Replicas = defaultComponentReplicas
+		if minIngesterReplicas > 1 {
+			r.Spec.Template.Ingester.Replicas = ptr.To(minIngesterReplicas)
+		} else {
+			r.Spec.Template.Ingester.Replicas = defaultComponentReplicas
+		}
 	}
 	if r.Spec.Template.Distributor.Replicas == nil {
 		r.Spec.Template.Distributor.Replicas = defaultComponentReplicas
@@ -144,19 +167,9 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 		r.Spec.Template.Gateway.Replicas = defaultComponentReplicas
 	}
 
-	// Default replication factor if not specified.
-	// If size is specified, use size's default RF, otherwise use 1.
+	// Set replication factor (we already computed effectiveRF above).
 	if r.Spec.ReplicationFactor == 0 {
-		if r.Spec.Size != "" {
-			sizeRF := manifestutils.ReplicationFactorForSize(r.Spec.Size)
-			if sizeRF > 0 {
-				r.Spec.ReplicationFactor = sizeRF
-			} else {
-				r.Spec.ReplicationFactor = defaultReplicationFactor
-			}
-		} else {
-			r.Spec.ReplicationFactor = defaultReplicationFactor
-		}
+		r.Spec.ReplicationFactor = effectiveRF
 	}
 
 	// if tenant mode is Openshift, ingress type should be route by default.
