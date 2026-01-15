@@ -440,12 +440,6 @@ spec:
           app.kubernetes.io/instance: simplest
           app.kubernetes.io/managed-by: tempo-operator
           app.kubernetes.io/name: tempo
-  - ports:
-    - port: 9000
-      protocol: TCP
-    to:
-    - namespaceSelector: {}
-      podSelector: {}
   ingress:
   - from:
     - namespaceSelector: {}

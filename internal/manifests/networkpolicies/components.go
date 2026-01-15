@@ -129,7 +129,7 @@ const (
 func componentRelations(params manifestutils.Params) networkRelations {
 	tempo := params.Tempo
 	var (
-		s3Conn   = extractS3Ports(params.StorageParams)
+		s3Conn   = extractStoragePorts(params.StorageParams)
 		grpcConn = []networkingv1.NetworkPolicyPort{
 			{
 				Protocol: ptr.To(corev1.ProtocolTCP),
@@ -161,9 +161,9 @@ func componentRelations(params manifestutils.Params) networkRelations {
 		manifestutils.CompactorComponentName:     {},
 	}
 
+	// Assign storage connections to components that need direct storage access
 	fromTo[manifestutils.IngesterComponentName][netPolicys3Storage] = s3Conn
 	fromTo[manifestutils.QuerierComponentName][netPolicys3Storage] = s3Conn
-	fromTo[manifestutils.QueryFrontendComponentName][netPolicys3Storage] = s3Conn
 	fromTo[manifestutils.CompactorComponentName][netPolicys3Storage] = s3Conn
 
 	// Distributor sends traces to Ingesters
@@ -180,7 +180,13 @@ func componentRelations(params manifestutils.Params) networkRelations {
 		fromTo[manifestutils.DistributorComponentName][netPolicyOtelTargets] = otelExport
 		fromTo[manifestutils.IngesterComponentName][netPolicyOtelTargets] = otelExport
 		fromTo[manifestutils.QuerierComponentName][netPolicyOtelTargets] = otelExport
+		fromTo[manifestutils.QueryFrontendComponentName][netPolicyOtelTargets] = otelExport
 		fromTo[manifestutils.CompactorComponentName][netPolicyOtelTargets] = otelExport
+
+		// Gateway telemetry export when gateway is enabled
+		if tempo.Spec.Template.Gateway.Enabled {
+			fromTo[manifestutils.GatewayComponentName][netPolicyOtelTargets] = otelExport
+		}
 	}
 
 	fromTo[netPolicyClusterComponents] = map[string][]networkingv1.NetworkPolicyPort{}
@@ -283,41 +289,52 @@ func reverseRelations(rels map[string]map[string][]networkingv1.NetworkPolicyPor
 	return reverse
 }
 
-// extractS3Ports parses the S3 endpoint to extract the port for network policies.
-// It handles different credential modes and endpoint formats.
-func extractS3Ports(storageParams manifestutils.StorageParams) []networkingv1.NetworkPolicyPort {
-	if storageParams.S3 == nil {
-		return []networkingv1.NetworkPolicyPort{}
-	}
+// extractStoragePorts extracts the storage port for network policies.
+// It handles S3 (with custom endpoints), Azure Storage, and GCS.
+// Azure and GCS always use HTTPS (port 443).
+// S3 can have custom endpoints with custom ports, or defaults to 443 (HTTPS) or 80 (HTTP).
+func extractStoragePorts(storageParams manifestutils.StorageParams) []networkingv1.NetworkPolicyPort {
+	if storageParams.S3 != nil {
+		port := 0
+		endpoint := storageParams.S3.Endpoint
 
-	port := 0
-	endpoint := storageParams.S3.Endpoint
-
-	// For static credential mode, parse port from endpoint
-	if storageParams.CredentialMode == "static" && endpoint != "" {
-		// Endpoint format is "hostname:port" (scheme already stripped)
-		if colonIdx := strings.LastIndexByte(endpoint, ':'); colonIdx != -1 {
-			portStr := endpoint[colonIdx+1:]
-			// Check if it's a valid port (not an IPv6 address)
-			if p, err := strconv.Atoi(portStr); err == nil && p > 0 && p <= 65535 {
-				port = p
+		if storageParams.CredentialMode == "static" && endpoint != "" {
+			// Endpoint format is "hostname:port" (scheme already stripped)
+			if colonIdx := strings.LastIndexByte(endpoint, ':'); colonIdx != -1 {
+				portStr := endpoint[colonIdx+1:]
+				// Check if it's a valid port (not an IPv6 address)
+				if p, err := strconv.Atoi(portStr); err == nil && p > 0 && p <= 65535 {
+					port = p
+				}
 			}
 		}
-	}
 
-	// If no port found in endpoint, default based on Insecure flag
-	if port == 0 {
-		if storageParams.S3.Insecure {
-			port = 80
-		} else {
-			port = 443
+		if port == 0 {
+			if storageParams.S3.Insecure {
+				port = 80
+			} else {
+				port = 443
+			}
+		}
+
+		return []networkingv1.NetworkPolicyPort{
+			{
+				Protocol: ptr.To(corev1.ProtocolTCP),
+				Port:     ptr.To(intstr.FromInt(port)),
+			},
 		}
 	}
 
-	return []networkingv1.NetworkPolicyPort{
-		{
-			Protocol: ptr.To(corev1.ProtocolTCP),
-			Port:     ptr.To(intstr.FromInt(port)),
-		},
+	// Azure Storage and GCS always use HTTPS (port 443)
+	if storageParams.AzureStorage != nil || storageParams.GCS != nil {
+		return []networkingv1.NetworkPolicyPort{
+			{
+				Protocol: ptr.To(corev1.ProtocolTCP),
+				Port:     ptr.To(intstr.FromInt(443)),
+			},
+		}
 	}
+
+	// No storage configured
+	return []networkingv1.NetworkPolicyPort{}
 }

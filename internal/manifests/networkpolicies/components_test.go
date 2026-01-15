@@ -169,13 +169,14 @@ func compareNetworkPolicyPorts(a, b networkingv1.NetworkPolicyPort) bool {
 	return a.Port.IntValue() == b.Port.IntValue()
 }
 
-func TestExtractS3Ports(t *testing.T) {
+func TestExtractStoragePorts(t *testing.T) {
 	tests := []struct {
 		name           string
 		storageParams  manifestutils.StorageParams
 		expectedPort   int
 		expectedLength int
 	}{
+		// S3 tests
 		{
 			name: "S3 with port 9000",
 			storageParams: manifestutils.StorageParams{
@@ -235,10 +236,37 @@ func TestExtractS3Ports(t *testing.T) {
 			expectedPort:   443,
 			expectedLength: 1,
 		},
+		// Azure Storage tests
 		{
-			name: "No S3 configured",
+			name: "Azure Storage configured",
 			storageParams: manifestutils.StorageParams{
-				S3: nil,
+				AzureStorage: &manifestutils.AzureStorage{
+					Container: "tempo-traces",
+				},
+				CredentialMode: v1alpha1.CredentialModeStatic,
+			},
+			expectedPort:   443,
+			expectedLength: 1,
+		},
+		// GCS tests
+		{
+			name: "GCS configured",
+			storageParams: manifestutils.StorageParams{
+				GCS: &manifestutils.GCS{
+					Bucket: "tempo-traces",
+				},
+				CredentialMode: v1alpha1.CredentialModeStatic,
+			},
+			expectedPort:   443,
+			expectedLength: 1,
+		},
+		// No storage configured
+		{
+			name: "No storage configured",
+			storageParams: manifestutils.StorageParams{
+				S3:           nil,
+				AzureStorage: nil,
+				GCS:          nil,
 			},
 			expectedPort:   0,
 			expectedLength: 0,
@@ -247,7 +275,7 @@ func TestExtractS3Ports(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ports := extractS3Ports(tt.storageParams)
+			ports := extractStoragePorts(tt.storageParams)
 			assert.Equal(t, tt.expectedLength, len(ports))
 			if tt.expectedLength > 0 {
 				assert.Equal(t, tt.expectedPort, ports[0].Port.IntValue())
