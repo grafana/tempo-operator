@@ -39,6 +39,8 @@ spec:                                    # TempoStackSpec defines the desired st
           maxSearchBytesPerTrace: 0      # DEPRECATED. MaxSearchBytesPerTrace defines the maximum size of search data for a single trace in bytes. default: `0` to disable.
           maxSearchDuration: ""          # MaxSearchDuration defines the maximum allowed time range for a search. If this value is not set, then spec.search.maxDuration is used.
   managementState: "Managed"             # ManagementState defines if the CR should be managed by the operator or not. Default is managed.
+  networkPolicy:                         # NetworkPolicySpec defines how network policies are handled.
+    enabled: true                        # Enabled determines whether network policies are generated for the operands.
   observability:                         # ObservabilitySpec defines how telemetry data gets handled.
     grafana:                             # Grafana defines the Grafana configuration for operands.
       createDatasource: false            # CreateDatasource specifies if a Grafana Datasource should be created for Tempo.

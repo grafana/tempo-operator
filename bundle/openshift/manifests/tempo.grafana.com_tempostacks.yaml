@@ -220,6 +220,15 @@ spec:
                 - Managed
                 - Unmanaged
                 type: string
+              networkPolicy:
+                description: NetworkPolicySpec defines how network policies are handled.
+                properties:
+                  enabled:
+                    default: true
+                    description: Enabled determines whether network policies are generated
+                      for the operands.
+                    type: boolean
+                type: object
               observability:
                 description: ObservabilitySpec defines how telemetry data gets handled.
                 properties:

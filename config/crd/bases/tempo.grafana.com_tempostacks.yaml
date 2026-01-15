@@ -216,8 +216,8 @@ spec:
                 - Managed
                 - Unmanaged
                 type: string
-              networking:
-                description: NetworkingSpec defines how networking configs are handled.
+              networkPolicy:
+                description: NetworkPolicySpec defines how network policies are handled.
                 properties:
                   enabled:
                     default: true
