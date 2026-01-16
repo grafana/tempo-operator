@@ -321,7 +321,6 @@ spec:
                           Deprecated: in favor of OTLPHttpEndpoint.
                         type: string
                       otlp_http_endpoint:
-                        default: http://localhost:4320
                         description: |-
                           OTLPHttpEndpoint defines the OTLP/http endpoint data gets send to.
                           For example, "http://localhost:4320".

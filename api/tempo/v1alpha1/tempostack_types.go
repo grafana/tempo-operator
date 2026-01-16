@@ -229,7 +229,6 @@ type TracingConfigSpec struct {
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
-	// +kubebuilder:default:="http://localhost:4320"
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="OTLP-HTTP-Endpoint"
 	OTLPHttpEndpoint string `json:"otlp_http_endpoint,omitempty"`
 }

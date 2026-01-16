@@ -74,18 +74,6 @@ metadata:
 spec:
   egress:
   - ports:
-    - port: 4318
-      protocol: TCP
-    to:
-    - ipBlock:
-        cidr: 0.0.0.0/0
-  - ports:
-    - port: 4317
-      protocol: TCP
-    to:
-    - ipBlock:
-        cidr: 0.0.0.0/0
-  - ports:
     - port: 9000
       protocol: TCP
     to:
@@ -147,18 +135,6 @@ spec:
           app.kubernetes.io/instance: simplest
           app.kubernetes.io/managed-by: tempo-operator
           app.kubernetes.io/name: tempo
-  - ports:
-    - port: 4318
-      protocol: TCP
-    to:
-    - ipBlock:
-        cidr: 0.0.0.0/0
-  - ports:
-    - port: 4317
-      protocol: TCP
-    to:
-    - ipBlock:
-        cidr: 0.0.0.0/0
   ingress:
   - from:
     - namespaceSelector: {}
@@ -242,18 +218,6 @@ metadata:
   name: tempo-simplest-ingester
 spec:
   egress:
-  - ports:
-    - port: 4318
-      protocol: TCP
-    to:
-    - ipBlock:
-        cidr: 0.0.0.0/0
-  - ports:
-    - port: 4317
-      protocol: TCP
-    to:
-    - ipBlock:
-        cidr: 0.0.0.0/0
   - ports:
     - port: 9000
       protocol: TCP
@@ -348,18 +312,6 @@ spec:
           app.kubernetes.io/instance: simplest
           app.kubernetes.io/managed-by: tempo-operator
           app.kubernetes.io/name: tempo
-  - ports:
-    - port: 4318
-      protocol: TCP
-    to:
-    - ipBlock:
-        cidr: 0.0.0.0/0
-  - ports:
-    - port: 4317
-      protocol: TCP
-    to:
-    - ipBlock:
-        cidr: 0.0.0.0/0
   - ports:
     - port: 9095
       protocol: TCP
