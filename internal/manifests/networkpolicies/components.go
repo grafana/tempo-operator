@@ -164,16 +164,19 @@ func componentRelations(params manifestutils.Params) networkRelations {
 	// Assign storage connections to components that need direct storage access
 	fromTo[manifestutils.IngesterComponentName][netPolicys3Storage] = s3Conn
 	fromTo[manifestutils.QuerierComponentName][netPolicys3Storage] = s3Conn
+	fromTo[manifestutils.QueryFrontendComponentName][netPolicys3Storage] = s3Conn
 	fromTo[manifestutils.CompactorComponentName][netPolicys3Storage] = s3Conn
 
 	// Distributor sends traces to Ingesters
 	fromTo[manifestutils.DistributorComponentName][manifestutils.IngesterComponentName] = grpcConn
 
-	// Querier connects to query-frontend and ingesters
-	fromTo[manifestutils.QuerierComponentName][manifestutils.QueryFrontendComponentName] = grpcConn
+	// Querier connects to ingesters
 	fromTo[manifestutils.QuerierComponentName][manifestutils.IngesterComponentName] = grpcConn
 
-	// Query Frontend connects to Queriers
+	// Bidirectional query-frontend <-> querier communication
+	// Querier connects to query-frontend on port 9095 (frontend worker registration)
+	fromTo[manifestutils.QuerierComponentName][manifestutils.QueryFrontendComponentName] = grpcConn
+	// Query-frontend connects to querier (sending queries)
 	fromTo[manifestutils.QueryFrontendComponentName][manifestutils.QuerierComponentName] = grpcConn
 
 	if tempo.Spec.Observability.Tracing.OTLPHttpEndpoint != "" {

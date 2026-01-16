@@ -17,8 +17,6 @@ func GenerateOperandPolicies(params manifestutils.Params) []client.Object {
 	delete(labels, "app.kubernetes.io/name")
 
 	policies := []client.Object{
-		policyDenyAll(tempo.Name, tempo.Namespace, labels),
-		policyIngressToMetrics(tempo.Name, tempo.Namespace, labels),
 		policyTempoGossip(tempo.Name, tempo.Namespace, labels),
 	}
 

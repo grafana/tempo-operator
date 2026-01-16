@@ -92,22 +92,6 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   labels:
-    app.kubernetes.io/instance: simplest
-    app.kubernetes.io/managed-by: tempo-operator
-  name: tempo-simplest-deny-all
-spec:
-  podSelector:
-    matchLabels:
-      app.kubernetes.io/instance: simplest
-      app.kubernetes.io/managed-by: tempo-operator
-  policyTypes:
-  - Ingress
-  - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  labels:
     app.kubernetes.io/component: distributor
     app.kubernetes.io/instance: simplest
     app.kubernetes.io/managed-by: tempo-operator
@@ -263,28 +247,6 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   labels:
-    app.kubernetes.io/instance: simplest
-    app.kubernetes.io/managed-by: tempo-operator
-  name: tempo-simplest-ingress-to-metrics
-spec:
-  ingress:
-  - from:
-    - namespaceSelector: {}
-      podSelector: {}
-    ports:
-    - port: 8443
-      protocol: TCP
-  podSelector:
-    matchLabels:
-      app.kubernetes.io/instance: simplest
-      app.kubernetes.io/managed-by: tempo-operator
-  policyTypes:
-  - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  labels:
     app.kubernetes.io/component: querier
     app.kubernetes.io/instance: simplest
     app.kubernetes.io/managed-by: tempo-operator
@@ -392,6 +354,12 @@ spec:
           app.kubernetes.io/instance: simplest
           app.kubernetes.io/managed-by: tempo-operator
           app.kubernetes.io/name: tempo
+  - ports:
+    - port: 9000
+      protocol: TCP
+    to:
+    - namespaceSelector: {}
+      podSelector: {}
   ingress:
   - from:
     - namespaceSelector: {}
