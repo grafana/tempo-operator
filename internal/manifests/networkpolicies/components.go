@@ -108,6 +108,14 @@ func policyPeerFor(name string, tempo v1alpha1.TempoStack) networkingv1.NetworkP
 		return networkingv1.NetworkPolicyPeer{
 			NamespaceSelector: &metav1.LabelSelector{},
 		}
+	case netPolicyKubeAPIServer:
+		// Allow egress to Kubernetes API server on any destination
+		// Port 6443 restriction is sufficient for security
+		// This works across all OpenShift distributions (standard, ROSA, Dedicated)
+		// where API server location varies (ClusterIP, external endpoints, different namespaces)
+		return networkingv1.NetworkPolicyPeer{
+			IPBlock: &networkingv1.IPBlock{CIDR: "0.0.0.0/0"},
+		}
 	default:
 		return networkingv1.NetworkPolicyPeer{
 			PodSelector: &metav1.LabelSelector{
@@ -124,6 +132,7 @@ const (
 	netPolicys3Storage         = "s3"
 	netPolicyOtelTargets       = "otel"
 	netPolicyClusterComponents = "cluster"
+	netPolicyKubeAPIServer     = "kube-apiserver"
 )
 
 func componentRelations(params manifestutils.Params) networkRelations {
@@ -148,6 +157,12 @@ func componentRelations(params manifestutils.Params) networkRelations {
 			{
 				Protocol: ptr.To(corev1.ProtocolTCP),
 				Port:     ptr.To(intstr.FromInt(manifestutils.PortOtlpGrpcServer)),
+			},
+		}
+		kubeAPIServer = []networkingv1.NetworkPolicyPort{
+			{
+				Protocol: ptr.To(corev1.ProtocolTCP),
+				Port:     ptr.To(intstr.FromInt(6443)),
 			},
 		}
 	)
@@ -220,6 +235,25 @@ func componentRelations(params manifestutils.Params) networkRelations {
 
 		// Gateway queries via Query Frontend
 		fromTo[manifestutils.GatewayComponentName][manifestutils.QueryFrontendComponentName] = grpcConn
+
+		// Gateway needs to access Kubernetes API server for TokenReview/SubjectAccessReview
+		// when using OpenShift RBAC mode for multi-tenancy
+		fromTo[manifestutils.GatewayComponentName][netPolicyKubeAPIServer] = kubeAPIServer
+
+		// Gateway needs to access Jaeger Query UI ports when JaegerQuery is enabled
+		if tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled {
+			fromTo[manifestutils.GatewayComponentName][manifestutils.QueryFrontendComponentName] = append(
+				fromTo[manifestutils.GatewayComponentName][manifestutils.QueryFrontendComponentName],
+				networkingv1.NetworkPolicyPort{
+					Protocol: ptr.To(corev1.ProtocolTCP),
+					Port:     ptr.To(intstr.FromInt(manifestutils.PortJaegerUI)),
+				},
+				networkingv1.NetworkPolicyPort{
+					Protocol: ptr.To(corev1.ProtocolTCP),
+					Port:     ptr.To(intstr.FromInt(manifestutils.PortJaegerMetrics)),
+				},
+			)
+		}
 	} else {
 		// Allow external access to Distributor receiver ports (when gateway is disabled)
 		fromTo[netPolicyClusterComponents][manifestutils.DistributorComponentName] = []networkingv1.NetworkPolicyPort{

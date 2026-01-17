@@ -49,6 +49,8 @@ subtext: |
   **Egress (outbound connections):**
   - Distributor (ports 4317, 4318) - For ingesting traces via OTLP
   - Query-frontend (ports 9095, 3200) - For querying traces
+  - Query-frontend (ports 16686, 16687) - For Jaeger Query UI and metrics (when JaegerQuery is enabled)
+  - Kubernetes API server (port 6443) - For TokenReview/SubjectAccessReview (when OpenShift RBAC multi-tenancy is enabled)
   - OTLP telemetry export (when configured)
 
   **Ingress (inbound connections):**
