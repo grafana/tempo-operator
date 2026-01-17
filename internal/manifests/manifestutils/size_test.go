@@ -16,43 +16,36 @@ func TestGetSizeProfile(t *testing.T) {
 		name    string
 		size    v1alpha1.TempoStackSize
 		wantNil bool
-		wantRF  int
 	}{
 		{
 			name:    "empty size returns nil",
 			size:    "",
 			wantNil: true,
-			wantRF:  0,
 		},
 		{
 			name:    "demo size returns nil (no resources)",
 			size:    v1alpha1.SizeDemo,
 			wantNil: true,
-			wantRF:  1,
 		},
 		{
 			name:    "pico size returns profile",
 			size:    v1alpha1.SizePico,
 			wantNil: false,
-			wantRF:  2,
 		},
 		{
 			name:    "extra-small size returns profile",
 			size:    v1alpha1.SizeExtraSmall,
 			wantNil: false,
-			wantRF:  2,
 		},
 		{
 			name:    "small size returns profile",
 			size:    v1alpha1.SizeSmall,
 			wantNil: false,
-			wantRF:  2,
 		},
 		{
 			name:    "medium size returns profile",
 			size:    v1alpha1.SizeMedium,
 			wantNil: false,
-			wantRF:  2,
 		},
 	}
 
@@ -63,7 +56,9 @@ func TestGetSizeProfile(t *testing.T) {
 				assert.Nil(t, profile)
 			} else {
 				require.NotNil(t, profile)
-				assert.Equal(t, tt.wantRF, profile.ReplicationFactor)
+				// Verify profile has component resources defined
+				assert.NotEmpty(t, profile.Ingester.CPU.String())
+				assert.NotEmpty(t, profile.Ingester.Memory.String())
 			}
 		})
 	}
@@ -188,30 +183,30 @@ func TestResourcesForComponent(t *testing.T) {
 	// Test specific resource values for extra-small size (based on perf tests)
 	t.Run("extra-small size has correct values", func(t *testing.T) {
 		ingesterRes := ResourcesForComponent(v1alpha1.SizeExtraSmall, IngesterComponentName)
-		assert.Equal(t, resource.MustParse("1500m"), ingesterRes.Requests[corev1.ResourceCPU])
-		assert.Equal(t, resource.MustParse("8Gi"), ingesterRes.Requests[corev1.ResourceMemory])
+		assert.True(t, ingesterRes.Requests[corev1.ResourceCPU].Equal(resource.MustParse("1500m")))
+		assert.True(t, ingesterRes.Requests[corev1.ResourceMemory].Equal(resource.MustParse("8Gi")))
 
 		distributorRes := ResourcesForComponent(v1alpha1.SizeExtraSmall, DistributorComponentName)
-		assert.Equal(t, resource.MustParse("200m"), distributorRes.Requests[corev1.ResourceCPU])
-		assert.Equal(t, resource.MustParse("128Mi"), distributorRes.Requests[corev1.ResourceMemory])
+		assert.True(t, distributorRes.Requests[corev1.ResourceCPU].Equal(resource.MustParse("200m")))
+		assert.True(t, distributorRes.Requests[corev1.ResourceMemory].Equal(resource.MustParse("128Mi")))
 	})
 
 	// Test specific resource values for small size (based on perf tests)
 	t.Run("small size has correct values", func(t *testing.T) {
 		ingesterRes := ResourcesForComponent(v1alpha1.SizeSmall, IngesterComponentName)
-		assert.Equal(t, resource.MustParse("2000m"), ingesterRes.Requests[corev1.ResourceCPU])
-		assert.Equal(t, resource.MustParse("10Gi"), ingesterRes.Requests[corev1.ResourceMemory])
+		assert.True(t, ingesterRes.Requests[corev1.ResourceCPU].Equal(resource.MustParse("2000m")))
+		assert.True(t, ingesterRes.Requests[corev1.ResourceMemory].Equal(resource.MustParse("10Gi")))
 	})
 
 	// Test specific resource values for medium size (based on perf tests)
 	t.Run("medium size has correct values", func(t *testing.T) {
 		ingesterRes := ResourcesForComponent(v1alpha1.SizeMedium, IngesterComponentName)
-		assert.Equal(t, resource.MustParse("8000m"), ingesterRes.Requests[corev1.ResourceCPU])
-		assert.Equal(t, resource.MustParse("16Gi"), ingesterRes.Requests[corev1.ResourceMemory])
+		assert.True(t, ingesterRes.Requests[corev1.ResourceCPU].Equal(resource.MustParse("8000m")))
+		assert.True(t, ingesterRes.Requests[corev1.ResourceMemory].Equal(resource.MustParse("16Gi")))
 
 		gatewayRes := ResourcesForComponent(v1alpha1.SizeMedium, GatewayComponentName)
-		assert.Equal(t, resource.MustParse("4000m"), gatewayRes.Requests[corev1.ResourceCPU])
-		assert.Equal(t, resource.MustParse("192Mi"), gatewayRes.Requests[corev1.ResourceMemory])
+		assert.True(t, gatewayRes.Requests[corev1.ResourceCPU].Equal(resource.MustParse("4000m")))
+		assert.True(t, gatewayRes.Requests[corev1.ResourceMemory].Equal(resource.MustParse("192Mi")))
 	})
 
 	// Test JaegerFrontend has same resources as Gateway

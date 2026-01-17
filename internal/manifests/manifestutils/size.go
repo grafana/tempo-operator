@@ -36,15 +36,16 @@ type ComponentResources struct {
 }
 
 // SizeProfile defines resources for all components at a given size.
+// Replication factors are stored separately in replicationFactors map
+// because SizeDemo has no resource profile but still needs RF=1.
 type SizeProfile struct {
-	Ingester          ComponentResources
-	Compactor         ComponentResources
-	Querier           ComponentResources
-	QueryFrontend     ComponentResources
-	Distributor       ComponentResources
-	Gateway           ComponentResources
-	JaegerFrontend    ComponentResources
-	ReplicationFactor int
+	Ingester      ComponentResources
+	Compactor     ComponentResources
+	Querier       ComponentResources
+	QueryFrontend ComponentResources
+	Distributor   ComponentResources
+	Gateway       ComponentResources
+	JaegerFrontend ComponentResources
 }
 
 // sizeProfiles maps each size to its resource profile.
@@ -60,53 +61,49 @@ var sizeProfiles = map[v1alpha1.TempoStackSize]*SizeProfile{
 
 	// 1x.pico: Small production workloads with HA support
 	v1alpha1.SizePico: {
-		Ingester:          ComponentResources{CPU: resource.MustParse("500m"), Memory: resource.MustParse("3Gi")},
-		Compactor:         ComponentResources{CPU: resource.MustParse("500m"), Memory: resource.MustParse("500Mi")},
-		Querier:           ComponentResources{CPU: resource.MustParse("750m"), Memory: resource.MustParse("1536Mi")},
-		QueryFrontend:     ComponentResources{CPU: resource.MustParse("500m"), Memory: resource.MustParse("500Mi")},
-		Distributor:       ComponentResources{CPU: resource.MustParse("500m"), Memory: resource.MustParse("500Mi")},
-		Gateway:           ComponentResources{CPU: resource.MustParse("100m"), Memory: resource.MustParse("64Mi")},
-		JaegerFrontend:    ComponentResources{CPU: resource.MustParse("100m"), Memory: resource.MustParse("64Mi")},
-		ReplicationFactor: 2,
+		Ingester:       ComponentResources{CPU: resource.MustParse("500m"), Memory: resource.MustParse("3Gi")},
+		Compactor:      ComponentResources{CPU: resource.MustParse("500m"), Memory: resource.MustParse("500Mi")},
+		Querier:        ComponentResources{CPU: resource.MustParse("750m"), Memory: resource.MustParse("1536Mi")},
+		QueryFrontend:  ComponentResources{CPU: resource.MustParse("500m"), Memory: resource.MustParse("500Mi")},
+		Distributor:    ComponentResources{CPU: resource.MustParse("500m"), Memory: resource.MustParse("500Mi")},
+		Gateway:        ComponentResources{CPU: resource.MustParse("100m"), Memory: resource.MustParse("64Mi")},
+		JaegerFrontend: ComponentResources{CPU: resource.MustParse("100m"), Memory: resource.MustParse("64Mi")},
 	},
 
 	// 1x.extra-small: Medium production workloads (~100GB/day) with HA support
 	// Based on performance test XS configuration
 	v1alpha1.SizeExtraSmall: {
-		Ingester:          ComponentResources{CPU: resource.MustParse("1500m"), Memory: resource.MustParse("8Gi")},
-		Compactor:         ComponentResources{CPU: resource.MustParse("200m"), Memory: resource.MustParse("4Gi")},
-		Querier:           ComponentResources{CPU: resource.MustParse("1000m"), Memory: resource.MustParse("1Gi")},
-		QueryFrontend:     ComponentResources{CPU: resource.MustParse("200m"), Memory: resource.MustParse("1Gi")},
-		Distributor:       ComponentResources{CPU: resource.MustParse("200m"), Memory: resource.MustParse("128Mi")},
-		Gateway:           ComponentResources{CPU: resource.MustParse("400m"), Memory: resource.MustParse("128Mi")},
-		JaegerFrontend:    ComponentResources{CPU: resource.MustParse("400m"), Memory: resource.MustParse("128Mi")},
-		ReplicationFactor: 2,
+		Ingester:       ComponentResources{CPU: resource.MustParse("1500m"), Memory: resource.MustParse("8Gi")},
+		Compactor:      ComponentResources{CPU: resource.MustParse("200m"), Memory: resource.MustParse("4Gi")},
+		Querier:        ComponentResources{CPU: resource.MustParse("1000m"), Memory: resource.MustParse("1Gi")},
+		QueryFrontend:  ComponentResources{CPU: resource.MustParse("200m"), Memory: resource.MustParse("1Gi")},
+		Distributor:    ComponentResources{CPU: resource.MustParse("200m"), Memory: resource.MustParse("128Mi")},
+		Gateway:        ComponentResources{CPU: resource.MustParse("400m"), Memory: resource.MustParse("128Mi")},
+		JaegerFrontend: ComponentResources{CPU: resource.MustParse("400m"), Memory: resource.MustParse("128Mi")},
 	},
 
 	// 1x.small: Larger production workloads (~500GB/day) with HA support
 	// Based on performance test S configuration
 	v1alpha1.SizeSmall: {
-		Ingester:          ComponentResources{CPU: resource.MustParse("2000m"), Memory: resource.MustParse("10Gi")},
-		Compactor:         ComponentResources{CPU: resource.MustParse("400m"), Memory: resource.MustParse("6Gi")},
-		Querier:           ComponentResources{CPU: resource.MustParse("2500m"), Memory: resource.MustParse("3Gi")},
-		QueryFrontend:     ComponentResources{CPU: resource.MustParse("400m"), Memory: resource.MustParse("1Gi")},
-		Distributor:       ComponentResources{CPU: resource.MustParse("600m"), Memory: resource.MustParse("128Mi")},
-		Gateway:           ComponentResources{CPU: resource.MustParse("800m"), Memory: resource.MustParse("192Mi")},
-		JaegerFrontend:    ComponentResources{CPU: resource.MustParse("800m"), Memory: resource.MustParse("192Mi")},
-		ReplicationFactor: 2,
+		Ingester:       ComponentResources{CPU: resource.MustParse("2000m"), Memory: resource.MustParse("10Gi")},
+		Compactor:      ComponentResources{CPU: resource.MustParse("400m"), Memory: resource.MustParse("6Gi")},
+		Querier:        ComponentResources{CPU: resource.MustParse("2500m"), Memory: resource.MustParse("3Gi")},
+		QueryFrontend:  ComponentResources{CPU: resource.MustParse("400m"), Memory: resource.MustParse("1Gi")},
+		Distributor:    ComponentResources{CPU: resource.MustParse("600m"), Memory: resource.MustParse("128Mi")},
+		Gateway:        ComponentResources{CPU: resource.MustParse("800m"), Memory: resource.MustParse("192Mi")},
+		JaegerFrontend: ComponentResources{CPU: resource.MustParse("800m"), Memory: resource.MustParse("192Mi")},
 	},
 
 	// 1x.medium: High-scale production workloads (~2TB/day) with HA support
 	// Based on performance test M configuration
 	v1alpha1.SizeMedium: {
-		Ingester:          ComponentResources{CPU: resource.MustParse("8000m"), Memory: resource.MustParse("16Gi")},
-		Compactor:         ComponentResources{CPU: resource.MustParse("600m"), Memory: resource.MustParse("10Gi")},
-		Querier:           ComponentResources{CPU: resource.MustParse("5000m"), Memory: resource.MustParse("4Gi")},
-		QueryFrontend:     ComponentResources{CPU: resource.MustParse("800m"), Memory: resource.MustParse("1Gi")},
-		Distributor:       ComponentResources{CPU: resource.MustParse("1500m"), Memory: resource.MustParse("128Mi")},
-		Gateway:           ComponentResources{CPU: resource.MustParse("4000m"), Memory: resource.MustParse("192Mi")},
-		JaegerFrontend:    ComponentResources{CPU: resource.MustParse("4000m"), Memory: resource.MustParse("192Mi")},
-		ReplicationFactor: 2,
+		Ingester:       ComponentResources{CPU: resource.MustParse("8000m"), Memory: resource.MustParse("16Gi")},
+		Compactor:      ComponentResources{CPU: resource.MustParse("600m"), Memory: resource.MustParse("10Gi")},
+		Querier:        ComponentResources{CPU: resource.MustParse("5000m"), Memory: resource.MustParse("4Gi")},
+		QueryFrontend:  ComponentResources{CPU: resource.MustParse("800m"), Memory: resource.MustParse("1Gi")},
+		Distributor:    ComponentResources{CPU: resource.MustParse("1500m"), Memory: resource.MustParse("128Mi")},
+		Gateway:        ComponentResources{CPU: resource.MustParse("4000m"), Memory: resource.MustParse("192Mi")},
+		JaegerFrontend: ComponentResources{CPU: resource.MustParse("4000m"), Memory: resource.MustParse("192Mi")},
 	},
 }
 
