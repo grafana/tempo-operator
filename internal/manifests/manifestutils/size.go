@@ -39,12 +39,12 @@ type ComponentResources struct {
 // Replication factors are stored separately in replicationFactors map
 // because SizeDemo has no resource profile but still needs RF=1.
 type SizeProfile struct {
-	Ingester      ComponentResources
-	Compactor     ComponentResources
-	Querier       ComponentResources
-	QueryFrontend ComponentResources
-	Distributor   ComponentResources
-	Gateway       ComponentResources
+	Ingester       ComponentResources
+	Compactor      ComponentResources
+	Querier        ComponentResources
+	QueryFrontend  ComponentResources
+	Distributor    ComponentResources
+	Gateway        ComponentResources
 	JaegerFrontend ComponentResources
 }
 
