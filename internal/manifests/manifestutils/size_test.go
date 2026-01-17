@@ -214,8 +214,8 @@ func TestResourcesForComponent(t *testing.T) {
 		assert.Equal(t, resource.MustParse("192Mi"), gatewayRes.Requests[corev1.ResourceMemory])
 	})
 
-	// Test JaegerUI has same resources as Gateway
-	t.Run("JaegerUI has same resources as Gateway", func(t *testing.T) {
+	// Test JaegerFrontend has same resources as Gateway
+	t.Run("JaegerFrontend has same resources as Gateway", func(t *testing.T) {
 		sizes := []v1alpha1.TempoStackSize{
 			v1alpha1.SizePico,
 			v1alpha1.SizeExtraSmall,
@@ -228,9 +228,9 @@ func TestResourcesForComponent(t *testing.T) {
 			jaegerRes := ResourcesForComponent(size, JaegerFrontendComponentName)
 
 			assert.Equal(t, gatewayRes.Requests[corev1.ResourceCPU], jaegerRes.Requests[corev1.ResourceCPU],
-				"size %s: JaegerUI should have same CPU as Gateway", size)
+				"size %s: JaegerFrontend should have same CPU as Gateway", size)
 			assert.Equal(t, gatewayRes.Requests[corev1.ResourceMemory], jaegerRes.Requests[corev1.ResourceMemory],
-				"size %s: JaegerUI should have same Memory as Gateway", size)
+				"size %s: JaegerFrontend should have same Memory as Gateway", size)
 		}
 	})
 }

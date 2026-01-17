@@ -53,15 +53,9 @@ var (
 // 4. No resources applied.
 func Resources(tempo v1alpha1.TempoStack, component string, replicas *int32) corev1.ResourceRequirements {
 	// Priority 2: Check if size is specified
+	// Size-based resources take precedence (SizeDemo intentionally returns empty)
 	if tempo.Spec.Size != "" {
-		resources := ResourcesForComponent(tempo.Spec.Size, component)
-		if resources.Requests != nil {
-			return resources
-		}
-		// SizeDemo returns empty resources intentionally, don't fall through
-		if tempo.Spec.Size == v1alpha1.SizeDemo {
-			return corev1.ResourceRequirements{}
-		}
+		return ResourcesForComponent(tempo.Spec.Size, component)
 	}
 
 	// Priority 3: Fall back to percentage-based calculation

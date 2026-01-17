@@ -124,7 +124,6 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 
 	// Default replication factor if not specified.
 	// If size is specified, use size's default RF, otherwise use 1.
-	// We need to determine the RF first to set the correct ingester replicas.
 	effectiveRF := defaultReplicationFactor
 	if r.Spec.ReplicationFactor == 0 {
 		if r.Spec.Size != "" {
@@ -137,13 +136,12 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 		effectiveRF = r.Spec.ReplicationFactor
 	}
 
-	// Calculate minimum ingester replicas needed for the replication factor.
-	// Quorum = floor(RF/2) + 1, and we need at least quorum replicas.
-	minIngesterReplicas := int32(math.Floor(float64(effectiveRF)/2.0) + 1)
-
 	// Default replicas for all components if not specified.
 	if r.Spec.Template.Ingester.Replicas == nil {
-		if minIngesterReplicas > 1 {
+		// When size is specified, ensure ingester replicas meet quorum requirements.
+		// Quorum = floor(RF/2) + 1, and we need at least quorum replicas.
+		if r.Spec.Size != "" {
+			minIngesterReplicas := int32(math.Floor(float64(effectiveRF)/2.0) + 1)
 			r.Spec.Template.Ingester.Replicas = ptr.To(minIngesterReplicas)
 		} else {
 			r.Spec.Template.Ingester.Replicas = defaultComponentReplicas

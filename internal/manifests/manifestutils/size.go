@@ -22,7 +22,7 @@ type SizeProfile struct {
 	QueryFrontend     ComponentResources
 	Distributor       ComponentResources
 	Gateway           ComponentResources
-	JaegerUI          ComponentResources
+	JaegerFrontend    ComponentResources
 	ReplicationFactor int
 }
 
@@ -42,7 +42,7 @@ var sizeProfiles = map[v1alpha1.TempoStackSize]*SizeProfile{
 		QueryFrontend:     ComponentResources{CPU: resource.MustParse("500m"), Memory: resource.MustParse("500Mi")},
 		Distributor:       ComponentResources{CPU: resource.MustParse("500m"), Memory: resource.MustParse("500Mi")},
 		Gateway:           ComponentResources{CPU: resource.MustParse("100m"), Memory: resource.MustParse("64Mi")},
-		JaegerUI:          ComponentResources{CPU: resource.MustParse("100m"), Memory: resource.MustParse("64Mi")},
+		JaegerFrontend:          ComponentResources{CPU: resource.MustParse("100m"), Memory: resource.MustParse("64Mi")},
 		ReplicationFactor: 2,
 	},
 
@@ -55,7 +55,7 @@ var sizeProfiles = map[v1alpha1.TempoStackSize]*SizeProfile{
 		QueryFrontend:     ComponentResources{CPU: resource.MustParse("200m"), Memory: resource.MustParse("1Gi")},
 		Distributor:       ComponentResources{CPU: resource.MustParse("200m"), Memory: resource.MustParse("128Mi")},
 		Gateway:           ComponentResources{CPU: resource.MustParse("400m"), Memory: resource.MustParse("128Mi")},
-		JaegerUI:          ComponentResources{CPU: resource.MustParse("400m"), Memory: resource.MustParse("128Mi")},
+		JaegerFrontend:          ComponentResources{CPU: resource.MustParse("400m"), Memory: resource.MustParse("128Mi")},
 		ReplicationFactor: 2,
 	},
 
@@ -68,7 +68,7 @@ var sizeProfiles = map[v1alpha1.TempoStackSize]*SizeProfile{
 		QueryFrontend:     ComponentResources{CPU: resource.MustParse("400m"), Memory: resource.MustParse("1Gi")},
 		Distributor:       ComponentResources{CPU: resource.MustParse("600m"), Memory: resource.MustParse("128Mi")},
 		Gateway:           ComponentResources{CPU: resource.MustParse("800m"), Memory: resource.MustParse("192Mi")},
-		JaegerUI:          ComponentResources{CPU: resource.MustParse("800m"), Memory: resource.MustParse("192Mi")},
+		JaegerFrontend:          ComponentResources{CPU: resource.MustParse("800m"), Memory: resource.MustParse("192Mi")},
 		ReplicationFactor: 2,
 	},
 
@@ -81,7 +81,7 @@ var sizeProfiles = map[v1alpha1.TempoStackSize]*SizeProfile{
 		QueryFrontend:     ComponentResources{CPU: resource.MustParse("800m"), Memory: resource.MustParse("1Gi")},
 		Distributor:       ComponentResources{CPU: resource.MustParse("1500m"), Memory: resource.MustParse("128Mi")},
 		Gateway:           ComponentResources{CPU: resource.MustParse("4000m"), Memory: resource.MustParse("192Mi")},
-		JaegerUI:          ComponentResources{CPU: resource.MustParse("4000m"), Memory: resource.MustParse("192Mi")},
+		JaegerFrontend:          ComponentResources{CPU: resource.MustParse("4000m"), Memory: resource.MustParse("192Mi")},
 		ReplicationFactor: 2,
 	},
 }
@@ -201,7 +201,7 @@ func ResourcesForComponent(size v1alpha1.TempoStackSize, component string) corev
 	case GatewayComponentName:
 		compRes = profile.Gateway
 	case JaegerFrontendComponentName:
-		compRes = profile.JaegerUI
+		compRes = profile.JaegerFrontend
 	default:
 		return corev1.ResourceRequirements{}
 	}

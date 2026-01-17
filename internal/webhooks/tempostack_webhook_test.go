@@ -132,7 +132,7 @@ func TestDefault(t *testing.T) {
 							TLS: v1alpha1.TLSSpec{},
 						},
 						Ingester: v1alpha1.TempoComponentSpec{
-							Replicas:           ptr.To(int32(2)), // RF=2 requires at least 2 ingester replicas
+							Replicas:           ptr.To(int32(1)),
 							PodSecurityContext: defaultPodSecurityContext,
 						},
 						Querier: v1alpha1.TempoComponentSpec{
@@ -616,7 +616,7 @@ func TestDefault(t *testing.T) {
 							TLS: v1alpha1.TLSSpec{},
 						},
 						Ingester: v1alpha1.TempoComponentSpec{
-							Replicas:           ptr.To(int32(2)), // RF=2 requires at least 2 ingester replicas
+							Replicas:           ptr.To(int32(1)),
 							PodSecurityContext: defaultPodSecurityContext,
 						},
 						Querier: v1alpha1.TempoComponentSpec{
@@ -783,6 +783,154 @@ func TestDefault(t *testing.T) {
 								RunAsNonRoot: ptr.To(true),
 								FSGroup:      ptr.To(int64(10001)),
 							},
+						},
+						Querier: v1alpha1.TempoComponentSpec{
+							Replicas:           ptr.To(int32(1)),
+							PodSecurityContext: defaultPodSecurityContext,
+						},
+						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+							TempoComponentSpec: v1alpha1.TempoComponentSpec{
+								Replicas:           ptr.To(int32(1)),
+								PodSecurityContext: defaultPodSecurityContext,
+							},
+							JaegerQuery: v1alpha1.JaegerQuerySpec{
+								ServicesQueryDuration: &defaultServicesDuration,
+							},
+						},
+						Gateway: v1alpha1.TempoGatewaySpec{
+							TempoComponentSpec: v1alpha1.TempoComponentSpec{
+								Replicas:           ptr.To(int32(1)),
+								PodSecurityContext: defaultPodSecurityContext,
+							},
+						},
+					},
+				},
+			},
+			ctrlConfig: defaultCfgConfig,
+		},
+		{
+			name: "size pico sets replication factor and ingester replicas",
+			input: &v1alpha1.TempoStack{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+				},
+				Spec: v1alpha1.TempoStackSpec{
+					Size: v1alpha1.SizePico,
+				},
+			},
+			expected: &v1alpha1.TempoStack{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+					Labels: map[string]string{
+						"app.kubernetes.io/managed-by":   "tempo-operator",
+						"tempo.grafana.com/distribution": "upstream",
+					},
+				},
+				Spec: v1alpha1.TempoStackSpec{
+					Size:              v1alpha1.SizePico,
+					ReplicationFactor: 2, // Size pico has RF=2
+					Timeout:           metav1.Duration{Duration: time.Second * 30},
+					Images:            configv1alpha1.ImagesSpec{},
+					ServiceAccount:    "tempo-test",
+					Retention: v1alpha1.RetentionSpec{
+						Global: v1alpha1.RetentionConfig{
+							Traces: metav1.Duration{Duration: 48 * time.Hour},
+						},
+					},
+					StorageSize: resource.MustParse("10Gi"),
+					SearchSpec: v1alpha1.SearchSpec{
+						MaxDuration:        metav1.Duration{Duration: 0},
+						DefaultResultLimit: &defaultDefaultResultLimit,
+					},
+					Template: v1alpha1.TempoTemplateSpec{
+						Compactor: v1alpha1.TempoComponentSpec{
+							Replicas:           ptr.To(int32(1)),
+							PodSecurityContext: defaultPodSecurityContext,
+						},
+						Distributor: v1alpha1.TempoDistributorSpec{
+							TempoComponentSpec: v1alpha1.TempoComponentSpec{
+								Replicas:           ptr.To(int32(1)),
+								PodSecurityContext: defaultPodSecurityContext,
+							},
+							TLS: v1alpha1.TLSSpec{},
+						},
+						Ingester: v1alpha1.TempoComponentSpec{
+							Replicas:           ptr.To(int32(2)), // RF=2 requires at least 2 ingester replicas
+							PodSecurityContext: defaultPodSecurityContext,
+						},
+						Querier: v1alpha1.TempoComponentSpec{
+							Replicas:           ptr.To(int32(1)),
+							PodSecurityContext: defaultPodSecurityContext,
+						},
+						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+							TempoComponentSpec: v1alpha1.TempoComponentSpec{
+								Replicas:           ptr.To(int32(1)),
+								PodSecurityContext: defaultPodSecurityContext,
+							},
+							JaegerQuery: v1alpha1.JaegerQuerySpec{
+								ServicesQueryDuration: &defaultServicesDuration,
+							},
+						},
+						Gateway: v1alpha1.TempoGatewaySpec{
+							TempoComponentSpec: v1alpha1.TempoComponentSpec{
+								Replicas:           ptr.To(int32(1)),
+								PodSecurityContext: defaultPodSecurityContext,
+							},
+						},
+					},
+				},
+			},
+			ctrlConfig: defaultCfgConfig,
+		},
+		{
+			name: "size demo sets replication factor 1 and ingester replicas 1",
+			input: &v1alpha1.TempoStack{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+				},
+				Spec: v1alpha1.TempoStackSpec{
+					Size: v1alpha1.SizeDemo,
+				},
+			},
+			expected: &v1alpha1.TempoStack{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+					Labels: map[string]string{
+						"app.kubernetes.io/managed-by":   "tempo-operator",
+						"tempo.grafana.com/distribution": "upstream",
+					},
+				},
+				Spec: v1alpha1.TempoStackSpec{
+					Size:              v1alpha1.SizeDemo,
+					ReplicationFactor: 1, // Size demo has RF=1
+					Timeout:           metav1.Duration{Duration: time.Second * 30},
+					Images:            configv1alpha1.ImagesSpec{},
+					ServiceAccount:    "tempo-test",
+					Retention: v1alpha1.RetentionSpec{
+						Global: v1alpha1.RetentionConfig{
+							Traces: metav1.Duration{Duration: 48 * time.Hour},
+						},
+					},
+					StorageSize: resource.MustParse("10Gi"),
+					SearchSpec: v1alpha1.SearchSpec{
+						MaxDuration:        metav1.Duration{Duration: 0},
+						DefaultResultLimit: &defaultDefaultResultLimit,
+					},
+					Template: v1alpha1.TempoTemplateSpec{
+						Compactor: v1alpha1.TempoComponentSpec{
+							Replicas:           ptr.To(int32(1)),
+							PodSecurityContext: defaultPodSecurityContext,
+						},
+						Distributor: v1alpha1.TempoDistributorSpec{
+							TempoComponentSpec: v1alpha1.TempoComponentSpec{
+								Replicas:           ptr.To(int32(1)),
+								PodSecurityContext: defaultPodSecurityContext,
+							},
+							TLS: v1alpha1.TLSSpec{},
+						},
+						Ingester: v1alpha1.TempoComponentSpec{
+							Replicas:           ptr.To(int32(1)), // RF=1 needs only 1 ingester replica
+							PodSecurityContext: defaultPodSecurityContext,
 						},
 						Querier: v1alpha1.TempoComponentSpec{
 							Replicas:           ptr.To(int32(1)),
