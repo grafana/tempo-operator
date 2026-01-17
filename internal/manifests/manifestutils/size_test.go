@@ -259,3 +259,128 @@ func TestResourcesIncreaseFromSmallToMedium(t *testing.T) {
 		})
 	}
 }
+
+func TestGetRateLimitProfile(t *testing.T) {
+	tests := []struct {
+		name                        string
+		size                        v1alpha1.TempoStackSize
+		wantNil                     bool
+		wantIngestionRateLimitBytes *int
+		wantIngestionBurstSizeBytes *int
+		wantMaxTracesPerUserNil     bool
+		wantMaxTracesPerUser        *int
+	}{
+		{
+			name:    "empty size returns nil",
+			size:    "",
+			wantNil: true,
+		},
+		{
+			name:    "demo size returns nil (no rate limits)",
+			size:    v1alpha1.SizeDemo,
+			wantNil: true,
+		},
+		{
+			name:                        "pico size returns profile with no MaxTracesPerUser",
+			size:                        v1alpha1.SizePico,
+			wantNil:                     false,
+			wantIngestionRateLimitBytes: intToPointer(600_000),
+			wantIngestionBurstSizeBytes: intToPointer(1_200_000),
+			wantMaxTracesPerUserNil:     true,
+		},
+		{
+			name:                        "extra-small size returns profile with no MaxTracesPerUser",
+			size:                        v1alpha1.SizeExtraSmall,
+			wantNil:                     false,
+			wantIngestionRateLimitBytes: intToPointer(1_200_000),
+			wantIngestionBurstSizeBytes: intToPointer(2_400_000),
+			wantMaxTracesPerUserNil:     true,
+		},
+		{
+			name:                        "small size returns profile with MaxTracesPerUser",
+			size:                        v1alpha1.SizeSmall,
+			wantNil:                     false,
+			wantIngestionRateLimitBytes: intToPointer(5_800_000),
+			wantIngestionBurstSizeBytes: intToPointer(11_600_000),
+			wantMaxTracesPerUserNil:     false,
+			wantMaxTracesPerUser:        intToPointer(17_000),
+		},
+		{
+			name:                        "medium size returns profile with MaxTracesPerUser",
+			size:                        v1alpha1.SizeMedium,
+			wantNil:                     false,
+			wantIngestionRateLimitBytes: intToPointer(23_000_000),
+			wantIngestionBurstSizeBytes: intToPointer(46_000_000),
+			wantMaxTracesPerUserNil:     false,
+			wantMaxTracesPerUser:        intToPointer(54_000),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			profile := GetRateLimitProfile(tt.size)
+			if tt.wantNil {
+				assert.Nil(t, profile)
+				return
+			}
+			require.NotNil(t, profile)
+			assert.Equal(t, tt.wantIngestionRateLimitBytes, profile.IngestionRateLimitBytes)
+			assert.Equal(t, tt.wantIngestionBurstSizeBytes, profile.IngestionBurstSizeBytes)
+			if tt.wantMaxTracesPerUserNil {
+				assert.Nil(t, profile.MaxTracesPerUser)
+			} else {
+				assert.Equal(t, tt.wantMaxTracesPerUser, profile.MaxTracesPerUser)
+			}
+		})
+	}
+}
+
+func TestRateLimitsIncreaseWithSize(t *testing.T) {
+	// Verify that rate limits increase from smaller to larger sizes
+	sizes := []v1alpha1.TempoStackSize{
+		v1alpha1.SizePico,
+		v1alpha1.SizeExtraSmall,
+		v1alpha1.SizeSmall,
+		v1alpha1.SizeMedium,
+	}
+
+	for i := 1; i < len(sizes); i++ {
+		t.Run("rate limits increase from "+string(sizes[i-1])+" to "+string(sizes[i]), func(t *testing.T) {
+			smaller := GetRateLimitProfile(sizes[i-1])
+			larger := GetRateLimitProfile(sizes[i])
+
+			require.NotNil(t, smaller)
+			require.NotNil(t, larger)
+
+			assert.Greater(t, *larger.IngestionRateLimitBytes, *smaller.IngestionRateLimitBytes,
+				"Ingestion rate limit should increase")
+			assert.Greater(t, *larger.IngestionBurstSizeBytes, *smaller.IngestionBurstSizeBytes,
+				"Ingestion burst size should increase")
+		})
+	}
+}
+
+func TestBurstSizeIsTwiceRateLimit(t *testing.T) {
+	// Verify that burst size is 2x the rate limit for all sizes
+	sizes := []v1alpha1.TempoStackSize{
+		v1alpha1.SizePico,
+		v1alpha1.SizeExtraSmall,
+		v1alpha1.SizeSmall,
+		v1alpha1.SizeMedium,
+	}
+
+	for _, size := range sizes {
+		t.Run("burst size is 2x rate limit for "+string(size), func(t *testing.T) {
+			profile := GetRateLimitProfile(size)
+			require.NotNil(t, profile)
+
+			expectedBurst := *profile.IngestionRateLimitBytes * 2
+			assert.Equal(t, expectedBurst, *profile.IngestionBurstSizeBytes,
+				"Burst size should be 2x the rate limit")
+		})
+	}
+}
+
+func intToPointer(i int) *int {
+	return &i
+}

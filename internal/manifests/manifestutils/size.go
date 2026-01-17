@@ -3,6 +3,7 @@ package manifestutils
 import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/utils/ptr"
 
 	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 )
@@ -85,6 +86,58 @@ var sizeProfiles = map[v1alpha1.TempoStackSize]*SizeProfile{
 	},
 }
 
+// RateLimitProfile defines rate limit defaults for a given size.
+// Pointer fields allow distinguishing between "not set" (nil) and "set to zero".
+type RateLimitProfile struct {
+	IngestionRateLimitBytes *int
+	IngestionBurstSizeBytes *int
+	MaxTracesPerUser        *int
+}
+
+// rateLimitProfiles maps each size to its rate limit profile.
+// Rate limits are based on performance testing results.
+// nil profile means no rate limits should be applied (use Tempo defaults).
+var rateLimitProfiles = map[v1alpha1.TempoStackSize]*RateLimitProfile{
+	// 1x.demo: No rate limits (development/demo environment)
+	v1alpha1.SizeDemo: nil,
+
+	// 1x.pico: Small production workloads
+	// ~0.6 MB/s ingestion rate, burst 2x
+	// MaxTracesPerUser uses Tempo default (10K is sufficient)
+	v1alpha1.SizePico: {
+		IngestionRateLimitBytes: ptr.To(600_000),
+		IngestionBurstSizeBytes: ptr.To(1_200_000),
+		MaxTracesPerUser:        nil,
+	},
+
+	// 1x.extra-small: Medium production workloads (~100GB/day)
+	// ~1.2 MB/s ingestion rate, burst 2x
+	// MaxTracesPerUser uses Tempo default (10K is sufficient)
+	v1alpha1.SizeExtraSmall: {
+		IngestionRateLimitBytes: ptr.To(1_200_000),
+		IngestionBurstSizeBytes: ptr.To(2_400_000),
+		MaxTracesPerUser:        nil,
+	},
+
+	// 1x.small: Larger production workloads (~500GB/day)
+	// ~5.8 MB/s ingestion rate, burst 2x
+	// MaxTracesPerUser: observed 13.8K + 20% headroom
+	v1alpha1.SizeSmall: {
+		IngestionRateLimitBytes: ptr.To(5_800_000),
+		IngestionBurstSizeBytes: ptr.To(11_600_000),
+		MaxTracesPerUser:        ptr.To(17_000),
+	},
+
+	// 1x.medium: High-scale production workloads (~2TB/day)
+	// ~23 MB/s ingestion rate, burst 2x
+	// MaxTracesPerUser: observed 44.3K + 20% headroom
+	v1alpha1.SizeMedium: {
+		IngestionRateLimitBytes: ptr.To(23_000_000),
+		IngestionBurstSizeBytes: ptr.To(46_000_000),
+		MaxTracesPerUser:        ptr.To(54_000),
+	},
+}
+
 // replicationFactors maps each size to its default replication factor.
 var replicationFactors = map[v1alpha1.TempoStackSize]int{
 	v1alpha1.SizeDemo:       1,
@@ -101,6 +154,15 @@ func GetSizeProfile(size v1alpha1.TempoStackSize) *SizeProfile {
 		return nil
 	}
 	return sizeProfiles[size]
+}
+
+// GetRateLimitProfile returns the rate limit profile for the given size.
+// Returns nil if size is empty or is SizeDemo (which has no rate limits).
+func GetRateLimitProfile(size v1alpha1.TempoStackSize) *RateLimitProfile {
+	if size == "" {
+		return nil
+	}
+	return rateLimitProfiles[size]
 }
 
 // ReplicationFactorForSize returns the default replication factor for the given size.

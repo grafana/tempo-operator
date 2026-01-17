@@ -61,6 +61,28 @@ func fromRateLimitSpecToRateLimitOptionsMap(rateLimits map[string]v1alpha1.RateL
 	return result
 }
 
+// applyRateLimitDefaults applies size-based rate limit defaults to a RateLimitSpec.
+// User-specified values (non-nil fields) always take precedence over size defaults.
+func applyRateLimitDefaults(spec v1alpha1.RateLimitSpec, size v1alpha1.TempoStackSize) v1alpha1.RateLimitSpec {
+	profile := manifestutils.GetRateLimitProfile(size)
+	if profile == nil {
+		return spec
+	}
+
+	// Apply defaults only for nil (unset) fields - user values take precedence
+	if spec.Ingestion.IngestionRateLimitBytes == nil && profile.IngestionRateLimitBytes != nil {
+		spec.Ingestion.IngestionRateLimitBytes = profile.IngestionRateLimitBytes
+	}
+	if spec.Ingestion.IngestionBurstSizeBytes == nil && profile.IngestionBurstSizeBytes != nil {
+		spec.Ingestion.IngestionBurstSizeBytes = profile.IngestionBurstSizeBytes
+	}
+	if spec.Ingestion.MaxTracesPerUser == nil && profile.MaxTracesPerUser != nil {
+		spec.Ingestion.MaxTracesPerUser = profile.MaxTracesPerUser
+	}
+
+	return spec
+}
+
 func buildQueryFrontEndConfig(params manifestutils.Params) ([]byte, error) {
 	if !params.Tempo.Spec.Template.Gateway.Enabled {
 		params.CtrlConfig.Gates.HTTPEncryption = false
@@ -91,7 +113,7 @@ func buildConfiguration(params manifestutils.Params) ([]byte, error) {
 			InstanceAddr: gossipRingInstanceAddr(tempo.Spec.HashRing),
 		},
 		QueryFrontendDiscovery: fmt.Sprintf("%s:%d", naming.Name("query-frontend-discovery", tempo.Name), manifestutils.PortGRPCServer),
-		GlobalRateLimits:       fromRateLimitSpecToTenantOverrides(tempo.Spec.LimitSpec.Global, nil),
+		GlobalRateLimits:       fromRateLimitSpecToTenantOverrides(applyRateLimitDefaults(tempo.Spec.LimitSpec.Global, tempo.Spec.Size), nil),
 		Search:                 fromSearchSpecToOptions(tempo.Spec.SearchSpec),
 		ReplicationFactor:      tempo.Spec.ReplicationFactor,
 		Multitenancy:           tempo.Spec.Tenants != nil,

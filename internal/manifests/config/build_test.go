@@ -2863,3 +2863,137 @@ query_frontend:
 	require.NoError(t, err)
 	require.YAMLEq(t, expCfg, string(cfg))
 }
+
+func TestApplyRateLimitDefaults(t *testing.T) {
+	tests := []struct {
+		name                        string
+		spec                        v1alpha1.RateLimitSpec
+		size                        v1alpha1.TempoStackSize
+		wantIngestionRateLimitBytes *int
+		wantIngestionBurstSizeBytes *int
+		wantMaxTracesPerUser        *int
+		wantMaxBytesPerTrace        *int
+	}{
+		{
+			name: "empty size returns original spec unchanged",
+			spec: v1alpha1.RateLimitSpec{
+				Ingestion: v1alpha1.IngestionLimitSpec{
+					IngestionRateLimitBytes: intToPointer(100),
+				},
+			},
+			size:                        "",
+			wantIngestionRateLimitBytes: intToPointer(100),
+		},
+		{
+			name:                        "demo size returns original spec (no defaults)",
+			spec:                        v1alpha1.RateLimitSpec{},
+			size:                        v1alpha1.SizeDemo,
+			wantIngestionRateLimitBytes: nil,
+		},
+		{
+			name:                        "pico size applies defaults when spec is empty",
+			spec:                        v1alpha1.RateLimitSpec{},
+			size:                        v1alpha1.SizePico,
+			wantIngestionRateLimitBytes: intToPointer(600_000),
+			wantIngestionBurstSizeBytes: intToPointer(1_200_000),
+			wantMaxTracesPerUser:        nil,
+		},
+		{
+			name:                        "extra-small size applies defaults when spec is empty",
+			spec:                        v1alpha1.RateLimitSpec{},
+			size:                        v1alpha1.SizeExtraSmall,
+			wantIngestionRateLimitBytes: intToPointer(1_200_000),
+			wantIngestionBurstSizeBytes: intToPointer(2_400_000),
+			wantMaxTracesPerUser:        nil,
+		},
+		{
+			name:                        "small size applies defaults including MaxTracesPerUser",
+			spec:                        v1alpha1.RateLimitSpec{},
+			size:                        v1alpha1.SizeSmall,
+			wantIngestionRateLimitBytes: intToPointer(5_800_000),
+			wantIngestionBurstSizeBytes: intToPointer(11_600_000),
+			wantMaxTracesPerUser:        intToPointer(17_000),
+		},
+		{
+			name:                        "medium size applies defaults including MaxTracesPerUser",
+			spec:                        v1alpha1.RateLimitSpec{},
+			size:                        v1alpha1.SizeMedium,
+			wantIngestionRateLimitBytes: intToPointer(23_000_000),
+			wantIngestionBurstSizeBytes: intToPointer(46_000_000),
+			wantMaxTracesPerUser:        intToPointer(54_000),
+		},
+		{
+			name: "user values override size defaults",
+			spec: v1alpha1.RateLimitSpec{
+				Ingestion: v1alpha1.IngestionLimitSpec{
+					IngestionRateLimitBytes: intToPointer(999),
+					IngestionBurstSizeBytes: intToPointer(888),
+					MaxTracesPerUser:        intToPointer(777),
+				},
+			},
+			size:                        v1alpha1.SizeMedium,
+			wantIngestionRateLimitBytes: intToPointer(999),
+			wantIngestionBurstSizeBytes: intToPointer(888),
+			wantMaxTracesPerUser:        intToPointer(777),
+		},
+		{
+			name: "partial user values - only override specified fields",
+			spec: v1alpha1.RateLimitSpec{
+				Ingestion: v1alpha1.IngestionLimitSpec{
+					IngestionRateLimitBytes: intToPointer(999),
+				},
+			},
+			size:                        v1alpha1.SizeMedium,
+			wantIngestionRateLimitBytes: intToPointer(999),
+			wantIngestionBurstSizeBytes: intToPointer(46_000_000),
+			wantMaxTracesPerUser:        intToPointer(54_000),
+		},
+		{
+			name: "MaxBytesPerTrace is not affected by size defaults",
+			spec: v1alpha1.RateLimitSpec{
+				Ingestion: v1alpha1.IngestionLimitSpec{
+					MaxBytesPerTrace: intToPointer(5_000_000),
+				},
+			},
+			size:                        v1alpha1.SizeMedium,
+			wantIngestionRateLimitBytes: intToPointer(23_000_000),
+			wantIngestionBurstSizeBytes: intToPointer(46_000_000),
+			wantMaxTracesPerUser:        intToPointer(54_000),
+			wantMaxBytesPerTrace:        intToPointer(5_000_000),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := applyRateLimitDefaults(tt.spec, tt.size)
+
+			if tt.wantIngestionRateLimitBytes == nil {
+				require.Nil(t, result.Ingestion.IngestionRateLimitBytes)
+			} else {
+				require.NotNil(t, result.Ingestion.IngestionRateLimitBytes)
+				require.Equal(t, *tt.wantIngestionRateLimitBytes, *result.Ingestion.IngestionRateLimitBytes)
+			}
+
+			if tt.wantIngestionBurstSizeBytes == nil {
+				require.Nil(t, result.Ingestion.IngestionBurstSizeBytes)
+			} else {
+				require.NotNil(t, result.Ingestion.IngestionBurstSizeBytes)
+				require.Equal(t, *tt.wantIngestionBurstSizeBytes, *result.Ingestion.IngestionBurstSizeBytes)
+			}
+
+			if tt.wantMaxTracesPerUser == nil {
+				require.Nil(t, result.Ingestion.MaxTracesPerUser)
+			} else {
+				require.NotNil(t, result.Ingestion.MaxTracesPerUser)
+				require.Equal(t, *tt.wantMaxTracesPerUser, *result.Ingestion.MaxTracesPerUser)
+			}
+
+			if tt.wantMaxBytesPerTrace == nil {
+				require.Nil(t, result.Ingestion.MaxBytesPerTrace)
+			} else {
+				require.NotNil(t, result.Ingestion.MaxBytesPerTrace)
+				require.Equal(t, *tt.wantMaxBytesPerTrace, *result.Ingestion.MaxBytesPerTrace)
+			}
+		})
+	}
+}
