@@ -23,6 +23,7 @@ import (
 	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
 	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/handlers/storage"
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
 )
 
@@ -1388,6 +1389,103 @@ func TestValidateReplicationFactor(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			errs := validator.validateReplicationFactor(test.input)
+			assert.Equal(t, test.expected, errs)
+		})
+	}
+}
+
+func TestValidateSize(t *testing.T) {
+	validator := &validator{}
+	sizePath := field.NewPath("spec").Child("size")
+
+	tests := []struct {
+		name     string
+		input    v1alpha1.TempoStack
+		expected field.ErrorList
+	}{
+		{
+			name: "empty size is valid",
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{},
+			},
+			expected: nil,
+		},
+		{
+			name: "demo size is valid",
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Size: v1alpha1.SizeDemo,
+				},
+			},
+			expected: nil,
+		},
+		{
+			name: "pico size is valid",
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Size: v1alpha1.SizePico,
+				},
+			},
+			expected: nil,
+		},
+		{
+			name: "extra-small size is valid",
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Size: v1alpha1.SizeExtraSmall,
+				},
+			},
+			expected: nil,
+		},
+		{
+			name: "small size is valid",
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Size: v1alpha1.SizeSmall,
+				},
+			},
+			expected: nil,
+		},
+		{
+			name: "medium size is valid",
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Size: v1alpha1.SizeMedium,
+				},
+			},
+			expected: nil,
+		},
+		{
+			name: "invalid size returns error",
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Size: v1alpha1.TempoStackSize("invalid"),
+				},
+			},
+			expected: field.ErrorList{
+				field.Invalid(sizePath, v1alpha1.TempoStackSize("invalid"),
+					fmt.Sprintf("invalid size %q, must be one of: %s", "invalid", manifestutils.ValidSizesString()),
+				),
+			},
+		},
+		{
+			name: "unknown size returns error",
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Size: v1alpha1.TempoStackSize("1x.large"),
+				},
+			},
+			expected: field.ErrorList{
+				field.Invalid(sizePath, v1alpha1.TempoStackSize("1x.large"),
+					fmt.Sprintf("invalid size %q, must be one of: %s", "1x.large", manifestutils.ValidSizesString()),
+				),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			errs := validator.validateSize(test.input)
 			assert.Equal(t, test.expected, errs)
 		})
 	}

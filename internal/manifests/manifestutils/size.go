@@ -1,12 +1,33 @@
 package manifestutils
 
 import (
+	"strings"
+
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/utils/ptr"
 
 	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 )
+
+// ValidSizes contains all valid TempoStackSize values.
+// This is the single source of truth for valid sizes.
+var ValidSizes = []v1alpha1.TempoStackSize{
+	v1alpha1.SizeDemo,
+	v1alpha1.SizePico,
+	v1alpha1.SizeExtraSmall,
+	v1alpha1.SizeSmall,
+	v1alpha1.SizeMedium,
+}
+
+// ValidSizesString returns a comma-separated string of all valid sizes.
+func ValidSizesString() string {
+	strs := make([]string, len(ValidSizes))
+	for i, s := range ValidSizes {
+		strs[i] = string(s)
+	}
+	return strings.Join(strs, ", ")
+}
 
 // ComponentResources defines CPU and Memory requests for a component.
 type ComponentResources struct {
@@ -27,7 +48,10 @@ type SizeProfile struct {
 }
 
 // sizeProfiles maps each size to its resource profile.
-// Resources are based on performance testing results.
+// Resources are based on performance testing results from:
+// https://github.com/rubenvp8510/perf-tests-tempo-results/tree/main/06
+// Methodology: tested with different ingestion rates without resource limits,
+// monitored actual consumption, and used max observed CPU/Memory values.
 // 1x.demo has no resources (nil profile).
 var sizeProfiles = map[v1alpha1.TempoStackSize]*SizeProfile{
 	// 1x.demo: No resources assigned (similar to LokiStack pattern)
@@ -42,7 +66,7 @@ var sizeProfiles = map[v1alpha1.TempoStackSize]*SizeProfile{
 		QueryFrontend:     ComponentResources{CPU: resource.MustParse("500m"), Memory: resource.MustParse("500Mi")},
 		Distributor:       ComponentResources{CPU: resource.MustParse("500m"), Memory: resource.MustParse("500Mi")},
 		Gateway:           ComponentResources{CPU: resource.MustParse("100m"), Memory: resource.MustParse("64Mi")},
-		JaegerFrontend:          ComponentResources{CPU: resource.MustParse("100m"), Memory: resource.MustParse("64Mi")},
+		JaegerFrontend:    ComponentResources{CPU: resource.MustParse("100m"), Memory: resource.MustParse("64Mi")},
 		ReplicationFactor: 2,
 	},
 
@@ -55,7 +79,7 @@ var sizeProfiles = map[v1alpha1.TempoStackSize]*SizeProfile{
 		QueryFrontend:     ComponentResources{CPU: resource.MustParse("200m"), Memory: resource.MustParse("1Gi")},
 		Distributor:       ComponentResources{CPU: resource.MustParse("200m"), Memory: resource.MustParse("128Mi")},
 		Gateway:           ComponentResources{CPU: resource.MustParse("400m"), Memory: resource.MustParse("128Mi")},
-		JaegerFrontend:          ComponentResources{CPU: resource.MustParse("400m"), Memory: resource.MustParse("128Mi")},
+		JaegerFrontend:    ComponentResources{CPU: resource.MustParse("400m"), Memory: resource.MustParse("128Mi")},
 		ReplicationFactor: 2,
 	},
 
@@ -68,7 +92,7 @@ var sizeProfiles = map[v1alpha1.TempoStackSize]*SizeProfile{
 		QueryFrontend:     ComponentResources{CPU: resource.MustParse("400m"), Memory: resource.MustParse("1Gi")},
 		Distributor:       ComponentResources{CPU: resource.MustParse("600m"), Memory: resource.MustParse("128Mi")},
 		Gateway:           ComponentResources{CPU: resource.MustParse("800m"), Memory: resource.MustParse("192Mi")},
-		JaegerFrontend:          ComponentResources{CPU: resource.MustParse("800m"), Memory: resource.MustParse("192Mi")},
+		JaegerFrontend:    ComponentResources{CPU: resource.MustParse("800m"), Memory: resource.MustParse("192Mi")},
 		ReplicationFactor: 2,
 	},
 
@@ -81,7 +105,7 @@ var sizeProfiles = map[v1alpha1.TempoStackSize]*SizeProfile{
 		QueryFrontend:     ComponentResources{CPU: resource.MustParse("800m"), Memory: resource.MustParse("1Gi")},
 		Distributor:       ComponentResources{CPU: resource.MustParse("1500m"), Memory: resource.MustParse("128Mi")},
 		Gateway:           ComponentResources{CPU: resource.MustParse("4000m"), Memory: resource.MustParse("192Mi")},
-		JaegerFrontend:          ComponentResources{CPU: resource.MustParse("4000m"), Memory: resource.MustParse("192Mi")},
+		JaegerFrontend:    ComponentResources{CPU: resource.MustParse("4000m"), Memory: resource.MustParse("192Mi")},
 		ReplicationFactor: 2,
 	},
 }

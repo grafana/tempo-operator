@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"net"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -518,6 +519,24 @@ func (v *validator) validateReceiverTLS(tempo v1alpha1.TempoStack) field.ErrorLi
 	return nil
 }
 
+func (v *validator) validateSize(tempo v1alpha1.TempoStack) field.ErrorList {
+	if tempo.Spec.Size == "" {
+		return nil
+	}
+
+	if slices.Contains(manifestutils.ValidSizes, tempo.Spec.Size) {
+		return nil
+	}
+
+	return field.ErrorList{
+		field.Invalid(
+			field.NewPath("spec").Child("size"),
+			tempo.Spec.Size,
+			fmt.Sprintf("invalid size %q, must be one of: %s", tempo.Spec.Size, manifestutils.ValidSizesString()),
+		),
+	}
+}
+
 func (v *validator) validateConflictWithMonolithic(ctx context.Context, tempo *v1alpha1.TempoStack) field.ErrorList {
 	return validateTempoNameConflict(func() error {
 		monolithic := &v1alpha1.TempoMonolithic{}
@@ -555,6 +574,8 @@ func (v *validator) validate(ctx context.Context, obj runtime.Object) (admission
 		}...)
 
 	}
+
+	allErrors = append(allErrors, v.validateSize(*tempo)...)
 
 	// Warn if both size and resources.total are specified (size takes precedence)
 	if tempo.Spec.Size != "" && tempo.Spec.Resources.Total != nil {
