@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.19.0
-    createdAt: "2026-01-09T19:14:58Z"
+    createdAt: "2026-01-20T04:24:54Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -1595,7 +1595,6 @@ spec:
               - args:
                 - --zap-log-level=info
                 - start
-                - --config=controller_manager_config.yaml
                 env:
                 - name: RELATED_IMAGE_TEMPO
                   value: docker.io/grafana/tempo:2.9.0
@@ -1643,9 +1642,6 @@ spec:
                 - mountPath: /tmp/k8s-webhook-server/serving-certs
                   name: cert
                   readOnly: true
-                - mountPath: /controller_manager_config.yaml
-                  name: manager-config
-                  subPath: controller_manager_config.yaml
               securityContext:
                 runAsNonRoot: true
               serviceAccountName: tempo-operator-controller-manager
@@ -1655,9 +1651,6 @@ spec:
                 secret:
                   defaultMode: 420
                   secretName: webhook-server-cert
-              - configMap:
-                  name: tempo-operator-manager-config
-                name: manager-config
       permissions:
       - rules:
         - apiGroups:

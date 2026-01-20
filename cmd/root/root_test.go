@@ -13,27 +13,34 @@ import (
 
 func TestReadConfig(t *testing.T) {
 	tests := []struct {
-		name     string
-		input    string
-		expected configv1alpha1.ProjectConfig
-		err      string
+		name        string
+		input       string
+		modifyCheck func(t *testing.T, cfg configv1alpha1.ProjectConfig)
+		err         string
 	}{
 		{
 			name:  "no featureGates.tlsProfile given, using default value",
 			input: "../testdata/empty.yaml",
-			expected: configv1alpha1.ProjectConfig{
-				Gates: configv1alpha1.FeatureGates{
-					TLSProfile: string(configv1alpha1.TLSProfileModernType),
-				},
+			modifyCheck: func(t *testing.T, cfg configv1alpha1.ProjectConfig) {
+				// Config file doesn't override TLSProfile, so default "Modern" is used
+				assert.Equal(t, string(configv1alpha1.TLSProfileModernType), cfg.Gates.TLSProfile)
+				// Verify other community defaults are present
+				assert.Equal(t, "community", cfg.Distribution)
+				assert.True(t, cfg.Gates.HTTPEncryption)
+				assert.True(t, cfg.Gates.GRPCEncryption)
+				assert.True(t, cfg.Gates.NetworkPolicies)
+				assert.True(t, cfg.Gates.BuiltInCertManagement.Enabled)
 			},
 		},
 		{
 			name:  "featureGates.tlsProfile given, not using default value",
 			input: "../testdata/tlsprofile_old.yaml",
-			expected: configv1alpha1.ProjectConfig{
-				Gates: configv1alpha1.FeatureGates{
-					TLSProfile: string(configv1alpha1.TLSProfileOldType),
-				},
+			modifyCheck: func(t *testing.T, cfg configv1alpha1.ProjectConfig) {
+				// Config file overrides TLSProfile to "Old"
+				assert.Equal(t, string(configv1alpha1.TLSProfileOldType), cfg.Gates.TLSProfile)
+				// Other community defaults should still be present
+				assert.Equal(t, "community", cfg.Distribution)
+				assert.True(t, cfg.Gates.HTTPEncryption)
 			},
 		},
 		{
@@ -53,7 +60,7 @@ func TestReadConfig(t *testing.T) {
 				require.NoError(t, err)
 
 				rootCmdConfig := cmd.Context().Value(RootConfigKey{}).(RootConfig)
-				assert.Equal(t, test.expected, rootCmdConfig.CtrlConfig)
+				test.modifyCheck(t, rootCmdConfig.CtrlConfig)
 			} else {
 				require.Error(t, err)
 				require.Equal(t, test.err, err.Error())

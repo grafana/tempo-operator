@@ -36,8 +36,6 @@ spec:
       containers:
       - name: manager
         image: controller:latest
-        args:
-        - --leader-elect
         env:
         - name: RELATED_IMAGE_TEMPO
           value: docker.io/grafana/tempo:2.9.0

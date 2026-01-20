@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.19.0
-    createdAt: "2026-01-09T19:14:56Z"
+    createdAt: "2026-01-20T04:24:52Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -1605,7 +1605,6 @@ spec:
               - args:
                 - --zap-log-level=info
                 - start
-                - --config=controller_manager_config.yaml
                 - --metrics-tls-cert-dir=/var/run/tls/server/
                 env:
                 - name: RELATED_IMAGE_TEMPO
@@ -1620,6 +1619,12 @@ spec:
                   value: quay.io/observatorium/opa-openshift:main-2025-06-16-ecdeca0
                 - name: RELATED_IMAGE_OAUTH_PROXY
                   value: quay.io/openshift/origin-oauth-proxy:4.14
+                - name: DISTRIBUTION
+                  value: openshift
+                - name: FEATURE_GATES
+                  value: openshift.route,openshift.servingCertsService,openshift.oauthProxy,prometheusOperator,observability.metrics.createServiceMonitors,observability.metrics.createPrometheusRules
+                - name: DEFAULT_POD_SECURITY_CONTEXT
+                  value: '{}'
                 image: ghcr.io/grafana/tempo-operator/tempo-operator:v0.19.0
                 livenessProbe:
                   httpGet:
@@ -1654,9 +1659,6 @@ spec:
                 - mountPath: /tmp/k8s-webhook-server/serving-certs
                   name: cert
                   readOnly: true
-                - mountPath: /controller_manager_config.yaml
-                  name: manager-config
-                  subPath: controller_manager_config.yaml
                 - mountPath: /var/run/tls/server
                   name: tempo-operator-metrics-cert
               securityContext:
@@ -1668,9 +1670,6 @@ spec:
                 secret:
                   defaultMode: 420
                   secretName: webhook-server-cert
-              - configMap:
-                  name: tempo-operator-manager-config
-                name: manager-config
               - name: tempo-operator-metrics-cert
                 secret:
                   defaultMode: 420

@@ -5,7 +5,7 @@ change_type: enhancement
 component: operator
 
 # A brief description of the change. Surround your text with quotes ("") if it needs to start with a backtick (`).
-note: Add environment variable support for operator configuration
+note: Migrate operator configuration from ConfigMap to environment variables
 
 # One or more tracking issues related to the change
 issues: [1348]
@@ -14,9 +14,15 @@ issues: [1348]
 # These lines will be padded with 2 spaces and then inserted directly into the document.
 # Use pipe (|) for multiline entries.
 subtext: |
-  The operator now supports configuring feature gates and controller settings via environment variables.
-  This enables OLM Subscription config overrides without modifying ConfigMaps.
-  Environment variables take precedence over config file values.
+  The operator no longer uses a ConfigMap-based configuration file. All configuration is now
+  managed through code defaults and environment variable overrides. This change:
+
+  - Removes controller_manager_config.yaml from community and OpenShift overlays
+  - Moves all community defaults into DefaultProjectConfig() in the codebase
+  - Configures OpenShift-specific settings via environment variables in the deployment
+
+  Environment variables take precedence over code defaults, enabling OLM Subscription
+  config overrides without modifying the operator deployment directly.
 
   Boolean feature gates are configured via a single FEATURE_GATES environment variable with comma-separated values:
   - Format: "gate1,gate2,-gate3" where - prefix disables the gate
@@ -25,12 +31,10 @@ subtext: |
     observability.metrics.createPrometheusRules, networkPolicies, builtInCertManagement
 
   Non-boolean settings use individual environment variables:
-  - OPENSHIFT_BASE_DOMAIN, TLS_PROFILE, DEFAULT_POD_SECURITY_CONTEXT
+  - DISTRIBUTION, OPENSHIFT_BASE_DOMAIN, TLS_PROFILE, DEFAULT_POD_SECURITY_CONTEXT
   - BUILT_IN_CERT_MANAGEMENT_CA_VALIDITY, BUILT_IN_CERT_MANAGEMENT_CA_REFRESH,
     BUILT_IN_CERT_MANAGEMENT_CERT_VALIDITY, BUILT_IN_CERT_MANAGEMENT_CERT_REFRESH
-
-  Other supported environment variables: DISTRIBUTION, LEADER_ELECTION_*, METRICS_BIND_ADDRESS,
-  METRICS_SECURE, HEALTH_PROBE_BIND_ADDRESS, WEBHOOK_PORT.
+  - LEADER_ELECTION_*, METRICS_BIND_ADDRESS, METRICS_SECURE, HEALTH_PROBE_BIND_ADDRESS, WEBHOOK_PORT
 
   Example OLM Subscription override:
   ```yaml
