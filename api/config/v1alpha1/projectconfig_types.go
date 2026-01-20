@@ -7,6 +7,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	configv1alpha1 "k8s.io/component-base/config/v1alpha1"
+	"k8s.io/utils/ptr"
 )
 
 const (
@@ -325,13 +326,10 @@ func init() {
 // DefaultProjectConfig returns the default operator config.
 // These values match the community distribution defaults.
 func DefaultProjectConfig() ProjectConfig {
-	leaderElect := true
-	webhookPort := 9443
-
 	return ProjectConfig{
 		ControllerManagerConfigurationSpec: ControllerManagerConfigurationSpec{
 			LeaderElection: &configv1alpha1.LeaderElectionConfiguration{
-				LeaderElect:  &leaderElect,
+				LeaderElect:  ptr.To(true),
 				ResourceName: "8b886b0f.grafana.com",
 			},
 			Metrics: ControllerMetrics{
@@ -342,7 +340,7 @@ func DefaultProjectConfig() ProjectConfig {
 				HealthProbeBindAddress: ":8081",
 			},
 			Webhook: ControllerWebhook{
-				Port: &webhookPort,
+				Port: ptr.To(9443),
 			},
 		},
 		DefaultImages: ImagesSpec{
@@ -385,14 +383,9 @@ func DefaultProjectConfig() ProjectConfig {
 				CertRefresh: metav1.Duration{Duration: 1728 * time.Hour},
 			},
 			DefaultPodSecurityContext: &corev1.PodSecurityContext{
-				FSGroup: ptrInt64(10001),
+				FSGroup: ptr.To[int64](10001),
 			},
 		},
 		Distribution: "community",
 	}
-}
-
-// ptrInt64 returns a pointer to the given int64 value.
-func ptrInt64(i int64) *int64 {
-	return &i
 }
