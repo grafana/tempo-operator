@@ -98,11 +98,10 @@ func policyPeerFor(name string, tempo v1alpha1.TempoStack) networkingv1.NetworkP
 			IPBlock: &networkingv1.IPBlock{CIDR: "0.0.0.0/0"},
 		}
 	case netPolicys3Storage:
-		// Allow egress to any namespace and any pod for S3 storage access
+		// Allow egress to any S3 storage api.
 		// This is necessary for cross-namespace access to object storage like MinIO
 		return networkingv1.NetworkPolicyPeer{
-			NamespaceSelector: &metav1.LabelSelector{},
-			PodSelector:       &metav1.LabelSelector{},
+			IPBlock: &networkingv1.IPBlock{CIDR: "0.0.0.0/0"},
 		}
 	case netPolicyClusterComponents:
 		return networkingv1.NetworkPolicyPeer{

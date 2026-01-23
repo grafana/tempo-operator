@@ -66,11 +66,12 @@ subtext: |
   - From querier (ports 9095, 3200) - For querying recent traces
 
   ### Storage Backend Support
-  - **S3**: Port extracted from endpoint URL, defaults to 443 (HTTPS) or 80 (HTTP)
-  - **Azure Storage**: Port 443 (HTTPS)
-  - **Google Cloud Storage (GCS)**: Port 443 (HTTPS)
+  - **S3 (in-cluster)**: Port extracted from endpoint URL, defaults to 443 (HTTPS) or 80 (HTTP). Allows egress to any namespace/pod for services like MinIO.
+  - **Azure Storage**: Port 443 (HTTPS). Allows egress to external internet (0.0.0.0/0) for Azure Storage endpoints.
+  - **Google Cloud Storage (GCS)**: Port 443 (HTTPS). Allows egress to external internet (0.0.0.0/0) for GCS and OAuth2 endpoints (storage.googleapis.com, oauth2.googleapis.com).
 
   ### Common Policies
   All components also have:
   - DNS egress (to kube-dns or openshift-dns)
   - Gossip ring communication (memberlist protocol)
+  - Metrics ingress (port 3200) - For Prometheus/monitoring scraping from in-cluster monitoring namespaces

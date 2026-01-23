@@ -77,8 +77,8 @@ spec:
     - port: 9000
       protocol: TCP
     to:
-    - namespaceSelector: {}
-      podSelector: {}
+    - ipBlock:
+        cidr: 0.0.0.0/0
   podSelector:
     matchLabels:
       app.kubernetes.io/component: compactor
@@ -206,8 +206,8 @@ spec:
     - port: 9000
       protocol: TCP
     to:
-    - namespaceSelector: {}
-      podSelector: {}
+    - ipBlock:
+        cidr: 0.0.0.0/0
   ingress:
   - from:
     - podSelector:
@@ -298,8 +298,8 @@ spec:
     - port: 9000
       protocol: TCP
     to:
-    - namespaceSelector: {}
-      podSelector: {}
+    - ipBlock:
+        cidr: 0.0.0.0/0
   ingress:
   - from:
     - podSelector:
@@ -358,8 +358,8 @@ spec:
     - port: 9000
       protocol: TCP
     to:
-    - namespaceSelector: {}
-      podSelector: {}
+    - ipBlock:
+        cidr: 0.0.0.0/0
   ingress:
   - from:
     - namespaceSelector: {}
@@ -392,4 +392,28 @@ spec:
       app.kubernetes.io/name: tempo
   policyTypes:
   - Egress
+  - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  labels:
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-operator
+  name: tempo-simplest-ingress-to-operand-metrics
+spec:
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchExpressions:
+        - key: openshift.io/cluster-monitoring
+          operator: Exists
+    ports:
+    - port: 3200
+      protocol: TCP
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: simplest
+      app.kubernetes.io/managed-by: tempo-operator
+  policyTypes:
   - Ingress

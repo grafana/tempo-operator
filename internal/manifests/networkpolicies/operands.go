@@ -18,6 +18,7 @@ func GenerateOperandPolicies(params manifestutils.Params) []client.Object {
 
 	policies := []client.Object{
 		policyTempoGossip(tempo.Name, tempo.Namespace, labels),
+		policyIngressToOperandMetrics(tempo.Name, tempo.Namespace, labels),
 	}
 
 	// Add platform-specific DNS policy
