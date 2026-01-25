@@ -46,6 +46,8 @@ type SizeProfile struct {
 	Distributor    ComponentResources
 	Gateway        ComponentResources
 	JaegerFrontend ComponentResources
+	OauthProxy     ComponentResources
+	GatewayOpa     ComponentResources
 }
 
 // sizeProfiles maps each size to its resource profile.
@@ -68,6 +70,8 @@ var sizeProfiles = map[v1alpha1.TempoStackSize]*SizeProfile{
 		Distributor:    ComponentResources{CPU: resource.MustParse("500m"), Memory: resource.MustParse("500Mi")},
 		Gateway:        ComponentResources{CPU: resource.MustParse("100m"), Memory: resource.MustParse("64Mi")},
 		JaegerFrontend: ComponentResources{CPU: resource.MustParse("100m"), Memory: resource.MustParse("64Mi")},
+		OauthProxy:     ComponentResources{CPU: resource.MustParse("50m"), Memory: resource.MustParse("64Mi")},
+		GatewayOpa:     ComponentResources{CPU: resource.MustParse("50m"), Memory: resource.MustParse("64Mi")},
 	},
 
 	// 1x.extra-small: Medium production workloads (~100GB/day) with HA support
@@ -80,6 +84,8 @@ var sizeProfiles = map[v1alpha1.TempoStackSize]*SizeProfile{
 		Distributor:    ComponentResources{CPU: resource.MustParse("200m"), Memory: resource.MustParse("128Mi")},
 		Gateway:        ComponentResources{CPU: resource.MustParse("400m"), Memory: resource.MustParse("128Mi")},
 		JaegerFrontend: ComponentResources{CPU: resource.MustParse("400m"), Memory: resource.MustParse("128Mi")},
+		OauthProxy:     ComponentResources{CPU: resource.MustParse("100m"), Memory: resource.MustParse("64Mi")},
+		GatewayOpa:     ComponentResources{CPU: resource.MustParse("100m"), Memory: resource.MustParse("64Mi")},
 	},
 
 	// 1x.small: Larger production workloads (~500GB/day) with HA support
@@ -92,6 +98,8 @@ var sizeProfiles = map[v1alpha1.TempoStackSize]*SizeProfile{
 		Distributor:    ComponentResources{CPU: resource.MustParse("600m"), Memory: resource.MustParse("128Mi")},
 		Gateway:        ComponentResources{CPU: resource.MustParse("800m"), Memory: resource.MustParse("192Mi")},
 		JaegerFrontend: ComponentResources{CPU: resource.MustParse("800m"), Memory: resource.MustParse("192Mi")},
+		OauthProxy:     ComponentResources{CPU: resource.MustParse("100m"), Memory: resource.MustParse("64Mi")},
+		GatewayOpa:     ComponentResources{CPU: resource.MustParse("100m"), Memory: resource.MustParse("64Mi")},
 	},
 
 	// 1x.medium: High-scale production workloads (~2TB/day) with HA support
@@ -104,6 +112,8 @@ var sizeProfiles = map[v1alpha1.TempoStackSize]*SizeProfile{
 		Distributor:    ComponentResources{CPU: resource.MustParse("1500m"), Memory: resource.MustParse("128Mi")},
 		Gateway:        ComponentResources{CPU: resource.MustParse("4000m"), Memory: resource.MustParse("192Mi")},
 		JaegerFrontend: ComponentResources{CPU: resource.MustParse("4000m"), Memory: resource.MustParse("192Mi")},
+		OauthProxy:     ComponentResources{CPU: resource.MustParse("200m"), Memory: resource.MustParse("128Mi")},
+		GatewayOpa:     ComponentResources{CPU: resource.MustParse("200m"), Memory: resource.MustParse("128Mi")},
 	},
 }
 
@@ -223,6 +233,10 @@ func ResourcesForComponent(size v1alpha1.TempoStackSize, component string) corev
 		compRes = profile.Gateway
 	case JaegerFrontendComponentName:
 		compRes = profile.JaegerFrontend
+	case QueryFrontendOauthProxyComponentName:
+		compRes = profile.OauthProxy
+	case GatewayOpaComponentName:
+		compRes = profile.GatewayOpa
 	default:
 		return corev1.ResourceRequirements{}
 	}

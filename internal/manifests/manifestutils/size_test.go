@@ -116,19 +116,22 @@ func TestReplicationFactorForSize(t *testing.T) {
 }
 
 func TestResourcesForComponent(t *testing.T) {
+	// allComponents returns all component names that should have size-based resources
+	allComponents := []string{
+		IngesterComponentName,
+		CompactorComponentName,
+		QuerierComponentName,
+		QueryFrontendComponentName,
+		DistributorComponentName,
+		GatewayComponentName,
+		JaegerFrontendComponentName,
+		QueryFrontendOauthProxyComponentName,
+		GatewayOpaComponentName,
+	}
+
 	// Test demo size returns empty resources
 	t.Run("demo size returns empty resources for all components", func(t *testing.T) {
-		components := []string{
-			IngesterComponentName,
-			CompactorComponentName,
-			QuerierComponentName,
-			QueryFrontendComponentName,
-			DistributorComponentName,
-			GatewayComponentName,
-			JaegerFrontendComponentName,
-		}
-
-		for _, comp := range components {
+		for _, comp := range allComponents {
 			res := ResourcesForComponent(v1alpha1.SizeDemo, comp)
 			assert.Nil(t, res.Requests, "demo size should return nil requests for %s", comp)
 			assert.Nil(t, res.Limits, "demo size should return nil limits for %s", comp)
@@ -158,18 +161,8 @@ func TestResourcesForComponent(t *testing.T) {
 			v1alpha1.SizeMedium,
 		}
 
-		components := []string{
-			IngesterComponentName,
-			CompactorComponentName,
-			QuerierComponentName,
-			QueryFrontendComponentName,
-			DistributorComponentName,
-			GatewayComponentName,
-			JaegerFrontendComponentName,
-		}
-
 		for _, size := range sizes {
-			for _, comp := range components {
+			for _, comp := range allComponents {
 				res := ResourcesForComponent(size, comp)
 				require.NotNil(t, res.Requests, "size %s should have requests for %s", size, comp)
 				assert.Contains(t, res.Requests, corev1.ResourceCPU, "size %s should have CPU request for %s", size, comp)

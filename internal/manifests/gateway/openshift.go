@@ -202,8 +202,9 @@ func patchOCPServiceAccount(tempo v1alpha1.TempoStack, dep *v1.Deployment) *v1.D
 }
 
 func patchOCPOPAContainer(params manifestutils.Params, dep *v1.Deployment) (*v1.Deployment, error) {
+	opaResources := manifestutils.Resources(params.Tempo, manifestutils.GatewayOpaComponentName, params.Tempo.Spec.Template.Gateway.Replicas)
 	pod := corev1.PodSpec{
-		Containers: []corev1.Container{NewOpaContainer(params.CtrlConfig, *params.Tempo.Spec.Tenants, params.Tempo.Spec.Template.Gateway.RBAC.Enabled, "tempostack", corev1.ResourceRequirements{})},
+		Containers: []corev1.Container{NewOpaContainer(params.CtrlConfig, *params.Tempo.Spec.Tenants, params.Tempo.Spec.Template.Gateway.RBAC.Enabled, "tempostack", opaResources)},
 	}
 	err := mergo.Merge(&dep.Spec.Template.Spec, pod, mergo.WithAppendSlice)
 	if err != nil {
