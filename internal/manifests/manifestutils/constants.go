@@ -141,6 +141,8 @@ const (
 	IngesterComponentName = "ingester"
 	// GatewayComponentName declares the internal name of the gateway component.
 	GatewayComponentName = "gateway"
+	// GatewayOpaComponentName declares the internal name of the gateway OPA sidecar component.
+	GatewayOpaComponentName = "tempo-gateway-opa"
 
 	// TempoMonolithComponentName declares the internal name of the Tempo Monolith component.
 	TempoMonolithComponentName = "tempo"

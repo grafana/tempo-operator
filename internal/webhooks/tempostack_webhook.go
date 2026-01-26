@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"net"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -27,6 +28,7 @@ import (
 	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/autodetect"
 	"github.com/grafana/tempo-operator/internal/handlers/storage"
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
 	"github.com/grafana/tempo-operator/internal/status"
 )
@@ -121,9 +123,30 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 	defaultComponentReplicas := ptr.To(int32(1))
 	defaultReplicationFactor := 1
 
+	// Default replication factor if not specified.
+	// If size is specified, use size's default RF, otherwise use 1.
+	effectiveRF := defaultReplicationFactor
+	if r.Spec.ReplicationFactor == 0 {
+		if r.Spec.Size != "" {
+			sizeRF := manifestutils.ReplicationFactorForSize(r.Spec.Size)
+			if sizeRF > 0 {
+				effectiveRF = sizeRF
+			}
+		}
+	} else {
+		effectiveRF = r.Spec.ReplicationFactor
+	}
+
 	// Default replicas for all components if not specified.
 	if r.Spec.Template.Ingester.Replicas == nil {
-		r.Spec.Template.Ingester.Replicas = defaultComponentReplicas
+		// When size is specified, ensure ingester replicas meet quorum requirements.
+		// Quorum = floor(RF/2) + 1, and we need at least quorum replicas.
+		if r.Spec.Size != "" {
+			minIngesterReplicas := int32(math.Floor(float64(effectiveRF)/2.0) + 1)
+			r.Spec.Template.Ingester.Replicas = ptr.To(minIngesterReplicas)
+		} else {
+			r.Spec.Template.Ingester.Replicas = defaultComponentReplicas
+		}
 	}
 	if r.Spec.Template.Distributor.Replicas == nil {
 		r.Spec.Template.Distributor.Replicas = defaultComponentReplicas
@@ -143,9 +166,9 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 		r.Spec.Template.Gateway.Replicas = defaultComponentReplicas
 	}
 
-	// Default replication factor if not specified.
+	// Set replication factor (we already computed effectiveRF above).
 	if r.Spec.ReplicationFactor == 0 {
-		r.Spec.ReplicationFactor = defaultReplicationFactor
+		r.Spec.ReplicationFactor = effectiveRF
 	}
 
 	// if tenant mode is Openshift, ingress type should be route by default.
@@ -496,6 +519,24 @@ func (v *validator) validateReceiverTLS(tempo v1alpha1.TempoStack) field.ErrorLi
 	return nil
 }
 
+func (v *validator) validateSize(tempo v1alpha1.TempoStack) field.ErrorList {
+	if tempo.Spec.Size == "" {
+		return nil
+	}
+
+	if slices.Contains(manifestutils.ValidSizes, tempo.Spec.Size) {
+		return nil
+	}
+
+	return field.ErrorList{
+		field.Invalid(
+			field.NewPath("spec").Child("size"),
+			tempo.Spec.Size,
+			fmt.Sprintf("invalid size %q, must be one of: %s", tempo.Spec.Size, manifestutils.ValidSizesString()),
+		),
+	}
+}
+
 func (v *validator) validateConflictWithMonolithic(ctx context.Context, tempo *v1alpha1.TempoStack) field.ErrorList {
 	return validateTempoNameConflict(func() error {
 		monolithic := &v1alpha1.TempoMonolithic{}
@@ -532,6 +573,15 @@ func (v *validator) validate(ctx context.Context, obj runtime.Object) (admission
 			"override tempo configuration could potentially break the stack, use it carefully",
 		}...)
 
+	}
+
+	allErrors = append(allErrors, v.validateSize(*tempo)...)
+
+	// Warn if both size and resources.total are specified (size takes precedence)
+	if tempo.Spec.Size != "" && tempo.Spec.Resources.Total != nil {
+		allWarnings = append(allWarnings, admission.Warnings{
+			"both spec.size and spec.resources.total are specified; spec.size takes precedence for resource allocation",
+		}...)
 	}
 
 	allErrors = append(allErrors, v.validateReplicationFactor(*tempo)...)
