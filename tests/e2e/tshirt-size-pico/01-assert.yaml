@@ -1,0 +1,80 @@
+# This test verifies that the t-shirt size 1x.pico correctly sets
+# resource requests and replica counts. We only check spec configuration,
+# not pod readiness, to allow running on resource-constrained clusters.
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoStack
+metadata:
+  name: pico
+spec:
+  replicationFactor: 2
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: tempo-pico-ingester
+spec:
+  replicas: 2
+  template:
+    spec:
+      containers:
+        - name: tempo
+          resources:
+            requests:
+              cpu: 500m
+              memory: 3Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-pico-distributor
+spec:
+  template:
+    spec:
+      containers:
+        - name: tempo
+          resources:
+            requests:
+              cpu: 500m
+              memory: 500Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-pico-querier
+spec:
+  template:
+    spec:
+      containers:
+        - name: tempo
+          resources:
+            requests:
+              cpu: 750m
+              memory: 1536Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-pico-query-frontend
+spec:
+  template:
+    spec:
+      containers:
+        - name: tempo
+          resources:
+            requests:
+              cpu: 500m
+              memory: 500Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-pico-compactor
+spec:
+  template:
+    spec:
+      containers:
+        - name: tempo
+          resources:
+            requests:
+              cpu: 500m
+              memory: 500Mi
