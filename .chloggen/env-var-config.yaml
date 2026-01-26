@@ -14,37 +14,31 @@ issues: [1348]
 # These lines will be padded with 2 spaces and then inserted directly into the document.
 # Use pipe (|) for multiline entries.
 subtext: |
-  The operator no longer uses a ConfigMap-based configuration file. All configuration is now
-  managed through code defaults and environment variable overrides. This change:
+  The default operator deployment no longer uses a ConfigMap-based configuration file.
+  Configuration is now managed through environment variables.
 
-  - Removes controller_manager_config.yaml from community and OpenShift overlays
-  - Moves all community defaults into DefaultProjectConfig() in the codebase
-  - Configures OpenShift-specific settings via environment variables in the deployment
+  **To continue using a ConfigMap:** Mount your `controller_manager_config.yaml` ConfigMap and add
+  the `--config=/path/to/config.yaml` flag to the operator deployment args.
+  Environment variables will still take precedence over the config file.
 
-  Environment variables take precedence over code defaults, enabling OLM Subscription
-  config overrides without modifying the operator deployment directly.
-
-  Boolean feature gates are configured via a single FEATURE_GATES environment variable with comma-separated values:
-  - Format: "gate1,gate2,-gate3" where - prefix disables the gate
-  - Available gates: openshift.route, openshift.servingCertsService, openshift.oauthProxy, httpEncryption,
-    grpcEncryption, prometheusOperator, grafanaOperator, observability.metrics.createServiceMonitors,
-    observability.metrics.createPrometheusRules, networkPolicies, builtInCertManagement
-
-  Non-boolean settings use individual environment variables:
-  - DISTRIBUTION, OPENSHIFT_BASE_DOMAIN, TLS_PROFILE, DEFAULT_POD_SECURITY_CONTEXT
-  - BUILT_IN_CERT_MANAGEMENT_CA_VALIDITY, BUILT_IN_CERT_MANAGEMENT_CA_REFRESH,
-    BUILT_IN_CERT_MANAGEMENT_CERT_VALIDITY, BUILT_IN_CERT_MANAGEMENT_CERT_REFRESH
-  - LEADER_ELECTION_*, METRICS_BIND_ADDRESS, METRICS_SECURE, HEALTH_PROBE_BIND_ADDRESS, WEBHOOK_PORT
+  **To migrate to environment variables:** Use `FEATURE_GATES` for boolean flags (comma-separated,
+  prefix with `-` to disable) and individual env vars for other settings.
 
   Example OLM Subscription override:
   ```yaml
-  apiVersion: operators.coreos.com/v1alpha1
-  kind: Subscription
   spec:
     config:
       env:
       - name: FEATURE_GATES
-        value: "prometheusOperator,observability.metrics.createServiceMonitors"
+        value: "prometheusOperator,observability.metrics.createServiceMonitors,-networkPolicies"
       - name: TLS_PROFILE
-        value: "Old"
+        value: "Intermediate"
   ```
+
+  Available feature gates: `openshift.route`, `openshift.servingCertsService`, `openshift.oauthProxy`,
+  `httpEncryption`, `grpcEncryption`, `prometheusOperator`, `grafanaOperator`, `builtInCertManagement`,
+  `observability.metrics.createServiceMonitors`, `observability.metrics.createPrometheusRules`, `networkPolicies`
+
+  Other env vars: `DISTRIBUTION`, `TLS_PROFILE`, `OPENSHIFT_BASE_DOMAIN`, `DEFAULT_POD_SECURITY_CONTEXT` (JSON),
+  `BUILT_IN_CERT_MANAGEMENT_CA_VALIDITY`, `BUILT_IN_CERT_MANAGEMENT_CA_REFRESH`,
+  `BUILT_IN_CERT_MANAGEMENT_CERT_VALIDITY`, `BUILT_IN_CERT_MANAGEMENT_CERT_REFRESH`
