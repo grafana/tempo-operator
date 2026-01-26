@@ -2,10 +2,12 @@ package v1alpha1
 
 import (
 	"os"
+	"time"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	configv1alpha1 "k8s.io/component-base/config/v1alpha1"
+	"k8s.io/utils/ptr"
 )
 
 const (
@@ -322,8 +324,25 @@ func init() {
 }
 
 // DefaultProjectConfig returns the default operator config.
+// These values match the community distribution defaults.
 func DefaultProjectConfig() ProjectConfig {
 	return ProjectConfig{
+		ControllerManagerConfigurationSpec: ControllerManagerConfigurationSpec{
+			LeaderElection: &configv1alpha1.LeaderElectionConfiguration{
+				LeaderElect:  ptr.To(true),
+				ResourceName: "8b886b0f.grafana.com",
+			},
+			Metrics: ControllerMetrics{
+				BindAddress: ":8443",
+				Secure:      true,
+			},
+			Health: ControllerHealth{
+				HealthProbeBindAddress: ":8081",
+			},
+			Webhook: ControllerWebhook{
+				Port: ptr.To(9443),
+			},
+		},
 		DefaultImages: ImagesSpec{
 			Tempo:           os.Getenv(EnvRelatedImageTempo),
 			JaegerQuery:     os.Getenv(EnvRelatedImageJaegerQuery),
@@ -333,7 +352,40 @@ func DefaultProjectConfig() ProjectConfig {
 			OauthProxy:      os.Getenv(EnvRelatedImageOauthProxy),
 		},
 		Gates: FeatureGates{
-			TLSProfile: string(TLSProfileModernType),
+			OpenShift: OpenShiftFeatureGates{
+				ServingCertsService: false,
+				OpenShiftRoute:      false,
+				OauthProxy: OauthProxyFeatureGates{
+					DefaultEnabled: false,
+				},
+			},
+			HTTPEncryption:     true,
+			GRPCEncryption:     true,
+			TLSProfile:         string(TLSProfileModernType),
+			PrometheusOperator: false,
+			GrafanaOperator:    false,
+			Observability: ObservabilityFeatureGates{
+				Metrics: MetricsFeatureGates{
+					CreateServiceMonitors: false,
+					CreatePrometheusRules: false,
+				},
+			},
+			NetworkPolicies: true,
+			BuiltInCertManagement: BuiltInCertManagement{
+				Enabled: true,
+				// CA certificate validity: 5 years
+				CACertValidity: metav1.Duration{Duration: 43830 * time.Hour},
+				// CA certificate refresh at 80% of validity
+				CACertRefresh: metav1.Duration{Duration: 35064 * time.Hour},
+				// Target certificate validity: 90d
+				CertValidity: metav1.Duration{Duration: 2160 * time.Hour},
+				// Target certificate refresh at 80% of validity
+				CertRefresh: metav1.Duration{Duration: 1728 * time.Hour},
+			},
+			DefaultPodSecurityContext: &corev1.PodSecurityContext{
+				FSGroup: ptr.To[int64](10001),
+			},
 		},
+		Distribution: "community",
 	}
 }

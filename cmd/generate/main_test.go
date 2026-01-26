@@ -2,6 +2,7 @@ package generate
 
 import (
 	"bytes"
+	"context"
 	"strings"
 	"testing"
 
@@ -16,18 +17,26 @@ import (
 	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
 	"github.com/grafana/tempo-operator/cmd/root"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
+	"github.com/grafana/tempo-operator/internal/tlsprofile"
 )
 
 func TestBuild(t *testing.T) {
+	// Start with community defaults, then override images for testing
+	ctrlConfig := configv1alpha1.DefaultProjectConfig()
+	ctrlConfig.DefaultImages = configv1alpha1.ImagesSpec{
+		Tempo:           "tempo-image",
+		TempoQuery:      "tempo-query-image",
+		TempoGateway:    "tempo-gateway-image",
+		TempoGatewayOpa: "tempo-gateway-opa-image",
+	}
+
+	// Get TLS profile settings based on config
+	tlsProfileOpts, err := tlsprofile.Get(context.Background(), ctrlConfig.Gates, nil)
+	require.NoError(t, err)
+
 	params := manifestutils.Params{
-		CtrlConfig: configv1alpha1.ProjectConfig{
-			DefaultImages: configv1alpha1.ImagesSpec{
-				Tempo:           "tempo-image",
-				TempoQuery:      "tempo-query-image",
-				TempoGateway:    "tempo-gateway-image",
-				TempoGatewayOpa: "tempo-gateway-opa-image",
-			},
-		},
+		CtrlConfig: ctrlConfig,
+		TLSProfile: tlsProfileOpts,
 		StorageParams: manifestutils.StorageParams{
 			AzureStorage: &manifestutils.AzureStorage{},
 			GCS:          &manifestutils.GCS{},

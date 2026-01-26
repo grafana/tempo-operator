@@ -3,7 +3,6 @@ package root
 import (
 	"errors"
 	"fmt"
-
 	"os"
 	"path/filepath"
 	"reflect"
@@ -17,6 +16,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
 	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
+	"github.com/grafana/tempo-operator/internal/envconfig"
 )
 
 var errConfigFileLoading = errors.New("could not read file at path")
@@ -42,16 +42,17 @@ func LoadConfig(scheme *runtime.Scheme, configFile string) (*configv1alpha1.Proj
 	options := ctrl.Options{Scheme: scheme}
 	ctrlConfig := configv1alpha1.DefaultProjectConfig()
 
-	if configFile == "" {
-		return &ctrlConfig, options, nil
+	if configFile != "" {
+		err := loadConfigFile(scheme, &ctrlConfig, configFile)
+		if err != nil {
+			return nil, options, fmt.Errorf("failed to parse controller manager config file: %w", err)
+		}
 	}
 
-	err := loadConfigFile(scheme, &ctrlConfig, configFile)
-	if err != nil {
-		return nil, options, fmt.Errorf("failed to parse controller manager config file: %w", err)
-	}
+	// Apply environment variable overrides (takes precedence over config file)
+	envconfig.ApplyEnvVars(&ctrlConfig)
 
-	err = ctrlConfig.Validate()
+	err := ctrlConfig.Validate()
 	if err != nil {
 		return nil, options, fmt.Errorf("controller config validation failed: %w", err)
 	}
