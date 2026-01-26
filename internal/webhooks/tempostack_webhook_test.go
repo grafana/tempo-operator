@@ -2667,7 +2667,7 @@ func TestWarning(t *testing.T) {
 				},
 			},
 			client:   &k8sFake{},
-			expected: admission.Warnings{"could not fetch Secret: mock: fails always"},
+			expected: admission.Warnings{"could not fetch storage configuration secret: mock: fails always. Tempo will start once the storage secret is available"},
 		},
 		{
 			name: "warning for use extra config",
