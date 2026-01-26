@@ -6,7 +6,6 @@ import (
 	grafanav1 "github.com/grafana/grafana-operator/v5/api/v1beta1"
 	"github.com/stretchr/testify/require"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/utils/ptr"
 
 	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 )
@@ -46,16 +45,18 @@ func TestBuildGrafanaDatasource(t *testing.T) {
 			Labels:    labels,
 		},
 		Spec: grafanav1.GrafanaDatasourceSpec{
+			GrafanaCommonSpec: grafanav1.GrafanaCommonSpec{
+				InstanceSelector: &metav1.LabelSelector{
+					MatchLabels: map[string]string{"key": "value"},
+				},
+				AllowCrossNamespaceImport: true,
+			},
 			Datasource: &grafanav1.GrafanaDatasourceInternal{
 				Name:   "sample",
 				Type:   "tempo",
 				Access: "proxy",
 				URL:    "http://tempo-sample.default.svc.cluster.local:3200",
 			},
-			InstanceSelector: &metav1.LabelSelector{
-				MatchLabels: map[string]string{"key": "value"},
-			},
-			AllowCrossNamespaceImport: ptr.To(true),
 		},
 	}, datasource)
 }
