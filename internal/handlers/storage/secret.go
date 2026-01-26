@@ -15,7 +15,7 @@ import (
 var (
 	// ErrFetchingSecret is used in the webhook to not fail validation when there was an error retrieving the storage secret.
 	// Manifests can be applied out-of-order (i.e. the CR gets applied before the storage secret).
-	ErrFetchingSecret = "could not fetch Secret"
+	ErrFetchingSecret = "could not fetch storage configuration secret"
 	hashSeparator     = []byte(",")
 )
 
@@ -23,7 +23,7 @@ func getSecret(ctx context.Context, client client.Client, namespace string, secr
 	var storageSecret corev1.Secret
 	err := client.Get(ctx, types.NamespacedName{Namespace: namespace, Name: secretName}, &storageSecret)
 	if err != nil {
-		return corev1.Secret{}, field.ErrorList{field.Invalid(path, secretName, fmt.Sprintf("%s: %v", ErrFetchingSecret, err))}
+		return corev1.Secret{}, field.ErrorList{field.Invalid(path, secretName, fmt.Sprintf("%s: %v. Tempo will start once the storage secret is available", ErrFetchingSecret, err))}
 	}
 
 	return storageSecret, nil
