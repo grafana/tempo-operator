@@ -175,7 +175,7 @@ func (v *monolithicValidator) validateMultitenancy(ctx context.Context, tempo te
 	}
 
 	if v.ctrlConfig.Gates.OpenShift.NoAuthWarning && !tempo.Spec.Multitenancy.IsGatewayEnabled() {
-		return admission.Warnings{"TempoMonolithic instances without multi-tenancy do not provide authentication or authorization, and are not supported on OpenShift"}, nil
+		return admission.Warnings{"TempoMonolithic instances without multi-tenancy provide no authentication or authorization on the ingest or query paths, and are not supported on OpenShift"}, nil
 	}
 
 	if !tempo.Spec.Multitenancy.IsGatewayEnabled() {

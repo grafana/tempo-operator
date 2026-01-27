@@ -401,7 +401,7 @@ func (v *validator) validateGateway(ctx context.Context, tempo v1alpha1.TempoSta
 		// Gateway disabled
 
 		if v.ctrlConfig.Gates.OpenShift.NoAuthWarning {
-			return admission.Warnings{"TempoStack instances without gateway do not provide authentication or authorization, and are not supported on OpenShift"}, nil
+			return admission.Warnings{"TempoStack instances without gateway provide no authentication or authorization on the ingest or query paths, and are not supported on OpenShift"}, nil
 		}
 	}
 

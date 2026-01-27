@@ -1907,7 +1907,7 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 				},
 			},
 			expected:         nil,
-			expectedWarnings: admission.Warnings{"TempoStack instances without gateway do not provide authentication or authorization, and are not supported on OpenShift"},
+			expectedWarnings: admission.Warnings{"TempoStack instances without gateway provide no authentication or authorization on the ingest or query paths, and are not supported on OpenShift"},
 		},
 	}
 
