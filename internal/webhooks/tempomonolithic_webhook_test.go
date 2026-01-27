@@ -230,7 +230,7 @@ func TestMonolithicValidate(t *testing.T) {
 				},
 				Spec: v1alpha1.TempoMonolithicSpec{},
 			},
-			warnings: admission.Warnings{"TempoMonolithic instances without multi-tenancy do not provide authentication and authorization, and are not supported on OpenShift"},
+			warnings: admission.Warnings{"TempoMonolithic instances without multi-tenancy do not provide authentication or authorization, and are not supported on OpenShift"},
 			errors:   field.ErrorList{},
 		},
 
