@@ -348,31 +348,31 @@ func (v *validator) validateQueryFrontend(tempo v1alpha1.TempoStack) field.Error
 	return nil
 }
 
-func (v *validator) validateGateway(ctx context.Context, tempo v1alpha1.TempoStack) field.ErrorList {
+func (v *validator) validateGateway(ctx context.Context, tempo v1alpha1.TempoStack) (admission.Warnings, field.ErrorList) {
 	path := field.NewPath("spec").Child("template").Child("gateway").Child("enabled")
 	if tempo.Spec.Template.Gateway.Enabled {
 		if tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type != v1alpha1.IngressTypeNone {
-			return field.ErrorList{
+			return nil, field.ErrorList{
 				field.Invalid(path, tempo.Spec.Template.Gateway.Enabled,
 					"cannot enable gateway and jaeger query ingress at the same time, please use the Jaeger UI from the gateway",
 				)}
 		}
 		if tempo.Spec.Template.Gateway.RBAC.Enabled && tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled {
-			return field.ErrorList{
+			return nil, field.ErrorList{
 				field.Invalid(path, tempo.Spec.Template.Gateway.RBAC.Enabled,
 					"cannot enable gateway and jaeger query at the same time. The Jaeger UI does not support query RBAC",
 				)}
 		}
 
 		if tempo.Spec.Tenants == nil {
-			return field.ErrorList{
+			return nil, field.ErrorList{
 				field.Invalid(path, tempo.Spec.Template.Gateway.Enabled,
 					"to enable the gateway, please configure tenants",
 				)}
 		}
 
 		if tempo.Spec.Template.Gateway.Ingress.Type == v1alpha1.IngressTypeRoute && !v.ctrlConfig.Gates.OpenShift.OpenShiftRoute {
-			return field.ErrorList{field.Invalid(
+			return nil, field.ErrorList{field.Invalid(
 				field.NewPath("spec").Child("template").Child("gateway").Child("ingress").Child("type"),
 				tempo.Spec.Template.Gateway.Ingress.Type,
 				"please enable the featureGates.openshift.openshiftRoute feature gate to use Routes",
@@ -380,7 +380,7 @@ func (v *validator) validateGateway(ctx context.Context, tempo v1alpha1.TempoSta
 		}
 
 		if tempo.Spec.Template.Gateway.Enabled && tempo.Spec.Template.Distributor.TLS.Enabled {
-			return field.ErrorList{field.Invalid(
+			return nil, field.ErrorList{field.Invalid(
 				field.NewPath("spec").Child("template").Child("gateway").Child("enabled"),
 				tempo.Spec.Template.Gateway.Enabled,
 				"Cannot enable gateway and distributor TLS at the same time",
@@ -390,15 +390,22 @@ func (v *validator) validateGateway(ctx context.Context, tempo v1alpha1.TempoSta
 		if tempo.Spec.Tenants != nil && tempo.Spec.Tenants.Mode == v1alpha1.ModeOpenShift {
 			err := validateGatewayOpenShiftModeRBAC(ctx, v.client)
 			if err != nil {
-				return field.ErrorList{field.Invalid(
+				return nil, field.ErrorList{field.Invalid(
 					field.NewPath("spec").Child("tenants").Child("mode"),
 					tempo.Spec.Tenants.Mode,
 					fmt.Sprintf("Cannot enable OpenShift tenancy mode: %v", err),
 				)}
 			}
 		}
+	} else {
+		// Gateway disabled
+
+		if v.ctrlConfig.Gates.OpenShift.NoAuthWarning {
+			return admission.Warnings{"TempoStack instances without gateway do not provide authentication and authorization, and are not supported on OpenShift"}, nil
+		}
 	}
-	return nil
+
+	return nil, nil
 }
 
 func (v *validator) validateObservability(tempo v1alpha1.TempoStack) field.ErrorList {
@@ -558,15 +565,14 @@ func (v *validator) validate(ctx context.Context, obj runtime.Object) (admission
 
 	allWarnings := admission.Warnings{}
 	allErrors := field.ErrorList{}
-	var warnings admission.Warnings
-	var errors field.ErrorList
+	addValidationResults := func(w admission.Warnings, e field.ErrorList) {
+		allWarnings = append(allWarnings, w...)
+		allErrors = append(allErrors, e...)
+	}
 
 	allErrors = append(allErrors, validateName(tempo.Name)...)
 	allErrors = append(allErrors, v.validateServiceAccount(ctx, *tempo)...)
-
-	warnings, errors = v.validateStorage(ctx, *tempo)
-	allWarnings = append(allWarnings, warnings...)
-	allErrors = append(allErrors, errors...)
+	addValidationResults(v.validateStorage(ctx, *tempo))
 
 	if tempo.Spec.ExtraConfig != nil && len(tempo.Spec.ExtraConfig.Tempo.Raw) > 0 {
 		allWarnings = append(allWarnings, admission.Warnings{
@@ -586,7 +592,7 @@ func (v *validator) validate(ctx context.Context, obj runtime.Object) (admission
 
 	allErrors = append(allErrors, v.validateReplicationFactor(*tempo)...)
 	allErrors = append(allErrors, v.validateQueryFrontend(*tempo)...)
-	allErrors = append(allErrors, v.validateGateway(ctx, *tempo)...)
+	addValidationResults(v.validateGateway(ctx, *tempo))
 	allErrors = append(allErrors, v.validateTenantConfigs(*tempo)...)
 	allErrors = append(allErrors, v.validateObservability(*tempo)...)
 	allErrors = append(allErrors, v.validateDeprecatedFields(*tempo)...)

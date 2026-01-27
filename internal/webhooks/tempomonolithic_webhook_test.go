@@ -175,7 +175,6 @@ func TestMonolithicValidate(t *testing.T) {
 				"cannot enable RBAC and jaeger query at the same time. The Jaeger UI does not support query RBAC",
 			)},
 		},
-
 		{
 			name: "RBAC and multitenancy disabled",
 			tempo: v1alpha1.TempoMonolithic{
@@ -214,6 +213,25 @@ func TestMonolithicValidate(t *testing.T) {
 				true,
 				"RBAC can only be enabled if multi-tenancy is enabled",
 			)},
+		},
+		{
+			name: "warn for non-multitenancy instance on OpenShift",
+			ctrlConfig: configv1alpha1.ProjectConfig{
+				Gates: configv1alpha1.FeatureGates{
+					OpenShift: configv1alpha1.OpenShiftFeatureGates{
+						NoAuthWarning: true,
+					},
+				},
+			},
+			tempo: v1alpha1.TempoMonolithic{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "sample",
+					Namespace: "default",
+				},
+				Spec: v1alpha1.TempoMonolithicSpec{},
+			},
+			warnings: admission.Warnings{"TempoMonolithic instances without multi-tenancy do not provide authentication and authorization, and are not supported on OpenShift"},
+			errors:   field.ErrorList{},
 		},
 
 		// observability

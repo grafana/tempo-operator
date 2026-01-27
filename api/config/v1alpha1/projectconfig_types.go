@@ -110,6 +110,10 @@ type OpenShiftFeatureGates struct {
 
 	// OauthProxy define options for the oauth proxy feature.
 	OauthProxy OauthProxyFeatureGates `json:"oAuthProxy,omitempty"`
+
+	// Show a warning if a Tempo instance without gateway is created, because
+	// instances without gateway don't provide authentication and authorization.
+	NoAuthWarning bool
 }
 
 // TLSProfileType is a TLS security profile based on the Mozilla definitions:

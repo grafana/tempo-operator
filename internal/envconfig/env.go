@@ -34,6 +34,9 @@ var featureGates = []featureGateDef{
 	{featureGateOpenShiftOAuthProxy, func(cfg *configv1alpha1.ProjectConfig, enabled bool) {
 		cfg.Gates.OpenShift.OauthProxy.DefaultEnabled = enabled
 	}},
+	{featureGateOpenShiftNoAuthWarning, func(cfg *configv1alpha1.ProjectConfig, enabled bool) {
+		cfg.Gates.OpenShift.NoAuthWarning = enabled
+	}},
 
 	// TLS/Encryption feature gates.
 	{featureGateHTTPEncryption, func(cfg *configv1alpha1.ProjectConfig, enabled bool) {
