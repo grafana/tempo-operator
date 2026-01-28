@@ -19,9 +19,9 @@ This test validates OpenShift-native multitenancy features:
 │ Collector (dev)     │    │   (Multi-tenant Proxy)   │    │ Backend             │
 │ - ServiceAccount    │    │ ┌─────────────────────┐  │    │ - Trace Storage     │
 │ - Bearer Token      │    │ │ Authentication      │  │    │ - Query Engine      │
-│ - X-Scope-OrgID     │    │ │ - ServiceAccount    │  │    └─────────────────────┘
-└─────────────────────┘    │ │ - Bearer Token      │  │
-                           │ │ Authorization       │  │    ┌─────────────────────┐
+│ - X-Scope-OrgID     │    │ │ - ServiceAccount    │  │    └──────────┬──────────┘
+└─────────────────────┘    │ │ - Bearer Token      │  │               │
+                           │ │ Authorization       │  │    ┌──────────▼──────────┐
 ┌─────────────────────┐    │ │ - RBAC Rules        │  │───▶│ Tenant: dev         │
 │ OpenShift RBAC      │◀───│ │ - Tenant Mapping    │  │    │ - ID: 1610b0...fa   │
 │ - ClusterRole       │    │ └─────────────────────┘  │    │ - Traces isolated   │
@@ -33,7 +33,18 @@ This test validates OpenShift-native multitenancy features:
 │ Jaeger UI           │◀───│   OpenShift Route        │    │ - Traces isolated   │
 │ - Multi-tenant      │    │   - External Access      │    └─────────────────────┘
 │ - RBAC-controlled   │    │   - TLS Termination      │
-└─────────────────────┘    └──────────────────────────┘
+└─────────────────────┘    └──────────────────────────┘               │
+                                                                       │
+                       ┌───────────────────────────────────────────────┘
+                       │
+                       │   ┌────────────────────────────────────┐
+                       │   │ monolithic-storage namespace       │
+                       └──▶│ ┌────────────────────────────────┐ │
+                           │ │ MinIO Object Storage           │ │
+                           │ │ - S3 Compatible API            │ │
+                           │ │ - Cross-namespace access       │ │
+                           │ └────────────────────────────────┘ │
+                           └────────────────────────────────────┘
 ```
 
 ## Prerequisites
@@ -67,9 +78,41 @@ EOF
 
 **Reference**: [`00-workload-monitoring.yaml`](./00-workload-monitoring.yaml)
 
-### Step 2: Deploy TempoMonolithic with OpenShift Multitenancy
+### Step 2: Deploy MinIO Object Storage with TLS
 
-Create a comprehensive multi-tenant TempoMonolithic configuration:
+Deploy S3-compatible storage backend in a dedicated namespace with TLS encryption:
+
+```bash
+# Apply storage configuration
+# This creates the monolithic-storage namespace with MinIO (TLS enabled)
+# and a secret + CA ConfigMap in chainsaw-monolithic-multitenancy namespace for TempoMonolithic
+kubectl apply -f 00-install-storage.yaml
+```
+
+**Storage Architecture**:
+- **Dedicated Namespace**: MinIO runs in `monolithic-storage` namespace
+- **TLS-Secured Access**: MinIO serves HTTPS on port 443 with self-signed certificate
+- **Cross-Namespace Access**: TempoMonolithic accesses MinIO via FQDN: `https://minio.monolithic-storage.svc.cluster.local:443`
+- **CA Certificate Distribution**: CA ConfigMap (`storage-ca`) copied to `chainsaw-monolithic-multitenancy` namespace
+- **Secret Replication**: Storage credentials copied to `chainsaw-monolithic-multitenancy` namespace
+- **Isolation**: Separates storage infrastructure from application workloads
+
+**TLS Configuration**:
+- **Certificate Secret**: `minio-cert` contains TLS private key and certificate
+- **CA ConfigMap**: `storage-ca` contains the CA certificate for verification
+- **Service Port**: 443 (HTTPS) mapping to container port 9000
+
+**MinIO Configuration**:
+- **S3 Endpoint**: Internal HTTPS service endpoint accessible across namespaces
+- **Access Credentials**: `tempo` / `supersecret` (development only)
+- **Bucket**: `tempo` bucket automatically created
+- **Persistent Storage**: 2Gi PVC for trace data
+
+**Reference**: [`00-install-storage.yaml`](./00-install-storage.yaml)
+
+### Step 3: Deploy TempoMonolithic with OpenShift Multitenancy
+
+Create a comprehensive multi-tenant TempoMonolithic configuration with S3 storage:
 
 ```bash
 oc apply -f - <<EOF
@@ -78,6 +121,14 @@ kind: TempoMonolithic
 metadata:
   name: mmo
 spec:
+  storage:
+    traces:
+      backend: s3
+      s3:
+        secret: minio
+        tls:
+          enabled: true
+          caName: storage-ca
   jaegerui:
     enabled: true
     route:
@@ -101,6 +152,14 @@ EOF
 
 **Key Configuration Elements**:
 
+#### Storage Configuration
+- `backend: s3`: Uses S3-compatible object storage
+- `secret: minio`: References storage credentials secret
+- `tls.enabled: true`: Enables TLS for secure storage communication
+- `tls.caName: storage-ca`: References CA ConfigMap for certificate verification
+- **Cross-Namespace Storage**: Connects to MinIO in `monolithic-storage` namespace via HTTPS on port 443
+- **S3 Compatibility**: Works with any S3-compatible storage (MinIO, AWS S3, etc.)
+
 #### Multitenancy Configuration
 - `enabled: true`: Activates multi-tenant mode
 - `mode: openshift`: Uses OpenShift-native authentication
@@ -116,7 +175,9 @@ EOF
 - **TLS Certificates**: Automatic certificate generation for gateway
 - **Monitoring Integration**: ServiceMonitors for multi-tenant metrics
 
-### Step 3: Configure RBAC for Tenant Access Control
+**Note**: The RBAC configuration below is included in [`01-install-tempo.yaml`](./01-install-tempo.yaml) alongwith the TempoMonolithic deployment.
+
+#### Configure RBAC for Tenant Access Control
 
 Set up OpenShift RBAC for secure tenant access:
 
