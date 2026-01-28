@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.19.0
-    createdAt: "2026-01-15T23:20:32Z"
+    createdAt: "2026-01-28T10:29:44Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -903,6 +903,19 @@ spec:
         displayName: Service Account
         path: serviceAccount
       - description: |-
+          Size defines a predefined deployment size profile for this TempoStack.
+          The operator will apply pre-tested resource configurations based on the selected size.
+          When not set, resources are determined by spec.resources.total or component-level overrides.
+          Size also sets a default replication factor (1 for demo, 2 for others) if not explicitly specified.
+        displayName: Deployment Size
+        path: size
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:select:1x.demo
+        - urn:alm:descriptor:com.tectonic.ui:select:1x.pico
+        - urn:alm:descriptor:com.tectonic.ui:select:1x.extra-small
+        - urn:alm:descriptor:com.tectonic.ui:select:1x.small
+        - urn:alm:descriptor:com.tectonic.ui:select:1x.medium
+      - description: |-
           Storage defines the spec for the object storage endpoint to store traces.
           User is required to create secret and supply it.
         displayName: Object Storage
@@ -1602,7 +1615,6 @@ spec:
               - args:
                 - --zap-log-level=info
                 - start
-                - --config=controller_manager_config.yaml
                 env:
                 - name: RELATED_IMAGE_TEMPO
                   value: docker.io/grafana/tempo:2.9.0
@@ -1650,9 +1662,6 @@ spec:
                 - mountPath: /tmp/k8s-webhook-server/serving-certs
                   name: cert
                   readOnly: true
-                - mountPath: /controller_manager_config.yaml
-                  name: manager-config
-                  subPath: controller_manager_config.yaml
               securityContext:
                 runAsNonRoot: true
               serviceAccountName: tempo-operator-controller-manager
@@ -1662,9 +1671,6 @@ spec:
                 secret:
                   defaultMode: 420
                   secretName: webhook-server-cert
-              - configMap:
-                  name: tempo-operator-manager-config
-                name: manager-config
       permissions:
       - rules:
         - apiGroups:

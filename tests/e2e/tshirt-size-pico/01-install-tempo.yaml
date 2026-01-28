@@ -1,0 +1,11 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoStack
+metadata:
+  name: pico
+spec:
+  size: 1x.pico
+  storage:
+    secret:
+      name: minio-test
+      type: s3
+  storageSize: 200M

@@ -46,8 +46,17 @@ var (
 )
 
 // Resources calculates the resource requirements of a specific component.
+// Resolution priority (component overrides are checked by callers before calling this function):
+// 1. spec.size - t-shirt size profile
+// 2. spec.resources.total - percentage-based calculation
+// 3. No resources applied.
 func Resources(tempo v1alpha1.TempoStack, component string, replicas *int32) corev1.ResourceRequirements {
+	// Use size-based resources if specified (SizeDemo intentionally returns empty)
+	if tempo.Spec.Size != "" {
+		return ResourcesForComponent(tempo.Spec.Size, component)
+	}
 
+	// Fall back to percentage-based calculation from spec.resources.total
 	resourcesMap := resourcesMapNoGateway
 	if tempo.Spec.Template.Gateway.Enabled {
 		resourcesMap = resourcesMapWithGateway

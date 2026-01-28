@@ -23,6 +23,31 @@ const (
 	ManagementStateUnmanaged ManagementStateType = "Unmanaged"
 )
 
+// TempoStackSize defines predefined deployment size profiles for TempoStack.
+// Each size maps to pre-tested resource configurations for all components.
+//
+// +kubebuilder:validation:Enum="1x.demo";"1x.pico";"1x.extra-small";"1x.small";"1x.medium"
+type TempoStackSize string
+
+const (
+	// SizeDemo is for development and demos, single-node clusters.
+	// No resources are assigned, and replication factor is 1.
+	// DO NOT USE IN PRODUCTION.
+	SizeDemo TempoStackSize = "1x.demo"
+
+	// SizePico is for small production workloads with HA support.
+	SizePico TempoStackSize = "1x.pico"
+
+	// SizeExtraSmall is for medium production workloads (~100GB/day) with HA support.
+	SizeExtraSmall TempoStackSize = "1x.extra-small"
+
+	// SizeSmall is for larger production workloads (~500GB/day) with HA support.
+	SizeSmall TempoStackSize = "1x.small"
+
+	// SizeMedium is for high-scale production workloads (~2TB/day) with HA support.
+	SizeMedium TempoStackSize = "1x.medium"
+)
+
 // TempoStackSpec defines the desired state of TempoStack.
 type TempoStackSpec struct {
 	// ManagementState defines if the CR should be managed by the operator or not.
@@ -33,6 +58,16 @@ type TempoStackSpec struct {
 	// +kubebuilder:default:=Managed
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors={"urn:alm:descriptor:com.tectonic.ui:select:Managed","urn:alm:descriptor:com.tectonic.ui:select:Unmanaged"},displayName="Management State"
 	ManagementState ManagementStateType `json:"managementState,omitempty"`
+
+	// Size defines a predefined deployment size profile for this TempoStack.
+	// The operator will apply pre-tested resource configurations based on the selected size.
+	// When not set, resources are determined by spec.resources.total or component-level overrides.
+	// Size also sets a default replication factor (1 for demo, 2 for others) if not explicitly specified.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors={"urn:alm:descriptor:com.tectonic.ui:select:1x.demo","urn:alm:descriptor:com.tectonic.ui:select:1x.pico","urn:alm:descriptor:com.tectonic.ui:select:1x.extra-small","urn:alm:descriptor:com.tectonic.ui:select:1x.small","urn:alm:descriptor:com.tectonic.ui:select:1x.medium"},displayName="Deployment Size"
+	Size TempoStackSize `json:"size,omitempty"`
 
 	// LimitSpec is used to limit ingestion and querying rates.
 	//

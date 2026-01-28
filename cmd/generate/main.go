@@ -19,6 +19,7 @@ import (
 	"github.com/grafana/tempo-operator/cmd/root"
 	"github.com/grafana/tempo-operator/internal/manifests"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
+	"github.com/grafana/tempo-operator/internal/tlsprofile"
 	"github.com/grafana/tempo-operator/internal/webhooks"
 )
 
@@ -177,8 +178,16 @@ func NewGenerateCommand() *cobra.Command {
 		Short: "Generate YAML manifests from a Tempo CR",
 		RunE: func(c *cobra.Command, args []string) error {
 			rootCmdConfig := c.Context().Value(root.RootConfigKey{}).(root.RootConfig)
+
+			// Get TLS profile settings based on config (nil client since we're not connecting to k8s)
+			tlsProfileOpts, err := tlsprofile.Get(c.Context(), rootCmdConfig.CtrlConfig.Gates, nil)
+			if err != nil {
+				return fmt.Errorf("error getting TLS profile: %w", err)
+			}
+
 			params := manifestutils.Params{
 				CtrlConfig: rootCmdConfig.CtrlConfig,
+				TLSProfile: tlsProfileOpts,
 			}
 
 			switch {

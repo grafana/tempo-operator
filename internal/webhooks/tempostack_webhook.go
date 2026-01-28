@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"net"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -27,6 +28,7 @@ import (
 	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/autodetect"
 	"github.com/grafana/tempo-operator/internal/handlers/storage"
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
 	"github.com/grafana/tempo-operator/internal/status"
 )
@@ -121,9 +123,30 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 	defaultComponentReplicas := ptr.To(int32(1))
 	defaultReplicationFactor := 1
 
+	// Default replication factor if not specified.
+	// If size is specified, use size's default RF, otherwise use 1.
+	effectiveRF := defaultReplicationFactor
+	if r.Spec.ReplicationFactor == 0 {
+		if r.Spec.Size != "" {
+			sizeRF := manifestutils.ReplicationFactorForSize(r.Spec.Size)
+			if sizeRF > 0 {
+				effectiveRF = sizeRF
+			}
+		}
+	} else {
+		effectiveRF = r.Spec.ReplicationFactor
+	}
+
 	// Default replicas for all components if not specified.
 	if r.Spec.Template.Ingester.Replicas == nil {
-		r.Spec.Template.Ingester.Replicas = defaultComponentReplicas
+		// When size is specified, ensure ingester replicas meet quorum requirements.
+		// Quorum = floor(RF/2) + 1, and we need at least quorum replicas.
+		if r.Spec.Size != "" {
+			minIngesterReplicas := int32(math.Floor(float64(effectiveRF)/2.0) + 1)
+			r.Spec.Template.Ingester.Replicas = ptr.To(minIngesterReplicas)
+		} else {
+			r.Spec.Template.Ingester.Replicas = defaultComponentReplicas
+		}
 	}
 	if r.Spec.Template.Distributor.Replicas == nil {
 		r.Spec.Template.Distributor.Replicas = defaultComponentReplicas
@@ -143,9 +166,9 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 		r.Spec.Template.Gateway.Replicas = defaultComponentReplicas
 	}
 
-	// Default replication factor if not specified.
+	// Set replication factor (we already computed effectiveRF above).
 	if r.Spec.ReplicationFactor == 0 {
-		r.Spec.ReplicationFactor = defaultReplicationFactor
+		r.Spec.ReplicationFactor = effectiveRF
 	}
 
 	// if tenant mode is Openshift, ingress type should be route by default.
@@ -325,31 +348,31 @@ func (v *validator) validateQueryFrontend(tempo v1alpha1.TempoStack) field.Error
 	return nil
 }
 
-func (v *validator) validateGateway(ctx context.Context, tempo v1alpha1.TempoStack) field.ErrorList {
+func (v *validator) validateGateway(ctx context.Context, tempo v1alpha1.TempoStack) (admission.Warnings, field.ErrorList) {
 	path := field.NewPath("spec").Child("template").Child("gateway").Child("enabled")
 	if tempo.Spec.Template.Gateway.Enabled {
 		if tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type != v1alpha1.IngressTypeNone {
-			return field.ErrorList{
+			return nil, field.ErrorList{
 				field.Invalid(path, tempo.Spec.Template.Gateway.Enabled,
 					"cannot enable gateway and jaeger query ingress at the same time, please use the Jaeger UI from the gateway",
 				)}
 		}
 		if tempo.Spec.Template.Gateway.RBAC.Enabled && tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled {
-			return field.ErrorList{
+			return nil, field.ErrorList{
 				field.Invalid(path, tempo.Spec.Template.Gateway.RBAC.Enabled,
 					"cannot enable gateway and jaeger query at the same time. The Jaeger UI does not support query RBAC",
 				)}
 		}
 
 		if tempo.Spec.Tenants == nil {
-			return field.ErrorList{
+			return nil, field.ErrorList{
 				field.Invalid(path, tempo.Spec.Template.Gateway.Enabled,
 					"to enable the gateway, please configure tenants",
 				)}
 		}
 
 		if tempo.Spec.Template.Gateway.Ingress.Type == v1alpha1.IngressTypeRoute && !v.ctrlConfig.Gates.OpenShift.OpenShiftRoute {
-			return field.ErrorList{field.Invalid(
+			return nil, field.ErrorList{field.Invalid(
 				field.NewPath("spec").Child("template").Child("gateway").Child("ingress").Child("type"),
 				tempo.Spec.Template.Gateway.Ingress.Type,
 				"please enable the featureGates.openshift.openshiftRoute feature gate to use Routes",
@@ -357,7 +380,7 @@ func (v *validator) validateGateway(ctx context.Context, tempo v1alpha1.TempoSta
 		}
 
 		if tempo.Spec.Template.Gateway.Enabled && tempo.Spec.Template.Distributor.TLS.Enabled {
-			return field.ErrorList{field.Invalid(
+			return nil, field.ErrorList{field.Invalid(
 				field.NewPath("spec").Child("template").Child("gateway").Child("enabled"),
 				tempo.Spec.Template.Gateway.Enabled,
 				"Cannot enable gateway and distributor TLS at the same time",
@@ -367,15 +390,22 @@ func (v *validator) validateGateway(ctx context.Context, tempo v1alpha1.TempoSta
 		if tempo.Spec.Tenants != nil && tempo.Spec.Tenants.Mode == v1alpha1.ModeOpenShift {
 			err := validateGatewayOpenShiftModeRBAC(ctx, v.client)
 			if err != nil {
-				return field.ErrorList{field.Invalid(
+				return nil, field.ErrorList{field.Invalid(
 					field.NewPath("spec").Child("tenants").Child("mode"),
 					tempo.Spec.Tenants.Mode,
 					fmt.Sprintf("Cannot enable OpenShift tenancy mode: %v", err),
 				)}
 			}
 		}
+	} else {
+		// Gateway disabled
+
+		if v.ctrlConfig.Gates.OpenShift.NoAuthWarning {
+			return admission.Warnings{"TempoStack instances without gateway provide no authentication or authorization on the ingest or query paths, and are not supported on OpenShift"}, nil
+		}
 	}
-	return nil
+
+	return nil, nil
 }
 
 func (v *validator) validateObservability(tempo v1alpha1.TempoStack) field.ErrorList {
@@ -496,6 +526,24 @@ func (v *validator) validateReceiverTLS(tempo v1alpha1.TempoStack) field.ErrorLi
 	return nil
 }
 
+func (v *validator) validateSize(tempo v1alpha1.TempoStack) field.ErrorList {
+	if tempo.Spec.Size == "" {
+		return nil
+	}
+
+	if slices.Contains(manifestutils.ValidSizes, tempo.Spec.Size) {
+		return nil
+	}
+
+	return field.ErrorList{
+		field.Invalid(
+			field.NewPath("spec").Child("size"),
+			tempo.Spec.Size,
+			fmt.Sprintf("invalid size %q, must be one of: %s", tempo.Spec.Size, manifestutils.ValidSizesString()),
+		),
+	}
+}
+
 func (v *validator) validateConflictWithMonolithic(ctx context.Context, tempo *v1alpha1.TempoStack) field.ErrorList {
 	return validateTempoNameConflict(func() error {
 		monolithic := &v1alpha1.TempoMonolithic{}
@@ -517,15 +565,14 @@ func (v *validator) validate(ctx context.Context, obj runtime.Object) (admission
 
 	allWarnings := admission.Warnings{}
 	allErrors := field.ErrorList{}
-	var warnings admission.Warnings
-	var errors field.ErrorList
+	addValidationResults := func(w admission.Warnings, e field.ErrorList) {
+		allWarnings = append(allWarnings, w...)
+		allErrors = append(allErrors, e...)
+	}
 
 	allErrors = append(allErrors, validateName(tempo.Name)...)
 	allErrors = append(allErrors, v.validateServiceAccount(ctx, *tempo)...)
-
-	warnings, errors = v.validateStorage(ctx, *tempo)
-	allWarnings = append(allWarnings, warnings...)
-	allErrors = append(allErrors, errors...)
+	addValidationResults(v.validateStorage(ctx, *tempo))
 
 	if tempo.Spec.ExtraConfig != nil && len(tempo.Spec.ExtraConfig.Tempo.Raw) > 0 {
 		allWarnings = append(allWarnings, admission.Warnings{
@@ -534,9 +581,18 @@ func (v *validator) validate(ctx context.Context, obj runtime.Object) (admission
 
 	}
 
+	allErrors = append(allErrors, v.validateSize(*tempo)...)
+
+	// Warn if both size and resources.total are specified (size takes precedence)
+	if tempo.Spec.Size != "" && tempo.Spec.Resources.Total != nil {
+		allWarnings = append(allWarnings, admission.Warnings{
+			"both spec.size and spec.resources.total are specified; spec.size takes precedence for resource allocation",
+		}...)
+	}
+
 	allErrors = append(allErrors, v.validateReplicationFactor(*tempo)...)
 	allErrors = append(allErrors, v.validateQueryFrontend(*tempo)...)
-	allErrors = append(allErrors, v.validateGateway(ctx, *tempo)...)
+	addValidationResults(v.validateGateway(ctx, *tempo))
 	allErrors = append(allErrors, v.validateTenantConfigs(*tempo)...)
 	allErrors = append(allErrors, v.validateObservability(*tempo)...)
 	allErrors = append(allErrors, v.validateDeprecatedFields(*tempo)...)

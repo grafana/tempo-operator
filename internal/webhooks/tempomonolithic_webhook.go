@@ -107,7 +107,7 @@ func (v *monolithicValidator) validateTempoMonolithic(ctx context.Context, tempo
 	errors = append(errors, validateName(tempo.Name)...)
 	addValidationResults(v.validateStorage(ctx, tempo))
 	errors = append(errors, v.validateJaegerUI(tempo)...)
-	errors = append(errors, v.validateMultitenancy(ctx, tempo)...)
+	addValidationResults(v.validateMultitenancy(ctx, tempo))
 	errors = append(errors, v.validateObservability(tempo)...)
 	errors = append(errors, v.validateServiceAccount(ctx, tempo)...)
 	errors = append(errors, v.validateConflictWithTempoStack(ctx, tempo)...)
@@ -166,16 +166,20 @@ func (v *monolithicValidator) validateJaegerUI(tempo tempov1alpha1.TempoMonolith
 	return nil
 }
 
-func (v *monolithicValidator) validateMultitenancy(ctx context.Context, tempo tempov1alpha1.TempoMonolithic) field.ErrorList {
+func (v *monolithicValidator) validateMultitenancy(ctx context.Context, tempo tempov1alpha1.TempoMonolithic) (admission.Warnings, field.ErrorList) {
 	if tempo.Spec.Query != nil && tempo.Spec.Query.RBAC.Enabled && (tempo.Spec.Multitenancy == nil || !tempo.Spec.Multitenancy.Enabled) {
-		return field.ErrorList{
+		return nil, field.ErrorList{
 			field.Invalid(field.NewPath("spec", "rbac", "enabled"), tempo.Spec.Query.RBAC.Enabled,
 				"RBAC can only be enabled if multi-tenancy is enabled",
 			)}
 	}
 
+	if v.ctrlConfig.Gates.OpenShift.NoAuthWarning && !tempo.Spec.Multitenancy.IsGatewayEnabled() {
+		return admission.Warnings{"TempoMonolithic instances without multi-tenancy provide no authentication or authorization on the ingest or query paths, and are not supported on OpenShift"}, nil
+	}
+
 	if !tempo.Spec.Multitenancy.IsGatewayEnabled() {
-		return nil
+		return nil, nil
 	}
 
 	multitenancyBase := field.NewPath("spec", "multitenancy")
@@ -183,7 +187,7 @@ func (v *monolithicValidator) validateMultitenancy(ctx context.Context, tempo te
 	if tempo.Spec.Multitenancy != nil && tempo.Spec.Multitenancy.Mode == tempov1alpha1.ModeOpenShift {
 		err := validateGatewayOpenShiftModeRBAC(ctx, v.client)
 		if err != nil {
-			return field.ErrorList{field.Invalid(
+			return nil, field.ErrorList{field.Invalid(
 				multitenancyBase.Child("mode"),
 				tempo.Spec.Multitenancy.Mode,
 				fmt.Sprintf("Cannot enable OpenShift tenancy mode: %v", err),
@@ -193,10 +197,10 @@ func (v *monolithicValidator) validateMultitenancy(ctx context.Context, tempo te
 
 	err := ValidateTenantConfigs(&tempo.Spec.Multitenancy.TenantsSpec, tempo.Spec.Multitenancy.IsGatewayEnabled())
 	if err != nil {
-		return field.ErrorList{field.Invalid(multitenancyBase.Child("enabled"), tempo.Spec.Multitenancy.Enabled, err.Error())}
+		return nil, field.ErrorList{field.Invalid(multitenancyBase.Child("enabled"), tempo.Spec.Multitenancy.Enabled, err.Error())}
 	}
 
-	return nil
+	return nil, nil
 }
 
 func (v *monolithicValidator) validateObservability(tempo tempov1alpha1.TempoMonolithic) field.ErrorList {

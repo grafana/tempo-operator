@@ -23,6 +23,7 @@ import (
 	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
 	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/handlers/storage"
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
 )
 
@@ -808,6 +809,154 @@ func TestDefault(t *testing.T) {
 			},
 			ctrlConfig: defaultCfgConfig,
 		},
+		{
+			name: "size pico sets replication factor and ingester replicas",
+			input: &v1alpha1.TempoStack{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+				},
+				Spec: v1alpha1.TempoStackSpec{
+					Size: v1alpha1.SizePico,
+				},
+			},
+			expected: &v1alpha1.TempoStack{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+					Labels: map[string]string{
+						"app.kubernetes.io/managed-by":   "tempo-operator",
+						"tempo.grafana.com/distribution": "upstream",
+					},
+				},
+				Spec: v1alpha1.TempoStackSpec{
+					Size:              v1alpha1.SizePico,
+					ReplicationFactor: 2, // Size pico has RF=2
+					Timeout:           metav1.Duration{Duration: time.Second * 30},
+					Images:            configv1alpha1.ImagesSpec{},
+					ServiceAccount:    "tempo-test",
+					Retention: v1alpha1.RetentionSpec{
+						Global: v1alpha1.RetentionConfig{
+							Traces: metav1.Duration{Duration: 48 * time.Hour},
+						},
+					},
+					StorageSize: resource.MustParse("10Gi"),
+					SearchSpec: v1alpha1.SearchSpec{
+						MaxDuration:        metav1.Duration{Duration: 0},
+						DefaultResultLimit: &defaultDefaultResultLimit,
+					},
+					Template: v1alpha1.TempoTemplateSpec{
+						Compactor: v1alpha1.TempoComponentSpec{
+							Replicas:           ptr.To(int32(1)),
+							PodSecurityContext: defaultPodSecurityContext,
+						},
+						Distributor: v1alpha1.TempoDistributorSpec{
+							TempoComponentSpec: v1alpha1.TempoComponentSpec{
+								Replicas:           ptr.To(int32(1)),
+								PodSecurityContext: defaultPodSecurityContext,
+							},
+							TLS: v1alpha1.TLSSpec{},
+						},
+						Ingester: v1alpha1.TempoComponentSpec{
+							Replicas:           ptr.To(int32(2)), // RF=2 requires at least 2 ingester replicas
+							PodSecurityContext: defaultPodSecurityContext,
+						},
+						Querier: v1alpha1.TempoComponentSpec{
+							Replicas:           ptr.To(int32(1)),
+							PodSecurityContext: defaultPodSecurityContext,
+						},
+						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+							TempoComponentSpec: v1alpha1.TempoComponentSpec{
+								Replicas:           ptr.To(int32(1)),
+								PodSecurityContext: defaultPodSecurityContext,
+							},
+							JaegerQuery: v1alpha1.JaegerQuerySpec{
+								ServicesQueryDuration: &defaultServicesDuration,
+							},
+						},
+						Gateway: v1alpha1.TempoGatewaySpec{
+							TempoComponentSpec: v1alpha1.TempoComponentSpec{
+								Replicas:           ptr.To(int32(1)),
+								PodSecurityContext: defaultPodSecurityContext,
+							},
+						},
+					},
+				},
+			},
+			ctrlConfig: defaultCfgConfig,
+		},
+		{
+			name: "size demo sets replication factor 1 and ingester replicas 1",
+			input: &v1alpha1.TempoStack{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+				},
+				Spec: v1alpha1.TempoStackSpec{
+					Size: v1alpha1.SizeDemo,
+				},
+			},
+			expected: &v1alpha1.TempoStack{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+					Labels: map[string]string{
+						"app.kubernetes.io/managed-by":   "tempo-operator",
+						"tempo.grafana.com/distribution": "upstream",
+					},
+				},
+				Spec: v1alpha1.TempoStackSpec{
+					Size:              v1alpha1.SizeDemo,
+					ReplicationFactor: 1, // Size demo has RF=1
+					Timeout:           metav1.Duration{Duration: time.Second * 30},
+					Images:            configv1alpha1.ImagesSpec{},
+					ServiceAccount:    "tempo-test",
+					Retention: v1alpha1.RetentionSpec{
+						Global: v1alpha1.RetentionConfig{
+							Traces: metav1.Duration{Duration: 48 * time.Hour},
+						},
+					},
+					StorageSize: resource.MustParse("10Gi"),
+					SearchSpec: v1alpha1.SearchSpec{
+						MaxDuration:        metav1.Duration{Duration: 0},
+						DefaultResultLimit: &defaultDefaultResultLimit,
+					},
+					Template: v1alpha1.TempoTemplateSpec{
+						Compactor: v1alpha1.TempoComponentSpec{
+							Replicas:           ptr.To(int32(1)),
+							PodSecurityContext: defaultPodSecurityContext,
+						},
+						Distributor: v1alpha1.TempoDistributorSpec{
+							TempoComponentSpec: v1alpha1.TempoComponentSpec{
+								Replicas:           ptr.To(int32(1)),
+								PodSecurityContext: defaultPodSecurityContext,
+							},
+							TLS: v1alpha1.TLSSpec{},
+						},
+						Ingester: v1alpha1.TempoComponentSpec{
+							Replicas:           ptr.To(int32(1)), // RF=1 needs only 1 ingester replica
+							PodSecurityContext: defaultPodSecurityContext,
+						},
+						Querier: v1alpha1.TempoComponentSpec{
+							Replicas:           ptr.To(int32(1)),
+							PodSecurityContext: defaultPodSecurityContext,
+						},
+						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+							TempoComponentSpec: v1alpha1.TempoComponentSpec{
+								Replicas:           ptr.To(int32(1)),
+								PodSecurityContext: defaultPodSecurityContext,
+							},
+							JaegerQuery: v1alpha1.JaegerQuerySpec{
+								ServicesQueryDuration: &defaultServicesDuration,
+							},
+						},
+						Gateway: v1alpha1.TempoGatewaySpec{
+							TempoComponentSpec: v1alpha1.TempoComponentSpec{
+								Replicas:           ptr.To(int32(1)),
+								PodSecurityContext: defaultPodSecurityContext,
+							},
+						},
+					},
+				},
+			},
+			ctrlConfig: defaultCfgConfig,
+		},
 	}
 
 	for _, test := range tests {
@@ -1245,6 +1394,103 @@ func TestValidateReplicationFactor(t *testing.T) {
 	}
 }
 
+func TestValidateSize(t *testing.T) {
+	validator := &validator{}
+	sizePath := field.NewPath("spec").Child("size")
+
+	tests := []struct {
+		name     string
+		input    v1alpha1.TempoStack
+		expected field.ErrorList
+	}{
+		{
+			name: "empty size is valid",
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{},
+			},
+			expected: nil,
+		},
+		{
+			name: "demo size is valid",
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Size: v1alpha1.SizeDemo,
+				},
+			},
+			expected: nil,
+		},
+		{
+			name: "pico size is valid",
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Size: v1alpha1.SizePico,
+				},
+			},
+			expected: nil,
+		},
+		{
+			name: "extra-small size is valid",
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Size: v1alpha1.SizeExtraSmall,
+				},
+			},
+			expected: nil,
+		},
+		{
+			name: "small size is valid",
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Size: v1alpha1.SizeSmall,
+				},
+			},
+			expected: nil,
+		},
+		{
+			name: "medium size is valid",
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Size: v1alpha1.SizeMedium,
+				},
+			},
+			expected: nil,
+		},
+		{
+			name: "invalid size returns error",
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Size: v1alpha1.TempoStackSize("invalid"),
+				},
+			},
+			expected: field.ErrorList{
+				field.Invalid(sizePath, v1alpha1.TempoStackSize("invalid"),
+					fmt.Sprintf("invalid size %q, must be one of: %s", "invalid", manifestutils.ValidSizesString()),
+				),
+			},
+		},
+		{
+			name: "unknown size returns error",
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Size: v1alpha1.TempoStackSize("1x.large"),
+				},
+			},
+			expected: field.ErrorList{
+				field.Invalid(sizePath, v1alpha1.TempoStackSize("1x.large"),
+					fmt.Sprintf("invalid size %q, must be one of: %s", "1x.large", manifestutils.ValidSizesString()),
+				),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			errs := validator.validateSize(test.input)
+			assert.Equal(t, test.expected, errs)
+		})
+	}
+}
+
 func TestValidateQueryFrontend(t *testing.T) {
 	ingressTypePath := field.NewPath("spec").Child("template").Child("queryFrontend").Child("jaegerQuery").Child("ingress").Child("type")
 	prometheusEndpointPath := field.NewPath("spec").Child("template").Child("queryFrontend").Child("jaegerQuery").Child("monitorTab").Child("prometheusEndpoint")
@@ -1400,9 +1646,11 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 	path := field.NewPath("spec").Child("template").Child("gateway").Child("enabled")
 
 	tests := []struct {
-		name     string
-		input    v1alpha1.TempoStack
-		expected field.ErrorList
+		name             string
+		ctrlConfig       configv1alpha1.ProjectConfig
+		input            v1alpha1.TempoStack
+		expected         field.ErrorList
+		expectedWarnings admission.Warnings
 	}{
 		{
 			name: "valid configuration enabled both",
@@ -1636,13 +1884,39 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 				),
 			},
 		},
+		{
+			name: "warn for non-multitenancy instance on OpenShift",
+			ctrlConfig: configv1alpha1.ProjectConfig{
+				Gates: configv1alpha1.FeatureGates{
+					OpenShift: configv1alpha1.OpenShiftFeatureGates{
+						NoAuthWarning: true,
+					},
+				},
+			},
+			input: v1alpha1.TempoStack{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "sample",
+					Namespace: "default",
+				},
+				Spec: v1alpha1.TempoStackSpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						Gateway: v1alpha1.TempoGatewaySpec{
+							Enabled: false,
+						},
+					},
+				},
+			},
+			expected:         nil,
+			expectedWarnings: admission.Warnings{"TempoStack instances without gateway provide no authentication or authorization on the ingest or query paths, and are not supported on OpenShift"},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			validator := &validator{ctrlConfig: configv1alpha1.ProjectConfig{}}
-			errs := validator.validateGateway(context.Background(), test.input)
+			validator := &validator{ctrlConfig: test.ctrlConfig}
+			warnings, errs := validator.validateGateway(context.Background(), test.input)
 			assert.Equal(t, test.expected, errs)
+			assert.Equal(t, test.expectedWarnings, warnings)
 		})
 	}
 }
@@ -2380,7 +2654,7 @@ func TestValidateReceiverTLSAndGateway(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			validator := &validator{ctrlConfig: configv1alpha1.ProjectConfig{}}
-			errs := validator.validateGateway(context.Background(), test.input)
+			_, errs := validator.validateGateway(context.Background(), test.input)
 			assert.Equal(t, test.expected, errs)
 		})
 	}
@@ -2421,7 +2695,7 @@ func TestWarning(t *testing.T) {
 				},
 			},
 			client:   &k8sFake{},
-			expected: admission.Warnings{"could not fetch Secret: mock: fails always"},
+			expected: admission.Warnings{"could not fetch storage configuration secret: mock: fails always. Tempo will start once the storage secret is available"},
 		},
 		{
 			name: "warning for use extra config",
