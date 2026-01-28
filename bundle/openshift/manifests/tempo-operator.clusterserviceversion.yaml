@@ -1635,7 +1635,7 @@ spec:
                 - name: DISTRIBUTION
                   value: openshift
                 - name: FEATURE_GATES
-                  value: openshift.route,openshift.servingCertsService,openshift.oauthProxy,prometheusOperator,observability.metrics.createServiceMonitors,observability.metrics.createPrometheusRules
+                  value: openshift.route,openshift.servingCertsService,openshift.oauthProxy,openshift.noAuthWarning,prometheusOperator,observability.metrics.createServiceMonitors,observability.metrics.createPrometheusRules
                 - name: DEFAULT_POD_SECURITY_CONTEXT
                   value: '{}'
                 image: ghcr.io/grafana/tempo-operator/tempo-operator:v0.19.0

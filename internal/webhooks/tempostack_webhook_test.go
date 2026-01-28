@@ -1646,9 +1646,11 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 	path := field.NewPath("spec").Child("template").Child("gateway").Child("enabled")
 
 	tests := []struct {
-		name     string
-		input    v1alpha1.TempoStack
-		expected field.ErrorList
+		name             string
+		ctrlConfig       configv1alpha1.ProjectConfig
+		input            v1alpha1.TempoStack
+		expected         field.ErrorList
+		expectedWarnings admission.Warnings
 	}{
 		{
 			name: "valid configuration enabled both",
@@ -1882,13 +1884,39 @@ func TestValidateGatewayAndJaegerQuery(t *testing.T) {
 				),
 			},
 		},
+		{
+			name: "warn for non-multitenancy instance on OpenShift",
+			ctrlConfig: configv1alpha1.ProjectConfig{
+				Gates: configv1alpha1.FeatureGates{
+					OpenShift: configv1alpha1.OpenShiftFeatureGates{
+						NoAuthWarning: true,
+					},
+				},
+			},
+			input: v1alpha1.TempoStack{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "sample",
+					Namespace: "default",
+				},
+				Spec: v1alpha1.TempoStackSpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						Gateway: v1alpha1.TempoGatewaySpec{
+							Enabled: false,
+						},
+					},
+				},
+			},
+			expected:         nil,
+			expectedWarnings: admission.Warnings{"TempoStack instances without gateway provide no authentication or authorization on the ingest or query paths, and are not supported on OpenShift"},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			validator := &validator{ctrlConfig: configv1alpha1.ProjectConfig{}}
-			errs := validator.validateGateway(context.Background(), test.input)
+			validator := &validator{ctrlConfig: test.ctrlConfig}
+			warnings, errs := validator.validateGateway(context.Background(), test.input)
 			assert.Equal(t, test.expected, errs)
+			assert.Equal(t, test.expectedWarnings, warnings)
 		})
 	}
 }
@@ -2626,7 +2654,7 @@ func TestValidateReceiverTLSAndGateway(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			validator := &validator{ctrlConfig: configv1alpha1.ProjectConfig{}}
-			errs := validator.validateGateway(context.Background(), test.input)
+			_, errs := validator.validateGateway(context.Background(), test.input)
 			assert.Equal(t, test.expected, errs)
 		})
 	}
