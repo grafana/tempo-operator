@@ -39,6 +39,8 @@ spec:                                    # TempoStackSpec defines the desired st
           maxSearchBytesPerTrace: 0      # DEPRECATED. MaxSearchBytesPerTrace defines the maximum size of search data for a single trace in bytes. default: `0` to disable.
           maxSearchDuration: ""          # MaxSearchDuration defines the maximum allowed time range for a search. If this value is not set, then spec.search.maxDuration is used.
   managementState: "Managed"             # ManagementState defines if the CR should be managed by the operator or not. Default is managed.
+  networkPolicy:                         # NetworkPolicySpec defines how network policies are handled.
+    enabled: true                        # Enabled determines whether network policies are generated for the operands.
   observability:                         # ObservabilitySpec defines how telemetry data gets handled.
     grafana:                             # Grafana defines the Grafana configuration for operands.
       createDatasource: false            # CreateDatasource specifies if a Grafana Datasource should be created for Tempo.
@@ -56,7 +58,7 @@ spec:                                    # TempoStackSpec defines the desired st
       extraServiceMonitorLabels: {}      # ExtraServiceMonitorLabels defines additional labels for the ServiceMonitor objects.
     tracing:                             # Tracing defines a config for operands.
       jaeger_agent_endpoint: "localhost:6831" # JaegerAgentEndpoint defines the jaeger endpoint data gets send to. Deprecated: in favor of OTLPHttpEndpoint.
-      otlp_http_endpoint: "http://localhost:4320" # OTLPHttpEndpoint defines the OTLP/http endpoint data gets send to. For example, "http://localhost:4320". The default OTLP/http port 4318 collides with the distributor ports, therefore it is recommended to use a different port on the sidecar injected to the Tempo (e.g. 4320).
+      otlp_http_endpoint: ""             # OTLPHttpEndpoint defines the OTLP/http endpoint data gets send to. For example, "http://localhost:4320". The default OTLP/http port 4318 collides with the distributor ports, therefore it is recommended to use a different port on the sidecar injected to the Tempo (e.g. 4320).
       sampling_fraction: ""              # SamplingFraction defines the sampling ratio. Valid values are 0 to 1. The SamplingFraction has to be defined to enable tracing.
   replicationFactor: 0                   # The replication factor is a configuration setting that determines how many ingesters need to acknowledge the data from the distributors before accepting a span.
   retention:                             # Retention period defined by dataset. User can specify how long data should be stored.

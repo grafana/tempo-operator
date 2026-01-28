@@ -220,6 +220,15 @@ spec:
                 - Managed
                 - Unmanaged
                 type: string
+              networkPolicy:
+                description: NetworkPolicySpec defines how network policies are handled.
+                properties:
+                  enabled:
+                    default: true
+                    description: Enabled determines whether network policies are generated
+                      for the operands.
+                    type: boolean
+                type: object
               observability:
                 description: ObservabilitySpec defines how telemetry data gets handled.
                 properties:
@@ -312,7 +321,6 @@ spec:
                           Deprecated: in favor of OTLPHttpEndpoint.
                         type: string
                       otlp_http_endpoint:
-                        default: http://localhost:4320
                         description: |-
                           OTLPHttpEndpoint defines the OTLP/http endpoint data gets send to.
                           For example, "http://localhost:4320".

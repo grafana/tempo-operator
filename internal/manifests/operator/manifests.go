@@ -4,7 +4,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
-	"github.com/grafana/tempo-operator/internal/manifests/networking"
+	"github.com/grafana/tempo-operator/internal/manifests/networkpolicies"
 	"github.com/grafana/tempo-operator/internal/manifests/operator/prometheus"
 )
 
@@ -17,7 +17,7 @@ func BuildAll(featureGates configv1alpha1.FeatureGates, namespace, k8sVersion st
 	}
 
 	if featureGates.NetworkPolicies {
-		manifests = append(manifests, networking.GenerateOperatorPolicies(namespace)...)
+		manifests = append(manifests, networkpolicies.GenerateOperatorPolicies(namespace)...)
 	}
 
 	if featureGates.Observability.Metrics.CreatePrometheusRules {

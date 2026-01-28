@@ -706,6 +706,13 @@ spec:
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:select:Managed
         - urn:alm:descriptor:com.tectonic.ui:select:Unmanaged
+      - description: NetworkPolicySpec defines how network policies are handled.
+        displayName: Network Policy
+        path: networkPolicy
+      - description: Enabled determines whether network policies are generated for
+          the operands.
+        displayName: Enable Network Policies
+        path: networkPolicy.enabled
       - description: ObservabilitySpec defines how telemetry data gets handled.
         displayName: Observability
         path: observability

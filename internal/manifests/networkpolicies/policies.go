@@ -1,4 +1,4 @@
-package networking
+package networkpolicies
 
 import (
 	"fmt"
@@ -138,10 +138,128 @@ func policyIngressToMetrics(instanceName, namespace string, labels map[string]st
 	}
 }
 
-// policyEgressAllowDNS is used on the operands.
-// TODO: remove nolint:unused once implemented.
-// https://github.com/grafana/tempo-operator/pull/1246
-// nolint:unused
+func policyTempoGossip(instanceName, namespace string, labels map[string]string) *networkingv1.NetworkPolicy {
+	return &networkingv1.NetworkPolicy{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "NetworkPolicy",
+			APIVersion: "networking.k8s.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      fmt.Sprintf("%s-gossip", naming.Name("", instanceName)),
+			Namespace: namespace,
+			Labels:    labels,
+		},
+		Spec: networkingv1.NetworkPolicySpec{
+			PodSelector: metav1.LabelSelector{
+				MatchLabels: labels,
+			},
+			PolicyTypes: []networkingv1.PolicyType{
+				networkingv1.PolicyTypeIngress,
+				networkingv1.PolicyTypeEgress,
+			},
+			Ingress: []networkingv1.NetworkPolicyIngressRule{
+				{
+					Ports: []networkingv1.NetworkPolicyPort{
+						{
+							Protocol: ptr.To(corev1.ProtocolTCP),
+							Port:     ptr.To(intstr.FromInt(manifestutils.PortMemberlist)),
+						},
+						{
+							Protocol: ptr.To(corev1.ProtocolTCP),
+							Port:     ptr.To(intstr.FromInt(3200)),
+						},
+						{
+							Protocol: ptr.To(corev1.ProtocolTCP),
+							Port:     ptr.To(intstr.FromInt(3101)),
+						},
+					},
+					From: []networkingv1.NetworkPolicyPeer{
+						{
+							PodSelector: &metav1.LabelSelector{
+								MatchLabels: labels,
+							},
+						},
+					},
+				},
+			},
+			Egress: []networkingv1.NetworkPolicyEgressRule{
+				{
+					Ports: []networkingv1.NetworkPolicyPort{
+						{
+							Protocol: ptr.To(corev1.ProtocolTCP),
+							Port:     ptr.To(intstr.FromInt(manifestutils.PortMemberlist)),
+						},
+						{
+							Protocol: ptr.To(corev1.ProtocolTCP),
+							Port:     ptr.To(intstr.FromInt(3200)),
+						},
+						{
+							Protocol: ptr.To(corev1.ProtocolTCP),
+							Port:     ptr.To(intstr.FromInt(3101)),
+						},
+					},
+					To: []networkingv1.NetworkPolicyPeer{
+						{
+							// NamespaceSelector: &metav1.LabelSelector{
+							// 	MatchLabels: map[string]string{
+							// 		"kubernetes.io/metadata.name": "openshift-dns",
+							// 	},
+							// },
+							PodSelector: &metav1.LabelSelector{
+								MatchLabels: labels,
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func policyIngressToOperandMetrics(instanceName, namespace string, labels map[string]string) *networkingv1.NetworkPolicy {
+	return &networkingv1.NetworkPolicy{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "NetworkPolicy",
+			APIVersion: "networking.k8s.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      fmt.Sprintf("%s-ingress-to-operand-metrics", naming.Name("", instanceName)),
+			Namespace: namespace,
+			Labels:    labels,
+		},
+		Spec: networkingv1.NetworkPolicySpec{
+			PodSelector: metav1.LabelSelector{
+				MatchLabels: labels,
+			},
+			PolicyTypes: []networkingv1.PolicyType{
+				networkingv1.PolicyTypeIngress,
+			},
+			Ingress: []networkingv1.NetworkPolicyIngressRule{
+				{
+					From: []networkingv1.NetworkPolicyPeer{
+						{
+							NamespaceSelector: &metav1.LabelSelector{
+								MatchExpressions: []metav1.LabelSelectorRequirement{
+									{
+										Key:      "openshift.io/cluster-monitoring",
+										Operator: metav1.LabelSelectorOpExists,
+									},
+								},
+							},
+						},
+					},
+					Ports: []networkingv1.NetworkPolicyPort{
+						{
+							Protocol: ptr.To(corev1.ProtocolTCP),
+							Port:     ptr.To(intstr.FromInt(manifestutils.PortHTTPServer)),
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
 func policyEgressAllowDNS(instanceName, namespace string, labels map[string]string) *networkingv1.NetworkPolicy {
 	return &networkingv1.NetworkPolicy{
 		TypeMeta: metav1.TypeMeta{
@@ -162,6 +280,7 @@ func policyEgressAllowDNS(instanceName, namespace string, labels map[string]stri
 			},
 			Egress: []networkingv1.NetworkPolicyEgressRule{
 				{
+					// Standard Kubernetes DNS on port 53
 					Ports: []networkingv1.NetworkPolicyPort{
 						{
 							Protocol: ptr.To(corev1.ProtocolTCP),
@@ -176,24 +295,63 @@ func policyEgressAllowDNS(instanceName, namespace string, labels map[string]stri
 						{
 							NamespaceSelector: &metav1.LabelSelector{
 								MatchLabels: map[string]string{
-									"kubernetes.io/metadata.name": "openshift-dns",
-								},
-							},
-							PodSelector: &metav1.LabelSelector{
-								MatchLabels: map[string]string{
-									"dns.operator.openshift.io/daemonset-dns": "default",
-								},
-							},
-						},
-						{
-							NamespaceSelector: &metav1.LabelSelector{
-								MatchLabels: map[string]string{
 									"kubernetes.io/metadata.name": "kube-system",
 								},
 							},
 							PodSelector: &metav1.LabelSelector{
 								MatchLabels: map[string]string{
 									"k8s-app": "kube-dns",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func policyEgressAllowDNSOpenShift(instanceName, namespace string, labels map[string]string) *networkingv1.NetworkPolicy {
+	return &networkingv1.NetworkPolicy{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "NetworkPolicy",
+			APIVersion: "networking.k8s.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      fmt.Sprintf("%s-allow-dns-openshift", naming.Name("", instanceName)),
+			Namespace: namespace,
+			Labels:    labels,
+		},
+		Spec: networkingv1.NetworkPolicySpec{
+			PodSelector: metav1.LabelSelector{
+				MatchLabels: labels,
+			},
+			PolicyTypes: []networkingv1.PolicyType{
+				networkingv1.PolicyTypeEgress,
+			},
+			Egress: []networkingv1.NetworkPolicyEgressRule{
+				{
+					// OpenShift DNS on port 5353
+					Ports: []networkingv1.NetworkPolicyPort{
+						{
+							Protocol: ptr.To(corev1.ProtocolTCP),
+							Port:     ptr.To(intstr.FromInt(5353)),
+						},
+						{
+							Protocol: ptr.To(corev1.ProtocolUDP),
+							Port:     ptr.To(intstr.FromInt(5353)),
+						},
+					},
+					To: []networkingv1.NetworkPolicyPeer{
+						{
+							NamespaceSelector: &metav1.LabelSelector{
+								MatchLabels: map[string]string{
+									"kubernetes.io/metadata.name": "openshift-dns",
+								},
+							},
+							PodSelector: &metav1.LabelSelector{
+								MatchLabels: map[string]string{
+									"dns.operator.openshift.io/daemonset-dns": "default",
 								},
 							},
 						},

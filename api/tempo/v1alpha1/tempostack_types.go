@@ -163,9 +163,26 @@ type TempoStackSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Observability"
 	Observability ObservabilitySpec `json:"observability,omitempty"`
 
+	// NetworkPolicySpec defines how network policies are handled.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Network Policy"
+	NetworkPolicy NetworkPolicySpec `json:"networkPolicy,omitempty"`
+
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Extra Configurations"
 	ExtraConfig *ExtraConfigSpec `json:"extraConfig,omitempty"`
+}
+
+// NetworkPolicySpec defines how network policies are handled.
+type NetworkPolicySpec struct {
+	// Enabled determines whether network policies are generated for the operands.
+	//
+	// +optional
+	// +kubebuilder:default:=true
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enable Network Policies"
+	Enabled bool `json:"enabled,omitempty"`
 }
 
 // ObservabilitySpec defines how telemetry data gets handled.
@@ -247,7 +264,6 @@ type TracingConfigSpec struct {
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
-	// +kubebuilder:default:="http://localhost:4320"
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="OTLP-HTTP-Endpoint"
 	OTLPHttpEndpoint string `json:"otlp_http_endpoint,omitempty"`
 }
