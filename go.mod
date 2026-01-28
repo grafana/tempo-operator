@@ -11,8 +11,8 @@ require (
 	github.com/grafana/grafana-operator/v5 v5.19.4
 	github.com/imdario/mergo v0.3.16
 	github.com/novln/docker-parser v1.0.0
-	github.com/onsi/ginkgo/v2 v2.23.4
-	github.com/onsi/gomega v1.38.0
+	github.com/onsi/ginkgo/v2 v2.25.3
+	github.com/onsi/gomega v1.39.0
 	github.com/openshift/cloud-credential-operator v0.0.0-20250417173756-8ff60a024ed9
 	github.com/openshift/library-go v0.0.0-20230620084201-504ca4bd5a83
 	github.com/operator-framework/api v0.31.0
