@@ -42,10 +42,10 @@ func generatePolicyFor(params manifestutils.Params, componentName string) *netwo
 	for _, target := range targets {
 		ports := rels[target]
 		for _, conn := range ports {
-			peer := policyPeerFor(target, tempo)
+			peers := policyPeersFor(target, tempo)
 			np.Spec.Egress = append(np.Spec.Egress, networkingv1.NetworkPolicyEgressRule{
 				Ports: []networkingv1.NetworkPolicyPort{conn},
-				To:    []networkingv1.NetworkPolicyPeer{peer},
+				To:    peers,
 			})
 		}
 	}
@@ -76,10 +76,10 @@ func generatePolicyFor(params manifestutils.Params, componentName string) *netwo
 
 		for _, target := range ingressTargets {
 			conn := ports[target]
-			peer := policyPeerFor(target, tempo)
+			peers := policyPeersFor(target, tempo)
 			np.Spec.Ingress = append(np.Spec.Ingress, networkingv1.NetworkPolicyIngressRule{
 				Ports: conn,
-				From:  []networkingv1.NetworkPolicyPeer{peer},
+				From:  peers,
 			})
 		}
 	}
@@ -91,34 +91,49 @@ func generatePolicyFor(params manifestutils.Params, componentName string) *netwo
 	return np
 }
 
-func policyPeerFor(name string, tempo v1alpha1.TempoStack) networkingv1.NetworkPolicyPeer {
+func policyPeersFor(name string, tempo v1alpha1.TempoStack) []networkingv1.NetworkPolicyPeer {
 	switch name {
 	case netPolicyOtelTargets:
-		return networkingv1.NetworkPolicyPeer{
-			IPBlock: &networkingv1.IPBlock{CIDR: "0.0.0.0/0"},
+		return []networkingv1.NetworkPolicyPeer{
+			{
+				IPBlock: &networkingv1.IPBlock{CIDR: "0.0.0.0/0"},
+			},
 		}
 	case netPolicys3Storage:
-		// Allow egress to any S3 storage api.
-		// This is necessary for cross-namespace access to object storage like MinIO
-		return networkingv1.NetworkPolicyPeer{
-			IPBlock: &networkingv1.IPBlock{CIDR: "0.0.0.0/0"},
+		// Allow egress to S3 storage backends:
+		// 1. ipBlock: Enables access to external storage (AWS S3, Azure, GCS) and pod IPs
+		// 2. namespaceSelector: Enables access to ClusterIP services in other namespaces (e.g., OpenShift ODF, cross-namespace MinIO)
+		// Port restriction provides security - only the configured storage port is allowed
+		return []networkingv1.NetworkPolicyPeer{
+			{
+				IPBlock: &networkingv1.IPBlock{CIDR: "0.0.0.0/0"},
+			},
+			{
+				NamespaceSelector: &metav1.LabelSelector{},
+			},
 		}
 	case netPolicyClusterComponents:
-		return networkingv1.NetworkPolicyPeer{
-			NamespaceSelector: &metav1.LabelSelector{},
+		return []networkingv1.NetworkPolicyPeer{
+			{
+				NamespaceSelector: &metav1.LabelSelector{},
+			},
 		}
 	case netPolicyKubeAPIServer:
 		// Allow egress to Kubernetes API server on any destination
 		// Port 6443 restriction is sufficient for security
 		// This works across all OpenShift distributions (standard, ROSA, Dedicated)
 		// where API server location varies (ClusterIP, external endpoints, different namespaces)
-		return networkingv1.NetworkPolicyPeer{
-			IPBlock: &networkingv1.IPBlock{CIDR: "0.0.0.0/0"},
+		return []networkingv1.NetworkPolicyPeer{
+			{
+				IPBlock: &networkingv1.IPBlock{CIDR: "0.0.0.0/0"},
+			},
 		}
 	default:
-		return networkingv1.NetworkPolicyPeer{
-			PodSelector: &metav1.LabelSelector{
-				MatchLabels: manifestutils.ComponentLabels(name, tempo.Name),
+		return []networkingv1.NetworkPolicyPeer{
+			{
+				PodSelector: &metav1.LabelSelector{
+					MatchLabels: manifestutils.ComponentLabels(name, tempo.Name),
+				},
 			},
 		}
 	}
