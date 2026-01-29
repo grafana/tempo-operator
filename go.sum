@@ -131,8 +131,8 @@ github.com/openshift/library-go v0.0.0-20230620084201-504ca4bd5a83 h1:z7tTnbZ2bz
 github.com/openshift/library-go v0.0.0-20230620084201-504ca4bd5a83/go.mod h1:PegtilvJPBJXjJG3AV8uL1a0SAnBr6K67ShNiWVb40M=
 github.com/operator-framework/api v0.31.0 h1:tRsFTuZ51xD8U5QgiPo3+mZgVipHZVgRXYrI6RRXOh8=
 github.com/operator-framework/api v0.31.0/go.mod h1:57oCiHNeWcxmzu1Se8qlnwEKr/GGXnuHvspIYFCcXmY=
-github.com/operator-framework/operator-lib v0.18.0 h1:6OaWemt/CuyrjFMkLyk4O8Vj4CPHxt/m1DMuMAmPwXo=
-github.com/operator-framework/operator-lib v0.18.0/go.mod h1:EWS6xGYBcMn04wj81j0bluAYbFHl3cJcar++poQMzqE=
+github.com/operator-framework/operator-lib v0.19.0 h1:az6ogYj21rtU0SF9uYctRLyKp2dtlqTsmpfehFy6Ce8=
+github.com/operator-framework/operator-lib v0.19.0/go.mod h1:KxycAjFnHt0DBtHmH3Jm7yHcY5sdrshPKTqM/HKAQ08=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
