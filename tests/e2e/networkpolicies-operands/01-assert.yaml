@@ -79,6 +79,7 @@ spec:
     to:
     - ipBlock:
         cidr: 0.0.0.0/0
+    - namespaceSelector: {}
   podSelector:
     matchLabels:
       app.kubernetes.io/component: compactor
@@ -208,6 +209,7 @@ spec:
     to:
     - ipBlock:
         cidr: 0.0.0.0/0
+    - namespaceSelector: {}
   ingress:
   - from:
     - podSelector:
@@ -300,6 +302,7 @@ spec:
     to:
     - ipBlock:
         cidr: 0.0.0.0/0
+    - namespaceSelector: {}
   ingress:
   - from:
     - podSelector:
@@ -360,6 +363,7 @@ spec:
     to:
     - ipBlock:
         cidr: 0.0.0.0/0
+    - namespaceSelector: {}
   ingress:
   - from:
     - namespaceSelector: {}
