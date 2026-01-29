@@ -24,10 +24,15 @@ This test validates a complete multi-tenant observability stack featuring:
                        │ └─────────────────┘  │    └─────────────────┘
 ┌─────────────────┐    └──────────────────────┘              │
 │ Prometheus      │◀──────────────────────────────────────────┘
-│ User Workload   │    ┌──────────────────────┐
-│ Monitoring      │    │ MinIO Object Storage │
-└─────────────────┘    │ (S3 Compatible)      │
-                       └──────────────────────┘
+│ User Workload   │                                           │
+│ Monitoring      │    ┌────────────────────────────────────┐ │
+└─────────────────┘    │ multitenancy-storage namespace     │◀┘
+                       │ ┌────────────────────────────────┐ │
+                       │ │ MinIO Object Storage           │ │
+                       │ │ - S3 Compatible API            │ │
+                       │ │ - Cross-namespace access       │ │
+                       │ └────────────────────────────────┘ │
+                       └────────────────────────────────────┘
 ```
 
 ## Prerequisites
@@ -65,14 +70,29 @@ EOF
 
 **Reference**: [`00-workload-monitoring.yaml`](./00-workload-monitoring.yaml)
 
-### Step 2: Deploy MinIO Object Storage
+### Step 2: Deploy MinIO Object Storage with TLS
 
-Deploy storage backend with persistent volume:
+Deploy storage backend in a dedicated namespace with TLS-secured cross-namespace access:
 
 ```bash
-# Apply storage configuration from compatibility test
-kubectl apply -f ../compatibility/00-install-storage.yaml -n chainsaw-multitenancy
+# Apply storage configuration
+# This creates the multitenancy-storage namespace with MinIO (TLS enabled)
+# and a secret + CA ConfigMap in chainsaw-multitenancy namespace for TempoStack
+kubectl apply -f 00-install-storage.yaml
 ```
+
+**Storage Architecture**:
+- **Dedicated Namespace**: MinIO runs in `multitenancy-storage` namespace
+- **TLS-Secured Access**: MinIO serves HTTPS on port 443 with self-signed certificate
+- **Cross-Namespace Access**: TempoStack accesses MinIO via FQDN: `https://minio.multitenancy-storage.svc.cluster.local:443`
+- **CA Certificate Distribution**: CA ConfigMap (`storage-ca`) copied to `chainsaw-multitenancy` namespace
+- **Secret Replication**: Storage credentials copied to `chainsaw-multitenancy` namespace
+- **Isolation**: Separates storage infrastructure from application workloads
+
+**TLS Configuration**:
+- **Certificate Secret**: `minio-cert` contains TLS private key and certificate
+- **CA ConfigMap**: `storage-ca` contains the CA certificate for verification
+- **Service Port**: 443 (HTTPS) mapping to container port 9000
 
 **Reference**: [`00-install-storage.yaml`](./00-install-storage.yaml)
 
@@ -109,6 +129,9 @@ spec:
     secret:
       name: minio
       type: s3
+    tls:
+      enabled: true
+      caName: storage-ca
   storageSize: 1Gi
   resources:
     total:

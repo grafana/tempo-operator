@@ -9,6 +9,12 @@ spec:
   concurrent: false
   namespace: chainsaw-monolithic-multitenancy
   steps:
+  - name: step-00
+    try:
+    - apply:
+        file: 00-install-storage.yaml
+    - assert:
+        file: 00-assert.yaml
   - name: step-00-workload-monitoring
     try:
     - apply:

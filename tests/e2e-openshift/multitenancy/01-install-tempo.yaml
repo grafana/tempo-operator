@@ -26,6 +26,9 @@ spec:
     secret:
       name: minio
       type: s3
+    tls:
+      enabled: true
+      caName: storage-ca
   storageSize: 1Gi
   resources:
     total:

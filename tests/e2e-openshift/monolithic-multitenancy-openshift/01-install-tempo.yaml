@@ -3,6 +3,14 @@ kind: TempoMonolithic
 metadata:
   name: mmo
 spec:
+  storage:
+    traces:
+      backend: s3
+      s3:
+        secret: minio
+        tls:
+          enabled: true
+          caName: storage-ca
   jaegerui:
     enabled: true
     route:
