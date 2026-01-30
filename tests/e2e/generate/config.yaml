@@ -42,3 +42,5 @@ featureGates:
     metrics:
       createServiceMonitors: false
       createPrometheusRules: false
+  # On OpenShift, SCCs manage security contexts automatically
+  defaultPodSecurityContext: null

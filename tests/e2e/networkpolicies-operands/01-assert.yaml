@@ -34,33 +34,9 @@ metadata:
 status:
   readyReplicas: 1
 ---
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  labels:
-    app.kubernetes.io/instance: simplest
-    app.kubernetes.io/managed-by: tempo-operator
-  name: tempo-simplest-allow-dns
-spec:
-  egress:
-  - ports:
-    - port: 53
-      protocol: TCP
-    - port: 53
-      protocol: UDP
-    to:
-    - namespaceSelector:
-        matchLabels:
-          kubernetes.io/metadata.name: kube-system
-      podSelector:
-        matchLabels:
-          k8s-app: kube-dns
-  podSelector:
-    matchLabels:
-      app.kubernetes.io/instance: simplest
-      app.kubernetes.io/managed-by: tempo-operator
-  policyTypes:
-  - Egress
+# DNS policy assertion removed - handled by script in chainsaw-test.yaml
+# because policy name differs between Kubernetes (tempo-simplest-allow-dns)
+# and OpenShift (tempo-simplest-allow-dns-openshift)
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -73,10 +49,9 @@ metadata:
   name: tempo-simplest-compactor
 spec:
   egress:
-  - ports:
-    - port: 9000
-      protocol: TCP
-    to:
+  # Storage egress doesn't specify ports because kube-proxy DNATs ClusterIP
+  # service traffic to targetPort, which may differ from service port
+  - to:
     - ipBlock:
         cidr: 0.0.0.0/0
     - namespaceSelector: {}
@@ -203,10 +178,9 @@ metadata:
   name: tempo-simplest-ingester
 spec:
   egress:
-  - ports:
-    - port: 9000
-      protocol: TCP
-    to:
+  # Storage egress doesn't specify ports because kube-proxy DNATs ClusterIP
+  # service traffic to targetPort, which may differ from service port
+  - to:
     - ipBlock:
         cidr: 0.0.0.0/0
     - namespaceSelector: {}
@@ -296,10 +270,9 @@ spec:
           app.kubernetes.io/instance: simplest
           app.kubernetes.io/managed-by: tempo-operator
           app.kubernetes.io/name: tempo
-  - ports:
-    - port: 9000
-      protocol: TCP
-    to:
+  # Storage egress doesn't specify ports because kube-proxy DNATs ClusterIP
+  # service traffic to targetPort, which may differ from service port
+  - to:
     - ipBlock:
         cidr: 0.0.0.0/0
     - namespaceSelector: {}
@@ -357,10 +330,9 @@ spec:
           app.kubernetes.io/instance: simplest
           app.kubernetes.io/managed-by: tempo-operator
           app.kubernetes.io/name: tempo
-  - ports:
-    - port: 9000
-      protocol: TCP
-    to:
+  # Storage egress doesn't specify ports because kube-proxy DNATs ClusterIP
+  # service traffic to targetPort, which may differ from service port
+  - to:
     - ipBlock:
         cidr: 0.0.0.0/0
     - namespaceSelector: {}

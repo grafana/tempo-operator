@@ -62,8 +62,10 @@ func TestNetworkPolicy(t *testing.T) {
 	assert.True(t, labels.Equals(manifestutils.ComponentLabels(componentName, tempo.Name), np.Spec.PodSelector.MatchLabels))
 	assert.Len(t, np.Spec.PolicyTypes, 2) // Ingester has both Egress (S3) and Ingress (from distributor/querier)
 	assert.Len(t, np.Spec.Egress, 1)
-	// Verify the S3 port is extracted correctly
-	assert.Equal(t, 9000, np.Spec.Egress[0].Ports[0].Port.IntValue())
+	// Storage egress rules don't specify ports because kube-proxy DNATs ClusterIP service
+	// traffic to the targetPort, which may differ from the service port. Network policies
+	// evaluate after DNAT, so we can't rely on the service port.
+	assert.Len(t, np.Spec.Egress[0].Ports, 0)
 	got, _ := yaml.Marshal(np)
 	fmt.Println(string(got))
 }
