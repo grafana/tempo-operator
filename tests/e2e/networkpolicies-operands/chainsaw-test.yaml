@@ -18,3 +18,36 @@ spec:
         file: 01-install-tempo.yaml
     - assert:
         file: 01-assert.yaml
+    # Verify DNS policy exists with correct ports (name and port differ between Kubernetes and OpenShift)
+    - script:
+        timeout: 30s
+        content: |
+          # Check for Kubernetes DNS policy (port 53)
+          if kubectl get networkpolicy tempo-simplest-allow-dns -n $NAMESPACE -o jsonpath='{.spec.egress[0].ports[0].port}' 2>/dev/null | grep -q "53"; then
+            echo "Found Kubernetes DNS policy: tempo-simplest-allow-dns with port 53"
+            # Verify it targets kube-system namespace
+            NS=$(kubectl get networkpolicy tempo-simplest-allow-dns -n $NAMESPACE -o jsonpath='{.spec.egress[0].to[0].namespaceSelector.matchLabels.kubernetes\.io/metadata\.name}')
+            if [ "$NS" = "kube-system" ]; then
+              echo "DNS policy correctly targets kube-system namespace"
+              exit 0
+            else
+              echo "ERROR: DNS policy does not target kube-system namespace"
+              exit 1
+            fi
+          # Check for OpenShift DNS policy (port 5353)
+          elif kubectl get networkpolicy tempo-simplest-allow-dns-openshift -n $NAMESPACE -o jsonpath='{.spec.egress[0].ports[0].port}' 2>/dev/null | grep -q "5353"; then
+            echo "Found OpenShift DNS policy: tempo-simplest-allow-dns-openshift with port 5353"
+            # Verify it targets openshift-dns namespace
+            NS=$(kubectl get networkpolicy tempo-simplest-allow-dns-openshift -n $NAMESPACE -o jsonpath='{.spec.egress[0].to[0].namespaceSelector.matchLabels.kubernetes\.io/metadata\.name}')
+            if [ "$NS" = "openshift-dns" ]; then
+              echo "DNS policy correctly targets openshift-dns namespace"
+              exit 0
+            else
+              echo "ERROR: DNS policy does not target openshift-dns namespace"
+              exit 1
+            fi
+          else
+            echo "ERROR: No valid DNS network policy found"
+            echo "Expected either tempo-simplest-allow-dns (port 53, kube-system) or tempo-simplest-allow-dns-openshift (port 5353, openshift-dns)"
+            exit 1
+          fi

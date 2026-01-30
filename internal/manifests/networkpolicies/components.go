@@ -41,8 +41,21 @@ func generatePolicyFor(params manifestutils.Params, componentName string) *netwo
 
 	for _, target := range targets {
 		ports := rels[target]
+		peers := policyPeersFor(target, tempo)
+
+		// For storage targets (S3, Azure, GCS), don't specify ports.
+		// When using ClusterIP services, kube-proxy DNATs traffic to the targetPort
+		// which may differ from the service port. Network policies evaluate after DNAT,
+		// so they see the targetPort, not the service port. Since we can't know the
+		// targetPort of in-cluster storage services, we allow any port to storage destinations.
+		if target == netPolicys3Storage {
+			np.Spec.Egress = append(np.Spec.Egress, networkingv1.NetworkPolicyEgressRule{
+				To: peers,
+			})
+			continue
+		}
+
 		for _, conn := range ports {
-			peers := policyPeersFor(target, tempo)
 			np.Spec.Egress = append(np.Spec.Egress, networkingv1.NetworkPolicyEgressRule{
 				Ports: []networkingv1.NetworkPolicyPort{conn},
 				To:    peers,
