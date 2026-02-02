@@ -551,6 +551,84 @@ metadata:
   name: tempo-simplest-gateway
   namespace: chainsaw-multitenancy
 spec:
+  egress:
+  # Gateway to Distributor OTLP ports
+  - ports:
+    - port: 4317
+      protocol: TCP
+    to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: distributor
+          app.kubernetes.io/instance: simplest
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+  - ports:
+    - port: 4318
+      protocol: TCP
+    to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: distributor
+          app.kubernetes.io/instance: simplest
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+  # Gateway to Kubernetes API server for TokenReview/SubjectAccessReview
+  - ports:
+    - port: 6443
+      protocol: TCP
+    to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+  # Gateway to OAuth server for token exchange
+  - ports:
+    - port: 443
+      protocol: TCP
+    to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+    - namespaceSelector: {}
+  # Gateway to Query-Frontend
+  - ports:
+    - port: 9095
+      protocol: TCP
+    to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: query-frontend
+          app.kubernetes.io/instance: simplest
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+  - ports:
+    - port: 3200
+      protocol: TCP
+    to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: query-frontend
+          app.kubernetes.io/instance: simplest
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+  - ports:
+    - port: 16686
+      protocol: TCP
+    to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: query-frontend
+          app.kubernetes.io/instance: simplest
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+  - ports:
+    - port: 16687
+      protocol: TCP
+    to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: query-frontend
+          app.kubernetes.io/instance: simplest
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
   ingress:
   - from:
     - namespaceSelector: {}
