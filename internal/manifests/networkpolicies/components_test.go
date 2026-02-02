@@ -171,6 +171,130 @@ func compareNetworkPolicyPorts(a, b networkingv1.NetworkPolicyPort) bool {
 	return a.Port.IntValue() == b.Port.IntValue()
 }
 
+func TestOAuthServerEgress(t *testing.T) {
+	// Test that OAuth server egress (port 443) is added to gateway when gateway is enabled
+	tempo := v1alpha1.TempoStack{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "myinstance",
+			Namespace: "something",
+		},
+		Spec: v1alpha1.TempoStackSpec{
+			Template: v1alpha1.TempoTemplateSpec{
+				Gateway: v1alpha1.TempoGatewaySpec{
+					Enabled: true,
+				},
+			},
+		},
+	}
+
+	params := manifestutils.Params{
+		Tempo: tempo,
+		StorageParams: manifestutils.StorageParams{
+			S3: &manifestutils.S3{
+				Endpoint: "minio:9000",
+				Bucket:   "tempo",
+				Insecure: false,
+			},
+			CredentialMode: v1alpha1.CredentialModeStatic,
+		},
+	}
+
+	np := generatePolicyFor(params, manifestutils.GatewayComponentName)
+	require.NotNil(t, np)
+
+	// Verify gateway has OAuth server egress on port 443
+	var hasOAuthServerEgress bool
+	for _, egress := range np.Spec.Egress {
+		for _, port := range egress.Ports {
+			if port.Port != nil && port.Port.IntValue() == 443 {
+				hasOAuthServerEgress = true
+				break
+			}
+		}
+	}
+	assert.True(t, hasOAuthServerEgress, "gateway should have OAuth server egress on port 443")
+
+	// Verify egress policy type is set
+	assert.Contains(t, np.Spec.PolicyTypes, networkingv1.PolicyTypeEgress)
+}
+
+func TestOAuthProxyPort(t *testing.T) {
+	tests := []struct {
+		name                 string
+		authEnabled          bool
+		expectOAuthProxyPort bool
+	}{
+		{
+			name:                 "JaegerQuery auth enabled - should include OAuth proxy port",
+			authEnabled:          true,
+			expectOAuthProxyPort: true,
+		},
+		{
+			name:                 "JaegerQuery auth disabled - should not include OAuth proxy port",
+			authEnabled:          false,
+			expectOAuthProxyPort: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tempo := v1alpha1.TempoStack{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "myinstance",
+					Namespace: "something",
+				},
+				Spec: v1alpha1.TempoStackSpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						Gateway: v1alpha1.TempoGatewaySpec{
+							Enabled: false, // Gateway disabled to test query-frontend directly
+						},
+						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+							JaegerQuery: v1alpha1.JaegerQuerySpec{
+								Enabled: true,
+								Authentication: &v1alpha1.JaegerQueryAuthenticationSpec{
+									Enabled: tt.authEnabled,
+								},
+							},
+						},
+					},
+				},
+			}
+
+			params := manifestutils.Params{
+				Tempo: tempo,
+				StorageParams: manifestutils.StorageParams{
+					S3: &manifestutils.S3{
+						Endpoint: "minio:9000",
+						Bucket:   "tempo",
+						Insecure: false,
+					},
+					CredentialMode: v1alpha1.CredentialModeStatic,
+				},
+			}
+
+			np := generatePolicyFor(params, manifestutils.QueryFrontendComponentName)
+			require.NotNil(t, np)
+
+			// Check for OAuth proxy port (8443) in ingress rules
+			var hasOAuthProxyPort bool
+			for _, ingress := range np.Spec.Ingress {
+				for _, port := range ingress.Ports {
+					if port.Port != nil && port.Port.IntValue() == manifestutils.OAuthProxyPort {
+						hasOAuthProxyPort = true
+						break
+					}
+				}
+			}
+
+			if tt.expectOAuthProxyPort {
+				assert.True(t, hasOAuthProxyPort, "query-frontend should have OAuth proxy port (8443) when auth is enabled")
+			} else {
+				assert.False(t, hasOAuthProxyPort, "query-frontend should not have OAuth proxy port (8443) when auth is disabled")
+			}
+		})
+	}
+}
+
 func TestExtractStoragePorts(t *testing.T) {
 	tests := []struct {
 		name           string
