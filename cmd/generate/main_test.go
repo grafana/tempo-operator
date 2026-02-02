@@ -46,7 +46,8 @@ func TestBuild(t *testing.T) {
 
 	objects, err := build(params)
 	require.NoError(t, err)
-	require.Equal(t, 14, len(objects))
+	// 14 base objects + 8 network policies (gossip, metrics, DNS, distributor, ingester, compactor, querier, query-frontend)
+	require.Equal(t, 22, len(objects))
 }
 
 func TestYAMLEncoding(t *testing.T) {
