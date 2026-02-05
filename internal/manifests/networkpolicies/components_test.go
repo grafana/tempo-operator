@@ -1,18 +1,15 @@
 package networkpolicies
 
 import (
-	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/utils/ptr"
-	"sigs.k8s.io/yaml"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 
 	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
@@ -66,8 +63,6 @@ func TestNetworkPolicy(t *testing.T) {
 	// traffic to the targetPort, which may differ from the service port. Network policies
 	// evaluate after DNAT, so we can't rely on the service port.
 	assert.Len(t, np.Spec.Egress[0].Ports, 0)
-	got, _ := yaml.Marshal(np)
-	fmt.Println(string(got))
 }
 
 func TestReverseRelations(t *testing.T) {

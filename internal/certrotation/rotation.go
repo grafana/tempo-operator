@@ -74,7 +74,7 @@ func (r *certificateRotation) NewCertificate(signer *crypto.CA, validity time.Du
 		return nil
 	}
 
-	return signer.MakeServerCertForDuration(sets.NewString(r.Hostnames...), validity, addClientAuthUsage, addSubject)
+	return signer.MakeServerCertForDuration(sets.New(r.Hostnames...), validity, addClientAuthUsage, addSubject)
 }
 
 func (r *certificateRotation) NeedNewCertificate(annotations map[string]string, signer *crypto.CA, caBundleCerts []*x509.Certificate, refresh time.Duration) string {
@@ -101,12 +101,12 @@ func (r *certificateRotation) NeedNewCertificate(annotations map[string]string, 
 		return fmt.Sprintf("issuer %q, not in ca bundle:\n%s", signerCommonName, certs.CertificateBundleToString(caBundleCerts))
 	}
 
-	existingHostnames := sets.NewString(strings.Split(annotations[CertificateHostnames], ",")...)
-	requiredHostnames := sets.NewString(r.Hostnames...)
+	existingHostnames := sets.New(strings.Split(annotations[CertificateHostnames], ",")...)
+	requiredHostnames := sets.New(r.Hostnames...)
 	if !existingHostnames.Equal(requiredHostnames) {
 		existingNotRequired := existingHostnames.Difference(requiredHostnames)
 		requiredNotExisting := requiredHostnames.Difference(existingHostnames)
-		return fmt.Sprintf("hostnames %q are existing and not required, %q are required and not existing", strings.Join(existingNotRequired.List(), ","), strings.Join(requiredNotExisting.List(), ","))
+		return fmt.Sprintf("hostnames %q are existing and not required, %q are required and not existing", strings.Join(existingNotRequired.UnsortedList(), ","), strings.Join(requiredNotExisting.UnsortedList(), ","))
 	}
 
 	return ""

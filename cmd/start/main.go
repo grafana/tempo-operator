@@ -9,6 +9,8 @@ import (
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
 
+	configv1 "github.com/openshift/api/config/v1"
+	openshifttls "github.com/openshift/controller-runtime-common/pkg/tls"
 	"github.com/spf13/cobra"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -29,6 +31,10 @@ func start(c *cobra.Command, args []string) {
 	ctrlConfig, options := rootCmdConfig.CtrlConfig, rootCmdConfig.Options
 	setupLog := ctrl.Log.WithName("setup")
 	version := version.Get()
+
+	// Create a cancellable context for graceful shutdown on TLS profile changes
+	ctx, cancel := context.WithCancel(ctrl.SetupSignalHandler())
+	defer cancel()
 
 	options.PprofBindAddress, _ = c.Flags().GetString("pprof-addr")
 
@@ -93,6 +99,28 @@ func start(c *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
+	// Setup TLS profile watcher to trigger graceful restart when the cluster TLS profile changes.
+	// This uses the recommended OpenShift controller-runtime-common package which triggers
+	// a graceful shutdown (via context cancellation) ensuring all connections use the new TLS settings.
+	if ctrlConfig.Gates.OpenShift.ClusterTLSPolicy {
+		watcher := &openshifttls.SecurityProfileWatcher{
+			Client:                mgr.GetClient(),
+			InitialTLSProfileSpec: rootCmdConfig.InitialTLSProfileSpec,
+			OnProfileChange: func(watcherCtx context.Context, old, new configv1.TLSProfileSpec) {
+				setupLog.Info("TLS profile changed, triggering graceful restart",
+					"oldMinVersion", old.MinTLSVersion,
+					"newMinVersion", new.MinTLSVersion,
+					"oldCiphersCount", len(old.Ciphers),
+					"newCiphersCount", len(new.Ciphers))
+				cancel()
+			},
+		}
+		if err = watcher.SetupWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create controller", "controller", "SecurityProfileWatcher")
+			os.Exit(1)
+		}
+	}
+
 	enableWebhooks := os.Getenv("ENABLE_WEBHOOKS") != "false"
 	if enableWebhooks {
 		if err = (&webhooks.TempoStackWebhook{}).SetupWebhookWithManager(mgr, ctrlConfig); err != nil {
@@ -140,7 +168,7 @@ func start(c *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
+	if err := mgr.Start(ctx); err != nil {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
 	}

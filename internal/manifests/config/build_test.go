@@ -1686,6 +1686,7 @@ distributor:
           endpoint: "0.0.0.0:4317"
           tls:
             cert_file: /var/run/tls/server/tls.crt
+            cipher_suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
             client_ca_file: /var/run/ca/service-ca.crt
             key_file: /var/run/tls/server/tls.key
             min_version: "1.2"
@@ -1693,6 +1694,7 @@ distributor:
           endpoint: "0.0.0.0:4318"
           tls:
             cert_file: /var/run/tls/server/tls.crt
+            cipher_suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
             client_ca_file: /var/run/ca/service-ca.crt
             key_file: /var/run/tls/server/tls.key
             min_version: "1.2"
@@ -2094,6 +2096,118 @@ distributor:
             cert_file: /var/run/tls/receiver/tls.crt
             key_file: /var/run/tls/receiver/tls.key
             min_version: VersionTLS13
+  ring:
+    kvstore:
+      store: memberlist
+ingester:
+  lifecycler:
+    ring:
+      kvstore:
+        store: memberlist
+      replication_factor: 1
+    tokens_file_path: /var/tempo/tokens.json
+  max_block_duration: 10m
+memberlist:
+  abort_if_cluster_join_fails: false
+  join_members:
+    - tempo-test-gossip-ring
+multitenancy_enabled: false
+querier:
+  max_concurrent_queries: 20
+  frontend_worker:
+    frontend_address: "tempo-test-query-frontend-discovery:9095"
+server:
+  grpc_server_max_recv_msg_size: 4194304
+  grpc_server_max_send_msg_size: 4194304
+  http_listen_port: 3200
+  http_server_read_timeout: 3m0s
+  http_server_write_timeout: 3m0s
+  log_format: logfmt
+storage:
+  trace:
+    backend: s3
+    blocklist_poll: 5m
+    local:
+      path: /var/tempo/traces
+    s3:
+      bucket: tempo
+      endpoint: "minio:9000"
+      insecure: true
+    wal:
+      path: /var/tempo/wal
+usage_report:
+  reporting_enabled: false
+query_frontend:
+  search:
+    concurrent_jobs: 2000
+    max_duration: 0s
+    max_spans_per_span_set: 0
+`,
+		},
+		{
+			name: "specify cert secret name with cipher suites",
+			spec: v1alpha1.TempoDistributorSpec{
+				TLS: v1alpha1.TLSSpec{
+					Enabled:      true,
+					Cert:         "my-cert",
+					MinVersion:   string(openshiftconfigv1.VersionTLS12),
+					CipherSuites: []string{"TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"},
+				},
+			},
+			expect: `
+---
+compactor:
+  compaction:
+    block_retention: 48h0m0s
+  ring:
+    kvstore:
+      store: memberlist
+distributor:
+  receivers:
+    jaeger:
+      protocols:
+        thrift_http:
+          endpoint: 0.0.0.0:14268
+          tls:
+            cert_file: /var/run/tls/receiver/tls.crt
+            key_file: /var/run/tls/receiver/tls.key
+            min_version: VersionTLS12
+            cipher_suites: "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"
+        thrift_binary:
+          endpoint: 0.0.0.0:6832
+        thrift_compact:
+          endpoint: 0.0.0.0:6831
+        grpc:
+          endpoint: 0.0.0.0:14250
+          tls:
+            cert_file: /var/run/tls/receiver/tls.crt
+            key_file: /var/run/tls/receiver/tls.key
+            min_version: VersionTLS12
+            cipher_suites: "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"
+    zipkin:
+       endpoint: 0.0.0.0:9411
+       tls:
+         cert_file: /var/run/tls/receiver/tls.crt
+         key_file: /var/run/tls/receiver/tls.key
+         min_version: VersionTLS12
+         cipher_suites: "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"
+    otlp:
+      protocols:
+        grpc:
+          endpoint: "0.0.0.0:4317"
+          tls:
+            cert_file: /var/run/tls/receiver/tls.crt
+            key_file: /var/run/tls/receiver/tls.key
+            min_version: VersionTLS12
+            cipher_suites: "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"
+
+        http:
+          endpoint: "0.0.0.0:4318"
+          tls:
+            cert_file: /var/run/tls/receiver/tls.crt
+            key_file: /var/run/tls/receiver/tls.key
+            min_version: VersionTLS12
+            cipher_suites: "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"
   ring:
     kvstore:
       store: memberlist

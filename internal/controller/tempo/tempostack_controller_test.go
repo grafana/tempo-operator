@@ -101,7 +101,7 @@ func TestReconcile(t *testing.T) {
 		Recorder: record.NewFakeRecorder(1),
 		CtrlConfig: configv1alpha1.ProjectConfig{
 			Gates: configv1alpha1.FeatureGates{
-				TLSProfile: string(configv1alpha1.TLSProfileIntermediateType),
+				TLSProfile: configv1alpha1.TLSProfileIntermediateType,
 			},
 		},
 		Version: version.Get(),
@@ -171,7 +171,7 @@ func TestReadyToConfigurationError(t *testing.T) {
 		Recorder: record.NewFakeRecorder(1),
 		CtrlConfig: configv1alpha1.ProjectConfig{
 			Gates: configv1alpha1.FeatureGates{
-				TLSProfile: string(configv1alpha1.TLSProfileIntermediateType),
+				TLSProfile: configv1alpha1.TLSProfileIntermediateType,
 			},
 		},
 		Version: version.Get(),
@@ -249,7 +249,7 @@ func TestConfigurationErrorToConfigurationError(t *testing.T) {
 		Recorder: record.NewFakeRecorder(1),
 		CtrlConfig: configv1alpha1.ProjectConfig{
 			Gates: configv1alpha1.FeatureGates{
-				TLSProfile: string(configv1alpha1.TLSProfileIntermediateType),
+				TLSProfile: configv1alpha1.TLSProfileIntermediateType,
 			},
 		},
 		Version: version.Get(),
@@ -317,7 +317,7 @@ func TestConfigurationErrorToReady(t *testing.T) {
 		Recorder: record.NewFakeRecorder(1),
 		CtrlConfig: configv1alpha1.ProjectConfig{
 			Gates: configv1alpha1.FeatureGates{
-				TLSProfile: string(configv1alpha1.TLSProfileIntermediateType),
+				TLSProfile: configv1alpha1.TLSProfileIntermediateType,
 			},
 		},
 		Version: version.Get(),
@@ -389,7 +389,7 @@ func TestReconcileGenericError(t *testing.T) {
 		Recorder: record.NewFakeRecorder(1),
 		CtrlConfig: configv1alpha1.ProjectConfig{
 			Gates: configv1alpha1.FeatureGates{
-				TLSProfile: string(configv1alpha1.TLSProfileIntermediateType),
+				TLSProfile: configv1alpha1.TLSProfileIntermediateType,
 				OpenShift: configv1alpha1.OpenShiftFeatureGates{
 					OpenShiftRoute: true, // this will throw an error, as the CRD is not installed
 				},
@@ -424,7 +424,7 @@ func TestStorageCustomCA(t *testing.T) {
 		Recorder: record.NewFakeRecorder(1),
 		CtrlConfig: configv1alpha1.ProjectConfig{
 			Gates: configv1alpha1.FeatureGates{
-				TLSProfile: string(configv1alpha1.TLSProfileIntermediateType),
+				TLSProfile: configv1alpha1.TLSProfileIntermediateType,
 			},
 		},
 		Version: version.Get(),
@@ -557,7 +557,7 @@ func TestTLSEnable(t *testing.T) {
 				},
 				HTTPEncryption: true,
 				GRPCEncryption: true,
-				TLSProfile:     string(configv1alpha1.TLSProfileIntermediateType),
+				TLSProfile:     configv1alpha1.TLSProfileIntermediateType,
 			},
 		},
 		Version: version.Get(),
@@ -656,7 +656,7 @@ func TestPruneIngress(t *testing.T) {
 		Recorder: record.NewFakeRecorder(1),
 		CtrlConfig: configv1alpha1.ProjectConfig{
 			Gates: configv1alpha1.FeatureGates{
-				TLSProfile: string(configv1alpha1.TLSProfileIntermediateType),
+				TLSProfile: configv1alpha1.TLSProfileIntermediateType,
 			},
 		},
 		Version: version.Get(),
@@ -805,7 +805,7 @@ func TestK8SGatewaySecret(t *testing.T) {
 				},
 				HTTPEncryption: true,
 				GRPCEncryption: true,
-				TLSProfile:     string(configv1alpha1.TLSProfileIntermediateType),
+				TLSProfile:     configv1alpha1.TLSProfileIntermediateType,
 			},
 		},
 		Version: version.Get(),
@@ -912,7 +912,7 @@ func TestOpenShiftMode_finalizer(t *testing.T) {
 				},
 				HTTPEncryption: true,
 				GRPCEncryption: true,
-				TLSProfile:     string(configv1alpha1.TLSProfileIntermediateType),
+				TLSProfile:     configv1alpha1.TLSProfileIntermediateType,
 			},
 		},
 		Version: version.Get(),
@@ -1043,7 +1043,7 @@ func TestUpgrade(t *testing.T) {
 				Tempo: "docker.io/grafana/tempo:1.5.0",
 			},
 			Gates: configv1alpha1.FeatureGates{
-				TLSProfile: string(configv1alpha1.TLSProfileIntermediateType),
+				TLSProfile: configv1alpha1.TLSProfileIntermediateType,
 			},
 		},
 		Version: version.Get(),

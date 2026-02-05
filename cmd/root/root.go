@@ -28,8 +28,9 @@ type RootConfigKey struct{}
 
 // RootConfig contains configuration relevant for all commands.
 type RootConfig struct {
-	Options    ctrl.Options
-	CtrlConfig configv1alpha1.ProjectConfig
+	Options               ctrl.Options
+	CtrlConfig            configv1alpha1.ProjectConfig
+	InitialTLSProfileSpec configv1.TLSProfileSpec
 }
 
 func init() {
@@ -48,12 +49,16 @@ func init() {
 
 func readConfig(cmd *cobra.Command, configFile string) error {
 	// default controller configuration
-	ctrlCfg, options, err := LoadConfig(scheme, configFile)
+	ctrlCfg, options, tlsProfileSpec, err := LoadConfig(scheme, configFile)
 	if err != nil {
 		return err
 	}
 
-	cmd.SetContext(context.WithValue(cmd.Context(), RootConfigKey{}, RootConfig{options, *ctrlCfg}))
+	cmd.SetContext(context.WithValue(cmd.Context(), RootConfigKey{}, RootConfig{
+		Options:               options,
+		CtrlConfig:            *ctrlCfg,
+		InitialTLSProfileSpec: tlsProfileSpec,
+	}))
 	return nil
 }
 

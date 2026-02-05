@@ -15,7 +15,7 @@ MIN_OPENSHIFT_VERSION ?= 4.12
 TEMPO_IMAGE ?= docker.io/grafana/tempo:$(TEMPO_VERSION)
 JAEGER_QUERY_IMAGE ?= docker.io/jaegertracing/jaeger-query:$(JAEGER_QUERY_VERSION)
 TEMPO_QUERY_IMAGE ?= docker.io/grafana/tempo-query:$(TEMPO_QUERY_VERSION)
-TEMPO_GATEWAY_IMAGE ?= quay.io/observatorium/api:$(TEMPO_GATEWAY_VERSION)
+TEMPO_GATEWAY_IMAGE ?= pavolloffay/api:main-2026-02-11-v0.1.2-669-g0532e43-dirty
 TEMPO_GATEWAY_OPA_IMAGE ?= quay.io/observatorium/opa-openshift:$(TEMPO_GATEWAY_OPA_VERSION)
 MUSTGATHER_IMAGE ?= ${IMG_PREFIX}/must-gather:$(OPERATOR_VERSION)
 OAUTH_PROXY_IMAGE ?= quay.io/openshift/origin-oauth-proxy:$(OAUTH_PROXY_VERSION)
@@ -212,6 +212,10 @@ undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/confi
 .PHONY: olm-deploy
 olm-deploy: operator-sdk ## Deploy operator via OLM
 	$(OPERATOR_SDK) run bundle -n $(OPERATOR_NAMESPACE) $(BUNDLE_IMG)
+
+.PHONY: olm-undeploy
+olm-undeploy: operator-sdk ## Remove operator previously installed via OLM
+	$(OPERATOR_SDK) cleanup --delete-operator-groups tempo-operator
 
 .PHONY: olm-upgrade
 olm-upgrade: operator-sdk ## Upgrade operator via OLM
