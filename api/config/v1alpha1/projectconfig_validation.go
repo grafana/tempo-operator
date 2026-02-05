@@ -10,9 +10,9 @@ import (
 // Validate validates the controller configuration (ProjectConfig).
 func (c *ProjectConfig) Validate() error {
 	switch c.Gates.TLSProfile {
-	case string(TLSProfileOldType),
-		string(TLSProfileIntermediateType),
-		string(TLSProfileModernType):
+	case TLSProfileOldType,
+		TLSProfileIntermediateType,
+		TLSProfileModernType:
 		// valid setting
 	default:
 		return fmt.Errorf("invalid value '%s' for setting featureGates.tlsProfile (valid values: %s, %s and %s)", c.Gates.TLSProfile, TLSProfileOldType, TLSProfileIntermediateType, TLSProfileModernType)

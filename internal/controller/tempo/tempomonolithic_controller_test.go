@@ -150,7 +150,7 @@ func TestOpenShiftModeMonolithic_finalizer(t *testing.T) {
 				},
 				HTTPEncryption: true,
 				GRPCEncryption: true,
-				TLSProfile:     string(configv1alpha1.TLSProfileIntermediateType),
+				TLSProfile:     configv1alpha1.TLSProfileIntermediateType,
 			},
 		},
 		Version: version.Get(),

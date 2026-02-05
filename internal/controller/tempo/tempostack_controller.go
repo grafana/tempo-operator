@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 
 	"github.com/go-logr/logr"
 	grafanav1 "github.com/grafana/grafana-operator/v5/api/v1beta1"
+	openshiftconfigv1 "github.com/openshift/api/config/v1"
 	routev1 "github.com/openshift/api/route/v1"
 	cloudcredentialv1 "github.com/openshift/cloud-credential-operator/pkg/apis/cloudcredential/v1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
@@ -21,9 +23,10 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/builder"
+	ctrlbuilder "sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -35,6 +38,7 @@ import (
 	"github.com/grafana/tempo-operator/internal/manifests/cloudcredentials"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/status"
+	"github.com/grafana/tempo-operator/internal/tlsprofile"
 	"github.com/grafana/tempo-operator/internal/upgrade"
 	"github.com/grafana/tempo-operator/internal/version"
 )
@@ -62,7 +66,7 @@ type TempoStackReconciler struct {
 // +kubebuilder:rbac:groups=metrics.k8s.io,resources=pods,verbs=create;get
 // +kubebuilder:rbac:groups=route.openshift.io,resources=routes;routes/custom-host,verbs=get;list;watch;create;update;delete
 // +kubebuilder:rbac:groups=operator.openshift.io,resources=ingresscontrollers,verbs=get;list;watch
-// +kubebuilder:rbac:groups=config.openshift.io,resources=dnses,verbs=get;list;watch
+// +kubebuilder:rbac:groups=config.openshift.io,resources=apiservers;dnses,verbs=get;list;watch
 // +kubebuilder:rbac:groups=monitoring.coreos.com,resources=servicemonitors;prometheusrules,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=grafana.integreatly.org,resources=grafanadatasources,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=networking.k8s.io,resources=networkpolicies,verbs=get;list;watch;create;update;patch;delete
@@ -258,7 +262,7 @@ func (r *TempoStackReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Watches(
 			&corev1.Secret{},
 			handler.EnqueueRequestsFromMapFunc(r.findTempoStackForStorageSecret),
-			builder.WithPredicates(predicate.ResourceVersionChangedPredicate{}),
+			ctrlbuilder.WithPredicates(predicate.ResourceVersionChangedPredicate{}),
 		)
 
 	if r.CtrlConfig.Gates.OpenShift.OpenShiftRoute {
@@ -277,6 +281,15 @@ func (r *TempoStackReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	tokenCCOAuthEnv := cloudcredentials.DiscoverTokenCCOAuthConfig()
 	if tokenCCOAuthEnv != nil {
 		builder = builder.Owns(&cloudcredentialv1.CredentialsRequest{})
+	}
+
+	// Watch APIServer for TLS profile changes when ClusterTLSPolicy is enabled
+	if r.CtrlConfig.Gates.OpenShift.ClusterTLSPolicy {
+		builder = builder.Watches(
+			&openshiftconfigv1.APIServer{},
+			handler.EnqueueRequestsFromMapFunc(r.mapAPIServerToTempoStacks),
+			ctrlbuilder.WithPredicates(tlsProfileChangedPredicate()),
+		)
 	}
 
 	return builder.Complete(r)
@@ -339,4 +352,64 @@ func (r *TempoStackReconciler) GetPodsComponent(ctx context.Context, componentNa
 func (r *TempoStackReconciler) PatchStatus(ctx context.Context, changed, original *v1alpha1.TempoStack) error {
 	statusPatch := client.MergeFrom(original)
 	return r.Client.Status().Patch(ctx, changed, statusPatch)
+}
+
+// mapAPIServerToTempoStacks returns reconcile requests for all TempoStack instances
+// when the APIServer resource changes. This ensures operands are updated when
+// the cluster-wide TLS profile changes.
+func (r *TempoStackReconciler) mapAPIServerToTempoStacks(ctx context.Context, obj client.Object) []reconcile.Request {
+	// Only react to the "cluster" APIServer
+	if obj.GetName() != tlsprofile.APIServerName {
+		return nil
+	}
+
+	var tempostacks v1alpha1.TempoStackList
+	if err := r.List(ctx, &tempostacks); err != nil {
+		ctrl.LoggerFrom(ctx).Error(err, "failed to list TempoStacks for APIServer TLS profile change")
+		return nil
+	}
+
+	requests := make([]reconcile.Request, len(tempostacks.Items))
+	for i, ts := range tempostacks.Items {
+		requests[i] = reconcile.Request{
+			NamespacedName: types.NamespacedName{
+				Name:      ts.Name,
+				Namespace: ts.Namespace,
+			},
+		}
+	}
+	return requests
+}
+
+// tlsProfileChangedPredicate filters events to only TLS profile changes on the APIServer.
+func tlsProfileChangedPredicate() predicate.Predicate {
+	return predicate.Funcs{
+		CreateFunc: func(e event.CreateEvent) bool {
+			return e.Object.GetName() == tlsprofile.APIServerName
+		},
+		UpdateFunc: func(e event.UpdateEvent) bool {
+			if e.ObjectNew.GetName() != tlsprofile.APIServerName {
+				return false
+			}
+			oldAPI, ok := e.ObjectOld.(*openshiftconfigv1.APIServer)
+			if !ok {
+				return false
+			}
+			newAPI, ok := e.ObjectNew.(*openshiftconfigv1.APIServer)
+			if !ok {
+				return false
+			}
+			// Only reconcile if TLS profile actually changed
+			return !reflect.DeepEqual(
+				oldAPI.Spec.TLSSecurityProfile,
+				newAPI.Spec.TLSSecurityProfile,
+			)
+		},
+		DeleteFunc: func(e event.DeleteEvent) bool {
+			return false
+		},
+		GenericFunc: func(e event.GenericEvent) bool {
+			return false
+		},
+	}
 }

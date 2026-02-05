@@ -22,6 +22,9 @@ distributor:
             cert_file: {{ .ReceiverTLS.Paths.Certificate }}
             key_file: {{ .ReceiverTLS.Paths.Key }}
             min_version: "{{ .ReceiverTLS.MinTLSVersion }}"
+{{- if .ReceiverTLS.Ciphers }}
+            cipher_suites: "{{ .ReceiverTLS.Ciphers }}"
+{{- end }}
 {{- end }}
         thrift_binary:
           endpoint: 0.0.0.0:6832
@@ -37,6 +40,9 @@ distributor:
             cert_file: {{ .ReceiverTLS.Paths.Certificate }}
             key_file: {{ .ReceiverTLS.Paths.Key }}
             min_version: "{{ .ReceiverTLS.MinTLSVersion }}"
+{{- if .ReceiverTLS.Ciphers }}
+            cipher_suites: "{{ .ReceiverTLS.Ciphers }}"
+{{- end }}
 {{- end }}
     zipkin:
       endpoint: 0.0.0.0:9411
@@ -48,6 +54,9 @@ distributor:
         cert_file: {{ .ReceiverTLS.Paths.Certificate }}
         key_file: {{ .ReceiverTLS.Paths.Key }}
         min_version: "{{ .ReceiverTLS.MinTLSVersion }}"
+{{- if .ReceiverTLS.Ciphers }}
+        cipher_suites: "{{ .ReceiverTLS.Ciphers }}"
+{{- end }}
   {{- end }}
 {{- end }}
     otlp:
@@ -60,6 +69,9 @@ distributor:
             cert_file: {{ .TLS.Paths.Certificate }}
             key_file: {{ .TLS.Paths.Key }}
             min_version: "{{ .TLS.Profile.MinTLSVersionShort }}"
+{{- if .TLS.Profile.Ciphers }}
+            cipher_suites: "{{ .TLS.Profile.Ciphers }}"
+{{- end }}
 {{- end }}
 {{- if .ReceiverTLS.Enabled }}
           tls:
@@ -69,6 +81,9 @@ distributor:
             cert_file: {{ .ReceiverTLS.Paths.Certificate }}
             key_file: {{ .ReceiverTLS.Paths.Key }}
             min_version: "{{ .ReceiverTLS.MinTLSVersion }}"
+{{- if .ReceiverTLS.Ciphers }}
+            cipher_suites: "{{ .ReceiverTLS.Ciphers }}"
+{{- end }}
 {{- end }}
         http:
           endpoint: 0.0.0.0:4318
@@ -78,6 +93,9 @@ distributor:
             cert_file: {{ .TLS.Paths.Certificate }}
             key_file: {{ .TLS.Paths.Key }}
             min_version: "{{ .TLS.Profile.MinTLSVersionShort }}"
+{{- if .TLS.Profile.Ciphers }}
+            cipher_suites: "{{ .TLS.Profile.Ciphers }}"
+{{- end }}
 {{- end }}
 {{- if .ReceiverTLS.Enabled }}
           tls:
@@ -87,6 +105,9 @@ distributor:
             cert_file: {{ .ReceiverTLS.Paths.Certificate }}
             key_file: {{ .ReceiverTLS.Paths.Key }}
             min_version: "{{ .ReceiverTLS.MinTLSVersion }}"
+{{- if .ReceiverTLS.Ciphers }}
+            cipher_suites: "{{ .ReceiverTLS.Ciphers }}"
+{{- end }}
 {{- end }}
   ring:
     kvstore:
@@ -239,6 +260,10 @@ storage:
     {{- if and .S3StorageTLS.Key }}
       tls_key_path: {{ .S3StorageTLS.Key }}
     {{- end }}
+      tls_min_version: {{ .S3StorageTLS.MinTLSVersion }}
+    {{- if and .S3StorageTLS.Ciphers }}
+      tls_cipher_suites: {{ .S3StorageTLS.Ciphers }}
+    {{- end }}
     {{- end }}
   {{- end }}
     {{- if and .StorageParams.S3 (or (eq .StorageParams.CredentialMode "token") (eq .StorageParams.CredentialMode "token-cco")) }}
@@ -255,6 +280,10 @@ storage:
     {{- end }}
     {{- if and .S3StorageTLS.Key }}
       tls_key_path: {{ .S3StorageTLS.Key }}
+    {{- end }}
+      tls_min_version: {{ .S3StorageTLS.MinTLSVersion }}
+    {{- if and .S3StorageTLS.Ciphers }}
+      tls_cipher_suites: {{ .S3StorageTLS.Ciphers }}
     {{- end }}
     {{- end }}
     {{- end }}

@@ -32,9 +32,17 @@ type TLSSpec struct {
 
 	// MinVersion defines the minimum acceptable TLS version.
 	//
+	// If not set, the version is set based on feature gate tlsProfile or obtained from the cluster if openshift.clusterTLSPolicy is enabled.
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Min TLS Version"
 	MinVersion string `json:"minVersion,omitempty"`
+
+	// CipherSuites defines the list of acceptable TLS cipher suites.
+	//
+	// If not set, the ciphers are set based on feature gate tlsProfile or obtained from the cluster if openshift.clusterTLSPolicy is enabled.
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Cipher Suites"
+	CipherSuites []string `json:"cipherSuites,omitempty"`
 }
 
 // ExtraConfigSpec defines extra configurations for tempo that will be merged with the operator generated, configurations defined here

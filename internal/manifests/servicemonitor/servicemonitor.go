@@ -89,7 +89,7 @@ func NewServiceMonitor(
 					Key: corev1.TLSPrivateKeyKey,
 				},
 				// E.g. tempo-simplest-compactor.tempo-operator-system.svc.cluster.local
-				ServerName: serverName,
+				ServerName: ptr.To(serverName),
 			},
 		}
 	}
@@ -104,7 +104,7 @@ func NewServiceMonitor(
 			TLSConfig: tlsConfig,
 			// Custom relabel configs to be compatible with predefined Tempo dashboards:
 			// https://grafana.com/docs/tempo/latest/operations/monitoring/#dashboards
-			RelabelConfigs: []*monitoringv1.RelabelConfig{
+			RelabelConfigs: []monitoringv1.RelabelConfig{
 				{
 					SourceLabels: []monitoringv1.LabelName{"__meta_kubernetes_service_label_app_kubernetes_io_instance"},
 					TargetLabel:  "cluster",

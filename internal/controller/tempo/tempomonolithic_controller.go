@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	grafanav1 "github.com/grafana/grafana-operator/v5/api/v1beta1"
+	openshiftconfigv1 "github.com/openshift/api/config/v1"
 	routev1 "github.com/openshift/api/route/v1"
 	cloudcredentialv1 "github.com/openshift/cloud-credential-operator/pkg/apis/cloudcredential/v1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
@@ -20,7 +21,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/builder"
+	ctrlbuilder "sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -430,7 +431,7 @@ func (r *TempoMonolithicReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Watches(
 			&corev1.Secret{},
 			handler.EnqueueRequestsFromMapFunc(r.findTempoMonolithicForStorageSecret),
-			builder.WithPredicates(predicate.ResourceVersionChangedPredicate{}),
+			ctrlbuilder.WithPredicates(predicate.ResourceVersionChangedPredicate{}),
 		)
 
 	if r.CtrlConfig.Gates.OpenShift.OpenShiftRoute {
@@ -451,7 +452,43 @@ func (r *TempoMonolithicReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		builder = builder.Owns(&cloudcredentialv1.CredentialsRequest{})
 	}
 
+	// Watch APIServer for TLS profile changes when ClusterTLSPolicy is enabled
+	if r.CtrlConfig.Gates.OpenShift.ClusterTLSPolicy {
+		builder = builder.Watches(
+			&openshiftconfigv1.APIServer{},
+			handler.EnqueueRequestsFromMapFunc(r.mapAPIServerToTempoMonolithics),
+			ctrlbuilder.WithPredicates(tlsProfileChangedPredicate()),
+		)
+	}
+
 	return builder.Complete(r)
+}
+
+// mapAPIServerToTempoMonolithics returns reconcile requests for all TempoMonolithic instances
+// when the APIServer resource changes. This ensures operands are updated when
+// the cluster-wide TLS profile changes.
+func (r *TempoMonolithicReconciler) mapAPIServerToTempoMonolithics(ctx context.Context, obj client.Object) []reconcile.Request {
+	// Only react to the "cluster" APIServer
+	if obj.GetName() != tlsprofile.APIServerName {
+		return nil
+	}
+
+	var tempomonolithics v1alpha1.TempoMonolithicList
+	if err := r.List(ctx, &tempomonolithics); err != nil {
+		ctrl.LoggerFrom(ctx).Error(err, "failed to list TempoMonolithics for APIServer TLS profile change")
+		return nil
+	}
+
+	requests := make([]reconcile.Request, len(tempomonolithics.Items))
+	for i, tm := range tempomonolithics.Items {
+		requests[i] = reconcile.Request{
+			NamespacedName: types.NamespacedName{
+				Name:      tm.Name,
+				Namespace: tm.Namespace,
+			},
+		}
+	}
+	return requests
 }
 
 func matchTempoMonolithicStorageSecret(item v1alpha1.TempoMonolithic, secretName string) bool {

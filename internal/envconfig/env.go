@@ -37,6 +37,9 @@ var featureGates = []featureGateDef{
 	{featureGateOpenShiftNoAuthWarning, func(cfg *configv1alpha1.ProjectConfig, enabled bool) {
 		cfg.Gates.OpenShift.NoAuthWarning = enabled
 	}},
+	{featureGateOpenShiftClusterTLSPolicy, func(cfg *configv1alpha1.ProjectConfig, enabled bool) {
+		cfg.Gates.OpenShift.ClusterTLSPolicy = enabled
+	}},
 
 	// TLS/Encryption feature gates.
 	{featureGateHTTPEncryption, func(cfg *configv1alpha1.ProjectConfig, enabled bool) {
@@ -105,7 +108,7 @@ func applyGatesEnvVars(cfg *configv1alpha1.ProjectConfig) {
 		cfg.Gates.OpenShift.BaseDomain = val
 	}
 	if val, ok := os.LookupEnv(envTLSProfile); ok {
-		cfg.Gates.TLSProfile = val
+		cfg.Gates.TLSProfile = configv1alpha1.TLSProfileType(val)
 	}
 	if val, ok := os.LookupEnv(envDefaultPodSecurityContext); ok {
 		if psc, err := parsePodSecurityContext(val); err == nil {
