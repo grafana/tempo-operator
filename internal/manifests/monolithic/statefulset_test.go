@@ -99,7 +99,6 @@ func TestStatefulsetMemoryStorage(t *testing.T) {
 							Env:   proxyEnv,
 							Args: []string{
 								"-config.file=/conf/tempo.yaml",
-								"-mem-ballast-size-mbs=1024",
 								"-log.level=info",
 							},
 							VolumeMounts: []corev1.VolumeMount{
@@ -332,7 +331,6 @@ func TestStatefulsetS3TLSStorage(t *testing.T) {
 
 	require.Equal(t, []string{
 		"-config.file=/conf/tempo.yaml",
-		"-mem-ballast-size-mbs=1024",
 		"-log.level=info",
 		"--storage.trace.s3.secret_key=$(S3_SECRET_KEY)",
 		"--storage.trace.s3.access_key=$(S3_ACCESS_KEY)",
