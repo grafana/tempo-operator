@@ -18,6 +18,7 @@ import (
 	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/manifests"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
+	"github.com/grafana/tempo-operator/internal/manifests/networkpolicies"
 	"github.com/grafana/tempo-operator/internal/manifests/operator"
 )
 
@@ -74,10 +75,14 @@ func (r *OperatorReconciler) Reconcile(ctx context.Context, ctrlConfig configv1a
 		return fmt.Errorf("unable to fetch k8s server version: %w", err)
 	}
 
+	// Discover Kubernetes API server endpoints for NetworkPolicies
+	apiServerInfo := networkpolicies.DiscoverKubernetesAPIServer(ctx, r.Client)
+
 	managedObjects, err := operator.BuildAll(
 		ctrlConfig.Gates,
 		operatorDeployment.Namespace,
 		fmt.Sprintf("%s.%s", k8sVersion.Major, k8sVersion.Minor),
+		apiServerInfo,
 	)
 	if err != nil {
 		return fmt.Errorf("error building manifests: %w", err)

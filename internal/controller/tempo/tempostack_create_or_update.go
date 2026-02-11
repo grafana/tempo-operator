@@ -20,6 +20,7 @@ import (
 	"github.com/grafana/tempo-operator/internal/manifests"
 	"github.com/grafana/tempo-operator/internal/manifests/cloudcredentials"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
+	"github.com/grafana/tempo-operator/internal/manifests/networkpolicies"
 	"github.com/grafana/tempo-operator/internal/status"
 	"github.com/grafana/tempo-operator/internal/tlsprofile"
 )
@@ -99,6 +100,9 @@ func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, tempo v1alpha
 		}
 
 	}
+
+	// Discover Kubernetes API server endpoints for NetworkPolicies
+	params.KubeAPIServer = networkpolicies.DiscoverKubernetesAPIServer(ctx, r.Client)
 
 	managedObjects, err := manifests.BuildAll(params)
 	// TODO (pavolloffay) check error type and change return appropriately

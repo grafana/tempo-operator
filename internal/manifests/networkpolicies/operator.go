@@ -9,11 +9,11 @@ import (
 )
 
 // GenerateOperatorPolicies to limit network access.
-func GenerateOperatorPolicies(namespace string) []client.Object {
+func GenerateOperatorPolicies(namespace string, apiServerInfo manifestutils.KubeAPIServerInfo) []client.Object {
 	const instanceName = "operator"
 	labels := manifestutils.CommonOperatorLabels()
 	objs := []client.Object{
-		policyAPIServer(instanceName, namespace),
+		policyAPIServer(instanceName, namespace, apiServerInfo),
 		policyDenyAll(instanceName, namespace, labels),
 		policyIngressToMetrics(instanceName, namespace, labels),
 	}

@@ -13,7 +13,21 @@ import (
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
 )
 
-func policyAPIServer(instanceName, namespace string) *networkingv1.NetworkPolicy {
+func policyAPIServer(instanceName, namespace string, apiServerInfo manifestutils.KubeAPIServerInfo) *networkingv1.NetworkPolicy {
+	egressRule := networkingv1.NetworkPolicyEgressRule{
+		Ports: apiServerInfo.Ports,
+	}
+
+	// Add IP-based peers if specific IPs are available, otherwise allow all destinations
+	if len(apiServerInfo.IPs) > 0 {
+		for _, ip := range apiServerInfo.IPs {
+			egressRule.To = append(egressRule.To, networkingv1.NetworkPolicyPeer{
+				IPBlock: &networkingv1.IPBlock{CIDR: ip + "/32"},
+			})
+		}
+	}
+	// If no specific IPs, To field remains nil which allows all destinations (port restriction still applies)
+
 	return &networkingv1.NetworkPolicy{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "NetworkPolicy",
@@ -31,16 +45,7 @@ func policyAPIServer(instanceName, namespace string) *networkingv1.NetworkPolicy
 			PolicyTypes: []networkingv1.PolicyType{
 				networkingv1.PolicyTypeEgress,
 			},
-			Egress: []networkingv1.NetworkPolicyEgressRule{
-				{
-					Ports: []networkingv1.NetworkPolicyPort{
-						{
-							Protocol: ptr.To(corev1.ProtocolTCP),
-							Port:     ptr.To(intstr.FromInt(6443)),
-						},
-					},
-				},
-			},
+			Egress: []networkingv1.NetworkPolicyEgressRule{egressRule},
 		},
 	}
 }
