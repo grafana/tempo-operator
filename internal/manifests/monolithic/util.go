@@ -38,7 +38,7 @@ func ingestionHTTPTLSEnabled(tempo v1alpha1.TempoMonolithic) bool {
 	return false
 }
 
-// if the gateway is enabled, the serving cert is generated for the gateway service, otherwise for the main Tempo service
+// If the gateway is enabled, the serving cert is generated for the gateway service, otherwise for the main Tempo service.
 func ingestionServingCertName(tempo v1alpha1.TempoMonolithic) string {
 	if tempo.Spec.Multitenancy.IsGatewayEnabled() {
 		return naming.ServingCertName(manifestutils.GatewayComponentName, tempo.Name)
