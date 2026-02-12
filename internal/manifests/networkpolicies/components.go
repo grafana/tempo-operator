@@ -213,7 +213,7 @@ func componentRelations(params manifestutils.Params) networkRelations {
 		}
 		// Use discovered Kubernetes API server ports, or fall back to default 6443
 		kubeAPIServer = params.KubeAPIServer.Ports
-		oauthServer = []networkingv1.NetworkPolicyPort{
+		oauthServer   = []networkingv1.NetworkPolicyPort{
 			{
 				Protocol: ptr.To(corev1.ProtocolTCP),
 				Port:     ptr.To(intstr.FromInt(443)),
