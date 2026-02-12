@@ -11,7 +11,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/utils/ptr"
 
-	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
 )
@@ -41,7 +40,7 @@ func generatePolicyFor(params manifestutils.Params, componentName string) *netwo
 
 	for _, target := range targets {
 		ports := rels[target]
-		peers := policyPeersFor(target, tempo)
+		peers := policyPeersFor(target, params)
 
 		// For storage targets (S3, Azure, GCS), don't specify ports.
 		// When using ClusterIP services, kube-proxy DNATs traffic to the targetPort
@@ -89,7 +88,7 @@ func generatePolicyFor(params manifestutils.Params, componentName string) *netwo
 
 		for _, target := range ingressTargets {
 			conn := ports[target]
-			peers := policyPeersFor(target, tempo)
+			peers := policyPeersFor(target, params)
 			np.Spec.Ingress = append(np.Spec.Ingress, networkingv1.NetworkPolicyIngressRule{
 				Ports: conn,
 				From:  peers,
@@ -104,7 +103,8 @@ func generatePolicyFor(params manifestutils.Params, componentName string) *netwo
 	return np
 }
 
-func policyPeersFor(name string, tempo v1alpha1.TempoStack) []networkingv1.NetworkPolicyPeer {
+func policyPeersFor(name string, params manifestutils.Params) []networkingv1.NetworkPolicyPeer {
+	tempo := params.Tempo
 	switch name {
 	case netPolicyOtelTargets:
 		return []networkingv1.NetworkPolicyPeer{
@@ -132,10 +132,22 @@ func policyPeersFor(name string, tempo v1alpha1.TempoStack) []networkingv1.Netwo
 			},
 		}
 	case netPolicyKubeAPIServer:
-		// Allow egress to Kubernetes API server on any destination
-		// Port 6443 restriction is sufficient for security
-		// This works across all OpenShift distributions (standard, ROSA, Dedicated)
-		// where API server location varies (ClusterIP, external endpoints, different namespaces)
+		// Allow egress to Kubernetes API server.
+		// Use discovered IPs from EndpointSlice if available, otherwise fall back to 0.0.0.0/0.
+		// This works across all Kubernetes distributions (EKS, GKE, standard K8s, OpenShift)
+		// where API server location and port vary.
+		if len(params.KubeAPIServer.IPs) > 0 {
+			// Use specific IP addresses discovered from EndpointSlice
+			peers := make([]networkingv1.NetworkPolicyPeer, 0, len(params.KubeAPIServer.IPs))
+			for _, ip := range params.KubeAPIServer.IPs {
+				peers = append(peers, networkingv1.NetworkPolicyPeer{
+					IPBlock: &networkingv1.IPBlock{CIDR: ip + "/32"},
+				})
+			}
+			return peers
+		}
+		// Fall back to allowing any destination if discovery failed
+		// Port restriction still provides security
 		return []networkingv1.NetworkPolicyPeer{
 			{
 				IPBlock: &networkingv1.IPBlock{CIDR: "0.0.0.0/0"},
@@ -186,12 +198,8 @@ func componentRelations(params manifestutils.Params) networkRelations {
 				Port:     ptr.To(intstr.FromInt(manifestutils.PortOtlpGrpcServer)),
 			},
 		}
-		kubeAPIServer = []networkingv1.NetworkPolicyPort{
-			{
-				Protocol: ptr.To(corev1.ProtocolTCP),
-				Port:     ptr.To(intstr.FromInt(6443)),
-			},
-		}
+		// Use discovered Kubernetes API server ports, or fall back to default 6443
+		kubeAPIServer = params.KubeAPIServer.Ports
 	)
 
 	fromTo := map[string]map[string][]networkingv1.NetworkPolicyPort{

@@ -1,10 +1,18 @@
 package manifestutils
 
 import (
+	networkingv1 "k8s.io/api/networking/v1"
+
 	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
 	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/tlsprofile"
 )
+
+// KubeAPIServerInfo contains the discovered Kubernetes API server endpoint information.
+type KubeAPIServerInfo struct {
+	Ports []networkingv1.NetworkPolicyPort
+	IPs   []string
+}
 
 // Params holds parameters used to create Tempo objects.
 type Params struct {
@@ -15,6 +23,7 @@ type Params struct {
 	TLSProfile          tlsprofile.TLSProfileOptions
 	GatewayTenantSecret []*GatewayTenantOIDCSecret
 	GatewayTenantsData  []*GatewayTenantsData
+	KubeAPIServer       KubeAPIServerInfo
 }
 
 // StorageParams holds storage configuration from the storage secret, except the credentials.
