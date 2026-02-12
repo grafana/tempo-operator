@@ -182,7 +182,7 @@ type NetworkPolicySpec struct {
 	// +optional
 	// +kubebuilder:default:=true
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enable Network Policies"
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
 }
 
 // ObservabilitySpec defines how telemetry data gets handled.

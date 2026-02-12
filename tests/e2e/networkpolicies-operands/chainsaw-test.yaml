@@ -51,3 +51,47 @@ spec:
             echo "Expected either tempo-simplest-allow-dns (port 53, kube-system) or tempo-simplest-allow-dns-openshift (port 5353, openshift-dns)"
             exit 1
           fi
+  - name: step-02-disable-networkpolicy
+    try:
+    - apply:
+        file: 02-disable-networkpolicy.yaml
+    # Verify all network policies are deleted when networkPolicy.enabled=false
+    - script:
+        timeout: 60s
+        content: |
+          echo "Waiting for network policies to be deleted..."
+          # Wait for network policies to be deleted (up to 30 seconds)
+          for i in $(seq 1 30); do
+            COUNT=$(kubectl get networkpolicy -n $NAMESPACE -l app.kubernetes.io/managed-by=tempo-operator --no-headers 2>/dev/null | wc -l | tr -d ' ')
+            if [ "$COUNT" = "0" ]; then
+              echo "All network policies have been deleted"
+              exit 0
+            fi
+            echo "Waiting... ($i/30) - $COUNT policies remaining"
+            sleep 1
+          done
+          echo "ERROR: Network policies were not deleted"
+          kubectl get networkpolicy -n $NAMESPACE -l app.kubernetes.io/managed-by=tempo-operator
+          exit 1
+  - name: step-03-enable-networkpolicy
+    try:
+    - apply:
+        file: 03-enable-networkpolicy.yaml
+    - assert:
+        file: 01-assert.yaml
+    # Verify DNS policy is recreated with correct configuration
+    - script:
+        timeout: 30s
+        content: |
+          # Check for Kubernetes DNS policy (port 53)
+          if kubectl get networkpolicy tempo-simplest-allow-dns -n $NAMESPACE -o jsonpath='{.spec.egress[0].ports[0].port}' 2>/dev/null | grep -q "53"; then
+            echo "Found Kubernetes DNS policy: tempo-simplest-allow-dns with port 53"
+            exit 0
+          # Check for OpenShift DNS policy (port 5353)
+          elif kubectl get networkpolicy tempo-simplest-allow-dns-openshift -n $NAMESPACE -o jsonpath='{.spec.egress[0].ports[0].port}' 2>/dev/null | grep -q "5353"; then
+            echo "Found OpenShift DNS policy: tempo-simplest-allow-dns-openshift with port 5353"
+            exit 0
+          else
+            echo "ERROR: No valid DNS network policy found after re-enabling"
+            exit 1
+          fi

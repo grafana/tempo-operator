@@ -88,7 +88,7 @@ func BuildAll(params manifestutils.Params) ([]client.Object, error) {
 		manifests = append(manifests, grafana.BuildGrafanaDatasource(params))
 	}
 
-	if params.Tempo.Spec.NetworkPolicy.Enabled {
+	if params.Tempo.Spec.NetworkPolicy.Enabled == nil || *params.Tempo.Spec.NetworkPolicy.Enabled {
 		manifests = append(manifests, networkpolicies.GenerateOperandPolicies(params)...)
 	}
 

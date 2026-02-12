@@ -168,6 +168,24 @@ func (r *TempoStackReconciler) findObjectsOwnedByTempoOperator(ctx context.Conte
 		ownedObjects[ingressList.Items[i].GetUID()] = &ingressList.Items[i]
 	}
 
+	// Network policies use a subset of labels (without app.kubernetes.io/name)
+	// for gossip, metrics, and DNS policies, so we need a more permissive selector
+	networkPolicyListOps := &client.ListOptions{
+		Namespace: tempo.GetNamespace(),
+		LabelSelector: labels.SelectorFromSet(map[string]string{
+			"app.kubernetes.io/instance":   tempo.Name,
+			"app.kubernetes.io/managed-by": "tempo-operator",
+		}),
+	}
+	networkPolicyList := &networkingv1.NetworkPolicyList{}
+	err = r.List(ctx, networkPolicyList, networkPolicyListOps)
+	if err != nil {
+		return nil, fmt.Errorf("error listing network policies: %w", err)
+	}
+	for i := range networkPolicyList.Items {
+		ownedObjects[networkPolicyList.Items[i].GetUID()] = &networkPolicyList.Items[i]
+	}
+
 	// metrics reader for Jaeger UI Monitor Tab
 	rolesList := &rbacv1.RoleList{}
 	err = r.List(ctx, rolesList, listOps)

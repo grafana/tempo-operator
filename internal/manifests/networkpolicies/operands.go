@@ -9,7 +9,7 @@ import (
 // GenerateOperandPolicies to limit network access.
 func GenerateOperandPolicies(params manifestutils.Params) []client.Object {
 	tempo := params.Tempo
-	if !tempo.Spec.NetworkPolicy.Enabled {
+	if tempo.Spec.NetworkPolicy.Enabled != nil && !*tempo.Spec.NetworkPolicy.Enabled {
 		return nil
 	}
 

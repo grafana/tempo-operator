@@ -153,6 +153,18 @@ func policyPeersFor(name string, params manifestutils.Params) []networkingv1.Net
 				IPBlock: &networkingv1.IPBlock{CIDR: "0.0.0.0/0"},
 			},
 		}
+	case netPolicyOAuthServer:
+		// Allow egress to OpenShift OAuth server for token exchange
+		// The OAuth server can be accessed via route (external) or service (internal)
+		// so we allow both ipBlock and namespaceSelector
+		return []networkingv1.NetworkPolicyPeer{
+			{
+				IPBlock: &networkingv1.IPBlock{CIDR: "0.0.0.0/0"},
+			},
+			{
+				NamespaceSelector: &metav1.LabelSelector{},
+			},
+		}
 	default:
 		return []networkingv1.NetworkPolicyPeer{
 			{
@@ -172,6 +184,7 @@ const (
 	netPolicyOtelTargets       = "otel"
 	netPolicyClusterComponents = "cluster"
 	netPolicyKubeAPIServer     = "kube-apiserver"
+	netPolicyOAuthServer       = "oauth-server"
 )
 
 func componentRelations(params manifestutils.Params) networkRelations {
@@ -200,6 +213,12 @@ func componentRelations(params manifestutils.Params) networkRelations {
 		}
 		// Use discovered Kubernetes API server ports, or fall back to default 6443
 		kubeAPIServer = params.KubeAPIServer.Ports
+		oauthServer   = []networkingv1.NetworkPolicyPort{
+			{
+				Protocol: ptr.To(corev1.ProtocolTCP),
+				Port:     ptr.To(intstr.FromInt(443)),
+			},
+		}
 	)
 
 	fromTo := map[string]map[string][]networkingv1.NetworkPolicyPort{
@@ -275,6 +294,10 @@ func componentRelations(params manifestutils.Params) networkRelations {
 		// when using OpenShift RBAC mode for multi-tenancy
 		fromTo[manifestutils.GatewayComponentName][netPolicyKubeAPIServer] = kubeAPIServer
 
+		// Gateway needs to access OpenShift OAuth server for token exchange
+		// when using OpenShift authentication mode
+		fromTo[manifestutils.GatewayComponentName][netPolicyOAuthServer] = oauthServer
+
 		// Gateway needs to access Jaeger Query UI ports when JaegerQuery is enabled
 		if tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled {
 			fromTo[manifestutils.GatewayComponentName][manifestutils.QueryFrontendComponentName] = append(
@@ -342,6 +365,18 @@ func componentRelations(params manifestutils.Params) networkRelations {
 				Port:     ptr.To(intstr.FromInt(manifestutils.PortJaegerMetrics)),
 			},
 		)
+
+		// Add oauth-proxy port when Jaeger Query authentication is enabled (single-tenant auth)
+		if tempo.Spec.Template.QueryFrontend.JaegerQuery.Authentication != nil &&
+			tempo.Spec.Template.QueryFrontend.JaegerQuery.Authentication.Enabled {
+			fromTo[netPolicyClusterComponents][manifestutils.QueryFrontendComponentName] = append(
+				fromTo[netPolicyClusterComponents][manifestutils.QueryFrontendComponentName],
+				networkingv1.NetworkPolicyPort{
+					Protocol: ptr.To(corev1.ProtocolTCP),
+					Port:     ptr.To(intstr.FromInt(manifestutils.OAuthProxyPort)),
+				},
+			)
+		}
 	}
 	return fromTo
 }
