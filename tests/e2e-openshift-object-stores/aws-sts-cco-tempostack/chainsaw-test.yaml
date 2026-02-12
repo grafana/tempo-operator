@@ -6,9 +6,9 @@ metadata:
   labels:
     type: aws-sts-cco
 spec:
-  # We need to run this test serially cause the opertaor is restarted after patching the operator subscription with ROLEARN
+  # We need to run this test serially cause the operator is restarted after patching the operator subscription with ROLEARN
   concurrent: false
-  description: Test TempoStack support for AWS S3 using STS. This test is meant to be run from OpenShift CI as it depends on the credentials from CI.
+  description: Test TempoStack support for AWS S3 using STS and operator env config feature. This test is meant to be run from OpenShift CI as it depends on the credentials from CI.
   namespace: chainsaw-awscco-tempo
   steps:
   - name: Create AWS S3 bucket, IAM policy and role required for STS
@@ -18,6 +18,30 @@ spec:
         content: ./aws-sts-s3-create.sh tmcco chainsaw-awscco-tempo
     - assert:
         file: aws-sts-s3-create-assert.yaml
+  - name: Verify operator env config feature
+    try:
+    - command:
+        entrypoint: oc
+        args:
+        - get
+        - pods
+        - -A
+        - -l control-plane=controller-manager
+        - -l app.kubernetes.io/name=tempo-operator
+        - -o
+        - jsonpath={.items[0].metadata.namespace}
+        outputs:
+        - name: TEMPO_NAMESPACE
+          value: ($stdout)
+    - script:
+        env:
+        - name: TEMPO_NAMESPACE
+          value: ($TEMPO_NAMESPACE)
+        content: |
+          # Verify the LEADER_ELECTION_RESOURCE_NAME env var is set in the deployment
+          oc get deployment tempo-operator-controller -n "$TEMPO_NAMESPACE" -o jsonpath='{.spec.template.spec.containers[0].env[?(@.name=="LEADER_ELECTION_RESOURCE_NAME")].value}' | grep -q "tempo-operator-leader-aws-sts-test"
+    - assert:
+        file: env-config-assert.yaml
   - name: Install TempoStack
     try:
     - apply:

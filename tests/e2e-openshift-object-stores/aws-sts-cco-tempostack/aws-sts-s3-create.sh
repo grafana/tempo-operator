@@ -88,12 +88,29 @@ TEMPO_OPERATOR_NAMESPACE=$(oc get pods -A \
 TEMPO_OPERATOR_SUB=$(oc get subscription -n "$TEMPO_OPERATOR_NAMESPACE" \
     -o jsonpath='{.items[0].metadata.name}')
 
-# Patch the Tempo Operator subscription with rolearn env.
+# Patch the Tempo Operator subscription with rolearn env and test the operator env config feature.
+# LEADER_ELECTION_RESOURCE_NAME is a safe env var that tests env config parsing without affecting other tests.
 oc patch subscription "$TEMPO_OPERATOR_SUB" -n "$TEMPO_OPERATOR_NAMESPACE" \
-    --type='merge' -p '{"spec": {"config": {"env": [{"name": "ROLEARN", "value": "'"$role_arn"'"}]}}}'
+    --type='merge' -p '{
+      "spec": {
+        "config": {
+          "env": [
+            {"name": "ROLEARN", "value": "'"$role_arn"'"},
+            {"name": "LEADER_ELECTION_RESOURCE_NAME", "value": "tempo-operator-leader-aws-sts-test"}
+          ]
+        }
+      }
+    }'
 
-# Wait for the operator to reconcile
-sleep 60
+# Wait for OLM to propagate the subscription change to the deployment
+echo "Waiting for OLM to update the deployment..."
+sleep 10
+
+# Wait for the operator deployment rollout to complete with the new env vars
+echo "Waiting for operator deployment rollout..."
+oc rollout status deployment/tempo-operator-controller -n "$TEMPO_OPERATOR_NAMESPACE" --timeout=120s
+
+# Verify the CSV is still healthy
 if oc -n "$TEMPO_OPERATOR_NAMESPACE" describe csv --selector=operators.coreos.com/tempo-operator.openshift-tempo-operator= | tail -n 1 | grep -qi "InstallSucceeded"; then
     echo "CSV updated successfully, continuing script execution..."
 else
