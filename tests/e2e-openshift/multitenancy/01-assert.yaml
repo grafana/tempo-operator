@@ -574,13 +574,14 @@ spec:
           app.kubernetes.io/managed-by: tempo-operator
           app.kubernetes.io/name: tempo
   # Gateway to Kubernetes API server for TokenReview/SubjectAccessReview
+  # Note: Port and CIDR are dynamically discovered from EndpointSlice
+  # Port could be 443 (EKS/GKE), 6443 (standard), or custom
+  # CIDR will be specific control plane IPs (/32) when discovered, or 0.0.0.0/0 as fallback
+  # We omit 'to' field to allow Chainsaw's subset matching to skip validation of dynamic IPs
   - ports:
-    - port: 6443
-      protocol: TCP
-    to:
-    - ipBlock:
-        cidr: 0.0.0.0/0
+    - protocol: TCP
   # Gateway to OAuth server for token exchange
+  # These values are hardcoded in the operator, so we can validate them
   - ports:
     - port: 443
       protocol: TCP
