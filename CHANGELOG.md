@@ -3,6 +3,178 @@ Changes by Version
 
 <!-- next version -->
 
+## 0.20.0
+
+### 🛑 Breaking changes 🛑
+
+- `operator`: Migrate operator configuration from ConfigMap to environment variables (#1348)
+  The default operator deployment no longer uses a ConfigMap-based configuration file.
+  Configuration is now managed through environment variables.
+  
+  **To continue using a ConfigMap:** Mount your `controller_manager_config.yaml` ConfigMap and add
+  the `--config=/path/to/config.yaml` flag to the operator deployment args.
+  Environment variables will still take precedence over the config file.
+  
+  **To migrate to environment variables:** Use `FEATURE_GATES` for boolean flags (comma-separated,
+  prefix with `-` to disable) and individual env vars for other settings.
+  
+  Example OLM Subscription override:
+  ```yaml
+  spec:
+    config:
+      env:
+      - name: FEATURE_GATES
+        value: "prometheusOperator,observability.metrics.createServiceMonitors,-networkPolicies"
+      - name: TLS_PROFILE
+        value: "Intermediate"
+  ```
+  
+  Available feature gates: `openshift.route`, `openshift.servingCertsService`, `openshift.oauthProxy`,
+  `httpEncryption`, `grpcEncryption`, `prometheusOperator`, `grafanaOperator`, `builtInCertManagement`,
+  `observability.metrics.createServiceMonitors`, `observability.metrics.createPrometheusRules`, `networkPolicies`
+  
+  Other env vars: `DISTRIBUTION`, `TLS_PROFILE`, `OPENSHIFT_BASE_DOMAIN`, `DEFAULT_POD_SECURITY_CONTEXT` (JSON),
+  `BUILT_IN_CERT_MANAGEMENT_CA_VALIDITY`, `BUILT_IN_CERT_MANAGEMENT_CA_REFRESH`,
+  `BUILT_IN_CERT_MANAGEMENT_CERT_VALIDITY`, `BUILT_IN_CERT_MANAGEMENT_CERT_REFRESH`
+  
+
+### 💡 Enhancements 💡
+
+- `tempostack, tempomonolithic`: Add configurable defaultPodSecurityContext to operator config (#1240)
+  The operator now supports a configurable defaultPodSecurityContext in the operator configuration.
+  This allows setting default pod security context fields (fsGroup, runAsUser, etc.) that are
+  merged into pod security contexts when specific fields are not set by the user.
+  For Community distributions, fsGroup is set to 10001 to ensure volume permissions work correctly
+  with certain CSI drivers (AWS EBS, DigitalOcean, etc.) that mount volumes with root:root ownership.
+  For OpenShift, this is set to an empty object {} as SCCs manage security contexts automatically.
+  
+- `tempostack, tempomonolithic`: Add MCP (Model Context Protocol) server configuration to TempoStack and TempoMonolithic CRDs (#1319)
+  The MCP server allows AI assistants to query tracing data from Tempo.
+  Enable it by setting `spec.template.queryFrontend.mcpServer.enabled: true` for TempoStack
+  or `spec.query.mcpServer.enabled: true` for TempoMonolithic.
+  
+- `tempostack, tempomonolithic`: Add support for extra labels on ServiceMonitor and PrometheusRule objects (#905)
+- `networking`: Add network policy support for Tempo operands (#1246)
+  Network policies are now **enabled by default** for all TempoStacks.
+  
+  ## Enabling/Disabling Network Policies
+  
+  Network policies are enabled by default. To disable them:
+  
+  ```yaml
+  apiVersion: tempo.grafana.com/v1alpha1
+  kind: TempoStack
+  metadata:
+    name: example
+  spec:
+    networkPolicy:
+      enabled: false  # Default is true
+  ```
+  
+  ## Generated Network Policies
+  
+  The operator creates the following network policies for each component:
+  
+  ### Query-Frontend
+  **Egress (outbound connections):**
+  - Storage backend (S3/Azure/GCS) - Required for initialization
+  - Queriers (ports 9095, 3200) - For query distribution
+  - OTLP telemetry export (when configured)
+  
+  **Ingress (inbound connections):**
+  - From cluster (port 9095, 3200) - External query access
+  - From gateway (when enabled) - For proxied queries
+  - From queriers (ports 9095, 3200) - Bidirectional worker communication
+  
+  ### Gateway (when enabled)
+  **Egress (outbound connections):**
+  - Distributor (ports 4317, 4318) - For ingesting traces via OTLP
+  - Query-frontend (ports 9095, 3200) - For querying traces
+  - Query-frontend (ports 16686, 16687) - For Jaeger Query UI and metrics (when JaegerQuery is enabled)
+  - Kubernetes API server (port 6443) - For TokenReview/SubjectAccessReview (when OpenShift RBAC multi-tenancy is enabled)
+  - OTLP telemetry export (when configured)
+  
+  **Ingress (inbound connections):**
+  - From cluster (ports 8080, 8090) - External HTTP/gRPC access for trace ingestion and queries
+  
+  ### Ingester
+  **Egress (outbound connections):**
+  - Storage backend (S3/Azure/GCS) - For writing trace blocks
+  - OTLP telemetry export (when configured)
+  
+  **Ingress (inbound connections):**
+  - From distributor (ports 9095, 3200) - For receiving traces
+  - From querier (ports 9095, 3200) - For querying recent traces
+  
+  ### Storage Backend Support
+  - **S3 (in-cluster)**: Port extracted from endpoint URL, defaults to 443 (HTTPS) or 80 (HTTP). Allows egress to any namespace/pod for services like MinIO.
+  - **Azure Storage**: Port 443 (HTTPS). Allows egress to external internet (0.0.0.0/0) for Azure Storage endpoints.
+  - **Google Cloud Storage (GCS)**: Port 443 (HTTPS). Allows egress to external internet (0.0.0.0/0) for GCS and OAuth2 endpoints (storage.googleapis.com, oauth2.googleapis.com).
+  
+  ### Common Policies
+  All components also have:
+  - DNS egress (to kube-dns or openshift-dns)
+  - Gossip ring communication (memberlist protocol)
+  - Metrics ingress (port 3200) - For Prometheus/monitoring scraping from in-cluster monitoring namespaces
+  
+- `tempostack, tempomonolithic`: Show a warning if an instance without gateway is created on OpenShift (#1359)
+- `tempostack`: Add t-shirt sizes for simplified TempoStack resource configuration (#1345)
+  Introduces predefined deployment size profiles via the new `spec.size` field.
+  Available sizes: `1x.demo`, `1x.pico`, `1x.extra-small`, `1x.small`, `1x.medium`.
+  Each size maps to pre-tested resource configurations based on performance testing.
+  Size also sets a default replication factor (1 for demo, 2 for others).
+  Resource values are based on ingestion rates: extra-small (~100GB/day), small (~500GB/day), medium (~2TB/day).
+  
+- `operator`: Update Kubernetes dependencies to v1.34.3 (#1324)
+- `tempostack, tempomonolithic`: Update Tempo to 2.10.0 (#1375)
+  Update Tempo to 2.10.0.
+  Changelog: https://github.com/grafana/tempo/releases/tag/v2.10.0
+  
+
+### 🧰 Bug fixes 🧰
+
+- `tempostack`: NetworkPolicies now dynamically discover Kubernetes API server endpoints and ports instead of hardcoding port 6443 (#1295)
+  This fix resolves connectivity issues on managed Kubernetes services (e.g., Amazon EKS, Google GKE)
+  that expose the Kubernetes API server on non-standard ports like 443 instead of the default 6443.
+  
+  ## What Changed
+  
+  The operator now automatically discovers the actual Kubernetes API server endpoints by querying the
+  `kubernetes` EndpointSlice in the `default` namespace at reconcile time. This provides:
+  
+  - **Dynamic port detection**: Works with port 443 (EKS, some GKE configs), 6443 (standard K8s), or custom ports
+  - **Specific IP restrictions**: When available, creates /32 CIDR rules for each control plane node IP
+  - **Fallback**: Falls back to 0.0.0.0/0 with discovered port if EndpointSlice lookup fails
+  
+  ## Example
+  
+  On an EKS cluster with 3 control plane nodes, the operator now generates:
+  
+  ```yaml
+  spec:
+    egress:
+    - ports:
+      - protocol: TCP
+        port: 443  # Discovered from EndpointSlice
+      to:
+      - ipBlock:
+          cidr: 100.105.216.2/32
+      - ipBlock:
+          cidr: 100.109.70.105/32
+      - ipBlock:
+          cidr: 100.114.146.103/32
+  ```
+  
+  No configuration changes are required. The operator automatically adapts to cluster's API server configuration.
+  
+- `tempomonolithic`: Use the gateway serving cert for ingestion TLS if the gateway is enabled (#1372)
+
+### Components
+- Tempo: [v2.10.0](https://github.com/grafana/tempo/releases/tag/v2.10.0)
+
+### Support
+This release supports Kubernetes 1.25 to 1.34.
+
 ## 0.19.0
 
 ### 💡 Enhancements 💡

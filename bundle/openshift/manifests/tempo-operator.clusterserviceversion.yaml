@@ -73,8 +73,8 @@ metadata:
       ]
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring,Observability
-    containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.19.0
-    createdAt: "2026-02-12T10:55:54Z"
+    containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.20.0
+    createdAt: "2026-02-12T18:23:08Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -83,7 +83,7 @@ metadata:
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v4
     repository: https://github.com/grafana/tempo-operator
     support: Grafana Tempo Operator SIG
-  name: tempo-operator.v0.19.0
+  name: tempo-operator.v0.20.0
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -1653,7 +1653,7 @@ spec:
                   value: openshift.route,openshift.servingCertsService,openshift.oauthProxy,openshift.noAuthWarning,prometheusOperator,observability.metrics.createServiceMonitors,observability.metrics.createPrometheusRules
                 - name: DEFAULT_POD_SECURITY_CONTEXT
                   value: '{}'
-                image: ghcr.io/grafana/tempo-operator/tempo-operator:v0.19.0
+                image: ghcr.io/grafana/tempo-operator/tempo-operator:v0.20.0
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -1783,7 +1783,7 @@ spec:
     name: tempo-gateway-opa
   - image: quay.io/openshift/origin-oauth-proxy:4.14
     name: oauth-proxy
-  version: 0.19.0
+  version: 0.20.0
   webhookdefinitions:
   - admissionReviewVersions:
     - v1
