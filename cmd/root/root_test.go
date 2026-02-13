@@ -23,7 +23,7 @@ func TestReadConfig(t *testing.T) {
 			input: "../testdata/empty.yaml",
 			modifyCheck: func(t *testing.T, cfg configv1alpha1.ProjectConfig) {
 				// Config file doesn't override TLSProfile, so default "Modern" is used
-				assert.Equal(t, string(configv1alpha1.TLSProfileModernType), cfg.Gates.TLSProfile)
+				assert.Equal(t, configv1alpha1.TLSProfileModernType, cfg.Gates.TLSProfile)
 				// Verify other community defaults are present
 				assert.Equal(t, "community", cfg.Distribution)
 				assert.True(t, cfg.Gates.HTTPEncryption)
@@ -37,7 +37,7 @@ func TestReadConfig(t *testing.T) {
 			input: "../testdata/tlsprofile_old.yaml",
 			modifyCheck: func(t *testing.T, cfg configv1alpha1.ProjectConfig) {
 				// Config file overrides TLSProfile to "Old"
-				assert.Equal(t, string(configv1alpha1.TLSProfileOldType), cfg.Gates.TLSProfile)
+				assert.Equal(t, configv1alpha1.TLSProfileOldType, cfg.Gates.TLSProfile)
 				// Other community defaults should still be present
 				assert.Equal(t, "community", cfg.Distribution)
 				assert.True(t, cfg.Gates.HTTPEncryption)

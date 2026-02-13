@@ -14,15 +14,13 @@ func TestOptionsCiphers(t *testing.T) {
 	}
 
 	expected := "CIPHER1,CIPHER2,CIPHER3"
-	assert.Equal(t, expected, ops.TLSCipherSuites())
+	assert.Equal(t, expected, ops.CipherSuites())
 }
 
 func TestShortVersion(t *testing.T) {
-
 	type testCase struct {
-		version     openshiftconfigv1.TLSProtocolVersion
-		expected    string
-		expectedErr error
+		version  openshiftconfigv1.TLSProtocolVersion
+		expected string
 	}
 	for _, scenario := range []testCase{
 		{
@@ -42,17 +40,15 @@ func TestShortVersion(t *testing.T) {
 			expected: "1.3",
 		},
 		{
-			version:     "invalid",
-			expected:    "",
-			expectedErr: ErrInvalidTLSVersion,
+			version:  "invalid",
+			expected: "",
 		},
 	} {
 		t.Run(string(scenario.version), func(t *testing.T) {
 			ops := TLSProfileOptions{
 				MinTLSVersion: string(scenario.version),
 			}
-			v, err := ops.MinVersionShort()
-			assert.Equal(t, scenario.expectedErr, err)
+			v := ops.MinVersionOTELFormat()
 			assert.Equal(t, scenario.expected, v)
 		})
 	}

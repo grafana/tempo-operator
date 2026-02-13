@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"io"
 	"path"
+	"strings"
 	"time"
 
 	"k8s.io/utils/ptr"
@@ -15,6 +16,7 @@ import (
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/manifests/memberlist"
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
+	"github.com/grafana/tempo-operator/internal/tlsprofile"
 )
 
 var (
@@ -94,13 +96,9 @@ func buildQueryFrontEndConfig(params manifestutils.Params) ([]byte, error) {
 func buildConfiguration(params manifestutils.Params) ([]byte, error) {
 	tempo := params.Tempo
 	tlsopts := tlsOptions{}
-	var err error
 
 	if params.CtrlConfig.Gates.GRPCEncryption || params.CtrlConfig.Gates.HTTPEncryption {
-		tlsopts, err = buildTLSConfig(params)
-		if err != nil {
-			return []byte{}, err
-		}
+		tlsopts = buildTempoServerTLSConfig(params)
 	}
 
 	opts := options{
@@ -123,7 +121,7 @@ func buildConfiguration(params manifestutils.Params) ([]byte, error) {
 			HTTPEncryption: params.CtrlConfig.Gates.HTTPEncryption,
 		},
 		TLS:          tlsopts,
-		ReceiverTLS:  buildReceiverTLSConfig(tempo),
+		ReceiverTLS:  buildReceiverTLSConfig(tempo, params.TLSProfile),
 		S3StorageTLS: buildS3StorageTLSConfig(params),
 		Timeout:      params.Tempo.Spec.Timeout.Duration,
 		MCPServer: mcpserverOptions{
@@ -148,7 +146,16 @@ func buildTenantOverrides(tempo v1alpha1.TempoStack) ([]byte, error) {
 	})
 }
 
-func buildReceiverTLSConfig(tempo v1alpha1.TempoStack) receiverTLSOptions {
+func buildReceiverTLSConfig(tempo v1alpha1.TempoStack, tlsProfile tlsprofile.TLSProfileOptions) receiverTLSOptions {
+	minVersion := tlsProfile.MinVersionOTELFormat()
+	if tempo.Spec.Template.Distributor.TLS.MinVersion != "" {
+		minVersion = tempo.Spec.Template.Distributor.TLS.MinVersion
+	}
+	ciphers := tlsProfile.Ciphers
+	if tempo.Spec.Template.Distributor.TLS.CipherSuites != nil {
+		ciphers = tempo.Spec.Template.Distributor.TLS.CipherSuites
+	}
+
 	return receiverTLSOptions{
 		Enabled:         tempo.Spec.Template.Distributor.TLS.Enabled,
 		ClientCAEnabled: tempo.Spec.Template.Distributor.TLS.CA != "",
@@ -157,15 +164,25 @@ func buildReceiverTLSConfig(tempo v1alpha1.TempoStack) receiverTLSOptions {
 			Key:         path.Join(manifestutils.ReceiverTLSCertDir, manifestutils.TLSKeyFilename),
 			Certificate: path.Join(manifestutils.ReceiverTLSCertDir, manifestutils.TLSCertFilename),
 		},
-		MinTLSVersion: tempo.Spec.Template.Distributor.TLS.MinVersion,
+		MinTLSVersion: minVersion,
+		Ciphers:       strings.Join(ciphers, ","),
 	}
 }
 
 func buildS3StorageTLSConfig(params manifestutils.Params) storageTLSOptions {
 	tempo := params.Tempo
+	minVersion := params.TLSProfile.MinTLSVersion
+	if tempo.Spec.Storage.TLS.MinVersion != "" {
+		minVersion = tempo.Spec.Storage.TLS.MinVersion
+	}
+	ciphers := params.TLSProfile.Ciphers
+	if tempo.Spec.Storage.TLS.CipherSuites != nil {
+		ciphers = tempo.Spec.Storage.TLS.CipherSuites
+	}
 	opts := storageTLSOptions{
 		Enabled:       params.Tempo.Spec.Storage.TLS.Enabled,
-		MinTLSVersion: params.Tempo.Spec.Storage.TLS.MinVersion,
+		MinTLSVersion: minVersion,
+		Ciphers:       strings.Join(ciphers, ","),
 	}
 	if tempo.Spec.Storage.TLS.CA != "" {
 		opts.CA = path.Join(manifestutils.StorageTLSCADir, params.StorageParams.S3.TLS.CAFilename)
@@ -177,12 +194,8 @@ func buildS3StorageTLSConfig(params manifestutils.Params) storageTLSOptions {
 	return opts
 }
 
-func buildTLSConfig(params manifestutils.Params) (tlsOptions, error) {
+func buildTempoServerTLSConfig(params manifestutils.Params) tlsOptions {
 	tempo := params.Tempo
-	minTLSShort, err := params.TLSProfile.MinVersionShort()
-	if err != nil {
-		return tlsOptions{}, err
-	}
 	return tlsOptions{
 		Paths: tlsFilePaths{
 			CA:          path.Join(manifestutils.TempoInternalTLSCADir, manifestutils.TLSCAFilename),
@@ -195,19 +208,13 @@ func buildTLSConfig(params manifestutils.Params) (tlsOptions, error) {
 		},
 		Profile: tlsProfileOptions{
 			MinTLSVersion:      params.TLSProfile.MinTLSVersion,
-			Ciphers:            params.TLSProfile.TLSCipherSuites(),
-			MinTLSVersionShort: minTLSShort,
+			Ciphers:            params.TLSProfile.CipherSuites(),
+			MinTLSVersionShort: params.TLSProfile.MinVersionOTELFormat(),
 		},
-	}, nil
-
+	}
 }
 
 func buildTempoQueryConfig(params manifestutils.Params) ([]byte, error) {
-	tlsopts, err := buildTLSConfig(params)
-	if err != nil {
-		return []byte{}, err
-	}
-
 	findTracesConcurrentRequests := params.Tempo.Spec.Template.QueryFrontend.JaegerQuery.FindTracesConcurrentRequests
 	if findTracesConcurrentRequests == 0 {
 		querierReplicas := int32(1)
@@ -217,7 +224,7 @@ func buildTempoQueryConfig(params manifestutils.Params) ([]byte, error) {
 		findTracesConcurrentRequests = int(querierReplicas) * 2
 	}
 	return renderTempoQueryTemplate(tempoQueryOptions{
-		TLS:      tlsopts,
+		TLS:      buildTempoServerTLSConfig(params),
 		HTTPPort: manifestutils.PortHTTPServer,
 		Gates: featureGates{
 			GRPCEncryption: params.CtrlConfig.Gates.GRPCEncryption,

@@ -6,6 +6,7 @@ import (
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/ptr"
 
 	"github.com/grafana/tempo-operator/api/config/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
@@ -28,7 +29,7 @@ func TestServiceMonitorWithoutTLS(t *testing.T) {
 				BearerTokenFile: "/var/run/secrets/kubernetes.io/serviceaccount/token",
 				TLSConfig: &monitoringv1.TLSConfig{
 					SafeTLSConfig: monitoringv1.SafeTLSConfig{
-						InsecureSkipVerify: true,
+						InsecureSkipVerify: ptr.To(true),
 					},
 				},
 			}},
@@ -66,7 +67,7 @@ func TestServiceMonitorWithTLS(t *testing.T) {
 				TLSConfig: &monitoringv1.TLSConfig{
 					CAFile: "/etc/prometheus/configmaps/serving-certs-ca-bundle/service-ca.crt",
 					SafeTLSConfig: monitoringv1.SafeTLSConfig{
-						ServerName: "tempo-operator-controller-manager-metrics-service.tempo-operator-system.svc",
+						ServerName: ptr.To("tempo-operator-controller-manager-metrics-service.tempo-operator-system.svc"),
 					},
 				},
 			}},

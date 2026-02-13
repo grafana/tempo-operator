@@ -217,7 +217,18 @@ spec:
         path: ingestion.otlp.grpc.tls.certName
         x-descriptors:
         - urn:alm:descriptor:io.kubernetes:Secret
-      - description: MinVersion defines the minimum acceptable TLS version.
+      - description: |-
+          CipherSuites defines the list of acceptable TLS cipher suites.
+
+
+          If not set, the ciphers are set based on feature gate tlsProfile or obtained from the cluster if openshift.clusterTLSPolicy is enabled.
+        displayName: Cipher Suites
+        path: ingestion.otlp.grpc.tls.cipherSuites
+      - description: |-
+          MinVersion defines the minimum acceptable TLS version.
+
+
+          If not set, the version is set based on feature gate tlsProfile or obtained from the cluster if openshift.clusterTLSPolicy is enabled.
         displayName: Min TLS Version
         path: ingestion.otlp.grpc.tls.minVersion
       - description: HTTP defines the OTLP over HTTP configuration.
@@ -245,7 +256,18 @@ spec:
         path: ingestion.otlp.http.tls.certName
         x-descriptors:
         - urn:alm:descriptor:io.kubernetes:Secret
-      - description: MinVersion defines the minimum acceptable TLS version.
+      - description: |-
+          CipherSuites defines the list of acceptable TLS cipher suites.
+
+
+          If not set, the ciphers are set based on feature gate tlsProfile or obtained from the cluster if openshift.clusterTLSPolicy is enabled.
+        displayName: Cipher Suites
+        path: ingestion.otlp.http.tls.cipherSuites
+      - description: |-
+          MinVersion defines the minimum acceptable TLS version.
+
+
+          If not set, the version is set based on feature gate tlsProfile or obtained from the cluster if openshift.clusterTLSPolicy is enabled.
         displayName: Min TLS Version
         path: ingestion.otlp.http.tls.minVersion
       - description: |-
@@ -492,7 +514,18 @@ spec:
         path: storage.traces.s3.tls.certName
         x-descriptors:
         - urn:alm:descriptor:io.kubernetes:Secret
-      - description: MinVersion defines the minimum acceptable TLS version.
+      - description: |-
+          CipherSuites defines the list of acceptable TLS cipher suites.
+
+
+          If not set, the ciphers are set based on feature gate tlsProfile or obtained from the cluster if openshift.clusterTLSPolicy is enabled.
+        displayName: Cipher Suites
+        path: storage.traces.s3.tls.cipherSuites
+      - description: |-
+          MinVersion defines the minimum acceptable TLS version.
+
+
+          If not set, the version is set based on feature gate tlsProfile or obtained from the cluster if openshift.clusterTLSPolicy is enabled.
         displayName: Min TLS Version
         path: storage.traces.s3.tls.minVersion
       - description: Tolerations defines the tolerations of a node to schedule the
@@ -884,7 +917,18 @@ spec:
         path: storage.tls.certName
         x-descriptors:
         - urn:alm:descriptor:io.kubernetes:Secret
-      - description: MinVersion defines the minimum acceptable TLS version.
+      - description: |-
+          CipherSuites defines the list of acceptable TLS cipher suites.
+
+
+          If not set, the ciphers are set based on feature gate tlsProfile or obtained from the cluster if openshift.clusterTLSPolicy is enabled.
+        displayName: Cipher Suites
+        path: storage.tls.cipherSuites
+      - description: |-
+          MinVersion defines the minimum acceptable TLS version.
+
+
+          If not set, the version is set based on feature gate tlsProfile or obtained from the cluster if openshift.clusterTLSPolicy is enabled.
         displayName: Min TLS Version
         path: storage.tls.minVersion
       - description: StorageClassName for PVCs used by ingester. Defaults to nil (default
@@ -958,7 +1002,18 @@ spec:
         path: template.distributor.tls.certName
         x-descriptors:
         - urn:alm:descriptor:io.kubernetes:Secret
-      - description: MinVersion defines the minimum acceptable TLS version.
+      - description: |-
+          CipherSuites defines the list of acceptable TLS cipher suites.
+
+
+          If not set, the ciphers are set based on feature gate tlsProfile or obtained from the cluster if openshift.clusterTLSPolicy is enabled.
+        displayName: Cipher Suites
+        path: template.distributor.tls.cipherSuites
+      - description: |-
+          MinVersion defines the minimum acceptable TLS version.
+
+
+          If not set, the version is set based on feature gate tlsProfile or obtained from the cluster if openshift.clusterTLSPolicy is enabled.
         displayName: Min TLS Version
         path: template.distributor.tls.minVersion
       - description: Tolerations defines component-specific pod tolerations.

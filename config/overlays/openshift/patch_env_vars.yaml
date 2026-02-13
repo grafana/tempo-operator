@@ -8,7 +8,7 @@
   path: /spec/template/spec/containers/0/env/-
   value:
     name: FEATURE_GATES
-    value: "openshift.route,openshift.servingCertsService,openshift.oauthProxy,openshift.noAuthWarning,prometheusOperator,observability.metrics.createServiceMonitors,observability.metrics.createPrometheusRules"
+    value: "openshift.route,openshift.servingCertsService,openshift.oauthProxy,openshift.noAuthWarning,openshift.clusterTLSPolicy,prometheusOperator,observability.metrics.createServiceMonitors,observability.metrics.createPrometheusRules"
 
 - op: add
   path: /spec/template/spec/containers/0/env/-

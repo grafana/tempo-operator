@@ -21,7 +21,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/builder"
+	ctrlbuilder "sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -62,7 +62,7 @@ type TempoStackReconciler struct {
 // +kubebuilder:rbac:groups=metrics.k8s.io,resources=pods,verbs=create;get
 // +kubebuilder:rbac:groups=route.openshift.io,resources=routes;routes/custom-host,verbs=get;list;watch;create;update;delete
 // +kubebuilder:rbac:groups=operator.openshift.io,resources=ingresscontrollers,verbs=get;list;watch
-// +kubebuilder:rbac:groups=config.openshift.io,resources=dnses,verbs=get;list;watch
+// +kubebuilder:rbac:groups=config.openshift.io,resources=apiservers;dnses,verbs=get;list;watch
 // +kubebuilder:rbac:groups=monitoring.coreos.com,resources=servicemonitors;prometheusrules,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=grafana.integreatly.org,resources=grafanadatasources,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=networking.k8s.io,resources=networkpolicies,verbs=get;list;watch;create;update;patch;delete
@@ -258,7 +258,7 @@ func (r *TempoStackReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Watches(
 			&corev1.Secret{},
 			handler.EnqueueRequestsFromMapFunc(r.findTempoStackForStorageSecret),
-			builder.WithPredicates(predicate.ResourceVersionChangedPredicate{}),
+			ctrlbuilder.WithPredicates(predicate.ResourceVersionChangedPredicate{}),
 		)
 
 	if r.CtrlConfig.Gates.OpenShift.OpenShiftRoute {

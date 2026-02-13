@@ -88,12 +88,14 @@ type receiverTLSOptions struct {
 	ClientCAEnabled bool
 	Paths           tlsFilePaths
 	MinTLSVersion   string
+	Ciphers         string
 }
 
 type storageTLSOptions struct {
 	tlsFilePaths
 	Enabled       bool
 	MinTLSVersion string
+	Ciphers       string
 }
 
 // TLSProfileSpec is the desired behavior of a TLSProfileType.

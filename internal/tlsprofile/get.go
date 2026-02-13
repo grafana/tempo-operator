@@ -19,17 +19,21 @@ var ErrGetInvalidProfile = errors.New("got invalid TLS profile from cluster, usi
 // should return an error, if openshift.ClusterTLSPolicy is enabled, it should get the profile
 // from the cluster, if the cluster return a unknow profile this should return an error.
 func Get(ctx context.Context, fg configv1alpha1.FeatureGates, c k8getter) (TLSProfileOptions, error) {
-	var tlsProfileType openshiftconfigv1.TLSSecurityProfile
+	var tlsProfileType *openshiftconfigv1.TLSSecurityProfile
 	var err error
 	var returnedErr error
 	// If ClusterTLSPolicy is enabled get the policy from the cluster
 	if fg.OpenShift.ClusterTLSPolicy {
+		if c == nil {
+			return TLSProfileOptions{}, errors.New("failed to get the TLS profile from cluster: client is nil")
+		}
+
 		tlsProfileType, err = getTLSProfileFromCluster(ctx, c)
 		if err != nil {
 			return TLSProfileOptions{}, ErrGetProfileFromCluster
 		}
 	} else {
-		tlsProfileType, err = getTLSSecurityProfile(configv1alpha1.TLSProfileType(fg.TLSProfile))
+		tlsProfileType, err = getTLSSecurityProfile(fg.TLSProfile)
 		if err != nil {
 			return TLSProfileOptions{}, ErrGetInvalidProfile
 		}

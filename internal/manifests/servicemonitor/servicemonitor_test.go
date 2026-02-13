@@ -41,7 +41,7 @@ func TestBuildServiceMonitors(t *testing.T) {
 				Scheme: "http",
 				Port:   "http",
 				Path:   "/metrics",
-				RelabelConfigs: []*monitoringv1.RelabelConfig{
+				RelabelConfigs: []monitoringv1.RelabelConfig{
 					{
 						SourceLabels: []monitoringv1.LabelName{"__meta_kubernetes_service_label_app_kubernetes_io_instance"},
 						TargetLabel:  "cluster",
@@ -120,10 +120,10 @@ func TestBuildServiceMonitorsTLS(t *testing.T) {
 							},
 							Key: corev1.TLSPrivateKeyKey,
 						},
-						ServerName: "tempo-test-compactor.project1.svc.cluster.local",
+						ServerName: ptr.To("tempo-test-compactor.project1.svc.cluster.local"),
 					},
 				},
-				RelabelConfigs: []*monitoringv1.RelabelConfig{
+				RelabelConfigs: []monitoringv1.RelabelConfig{
 					{
 						SourceLabels: []monitoringv1.LabelName{"__meta_kubernetes_service_label_app_kubernetes_io_instance"},
 						TargetLabel:  "cluster",
@@ -177,7 +177,7 @@ func TestBuildGatewayServiceMonitor(t *testing.T) {
 				Scheme: "http",
 				Port:   "internal",
 				Path:   "/metrics",
-				RelabelConfigs: []*monitoringv1.RelabelConfig{
+				RelabelConfigs: []monitoringv1.RelabelConfig{
 					{
 						SourceLabels: []monitoringv1.LabelName{"__meta_kubernetes_service_label_app_kubernetes_io_instance"},
 						TargetLabel:  "cluster",
@@ -265,10 +265,10 @@ func TestBuildGatewayServiceMonitorsTLS(t *testing.T) {
 							},
 							Key: corev1.TLSPrivateKeyKey,
 						},
-						ServerName: "tempo-test-gateway.project1.svc.cluster.local",
+						ServerName: ptr.To("tempo-test-gateway.project1.svc.cluster.local"),
 					},
 				},
-				RelabelConfigs: []*monitoringv1.RelabelConfig{
+				RelabelConfigs: []monitoringv1.RelabelConfig{
 					{
 						SourceLabels: []monitoringv1.LabelName{"__meta_kubernetes_service_label_app_kubernetes_io_instance"},
 						TargetLabel:  "cluster",

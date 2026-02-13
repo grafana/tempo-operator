@@ -41,7 +41,7 @@ func TestBuildServiceMonitor(t *testing.T) {
 				Scheme: "http",
 				Port:   "http",
 				Path:   "/metrics",
-				RelabelConfigs: []*monitoringv1.RelabelConfig{
+				RelabelConfigs: []monitoringv1.RelabelConfig{
 					{
 						SourceLabels: []monitoringv1.LabelName{"__meta_kubernetes_service_label_app_kubernetes_io_instance"},
 						TargetLabel:  "cluster",
@@ -110,7 +110,7 @@ func TestBuildServiceMonitorGateway(t *testing.T) {
 				Scheme: "http",
 				Port:   "internal",
 				Path:   "/metrics",
-				RelabelConfigs: []*monitoringv1.RelabelConfig{
+				RelabelConfigs: []monitoringv1.RelabelConfig{
 					{
 						SourceLabels: []monitoringv1.LabelName{"__meta_kubernetes_service_label_app_kubernetes_io_instance"},
 						TargetLabel:  "cluster",
@@ -125,7 +125,7 @@ func TestBuildServiceMonitorGateway(t *testing.T) {
 				Scheme: "http",
 				Port:   "http",
 				Path:   "/metrics",
-				RelabelConfigs: []*monitoringv1.RelabelConfig{
+				RelabelConfigs: []monitoringv1.RelabelConfig{
 					{
 						SourceLabels: []monitoringv1.LabelName{"__meta_kubernetes_service_label_app_kubernetes_io_instance"},
 						TargetLabel:  "cluster",

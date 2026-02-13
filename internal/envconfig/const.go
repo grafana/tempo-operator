@@ -76,10 +76,11 @@ const (
 // Feature gate name constants used in the FEATURE_GATES environment variable.
 const (
 	// OpenShift-specific feature gates.
-	featureGateOpenShiftRoute         = "openshift.route"
-	featureGateOpenShiftServingCerts  = "openshift.servingCertsService"
-	featureGateOpenShiftOAuthProxy    = "openshift.oauthProxy"
-	featureGateOpenShiftNoAuthWarning = "openshift.noAuthWarning"
+	featureGateOpenShiftRoute            = "openshift.route"
+	featureGateOpenShiftServingCerts     = "openshift.servingCertsService"
+	featureGateOpenShiftOAuthProxy       = "openshift.oauthProxy"
+	featureGateOpenShiftNoAuthWarning    = "openshift.noAuthWarning"
+	featureGateOpenShiftClusterTLSPolicy = "openshift.clusterTLSPolicy"
 
 	// TLS/Encryption feature gates.
 	featureGateHTTPEncryption = "httpEncryption"
