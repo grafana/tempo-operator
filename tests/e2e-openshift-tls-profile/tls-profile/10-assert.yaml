@@ -1,0 +1,31 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: verify-traces-grpc-modern
+  namespace: chainsaw-tls-profile-gw
+status:
+  succeeded: 1
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: verify-traces-traceql-grpc-modern
+  namespace: chainsaw-tls-profile-gw
+status:
+  succeeded: 1
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: verify-traces-http-modern
+  namespace: chainsaw-tls-profile-gw
+status:
+  succeeded: 1
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: verify-traces-traceql-http-modern
+  namespace: chainsaw-tls-profile-gw
+status:
+  succeeded: 1
