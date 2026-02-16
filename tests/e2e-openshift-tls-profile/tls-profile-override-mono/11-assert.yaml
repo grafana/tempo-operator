@@ -1,0 +1,7 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: generate-traces-grpc-override
+  namespace: chainsaw-tls-profile-mono
+status:
+  succeeded: 1

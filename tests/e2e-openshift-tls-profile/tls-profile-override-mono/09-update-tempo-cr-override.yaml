@@ -1,0 +1,30 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoMonolithic
+metadata:
+  name: mono
+  namespace: chainsaw-tls-profile-mono
+spec:
+  storage:
+    traces:
+      backend: s3
+      size: 1Gi
+      s3:
+        secret: minio
+        tls:
+          enabled: true
+          caName: custom-ca
+          minVersion: "1.3"
+  jaegerui:
+    enabled: true
+    route:
+      enabled: true
+  ingestion:
+    otlp:
+      grpc:
+        tls:
+          enabled: true
+          minVersion: "1.3"
+      http:
+        tls:
+          enabled: true
+          minVersion: "1.3"

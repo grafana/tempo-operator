@@ -1,0 +1,81 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/kyverno/chainsaw/main/.schemas/json/test-chainsaw-v1alpha1.json
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  creationTimestamp: null
+  name: tls-profile-override-stack
+spec:
+  # Must run alone because it patches the operator subscription.
+  concurrent: false
+  namespace: chainsaw-tls-profile-gw-ovr
+  # Revert the operator subscription on any failure to prevent impact on other tests.
+  catch:
+  - script:
+      timeout: 5m
+      content: ./08-revert-subscription.sh
+  steps:
+  - name: step-00
+    try:
+    - script:
+        timeout: 5m
+        content: ./00-patch-subscription.sh
+  - name: step-01
+    try:
+    - apply:
+        file: 01-install-storage.yaml
+    - assert:
+        file: 01-assert.yaml
+  - name: step-02
+    try:
+    - apply:
+        file: 02-install-tempo.yaml
+    - assert:
+        file: 02-assert.yaml
+  - name: step-03
+    try:
+    - apply:
+        file: 03-install-tls-scanner.yaml
+    - assert:
+        file: 03-assert.yaml
+  - name: step-04
+    try:
+    - script:
+        timeout: 10m
+        content: ./04-verify-override.sh
+  - name: step-05
+    try:
+    - apply:
+        file: 05-install-otelcol.yaml
+    - assert:
+        file: 05-assert.yaml
+  - name: step-06
+    try:
+    - apply:
+        file: 06-generate-traces.yaml
+    - assert:
+        file: 06-assert.yaml
+  - name: step-07
+    try:
+    - apply:
+        file: 07-verify-traces.yaml
+    - assert:
+        file: 07-assert.yaml
+  - name: step-08
+    try:
+    - script:
+        timeout: 5m
+        content: ./08-revert-subscription.sh
+  # --- Per-CR component-level TLS override tests ---
+  # After reverting the subscription, the operator uses the default TLS profile (Intermediate from APIServer).
+  # Now test that per-CR minVersion overrides take precedence over the operator-level profile.
+  - name: step-09
+    try:
+    - apply:
+        file: 09-update-tempo-cr-override.yaml
+    - assert:
+        file: 09-assert.yaml
+  - name: step-10
+    try:
+    - script:
+        timeout: 10m
+        content: ./10-verify-cr-override.sh
