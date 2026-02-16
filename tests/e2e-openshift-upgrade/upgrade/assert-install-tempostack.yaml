@@ -140,6 +140,8 @@ spec:
         - --traces.tls.cert-file=/var/run/tls/server/tls.crt
         - --traces.tls.ca-file=/var/run/ca/service-ca.crt
         - --traces.tls.watch-certs=true
+        - --tls.cipher-suites=TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384,TLS_CHACHA20_POLY1305_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+        - --tls.min-version=VersionTLS12
         - --tls.server.cert-file=/etc/tempo-gateway/serving-certs/tls.crt
         - --tls.server.key-file=/etc/tempo-gateway/serving-certs/tls.key
         - --tls.healthchecks.server-ca-file=/etc/tempo-gateway/cabundle/service-ca.crt

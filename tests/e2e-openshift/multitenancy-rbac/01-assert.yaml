@@ -156,6 +156,8 @@ spec:
         - --traces.tls.cert-file=/var/run/tls/server/tls.crt
         - --traces.tls.ca-file=/var/run/ca/service-ca.crt
         - --traces.tls.watch-certs=true
+        - --tls.cipher-suites=TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384,TLS_CHACHA20_POLY1305_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+        - --tls.min-version=VersionTLS12
         - --tls.server.cert-file=/etc/tempo-gateway/serving-certs/tls.crt
         - --tls.server.key-file=/etc/tempo-gateway/serving-certs/tls.key
         - --tls.healthchecks.server-ca-file=/etc/tempo-gateway/cabundle/service-ca.crt
@@ -302,3 +304,392 @@ metadata:
   namespace: chainsaw-rbac
 status:
   readyReplicas: 1
+---
+# ConfigMap TLS assertion - validate TLS cipher suites and min version
+apiVersion: v1
+data:
+  tempo-query-frontend.yaml: |
+    compactor:
+      compaction:
+        block_retention: 48h0m0s
+      ring:
+        kvstore:
+          store: memberlist
+    distributor:
+      receivers:
+        otlp:
+          protocols:
+            grpc:
+              endpoint: 0.0.0.0:4317
+              tls:
+                client_ca_file:  /var/run/ca/service-ca.crt
+                cert_file: /var/run/tls/server/tls.crt
+                key_file: /var/run/tls/server/tls.key
+                min_version: "1.2"
+                cipher_suites: "TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384,TLS_CHACHA20_POLY1305_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256"
+            http:
+              endpoint: 0.0.0.0:4318
+              tls:
+                client_ca_file:  /var/run/ca/service-ca.crt
+                cert_file: /var/run/tls/server/tls.crt
+                key_file: /var/run/tls/server/tls.key
+                min_version: "1.2"
+                cipher_suites: "TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384,TLS_CHACHA20_POLY1305_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256"
+      ring:
+        kvstore:
+          store: memberlist
+    ingester:
+      lifecycler:
+        ring:
+          kvstore:
+            store: memberlist
+          replication_factor: 1
+        tokens_file_path: /var/tempo/tokens.json
+      max_block_duration: 10m
+    memberlist:
+      abort_if_cluster_join_fails: false
+      join_members:
+      - tempo-simplst-gossip-ring
+    multitenancy_enabled: true
+    querier:
+      max_concurrent_queries: 20
+      frontend_worker:
+        frontend_address: tempo-simplst-query-frontend-discovery:9095
+        grpc_client_config:
+          tls_enabled: true
+          tls_cert_path:  /var/run/tls/server/tls.crt
+          tls_key_path: /var/run/tls/server/tls.key
+          tls_ca_path: /var/run/ca/service-ca.crt
+          tls_server_name: tempo-simplst-query-frontend.chainsaw-rbac.svc.cluster.local
+          tls_cipher_suites: TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384,TLS_CHACHA20_POLY1305_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+          tls_min_version: VersionTLS12
+    internal_server:
+      enable: true
+      http_listen_address: ""
+      tls_cipher_suites: TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384,TLS_CHACHA20_POLY1305_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+      tls_min_version: VersionTLS12
+      http_tls_config:
+        cert_file: /var/run/tls/server/tls.crt
+        key_file: /var/run/tls/server/tls.key
+    server:
+      grpc_server_max_recv_msg_size: 4194304
+      grpc_server_max_send_msg_size: 4194304
+      http_listen_port: 3200
+      http_server_read_timeout: 30s
+      http_server_write_timeout: 30s
+      log_format: logfmt
+      tls_cipher_suites: TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384,TLS_CHACHA20_POLY1305_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+      tls_min_version: VersionTLS12
+      grpc_tls_config:
+        cert_file:  /var/run/tls/server/tls.crt
+        key_file: /var/run/tls/server/tls.key
+        client_ca_file: /var/run/ca/service-ca.crt
+        client_auth_type: RequireAndVerifyClientCert
+      http_tls_config:
+        cert_file:  /var/run/tls/server/tls.crt
+        client_auth_type: RequireAndVerifyClientCert
+        key_file: /var/run/tls/server/tls.key
+        client_ca_file: /var/run/ca/service-ca.crt
+    storage:
+      trace:
+        backend: s3
+        blocklist_poll: 5m
+        s3:
+          endpoint: minio:9000
+          bucket: tempo
+          insecure: true
+        local:
+          path: /var/tempo/traces
+        wal:
+          path: /var/tempo/wal
+    usage_report:
+      reporting_enabled: false
+    query_frontend:
+      search:
+        max_spans_per_span_set: 0
+        concurrent_jobs: 2000
+        max_duration: 0s
+        default_result_limit: 20
+    ingester_client:
+      grpc_client_config:
+        tls_enabled: true
+        tls_cert_path:  /var/run/tls/server/tls.crt
+        tls_key_path: /var/run/tls/server/tls.key
+        tls_ca_path: /var/run/ca/service-ca.crt
+        tls_server_name: tempo-simplst-ingester.chainsaw-rbac.svc.cluster.local
+        tls_insecure_skip_verify: false
+        tls_cipher_suites: TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384,TLS_CHACHA20_POLY1305_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+        tls_min_version: VersionTLS12
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/component: config
+    app.kubernetes.io/instance: simplst
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-simplst
+  namespace: chainsaw-rbac
+---
+# Distributor network policy
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  labels:
+    app.kubernetes.io/component: distributor
+    app.kubernetes.io/instance: simplst
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-simplst-distributor
+  namespace: chainsaw-rbac
+spec:
+  egress:
+  - ports:
+    - port: 9095
+      protocol: TCP
+    to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: ingester
+          app.kubernetes.io/instance: simplst
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+  - ports:
+    - port: 3200
+      protocol: TCP
+    to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: ingester
+          app.kubernetes.io/instance: simplst
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: gateway
+          app.kubernetes.io/instance: simplst
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+    ports:
+    - port: 4317
+      protocol: TCP
+    - port: 4318
+      protocol: TCP
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: distributor
+      app.kubernetes.io/instance: simplst
+      app.kubernetes.io/managed-by: tempo-operator
+      app.kubernetes.io/name: tempo
+  policyTypes:
+  - Egress
+  - Ingress
+---
+# Ingester network policy
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  labels:
+    app.kubernetes.io/component: ingester
+    app.kubernetes.io/instance: simplst
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-simplst-ingester
+  namespace: chainsaw-rbac
+spec:
+  egress:
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+    - namespaceSelector: {}
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: distributor
+          app.kubernetes.io/instance: simplst
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+    ports:
+    - port: 9095
+      protocol: TCP
+    - port: 3200
+      protocol: TCP
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: querier
+          app.kubernetes.io/instance: simplst
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+    ports:
+    - port: 9095
+      protocol: TCP
+    - port: 3200
+      protocol: TCP
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: ingester
+      app.kubernetes.io/instance: simplst
+      app.kubernetes.io/managed-by: tempo-operator
+      app.kubernetes.io/name: tempo
+  policyTypes:
+  - Egress
+  - Ingress
+---
+# Querier network policy
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  labels:
+    app.kubernetes.io/component: querier
+    app.kubernetes.io/instance: simplst
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-simplst-querier
+  namespace: chainsaw-rbac
+spec:
+  egress:
+  - ports:
+    - port: 9095
+      protocol: TCP
+    to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: ingester
+          app.kubernetes.io/instance: simplst
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+  - ports:
+    - port: 3200
+      protocol: TCP
+    to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: ingester
+          app.kubernetes.io/instance: simplst
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+  - ports:
+    - port: 9095
+      protocol: TCP
+    to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: query-frontend
+          app.kubernetes.io/instance: simplst
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+  - ports:
+    - port: 3200
+      protocol: TCP
+    to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: query-frontend
+          app.kubernetes.io/instance: simplst
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+  # Storage egress without port restrictions
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+    - namespaceSelector: {}
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: query-frontend
+          app.kubernetes.io/instance: simplst
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+    ports:
+    - port: 9095
+      protocol: TCP
+    - port: 3200
+      protocol: TCP
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: querier
+      app.kubernetes.io/instance: simplst
+      app.kubernetes.io/managed-by: tempo-operator
+      app.kubernetes.io/name: tempo
+  policyTypes:
+  - Egress
+  - Ingress
+---
+# Query-frontend network policy
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  labels:
+    app.kubernetes.io/component: query-frontend
+    app.kubernetes.io/instance: simplst
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-simplst-query-frontend
+  namespace: chainsaw-rbac
+spec:
+  egress:
+  - ports:
+    - port: 9095
+      protocol: TCP
+    to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: querier
+          app.kubernetes.io/instance: simplst
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+  - ports:
+    - port: 3200
+      protocol: TCP
+    to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: querier
+          app.kubernetes.io/instance: simplst
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+  # Storage egress without port restrictions
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+    - namespaceSelector: {}
+  ingress:
+  # Gateway access to query-frontend
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: gateway
+          app.kubernetes.io/instance: simplst
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+    ports:
+    - port: 9095
+      protocol: TCP
+    - port: 3200
+      protocol: TCP
+  # Querier access to query-frontend
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: querier
+          app.kubernetes.io/instance: simplst
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+    ports:
+    - port: 9095
+      protocol: TCP
+    - port: 3200
+      protocol: TCP
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: query-frontend
+      app.kubernetes.io/instance: simplst
+      app.kubernetes.io/managed-by: tempo-operator
+      app.kubernetes.io/name: tempo
+  policyTypes:
+  - Egress
+  - Ingress

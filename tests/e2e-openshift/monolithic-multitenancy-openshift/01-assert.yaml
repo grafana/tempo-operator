@@ -2,6 +2,51 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: tempo-mmo
+spec:
+  template:
+    spec:
+      containers:
+      - name: tempo
+      - name: jaeger-query
+      - name: tempo-query
+      - args:
+        - --web.listen=0.0.0.0:8080
+        - --web.internal.listen=0.0.0.0:8081
+        - --traces.tenant-header=x-scope-orgid
+        - --traces.tempo.endpoint=https://localhost:3200
+        - --traces.write-timeout=30s
+        - --rbac.config=/etc/tempo-gateway/rbac/rbac.yaml
+        - --tenants.config=/etc/tempo-gateway/tenants/tenants.yaml
+        - --log.level=info
+        - --tls.internal.server.key-file=/var/run/tls/server/tls.key
+        - --tls.internal.server.cert-file=/var/run/tls/server/tls.crt
+        - --traces.tls.key-file=/var/run/tls/server/tls.key
+        - --traces.tls.cert-file=/var/run/tls/server/tls.crt
+        - --traces.tls.ca-file=/var/run/ca/service-ca.crt
+        - --traces.tls.watch-certs=true
+        - --grpc.listen=0.0.0.0:8090
+        - --traces.write.otlpgrpc.endpoint=localhost:4317
+        - --traces.write.otlphttp.endpoint=http://localhost:4318
+        - --traces.read.endpoint=http://localhost:16686
+        - --tls.server.cert-file=/etc/tempo-gateway/serving-cert/tls.crt
+        - --tls.server.key-file=/etc/tempo-gateway/serving-cert/tls.key
+        - --tls.healthchecks.server-ca-file=/etc/tempo-gateway/serving-ca/service-ca.crt
+        - --tls.healthchecks.server-name=tempo-mmo-gateway.chainsaw-monolithic-multitenancy.svc.cluster.local
+        - --web.healthchecks.url=https://localhost:8080
+        - --tls.client-auth-type=NoClientCert
+        - --tls.cipher-suites=TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384,TLS_CHACHA20_POLY1305_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+        - --tls.min-version=VersionTLS12
+        name: tempo-gateway
+      - args:
+        - --log.level=warn
+        - --web.listen=:8082
+        - --web.internal.listen=:8083
+        - --web.healthchecks.url=http://localhost:8082
+        - --opa.package=tempomonolithic
+        - --opa.ssar
+        - --openshift.mappings=dev=tempo.grafana.com
+        - --openshift.mappings=prod=tempo.grafana.com
+        name: tempo-gateway-opa
 status:
   readyReplicas: 1
 
@@ -65,6 +110,32 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: tempo-mmo
+  namespace: chainsaw-monolithic-multitenancy
+
+---
+apiVersion: v1
+data:
+  tempo-query.yaml: |
+    address: 0.0.0.0:7777
+    backend: localhost:3200
+    tenant_header_key: x-scope-orgid
+    services_query_duration: 72h0m0s
+    find_traces_concurrent_requests: 2
+    tls_enabled: true
+    tls_cert_path: /var/run/tls/server/tls.crt
+    tls_key_path: /var/run/tls/server/tls.key
+    tls_ca_path: /var/run/ca/service-ca.crt
+    tls_insecure_skip_verify: false
+    tls_min_version: VersionTLS12
+    tls_cipher_suites: TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384,TLS_CHACHA20_POLY1305_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/component: config
+    app.kubernetes.io/instance: mmo
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo-monolithic
+  name: tempo-mmo-config
   namespace: chainsaw-monolithic-multitenancy
 
 ---

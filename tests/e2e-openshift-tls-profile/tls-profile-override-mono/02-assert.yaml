@@ -1,0 +1,21 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoMonolithic
+metadata:
+  name: mono
+  namespace: chainsaw-tls-profile-mono
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: tempo-mono
+  namespace: chainsaw-tls-profile-mono
+status:
+  readyReplicas: 1
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: tempo-mono-0
+  namespace: chainsaw-tls-profile-mono
+status:
+  phase: Running

@@ -160,6 +160,8 @@ spec:
         - --traces.tls.cert-file=/var/run/tls/server/tls.crt
         - --traces.tls.ca-file=/var/run/ca/service-ca.crt
         - --traces.tls.watch-certs=true
+        - --tls.cipher-suites=TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384,TLS_CHACHA20_POLY1305_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+        - --tls.min-version=VersionTLS12
         - --tls.server.cert-file=/etc/tempo-gateway/serving-certs/tls.crt
         - --tls.server.key-file=/etc/tempo-gateway/serving-certs/tls.key
         - --tls.healthchecks.server-ca-file=/etc/tempo-gateway/cabundle/service-ca.crt
@@ -412,6 +414,33 @@ metadata:
 status:
   readyReplicas: 1
 ---
+# ConfigMap TLS assertion - validate TLS cipher suites and min version
+apiVersion: v1
+data:
+  tempo-query.yaml: |
+    address: 0.0.0.0:7777
+    backend: localhost:3200
+    tenant_header_key: x-scope-orgid
+    tls_enabled: true
+    tls_cert_path: /var/run/tls/server/tls.crt
+    tls_key_path: /var/run/tls/server/tls.key
+    tls_ca_path: /var/run/ca/service-ca.crt
+    tls_insecure_skip_verify: false
+    tls_server_name: tempo-simplest-query-frontend.chainsaw-multitenancy.svc.cluster.local
+    tls_min_version: VersionTLS12
+    tls_cipher_suites: TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384,TLS_CHACHA20_POLY1305_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+    services_query_duration: 72h0m0s
+    find_traces_concurrent_requests: 2
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/component: config
+    app.kubernetes.io/instance: simplest
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-simplest
+  namespace: chainsaw-multitenancy
+---
 # Network Policy Assertions
 # DNS policy for OpenShift (port 5353 to openshift-dns namespace)
 apiVersion: networking.k8s.io/v1
@@ -621,16 +650,6 @@ spec:
           app.kubernetes.io/managed-by: tempo-operator
           app.kubernetes.io/name: tempo
   - ports:
-    - port: 16685
-      protocol: TCP
-    to:
-    - podSelector:
-        matchLabels:
-          app.kubernetes.io/component: query-frontend
-          app.kubernetes.io/instance: simplest
-          app.kubernetes.io/managed-by: tempo-operator
-          app.kubernetes.io/name: tempo
-  - ports:
     - port: 16687
       protocol: TCP
     to:
@@ -672,6 +691,27 @@ metadata:
   name: tempo-simplest-distributor
   namespace: chainsaw-multitenancy
 spec:
+  egress:
+  - ports:
+    - port: 9095
+      protocol: TCP
+    to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: ingester
+          app.kubernetes.io/instance: simplest
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+  - ports:
+    - port: 3200
+      protocol: TCP
+    to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: ingester
+          app.kubernetes.io/instance: simplest
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
   ingress:
   - from:
     - podSelector:
@@ -712,6 +752,31 @@ spec:
     - ipBlock:
         cidr: 0.0.0.0/0
     - namespaceSelector: {}
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: distributor
+          app.kubernetes.io/instance: simplest
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+    ports:
+    - port: 9095
+      protocol: TCP
+    - port: 3200
+      protocol: TCP
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: querier
+          app.kubernetes.io/instance: simplest
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+    ports:
+    - port: 9095
+      protocol: TCP
+    - port: 3200
+      protocol: TCP
   podSelector:
     matchLabels:
       app.kubernetes.io/component: ingester
@@ -722,7 +787,7 @@ spec:
   - Egress
   - Ingress
 ---
-# Querier network policy - storage egress without port restrictions
+# Querier network policy
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -734,6 +799,65 @@ metadata:
   name: tempo-simplest-querier
   namespace: chainsaw-multitenancy
 spec:
+  egress:
+  - ports:
+    - port: 9095
+      protocol: TCP
+    to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: ingester
+          app.kubernetes.io/instance: simplest
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+  - ports:
+    - port: 3200
+      protocol: TCP
+    to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: ingester
+          app.kubernetes.io/instance: simplest
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+  - ports:
+    - port: 9095
+      protocol: TCP
+    to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: query-frontend
+          app.kubernetes.io/instance: simplest
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+  - ports:
+    - port: 3200
+      protocol: TCP
+    to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: query-frontend
+          app.kubernetes.io/instance: simplest
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+  # Storage egress without port restrictions
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+    - namespaceSelector: {}
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: query-frontend
+          app.kubernetes.io/instance: simplest
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+    ports:
+    - port: 9095
+      protocol: TCP
+    - port: 3200
+      protocol: TCP
   podSelector:
     matchLabels:
       app.kubernetes.io/component: querier
@@ -744,7 +868,7 @@ spec:
   - Egress
   - Ingress
 ---
-# Query-frontend network policy - storage egress without port restrictions
+# Query-frontend network policy
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -756,6 +880,73 @@ metadata:
   name: tempo-simplest-query-frontend
   namespace: chainsaw-multitenancy
 spec:
+  egress:
+  - ports:
+    - port: 9095
+      protocol: TCP
+    to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: querier
+          app.kubernetes.io/instance: simplest
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+  - ports:
+    - port: 3200
+      protocol: TCP
+    to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: querier
+          app.kubernetes.io/instance: simplest
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+  # Storage egress without port restrictions
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+    - namespaceSelector: {}
+  ingress:
+  # Cluster components access to Jaeger ports
+  - from:
+    - namespaceSelector: {}
+    ports:
+    - port: 16685
+      protocol: TCP
+    - port: 16686
+      protocol: TCP
+    - port: 16687
+      protocol: TCP
+  # Gateway access to query-frontend
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: gateway
+          app.kubernetes.io/instance: simplest
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+    ports:
+    - port: 9095
+      protocol: TCP
+    - port: 3200
+      protocol: TCP
+    - port: 16686
+      protocol: TCP
+    - port: 16687
+      protocol: TCP
+  # Querier access to query-frontend
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: querier
+          app.kubernetes.io/instance: simplest
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+    ports:
+    - port: 9095
+      protocol: TCP
+    - port: 3200
+      protocol: TCP
   podSelector:
     matchLabels:
       app.kubernetes.io/component: query-frontend
