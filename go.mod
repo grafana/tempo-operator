@@ -39,7 +39,7 @@ require (
 )
 
 require (
-	github.com/openshift/api v0.0.0-20250115152744-52377f09e5c9
+	github.com/openshift/api v0.0.0-20260219112234-43090db3afe4
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.73.2
 	github.com/stretchr/testify v1.11.1
 	gopkg.in/yaml.v3 v3.0.1
