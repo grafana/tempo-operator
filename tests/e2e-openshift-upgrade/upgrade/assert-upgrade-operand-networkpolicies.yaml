@@ -1,0 +1,549 @@
+# Operand NetworkPolicy assertions post-upgrade for TempoStack
+# These policies are created by the operator for the TempoStack simplst in chainsaw-rbac namespace
+# Note: OTLP egress rules (4317/4318) are present because the TempoStack has observability.tracing.otlp_http_endpoint configured
+---
+# DNS policy for OpenShift (port 5353 to openshift-dns namespace)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  labels:
+    app.kubernetes.io/instance: simplst
+    app.kubernetes.io/managed-by: tempo-operator
+  name: tempo-simplst-allow-dns-openshift
+  namespace: chainsaw-rbac
+spec:
+  egress:
+  - ports:
+    - port: 5353
+      protocol: TCP
+    - port: 5353
+      protocol: UDP
+    to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: openshift-dns
+      podSelector:
+        matchLabels:
+          dns.operator.openshift.io/daemonset-dns: default
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: simplst
+      app.kubernetes.io/managed-by: tempo-operator
+  policyTypes:
+  - Egress
+---
+# Gossip policy for memberlist communication between tempo pods
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  labels:
+    app.kubernetes.io/instance: simplst
+    app.kubernetes.io/managed-by: tempo-operator
+  name: tempo-simplst-gossip
+  namespace: chainsaw-rbac
+spec:
+  egress:
+  - ports:
+    - port: 7946
+      protocol: TCP
+    - port: 3200
+      protocol: TCP
+    - port: 3101
+      protocol: TCP
+    to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/instance: simplst
+          app.kubernetes.io/managed-by: tempo-operator
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/instance: simplst
+          app.kubernetes.io/managed-by: tempo-operator
+    ports:
+    - port: 7946
+      protocol: TCP
+    - port: 3200
+      protocol: TCP
+    - port: 3101
+      protocol: TCP
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: simplst
+      app.kubernetes.io/managed-by: tempo-operator
+  policyTypes:
+  - Ingress
+  - Egress
+---
+# Metrics ingress policy for Prometheus scraping
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  labels:
+    app.kubernetes.io/instance: simplst
+    app.kubernetes.io/managed-by: tempo-operator
+  name: tempo-simplst-ingress-to-operand-metrics
+  namespace: chainsaw-rbac
+spec:
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchExpressions:
+        - key: openshift.io/cluster-monitoring
+          operator: Exists
+    ports:
+    - port: 3200
+      protocol: TCP
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: simplst
+      app.kubernetes.io/managed-by: tempo-operator
+  policyTypes:
+  - Ingress
+---
+# Compactor network policy - OTLP export + storage egress
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  labels:
+    app.kubernetes.io/component: compactor
+    app.kubernetes.io/instance: simplst
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-simplst-compactor
+  namespace: chainsaw-rbac
+spec:
+  egress:
+  - ports:
+    - port: 4318
+      protocol: TCP
+    to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+  - ports:
+    - port: 4317
+      protocol: TCP
+    to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+    - namespaceSelector: {}
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: compactor
+      app.kubernetes.io/instance: simplst
+      app.kubernetes.io/managed-by: tempo-operator
+      app.kubernetes.io/name: tempo
+  policyTypes:
+  - Egress
+---
+# Gateway network policy - controls traffic to/from gateway
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  labels:
+    app.kubernetes.io/component: gateway
+    app.kubernetes.io/instance: simplst
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-simplst-gateway
+  namespace: chainsaw-rbac
+spec:
+  egress:
+  # Gateway to Distributor OTLP gRPC
+  - ports:
+    - port: 4317
+      protocol: TCP
+    to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: distributor
+          app.kubernetes.io/instance: simplst
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+  # Gateway to Distributor OTLP HTTP
+  - ports:
+    - port: 4318
+      protocol: TCP
+    to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: distributor
+          app.kubernetes.io/instance: simplst
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+  # Gateway to Kubernetes API server for TokenReview/SubjectAccessReview
+  # Port and CIDR are dynamically discovered from EndpointSlice, so we only assert the port
+  - ports:
+    - port: 6443
+      protocol: TCP
+  # Gateway to OAuth server for token exchange
+  - ports:
+    - port: 443
+      protocol: TCP
+    to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+    - namespaceSelector: {}
+  # Gateway OTLP export (telemetry)
+  - ports:
+    - port: 4318
+      protocol: TCP
+    to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+  - ports:
+    - port: 4317
+      protocol: TCP
+    to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+  # Gateway to Query-Frontend
+  - ports:
+    - port: 9095
+      protocol: TCP
+    to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: query-frontend
+          app.kubernetes.io/instance: simplst
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+  - ports:
+    - port: 3200
+      protocol: TCP
+    to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: query-frontend
+          app.kubernetes.io/instance: simplst
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+  ingress:
+  - from:
+    - namespaceSelector: {}
+    ports:
+    - port: 8080
+      protocol: TCP
+    - port: 8090
+      protocol: TCP
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: gateway
+      app.kubernetes.io/instance: simplst
+      app.kubernetes.io/managed-by: tempo-operator
+      app.kubernetes.io/name: tempo
+  policyTypes:
+  - Egress
+  - Ingress
+---
+# Distributor network policy - egress to ingester + OTLP export, ingress from gateway
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  labels:
+    app.kubernetes.io/component: distributor
+    app.kubernetes.io/instance: simplst
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-simplst-distributor
+  namespace: chainsaw-rbac
+spec:
+  egress:
+  - ports:
+    - port: 9095
+      protocol: TCP
+    to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: ingester
+          app.kubernetes.io/instance: simplst
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+  - ports:
+    - port: 3200
+      protocol: TCP
+    to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: ingester
+          app.kubernetes.io/instance: simplst
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+  - ports:
+    - port: 4318
+      protocol: TCP
+    to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+  - ports:
+    - port: 4317
+      protocol: TCP
+    to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: gateway
+          app.kubernetes.io/instance: simplst
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+    ports:
+    - port: 4317
+      protocol: TCP
+    - port: 4318
+      protocol: TCP
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: distributor
+      app.kubernetes.io/instance: simplst
+      app.kubernetes.io/managed-by: tempo-operator
+      app.kubernetes.io/name: tempo
+  policyTypes:
+  - Egress
+  - Ingress
+---
+# Ingester network policy - OTLP export + storage egress, ingress from distributor and querier
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  labels:
+    app.kubernetes.io/component: ingester
+    app.kubernetes.io/instance: simplst
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-simplst-ingester
+  namespace: chainsaw-rbac
+spec:
+  egress:
+  - ports:
+    - port: 4318
+      protocol: TCP
+    to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+  - ports:
+    - port: 4317
+      protocol: TCP
+    to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+    - namespaceSelector: {}
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: distributor
+          app.kubernetes.io/instance: simplst
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+    ports:
+    - port: 9095
+      protocol: TCP
+    - port: 3200
+      protocol: TCP
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: querier
+          app.kubernetes.io/instance: simplst
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+    ports:
+    - port: 9095
+      protocol: TCP
+    - port: 3200
+      protocol: TCP
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: ingester
+      app.kubernetes.io/instance: simplst
+      app.kubernetes.io/managed-by: tempo-operator
+      app.kubernetes.io/name: tempo
+  policyTypes:
+  - Egress
+  - Ingress
+---
+# Querier network policy - egress to ingester, query-frontend, OTLP + storage; ingress from query-frontend
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  labels:
+    app.kubernetes.io/component: querier
+    app.kubernetes.io/instance: simplst
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-simplst-querier
+  namespace: chainsaw-rbac
+spec:
+  egress:
+  - ports:
+    - port: 9095
+      protocol: TCP
+    to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: ingester
+          app.kubernetes.io/instance: simplst
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+  - ports:
+    - port: 3200
+      protocol: TCP
+    to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: ingester
+          app.kubernetes.io/instance: simplst
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+  - ports:
+    - port: 4318
+      protocol: TCP
+    to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+  - ports:
+    - port: 4317
+      protocol: TCP
+    to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+  - ports:
+    - port: 9095
+      protocol: TCP
+    to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: query-frontend
+          app.kubernetes.io/instance: simplst
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+  - ports:
+    - port: 3200
+      protocol: TCP
+    to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: query-frontend
+          app.kubernetes.io/instance: simplst
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+    - namespaceSelector: {}
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: query-frontend
+          app.kubernetes.io/instance: simplst
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+    ports:
+    - port: 9095
+      protocol: TCP
+    - port: 3200
+      protocol: TCP
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: querier
+      app.kubernetes.io/instance: simplst
+      app.kubernetes.io/managed-by: tempo-operator
+      app.kubernetes.io/name: tempo
+  policyTypes:
+  - Egress
+  - Ingress
+---
+# Query-frontend network policy - egress OTLP + to querier + storage; ingress from gateway and querier
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  labels:
+    app.kubernetes.io/component: query-frontend
+    app.kubernetes.io/instance: simplst
+    app.kubernetes.io/managed-by: tempo-operator
+    app.kubernetes.io/name: tempo
+  name: tempo-simplst-query-frontend
+  namespace: chainsaw-rbac
+spec:
+  egress:
+  - ports:
+    - port: 4318
+      protocol: TCP
+    to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+  - ports:
+    - port: 4317
+      protocol: TCP
+    to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+  - ports:
+    - port: 9095
+      protocol: TCP
+    to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: querier
+          app.kubernetes.io/instance: simplst
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+  - ports:
+    - port: 3200
+      protocol: TCP
+    to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: querier
+          app.kubernetes.io/instance: simplst
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+    - namespaceSelector: {}
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: gateway
+          app.kubernetes.io/instance: simplst
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+    ports:
+    - port: 9095
+      protocol: TCP
+    - port: 3200
+      protocol: TCP
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: querier
+          app.kubernetes.io/instance: simplst
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+    ports:
+    - port: 9095
+      protocol: TCP
+    - port: 3200
+      protocol: TCP
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: query-frontend
+      app.kubernetes.io/instance: simplst
+      app.kubernetes.io/managed-by: tempo-operator
+      app.kubernetes.io/name: tempo
+  policyTypes:
+  - Egress
+  - Ingress

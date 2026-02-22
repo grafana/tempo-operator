@@ -23,6 +23,7 @@
 * Create upgrade catalog for Tempo Operator
 * Upgrade Tempo Operator using the provided FBC image
 * Assert both TempoStack and TempoMonolithic are ready after upgrade
+* Assert operator and operand NetworkPolicies exist post-upgrade
 * Verify traces and RBAC functionality still work after upgrade
 
 ## Running the OpenShift upgrade test
@@ -30,20 +31,20 @@
 ### Using heredoc to pass values:
 ```bash
 chainsaw test --config .chainsaw-openshift.yaml tests/e2e-openshift-upgrade --values - <<EOF
-upgrade_fbc_image: brew.registry.redhat.io/rh-osbs/iib:988093
-upgrade_operator_version: 0.16.0
-upgrade_tempo_version: 2.7.2
-upgrade_operator_csv_name: tempo-operator.v0.16.0-1
+upgrade_fbc_image: brew.registry.redhat.io/rh-osbs/iib:1106846
+upgrade_operator_version: 0.20.0
+upgrade_tempo_version: 2.10.0
+upgrade_operator_csv_name: tempo-operator.v0.20.0-1
 EOF
 ```
 
 ### Using values file:
 Create a `values.yaml` file with the required values:
 ```yaml
-upgrade_fbc_image: brew.registry.redhat.io/rh-osbs/iib:988093
-upgrade_operator_version: 0.16.0
-upgrade_tempo_version: 2.7.2
-upgrade_operator_csv_name: tempo-operator.v0.16.0-1
+upgrade_fbc_image: brew.registry.redhat.io/rh-osbs/iib:1106846
+upgrade_operator_version: 0.20.0
+upgrade_tempo_version: 2.10.0
+upgrade_operator_csv_name: tempo-operator.v0.20.0-1
 ```
 
 Then run:
@@ -58,4 +59,5 @@ chainsaw test --config .chainsaw-openshift.yaml tests/e2e-openshift-upgrade --va
 * OpenTelemetry Collector integration
 * Operator upgrade process using file-based catalog
 * Post-upgrade functionality verification
-* Admin-level access to traces from all projects 
+* Operator and operand NetworkPolicy validation post-upgrade
+* Admin-level access to traces from all projects
