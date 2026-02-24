@@ -29,22 +29,3 @@ metadata:
 status:
   readyReplicas: 1 
 
----
-apiVersion: tempo.grafana.com/v1alpha1
-kind: TempoStack
-metadata:
-  name: simplst
-  namespace: chainsaw-rbac
-status:
-  operatorVersion: ($upgrade_operator_version)
-  tempoVersion: ($upgrade_tempo_version)
-
----
-apiVersion: tempo.grafana.com/v1alpha1
-kind: TempoMonolithic
-metadata:
-  name: mmo-rbac
-  namespace: chainsaw-mmo-rbac
-status:
-  operatorVersion: ($upgrade_operator_version)
-  tempoVersion: ($upgrade_tempo_version)
