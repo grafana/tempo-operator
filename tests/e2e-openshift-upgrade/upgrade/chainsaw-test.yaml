@@ -17,10 +17,10 @@ spec:
   # https://kyverno.github.io/chainsaw/latest/examples/values/
   # Example using heredoc:
   # chainsaw test --config .chainsaw-openshift.yaml tests/e2e-openshift-upgrade --values - <<EOF
-  # upgrade_fbc_image: brew.registry.redhat.io/rh-osbs/iib:988093
-  # upgrade_operator_version: 0.16.0
-  # upgrade_tempo_version: 2.7.2
-  # upgrade_operator_csv_name: tempo-operator.v0.16.0-1
+  # upgrade_fbc_image: brew.registry.redhat.io/rh-osbs/iib:1106846
+  # upgrade_operator_version: 0.20.0
+  # upgrade_tempo_version: 2.10.0
+  # upgrade_operator_csv_name: tempo-operator.v0.20.0-1
   # EOF
   steps:
   - name: Install operators from marketplace
@@ -177,6 +177,8 @@ spec:
             name: simplst
             namespace: chainsaw-rbac
           status:
+            operatorVersion: ($upgrade_operator_version)
+            tempoVersion: ($upgrade_tempo_version)
             (conditions[?type == 'Ready']):
             - status: 'True'
     finally:
@@ -200,6 +202,8 @@ spec:
             name: mmo-rbac
             namespace: chainsaw-mmo-rbac
           status:
+            operatorVersion: ($upgrade_operator_version)
+            tempoVersion: ($upgrade_tempo_version)
             (conditions[?type == 'Ready']):
             - status: 'True'
     finally:
@@ -213,6 +217,14 @@ spec:
         kind: StatefulSet
         namespace: chainsaw-mmo-rbac
         format: yaml
+  - name: Assert operator NetworkPolicies post-upgrade
+    try:
+    - assert:
+        file: assert-upgrade-operator-networkpolicies.yaml
+  - name: Assert operand NetworkPolicies post-upgrade
+    try:
+    - assert:
+        file: assert-upgrade-operand-networkpolicies.yaml
   - name: Generate traces from namespace chainsaw-mono-rbac-1 for TempoMonolithic after upgrade
     try:
     - create:
