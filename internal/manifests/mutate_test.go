@@ -910,7 +910,7 @@ func TestGetMutateFunc_MutateServiceMonitorSpec(t *testing.T) {
 							BearerTokenFile: manifestutils.BearerTokenFile,
 							TLSConfig: &monitoringv1.TLSConfig{
 								SafeTLSConfig: monitoringv1.SafeTLSConfig{
-									ServerName: "tempo-test.some-ns.svc.cluster.local",
+									ServerName: ptr.To("tempo-test.some-ns.svc.cluster.local"),
 								},
 								CAFile: manifestutils.PrometheusCAFile,
 							},
@@ -937,7 +937,7 @@ func TestGetMutateFunc_MutateServiceMonitorSpec(t *testing.T) {
 							BearerTokenFile: manifestutils.BearerTokenFile,
 							TLSConfig: &monitoringv1.TLSConfig{
 								SafeTLSConfig: monitoringv1.SafeTLSConfig{
-									ServerName: "tempo-test.some-ns.svc.cluster.local",
+									ServerName: ptr.To("tempo-test.some-ns.svc.cluster.local"),
 								},
 								CAFile: manifestutils.PrometheusCAFile,
 							},
@@ -949,7 +949,7 @@ func TestGetMutateFunc_MutateServiceMonitorSpec(t *testing.T) {
 							BearerTokenFile: manifestutils.BearerTokenFile,
 							TLSConfig: &monitoringv1.TLSConfig{
 								SafeTLSConfig: monitoringv1.SafeTLSConfig{
-									ServerName: "tempo-test.some-ns.svc.cluster.local",
+									ServerName: ptr.To("tempo-test.some-ns.svc.cluster.local"),
 								},
 								CAFile: manifestutils.PrometheusCAFile,
 							},
@@ -981,7 +981,7 @@ func TestGetMutateFunc_MutateServiceMonitorSpec(t *testing.T) {
 							BearerTokenFile: manifestutils.BearerTokenFile,
 							TLSConfig: &monitoringv1.TLSConfig{
 								SafeTLSConfig: monitoringv1.SafeTLSConfig{
-									ServerName: "tempo-test.some-ns.svc.cluster.local",
+									ServerName: ptr.To("tempo-test.some-ns.svc.cluster.local"),
 								},
 								CAFile: manifestutils.PrometheusCAFile,
 							},
@@ -1009,7 +1009,7 @@ func TestGetMutateFunc_MutateServiceMonitorSpec(t *testing.T) {
 							BearerTokenFile: manifestutils.BearerTokenFile,
 							TLSConfig: &monitoringv1.TLSConfig{
 								SafeTLSConfig: monitoringv1.SafeTLSConfig{
-									ServerName: "tempo-test.some-ns.svc.cluster.local",
+									ServerName: ptr.To("tempo-test.some-ns.svc.cluster.local"),
 								},
 								CAFile: manifestutils.PrometheusCAFile,
 							},
@@ -1021,7 +1021,7 @@ func TestGetMutateFunc_MutateServiceMonitorSpec(t *testing.T) {
 							BearerTokenFile: manifestutils.BearerTokenFile,
 							TLSConfig: &monitoringv1.TLSConfig{
 								SafeTLSConfig: monitoringv1.SafeTLSConfig{
-									ServerName: "tempo-test.some-ns.svc.cluster.local",
+									ServerName: ptr.To("tempo-test.some-ns.svc.cluster.local"),
 								},
 								CAFile: manifestutils.PrometheusCAFile,
 							},

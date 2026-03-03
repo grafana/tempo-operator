@@ -30,12 +30,12 @@ func TestGetInvalidOrEmptyTLSProfile(t *testing.T) {
 func TestGetSpecificProfile(t *testing.T) {
 	ctx := context.Background()
 	fg := configv1alpha1.FeatureGates{
-		TLSProfile: string(configv1alpha1.TLSProfileOldType),
+		TLSProfile: configv1alpha1.TLSProfileOldType,
 	}
 
 	cl := &clientStub{}
 
-	oldSettings, err := GetTLSSettings(openshiftconfigv1.TLSSecurityProfile{
+	oldSettings, err := GetTLSSettings(&openshiftconfigv1.TLSSecurityProfile{
 		Type: openshiftconfigv1.TLSProfileOldType,
 	})
 	require.NoError(t, err)
@@ -48,7 +48,7 @@ func TestGetSpecificProfile(t *testing.T) {
 func TestGetWithClusterError(t *testing.T) {
 	ctx := context.Background()
 	fg := configv1alpha1.FeatureGates{
-		TLSProfile: string(configv1alpha1.TLSProfileOldType),
+		TLSProfile: configv1alpha1.TLSProfileOldType,
 		OpenShift: configv1alpha1.OpenShiftFeatureGates{
 			ClusterTLSPolicy: true,
 		},
@@ -69,7 +69,7 @@ func TestGetWithClusterError(t *testing.T) {
 func TestGetWithClusterPolicy(t *testing.T) {
 	ctx := context.Background()
 	fg := configv1alpha1.FeatureGates{
-		TLSProfile: string(configv1alpha1.TLSProfileOldType),
+		TLSProfile: configv1alpha1.TLSProfileOldType,
 		OpenShift: configv1alpha1.OpenShiftFeatureGates{
 			ClusterTLSPolicy: true,
 		},
@@ -82,7 +82,7 @@ func TestGetWithClusterPolicy(t *testing.T) {
 		}
 	})
 
-	modernSettings, err := GetTLSSettings(openshiftconfigv1.TLSSecurityProfile{
+	modernSettings, err := GetTLSSettings(&openshiftconfigv1.TLSSecurityProfile{
 		Type: openshiftconfigv1.TLSProfileModernType,
 	})
 	require.NoError(t, err)
@@ -99,7 +99,7 @@ func TestGetWithClusterPolicy(t *testing.T) {
 func TestGetWithInvalidClusterPolicy(t *testing.T) {
 	ctx := context.Background()
 	fg := configv1alpha1.FeatureGates{
-		TLSProfile: string(configv1alpha1.TLSProfileOldType),
+		TLSProfile: configv1alpha1.TLSProfileOldType,
 		OpenShift: configv1alpha1.OpenShiftFeatureGates{
 			ClusterTLSPolicy: true,
 		},

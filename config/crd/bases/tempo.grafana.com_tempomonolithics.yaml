@@ -1001,12 +1001,22 @@ spec:
                                   Cert is the name of a Secret containing a certificate (tls.crt) and private key (tls.key).
                                   It needs to be in the same namespace as the Tempo custom resource.
                                 type: string
+                              cipherSuites:
+                                description: |-
+                                  CipherSuites defines the list of acceptable TLS cipher suites.
+
+                                  If not set, the ciphers are set based on feature gate tlsProfile or obtained from the cluster if openshift.clusterTLSPolicy is enabled.
+                                items:
+                                  type: string
+                                type: array
                               enabled:
                                 description: Enabled defines if TLS is enabled.
                                 type: boolean
                               minVersion:
-                                description: MinVersion defines the minimum acceptable
-                                  TLS version.
+                                description: |-
+                                  MinVersion defines the minimum acceptable TLS version.
+
+                                  If not set, the version is set based on feature gate tlsProfile or obtained from the cluster if openshift.clusterTLSPolicy is enabled.
                                 type: string
                             type: object
                         required:
@@ -1038,12 +1048,22 @@ spec:
                                   Cert is the name of a Secret containing a certificate (tls.crt) and private key (tls.key).
                                   It needs to be in the same namespace as the Tempo custom resource.
                                 type: string
+                              cipherSuites:
+                                description: |-
+                                  CipherSuites defines the list of acceptable TLS cipher suites.
+
+                                  If not set, the ciphers are set based on feature gate tlsProfile or obtained from the cluster if openshift.clusterTLSPolicy is enabled.
+                                items:
+                                  type: string
+                                type: array
                               enabled:
                                 description: Enabled defines if TLS is enabled.
                                 type: boolean
                               minVersion:
-                                description: MinVersion defines the minimum acceptable
-                                  TLS version.
+                                description: |-
+                                  MinVersion defines the minimum acceptable TLS version.
+
+                                  If not set, the version is set based on feature gate tlsProfile or obtained from the cluster if openshift.clusterTLSPolicy is enabled.
                                 type: string
                             type: object
                         required:
@@ -2041,12 +2061,22 @@ spec:
                                   Cert is the name of a Secret containing a certificate (tls.crt) and private key (tls.key).
                                   It needs to be in the same namespace as the Tempo custom resource.
                                 type: string
+                              cipherSuites:
+                                description: |-
+                                  CipherSuites defines the list of acceptable TLS cipher suites.
+
+                                  If not set, the ciphers are set based on feature gate tlsProfile or obtained from the cluster if openshift.clusterTLSPolicy is enabled.
+                                items:
+                                  type: string
+                                type: array
                               enabled:
                                 description: Enabled defines if TLS is enabled.
                                 type: boolean
                               minVersion:
-                                description: MinVersion defines the minimum acceptable
-                                  TLS version.
+                                description: |-
+                                  MinVersion defines the minimum acceptable TLS version.
+
+                                  If not set, the version is set based on feature gate tlsProfile or obtained from the cluster if openshift.clusterTLSPolicy is enabled.
                                 type: string
                             type: object
                         required:

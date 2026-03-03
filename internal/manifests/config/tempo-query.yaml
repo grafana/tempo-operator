@@ -8,6 +8,8 @@ tls_key_path: {{ .TLS.Paths.Key }}
 tls_ca_path: {{ .TLS.Paths.CA }}
 tls_insecure_skip_verify: false
 tls_server_name: {{ .TLS.ServerNames.QueryFrontend }}
+tls_min_version: {{ .TLS.Profile.MinTLSVersion }}
+tls_cipher_suites: {{ .TLS.Profile.Ciphers }}
 {{- end }}
 services_query_duration: {{ .ServicesQueryDuration }}
 find_traces_concurrent_requests: {{ .FindTracesConcurrentRequests }}

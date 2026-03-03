@@ -15,47 +15,46 @@ import (
 const APIServerName = "cluster"
 
 // GetTLSProfileFromCluster get the TLS profile from the cluster, if it's defined.
-func getTLSProfileFromCluster(ctx context.Context, c k8getter) (openshiftconfigv1.TLSSecurityProfile, error) {
+func getTLSProfileFromCluster(ctx context.Context, c k8getter) (*openshiftconfigv1.TLSSecurityProfile, error) {
 	var apiServer openshiftconfigv1.APIServer
 	if err := c.Get(ctx, client.ObjectKey{Name: APIServerName}, &apiServer); err != nil {
-		return openshiftconfigv1.TLSSecurityProfile{}, kverrors.Wrap(err, "failed to lookup openshift apiServer")
+		return nil, kverrors.Wrap(err, "failed to lookup openshift apiServer")
 	}
-	return *apiServer.Spec.TLSSecurityProfile, nil
+	return apiServer.Spec.TLSSecurityProfile, nil
 }
 
 // GetTLSSecurityProfile gets the tls profile info to apply.
-func getTLSSecurityProfile(tlsProfileType configv1alpha1.TLSProfileType) (openshiftconfigv1.TLSSecurityProfile, error) {
+func getTLSSecurityProfile(tlsProfileType configv1alpha1.TLSProfileType) (*openshiftconfigv1.TLSSecurityProfile, error) {
 	switch tlsProfileType {
 	case configv1alpha1.TLSProfileOldType:
-		return openshiftconfigv1.TLSSecurityProfile{
+		return &openshiftconfigv1.TLSSecurityProfile{
 			Type: openshiftconfigv1.TLSProfileOldType,
 		}, nil
 	case configv1alpha1.TLSProfileIntermediateType:
-		return openshiftconfigv1.TLSSecurityProfile{
+		return &openshiftconfigv1.TLSSecurityProfile{
 			Type: openshiftconfigv1.TLSProfileIntermediateType,
 		}, nil
 	case configv1alpha1.TLSProfileModernType:
-		return openshiftconfigv1.TLSSecurityProfile{
+		return &openshiftconfigv1.TLSSecurityProfile{
 			Type: openshiftconfigv1.TLSProfileModernType,
 		}, nil
 	default:
-		return openshiftconfigv1.TLSSecurityProfile{}, kverrors.New("unable to determine tls profile settings %s", tlsProfileType)
-	}
-}
-
-// GetDefaultTLSSecurityProfile get the default tls profile settings if none is specified.
-func GetDefaultTLSSecurityProfile() openshiftconfigv1.TLSSecurityProfile {
-	return openshiftconfigv1.TLSSecurityProfile{
-		Type: openshiftconfigv1.TLSProfileIntermediateType,
+		return nil, kverrors.New("unable to determine tls profile settings %s", tlsProfileType)
 	}
 }
 
 // GetTLSSettings get the tls settings that belongs to the TLS profile specifications.
-func GetTLSSettings(profile openshiftconfigv1.TLSSecurityProfile) (TLSProfileOptions, error) {
+func GetTLSSettings(profile *openshiftconfigv1.TLSSecurityProfile) (TLSProfileOptions, error) {
 	var (
 		minTLSVersion openshiftconfigv1.TLSProtocolVersion
 		ciphers       []string
 	)
+
+	if profile == nil {
+		profile = &openshiftconfigv1.TLSSecurityProfile{
+			Type: openshiftconfigv1.TLSProfileIntermediateType,
+		}
+	}
 
 	switch profile.Type {
 	case openshiftconfigv1.TLSProfileCustomType:

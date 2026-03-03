@@ -417,6 +417,7 @@ data:
         grpc_client_config:
             tls_ca_path: /var/run/ca/service-ca.crt
             tls_cert_path: /var/run/tls/server/tls.crt
+            tls_cipher_suites: TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384,TLS_CHACHA20_POLY1305_SHA256
             tls_enabled: true
             tls_insecure_skip_verify: false
             tls_key_path: /var/run/tls/server/tls.key
@@ -433,6 +434,7 @@ data:
             grpc_client_config:
                 tls_ca_path: /var/run/ca/service-ca.crt
                 tls_cert_path: /var/run/tls/server/tls.crt
+                tls_cipher_suites: TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384,TLS_CHACHA20_POLY1305_SHA256
                 tls_enabled: true
                 tls_key_path: /var/run/tls/server/tls.key
                 tls_min_version: VersionTLS13
@@ -459,6 +461,7 @@ data:
         http_server_read_timeout: 10m
         http_server_write_timeout: 10m
         log_format: logfmt
+        tls_cipher_suites: TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384,TLS_CHACHA20_POLY1305_SHA256
         tls_min_version: VersionTLS13
     storage:
         trace:
@@ -522,6 +525,7 @@ data:
         grpc_client_config:
             tls_ca_path: /var/run/ca/service-ca.crt
             tls_cert_path: /var/run/tls/server/tls.crt
+            tls_cipher_suites: TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384,TLS_CHACHA20_POLY1305_SHA256
             tls_enabled: true
             tls_insecure_skip_verify: false
             tls_key_path: /var/run/tls/server/tls.key
@@ -533,6 +537,7 @@ data:
         http_tls_config:
             cert_file: /var/run/tls/server/tls.crt
             key_file: /var/run/tls/server/tls.key
+        tls_cipher_suites: TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384,TLS_CHACHA20_POLY1305_SHA256
         tls_min_version: VersionTLS13
     memberlist:
         abort_if_cluster_join_fails: false
@@ -545,6 +550,7 @@ data:
             grpc_client_config:
                 tls_ca_path: /var/run/ca/service-ca.crt
                 tls_cert_path: /var/run/tls/server/tls.crt
+                tls_cipher_suites: TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384,TLS_CHACHA20_POLY1305_SHA256
                 tls_enabled: true
                 tls_key_path: /var/run/tls/server/tls.key
                 tls_min_version: VersionTLS13
@@ -576,6 +582,7 @@ data:
             client_ca_file: /var/run/ca/service-ca.crt
             key_file: /var/run/tls/server/tls.key
         log_format: logfmt
+        tls_cipher_suites: TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384,TLS_CHACHA20_POLY1305_SHA256
         tls_min_version: VersionTLS13
     storage:
         trace:

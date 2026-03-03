@@ -221,6 +221,12 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 			fmt.Sprintf("--traces.tls.ca-file=%s", path.Join(manifestutils.TempoInternalTLSCADir, manifestutils.TLSCAFilename)),
 			"--traces.tls.watch-certs=true",
 		}
+		if params.TLSProfile.Ciphers != nil {
+			tlsArgs = append(tlsArgs, fmt.Sprintf("--tls.cipher-suites=%s", params.TLSProfile.CipherSuites()))
+		}
+		if params.TLSProfile.MinTLSVersion != "" {
+			tlsArgs = append(tlsArgs, fmt.Sprintf("--tls.min-version=%s", params.TLSProfile.MinTLSVersion))
+		}
 	}
 
 	dep := &appsv1.Deployment{

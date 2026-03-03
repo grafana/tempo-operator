@@ -500,6 +500,13 @@ func configureGateway(opts Options, sts *appsv1.StatefulSet) error {
 			"--web.healthchecks.url=https://localhost:8080",
 			"--tls.client-auth-type=NoClientCert",
 		}...)
+
+		if opts.TLSProfile.Ciphers != nil {
+			args = append(args, fmt.Sprintf("--tls.cipher-suites=%s", opts.TLSProfile.CipherSuites()))
+		}
+		if opts.TLSProfile.MinTLSVersion != "" {
+			args = append(args, fmt.Sprintf("--tls.min-version=%s", opts.TLSProfile.MinTLSVersion))
+		}
 	}
 
 	gatewayContainer := corev1.Container{

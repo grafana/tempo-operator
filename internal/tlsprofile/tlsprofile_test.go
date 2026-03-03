@@ -19,7 +19,7 @@ func TestGetTLSSecurityProfile(t *testing.T) {
 	type tt struct {
 		desc        string
 		profile     configv1alpha1.TLSProfileType
-		expected    openshiftconfigv1.TLSSecurityProfile
+		expected    *openshiftconfigv1.TLSSecurityProfile
 		expectedErr error
 	}
 
@@ -27,38 +27,37 @@ func TestGetTLSSecurityProfile(t *testing.T) {
 		{
 			desc:    "Old profile",
 			profile: configv1alpha1.TLSProfileOldType,
-			expected: openshiftconfigv1.TLSSecurityProfile{
+			expected: &openshiftconfigv1.TLSSecurityProfile{
 				Type: openshiftconfigv1.TLSProfileOldType,
 			},
 		},
 		{
 			desc:    "Intermediate profile",
 			profile: configv1alpha1.TLSProfileIntermediateType,
-			expected: openshiftconfigv1.TLSSecurityProfile{
+			expected: &openshiftconfigv1.TLSSecurityProfile{
 				Type: openshiftconfigv1.TLSProfileIntermediateType,
 			},
 		},
 		{
 			desc:    "Modern profile",
 			profile: configv1alpha1.TLSProfileModernType,
-			expected: openshiftconfigv1.TLSSecurityProfile{
+			expected: &openshiftconfigv1.TLSSecurityProfile{
 				Type: openshiftconfigv1.TLSProfileModernType,
 			},
 		},
 		{
 			desc:        "Unknow profile",
 			profile:     configv1alpha1.TLSProfileType(""),
-			expected:    openshiftconfigv1.TLSSecurityProfile{},
+			expected:    nil,
 			expectedErr: kverrors.New("unable to determine tls profile settings %s", ""),
 		},
 	}
 
 	for _, tc := range tc {
-		tc := tc
 		t.Run(tc.desc, func(t *testing.T) {
 			profile, err := getTLSSecurityProfile(tc.profile)
 			assert.Equal(t, tc.expectedErr, err)
-			assert.EqualValues(t, tc.expected, profile)
+			assert.Equal(t, tc.expected, profile)
 		})
 	}
 }
@@ -106,7 +105,7 @@ func TestGetTLSSettings(t *testing.T) {
 	for _, tc := range tc {
 		tc := tc
 		t.Run(tc.desc, func(t *testing.T) {
-			options, err := GetTLSSettings(tc.profile)
+			options, err := GetTLSSettings(&tc.profile)
 			assert.Equal(t, tc.expectedErr, err)
 			if tc.expectedErr == nil {
 				expected := TLSProfileOptions{
@@ -135,17 +134,9 @@ func TestGetTLSSettingsCustom(t *testing.T) {
 		MinTLSVersion: "TLSv1.1",
 	}
 
-	options, err := GetTLSSettings(profile)
+	options, err := GetTLSSettings(&profile)
 	assert.NoError(t, err)
 	assert.EqualValues(t, expected, options)
-}
-
-func TestGetDefaultTLSSecurityProfile(t *testing.T) {
-	profile := GetDefaultTLSSecurityProfile()
-	assert.EqualValues(t, openshiftconfigv1.TLSSecurityProfile{
-		Type: openshiftconfigv1.TLSProfileIntermediateType,
-	}, profile)
-
 }
 
 func TestGetTLSSecurityProfile_APIServerNotFound(t *testing.T) {
@@ -154,7 +145,7 @@ func TestGetTLSSecurityProfile_APIServerNotFound(t *testing.T) {
 		desc            string
 		mockFn          func(args mock.Arguments)
 		returnErr       error
-		expectedProfile openshiftconfigv1.TLSSecurityProfile
+		expectedProfile *openshiftconfigv1.TLSSecurityProfile
 	}
 
 	nopFn := func(args mock.Arguments) {}
@@ -163,7 +154,7 @@ func TestGetTLSSecurityProfile_APIServerNotFound(t *testing.T) {
 		{
 			desc:            "Profile not found",
 			returnErr:       apierrors.NewNotFound(schema.GroupResource{}, "something wasn't found"),
-			expectedProfile: openshiftconfigv1.TLSSecurityProfile{},
+			expectedProfile: nil,
 			mockFn:          nopFn,
 		},
 		{
@@ -174,7 +165,7 @@ func TestGetTLSSecurityProfile_APIServerNotFound(t *testing.T) {
 					Type: openshiftconfigv1.TLSProfileModernType,
 				}
 			},
-			expectedProfile: openshiftconfigv1.TLSSecurityProfile{
+			expectedProfile: &openshiftconfigv1.TLSSecurityProfile{
 				Type: openshiftconfigv1.TLSProfileModernType,
 			},
 		},

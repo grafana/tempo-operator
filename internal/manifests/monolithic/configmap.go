@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"path"
+	"strings"
 	"time"
 
 	"gopkg.in/yaml.v2"
@@ -66,6 +67,8 @@ type tempoConfig struct {
 		GRPCListenAddress      string              `yaml:"grpc_listen_address,omitempty"`
 		HttpServerReadTimeout  time.Duration       `yaml:"http_server_read_timeout,omitempty"`
 		HttpServerWriteTimeout time.Duration       `yaml:"http_server_write_timeout,omitempty"`
+		TLSMinVersion          string              `yaml:"tls_min_version,omitempty"`
+		TLSCipherSuites        string              `yaml:"tls_cipher_suites,omitempty"`
 		HTTPTLSConfig          *tempoHTTPTLSConfig `yaml:"http_tls_config,omitempty"`
 	} `yaml:"server"`
 
@@ -120,6 +123,8 @@ type tempoQueryConfig struct {
 	TLSKeyPath                   *string       `yaml:"tls_key_path,omitempty"`
 	TLSCAPath                    *string       `yaml:"tls_ca_path,omitempty"`
 	TLSInsecureSkipVerify        *bool         `yaml:"tls_insecure_skip_verify,omitempty"`
+	TLSMinVersion                string        `yaml:"tls_min_version,omitempty"`
+	TLSCiphers                   string        `yaml:"tls_cipher_suites,omitempty"`
 }
 
 // BuildConfigMap creates the Tempo ConfigMap for a monolithic deployment.
@@ -154,7 +159,7 @@ func BuildConfigMap(opts Options) (*corev1.ConfigMap, map[string]string, error) 
 	if tempo.Spec.JaegerUI != nil && tempo.Spec.JaegerUI.Enabled {
 
 		enableTLS := tempo.Spec.Multitenancy.IsGatewayEnabled() && opts.CtrlConfig.Gates.HTTPEncryption
-		tempoQueryConfig, err := buildTempoQueryConfig(tempo.Spec.JaegerUI, enableTLS)
+		tempoQueryConfig, err := buildTempoQueryConfig(tempo.Spec.JaegerUI, enableTLS, opts.TLSProfile)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -164,7 +169,7 @@ func BuildConfigMap(opts Options) (*corev1.ConfigMap, map[string]string, error) 
 	return configMap, extraAnnotations, nil
 }
 
-func configureReceiverTLS(tlsSpec *v1alpha1.TLSSpec, tlsProfile tlsprofile.TLSProfileOptions, caCertDir, certDir string) (tempoReceiverTLSConfig, error) {
+func configureReceiverTLS(tlsSpec *v1alpha1.TLSSpec, tlsProfile tlsprofile.TLSProfileOptions, caCertDir, certDir string) tempoReceiverTLSConfig {
 	tlsCfg := tempoReceiverTLSConfig{}
 	if tlsSpec != nil && tlsSpec.Enabled {
 		if tlsSpec.Cert != "" {
@@ -174,18 +179,20 @@ func configureReceiverTLS(tlsSpec *v1alpha1.TLSSpec, tlsProfile tlsprofile.TLSPr
 		if tlsSpec.CA != "" {
 			tlsCfg.CAFile = path.Join(caCertDir, manifestutils.TLSCAFilename)
 		}
+
+		minVersion := tlsProfile.MinVersionOTELFormat()
 		if tlsSpec.MinVersion != "" {
-			tlsCfg.MinVersion = tlsSpec.MinVersion
-		} else if tlsProfile.MinTLSVersion != "" {
-			var err error
-			tlsCfg.MinVersion, err = tlsProfile.MinVersionShort()
-			if err != nil {
-				return tempoReceiverTLSConfig{}, err
-			}
+			minVersion = tlsSpec.MinVersion
 		}
-		tlsCfg.CipherSuites = tlsProfile.Ciphers
+		tlsCfg.MinVersion = minVersion
+
+		ciphers := tlsProfile.Ciphers
+		if tlsSpec.CipherSuites != nil {
+			ciphers = tlsSpec.CipherSuites
+		}
+		tlsCfg.CipherSuites = ciphers
 	}
-	return tlsCfg, nil
+	return tlsCfg
 }
 
 func buildTempoConfig(opts Options) ([]byte, error) {
@@ -203,6 +210,8 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 		config.Server.GRPCListenAddress = "localhost"
 
 		if opts.CtrlConfig.Gates.HTTPEncryption {
+			config.Server.TLSMinVersion = opts.TLSProfile.MinTLSVersion
+			config.Server.TLSCipherSuites = opts.TLSProfile.CipherSuites()
 			config.Server.HTTPTLSConfig = &tempoHTTPTLSConfig{
 				CertFile:       path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSCertFilename),
 				KeyFile:        path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSKeyFilename),
@@ -243,12 +252,18 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 						config.Storage.Trace.S3.TLSCertPath = path.Join(manifestutils.StorageTLSCertDir, manifestutils.TLSCertFilename)
 						config.Storage.Trace.S3.TLSKeyPath = path.Join(manifestutils.StorageTLSCertDir, manifestutils.TLSKeyFilename)
 					}
+
+					tlsMinVersion := opts.TLSProfile.MinTLSVersion
 					if tempo.Spec.Storage.Traces.S3.TLS.MinVersion != "" {
-						config.Storage.Trace.S3.TLSMinVersion = tempo.Spec.Storage.Traces.S3.TLS.MinVersion
-					} else if opts.TLSProfile.MinTLSVersion != "" {
-						config.Storage.Trace.S3.TLSMinVersion = opts.TLSProfile.MinTLSVersion
+						tlsMinVersion = tempo.Spec.Storage.Traces.S3.TLS.MinVersion
 					}
-					config.Storage.Trace.S3.TLSCipherSuites = opts.TLSProfile.TLSCipherSuites()
+					config.Storage.Trace.S3.TLSMinVersion = tlsMinVersion
+
+					tlsCiphers := opts.TLSProfile.Ciphers
+					if tempo.Spec.Storage.Traces.S3.TLS.CipherSuites != nil {
+						tlsCiphers = tempo.Spec.Storage.Traces.S3.TLS.CipherSuites
+					}
+					config.Storage.Trace.S3.TLSCipherSuites = strings.Join(tlsCiphers, ",")
 				}
 			} else if opts.StorageParams.CredentialMode == v1alpha1.CredentialModeToken || opts.StorageParams.CredentialMode == v1alpha1.CredentialModeTokenCCO {
 				config.Storage.Trace.S3.Bucket = opts.StorageParams.S3.Bucket
@@ -274,21 +289,29 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 		if tempo.Spec.Ingestion.OTLP != nil {
 			// It seems like the gateway try to report grpc using mTLS even if only HTTP encryption is enabled.
 			if tempo.Spec.Multitenancy.IsGatewayEnabled() && opts.CtrlConfig.Gates.HTTPEncryption {
+				minVersion := opts.TLSProfile.MinVersionOTELFormat()
+				ciphers := opts.TLSProfile.Ciphers
+				if tempo.Spec.Ingestion.OTLP.GRPC != nil && tempo.Spec.Ingestion.OTLP.GRPC.TLS != nil {
+					if tempo.Spec.Ingestion.OTLP.GRPC.TLS.MinVersion != "" {
+						minVersion = tempo.Spec.Ingestion.OTLP.GRPC.TLS.MinVersion
+					}
+					if tempo.Spec.Ingestion.OTLP.GRPC.TLS.CipherSuites != nil {
+						ciphers = tempo.Spec.Ingestion.OTLP.GRPC.TLS.CipherSuites
+					}
+				}
 				config.Distributor.Receivers.OTLP.Protocols.GRPC = &tempoReceiverConfig{
 					TLS: tempoReceiverTLSConfig{
-						CertFile: path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSCertFilename),
-						CAFile:   path.Join(manifestutils.TempoInternalTLSCADir, manifestutils.TLSCAFilename),
-						KeyFile:  path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSKeyFilename),
+						CertFile:     path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSCertFilename),
+						CAFile:       path.Join(manifestutils.TempoInternalTLSCADir, manifestutils.TLSCAFilename),
+						KeyFile:      path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSKeyFilename),
+						MinVersion:   minVersion,
+						CipherSuites: ciphers,
 					},
 				}
 			} else {
 				if tempo.Spec.Ingestion.OTLP.GRPC != nil && tempo.Spec.Ingestion.OTLP.GRPC.Enabled {
-					receiverTLS, err := configureReceiverTLS(tempo.Spec.Ingestion.OTLP.GRPC.TLS, opts.TLSProfile,
+					receiverTLS := configureReceiverTLS(tempo.Spec.Ingestion.OTLP.GRPC.TLS, opts.TLSProfile,
 						manifestutils.ReceiverGRPCTLSCADir, manifestutils.ReceiverGRPCTLSCertDir)
-
-					if err != nil {
-						return nil, err
-					}
 
 					config.Distributor.Receivers.OTLP.Protocols.GRPC = &tempoReceiverConfig{
 						TLS: receiverTLS,
@@ -304,11 +327,8 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 			}
 
 			if tempo.Spec.Ingestion.OTLP.HTTP != nil && tempo.Spec.Ingestion.OTLP.HTTP.Enabled {
-				receiverTLS, err := configureReceiverTLS(tempo.Spec.Ingestion.OTLP.HTTP.TLS,
+				receiverTLS := configureReceiverTLS(tempo.Spec.Ingestion.OTLP.HTTP.TLS,
 					opts.TLSProfile, manifestutils.ReceiverHTTPTLSCADir, manifestutils.ReceiverHTTPTLSCertDir)
-				if err != nil {
-					return nil, err
-				}
 
 				config.Distributor.Receivers.OTLP.Protocols.HTTP = &tempoReceiverConfig{
 					TLS: receiverTLS,
@@ -340,7 +360,7 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 	}
 }
 
-func buildTempoQueryConfig(jaegerUISpec *v1alpha1.MonolithicJaegerUISpec, enableTLS bool) ([]byte, error) {
+func buildTempoQueryConfig(jaegerUISpec *v1alpha1.MonolithicJaegerUISpec, enableTLS bool, profile tlsprofile.TLSProfileOptions) ([]byte, error) {
 	config := tempoQueryConfig{}
 	config.Address = fmt.Sprintf("0.0.0.0:%d", manifestutils.PortTempoGRPCQuery)
 	config.Backend = fmt.Sprintf("localhost:%d", manifestutils.PortHTTPServer)
@@ -353,6 +373,8 @@ func buildTempoQueryConfig(jaegerUISpec *v1alpha1.MonolithicJaegerUISpec, enable
 		config.TLSKeyPath = ptr.To(path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSKeyFilename))
 		config.TLSCAPath = ptr.To(path.Join(manifestutils.TempoInternalTLSCADir, manifestutils.TLSCAFilename))
 		config.TLSInsecureSkipVerify = ptr.To(false)
+		config.TLSMinVersion = profile.MinTLSVersion
+		config.TLSCiphers = profile.CipherSuites()
 	}
 	return yaml.Marshal(&config)
 }

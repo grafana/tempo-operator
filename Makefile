@@ -4,7 +4,7 @@ TEMPO_VERSION ?= 2.10.0
 JAEGER_QUERY_VERSION ?= 1.68.0
 TEMPO_QUERY_VERSION ?= $(TEMPO_VERSION)
 # https://quay.io/repository/observatorium/api
-TEMPO_GATEWAY_VERSION ?= main-2025-08-25-7489eb0
+TEMPO_GATEWAY_VERSION ?= main-2026-03-02-4f749a8
 # https://quay.io/repository/observatorium/opa-openshift
 TEMPO_GATEWAY_OPA_VERSION ?= main-2025-06-16-ecdeca0
 OAUTH_PROXY_VERSION=4.14
@@ -212,6 +212,10 @@ undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/confi
 .PHONY: olm-deploy
 olm-deploy: operator-sdk ## Deploy operator via OLM
 	$(OPERATOR_SDK) run bundle -n $(OPERATOR_NAMESPACE) $(BUNDLE_IMG)
+
+.PHONY: olm-undeploy
+olm-undeploy: operator-sdk ## Remove operator previously installed via OLM
+	$(OPERATOR_SDK) cleanup --delete-operator-groups tempo-operator
 
 .PHONY: olm-upgrade
 olm-upgrade: operator-sdk ## Upgrade operator via OLM

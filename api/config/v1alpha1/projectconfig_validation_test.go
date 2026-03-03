@@ -17,7 +17,7 @@ func TestValidateProjectConfig(t *testing.T) {
 			name: "valid featureGates.tlsProfile setting",
 			input: ProjectConfig{
 				Gates: FeatureGates{
-					TLSProfile: string(TLSProfileModernType),
+					TLSProfile: TLSProfileModernType,
 				},
 			},
 			expected: nil,

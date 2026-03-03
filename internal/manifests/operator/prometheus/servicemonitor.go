@@ -5,6 +5,7 @@ import (
 
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/ptr"
 
 	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
@@ -18,14 +19,14 @@ func ServiceMonitor(featureGates configv1alpha1.FeatureGates, namespace string) 
 		tlsConfig = &monitoringv1.TLSConfig{
 			CAFile: "/etc/prometheus/configmaps/serving-certs-ca-bundle/service-ca.crt",
 			SafeTLSConfig: monitoringv1.SafeTLSConfig{
-				ServerName: fmt.Sprintf("tempo-operator-controller-manager-metrics-service.%s.svc", namespace),
+				ServerName: ptr.To(fmt.Sprintf("tempo-operator-controller-manager-metrics-service.%s.svc", namespace)),
 			},
 		}
 	} else {
 		tlsConfig = &monitoringv1.TLSConfig{
 			SafeTLSConfig: monitoringv1.SafeTLSConfig{
 				// kube-rbac-proxy uses a self-signed cert by default
-				InsecureSkipVerify: true,
+				InsecureSkipVerify: ptr.To(true),
 			},
 		}
 	}

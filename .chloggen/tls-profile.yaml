@@ -1,0 +1,26 @@
+# One of 'breaking', 'deprecation', 'new_component', 'enhancement', 'bug_fix'
+change_type: enhancement
+
+# The name of the component, or a single word describing the area of concern, (e.g. tempostack, tempomonolithic, github action)
+component: tempostack, tempomonolithic
+
+# A brief description of the change. Surround your text with quotes ("") if it needs to start with a backtick (`).
+note: Use TLS profile (min version and ciphers) from the feature gate or OpenShift APIServer CR.
+
+# One or more tracking issues related to the change
+issues: [1367]
+
+# (Optional) One or more lines of additional information to render under the primary note.
+# These lines will be padded with 2 spaces and then inserted directly into the document.
+# Use pipe (|) for multiline entries.
+subtext: |
+  When feature gate `openshift.clusterTLSPolicy` is enabled the TLS profile (min version and ciphers) are obtained from OpenShift APIServer CR.
+  The feature gate `tlsProfile` can set the profile explicitly and is active only when `openshift.clusterTLSPolicy` is disabled.
+  
+  The TLS profile is then used in all TLS connections, however it can be overridden if (min version or ciphers) are directly specified in the TLS config
+  for a given component in the CR.
+  
+  The `openshift.clusterTLSPolicy` can be enabled via `FEATURE_GATES` env variable
+  The `tlsProfile` feature gate can be enabled via `TLS_PROFILE` environment variable and valid values are: `Old`, `Intermediate`, `Modern`.
+  
+  On OpenShift the `openshift.clusterTLSPolicy` is enabled by default.

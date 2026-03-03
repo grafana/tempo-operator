@@ -105,6 +105,7 @@ type OpenShiftFeatureGates struct {
 	BaseDomain string `json:"baseDomain,omitempty"`
 
 	// ClusterTLSPolicy enables usage of TLS policies set in the API Server.
+	// When enabled, it overrides the tlsProfile feature gate.
 	// More details: https://docs.openshift.com/container-platform/4.11/security/tls-security-profiles.html
 	ClusterTLSPolicy bool
 
@@ -216,7 +217,7 @@ type FeatureGates struct {
 
 	// TLSProfile allows to chose a TLS security profile. Enforced
 	// when using HTTPEncryption or GRPCEncryption.
-	TLSProfile string `json:"tlsProfile,omitempty"`
+	TLSProfile TLSProfileType `json:"tlsProfile,omitempty"`
 
 	// PrometheusOperator defines whether the Prometheus Operator CRD exists in the cluster.
 	// This CRD is part of prometheus-operator.
@@ -365,7 +366,7 @@ func DefaultProjectConfig() ProjectConfig {
 			},
 			HTTPEncryption:     true,
 			GRPCEncryption:     true,
-			TLSProfile:         string(TLSProfileModernType),
+			TLSProfile:         TLSProfileModernType,
 			PrometheusOperator: false,
 			GrafanaOperator:    false,
 			Observability: ObservabilityFeatureGates{

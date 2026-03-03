@@ -10,6 +10,7 @@ import (
 
 	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
+	"github.com/grafana/tempo-operator/internal/tlsprofile"
 )
 
 func TestBuildAll(t *testing.T) {
@@ -79,6 +80,7 @@ func TestBuildAll(t *testing.T) {
 				},
 			},
 		},
+		TLSProfile: tlsprofile.TLSProfileOptions{},
 	})
 	require.NoError(t, err)
 	// 17 base objects + 9 network policies (gossip, metrics, DNS, distributor, ingester, compactor, querier, query-frontend, gateway)
