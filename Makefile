@@ -4,7 +4,7 @@ TEMPO_VERSION ?= 2.10.0
 JAEGER_QUERY_VERSION ?= 1.68.0
 TEMPO_QUERY_VERSION ?= $(TEMPO_VERSION)
 # https://quay.io/repository/observatorium/api
-TEMPO_GATEWAY_VERSION ?= main-2025-08-25-7489eb0
+TEMPO_GATEWAY_VERSION ?= main-2026-03-02-4f749a8
 # https://quay.io/repository/observatorium/opa-openshift
 TEMPO_GATEWAY_OPA_VERSION ?= main-2025-06-16-ecdeca0
 OAUTH_PROXY_VERSION=4.14
@@ -15,7 +15,7 @@ MIN_OPENSHIFT_VERSION ?= 4.12
 TEMPO_IMAGE ?= docker.io/grafana/tempo:$(TEMPO_VERSION)
 JAEGER_QUERY_IMAGE ?= docker.io/jaegertracing/jaeger-query:$(JAEGER_QUERY_VERSION)
 TEMPO_QUERY_IMAGE ?= docker.io/grafana/tempo-query:$(TEMPO_QUERY_VERSION)
-TEMPO_GATEWAY_IMAGE ?= pavolloffay/api:main-2026-02-11-v0.1.2-669-g0532e43-dirty
+TEMPO_GATEWAY_IMAGE ?= quay.io/observatorium/api:$(TEMPO_GATEWAY_VERSION)
 TEMPO_GATEWAY_OPA_IMAGE ?= quay.io/observatorium/opa-openshift:$(TEMPO_GATEWAY_OPA_VERSION)
 MUSTGATHER_IMAGE ?= ${IMG_PREFIX}/must-gather:$(OPERATOR_VERSION)
 OAUTH_PROXY_IMAGE ?= quay.io/openshift/origin-oauth-proxy:$(OAUTH_PROXY_VERSION)
