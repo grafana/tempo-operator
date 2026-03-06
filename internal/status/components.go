@@ -45,6 +45,13 @@ func componentsStatus(ctx context.Context, c StatusClient, s v1alpha1.TempoStack
 		return v1alpha1.ComponentStatus{}, kverrors.Wrap(err, "failed lookup TempoStack component pods status", "name", manifestutils.GatewayComponentName)
 	}
 
+	if s.Spec.Template.MetricsGenerator != nil {
+		components.MetricsGenerator, err = appendPodStatus(ctx, c, manifestutils.MetricsGeneratorComponentName, s)
+		if err != nil {
+			return v1alpha1.ComponentStatus{}, kverrors.Wrap(err, "failed lookup TempoStack component pods status", "name", manifestutils.MetricsGeneratorComponentName)
+		}
+	}
+
 	return components, nil
 }
 
@@ -79,13 +86,15 @@ func GetComponentsStatus(ctx context.Context, k StatusClient, s v1alpha1.TempoSt
 		len(cs.Distributor[corev1.PodFailed]) +
 		len(cs.Ingester[corev1.PodFailed]) +
 		len(cs.Querier[corev1.PodFailed]) +
-		len(cs.QueryFrontend[corev1.PodFailed])
+		len(cs.QueryFrontend[corev1.PodFailed]) +
+		len(cs.MetricsGenerator[corev1.PodFailed])
 
 	unknown := len(cs.Compactor[corev1.PodUnknown]) +
 		len(cs.Distributor[corev1.PodUnknown]) +
 		len(cs.Ingester[corev1.PodUnknown]) +
 		len(cs.Querier[corev1.PodUnknown]) +
-		len(cs.QueryFrontend[corev1.PodUnknown])
+		len(cs.QueryFrontend[corev1.PodUnknown]) +
+		len(cs.MetricsGenerator[corev1.PodUnknown])
 
 	if failed != 0 || unknown != 0 {
 		s.Status.Conditions = FailedCondition(s)
@@ -97,7 +106,8 @@ func GetComponentsStatus(ctx context.Context, k StatusClient, s v1alpha1.TempoSt
 		len(cs.Distributor[corev1.PodPending]) +
 		len(cs.Ingester[corev1.PodPending]) +
 		len(cs.Querier[corev1.PodPending]) +
-		len(cs.QueryFrontend[corev1.PodPending])
+		len(cs.QueryFrontend[corev1.PodPending]) +
+		len(cs.MetricsGenerator[corev1.PodPending])
 
 	if pending != 0 {
 		s.Status.Conditions = PendingCondition(s)

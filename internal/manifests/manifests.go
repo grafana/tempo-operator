@@ -12,6 +12,7 @@ import (
 	"github.com/grafana/tempo-operator/internal/manifests/ingester"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 	"github.com/grafana/tempo-operator/internal/manifests/memberlist"
+	"github.com/grafana/tempo-operator/internal/manifests/metricsgenerator"
 	"github.com/grafana/tempo-operator/internal/manifests/naming"
 	"github.com/grafana/tempo-operator/internal/manifests/networkpolicies"
 	"github.com/grafana/tempo-operator/internal/manifests/querier"
@@ -63,6 +64,14 @@ func BuildAll(params manifestutils.Params) ([]client.Object, error) {
 	manifests = append(manifests, frontendObjs...)
 	manifests = append(manifests, querierObjs...)
 	manifests = append(manifests, compactorObjs...)
+
+	if params.Tempo.Spec.Template.MetricsGenerator != nil {
+		mgObjs, err := metricsgenerator.BuildMetricsGenerator(params)
+		if err != nil {
+			return nil, err
+		}
+		manifests = append(manifests, mgObjs...)
+	}
 
 	if params.Tempo.Spec.Template.Gateway.Enabled {
 		gw, err := gateway.BuildGateway(params)
