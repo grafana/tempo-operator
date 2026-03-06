@@ -115,6 +115,23 @@ distributor:
     {{- with .MemberList.InstanceAddr }}
     instance_addr: {{ . }}
     {{- end }}
+{{- if .MetricsGenerator.Enabled }}
+  metric_generator_client:
+    grpc_client_config:
+{{- if .Gates.GRPCEncryption }}
+      tls_enabled: true
+      tls_cert_path: {{ .TLS.Paths.Certificate }}
+      tls_key_path: {{ .TLS.Paths.Key }}
+      tls_ca_path: {{ .TLS.Paths.CA }}
+      tls_server_name: {{ .MetricsGenerator.Address }}
+{{- if .TLS.Profile.Ciphers }}
+      tls_cipher_suites: {{ .TLS.Profile.Ciphers }}
+{{- end }}
+      tls_min_version: {{ .TLS.Profile.MinTLSVersion }}
+{{- end }}
+    address: {{ .MetricsGenerator.Address }}
+  generate_all_spans: true
+{{- end }}
 ingester:
   lifecycler:
     ring:
@@ -325,4 +342,20 @@ ingester_client:
     tls_cipher_suites: {{ .TLS.Profile.Ciphers }}
 {{- end }}
     tls_min_version: {{ .TLS.Profile.MinTLSVersion }}
+{{- end }}
+{{- if .MetricsGenerator.Enabled }}
+metrics_generator:
+  ring:
+    kvstore:
+      store: memberlist
+  processor:
+{{- range .MetricsGenerator.Processors }}
+    {{ . }}:
+{{- end }}
+  storage:
+    path: /var/tempo/wal
+    remote_write:
+{{- range .MetricsGenerator.RemoteWriteURLs }}
+    - url: {{ . }}
+{{- end }}
 {{- end }}

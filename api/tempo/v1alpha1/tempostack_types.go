@@ -346,6 +346,13 @@ type ComponentStatus struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=status,xDescriptors="urn:alm:descriptor:com.tectonic.ui:podStatuses",displayName="Gateway",order=6
 	Gateway PodStatusMap `json:"gateway"`
+
+	// MetricsGenerator is a map to the per pod status of the metrics-generator deployment.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=status,xDescriptors="urn:alm:descriptor:com.tectonic.ui:podStatuses",displayName="Metrics Generator",order=7
+	MetricsGenerator PodStatusMap `json:"metricsGenerator,omitempty"`
 }
 
 // TempoStackStatus defines the observed state of TempoStack.
@@ -601,6 +608,45 @@ type TempoTemplateSpec struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Gateway pods"
 	Gateway TempoGatewaySpec `json:"gateway,omitempty"`
+
+	// MetricsGenerator defines the metrics-generator component spec.
+	// When non-nil, the metrics-generator component will be deployed.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Metrics Generator pods"
+	MetricsGenerator *TempoMetricsGeneratorSpec `json:"metricsGenerator,omitempty"`
+}
+
+// TempoMetricsGeneratorSpec defines the metrics-generator component spec.
+type TempoMetricsGeneratorSpec struct {
+	// TempoComponentSpec is embedded to extend this definition with further options.
+	//
+	// Currently, there is no way to inline this field.
+	// See: https://github.com/golang/go/issues/6213
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	TempoComponentSpec `json:"component,omitempty"`
+
+	// RemoteWriteURLs defines the list of Prometheus remote write endpoints
+	// to which the metrics-generator will push generated metrics.
+	//
+	// +required
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:MinItems=1
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Remote Write URLs"
+	RemoteWriteURLs []string `json:"remoteWriteURLs"`
+
+	// Processors defines which processors to enable.
+	// Valid values are: service-graphs, span-metrics, local-blocks.
+	// Defaults to service-graphs and span-metrics if not set.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:validation:items:Enum=service-graphs;span-metrics;local-blocks
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Processors"
+	Processors []string `json:"processors,omitempty"`
 }
 
 // TempoDistributorSpec defines the template of all requirements to configure

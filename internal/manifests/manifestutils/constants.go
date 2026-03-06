@@ -139,6 +139,8 @@ const (
 
 	// IngesterComponentName declares the internal name of the ingester component.
 	IngesterComponentName = "ingester"
+	// MetricsGeneratorComponentName declares the internal name of the metrics-generator component.
+	MetricsGeneratorComponentName = "metrics-generator"
 	// GatewayComponentName declares the internal name of the gateway component.
 	GatewayComponentName = "gateway"
 	// GatewayOpaComponentName declares the internal name of the gateway OPA sidecar component.
