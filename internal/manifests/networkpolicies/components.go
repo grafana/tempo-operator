@@ -308,6 +308,10 @@ func componentRelations(params manifestutils.Params) networkRelations {
 				},
 				networkingv1.NetworkPolicyPort{
 					Protocol: ptr.To(corev1.ProtocolTCP),
+					Port:     ptr.To(intstr.FromInt(manifestutils.PortJaegerGRPCQuery)),
+				},
+				networkingv1.NetworkPolicyPort{
+					Protocol: ptr.To(corev1.ProtocolTCP),
 					Port:     ptr.To(intstr.FromInt(manifestutils.PortJaegerMetrics)),
 				},
 			)
@@ -359,6 +363,10 @@ func componentRelations(params manifestutils.Params) networkRelations {
 			networkingv1.NetworkPolicyPort{
 				Protocol: ptr.To(corev1.ProtocolTCP),
 				Port:     ptr.To(intstr.FromInt(manifestutils.PortJaegerUI)),
+			},
+			networkingv1.NetworkPolicyPort{
+				Protocol: ptr.To(corev1.ProtocolTCP),
+				Port:     ptr.To(intstr.FromInt(manifestutils.PortJaegerGRPCQuery)),
 			},
 			networkingv1.NetworkPolicyPort{
 				Protocol: ptr.To(corev1.ProtocolTCP),

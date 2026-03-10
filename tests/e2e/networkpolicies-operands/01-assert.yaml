@@ -346,6 +346,8 @@ spec:
       protocol: TCP
     - port: 16686
       protocol: TCP
+    - port: 16685
+      protocol: TCP
     - port: 16687
       protocol: TCP
   - from:
