@@ -271,6 +271,10 @@ func componentRelations(params manifestutils.Params) networkRelations {
 			},
 			{
 				Protocol: ptr.To(corev1.ProtocolTCP),
+				Port:     ptr.To(intstr.FromInt(manifestutils.GatewayPortInternalHTTPServer)),
+			},
+			{
+				Protocol: ptr.To(corev1.ProtocolTCP),
 				Port:     ptr.To(intstr.FromInt(manifestutils.GatewayPortGRPCServer)),
 			},
 		}
@@ -356,6 +360,10 @@ func componentRelations(params manifestutils.Params) networkRelations {
 	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled {
 		fromTo[netPolicyClusterComponents][manifestutils.QueryFrontendComponentName] = append(
 			fromTo[netPolicyClusterComponents][manifestutils.QueryFrontendComponentName],
+			networkingv1.NetworkPolicyPort{
+				Protocol: ptr.To(corev1.ProtocolTCP),
+				Port:     ptr.To(intstr.FromInt(manifestutils.PortJaegerGRPCQuery)),
+			},
 			networkingv1.NetworkPolicyPort{
 				Protocol: ptr.To(corev1.ProtocolTCP),
 				Port:     ptr.To(intstr.FromInt(manifestutils.PortJaegerUI)),
