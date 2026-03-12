@@ -25,6 +25,14 @@ type options struct {
 	S3StorageTLS           storageTLSOptions
 	Timeout                time.Duration
 	MCPServer              mcpserverOptions
+	MetricsGenerator       metricsGeneratorOptions
+}
+
+type metricsGeneratorOptions struct {
+	Enabled         bool
+	RemoteWriteURLs []string
+	Processors      []string
+	Address         string
 }
 
 type tempoQueryOptions struct {
