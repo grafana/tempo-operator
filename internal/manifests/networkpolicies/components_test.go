@@ -295,6 +295,170 @@ func TestOAuthProxyPort(t *testing.T) {
 	}
 }
 
+func TestJaegerQueryPorts(t *testing.T) {
+	tests := []struct {
+		name                 string
+		gatewayEnabled       bool
+		jaegerEnabled        bool
+		expectedPorts        []int
+		expectedGatewayPorts []int
+	}{
+		{
+			name:                 "JaegerQuery enabled with gateway - should include all Jaeger ports",
+			gatewayEnabled:       true,
+			jaegerEnabled:        true,
+			expectedPorts:        []int{manifestutils.PortJaegerGRPCQuery, manifestutils.PortJaegerUI, manifestutils.PortJaegerMetrics},
+			expectedGatewayPorts: []int{manifestutils.PortJaegerUI, manifestutils.PortJaegerMetrics},
+		},
+		{
+			name:                 "JaegerQuery enabled without gateway - should include all Jaeger ports",
+			gatewayEnabled:       false,
+			jaegerEnabled:        true,
+			expectedPorts:        []int{manifestutils.PortJaegerGRPCQuery, manifestutils.PortJaegerUI, manifestutils.PortJaegerMetrics},
+			expectedGatewayPorts: []int{},
+		},
+		{
+			name:                 "JaegerQuery disabled - should not include Jaeger ports",
+			gatewayEnabled:       false,
+			jaegerEnabled:        false,
+			expectedPorts:        []int{},
+			expectedGatewayPorts: []int{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tempo := v1alpha1.TempoStack{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "myinstance",
+					Namespace: "something",
+				},
+				Spec: v1alpha1.TempoStackSpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						Gateway: v1alpha1.TempoGatewaySpec{
+							Enabled: tt.gatewayEnabled,
+						},
+						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+							JaegerQuery: v1alpha1.JaegerQuerySpec{
+								Enabled: tt.jaegerEnabled,
+							},
+						},
+					},
+				},
+			}
+
+			params := manifestutils.Params{
+				Tempo: tempo,
+				StorageParams: manifestutils.StorageParams{
+					S3: &manifestutils.S3{
+						Endpoint: "minio:9000",
+						Bucket:   "tempo",
+						Insecure: false,
+					},
+					CredentialMode: v1alpha1.CredentialModeStatic,
+				},
+			}
+
+			// Test query-frontend NetworkPolicy
+			np := generatePolicyFor(params, manifestutils.QueryFrontendComponentName)
+			require.NotNil(t, np)
+
+			// Check ingress rules for expected Jaeger ports
+			foundPorts := make(map[int]bool)
+			for _, ingress := range np.Spec.Ingress {
+				for _, port := range ingress.Ports {
+					if port.Port != nil {
+						foundPorts[port.Port.IntValue()] = true
+					}
+				}
+			}
+
+			for _, expectedPort := range tt.expectedPorts {
+				assert.True(t, foundPorts[expectedPort],
+					"query-frontend should have ingress port %d (JaegerQuery enabled: %v)",
+					expectedPort, tt.jaegerEnabled)
+			}
+
+			// If gateway is enabled, also check gateway NetworkPolicy
+			if tt.gatewayEnabled {
+				gwNp := generatePolicyFor(params, manifestutils.GatewayComponentName)
+				require.NotNil(t, gwNp)
+
+				// Check egress rules for expected Jaeger ports to query-frontend
+				foundGwPorts := make(map[int]bool)
+				for _, egress := range gwNp.Spec.Egress {
+					for _, port := range egress.Ports {
+						if port.Port != nil {
+							foundGwPorts[port.Port.IntValue()] = true
+						}
+					}
+				}
+
+				for _, expectedPort := range tt.expectedGatewayPorts {
+					assert.True(t, foundGwPorts[expectedPort],
+						"gateway should have egress port %d to query-frontend (JaegerQuery enabled: %v)",
+						expectedPort, tt.jaegerEnabled)
+				}
+			}
+		})
+	}
+}
+
+func TestGatewayPorts(t *testing.T) {
+	tempo := v1alpha1.TempoStack{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "myinstance",
+			Namespace: "something",
+		},
+		Spec: v1alpha1.TempoStackSpec{
+			Template: v1alpha1.TempoTemplateSpec{
+				Gateway: v1alpha1.TempoGatewaySpec{
+					Enabled: true,
+				},
+			},
+		},
+	}
+
+	params := manifestutils.Params{
+		Tempo: tempo,
+		StorageParams: manifestutils.StorageParams{
+			S3: &manifestutils.S3{
+				Endpoint: "minio:9000",
+				Bucket:   "tempo",
+				Insecure: false,
+			},
+			CredentialMode: v1alpha1.CredentialModeStatic,
+		},
+	}
+
+	np := generatePolicyFor(params, manifestutils.GatewayComponentName)
+	require.NotNil(t, np)
+
+	// Check that all three gateway ports are allowed for ingress from cluster components
+	expectedPorts := []int{
+		manifestutils.GatewayPortHTTPServer,         // 8080
+		manifestutils.GatewayPortInternalHTTPServer, // 8081
+		manifestutils.GatewayPortGRPCServer,         // 8090
+	}
+
+	foundPorts := make(map[int]bool)
+	for _, ingress := range np.Spec.Ingress {
+		for _, port := range ingress.Ports {
+			if port.Port != nil {
+				foundPorts[port.Port.IntValue()] = true
+			}
+		}
+	}
+
+	for _, expectedPort := range expectedPorts {
+		assert.True(t, foundPorts[expectedPort],
+			"gateway should have ingress port %d", expectedPort)
+	}
+
+	// Verify ingress policy type is set
+	assert.Contains(t, np.Spec.PolicyTypes, networkingv1.PolicyTypeIngress)
+}
+
 func TestExtractStoragePorts(t *testing.T) {
 	tests := []struct {
 		name           string

@@ -621,6 +621,16 @@ spec:
           app.kubernetes.io/managed-by: tempo-operator
           app.kubernetes.io/name: tempo
   - ports:
+    - port: 16685
+      protocol: TCP
+    to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/component: query-frontend
+          app.kubernetes.io/instance: simplest
+          app.kubernetes.io/managed-by: tempo-operator
+          app.kubernetes.io/name: tempo
+  - ports:
     - port: 16687
       protocol: TCP
     to:
@@ -635,6 +645,8 @@ spec:
     - namespaceSelector: {}
     ports:
     - port: 8080
+      protocol: TCP
+    - port: 8081
       protocol: TCP
     - port: 8090
       protocol: TCP
