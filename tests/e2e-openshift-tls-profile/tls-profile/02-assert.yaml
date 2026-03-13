@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: tls-scanner
+  namespace: chainsaw-tls-profile-gw
+status:
+  phase: Running
