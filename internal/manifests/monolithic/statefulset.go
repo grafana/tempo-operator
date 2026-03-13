@@ -70,7 +70,6 @@ func BuildTempoStatefulset(opts Options, extraAnnotations map[string]string) (*a
 							Env:   proxy.ReadProxyVarsFromEnv(),
 							Args: []string{
 								"-config.file=/conf/tempo.yaml",
-								"-mem-ballast-size-mbs=1024",
 								"-log.level=info",
 							},
 							VolumeMounts: []corev1.VolumeMount{
