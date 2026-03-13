@@ -1,6 +1,6 @@
 module github.com/grafana/tempo-operator
 
-go 1.24.2
+go 1.24.3
 
 require (
 	github.com/Masterminds/semver/v3 v3.4.0
@@ -16,7 +16,7 @@ require (
 	github.com/openshift/cloud-credential-operator v0.0.0-20250417173756-8ff60a024ed9
 	github.com/openshift/library-go v0.0.0-20260210145149-d0e860e8d752
 	github.com/operator-framework/api v0.31.0
-	github.com/operator-framework/operator-lib v0.18.0
+	github.com/operator-framework/operator-lib v0.19.0
 	github.com/prometheus/client_golang v1.23.2
 	github.com/prometheus/common v0.67.4
 	github.com/spf13/cobra v1.10.2
