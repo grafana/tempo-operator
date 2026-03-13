@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: tempo-mmo
+status:
+  readyReplicas: 1
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: tempo-mmo-0
+status:
+  containerStatuses:
+  - name: jaeger-query
+    ready: true
+    started: true
+  - name: tempo
+    ready: true
+    started: true
+  - name: tempo-gateway
+    ready: true
+    started: true
+  - name: tempo-gateway-opa
+    ready: true
+    started: true
+  - name: tempo-query
+    ready: true
+    started: true
+  phase: Running
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: tempo-mmo-gateway
+spec:
+    ports:
+    - name: public
+      protocol: TCP
+      port: 8080
+      targetPort: public
+    - name: internal
+      protocol: TCP
+      port: 8081
+      targetPort: internal
+    - name: http
+      protocol: TCP
+      port: 3200
+      targetPort: http
+    - name: otlp-grpc
+      protocol: TCP
+      port: 4317
+      targetPort: grpc-public

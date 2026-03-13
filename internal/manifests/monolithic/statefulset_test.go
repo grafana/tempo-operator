@@ -1289,6 +1289,84 @@ func TestStatefulsetGatewayRBAC(t *testing.T) {
 	}, sts.Spec.Template.Spec.Containers[2])
 }
 
+func TestStatefulsetGatewayOTLPHTTPReceiverTLS(t *testing.T) {
+	opts := Options{
+		CtrlConfig: configv1alpha1.ProjectConfig{
+			DefaultImages: configv1alpha1.ImagesSpec{
+				TempoGateway:    "quay.io/observatorium/api:x.y.z",
+				TempoGatewayOpa: "quay.io/observatorium/opa-openshift:x.y.z",
+			},
+			Gates: configv1alpha1.FeatureGates{
+				OpenShift: configv1alpha1.OpenShiftFeatureGates{
+					ServingCertsService: true,
+				},
+			},
+		},
+		Tempo: v1alpha1.TempoMonolithic{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "sample",
+				Namespace: "default",
+			},
+			Spec: v1alpha1.TempoMonolithicSpec{
+				Timeout: metav1.Duration{Duration: time.Second * 5},
+				Storage: &v1alpha1.MonolithicStorageSpec{
+					Traces: v1alpha1.MonolithicTracesStorageSpec{
+						Backend: "memory",
+					},
+				},
+				Query: &v1alpha1.MonolithicQuerySpec{},
+				Ingestion: &v1alpha1.MonolithicIngestionSpec{
+					OTLP: &v1alpha1.MonolithicIngestionOTLPSpec{
+						GRPC: &v1alpha1.MonolithicIngestionOTLPProtocolsGRPCSpec{
+							Enabled: true,
+						},
+						HTTP: &v1alpha1.MonolithicIngestionOTLPProtocolsHTTPSpec{
+							Enabled: true,
+							TLS: &v1alpha1.TLSSpec{
+								Enabled: true,
+								Cert:    "http-receiver-cert",
+								CA:      "http-receiver-ca",
+							},
+						},
+					},
+				},
+				JaegerUI: &v1alpha1.MonolithicJaegerUISpec{
+					Enabled: true,
+				},
+				Multitenancy: &v1alpha1.MonolithicMultitenancySpec{
+					Enabled: true,
+					TenantsSpec: v1alpha1.TenantsSpec{
+						Mode: v1alpha1.ModeOpenShift,
+						Authentication: []v1alpha1.AuthenticationSpec{
+							{
+								TenantName: "dev",
+								TenantID:   "1610b0c3-c509-4592-a256-a1871353dbfa",
+							},
+						},
+					},
+					Resources: &corev1.ResourceRequirements{},
+				},
+			},
+		},
+	}
+	sts, err := BuildTempoStatefulset(opts, map[string]string{})
+	require.NoError(t, err)
+
+	// Find the gateway container
+	var gatewayContainer *corev1.Container
+	for i := range sts.Spec.Template.Spec.Containers {
+		if sts.Spec.Template.Spec.Containers[i].Name == "tempo-gateway" {
+			gatewayContainer = &sts.Spec.Template.Spec.Containers[i]
+			break
+		}
+	}
+	require.NotNil(t, gatewayContainer)
+
+	// Verify that the OTLP HTTP endpoint uses https:// when receiver TLS is enabled
+	require.Contains(t, gatewayContainer.Args, "--traces.write.otlphttp.endpoint=https://localhost:4318")
+	require.NotContains(t, gatewayContainer.Args, "--traces.write.otlphttp.endpoint=http://localhost:4318")
+}
+
 func TestStatefulsetCustomStorageClass(t *testing.T) {
 	opts := Options{
 		CtrlConfig: configv1alpha1.ProjectConfig{
