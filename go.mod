@@ -41,7 +41,7 @@ require (
 require (
 	github.com/openshift/api v0.0.0-20260130140113-71e91db96ffc
 	github.com/openshift/controller-runtime-common v0.0.0-20260210092218-8eef974290cd
-	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.74.0
+	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.89.0
 	github.com/stretchr/testify v1.11.1
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/utils v0.0.0-20260108192941-914a6e750570
