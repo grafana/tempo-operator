@@ -42,14 +42,14 @@ jobs:
               --force
 
       - name: Checkout operatorhub repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           repository: tempooperatorbot/${{ inputs.repo }}
           token: ${{ secrets.TEMPOOPERATORBOT_GITHUB_TOKEN }}
           persist-credentials: true
 
       - name: Checkout tempo-operator to tmp/ directory
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           repository: ${{ inputs.oprepo }}
           token: ${{ secrets.TEMPOOPERATORBOT_GITHUB_TOKEN }}
