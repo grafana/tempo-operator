@@ -17,7 +17,7 @@ jobs:
       operator_version: ${{ steps.operator-version.outputs.version }}
     steps:
     - name: Checkout
-      uses: actions/checkout@v6
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       with:
         ref: main
         token: ${{ secrets.GITHUB_TOKEN }}
@@ -28,7 +28,7 @@ jobs:
       run: echo "version=$(grep -Eo '## [0-9]+\.[0-9]+\.[0-9]+' CHANGELOG.md | head -n 1 | awk '{print $2}')" >> "$GITHUB_OUTPUT"
 
     - name: Set up Go
-      uses: actions/setup-go@v6
+      uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6
       with:
         go-version-file: go.mod
 
