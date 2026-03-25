@@ -79,7 +79,8 @@ data:
           tls_key_path: /var/run/tls/server/tls.key
           tls_ca_path: /var/run/ca/service-ca.crt
           tls_server_name: tempo-simplest-query-frontend.chainsaw-route.svc.cluster.local
-          tls_min_version: VersionTLS13
+          tls_cipher_suites: TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384,TLS_CHACHA20_POLY1305_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+          tls_min_version: VersionTLS12
     server:
       grpc_server_max_recv_msg_size: 4194304
       grpc_server_max_send_msg_size: 4194304
@@ -87,7 +88,8 @@ data:
       http_server_read_timeout: 2m0s
       http_server_write_timeout: 2m0s
       log_format: logfmt
-      tls_min_version: VersionTLS13
+      tls_cipher_suites: TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384,TLS_CHACHA20_POLY1305_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+      tls_min_version: VersionTLS12
       grpc_tls_config:
         cert_file:  /var/run/tls/server/tls.crt
         key_file: /var/run/tls/server/tls.key
@@ -121,7 +123,8 @@ data:
         tls_ca_path: /var/run/ca/service-ca.crt
         tls_server_name: tempo-simplest-ingester.chainsaw-route.svc.cluster.local
         tls_insecure_skip_verify: false
-        tls_min_version: VersionTLS13
+        tls_cipher_suites: TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384,TLS_CHACHA20_POLY1305_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+        tls_min_version: VersionTLS12
   tempo-query.yaml: |
     address: 0.0.0.0:7777
     backend: localhost:3200
@@ -181,11 +184,13 @@ data:
           tls_key_path: /var/run/tls/server/tls.key
           tls_ca_path: /var/run/ca/service-ca.crt
           tls_server_name: tempo-simplest-query-frontend.chainsaw-route.svc.cluster.local
-          tls_min_version: VersionTLS13
+          tls_cipher_suites: TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384,TLS_CHACHA20_POLY1305_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+          tls_min_version: VersionTLS12
     internal_server:
       enable: true
       http_listen_address: ""
-      tls_min_version: VersionTLS13
+      tls_cipher_suites: TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384,TLS_CHACHA20_POLY1305_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+      tls_min_version: VersionTLS12
       http_tls_config:
         cert_file: /var/run/tls/server/tls.crt
         key_file: /var/run/tls/server/tls.key
@@ -196,7 +201,8 @@ data:
       http_server_read_timeout: 2m0s
       http_server_write_timeout: 2m0s
       log_format: logfmt
-      tls_min_version: VersionTLS13
+      tls_cipher_suites: TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384,TLS_CHACHA20_POLY1305_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+      tls_min_version: VersionTLS12
       grpc_tls_config:
         cert_file:  /var/run/tls/server/tls.crt
         key_file: /var/run/tls/server/tls.key
@@ -235,7 +241,8 @@ data:
         tls_ca_path: /var/run/ca/service-ca.crt
         tls_server_name: tempo-simplest-ingester.chainsaw-route.svc.cluster.local
         tls_insecure_skip_verify: false
-        tls_min_version: VersionTLS13
+        tls_cipher_suites: TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384,TLS_CHACHA20_POLY1305_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+        tls_min_version: VersionTLS12
 kind: ConfigMap
 metadata:
   labels:

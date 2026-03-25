@@ -19,6 +19,11 @@ spec:
         file: install-tempostack.yaml
     - assert:
         file: install-tempostack-assert.yaml
+  - name: Verify extraConfig in ConfigMap
+    try:
+    - script:
+        timeout: 1m
+        content: ./verify-extraconfig.sh
   - name: Check TempoStack status
     try:
     - script:
