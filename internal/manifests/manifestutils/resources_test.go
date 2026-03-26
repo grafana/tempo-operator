@@ -223,6 +223,37 @@ func TestResources(t *testing.T) {
 	}
 }
 
+func TestResourcesGatewayOpa(t *testing.T) {
+	tempo := v1alpha1.TempoStack{
+		Spec: v1alpha1.TempoStackSpec{
+			Template: v1alpha1.TempoTemplateSpec{
+				Gateway: v1alpha1.TempoGatewaySpec{
+					Enabled: true,
+				},
+			},
+			Resources: v1alpha1.Resources{
+				Total: &corev1.ResourceRequirements{
+					Limits: map[corev1.ResourceName]resource.Quantity{
+						corev1.ResourceMemory: resource.MustParse("2Gi"),
+						corev1.ResourceCPU:    resource.MustParse("1000m"),
+					},
+				},
+			},
+		},
+	}
+	resources := Resources(tempo, GatewayOpaComponentName, nil)
+	assert.Equal(t, corev1.ResourceRequirements{
+		Limits: corev1.ResourceList{
+			corev1.ResourceCPU:    *resource.NewMilliQuantity(20, resource.BinarySI),
+			corev1.ResourceMemory: *resource.NewQuantity(42949672, resource.BinarySI),
+		},
+		Requests: corev1.ResourceList{
+			corev1.ResourceCPU:    *resource.NewMilliQuantity(6, resource.BinarySI),
+			corev1.ResourceMemory: *resource.NewQuantity(12884902, resource.BinarySI),
+		},
+	}, resources)
+}
+
 func TestResourcesWithSize(t *testing.T) {
 	tests := []struct {
 		name      string
