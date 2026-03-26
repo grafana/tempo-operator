@@ -17,12 +17,10 @@ import (
 
 // BuildMetricsGenerator creates metrics-generator objects.
 func BuildMetricsGenerator(params manifestutils.Params) ([]client.Object, error) {
-	d, err := deployment(params)
-	if err != nil {
-		return nil, err
-	}
+	d := deployment(params)
 
-	if err := memberlist.ConfigureHashRingEnv(&d.Spec.Template.Spec, params.Tempo); err != nil {
+	err := error(nil)
+	if err = memberlist.ConfigureHashRingEnv(&d.Spec.Template.Spec, params.Tempo); err != nil {
 		return nil, err
 	}
 
@@ -54,7 +52,7 @@ func resources(tempo v1alpha1.TempoStack) corev1.ResourceRequirements {
 	return *tempo.Spec.Template.MetricsGenerator.Resources
 }
 
-func deployment(params manifestutils.Params) (*v1.Deployment, error) {
+func deployment(params manifestutils.Params) *v1.Deployment {
 	tempo := params.Tempo
 	labels := manifestutils.ComponentLabels(manifestutils.MetricsGeneratorComponentName, tempo.Name)
 	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
@@ -158,7 +156,7 @@ func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 	}
 
 	manifestutils.SetGoMemLimit("tempo", &d.Spec.Template.Spec)
-	return d, nil
+	return d
 }
 
 func service(tempo v1alpha1.TempoStack) *corev1.Service {
