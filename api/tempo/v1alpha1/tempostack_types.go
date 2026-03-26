@@ -173,6 +173,24 @@ type TempoStackSpec struct {
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Extra Configurations"
 	ExtraConfig *ExtraConfigSpec `json:"extraConfig,omitempty"`
+
+	// Env defines additional environment variables for the Tempo containers of all components.
+	// These environment variables can be used together with extraConfig and the -config.expand-env=true flag
+	// to reference Kubernetes Secrets or ConfigMaps in the Tempo configuration,
+	// for example for a password-protected Redis cache.
+	//
+	// +optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Environment Variables",xDescriptors="urn:alm:descriptor:com.tectonic.ui:advanced"
+	Env []corev1.EnvVar `json:"env,omitempty"`
+
+	// EnvFrom defines additional environment variable sources for the Tempo containers of all components.
+	// These environment variables can be used together with extraConfig and the -config.expand-env=true flag
+	// to reference Kubernetes Secrets or ConfigMaps in the Tempo configuration,
+	// for example for a password-protected Redis cache.
+	//
+	// +optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Environment Variable Sources",xDescriptors="urn:alm:descriptor:com.tectonic.ui:advanced"
+	EnvFrom []corev1.EnvFromSource `json:"envFrom,omitempty"`
 }
 
 // NetworkPolicySpec defines how network policies are handled.

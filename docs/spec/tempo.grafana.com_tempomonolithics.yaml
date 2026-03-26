@@ -3,6 +3,38 @@ kind: TempoMonolithic                    # Kind is a string value representing t
 metadata:
   name: example
 spec:                                    # TempoMonolithicSpec defines the desired state of TempoMonolithic.
+  env:                                   # Env defines additional environment variables for the Tempo container. These environment variables can be used together with extraConfig and the -config.expand-env=true flag to reference Kubernetes Secrets or ConfigMaps in the Tempo configuration, for example for a password-protected Redis cache.
+  - name: ""                             # Name of the environment variable. May consist of any printable ASCII characters except '='.
+    value: ""                            # Variable references $(VAR_NAME) are expanded using the previously defined environment variables in the container and any service environment variables. If a variable cannot be resolved, the reference in the input string will be unchanged. Double $$ are reduced to a single $, which allows for escaping the $(VAR_NAME) syntax: i.e. "$$(VAR_NAME)" will produce the string literal "$(VAR_NAME)". Escaped references will never be expanded, regardless of whether the variable exists or not. Defaults to "".
+    valueFrom:                           # Source for the environment variable's value. Cannot be used if value is not empty.
+      configMapKeyRef:                   # Selects a key of a ConfigMap.
+        key: ""                          # The key to select.
+        name: ""                         # Name of the referent. This field is effectively required, but due to backwards compatibility is allowed to be empty. Instances of this type with an empty value here are almost certainly wrong. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+        optional: false                  # Specify whether the ConfigMap or its key must be defined
+      fieldRef:                          # Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['<KEY>']`, `metadata.annotations['<KEY>']`, spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.
+        apiVersion: ""                   # Version of the schema the FieldPath is written in terms of, defaults to "v1".
+        fieldPath: ""                    # Path of the field to select in the specified API version.
+      fileKeyRef:                        # FileKeyRef selects a key of the env file. Requires the EnvFiles feature gate to be enabled.
+        key: ""                          # The key within the env file. An invalid key will prevent the pod from starting. The keys defined within a source may consist of any printable ASCII characters except '='. During Alpha stage of the EnvFiles feature gate, the key size is limited to 128 characters.
+        optional: false                  # Specify whether the file or its key must be defined. If the file or key does not exist, then the env var is not published. If optional is set to true and the specified key does not exist, the environment variable will not be set in the Pod's containers.  If optional is set to false and the specified key does not exist, an error will be returned during Pod creation.
+        path: ""                         # The path within the volume from which to select the file. Must be relative and may not contain the '..' path or start with '..'.
+        volumeName: ""                   # The name of the volume mount containing the env file.
+      resourceFieldRef:                  # Selects a resource of the container: only resources limits and requests (limits.cpu, limits.memory, limits.ephemeral-storage, requests.cpu, requests.memory and requests.ephemeral-storage) are currently supported.
+        containerName: ""                # Container name: required for volumes, optional for env vars
+        divisor: 0Gi                     # Specifies the output format of the exposed resources, defaults to "1"
+        resource: ""                     # Required: resource to select
+      secretKeyRef:                      # Selects a key of a secret in the pod's namespace
+        key: ""                          # The key of the secret to select from.  Must be a valid secret key.
+        name: ""                         # Name of the referent. This field is effectively required, but due to backwards compatibility is allowed to be empty. Instances of this type with an empty value here are almost certainly wrong. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+        optional: false                  # Specify whether the Secret or its key must be defined
+  envFrom:                               # EnvFrom defines additional environment variable sources for the Tempo container. These environment variables can be used together with extraConfig and the -config.expand-env=true flag to reference Kubernetes Secrets or ConfigMaps in the Tempo configuration, for example for a password-protected Redis cache.
+  - configMapRef:                        # The ConfigMap to select from
+      name: ""                           # Name of the referent. This field is effectively required, but due to backwards compatibility is allowed to be empty. Instances of this type with an empty value here are almost certainly wrong. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+      optional: false                    # Specify whether the ConfigMap must be defined
+    prefix: ""                           # Optional text to prepend to the name of each environment variable. May consist of any printable ASCII characters except '='.
+    secretRef:                           # The Secret to select from
+      name: ""                           # Name of the referent. This field is effectively required, but due to backwards compatibility is allowed to be empty. Instances of this type with an empty value here are almost certainly wrong. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+      optional: false                    # Specify whether the Secret must be defined
   extraConfig:                           # ExtraConfig defines any extra (overlay) configuration of components.
     tempo: {}                            # Tempo defines any extra Tempo configuration, which will be merged with the operator's generated Tempo configuration
   ingestion:                             # Ingestion defines the trace ingestion configuration.

@@ -46,6 +46,7 @@ func BuildDistributor(params manifestutils.Params) ([]client.Object, error) {
 	}
 
 	manifestutils.SetGoMemLimit("tempo", &dep.Spec.Template.Spec)
+	manifestutils.PatchEnvVars(&dep.Spec.Template.Spec, "tempo", tempo.Spec.Env, tempo.Spec.EnvFrom)
 
 	distributorService := service(tempo)
 	objects := []client.Object{dep, distributorService}
