@@ -793,7 +793,10 @@ func TestStatefulsetGateway(t *testing.T) {
 	require.Equal(t, corev1.Container{
 		Name:  "tempo-gateway",
 		Image: "quay.io/observatorium/api:x.y.z",
-		Env:   proxy.ReadProxyVarsFromEnv(),
+		Env: append(proxy.ReadProxyVarsFromEnv(), corev1.EnvVar{
+			Name:  "SSL_CERT_FILE",
+			Value: "/etc/tempo-gateway/trusted-ca/ca-bundle.crt",
+		}),
 		Args: []string{
 			"--web.listen=0.0.0.0:8080",
 			"--web.internal.listen=0.0.0.0:8081",
@@ -867,6 +870,11 @@ func TestStatefulsetGateway(t *testing.T) {
 				MountPath: "/etc/tempo-gateway/tenants",
 			},
 			{
+				Name:      "tempo-sample-gateway-trusted-cabundle",
+				ReadOnly:  true,
+				MountPath: "/etc/tempo-gateway/trusted-ca",
+			},
+			{
 				Name:      "tempo-sample-serving-cabundle",
 				ReadOnly:  true,
 				MountPath: "/etc/tempo-gateway/serving-ca",
@@ -917,6 +925,16 @@ func TestStatefulsetGateway(t *testing.T) {
 							Key:  "tenants.yaml",
 							Path: "tenants.yaml",
 						},
+					},
+				},
+			},
+		},
+		{
+			Name: "tempo-sample-gateway-trusted-cabundle",
+			VolumeSource: corev1.VolumeSource{
+				ConfigMap: &corev1.ConfigMapVolumeSource{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: "tempo-sample-gateway-trusted-cabundle",
 					},
 				},
 			},
@@ -1078,7 +1096,10 @@ func TestStatefulsetGatewayRBAC(t *testing.T) {
 	require.Equal(t, corev1.Container{
 		Name:  "tempo-gateway",
 		Image: "quay.io/observatorium/api:x.y.z",
-		Env:   proxy.ReadProxyVarsFromEnv(),
+		Env: append(proxy.ReadProxyVarsFromEnv(), corev1.EnvVar{
+			Name:  "SSL_CERT_FILE",
+			Value: "/etc/tempo-gateway/trusted-ca/ca-bundle.crt",
+		}),
 		Args: []string{
 			"--web.listen=0.0.0.0:8080",
 			"--web.internal.listen=0.0.0.0:8081",
@@ -1152,6 +1173,11 @@ func TestStatefulsetGatewayRBAC(t *testing.T) {
 				MountPath: "/etc/tempo-gateway/tenants",
 			},
 			{
+				Name:      "tempo-sample-gateway-trusted-cabundle",
+				ReadOnly:  true,
+				MountPath: "/etc/tempo-gateway/trusted-ca",
+			},
+			{
 				Name:      "tempo-sample-serving-cabundle",
 				ReadOnly:  true,
 				MountPath: "/etc/tempo-gateway/serving-ca",
@@ -1202,6 +1228,16 @@ func TestStatefulsetGatewayRBAC(t *testing.T) {
 							Key:  "tenants.yaml",
 							Path: "tenants.yaml",
 						},
+					},
+				},
+			},
+		},
+		{
+			Name: "tempo-sample-gateway-trusted-cabundle",
+			VolumeSource: corev1.VolumeSource{
+				ConfigMap: &corev1.ConfigMapVolumeSource{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: "tempo-sample-gateway-trusted-cabundle",
 					},
 				},
 			},

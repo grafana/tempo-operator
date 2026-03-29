@@ -93,7 +93,17 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 				gatewayObjectName,
 			),
 			serviceAccount(params.Tempo),
+			manifestutils.NewConfigMapTrustedCABundle(
+				tempo.Namespace,
+				naming.Name("gateway-trusted-cabundle", tempo.Name),
+				manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name),
+			),
 		}...)
+
+		dep, err = patchOCPTrustedCA(params.Tempo, dep)
+		if err != nil {
+			return nil, err
+		}
 
 		if params.CtrlConfig.Gates.OpenShift.ServingCertsService {
 			objs = append(objs, manifestutils.NewConfigMapCABundle(

@@ -196,6 +196,52 @@ func patchOCPServingCerts(tempo v1alpha1.TempoStack, dep *v1.Deployment) (*v1.De
 	return dep, err
 }
 
+func patchOCPTrustedCA(tempo v1alpha1.TempoStack, dep *v1.Deployment) (*v1.Deployment, error) {
+	trustedCAVolumeName := "trusted-ca"
+	trustedCAMountPath := path.Join(tempoGatewayMountDir, "trusted-ca")
+	trustedCAFile := path.Join(trustedCAMountPath, "ca-bundle.crt")
+
+	container := corev1.Container{
+		VolumeMounts: []corev1.VolumeMount{
+			{
+				Name:      trustedCAVolumeName,
+				ReadOnly:  true,
+				MountPath: trustedCAMountPath,
+			},
+		},
+		Env: []corev1.EnvVar{
+			{
+				Name:  "SSL_CERT_FILE",
+				Value: trustedCAFile,
+			},
+		},
+	}
+	err := mergo.Merge(&dep.Spec.Template.Spec.Containers[0], container, mergo.WithAppendSlice)
+	if err != nil {
+		return nil, err
+	}
+
+	pod := corev1.PodSpec{
+		Volumes: []corev1.Volume{
+			{
+				Name: trustedCAVolumeName,
+				VolumeSource: corev1.VolumeSource{
+					ConfigMap: &corev1.ConfigMapVolumeSource{
+						LocalObjectReference: corev1.LocalObjectReference{
+							Name: naming.Name("gateway-trusted-cabundle", tempo.Name),
+						},
+					},
+				},
+			},
+		},
+	}
+	err = mergo.Merge(&dep.Spec.Template.Spec, pod, mergo.WithAppendSlice)
+	if err != nil {
+		return nil, err
+	}
+	return dep, nil
+}
+
 func patchOCPServiceAccount(tempo v1alpha1.TempoStack, dep *v1.Deployment) *v1.Deployment {
 	dep.Spec.Template.Spec.ServiceAccountName = naming.Name(manifestutils.GatewayComponentName, tempo.Name)
 	return dep

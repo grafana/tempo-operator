@@ -72,6 +72,12 @@ func BuildGatewayObjects(opts Options) ([]client.Object, map[string]string, erro
 			tempo.Namespace,
 			naming.DefaultServiceAccountName(tempo.Name),
 		))
+
+		manifests = append(manifests, manifestutils.NewConfigMapTrustedCABundle(
+			tempo.Namespace,
+			naming.Name("gateway-trusted-cabundle", tempo.Name),
+			ComponentLabels(manifestutils.GatewayComponentName, tempo.Name),
+		))
 	}
 
 	return manifests, extraAnnotations, nil

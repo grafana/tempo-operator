@@ -51,6 +51,64 @@ func TestPatchOPAContainer(t *testing.T) {
 	}, dep.Spec.Template.Spec.Containers[0].Args)
 }
 
+func TestPatchOCPTrustedCA(t *testing.T) {
+	tempo := v1alpha1.TempoStack{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "simplest",
+			Namespace: "observability",
+		},
+	}
+	dep := &appsv1.Deployment{
+		Spec: appsv1.DeploymentSpec{
+			Template: corev1.PodTemplateSpec{
+				Spec: corev1.PodSpec{
+					Volumes: []corev1.Volume{
+						{
+							Name: "data",
+						},
+					},
+					Containers: []corev1.Container{
+						{
+							Args: []string{"--help"},
+							VolumeMounts: []corev1.VolumeMount{
+								{
+									Name: "data",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	expected := dep.DeepCopy()
+	expected.Spec.Template.Spec.Volumes = append(expected.Spec.Template.Spec.Volumes, corev1.Volume{
+		Name: "trusted-ca",
+		VolumeSource: corev1.VolumeSource{
+			ConfigMap: &corev1.ConfigMapVolumeSource{
+				LocalObjectReference: corev1.LocalObjectReference{
+					Name: naming.Name("gateway-trusted-cabundle", tempo.Name),
+				},
+			},
+		},
+	})
+	expected.Spec.Template.Spec.Containers[0].VolumeMounts = append(expected.Spec.Template.Spec.Containers[0].VolumeMounts,
+		corev1.VolumeMount{
+			Name:      "trusted-ca",
+			ReadOnly:  true,
+			MountPath: "/etc/tempo-gateway/trusted-ca",
+		})
+	expected.Spec.Template.Spec.Containers[0].Env = append(expected.Spec.Template.Spec.Containers[0].Env,
+		corev1.EnvVar{
+			Name:  "SSL_CERT_FILE",
+			Value: "/etc/tempo-gateway/trusted-ca/ca-bundle.crt",
+		})
+
+	got, err := patchOCPTrustedCA(tempo, dep)
+	require.NoError(t, err)
+	assert.Equal(t, expected, got)
+}
+
 func TestPatchOCPServingCerts(t *testing.T) {
 	tempo := v1alpha1.TempoStack{
 		ObjectMeta: metav1.ObjectMeta{

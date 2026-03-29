@@ -46,7 +46,7 @@ func TestGateway(t *testing.T) {
 	}
 	objs, annotations, err := BuildGatewayObjects(opts)
 	require.NoError(t, err)
-	require.Len(t, objs, 4)
+	require.Len(t, objs, 5)
 
 	require.Contains(t, annotations, "tempo.grafana.com/rbacConfig.hash")
 	require.Contains(t, annotations, "tempo.grafana.com/tenantsConfig.hash")

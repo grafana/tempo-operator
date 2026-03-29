@@ -189,7 +189,7 @@ func TestBuildGateway_openshift(t *testing.T) {
 		},
 	})
 	require.NoError(t, err)
-	assert.Equal(t, 9, len(objects))
+	assert.Equal(t, 10, len(objects))
 	obj := getObjectByTypeAndName(objects, "tempo-simplest-gateway", reflect.TypeOf(&appsv1.Deployment{}))
 	require.NotNil(t, obj)
 	dep, ok := obj.(*appsv1.Deployment)
@@ -256,6 +256,14 @@ func TestBuildGateway_openshift(t *testing.T) {
 	require.Equal(t, map[string]string{
 		"service.beta.openshift.io/inject-cabundle": "true",
 	}, caConfigMap.Annotations)
+
+	obj = getObjectByTypeAndName(objects, "tempo-simplest-gateway-trusted-cabundle", reflect.TypeOf(&corev1.ConfigMap{}))
+	require.NotNil(t, obj)
+	trustedCAConfigMap, ok := obj.(*corev1.ConfigMap)
+	require.True(t, ok)
+	require.Equal(t, map[string]string{
+		"config.openshift.io/inject-trusted-cabundle": "true",
+	}, trustedCAConfigMap.Annotations)
 }
 
 func getObjectByTypeAndName(objects []client.Object, name string, t reflect.Type) client.Object { // nolint: unparam

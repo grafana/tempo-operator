@@ -582,6 +582,21 @@ func configureGateway(opts Options, sts *appsv1.StatefulSet) error {
 			ptr.Deref(opts.Tempo.Spec.Multitenancy.Resources, corev1.ResourceRequirements{}),
 		)
 		sts.Spec.Template.Spec.Containers = append(sts.Spec.Template.Spec.Containers, opaContainer)
+
+		trustedCAMountPath := path.Join(gatewayMountDir, "trusted-ca")
+		err := manifestutils.MountCAConfigMap(&sts.Spec.Template.Spec, containerName, naming.Name("gateway-trusted-cabundle", tempo.Name), trustedCAMountPath)
+		if err != nil {
+			return err
+		}
+		for i := range sts.Spec.Template.Spec.Containers {
+			if sts.Spec.Template.Spec.Containers[i].Name == containerName {
+				sts.Spec.Template.Spec.Containers[i].Env = append(sts.Spec.Template.Spec.Containers[i].Env, corev1.EnvVar{
+					Name:  "SSL_CERT_FILE",
+					Value: path.Join(trustedCAMountPath, "ca-bundle.crt"),
+				})
+				break
+			}
+		}
 	}
 
 	if opts.CtrlConfig.Gates.OpenShift.ServingCertsService {

@@ -184,6 +184,13 @@ func mutateConfigMap(existing, desired *corev1.ConfigMap) {
 		return
 	}
 
+	if _, ok := desired.Annotations["config.openshift.io/inject-trusted-cabundle"]; ok {
+		// The OpenShift cluster-network-operator will inject ca-bundle.crt into the ConfigMap.
+		// Skip mutating this ConfigMap, otherwise the ca-bundle.crt will be deleted by this operator
+		// and re-added by the cluster-network-operator in a loop.
+		return
+	}
+
 	existing.BinaryData = desired.BinaryData
 	existing.Data = desired.Data
 }

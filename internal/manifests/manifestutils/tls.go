@@ -119,6 +119,20 @@ func NewConfigMapCABundle(namespace string, name string, labels labels.Set) *cor
 	}
 }
 
+// NewConfigMapTrustedCABundle creates a new ConfigMap with an annotation that triggers the
+// cluster-network-operator to inject the cluster-wide trusted CA bundle in this ConfigMap (ca-bundle.crt key).
+// This includes the system trust store plus any custom CA certificates configured in the cluster's Proxy resource.
+func NewConfigMapTrustedCABundle(namespace string, name string, labels labels.Set) *corev1.ConfigMap {
+	return &corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        name,
+			Namespace:   namespace,
+			Labels:      labels,
+			Annotations: map[string]string{"config.openshift.io/inject-trusted-cabundle": "true"},
+		},
+	}
+}
+
 func findContainerIndex(pod *corev1.PodSpec, containerName string) (int, error) {
 	for i, container := range pod.Containers {
 		if container.Name == containerName {
