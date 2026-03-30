@@ -18,4 +18,26 @@ metadata:
   name: tempo-mono-0
   namespace: chainsaw-tls-profile-mono
 status:
+  containerStatuses:
+  - name: jaeger-query
+    ready: true
+    started: true
+  - name: tempo
+    ready: true
+    started: true
+  - name: tempo-gateway
+    ready: true
+    started: true
+  - name: tempo-gateway-opa
+    ready: true
+    started: true
+  - name: tempo-query
+    ready: true
+    started: true
   phase: Running
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tempo-mono-gateway
+  namespace: chainsaw-tls-profile-mono

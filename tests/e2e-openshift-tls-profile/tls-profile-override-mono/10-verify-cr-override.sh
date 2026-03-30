@@ -16,7 +16,7 @@ CONFIG=$(kubectl get configmap tempo-mono-config -n $NAMESPACE -o jsonpath='{.da
 echo "$CONFIG"
 
 # Verify both gRPC and HTTP receivers use per-CR override (min_version "1.3")
-COUNT_13=$(echo "$CONFIG" | grep -c 'min_version: "1.3"')
+COUNT_13=$(echo "$CONFIG" | grep -c 'min_version: "1.3"' || true)
 if [[ "$COUNT_13" -ne 2 ]]; then
   fail "expected 2 occurrences of min_version 1.3 (gRPC + HTTP receivers from per-CR minVersion override), found $COUNT_13"
 fi
@@ -37,12 +37,12 @@ echo "ConfigMap: storage TLS minVersion=VersionTLS13 (from per-CR minVersion ove
 
 # --- 2. Functional TLS checks ---
 echo "=== Functional TLS checks ==="
-kubectl exec tls-scanner -n $NAMESPACE -- tls-scanner -host tempo-mono -port 4317 \
-  || fail "TLS check failed on monolithic gRPC:4317"
-echo "PASS: monolithic gRPC:4317 TLS functional"
+kubectl exec tls-scanner -n $NAMESPACE -- tls-scanner -host tempo-mono-gateway -port 8080 \
+  || fail "TLS check failed on gateway HTTP:8080"
+echo "PASS: gateway HTTP:8080 TLS functional"
 
-kubectl exec tls-scanner -n $NAMESPACE -- tls-scanner -host tempo-mono -port 4318 \
-  || fail "TLS check failed on monolithic HTTP:4318"
-echo "PASS: monolithic HTTP:4318 TLS functional"
+kubectl exec tls-scanner -n $NAMESPACE -- tls-scanner -host tempo-mono-gateway -port 8090 \
+  || fail "TLS check failed on gateway gRPC:8090"
+echo "PASS: gateway gRPC:8090 TLS functional"
 
-echo "PASS: All per-CR TLS overrides verified - gRPC=Modern, HTTP=Modern, storage=VersionTLS13"
+echo "PASS: All per-CR TLS overrides verified - gateway HTTP=Modern, gateway gRPC=Modern, storage=VersionTLS13"

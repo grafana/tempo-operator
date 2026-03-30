@@ -6,3 +6,11 @@ metadata:
   namespace: chainsaw-tls-profile-gw
 status:
   readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dev-mono-collector
+  namespace: chainsaw-tls-profile-gw
+status:
+  readyReplicas: 1
