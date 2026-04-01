@@ -103,9 +103,12 @@ fi
 echo "ConfigMap: storage TLS minVersion=VersionTLS13 (from subscription TLS_PROFILE=Modern) - OK"
 
 # Verify distributor receivers use Modern profile (min_version "1.3") from subscription TLS_PROFILE=Modern.
-# With gateway enabled, traces flow through the gateway, not the distributor receiver ports.
-echo "$CONFIG" | grep 'min_version: "1.3"' || fail "distributor receiver min_version should be 1.3 (from subscription TLS_PROFILE=Modern)"
-echo "ConfigMap: distributor receiver TLS minVersion=1.3 (from subscription TLS_PROFILE=Modern) - OK"
+# With HTTPEncryption, both gRPC and HTTP receivers get min_version from the TLS profile.
+COUNT_13=$(echo "$CONFIG" | grep -c 'min_version: "1.3"' || true)
+if [[ "$COUNT_13" -ne 2 ]]; then
+  fail "expected 2 occurrences of min_version 1.3 (gRPC + HTTP receivers from subscription TLS_PROFILE=Modern), found $COUNT_13"
+fi
+echo "ConfigMap: gRPC receiver=1.3, HTTP receiver=1.3 (from subscription TLS_PROFILE=Modern) - OK"
 
 # --- 2. Gateway args verification ---
 # Gateway uses Modern profile from subscription TLS_PROFILE=Modern.

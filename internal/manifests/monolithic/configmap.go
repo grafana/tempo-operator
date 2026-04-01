@@ -326,7 +326,30 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 				}
 			}
 
-			if tempo.Spec.Ingestion.OTLP.HTTP != nil && tempo.Spec.Ingestion.OTLP.HTTP.Enabled {
+			// When gateway and HTTPEncryption are enabled, use the internal mTLS cert for the HTTP receiver,
+			// matching the gRPC receiver behavior above.
+			if tempo.Spec.Multitenancy.IsGatewayEnabled() && opts.CtrlConfig.Gates.HTTPEncryption {
+				minVersion := opts.TLSProfile.MinVersionOTELFormat()
+				ciphers := opts.TLSProfile.Ciphers
+				if tempo.Spec.Ingestion.OTLP.HTTP != nil && tempo.Spec.Ingestion.OTLP.HTTP.TLS != nil {
+					if tempo.Spec.Ingestion.OTLP.HTTP.TLS.MinVersion != "" {
+						minVersion = tempo.Spec.Ingestion.OTLP.HTTP.TLS.MinVersion
+					}
+					if tempo.Spec.Ingestion.OTLP.HTTP.TLS.CipherSuites != nil {
+						ciphers = tempo.Spec.Ingestion.OTLP.HTTP.TLS.CipherSuites
+					}
+				}
+				config.Distributor.Receivers.OTLP.Protocols.HTTP = &tempoReceiverConfig{
+					TLS: tempoReceiverTLSConfig{
+						CertFile:     path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSCertFilename),
+						CAFile:       path.Join(manifestutils.TempoInternalTLSCADir, manifestutils.TLSCAFilename),
+						KeyFile:      path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSKeyFilename),
+						MinVersion:   minVersion,
+						CipherSuites: ciphers,
+					},
+					Endpoint: fmt.Sprintf("localhost:%d", manifestutils.PortOtlpHttp),
+				}
+			} else if tempo.Spec.Ingestion.OTLP.HTTP != nil && tempo.Spec.Ingestion.OTLP.HTTP.Enabled {
 				receiverTLS := configureReceiverTLS(tempo.Spec.Ingestion.OTLP.HTTP.TLS,
 					opts.TLSProfile, manifestutils.ReceiverHTTPTLSCADir, manifestutils.ReceiverHTTPTLSCertDir)
 

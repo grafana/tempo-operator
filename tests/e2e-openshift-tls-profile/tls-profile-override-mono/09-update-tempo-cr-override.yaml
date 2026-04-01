@@ -16,8 +16,12 @@ spec:
           minVersion: "1.3"
   jaegerui:
     enabled: true
-    route:
-      enabled: true
+  multitenancy:
+    enabled: true
+    mode: openshift
+    authentication:
+    - tenantName: dev
+      tenantId: "1610b0c3-c509-4592-a256-a1871353dbfa"
   ingestion:
     otlp:
       grpc:

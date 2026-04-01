@@ -111,3 +111,83 @@ subjects:
 - kind: ServiceAccount
   name: default
   namespace: chainsaw-tls-profile-gw
+---
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoMonolithic
+metadata:
+  name: mono
+  namespace: chainsaw-tls-profile-gw
+spec:
+  storage:
+    traces:
+      backend: s3
+      size: 1Gi
+      s3:
+        secret: minio
+        tls:
+          enabled: true
+          caName: custom-ca
+  jaegerui:
+    enabled: true
+  multitenancy:
+    enabled: true
+    mode: openshift
+    authentication:
+    - tenantName: dev
+      tenantId: "1610b0c3-c509-4592-a256-a1871353dbfa"
+  ingestion:
+    otlp:
+      grpc:
+        tls:
+          enabled: true
+      http:
+        tls:
+          enabled: true
+---
+# Grant the dev-mono-collector Service Account permission to write traces to the 'dev' tenant (monolithic)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: allow-write-traces-dev-tenant-tls-profile-gw-mono
+rules:
+- apiGroups: [tempo.grafana.com]
+  resources: [dev]
+  resourceNames: [traces]
+  verbs: [create]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: allow-write-traces-dev-tenant-tls-profile-gw-mono
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: allow-write-traces-dev-tenant-tls-profile-gw-mono
+subjects:
+- kind: ServiceAccount
+  name: dev-mono-collector
+  namespace: chainsaw-tls-profile-gw
+---
+# Grant the default Service Account permission to read traces of the 'dev' tenant (monolithic)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: allow-read-traces-dev-tenant-tls-profile-gw-mono
+rules:
+- apiGroups: [tempo.grafana.com]
+  resources: [dev]
+  resourceNames: [traces]
+  verbs: [get]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: allow-read-traces-dev-tenant-tls-profile-gw-mono
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: allow-read-traces-dev-tenant-tls-profile-gw-mono
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: chainsaw-tls-profile-gw

@@ -116,7 +116,31 @@ echo "PASS: gateway:8090 TLS functional"
 GATEWAY_IP=$(kubectl get pod -n $NAMESPACE -l app.kubernetes.io/component=gateway -o jsonpath='{.items[0].status.podIP}')
 verify_nmap_tls_profile "$GATEWAY_IP" "8080,8090" intermediate "Gateway"
 
-# --- 5. Internal gRPC TLS profile verification via -all-pods ---
+# --- 5. Monolithic ConfigMap verification ---
+MONO_CONFIG=$(kubectl get configmap tempo-mono-config -n $NAMESPACE -o jsonpath='{.data.tempo\.yaml}')
+echo "$MONO_CONFIG" | grep 'tls_min_version: VersionTLS12' || fail "monolithic tls_min_version VersionTLS12 not found"
+echo "$MONO_CONFIG" | grep 'tls_ca_path' || fail "monolithic storage tls_ca_path not found - storage TLS not configured"
+
+# --- 6. Monolithic Gateway args verification ---
+MONO_GW_ARGS=$(kubectl get statefulset tempo-mono -n $NAMESPACE -o jsonpath='{.spec.template.spec.containers[?(@.name=="tempo-gateway")].args}')
+echo "$MONO_GW_ARGS" | grep -- '--tls.min-version=VersionTLS12' || fail "monolithic gateway --tls.min-version missing"
+echo "$MONO_GW_ARGS" | grep -- '--tls.cipher-suites=' || fail "monolithic gateway --tls.cipher-suites missing"
+
+# --- 7. Monolithic Functional TLS checks ---
+echo "=== Monolithic Functional TLS checks ==="
+kubectl exec tls-scanner -n $NAMESPACE -- tls-scanner -host tempo-mono-gateway -port 8080 \
+  || fail "TLS check failed on monolithic gateway:8080"
+echo "PASS: monolithic gateway:8080 TLS functional"
+
+kubectl exec tls-scanner -n $NAMESPACE -- tls-scanner -host tempo-mono-gateway -port 8090 \
+  || fail "TLS check failed on monolithic gateway:8090"
+echo "PASS: monolithic gateway:8090 TLS functional"
+
+# --- 8. Monolithic Gateway TLS profile verification via direct nmap ---
+MONO_GATEWAY_IP=$(kubectl get pod -n $NAMESPACE tempo-mono-0 -o jsonpath='{.status.podIP}')
+verify_nmap_tls_profile "$MONO_GATEWAY_IP" "8080,8090" intermediate "Monolithic Gateway"
+
+# --- 9. Internal gRPC TLS profile verification via -all-pods ---
 echo "=== Scanning all Tempo pods in $NAMESPACE ==="
 SCAN_OUTPUT=$(kubectl exec tls-scanner -n $NAMESPACE -- tls-scanner \
   -all-pods \
@@ -152,4 +176,4 @@ echo "PASS: operator metrics:8443 TLS functional"
 # Operator TLS profile verification via direct nmap
 verify_nmap_tls_profile "$OPERATOR_IP" "9443,8443" intermediate "Operator"
 
-echo "PASS: Intermediate profile verified on all components, gateway, storage, and operator"
+echo "PASS: Intermediate profile verified on all components, gateway, monolithic gateway, storage, and operator"
