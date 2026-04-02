@@ -35,6 +35,9 @@ spec:
       app.kubernetes.io/instance: simplest
       app.kubernetes.io/managed-by: tempo-operator
       app.kubernetes.io/name: tempo
+(spec.template.spec.containers[?name == 'tempo'] | [0].env[?name == 'TEST_DIRECT_ENV'] | [0].value): "direct-value"
+(spec.template.spec.containers[?name == 'tempo'] | [0].env[?name == 'TEST_SECRET_ENV'] | [0].valueFrom.secretKeyRef.name): "test-env-secret"
+(spec.template.spec.containers[?name == 'tempo'] | [0].envFrom[?secretRef.name == 'test-env-secret'] | length(@) > `0`): true
 status:
   readyReplicas: 1
 ---
@@ -55,6 +58,9 @@ spec:
       app.kubernetes.io/instance: simplest
       app.kubernetes.io/managed-by: tempo-operator
       app.kubernetes.io/name: tempo
+(spec.template.spec.containers[?name == 'tempo'] | [0].env[?name == 'TEST_DIRECT_ENV'] | [0].value): "direct-value"
+(spec.template.spec.containers[?name == 'tempo'] | [0].env[?name == 'TEST_SECRET_ENV'] | [0].valueFrom.secretKeyRef.name): "test-env-secret"
+(spec.template.spec.containers[?name == 'tempo'] | [0].envFrom[?secretRef.name == 'test-env-secret'] | length(@) > `0`): true
 status:
   readyReplicas: 1
 ---
@@ -74,6 +80,9 @@ spec:
       app.kubernetes.io/instance: simplest
       app.kubernetes.io/managed-by: tempo-operator
       app.kubernetes.io/name: tempo
+(spec.template.spec.containers[?name == 'tempo'] | [0].env[?name == 'TEST_DIRECT_ENV'] | [0].value): "direct-value"
+(spec.template.spec.containers[?name == 'tempo'] | [0].env[?name == 'TEST_SECRET_ENV'] | [0].valueFrom.secretKeyRef.name): "test-env-secret"
+(spec.template.spec.containers[?name == 'tempo'] | [0].envFrom[?secretRef.name == 'test-env-secret'] | length(@) > `0`): true
 status:
   readyReplicas: 1
 ---
@@ -93,6 +102,9 @@ spec:
       app.kubernetes.io/instance: simplest
       app.kubernetes.io/managed-by: tempo-operator
       app.kubernetes.io/name: tempo
+(spec.template.spec.containers[?name == 'tempo'] | [0].env[?name == 'TEST_DIRECT_ENV'] | [0].value): "direct-value"
+(spec.template.spec.containers[?name == 'tempo'] | [0].env[?name == 'TEST_SECRET_ENV'] | [0].valueFrom.secretKeyRef.name): "test-env-secret"
+(spec.template.spec.containers[?name == 'tempo'] | [0].envFrom[?secretRef.name == 'test-env-secret'] | length(@) > `0`): true
 status:
   readyReplicas: 1
 #
@@ -115,6 +127,9 @@ spec:
       app.kubernetes.io/instance: simplest
       app.kubernetes.io/managed-by: tempo-operator
       app.kubernetes.io/name: tempo
+(spec.template.spec.containers[?name == 'tempo'] | [0].env[?name == 'TEST_DIRECT_ENV'] | [0].value): "direct-value"
+(spec.template.spec.containers[?name == 'tempo'] | [0].env[?name == 'TEST_SECRET_ENV'] | [0].valueFrom.secretKeyRef.name): "test-env-secret"
+(spec.template.spec.containers[?name == 'tempo'] | [0].envFrom[?secretRef.name == 'test-env-secret'] | length(@) > `0`): true
 status:
   readyReplicas: 1
 #

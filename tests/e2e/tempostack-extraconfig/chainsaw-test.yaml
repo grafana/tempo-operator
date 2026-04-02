@@ -7,8 +7,10 @@ spec:
   description: Test extra config in TempoStack
   namespace: chainsaw-tempoextcfg
   steps:
-  - name: Install Minio storage
+  - name: Install env Secret and Minio storage
     try:
+    - apply:
+        file: install-env-secret.yaml
     - apply:
         file: install-storage.yaml
     - assert:

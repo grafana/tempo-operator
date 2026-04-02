@@ -4,6 +4,17 @@ metadata:
   name: simplest
 spec:
   timeout: 70s
+  env:
+    - name: TEST_DIRECT_ENV
+      value: "direct-value"
+    - name: TEST_SECRET_ENV
+      valueFrom:
+        secretKeyRef:
+          name: test-env-secret
+          key: SECRET_PASSWORD
+  envFrom:
+    - secretRef:
+        name: test-env-secret
   extraConfig:
     tempo:
       server:

@@ -6,8 +6,10 @@ spec:
   description: Test extra config in Tempo Monolithic
   namespace: chainsaw-monoextcfg
   steps:
-  - name: Install Tempo Monolithic
+  - name: Install env Secret and Tempo Monolithic
     try:
+    - apply:
+        file: install-env-secret.yaml
     - apply:
         file: install-tempo.yaml
     - assert:
