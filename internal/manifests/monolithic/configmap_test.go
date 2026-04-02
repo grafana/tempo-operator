@@ -541,6 +541,86 @@ usage_report:
   reporting_enabled: false
 `,
 		},
+		{
+			name: "gateway with HTTPEncryption and OTLP/HTTP receiver TLS",
+			spec: v1alpha1.TempoMonolithicSpec{
+				Ingestion: &v1alpha1.MonolithicIngestionSpec{
+					OTLP: &v1alpha1.MonolithicIngestionOTLPSpec{
+						GRPC: &v1alpha1.MonolithicIngestionOTLPProtocolsGRPCSpec{
+							Enabled: true,
+						},
+						HTTP: &v1alpha1.MonolithicIngestionOTLPProtocolsHTTPSpec{
+							Enabled: true,
+							TLS: &v1alpha1.TLSSpec{
+								Enabled:    true,
+								MinVersion: "1.3",
+							},
+						},
+					},
+				},
+				Multitenancy: &v1alpha1.MonolithicMultitenancySpec{
+					Enabled: true,
+					TenantsSpec: v1alpha1.TenantsSpec{
+						Mode: v1alpha1.ModeOpenShift,
+						Authentication: []v1alpha1.AuthenticationSpec{
+							{
+								TenantName: "dev",
+								TenantID:   "abc",
+							},
+						},
+					},
+				},
+			},
+			opts: Options{
+				CtrlConfig: configv1alpha1.ProjectConfig{
+					Gates: configv1alpha1.FeatureGates{
+						HTTPEncryption: true,
+					},
+				},
+			},
+			expected: `
+server:
+  http_listen_port: 3200
+  http_listen_address: 0.0.0.0
+  grpc_listen_address: localhost
+  http_server_read_timeout: 30s
+  http_server_write_timeout: 30s
+  http_tls_config:
+    cert_file: /var/run/tls/server/tls.crt
+    key_file: /var/run/tls/server/tls.key
+    client_auth_type: RequireAndVerifyClientCert
+    client_ca_file: /var/run/ca/service-ca.crt
+internal_server:
+  enable: true
+  http_listen_address: 0.0.0.0
+multitenancy_enabled: true
+storage:
+  trace:
+    backend: local
+    wal:
+      path: /var/tempo/wal
+    local:
+      path: /var/tempo/blocks
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        http:
+          endpoint: localhost:4318
+          tls:
+            cert_file: /var/run/tls/server/tls.crt
+            client_ca_file: /var/run/ca/service-ca.crt
+            key_file: /var/run/tls/server/tls.key
+            min_version: "1.3"
+        grpc:
+          tls:
+            cert_file: /var/run/tls/server/tls.crt
+            client_ca_file: /var/run/ca/service-ca.crt
+            key_file: /var/run/tls/server/tls.key
+usage_report:
+  reporting_enabled: false
+`,
+		},
 	}
 
 	for _, test := range tests {

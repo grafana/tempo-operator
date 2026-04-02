@@ -5,3 +5,11 @@ metadata:
   namespace: chainsaw-tls-profile-mono
 status:
   succeeded: 1
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: generate-traces-http-override
+  namespace: chainsaw-tls-profile-mono
+status:
+  succeeded: 1

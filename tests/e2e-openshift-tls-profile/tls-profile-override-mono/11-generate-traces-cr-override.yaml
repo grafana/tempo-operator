@@ -16,3 +16,23 @@ spec:
         - --otlp-insecure
         - --traces=10
       restartPolicy: Never
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: generate-traces-http-override
+  namespace: chainsaw-tls-profile-mono
+spec:
+  template:
+    spec:
+      containers:
+        - name: telemetrygen
+          image: ghcr.io/open-telemetry/opentelemetry-collector-contrib/telemetrygen:v0.92.0
+          args:
+            - traces
+            - --otlp-endpoint=dev-collector:4318
+            - --otlp-http
+            - --otlp-insecure
+            - --service=http-override
+            - --traces=10
+      restartPolicy: Never

@@ -28,7 +28,7 @@ spec:
         - --traces.tls.watch-certs=true
         - --grpc.listen=0.0.0.0:8090
         - --traces.write.otlpgrpc.endpoint=localhost:4317
-        - --traces.write.otlphttp.endpoint=http://localhost:4318
+        - --traces.write.otlphttp.endpoint=https://localhost:4318
         - --traces.query-rbac=true
         - --tls.server.cert-file=/etc/tempo-gateway/serving-cert/tls.crt
         - --tls.server.key-file=/etc/tempo-gateway/serving-cert/tls.key
@@ -120,6 +120,21 @@ data:
                 - TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256
                 - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
             http:
+              tls:
+                client_ca_file: /var/run/ca/service-ca.crt
+                cert_file: /var/run/tls/server/tls.crt
+                key_file: /var/run/tls/server/tls.key
+                min_version: "1.2"
+                cipher_suites:
+                - TLS_AES_128_GCM_SHA256
+                - TLS_AES_256_GCM_SHA384
+                - TLS_CHACHA20_POLY1305_SHA256
+                - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+                - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+                - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+                - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+                - TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256
+                - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
               endpoint: localhost:4318
     usage_report:
       reporting_enabled: false

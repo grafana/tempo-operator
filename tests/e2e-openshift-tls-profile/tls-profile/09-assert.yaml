@@ -13,3 +13,19 @@ metadata:
   namespace: chainsaw-tls-profile-gw
 status:
   succeeded: 1
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: generate-traces-grpc-mono-modern
+  namespace: chainsaw-tls-profile-gw
+status:
+  succeeded: 1
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: generate-traces-http-mono-modern
+  namespace: chainsaw-tls-profile-gw
+status:
+  succeeded: 1
