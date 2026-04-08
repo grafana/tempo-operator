@@ -72,6 +72,7 @@ func BuildTempoStatefulset(opts Options, extraAnnotations map[string]string) (*a
 								"-config.file=/conf/tempo.yaml",
 								"-mem-ballast-size-mbs=1024",
 								"-log.level=info",
+								"-config.expand-env=true",
 							},
 							VolumeMounts: []corev1.VolumeMount{
 								{
@@ -115,6 +116,7 @@ func BuildTempoStatefulset(opts Options, extraAnnotations map[string]string) (*a
 	}
 
 	manifestutils.SetGoMemLimit("tempo", &sts.Spec.Template.Spec)
+	manifestutils.PatchEnvVars(&sts.Spec.Template.Spec, "tempo", tempo.Spec.Env, tempo.Spec.EnvFrom)
 
 	err := configureStorage(opts, sts)
 	if err != nil {

@@ -46,6 +46,8 @@ func BuildIngester(params manifestutils.Params) ([]client.Object, error) {
 		}
 	}
 
+	manifestutils.PatchEnvVars(&ss.Spec.Template.Spec, "tempo", tempo.Spec.Env, tempo.Spec.EnvFrom)
+
 	return []client.Object{ss, service(tempo)}, nil
 }
 
