@@ -43,6 +43,8 @@ func BuildCompactor(params manifestutils.Params) ([]client.Object, error) {
 		}
 	}
 
+	manifestutils.PatchEnvVars(&d.Spec.Template.Spec, "tempo", tempo.Spec.Env, tempo.Spec.EnvFrom)
+
 	return []client.Object{d, service(tempo)}, nil
 }
 

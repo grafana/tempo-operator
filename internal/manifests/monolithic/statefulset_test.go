@@ -101,6 +101,7 @@ func TestStatefulsetMemoryStorage(t *testing.T) {
 								"-config.file=/conf/tempo.yaml",
 								"-mem-ballast-size-mbs=1024",
 								"-log.level=info",
+								"-config.expand-env=true",
 							},
 							VolumeMounts: []corev1.VolumeMount{
 								{
@@ -334,6 +335,7 @@ func TestStatefulsetS3TLSStorage(t *testing.T) {
 		"-config.file=/conf/tempo.yaml",
 		"-mem-ballast-size-mbs=1024",
 		"-log.level=info",
+		"-config.expand-env=true",
 		"--storage.trace.s3.secret_key=$(S3_SECRET_KEY)",
 		"--storage.trace.s3.access_key=$(S3_ACCESS_KEY)",
 	}, sts.Spec.Template.Spec.Containers[0].Args)

@@ -1498,6 +1498,20 @@ func (in *TempoMonolithicSpec) DeepCopyInto(out *TempoMonolithicSpec) {
 		*out = new(ExtraConfigSpec)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.Env != nil {
+		in, out := &in.Env, &out.Env
+		*out = make([]v1.EnvVar, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
+	if in.EnvFrom != nil {
+		in, out := &in.EnvFrom, &out.EnvFrom
+		*out = make([]v1.EnvFromSource, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
 	if in.Query != nil {
 		in, out := &in.Query, &out.Query
 		*out = new(MonolithicQuerySpec)
@@ -1665,6 +1679,20 @@ func (in *TempoStackSpec) DeepCopyInto(out *TempoStackSpec) {
 		in, out := &in.ExtraConfig, &out.ExtraConfig
 		*out = new(ExtraConfigSpec)
 		(*in).DeepCopyInto(*out)
+	}
+	if in.Env != nil {
+		in, out := &in.Env, &out.Env
+		*out = make([]v1.EnvVar, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
+	if in.EnvFrom != nil {
+		in, out := &in.EnvFrom, &out.EnvFrom
+		*out = make([]v1.EnvFromSource, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 }
 

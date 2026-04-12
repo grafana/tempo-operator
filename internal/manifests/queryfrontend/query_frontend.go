@@ -74,6 +74,7 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 	for _, target := range targets {
 		manifestutils.SetGoMemLimit(target, &d.Spec.Template.Spec)
 	}
+	manifestutils.PatchEnvVars(&d.Spec.Template.Spec, containerNameTempo, tempo.Spec.Env, tempo.Spec.EnvFrom)
 
 	svcs := services(params)
 	for _, s := range svcs {

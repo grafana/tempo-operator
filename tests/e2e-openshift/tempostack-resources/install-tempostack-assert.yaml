@@ -121,12 +121,19 @@ spec:
       - name: tempo-gateway
         resources:
           limits:
-            cpu: 120m
-            memory: "107374184"
+            cpu: 80m
+            memory: "64424508"
           requests:
-            cpu: 36m
-            memory: "32212256"
+            cpu: 24m
+            memory: "19327352"
       - name: tempo-gateway-opa
+        resources:
+          limits:
+            cpu: 40m
+            memory: "42949672"
+          requests:
+            cpu: 12m
+            memory: "12884902"
 status:
   availableReplicas: 1
   readyReplicas: 1

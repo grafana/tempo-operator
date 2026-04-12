@@ -180,6 +180,24 @@ spec:
         path: affinity
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:advanced
+      - description: |-
+          Env defines additional environment variables for the Tempo container.
+          These environment variables can be used together with extraConfig and the -config.expand-env=true flag
+          to reference Kubernetes Secrets or ConfigMaps in the Tempo configuration,
+          for example for a password-protected Redis cache.
+        displayName: Environment Variables
+        path: env
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:advanced
+      - description: |-
+          EnvFrom defines additional environment variable sources for the Tempo container.
+          These environment variables can be used together with extraConfig and the -config.expand-env=true flag
+          to reference Kubernetes Secrets or ConfigMaps in the Tempo configuration,
+          for example for a password-protected Redis cache.
+        displayName: Environment Variable Sources
+        path: envFrom
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:advanced
       - description: ExtraConfig defines any extra (overlay) configuration of components.
         displayName: Extra Configuration
         path: extraConfig
@@ -591,6 +609,24 @@ spec:
         path: template.queryFrontend.jaegerQuery.authentication.enabled
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:booleanSwitch
+      - description: |-
+          Env defines additional environment variables for the Tempo containers of all components.
+          These environment variables can be used together with extraConfig and the -config.expand-env=true flag
+          to reference Kubernetes Secrets or ConfigMaps in the Tempo configuration,
+          for example for a password-protected Redis cache.
+        displayName: Environment Variables
+        path: env
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:advanced
+      - description: |-
+          EnvFrom defines additional environment variable sources for the Tempo containers of all components.
+          These environment variables can be used together with extraConfig and the -config.expand-env=true flag
+          to reference Kubernetes Secrets or ConfigMaps in the Tempo configuration,
+          for example for a password-protected Redis cache.
+        displayName: Environment Variable Sources
+        path: envFrom
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:advanced
       - displayName: Extra Configurations
         path: extraConfig
       - description: Tempo defines any extra Tempo configuration, which will be merged

@@ -72,6 +72,7 @@ func BuildTempoStatefulset(opts Options, extraAnnotations map[string]string) (*a
 								"-config.file=/conf/tempo.yaml",
 								"-mem-ballast-size-mbs=1024",
 								"-log.level=info",
+								"-config.expand-env=true",
 							},
 							VolumeMounts: []corev1.VolumeMount{
 								{
@@ -115,6 +116,7 @@ func BuildTempoStatefulset(opts Options, extraAnnotations map[string]string) (*a
 	}
 
 	manifestutils.SetGoMemLimit("tempo", &sts.Spec.Template.Spec)
+	manifestutils.PatchEnvVars(&sts.Spec.Template.Spec, "tempo", tempo.Spec.Env, tempo.Spec.EnvFrom)
 
 	err := configureStorage(opts, sts)
 	if err != nil {
@@ -476,7 +478,8 @@ func configureGateway(opts Options, sts *appsv1.StatefulSet) error {
 		args = append(args, fmt.Sprintf("--grpc.listen=0.0.0.0:%d", manifestutils.GatewayPortGRPCServer))                   // proxies Tempo Distributor gRPC
 		args = append(args, fmt.Sprintf("--traces.write.otlpgrpc.endpoint=localhost:%d", manifestutils.PortOtlpGrpcServer)) // Tempo Distributor gRPC upstream
 		otlpHTTPScheme := "http"
-		if tempo.Spec.Ingestion.OTLP.HTTP != nil && tempo.Spec.Ingestion.OTLP.HTTP.TLS != nil && tempo.Spec.Ingestion.OTLP.HTTP.TLS.Enabled {
+		if opts.CtrlConfig.Gates.HTTPEncryption ||
+			(tempo.Spec.Ingestion.OTLP.HTTP != nil && tempo.Spec.Ingestion.OTLP.HTTP.TLS != nil && tempo.Spec.Ingestion.OTLP.HTTP.TLS.Enabled) {
 			otlpHTTPScheme = "https"
 		}
 		args = append(args, fmt.Sprintf("--traces.write.otlphttp.endpoint=%s://localhost:%d", otlpHTTPScheme, manifestutils.PortOtlpHttp)) // Tempo Distributor HTTP upstream

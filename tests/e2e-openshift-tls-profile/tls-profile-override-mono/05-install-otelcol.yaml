@@ -5,6 +5,10 @@ metadata:
   namespace: chainsaw-tls-profile-mono
 spec:
   config: |
+    extensions:
+      bearertokenauth:
+        filename: /var/run/secrets/kubernetes.io/serviceaccount/token
+
     receivers:
       otlp/grpc:
         protocols:
@@ -12,23 +16,32 @@ spec:
       otlp/http:
         protocols:
           http:
+
     exporters:
       otlp:
-        endpoint: tempo-mono.chainsaw-tls-profile-mono.svc.cluster.local:4317
+        endpoint: tempo-mono-gateway.chainsaw-tls-profile-mono.svc.cluster.local:4317
         tls:
-          insecure: false
-          ca_file: "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt"
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt
+        auth:
+          authenticator: bearertokenauth
+        headers:
+          X-Scope-OrgID: dev
       otlphttp:
-        endpoint: https://tempo-mono.chainsaw-tls-profile-mono.svc.cluster.local:4318
+        endpoint: https://tempo-mono-gateway.chainsaw-tls-profile-mono.svc.cluster.local:8080/api/traces/v1/dev
         tls:
-          insecure: false
-          ca_file: "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt"
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt
+        auth:
+          authenticator: bearertokenauth
+        headers:
+          X-Scope-OrgID: dev
+
     service:
       telemetry:
         logs:
           level: "DEBUG"
           development: true
           encoding: "json"
+      extensions: [bearertokenauth]
       pipelines:
         traces/grpc:
           receivers: [otlp/grpc]
