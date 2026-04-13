@@ -98,7 +98,7 @@ func TestGetS3Storage(t *testing.T) {
 		},
 	}
 
-	assert.NoError(t, ConfigureS3Storage(&pod, "ingester", tempo.Spec.Storage.Secret.Name, &tempo.Spec.Storage.TLS, tempo.Spec.Storage.Secret.CredentialMode, "", &TokenCCOAuthConfig{}))
+	assert.NoError(t, ConfigureS3Storage(&pod, "ingester", tempo.Spec.Storage.Secret.Name, &tempo.Spec.Storage.TLS, tempo.Spec.Storage.Secret.CredentialMode, "", &TokenCCOAuthConfig{}, ""))
 	assert.Len(t, pod.Containers[0].Env, 2)
 	assert.NoError(t, findEnvVar("S3_SECRET_KEY", &pod.Containers[0].Env))
 	assert.NoError(t, findEnvVar("S3_ACCESS_KEY", &pod.Containers[0].Env))
@@ -129,7 +129,7 @@ func TestGetS3Storage_short_lived(t *testing.T) {
 		},
 	}
 
-	assert.NoError(t, ConfigureS3Storage(&pod, "ingester", tempo.Spec.Storage.Secret.Name, &tempo.Spec.Storage.TLS, tempo.Spec.Storage.Secret.CredentialMode, "", &TokenCCOAuthConfig{}))
+	assert.NoError(t, ConfigureS3Storage(&pod, "ingester", tempo.Spec.Storage.Secret.Name, &tempo.Spec.Storage.TLS, tempo.Spec.Storage.Secret.CredentialMode, "", &TokenCCOAuthConfig{}, ""))
 	assert.Len(t, pod.Containers[0].Env, 0)
 	assert.Len(t, pod.Containers[0].Args, 0)
 }
@@ -158,7 +158,7 @@ func TestGetS3StorageWithCA(t *testing.T) {
 		},
 	}
 
-	assert.NoError(t, ConfigureS3Storage(&pod, "ingester", tempo.Spec.Storage.Secret.Name, &tempo.Spec.Storage.TLS, tempo.Spec.Storage.Secret.CredentialMode, "", &TokenCCOAuthConfig{}))
+	assert.NoError(t, ConfigureS3Storage(&pod, "ingester", tempo.Spec.Storage.Secret.Name, &tempo.Spec.Storage.TLS, tempo.Spec.Storage.Secret.CredentialMode, "", &TokenCCOAuthConfig{}, ""))
 	assert.Equal(t, []corev1.Volume{
 		{
 			Name: "customca",
@@ -324,10 +324,11 @@ func TestConfigureStorageWithS3CCO(t *testing.T) {
 			AWS: &TokenCCOAWSEnvironment{
 				RoleARN: "arn:aws:iam::12345:role/test",
 			},
-		}))
-	assert.Len(t, pod.Containers[0].Env, 4)
+		}, "us-east-1"))
+	assert.Len(t, pod.Containers[0].Env, 5)
 	assert.NoError(t, findEnvVar("AWS_SHARED_CREDENTIALS_FILE", &pod.Containers[0].Env))
 	assert.NoError(t, findEnvVar("AWS_SDK_LOAD_CONFIG", &pod.Containers[0].Env))
+	assert.NoError(t, findEnvVar("AWS_DEFAULT_REGION", &pod.Containers[0].Env))
 	assert.Len(t, pod.Containers[0].VolumeMounts, 2)
 	assert.Len(t, pod.Volumes, 2)
 	assert.Equal(t, tokenAuthConfigVolumeName, pod.Containers[0].VolumeMounts[0].Name)
