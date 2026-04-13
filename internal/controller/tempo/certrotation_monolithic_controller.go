@@ -47,6 +47,13 @@ func (r *CertRotationMonolithicReconciler) Reconcile(ctx context.Context, req ct
 		}
 		return ctrl.Result{}, kverrors.Wrap(err, "failed to lookup tempostack", "name", req.NamespacedName)
 	}
+
+	// Skip cert rotation if the resource is being deleted to avoid conflicts
+	// with the foregroundDeletion finalizer.
+	if monolithic.GetDeletionTimestamp() != nil {
+		return ctrl.Result{}, nil
+	}
+
 	managed := monolithic.Spec.Management == v1alpha1.ManagementStateManaged
 
 	if !managed {
