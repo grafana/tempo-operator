@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	corev1 "k8s.io/api/core/v1"
 	discoveryv1 "k8s.io/api/discovery/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -15,6 +16,7 @@ import (
 
 func TestDiscoverKubernetesAPIServer(t *testing.T) {
 	scheme := runtime.NewScheme()
+	require.NoError(t, corev1.AddToScheme(scheme))
 	require.NoError(t, discoveryv1.AddToScheme(scheme))
 
 	t.Run("discovers API server from EndpointSlice", func(t *testing.T) {
@@ -151,5 +153,246 @@ func TestDiscoverKubernetesAPIServer(t *testing.T) {
 		// Should deduplicate to 1 port and 2 IPs
 		assert.Len(t, info.Ports, 1)
 		assert.Len(t, info.IPs, 2)
+	})
+
+	t.Run("includes Service ClusterIP alongside endpoint IPs", func(t *testing.T) {
+		kubeService := &corev1.Service{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "kubernetes",
+				Namespace: "default",
+			},
+			Spec: corev1.ServiceSpec{
+				ClusterIP: "10.96.0.1",
+				Ports: []corev1.ServicePort{
+					{
+						Port: 443,
+					},
+				},
+			},
+		}
+
+		endpointSlice := &discoveryv1.EndpointSlice{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "kubernetes",
+				Namespace: "default",
+				Labels: map[string]string{
+					"kubernetes.io/service-name": "kubernetes",
+				},
+			},
+			Ports: []discoveryv1.EndpointPort{
+				{
+					Name: ptr.To("https"),
+					Port: ptr.To(int32(443)),
+				},
+			},
+			Endpoints: []discoveryv1.Endpoint{
+				{
+					Addresses: []string{"10.0.0.1"},
+				},
+				{
+					Addresses: []string{"10.0.0.2"},
+				},
+			},
+		}
+
+		client := fake.NewClientBuilder().
+			WithScheme(scheme).
+			WithObjects(kubeService, endpointSlice).
+			Build()
+
+		ctx := context.Background()
+		info := DiscoverKubernetesAPIServer(ctx, client)
+
+		require.Len(t, info.Ports, 1)
+		assert.Equal(t, int32(443), info.Ports[0].Port.IntVal)
+		require.Len(t, info.IPs, 3)
+		assert.Contains(t, info.IPs, "10.96.0.1") // ClusterIP
+		assert.Contains(t, info.IPs, "10.0.0.1")  // Endpoint IP
+		assert.Contains(t, info.IPs, "10.0.0.2")  // Endpoint IP
+	})
+
+	t.Run("supports dual-stack ClusterIPs", func(t *testing.T) {
+		kubeService := &corev1.Service{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "kubernetes",
+				Namespace: "default",
+			},
+			Spec: corev1.ServiceSpec{
+				ClusterIPs: []string{"10.96.0.1", "fd00::1"},
+				Ports: []corev1.ServicePort{
+					{
+						Port: 6443,
+					},
+				},
+			},
+		}
+
+		endpointSlice := &discoveryv1.EndpointSlice{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "kubernetes",
+				Namespace: "default",
+				Labels: map[string]string{
+					"kubernetes.io/service-name": "kubernetes",
+				},
+			},
+			Ports: []discoveryv1.EndpointPort{
+				{
+					Name: ptr.To("https"),
+					Port: ptr.To(int32(6443)),
+				},
+			},
+			Endpoints: []discoveryv1.Endpoint{
+				{
+					Addresses: []string{"192.168.1.10"},
+				},
+			},
+		}
+
+		client := fake.NewClientBuilder().
+			WithScheme(scheme).
+			WithObjects(kubeService, endpointSlice).
+			Build()
+
+		ctx := context.Background()
+		info := DiscoverKubernetesAPIServer(ctx, client)
+
+		require.Len(t, info.Ports, 1)
+		assert.Equal(t, int32(6443), info.Ports[0].Port.IntVal)
+		require.Len(t, info.IPs, 3)
+		assert.Contains(t, info.IPs, "10.96.0.1")    // IPv4 ClusterIP
+		assert.Contains(t, info.IPs, "fd00::1")      // IPv6 ClusterIP
+		assert.Contains(t, info.IPs, "192.168.1.10") // Endpoint IP
+	})
+
+	t.Run("skips headless service (ClusterIP=None)", func(t *testing.T) {
+		kubeService := &corev1.Service{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "kubernetes",
+				Namespace: "default",
+			},
+			Spec: corev1.ServiceSpec{
+				ClusterIP: "None",
+				Ports: []corev1.ServicePort{
+					{
+						Port: 6443,
+					},
+				},
+			},
+		}
+
+		endpointSlice := &discoveryv1.EndpointSlice{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "kubernetes",
+				Namespace: "default",
+				Labels: map[string]string{
+					"kubernetes.io/service-name": "kubernetes",
+				},
+			},
+			Ports: []discoveryv1.EndpointPort{
+				{
+					Name: ptr.To("https"),
+					Port: ptr.To(int32(6443)),
+				},
+			},
+			Endpoints: []discoveryv1.Endpoint{
+				{
+					Addresses: []string{"10.0.0.1"},
+				},
+			},
+		}
+
+		client := fake.NewClientBuilder().
+			WithScheme(scheme).
+			WithObjects(kubeService, endpointSlice).
+			Build()
+
+		ctx := context.Background()
+		info := DiscoverKubernetesAPIServer(ctx, client)
+
+		require.Len(t, info.Ports, 1)
+		assert.Equal(t, int32(6443), info.Ports[0].Port.IntVal)
+		require.Len(t, info.IPs, 1)
+		assert.Contains(t, info.IPs, "10.0.0.1") // Only endpoint IP, no ClusterIP
+	})
+
+	t.Run("uses Service ClusterIP and ports when no EndpointSlice", func(t *testing.T) {
+		kubeService := &corev1.Service{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "kubernetes",
+				Namespace: "default",
+			},
+			Spec: corev1.ServiceSpec{
+				ClusterIP: "10.96.0.1",
+				Ports: []corev1.ServicePort{
+					{
+						Port: 443,
+					},
+				},
+			},
+		}
+
+		client := fake.NewClientBuilder().
+			WithScheme(scheme).
+			WithObjects(kubeService).
+			Build()
+
+		ctx := context.Background()
+		info := DiscoverKubernetesAPIServer(ctx, client)
+
+		require.Len(t, info.Ports, 1)
+		assert.Equal(t, int32(443), info.Ports[0].Port.IntVal)
+		require.Len(t, info.IPs, 1)
+		assert.Contains(t, info.IPs, "10.96.0.1") // Service ClusterIP
+	})
+
+	t.Run("deduplicates when ClusterIP equals endpoint IP", func(t *testing.T) {
+		kubeService := &corev1.Service{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "kubernetes",
+				Namespace: "default",
+			},
+			Spec: corev1.ServiceSpec{
+				ClusterIP: "10.0.0.1",
+				Ports: []corev1.ServicePort{
+					{
+						Port: 6443,
+					},
+				},
+			},
+		}
+
+		endpointSlice := &discoveryv1.EndpointSlice{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "kubernetes",
+				Namespace: "default",
+				Labels: map[string]string{
+					"kubernetes.io/service-name": "kubernetes",
+				},
+			},
+			Ports: []discoveryv1.EndpointPort{
+				{
+					Name: ptr.To("https"),
+					Port: ptr.To(int32(6443)),
+				},
+			},
+			Endpoints: []discoveryv1.Endpoint{
+				{
+					Addresses: []string{"10.0.0.1"},
+				},
+			},
+		}
+
+		client := fake.NewClientBuilder().
+			WithScheme(scheme).
+			WithObjects(kubeService, endpointSlice).
+			Build()
+
+		ctx := context.Background()
+		info := DiscoverKubernetesAPIServer(ctx, client)
+
+		require.Len(t, info.Ports, 1)
+		assert.Equal(t, int32(6443), info.Ports[0].Port.IntVal)
+		require.Len(t, info.IPs, 1)
+		assert.Contains(t, info.IPs, "10.0.0.1") // IP appears only once
 	})
 }
