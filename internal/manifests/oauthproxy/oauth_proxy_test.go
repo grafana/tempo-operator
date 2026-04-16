@@ -252,7 +252,6 @@ func TestPatchDeploymentForOauthProxy(t *testing.T) {
 							Args: []string{
 								"-target=query-frontend",
 								"-config.file=/conf/tempo-query-frontend.yaml",
-								"-mem-ballast-size-mbs=1024",
 								"-log.level=info",
 							},
 							Ports: []corev1.ContainerPort{
@@ -394,7 +393,6 @@ func TestPatchStatefulSetForOauthProxy(t *testing.T) {
 							Args: []string{
 								"-target=query-frontend",
 								"-config.file=/conf/tempo-query-frontend.yaml",
-								"-mem-ballast-size-mbs=1024",
 								"-log.level=info",
 							},
 							Ports: []corev1.ContainerPort{

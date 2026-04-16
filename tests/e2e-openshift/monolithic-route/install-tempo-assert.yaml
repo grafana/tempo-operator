@@ -33,7 +33,6 @@ spec:
       containers:
       - args:
         - -config.file=/conf/tempo.yaml
-        - -mem-ballast-size-mbs=1024
         - -log.level=info
         name: tempo
         ports:
