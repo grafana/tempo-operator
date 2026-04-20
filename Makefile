@@ -414,6 +414,11 @@ test-operator-metrics:
 e2e-openshift:
 	$(CHAINSAW) test --test-dir ./tests/e2e-openshift --config .chainsaw-openshift.yaml
 
+# OpenShift T-shirt sizes end-to-end tests
+.PHONY: e2e-openshift-tshirt-sizes
+e2e-openshift-tshirt-sizes:
+	$(CHAINSAW) test --test-dir ./tests/e2e-openshift-tshirt-sizes --config .chainsaw-openshift.yaml
+
 # upgrade tests
 e2e-upgrade:
 	$(CHAINSAW) test --test-dir ./tests/e2e-upgrade --config .chainsaw-upgrade.yaml

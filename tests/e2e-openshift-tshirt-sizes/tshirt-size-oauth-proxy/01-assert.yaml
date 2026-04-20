@@ -1,0 +1,96 @@
+# Verifies OAuth proxy resources from the 1x.pico size profile.
+# In single-tenant mode with Jaeger UI authentication enabled,
+# the query-frontend deployment includes an oauth-proxy container.
+# No gateway is deployed in this mode.
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoStack
+metadata:
+  name: oauth
+spec:
+  replicationFactor: 2
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: tempo-oauth-ingester
+spec:
+  replicas: 2
+  template:
+    spec:
+      containers:
+        - name: tempo
+          resources:
+            requests:
+              cpu: 500m
+              memory: 3Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-oauth-distributor
+spec:
+  template:
+    spec:
+      containers:
+        - name: tempo
+          resources:
+            requests:
+              cpu: 500m
+              memory: 500Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-oauth-querier
+spec:
+  template:
+    spec:
+      containers:
+        - name: tempo
+          resources:
+            requests:
+              cpu: 750m
+              memory: 1536Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-oauth-query-frontend
+spec:
+  template:
+    spec:
+      containers:
+        - name: tempo
+          resources:
+            requests:
+              cpu: 500m
+              memory: 500Mi
+        - name: jaeger-query
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+        - name: tempo-query
+          resources:
+            requests:
+              cpu: 500m
+              memory: 500Mi
+        - name: oauth-proxy
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-oauth-compactor
+spec:
+  template:
+    spec:
+      containers:
+        - name: tempo
+          resources:
+            requests:
+              cpu: 500m
+              memory: 500Mi

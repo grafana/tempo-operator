@@ -1,0 +1,109 @@
+# 1x.medium: high-scale production workloads (~2TB/day) with HA support.
+# We only check spec configuration, not pod readiness, to allow running
+# on resource-constrained clusters.
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoStack
+metadata:
+  name: medium
+spec:
+  replicationFactor: 2
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: tempo-medium-ingester
+spec:
+  replicas: 2
+  template:
+    spec:
+      containers:
+        - name: tempo
+          resources:
+            requests:
+              cpu: "8"
+              memory: 16Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-medium-distributor
+spec:
+  template:
+    spec:
+      containers:
+        - name: tempo
+          resources:
+            requests:
+              cpu: 1500m
+              memory: 128Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-medium-querier
+spec:
+  template:
+    spec:
+      containers:
+        - name: tempo
+          resources:
+            requests:
+              cpu: "5"
+              memory: 4Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-medium-query-frontend
+spec:
+  template:
+    spec:
+      containers:
+        - name: tempo
+          resources:
+            requests:
+              cpu: 800m
+              memory: 1Gi
+        - name: jaeger-query
+          resources:
+            requests:
+              cpu: "4"
+              memory: 192Mi
+        - name: tempo-query
+          resources:
+            requests:
+              cpu: 800m
+              memory: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-medium-compactor
+spec:
+  template:
+    spec:
+      containers:
+        - name: tempo
+          resources:
+            requests:
+              cpu: 600m
+              memory: 10Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-medium-gateway
+spec:
+  template:
+    spec:
+      containers:
+        - name: tempo-gateway
+          resources:
+            requests:
+              cpu: "4"
+              memory: 192Mi
+        - name: tempo-gateway-opa
+          resources:
+            requests:
+              cpu: 200m
+              memory: 128Mi
