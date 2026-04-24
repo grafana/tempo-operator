@@ -38,7 +38,7 @@ func ServiceMonitor(featureGates configv1alpha1.FeatureGates, namespace string) 
 			Labels:    manifestutils.CommonOperatorLabels(),
 		},
 		Spec: monitoringv1.ServiceMonitorSpec{
-			Endpoints: []monitoringv1.Endpoint{{
+			Endpoints: []monitoringv1.Endpoint{{ //nolint:gosec
 				Scheme:          "https",
 				Port:            "https",
 				Path:            "/metrics",

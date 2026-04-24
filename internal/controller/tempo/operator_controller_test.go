@@ -67,7 +67,7 @@ func (m *mockK8SVersionRoundTripper) RoundTrip(req *http.Request) (*http.Respons
 		GitCommit:    "abc123",
 		GitTreeState: "clean",
 		BuildDate:    "2025-07-24T00:00:00Z",
-		GoVersion:    "go1.24.4",
+		GoVersion:    "go1.25.0",
 		Compiler:     "gc",
 		Platform:     "linux/amd64",
 	}
