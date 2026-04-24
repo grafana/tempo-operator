@@ -19,7 +19,7 @@ import (
 func BuildMetricsGenerator(params manifestutils.Params) ([]client.Object, error) {
 	d := deployment(params)
 
-	err := error(nil)
+	var err error
 	if err = memberlist.ConfigureHashRingEnv(&d.Spec.Template.Spec, params.Tempo); err != nil {
 		return nil, err
 	}
