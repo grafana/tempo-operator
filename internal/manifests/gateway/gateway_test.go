@@ -199,6 +199,7 @@ func TestBuildGateway_openshift(t *testing.T) {
 	assert.Equal(t, 2, len(dep.Spec.Template.Spec.Containers))
 	assert.Equal(t, "tempo-gateway-opa", dep.Spec.Template.Spec.Containers[1].Name)
 	assert.Equal(t, "tempo-simplest-gateway", dep.Spec.Template.Spec.ServiceAccountName)
+	assert.Equal(t, manifestutils.DefaultAffinity(dep.Spec.Template.Labels), dep.Spec.Template.Spec.Affinity)
 	assert.Equal(t, &corev1.Probe{
 		ProbeHandler: corev1.ProbeHandler{
 			HTTPGet: &corev1.HTTPGetAction{

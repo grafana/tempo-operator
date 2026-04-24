@@ -143,6 +143,27 @@ spec:
         app.kubernetes.io/managed-by: tempo-operator
         app.kubernetes.io/name: tempo
     spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/component: gateway
+                  app.kubernetes.io/instance: cmpreps
+                  app.kubernetes.io/managed-by: tempo-operator
+                  app.kubernetes.io/name: tempo
+              topologyKey: kubernetes.io/hostname
+            weight: 100
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/component: gateway
+                  app.kubernetes.io/instance: cmpreps
+                  app.kubernetes.io/managed-by: tempo-operator
+                  app.kubernetes.io/name: tempo
+              topologyKey: failure-domain.beta.kubernetes.io/zone
+            weight: 75
       containers:
       - args:
         - --traces.tenant-header=x-scope-orgid
@@ -374,6 +395,30 @@ kind: Deployment
 metadata:
   name: tempo-cmpreps-compactor
   namespace: chainsaw-replicas
+spec:
+  template:
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/component: compactor
+                  app.kubernetes.io/instance: cmpreps
+                  app.kubernetes.io/managed-by: tempo-operator
+                  app.kubernetes.io/name: tempo
+              topologyKey: kubernetes.io/hostname
+            weight: 100
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/component: compactor
+                  app.kubernetes.io/instance: cmpreps
+                  app.kubernetes.io/managed-by: tempo-operator
+                  app.kubernetes.io/name: tempo
+              topologyKey: failure-domain.beta.kubernetes.io/zone
+            weight: 75
 status:
   readyReplicas: ($tempo_replicas)
 ---
@@ -382,6 +427,30 @@ kind: Deployment
 metadata:
   name: tempo-cmpreps-distributor
   namespace: chainsaw-replicas
+spec:
+  template:
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/component: distributor
+                  app.kubernetes.io/instance: cmpreps
+                  app.kubernetes.io/managed-by: tempo-operator
+                  app.kubernetes.io/name: tempo
+              topologyKey: kubernetes.io/hostname
+            weight: 100
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/component: distributor
+                  app.kubernetes.io/instance: cmpreps
+                  app.kubernetes.io/managed-by: tempo-operator
+                  app.kubernetes.io/name: tempo
+              topologyKey: failure-domain.beta.kubernetes.io/zone
+            weight: 75
 status:
   readyReplicas: ($tempo_replicas)
 ---
@@ -390,6 +459,30 @@ kind: Deployment
 metadata:
   name: tempo-cmpreps-querier
   namespace: chainsaw-replicas
+spec:
+  template:
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/component: querier
+                  app.kubernetes.io/instance: cmpreps
+                  app.kubernetes.io/managed-by: tempo-operator
+                  app.kubernetes.io/name: tempo
+              topologyKey: kubernetes.io/hostname
+            weight: 100
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/component: querier
+                  app.kubernetes.io/instance: cmpreps
+                  app.kubernetes.io/managed-by: tempo-operator
+                  app.kubernetes.io/name: tempo
+              topologyKey: failure-domain.beta.kubernetes.io/zone
+            weight: 75
 status:
   readyReplicas: ($tempo_replicas)
 ---
@@ -398,6 +491,30 @@ kind: Deployment
 metadata:
   name: tempo-cmpreps-query-frontend
   namespace: chainsaw-replicas
+spec:
+  template:
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/component: query-frontend
+                  app.kubernetes.io/instance: cmpreps
+                  app.kubernetes.io/managed-by: tempo-operator
+                  app.kubernetes.io/name: tempo
+              topologyKey: kubernetes.io/hostname
+            weight: 100
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/component: query-frontend
+                  app.kubernetes.io/instance: cmpreps
+                  app.kubernetes.io/managed-by: tempo-operator
+                  app.kubernetes.io/name: tempo
+              topologyKey: failure-domain.beta.kubernetes.io/zone
+            weight: 75
 status:
   readyReplicas: ($tempo_replicas)
 ---
@@ -406,5 +523,29 @@ kind: StatefulSet
 metadata:
   name: tempo-cmpreps-ingester
   namespace: chainsaw-replicas
+spec:
+  template:
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/component: ingester
+                  app.kubernetes.io/instance: cmpreps
+                  app.kubernetes.io/managed-by: tempo-operator
+                  app.kubernetes.io/name: tempo
+              topologyKey: kubernetes.io/hostname
+            weight: 100
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/component: ingester
+                  app.kubernetes.io/instance: cmpreps
+                  app.kubernetes.io/managed-by: tempo-operator
+                  app.kubernetes.io/name: tempo
+              topologyKey: failure-domain.beta.kubernetes.io/zone
+            weight: 75
 status:
   readyReplicas: ($tempo_replicas)
