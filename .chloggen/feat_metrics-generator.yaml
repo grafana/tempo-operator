@@ -13,4 +13,20 @@ issues: [1120]
 # (Optional) One or more lines of additional information to render under the primary note.
 # These lines will be padded with 2 spaces and then inserted directly into the document.
 # Use pipe (|) for multiline entries.
-subtext:
+subtext: |
+  To enable the metrics-generator, add a `metricsGenerator` section to the TempoStack spec:
+
+  ```yaml
+  spec:
+    template:
+      metricsGenerator:
+        remoteWriteURLs:
+          - http://prometheus:9090/api/v1/write
+        processors:
+          - service-graphs
+          - span-metrics
+  ```
+
+  `remoteWriteURLs` is required and must contain at least one Prometheus remote write endpoint.
+  `processors` is optional and defaults to `service-graphs` and `span-metrics` if not set.
+  Valid processor values are: `service-graphs`, `span-metrics`, `local-blocks`.
