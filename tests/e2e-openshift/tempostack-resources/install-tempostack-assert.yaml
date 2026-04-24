@@ -125,7 +125,7 @@ spec:
             memory: "64424508"
           requests:
             cpu: 24m
-            memory: "19327352"
+            memory: "19327354"
       - name: tempo-gateway-opa
         resources:
           limits:

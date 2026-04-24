@@ -200,11 +200,11 @@ spec:
           timeoutSeconds: 1
         resources:
           limits:
-            cpu: 120m
-            memory: "161061280"
+            cpu: 80m
+            memory: "96636760"
           requests:
-            cpu: 36m
-            memory: "48318384"
+            cpu: 24m
+            memory: "28991030"
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:

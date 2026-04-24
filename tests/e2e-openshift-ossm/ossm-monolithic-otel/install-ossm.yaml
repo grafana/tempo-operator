@@ -29,6 +29,9 @@ metadata:
   namespace: istio-system
 spec:
   version: v2.5
+  security:
+    identity:
+      type: ThirdParty
   tracing:
     type: None
     sampling: 10000
