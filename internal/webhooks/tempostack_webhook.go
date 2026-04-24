@@ -216,6 +216,10 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 		r.Spec.Timeout = defaultTimeout
 	}
 
+	if r.Spec.Template.MetricsGenerator != nil && len(r.Spec.Template.MetricsGenerator.Processors) == 0 {
+		r.Spec.Template.MetricsGenerator.Processors = []string{"service-graphs", "span-metrics"}
+	}
+
 	// Apply default pod security context from config to all components
 	defaultPSC := d.ctrlConfig.Gates.DefaultPodSecurityContext
 	applyDefaultPodSecurityContext(&r.Spec.Template.Ingester.PodSecurityContext, defaultPSC)

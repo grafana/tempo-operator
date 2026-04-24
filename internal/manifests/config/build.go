@@ -134,14 +134,10 @@ func buildConfiguration(params manifestutils.Params) ([]byte, error) {
 	}
 
 	if tempo.Spec.Template.MetricsGenerator != nil {
-		processors := tempo.Spec.Template.MetricsGenerator.Processors
-		if len(processors) == 0 {
-			processors = []string{"service-graphs", "span-metrics"}
-		}
 		opts.MetricsGenerator = metricsGeneratorOptions{
 			Enabled:         true,
 			RemoteWriteURLs: tempo.Spec.Template.MetricsGenerator.RemoteWriteURLs,
-			Processors:      processors,
+			Processors:      tempo.Spec.Template.MetricsGenerator.Processors,
 			Address:         fmt.Sprintf("%s:%d", naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.MetricsGeneratorComponentName), manifestutils.PortGRPCServer),
 		}
 	}
