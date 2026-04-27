@@ -235,12 +235,13 @@ func componentRelations(params manifestutils.Params) networkRelations {
 	)
 
 	fromTo := map[string]map[string][]networkingv1.NetworkPolicyPort{
-		manifestutils.GatewayComponentName:       {},
-		manifestutils.DistributorComponentName:   {},
-		manifestutils.IngesterComponentName:      {},
-		manifestutils.QueryFrontendComponentName: {},
-		manifestutils.QuerierComponentName:       {},
-		manifestutils.CompactorComponentName:     {},
+		manifestutils.GatewayComponentName:          {},
+		manifestutils.DistributorComponentName:      {},
+		manifestutils.IngesterComponentName:         {},
+		manifestutils.QueryFrontendComponentName:    {},
+		manifestutils.QuerierComponentName:          {},
+		manifestutils.CompactorComponentName:        {},
+		manifestutils.MetricsGeneratorComponentName: {},
 	}
 
 	// Assign storage connections to components that need direct storage access
@@ -405,14 +406,17 @@ func componentRelations(params manifestutils.Params) networkRelations {
 	}
 
 	if tempo.Spec.Template.MetricsGenerator != nil {
-		fromTo[manifestutils.MetricsGeneratorComponentName] = map[string][]networkingv1.NetworkPolicyPort{}
 		// Distributor forwards spans to the metrics-generator via gRPC
 		fromTo[manifestutils.DistributorComponentName][manifestutils.MetricsGeneratorComponentName] = grpcConn
-		// Metrics-generator pushes metrics to Prometheus via remote write
-		fromTo[manifestutils.MetricsGeneratorComponentName][netPolicyPrometheusServer] = []networkingv1.NetworkPolicyPort{
-			{
-				Protocol: ptr.To(corev1.ProtocolTCP),
-				Port:     ptr.To(intstr.FromInt(manifestutils.PortPrometheusServer)),
+
+		// Metrics-generator needs access to storage and Prometheus
+		fromTo[manifestutils.MetricsGeneratorComponentName] = map[string][]networkingv1.NetworkPolicyPort{
+			netPolicys3Storage: s3Conn,
+			netPolicyPrometheusServer: {
+				{
+					Protocol: ptr.To(corev1.ProtocolTCP),
+					Port:     ptr.To(intstr.FromInt(manifestutils.PortPrometheusServer)),
+				},
 			},
 		}
 	}
