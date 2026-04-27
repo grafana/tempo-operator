@@ -115,6 +115,8 @@ func TestBuildMetricsGenerator(t *testing.T) {
 								"-config.file=/conf/tempo.yaml",
 								"-log.level=info",
 								"-config.expand-env=true",
+								"--storage.trace.s3.secret_key=$(S3_SECRET_KEY)",
+								"--storage.trace.s3.access_key=$(S3_ACCESS_KEY)",
 							},
 							Env: d.Spec.Template.Spec.Containers[0].Env,
 							Ports: []corev1.ContainerPort{

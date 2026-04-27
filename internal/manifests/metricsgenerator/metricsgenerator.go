@@ -29,6 +29,10 @@ func BuildMetricsGenerator(params manifestutils.Params) ([]client.Object, error)
 		return nil, err
 	}
 
+	if err = manifestutils.ConfigureStorage(params.StorageParams, params.Tempo, &d.Spec.Template.Spec, "tempo"); err != nil {
+		return nil, err
+	}
+
 	gates := params.CtrlConfig.Gates
 	tempo := params.Tempo
 
