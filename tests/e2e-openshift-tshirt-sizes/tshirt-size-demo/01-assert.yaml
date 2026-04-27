@@ -1,0 +1,40 @@
+# 1x.demo: no resource requests, replication factor 1, single replicas.
+# Demo size is intended for development/demo environments.
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoStack
+metadata:
+  name: demo
+spec:
+  replicationFactor: 1
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: tempo-demo-ingester
+spec:
+  replicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-demo-distributor
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-demo-querier
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-demo-query-frontend
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-demo-compactor
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-demo-gateway

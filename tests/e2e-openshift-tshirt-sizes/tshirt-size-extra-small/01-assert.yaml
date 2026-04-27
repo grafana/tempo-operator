@@ -1,0 +1,109 @@
+# 1x.extra-small: medium production workloads (~100GB/day) with HA support.
+# We only check spec configuration, not pod readiness, to allow running
+# on resource-constrained clusters.
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoStack
+metadata:
+  name: extra-small
+spec:
+  replicationFactor: 2
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: tempo-extra-small-ingester
+spec:
+  replicas: 2
+  template:
+    spec:
+      containers:
+        - name: tempo
+          resources:
+            requests:
+              cpu: 1500m
+              memory: 8Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-extra-small-distributor
+spec:
+  template:
+    spec:
+      containers:
+        - name: tempo
+          resources:
+            requests:
+              cpu: 200m
+              memory: 128Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-extra-small-querier
+spec:
+  template:
+    spec:
+      containers:
+        - name: tempo
+          resources:
+            requests:
+              cpu: "1"
+              memory: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-extra-small-query-frontend
+spec:
+  template:
+    spec:
+      containers:
+        - name: tempo
+          resources:
+            requests:
+              cpu: 200m
+              memory: 1Gi
+        - name: jaeger-query
+          resources:
+            requests:
+              cpu: 400m
+              memory: 128Mi
+        - name: tempo-query
+          resources:
+            requests:
+              cpu: 200m
+              memory: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-extra-small-compactor
+spec:
+  template:
+    spec:
+      containers:
+        - name: tempo
+          resources:
+            requests:
+              cpu: 200m
+              memory: 4Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-extra-small-gateway
+spec:
+  template:
+    spec:
+      containers:
+        - name: tempo-gateway
+          resources:
+            requests:
+              cpu: 400m
+              memory: 128Mi
+        - name: tempo-gateway-opa
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi

@@ -1,0 +1,109 @@
+# Verify that explicit replicationFactor=3 and ingester replicas=3
+# override the 1x.pico defaults (RF=2, ingester replicas=2),
+# while resource requests still come from the size profile.
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoStack
+metadata:
+  name: override
+spec:
+  replicationFactor: 3
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: tempo-override-ingester
+spec:
+  replicas: 3
+  template:
+    spec:
+      containers:
+        - name: tempo
+          resources:
+            requests:
+              cpu: 500m
+              memory: 3Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-override-distributor
+spec:
+  template:
+    spec:
+      containers:
+        - name: tempo
+          resources:
+            requests:
+              cpu: 500m
+              memory: 500Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-override-querier
+spec:
+  template:
+    spec:
+      containers:
+        - name: tempo
+          resources:
+            requests:
+              cpu: 750m
+              memory: 1536Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-override-query-frontend
+spec:
+  template:
+    spec:
+      containers:
+        - name: tempo
+          resources:
+            requests:
+              cpu: 500m
+              memory: 500Mi
+        - name: jaeger-query
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+        - name: tempo-query
+          resources:
+            requests:
+              cpu: 500m
+              memory: 500Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-override-compactor
+spec:
+  template:
+    spec:
+      containers:
+        - name: tempo
+          resources:
+            requests:
+              cpu: 500m
+              memory: 500Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-override-gateway
+spec:
+  template:
+    spec:
+      containers:
+        - name: tempo-gateway
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+        - name: tempo-gateway-opa
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi

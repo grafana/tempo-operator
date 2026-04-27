@@ -1,0 +1,22 @@
+# Tests the OAuth proxy component resources from the size profile.
+# OAuth proxy is deployed in single-tenant mode when Jaeger UI
+# authentication is enabled (not in multitenancy/gateway mode).
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoStack
+metadata:
+  name: oauth
+spec:
+  size: 1x.pico
+  storage:
+    secret:
+      name: minio-test
+      type: s3
+  storageSize: 200M
+  template:
+    queryFrontend:
+      jaegerQuery:
+        enabled: true
+        authentication:
+          enabled: true
+        ingress:
+          type: route

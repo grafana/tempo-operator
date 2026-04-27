@@ -1,0 +1,29 @@
+# Tests that explicit replicationFactor and ingester replicas
+# override the size defaults.
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoStack
+metadata:
+  name: override
+spec:
+  size: 1x.pico
+  replicationFactor: 3
+  storage:
+    secret:
+      name: minio-test
+      type: s3
+  storageSize: 200M
+  tenants:
+    mode: openshift
+    authentication:
+      - tenantName: dev
+        tenantId: "1610b0c3-c509-4592-a256-a1871353dbfa"
+      - tenantName: prod
+        tenantId: "1610b0c3-c509-4592-a256-a1871353dbfb"
+  template:
+    ingester:
+      replicas: 3
+    gateway:
+      enabled: true
+    queryFrontend:
+      jaegerQuery:
+        enabled: true
