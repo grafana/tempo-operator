@@ -32,7 +32,7 @@ func getSecret(ctx context.Context, client client.Client, namespace string, secr
 func ensureNotEmpty(storageSecret corev1.Secret, fields []string, path *field.Path) field.ErrorList {
 	var allErrs field.ErrorList
 	for _, key := range fields {
-		if storageSecret.Data[key] == nil || len(storageSecret.Data[key]) == 0 {
+		if len(storageSecret.Data[key]) == 0 {
 			allErrs = append(allErrs, field.Invalid(
 				path,
 				storageSecret.Name,
