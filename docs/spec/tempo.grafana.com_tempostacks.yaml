@@ -355,8 +355,6 @@ spec:                                    # TempoStackSpec defines the desired st
             cpu: "500m"
             memory: "1Gi"
         tolerations: {}                  # Tolerations defines component-specific pod tolerations.
-      processors:                        # Processors defines which processors to enable. Valid values are: service-graphs, span-metrics, local-blocks. Defaults to service-graphs and span-metrics if not set.
-      - ""
       remoteWriteURLs:                   # RemoteWriteURLs defines the list of Prometheus remote write endpoints to which the metrics-generator will push generated metrics.
       - ""
     querier:                             # Querier defines the querier component spec.

@@ -1144,12 +1144,6 @@ spec:
         displayName: PodSecurityContext
         path: template.metricsGenerator.podSecurityContext
       - description: |-
-          Processors defines which processors to enable.
-          Valid values are: service-graphs, span-metrics, local-blocks.
-          Defaults to service-graphs and span-metrics if not set.
-        displayName: Processors
-        path: template.metricsGenerator.processors
-      - description: |-
           RemoteWriteURLs defines the list of Prometheus remote write endpoints
           to which the metrics-generator will push generated metrics.
         displayName: Remote Write URLs

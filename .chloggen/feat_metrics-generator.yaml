@@ -22,11 +22,17 @@ subtext: |
       metricsGenerator:
         remoteWriteURLs:
           - http://prometheus:9090/api/v1/write
-        processors:
-          - service-graphs
-          - span-metrics
+    extraConfig:
+      tempo:
+        metrics_generator:
+          processor:
+            service_graphs:
+              max_items: 10000
+            span_metrics:
+              enable_target_info: true
   ```
 
   `remoteWriteURLs` is required and must contain at least one Prometheus remote write endpoint.
-  `processors` is optional and defaults to `service-graphs` and `span-metrics` if not set.
-  Valid processor values are: `service-graphs`, `span-metrics`, `local-blocks`.
+  Processor configuration is set via `extraConfig.tempo`. Refer to the
+  [Tempo metrics-generator documentation](https://grafana.com/docs/tempo/latest/configuration/#metrics-generator)
+  for all available options.

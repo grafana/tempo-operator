@@ -637,16 +637,6 @@ type TempoMetricsGeneratorSpec struct {
 	// +kubebuilder:validation:MinItems=1
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Remote Write URLs"
 	RemoteWriteURLs []string `json:"remoteWriteURLs"`
-
-	// Processors defines which processors to enable.
-	// Valid values are: service-graphs, span-metrics, local-blocks.
-	// Defaults to service-graphs and span-metrics if not set.
-	//
-	// +optional
-	// +kubebuilder:validation:Optional
-	// +kubebuilder:validation:items:Enum=service-graphs;span-metrics;local-blocks
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Processors"
-	Processors []string `json:"processors,omitempty"`
 }
 
 // TempoDistributorSpec defines the template of all requirements to configure

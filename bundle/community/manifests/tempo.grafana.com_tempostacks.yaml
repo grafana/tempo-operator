@@ -2640,18 +2640,6 @@ spec:
                             type: array
                             x-kubernetes-list-type: atomic
                         type: object
-                      processors:
-                        description: |-
-                          Processors defines which processors to enable.
-                          Valid values are: service-graphs, span-metrics, local-blocks.
-                          Defaults to service-graphs and span-metrics if not set.
-                        items:
-                          enum:
-                          - service-graphs
-                          - span-metrics
-                          - local-blocks
-                          type: string
-                        type: array
                       remoteWriteURLs:
                         description: |-
                           RemoteWriteURLs defines the list of Prometheus remote write endpoints
