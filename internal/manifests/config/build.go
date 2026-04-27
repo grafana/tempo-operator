@@ -210,8 +210,9 @@ func buildTempoServerTLSConfig(params manifestutils.Params) tlsOptions {
 			Certificate: path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSCertFilename),
 		},
 		ServerNames: serverNames{
-			QueryFrontend: naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.QueryFrontendComponentName),
-			Ingester:      naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.IngesterComponentName),
+			QueryFrontend:    naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.QueryFrontendComponentName),
+			Ingester:         naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.IngesterComponentName),
+			MetricsGenerator: naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.MetricsGeneratorComponentName),
 		},
 		Profile: tlsProfileOptions{
 			MinTLSVersion:      params.TLSProfile.MinTLSVersion,

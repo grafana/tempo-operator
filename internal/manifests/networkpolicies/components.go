@@ -409,6 +409,9 @@ func componentRelations(params manifestutils.Params) networkRelations {
 		// Distributor forwards spans to the metrics-generator via gRPC
 		fromTo[manifestutils.DistributorComponentName][manifestutils.MetricsGeneratorComponentName] = grpcConn
 
+		// Querier connects to generator via gRPC
+		fromTo[manifestutils.QuerierComponentName][manifestutils.MetricsGeneratorComponentName] = grpcConn
+
 		// Metrics-generator needs access to storage and Prometheus
 		fromTo[manifestutils.MetricsGeneratorComponentName] = map[string][]networkingv1.NetworkPolicyPort{
 			netPolicys3Storage: s3Conn,

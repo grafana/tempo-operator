@@ -335,6 +335,8 @@ metrics_generator_client:
     tls_cert_path: {{ .TLS.Paths.Certificate }}
     tls_key_path: {{ .TLS.Paths.Key }}
     tls_ca_path: {{ .TLS.Paths.CA }}
+    tls_server_name: {{ .TLS.ServerNames.MetricsGenerator }}
+    tls_insecure_skip_verify: false
 {{- if .TLS.Profile.Ciphers }}
     tls_cipher_suites: {{ .TLS.Profile.Ciphers }}
 {{- end }}

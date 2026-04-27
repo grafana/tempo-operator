@@ -504,17 +504,32 @@ func TestMetricsGeneratorPolicy(t *testing.T) {
 	}
 	assert.True(t, hasPrometheusEgress, "metrics-generator should have egress to Prometheus on port 9090")
 
-	// Ingress from distributor on gRPC/HTTP ports
-	var hasDistributorIngress bool
+	// Ingress from distributor and querier on gRPC port
+	var hasGRPCIngress bool
 	for _, ingress := range np.Spec.Ingress {
 		for _, port := range ingress.Ports {
 			if port.Port != nil && port.Port.IntValue() == manifestutils.PortGRPCServer {
-				hasDistributorIngress = true
+				hasGRPCIngress = true
 				break
 			}
 		}
 	}
-	assert.True(t, hasDistributorIngress, "metrics-generator should accept ingress from distributor on gRPC port")
+	assert.True(t, hasGRPCIngress, "metrics-generator should accept ingress on gRPC port (from distributor and querier)")
+
+	// Querier egress to metrics-generator should also be allowed (reverse relation)
+	npQuerier := generatePolicyFor(params, manifestutils.QuerierComponentName)
+	require.NotNil(t, npQuerier)
+
+	var hasMetricsGeneratorEgress bool
+	for _, egress := range npQuerier.Spec.Egress {
+		for _, port := range egress.Ports {
+			if port.Port != nil && port.Port.IntValue() == manifestutils.PortGRPCServer {
+				hasMetricsGeneratorEgress = true
+				break
+			}
+		}
+	}
+	assert.True(t, hasMetricsGeneratorEgress, "querier should have egress to metrics-generator on gRPC port")
 }
 
 func TestExtractStoragePorts(t *testing.T) {
