@@ -165,6 +165,18 @@ func policyPeersFor(name string, params manifestutils.Params) []networkingv1.Net
 				NamespaceSelector: &metav1.LabelSelector{},
 			},
 		}
+	case netPolicyPrometheusServer:
+		// Allow egress to Prometheus remote write endpoints.
+		// These are user-defined and can be external services or in-cluster services
+		// in any namespace, so we allow both ipBlock and namespaceSelector.
+		return []networkingv1.NetworkPolicyPeer{
+			{
+				IPBlock: &networkingv1.IPBlock{CIDR: "0.0.0.0/0"},
+			},
+			{
+				NamespaceSelector: &metav1.LabelSelector{},
+			},
+		}
 	default:
 		return []networkingv1.NetworkPolicyPeer{
 			{
@@ -185,6 +197,7 @@ const (
 	netPolicyClusterComponents = "cluster"
 	netPolicyKubeAPIServer     = "kube-apiserver"
 	netPolicyOAuthServer       = "oauth-server"
+	netPolicyPrometheusServer  = "prometheus"
 )
 
 func componentRelations(params manifestutils.Params) networkRelations {
@@ -254,6 +267,10 @@ func componentRelations(params manifestutils.Params) networkRelations {
 		fromTo[manifestutils.QuerierComponentName][netPolicyOtelTargets] = otelExport
 		fromTo[manifestutils.QueryFrontendComponentName][netPolicyOtelTargets] = otelExport
 		fromTo[manifestutils.CompactorComponentName][netPolicyOtelTargets] = otelExport
+
+		if tempo.Spec.Template.MetricsGenerator != nil {
+			fromTo[manifestutils.MetricsGeneratorComponentName][netPolicyOtelTargets] = otelExport
+		}
 
 		// Gateway telemetry export when gateway is enabled
 		if tempo.Spec.Template.Gateway.Enabled {
@@ -386,6 +403,20 @@ func componentRelations(params manifestutils.Params) networkRelations {
 			)
 		}
 	}
+
+	if tempo.Spec.Template.MetricsGenerator != nil {
+		fromTo[manifestutils.MetricsGeneratorComponentName] = map[string][]networkingv1.NetworkPolicyPort{}
+		// Distributor forwards spans to the metrics-generator via gRPC
+		fromTo[manifestutils.DistributorComponentName][manifestutils.MetricsGeneratorComponentName] = grpcConn
+		// Metrics-generator pushes metrics to Prometheus via remote write
+		fromTo[manifestutils.MetricsGeneratorComponentName][netPolicyPrometheusServer] = []networkingv1.NetworkPolicyPort{
+			{
+				Protocol: ptr.To(corev1.ProtocolTCP),
+				Port:     ptr.To(intstr.FromInt(manifestutils.PortPrometheusServer)),
+			},
+		}
+	}
+
 	return fromTo
 }
 
