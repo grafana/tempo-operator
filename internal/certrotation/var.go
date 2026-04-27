@@ -36,12 +36,13 @@ func CABundleName(stackName string) string {
 // TempoStackComponentCertSecretNames returns a map, with the key as the service name, and the value the secret name.
 func TempoStackComponentCertSecretNames(stackName string) map[string]string {
 	return map[string]string{
-		naming.Name(manifestutils.DistributorComponentName, stackName):   naming.TLSSecretName(manifestutils.DistributorComponentName, stackName),
-		naming.Name(manifestutils.IngesterComponentName, stackName):      naming.TLSSecretName(manifestutils.IngesterComponentName, stackName),
-		naming.Name(manifestutils.QuerierComponentName, stackName):       naming.TLSSecretName(manifestutils.QuerierComponentName, stackName),
-		naming.Name(manifestutils.QueryFrontendComponentName, stackName): naming.TLSSecretName(manifestutils.QueryFrontendComponentName, stackName),
-		naming.Name(manifestutils.CompactorComponentName, stackName):     naming.TLSSecretName(manifestutils.CompactorComponentName, stackName),
-		naming.Name(manifestutils.GatewayComponentName, stackName):       naming.TLSSecretName(manifestutils.GatewayComponentName, stackName),
+		naming.Name(manifestutils.DistributorComponentName, stackName):      naming.TLSSecretName(manifestutils.DistributorComponentName, stackName),
+		naming.Name(manifestutils.IngesterComponentName, stackName):         naming.TLSSecretName(manifestutils.IngesterComponentName, stackName),
+		naming.Name(manifestutils.QuerierComponentName, stackName):          naming.TLSSecretName(manifestutils.QuerierComponentName, stackName),
+		naming.Name(manifestutils.QueryFrontendComponentName, stackName):    naming.TLSSecretName(manifestutils.QueryFrontendComponentName, stackName),
+		naming.Name(manifestutils.CompactorComponentName, stackName):        naming.TLSSecretName(manifestutils.CompactorComponentName, stackName),
+		naming.Name(manifestutils.GatewayComponentName, stackName):          naming.TLSSecretName(manifestutils.GatewayComponentName, stackName),
+		naming.Name(manifestutils.MetricsGeneratorComponentName, stackName): naming.TLSSecretName(manifestutils.MetricsGeneratorComponentName, stackName),
 	}
 }
 
