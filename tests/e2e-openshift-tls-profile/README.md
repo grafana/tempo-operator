@@ -16,12 +16,12 @@ This directory contains end-to-end tests for TLS profile management in the Tempo
 chainsaw test --config .chainsaw-openshift.yaml tests/e2e-openshift-tls-profile
 
 # Run individual tests
-chainsaw test --config .chainsaw-openshift.yaml tests/e2e-openshift-tls-profile/tls-profile
-chainsaw test --config .chainsaw-openshift.yaml tests/e2e-openshift-tls-profile/tls-profile-override-mono
-chainsaw test --config .chainsaw-openshift.yaml tests/e2e-openshift-tls-profile/tls-profile-override-stack
+chainsaw test --config .chainsaw-openshift.yaml tests/e2e-openshift-tls-profile/01-tls-profile-override-mono
+chainsaw test --config .chainsaw-openshift.yaml tests/e2e-openshift-tls-profile/02-tls-profile-override-stack
+chainsaw test --config .chainsaw-openshift.yaml tests/e2e-openshift-tls-profile/03-tls-profile
 
 # Debug a failing test (keep resources for inspection)
-chainsaw test --config .chainsaw-openshift.yaml tests/e2e-openshift-tls-profile/tls-profile-override-mono --skip-delete
+chainsaw test --config .chainsaw-openshift.yaml tests/e2e-openshift-tls-profile/01-tls-profile-override-mono --skip-delete
 ```
 
 All tests use `concurrent: false` because they modify cluster-wide resources (APIServer CR or operator Subscription).
@@ -39,41 +39,7 @@ The operator resolves TLS settings with the following priority (highest to lowes
 
 ## Test Descriptions
 
-### 1. `tls-profile/` - APIServer-Level TLS Profile
-
-**Purpose:** Verifies that the operator reads and applies TLS profiles from the OpenShift APIServer CR (`openshift.clusterTLSPolicy` feature gate).
-
-**Namespace:** `chainsaw-tls-profile-gw`
-
-**Deployment model:** TempoStack (distributed with gateway)
-
-| Step | Description |
-|------|-------------|
-| 00 | Install MinIO object storage with self-signed TLS certificates |
-| 01 | Deploy TempoStack with gateway, Jaeger UI, and storage TLS enabled |
-| 02 | Deploy tls-scanner pod for TLS verification |
-| 03 | **Verify Intermediate profile** - ConfigMap (`tls_min_version: VersionTLS12`), gateway args (`--tls.min-version=VersionTLS12`), nmap ssl-enum-ciphers on gateway and internal gRPC ports, operator webhook/metrics ports |
-| 04 | Install OpenTelemetry Collector for trace forwarding |
-| 05 | Generate traces via gRPC and HTTP pipelines |
-| 06 | Verify traces are queryable through the gateway (Jaeger API + TraceQL) |
-| 07 | **Patch APIServer to Modern** - Sets `tlsSecurityProfile: {type: Modern}`, waits for MCO node reconciliation and operator pod restart (up to 25 minutes) |
-| 08 | **Verify Modern profile** - All components switch to TLSv1.3 only. Recreates tls-scanner if evicted by MCO |
-| 09 | Generate traces under Modern profile |
-| 10 | Verify traces are queryable under Modern profile |
-| 11 | **Revert APIServer** to default profile, wait for operator webhook availability |
-
-**Cleanup:** Catch block reverts the APIServer TLS profile on any failure.
-
-**Components verified:**
-- Gateway HTTP (8080) and gRPC (8090) ports
-- Internal gRPC (9095) on ingester and query-frontend
-- Operator webhook (9443) and metrics (8443) ports
-- Storage TLS config in ConfigMap
-- Trace ingestion and query end-to-end
-
----
-
-### 2. `tls-profile-override-mono/` - Subscription + Per-CR Overrides (Monolithic)
+### 1. `01-tls-profile-override-mono/` - Subscription + Per-CR Overrides (Monolithic)
 
 **Purpose:** Tests two override mechanisms on TempoMonolithic:
 - **Subscription-level:** Setting `TLS_PROFILE=Modern` via the OLM Subscription env var
@@ -106,7 +72,7 @@ The operator resolves TLS settings with the following priority (highest to lowes
 
 ---
 
-### 3. `tls-profile-override-stack/` - Subscription + Per-CR Overrides (TempoStack)
+### 2. `02-tls-profile-override-stack/` - Subscription + Per-CR Overrides (TempoStack)
 
 **Purpose:** Same override mechanisms as the mono test, but on a distributed TempoStack deployment with gateway.
 
@@ -134,6 +100,40 @@ The operator resolves TLS settings with the following priority (highest to lowes
 - `spec.storage.tls.minVersion`
 
 > **Note:** `spec.template.distributor.tls` cannot be enabled when `spec.template.gateway.enabled` is true (webhook validation rejects this combination).
+
+---
+
+### 3. `03-tls-profile/` - APIServer-Level TLS Profile
+
+**Purpose:** Verifies that the operator reads and applies TLS profiles from the OpenShift APIServer CR (`openshift.clusterTLSPolicy` feature gate).
+
+**Namespace:** `chainsaw-tls-profile-gw`
+
+**Deployment model:** TempoStack (distributed with gateway)
+
+| Step | Description |
+|------|-------------|
+| 00 | Install MinIO object storage with self-signed TLS certificates |
+| 01 | Deploy TempoStack with gateway, Jaeger UI, and storage TLS enabled |
+| 02 | Deploy tls-scanner pod for TLS verification |
+| 03 | **Verify Intermediate profile** - ConfigMap (`tls_min_version: VersionTLS12`), gateway args (`--tls.min-version=VersionTLS12`), nmap ssl-enum-ciphers on gateway and internal gRPC ports, operator webhook/metrics ports |
+| 04 | Install OpenTelemetry Collector for trace forwarding |
+| 05 | Generate traces via gRPC and HTTP pipelines |
+| 06 | Verify traces are queryable through the gateway (Jaeger API + TraceQL) |
+| 07 | **Patch APIServer to Modern** - Sets `tlsSecurityProfile: {type: Modern}`, waits for MCO node reconciliation and operator pod restart (up to 25 minutes) |
+| 08 | **Verify Modern profile** - All components switch to TLSv1.3 only. Recreates tls-scanner if evicted by MCO |
+| 09 | Generate traces under Modern profile |
+| 10 | Verify traces are queryable under Modern profile |
+| 11 | **Revert APIServer** to default profile, wait for operator webhook availability |
+
+**Cleanup:** Catch block reverts the APIServer TLS profile on any failure.
+
+**Components verified:**
+- Gateway HTTP (8080) and gRPC (8090) ports
+- Internal gRPC (9095) on ingester and query-frontend
+- Operator webhook (9443) and metrics (8443) ports
+- Storage TLS config in ConfigMap
+- Trace ingestion and query end-to-end
 
 ## Verification Methods
 

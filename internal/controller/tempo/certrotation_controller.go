@@ -6,6 +6,7 @@ import (
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -39,6 +40,19 @@ func (r *CertRotationReconciler) Reconcile(ctx context.Context, req ctrl.Request
 
 	log.V(1).Info("starting reconcile loop")
 	defer log.V(1).Info("finished reconcile loop")
+
+	// Check if the resource is being deleted before checking management state
+	// to avoid cert rotation updates conflicting with the foregroundDeletion finalizer.
+	var tempoStack v1alpha1.TempoStack
+	if err := r.Get(ctx, req.NamespacedName, &tempoStack); err != nil {
+		if apierrors.IsNotFound(err) {
+			return ctrl.Result{}, nil
+		}
+		return ctrl.Result{}, err
+	}
+	if tempoStack.GetDeletionTimestamp() != nil {
+		return ctrl.Result{}, nil
+	}
 
 	managed, err := tempoStackState.IsManaged(ctx, req, r.Client)
 	if err != nil {
