@@ -454,6 +454,84 @@ func TestGatewayPorts(t *testing.T) {
 	assert.Contains(t, np.Spec.PolicyTypes, networkingv1.PolicyTypeIngress)
 }
 
+func TestMetricsGeneratorPolicy(t *testing.T) {
+	tempo := v1alpha1.TempoStack{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "myinstance",
+			Namespace: "something",
+		},
+		Spec: v1alpha1.TempoStackSpec{
+			Template: v1alpha1.TempoTemplateSpec{
+				MetricsGenerator: &v1alpha1.TempoMetricsGeneratorSpec{
+					RemoteWriteURLs: []string{"http://prometheus:9090/api/v1/write"},
+				},
+			},
+		},
+	}
+
+	params := manifestutils.Params{
+		Tempo: tempo,
+		StorageParams: manifestutils.StorageParams{
+			S3: &manifestutils.S3{
+				Endpoint: "minio:9000",
+				Bucket:   "tempo",
+				Insecure: false,
+			},
+			CredentialMode: v1alpha1.CredentialModeStatic,
+		},
+	}
+
+	np := generatePolicyFor(params, manifestutils.MetricsGeneratorComponentName)
+	require.NotNil(t, np)
+
+	assert.Equal(t, naming.Name(manifestutils.MetricsGeneratorComponentName, tempo.Name), np.ObjectMeta.Name)
+	assert.Equal(t, tempo.Namespace, np.ObjectMeta.Namespace)
+	assert.True(t, labels.Equals(manifestutils.ComponentLabels(manifestutils.MetricsGeneratorComponentName, tempo.Name), np.Spec.PodSelector.MatchLabels))
+
+	// Should have egress (remote write) and ingress (from distributor)
+	assert.Contains(t, np.Spec.PolicyTypes, networkingv1.PolicyTypeEgress)
+	assert.Contains(t, np.Spec.PolicyTypes, networkingv1.PolicyTypeIngress)
+
+	// Egress to Prometheus on port 9090
+	var hasPrometheusEgress bool
+	for _, egress := range np.Spec.Egress {
+		for _, port := range egress.Ports {
+			if port.Port != nil && port.Port.IntValue() == manifestutils.PortPrometheusServer {
+				hasPrometheusEgress = true
+				break
+			}
+		}
+	}
+	assert.True(t, hasPrometheusEgress, "metrics-generator should have egress to Prometheus on port 9090")
+
+	// Ingress from distributor and querier on gRPC port
+	var hasGRPCIngress bool
+	for _, ingress := range np.Spec.Ingress {
+		for _, port := range ingress.Ports {
+			if port.Port != nil && port.Port.IntValue() == manifestutils.PortGRPCServer {
+				hasGRPCIngress = true
+				break
+			}
+		}
+	}
+	assert.True(t, hasGRPCIngress, "metrics-generator should accept ingress on gRPC port (from distributor and querier)")
+
+	// Querier egress to metrics-generator should also be allowed (reverse relation)
+	npQuerier := generatePolicyFor(params, manifestutils.QuerierComponentName)
+	require.NotNil(t, npQuerier)
+
+	var hasMetricsGeneratorEgress bool
+	for _, egress := range npQuerier.Spec.Egress {
+		for _, port := range egress.Ports {
+			if port.Port != nil && port.Port.IntValue() == manifestutils.PortGRPCServer {
+				hasMetricsGeneratorEgress = true
+				break
+			}
+		}
+	}
+	assert.True(t, hasMetricsGeneratorEgress, "querier should have egress to metrics-generator on gRPC port")
+}
+
 func TestExtractStoragePorts(t *testing.T) {
 	tests := []struct {
 		name           string
