@@ -57,5 +57,10 @@ func getCAConfigMapKey(caConfigMap corev1.ConfigMap, path *field.Path) (string, 
 		return manifestutils.StorageTLSCAFilename, nil
 	}
 
-	return "", field.ErrorList{field.Invalid(path, caConfigMap.Name, fmt.Sprintf("CA ConfigMap must contain a '%s' key", manifestutils.TLSCAFilename))}
+	// OpenShift injects CA bundles under this key when the ConfigMap is labeled with config.openshift.io/inject-trusted-cabundle: "true"
+	if caConfigMap.Data[manifestutils.OpenshiftTrustedCABundleFilename] != "" {
+		return manifestutils.OpenshiftTrustedCABundleFilename, nil
+	}
+
+	return "", field.ErrorList{field.Invalid(path, caConfigMap.Name, fmt.Sprintf("CA ConfigMap must contain a '%s', '%s', or '%s' key", manifestutils.TLSCAFilename, manifestutils.StorageTLSCAFilename, manifestutils.OpenshiftTrustedCABundleFilename))}
 }
