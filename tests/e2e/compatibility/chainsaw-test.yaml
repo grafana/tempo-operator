@@ -20,9 +20,17 @@ spec:
         file: 01-assert.yaml
   - name: step-02
     try:
-    - script:
+    - assert:
         timeout: 5m
-        content: kubectl get --namespace $NAMESPACE tempo simplest -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' | grep True
+        resource:
+          apiVersion: tempo.grafana.com/v1alpha1
+          kind: TempoStack
+          metadata:
+            name: simplest
+          status:
+            conditions:
+            - type: Ready
+              status: "True"
   - name: step-03
     try:
     - apply:
