@@ -497,7 +497,7 @@ func TestStorageCustomCA(t *testing.T) {
 		Status:             "True",
 		LastTransitionTime: updatedTempo2.Status.Conditions[0].LastTransitionTime,
 		Reason:             string(v1alpha1.ReasonInvalidStorageConfig),
-		Message:            "CA ConfigMap must contain a 'service-ca.crt' key",
+		Message:            "CA ConfigMap must contain a 'service-ca.crt', 'ca.crt', or 'ca-bundle.crt' key",
 	}}, updatedTempo2.Status.Conditions)
 
 	caConfigMap.Data = map[string]string{
@@ -517,7 +517,7 @@ func TestStorageCustomCA(t *testing.T) {
 			Status:             "False",
 			LastTransitionTime: updatedTempo3.Status.Conditions[0].LastTransitionTime,
 			Reason:             string(v1alpha1.ReasonInvalidStorageConfig),
-			Message:            "CA ConfigMap must contain a 'service-ca.crt' key",
+			Message:            "CA ConfigMap must contain a 'service-ca.crt', 'ca.crt', or 'ca-bundle.crt' key",
 		},
 		{
 			Type:               string(v1alpha1.ConditionReady),
