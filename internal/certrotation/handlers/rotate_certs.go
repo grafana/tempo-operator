@@ -11,6 +11,8 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/util/retry"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	ctrlutil "sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -116,6 +118,14 @@ func addCertificateHashAnnotations(ctx context.Context, k client.Client, stack *
 		certSecrets[name] = cert.Secret
 	}
 
-	stack.Annotations = labels.Merge(stack.Annotations, manifestutils.CertificateHashAnnotations(certSecrets))
-	return k.Update(ctx, stack)
+	hashAnnotations := manifestutils.CertificateHashAnnotations(certSecrets)
+
+	return retry.RetryOnConflict(retry.DefaultRetry, func() error {
+		current := &v1alpha1.TempoStack{}
+		if err := k.Get(ctx, types.NamespacedName{Name: stack.Name, Namespace: stack.Namespace}, current); err != nil {
+			return err
+		}
+		current.Annotations = labels.Merge(current.Annotations, hashAnnotations)
+		return k.Update(ctx, current)
+	})
 }
