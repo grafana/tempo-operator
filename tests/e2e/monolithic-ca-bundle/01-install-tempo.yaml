@@ -1,0 +1,13 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoMonolithic
+metadata:
+  name: simplest
+spec:
+  storage:
+    traces:
+      backend: s3
+      s3:
+        secret: minio
+        tls:
+          enabled: true
+          caName: ocp-ca-bundle

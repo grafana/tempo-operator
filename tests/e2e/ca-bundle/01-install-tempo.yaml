@@ -1,0 +1,17 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoStack
+metadata:
+  name: simplest
+spec:
+  storage:
+    secret:
+      name: minio
+      type: s3
+    tls:
+      enabled: true
+      caName: ocp-ca-bundle
+  storageSize: 200M
+  template:
+    queryFrontend:
+      jaegerQuery:
+        enabled: true
