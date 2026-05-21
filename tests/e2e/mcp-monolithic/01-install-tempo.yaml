@@ -1,0 +1,10 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoMonolithic
+metadata:
+  name: simplest
+spec:
+  jaegerui:
+    enabled: true
+  query:
+    mcpServer:
+      enabled: true

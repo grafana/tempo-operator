@@ -8,7 +8,7 @@ COPY . /tmp/tempo-operator
 WORKDIR /tmp
 
 # Install dependencies required by test cases and debugging
-RUN apt-get update && apt-get install -y jq vim libreadline-dev unzip
+RUN apt-get update && apt-get install -y jq vim libreadline-dev unzip python3
 
 # Install kuttl
 RUN curl -LO https://github.com/kudobuilder/kuttl/releases/download/v0.15.0/kubectl-kuttl_0.15.0_linux_x86_64 \
@@ -39,6 +39,9 @@ RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
 RUN curl -LO https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-linux-x86_64.tar.gz \
     && tar -xf google-cloud-cli-linux-x86_64.tar.gz \
     && ./google-cloud-sdk/install.sh -q
+
+# Install IBM Cloud CLI
+RUN curl -fsSL https://clis.cloud.ibm.com/install/linux | bash
 
 # Add gcloud to PATH
 ENV PATH="/tmp/google-cloud-sdk/bin:${PATH}"

@@ -1,0 +1,112 @@
+# Verify the MCP server responds correctly to the initialize handshake.
+# Validates:
+#   - HTTP 200 from /api/mcp
+#   - result.serverInfo present in the response (handles both JSON and SSE body format)
+#   - notifications/initialized acknowledged (HTTP 200 or 202)
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: verify-mcp
+spec:
+  template:
+    spec:
+      containers:
+      - name: verify-mcp
+        image: ghcr.io/grafana/tempo-operator/test-utils:main
+        command:
+        - /bin/bash
+        - -eux
+        - -c
+        args:
+        - |
+          TEMPO_MCP_URL="http://tempo-simplest-query-frontend:3200/api/mcp"
+
+          # Extract the first JSON object from a response that may be plain JSON
+          # or SSE format ("data: {...}\n\n").
+          extract_json() {
+            local file="$1"
+            if grep -q "^data:" "$file" 2>/dev/null; then
+              grep "^data:" "$file" | grep -v "^data: \[DONE\]" | head -1 | sed 's/^data: //'
+            else
+              cat "$file"
+            fi
+          }
+
+          echo "=== MCP initialize ==="
+          init_body=$(mktemp)
+          init_headers=$(mktemp)
+          http_status=$(curl -s \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -H "Accept: application/json, text/event-stream" \
+            -D "${init_headers}" \
+            -o "${init_body}" \
+            -w "%{http_code}" \
+            --max-time 30 \
+            "${TEMPO_MCP_URL}" \
+            -d '{
+              "jsonrpc": "2.0",
+              "method": "initialize",
+              "params": {
+                "protocolVersion": "2024-11-05",
+                "capabilities": {},
+                "clientInfo": {"name": "e2e-test", "version": "1.0.0"}
+              },
+              "id": 1
+            }')
+
+          echo "initialize HTTP status: ${http_status}"
+          echo "initialize response headers:"
+          cat "${init_headers}"
+          echo "initialize response body:"
+          cat "${init_body}"
+
+          if [[ "${http_status}" -ne 200 ]]; then
+            echo "ERROR: initialize returned HTTP ${http_status}, expected 200"
+            exit 1
+          fi
+
+          init_json=$(extract_json "${init_body}")
+          if ! echo "${init_json}" | jq -e '.result.serverInfo' > /dev/null 2>&1; then
+            echo "ERROR: initialize response missing result.serverInfo"
+            echo "Parsed JSON: ${init_json}"
+            exit 1
+          fi
+
+          echo "serverInfo: $(echo "${init_json}" | jq '.result.serverInfo')"
+
+          # Capture session ID if the server issued one (optional per spec).
+          SESSION_ID=$(grep -i "^mcp-session-id:" "${init_headers}" \
+                       | tr -d '\r' | awk '{print $2}' || true)
+          echo "Session ID: '${SESSION_ID}'"
+
+          SESSION_ARGS=()
+          if [[ -n "${SESSION_ID}" ]]; then
+            SESSION_ARGS=("-H" "Mcp-Session-Id: ${SESSION_ID}")
+          fi
+
+          echo "=== MCP notifications/initialized ==="
+          notif_body=$(mktemp)
+          notif_status=$(curl -s \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -H "Accept: application/json, text/event-stream" \
+            "${SESSION_ARGS[@]}" \
+            -o "${notif_body}" \
+            -w "%{http_code}" \
+            --max-time 30 \
+            "${TEMPO_MCP_URL}" \
+            -d '{"jsonrpc":"2.0","method":"notifications/initialized","params":{}}')
+
+          echo "notifications/initialized HTTP status: ${notif_status}"
+          cat "${notif_body}"
+
+          # Spec allows 200 (empty body) or 202 (accepted) for notifications.
+          if [[ "${notif_status}" -ne 200 && "${notif_status}" -ne 202 ]]; then
+            echo "ERROR: notifications/initialized returned HTTP ${notif_status}"
+            exit 1
+          fi
+
+          echo "SUCCESS: MCP server handshake complete"
+      restartPolicy: Never
+  backoffLimit: 4
