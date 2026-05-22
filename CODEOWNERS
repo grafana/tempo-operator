@@ -1,5 +1,6 @@
-.github/workflows/    @pavolloffay @frzifus @andreasgerstmayr @rubenvp8510 @iblancasa
-Makefile              @pavolloffay @frzifus @andreasgerstmayr @rubenvp8510 @iblancasa
-Dockerfile            @pavolloffay @frzifus @andreasgerstmayr @rubenvp8510 @iblancasa
-go.mod                @pavolloffay @frzifus @andreasgerstmayr @rubenvp8510 @iblancasa
-go.sum                @pavolloffay @frzifus @andreasgerstmayr @rubenvp8510 @iblancasa
+.github/    @pavolloffay @frzifus @andreasgerstmayr @rubenvp8510 @iblancasa
+Makefile    @pavolloffay @frzifus @andreasgerstmayr @rubenvp8510 @iblancasa
+Dockerfile  @pavolloffay @frzifus @andreasgerstmayr @rubenvp8510 @iblancasa
+go.mod      @pavolloffay @frzifus @andreasgerstmayr @rubenvp8510 @iblancasa
+go.sum      @pavolloffay @frzifus @andreasgerstmayr @rubenvp8510 @iblancasa
+CODEOWNERS  @pavolloffay @frzifus @andreasgerstmayr @rubenvp8510 @iblancasa
