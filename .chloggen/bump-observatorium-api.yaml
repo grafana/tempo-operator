@@ -8,7 +8,7 @@ component: operator
 note: Bump observatorium/api gateway image to main-2026-05-19-489f301
 
 # One or more tracking issues related to the change
-issues: []
+issues: [1459]
 
 # (Optional) One or more lines of additional information to render under the primary note.
 # These lines will be padded with 2 spaces and then inserted directly into the document.
