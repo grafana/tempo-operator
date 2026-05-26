@@ -1,13 +1,10 @@
-name: "Publish test utils image"
+name: "Validate test utils image"
 
 on:
-  push:
+  pull_request:
     paths:
       - 'tests/Dockerfile.utils'
-      - '.github/workflows/publish-test-utils-image.yaml'
-    branches:
-      - main
-  workflow_dispatch:
+      - '.github/workflows/validate-test-utils-image.yaml'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -16,22 +13,15 @@ concurrency:
 permissions: {}
 
 jobs:
-  test-utils:
+  validate:
+    name: Build
     runs-on: ubuntu-22.04
-    permissions:
-      packages: write # push container image
-
+    permissions: {}
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           persist-credentials: false
-
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@030e881283bb7a6894de51c315a6bfe6a94e05cf # v6.0.0
-        with:
-          images: ghcr.io/${{ github.repository }}/test-utils
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a # v4.0.0
@@ -39,18 +29,10 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
 
-      - name: Login to GitHub Package Registry
-        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 #v4.1.0
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and push
+      - name: Build
         uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f #v7.1.0
         with:
           context: tests/
           file: tests/Dockerfile.utils
           platforms: linux/arm64,linux/amd64,linux/s390x,linux/ppc64le
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          push: false
