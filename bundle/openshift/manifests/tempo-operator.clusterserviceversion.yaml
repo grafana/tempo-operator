@@ -1728,11 +1728,11 @@ spec:
                 - --metrics-tls-cert-dir=/var/run/tls/server/
                 env:
                 - name: RELATED_IMAGE_TEMPO
-                  value: docker.io/grafana/tempo:2.10.0
+                  value: docker.io/grafana/tempo:2.10.5
                 - name: RELATED_IMAGE_JAEGER_QUERY
                   value: docker.io/jaegertracing/jaeger-query:1.68.0
                 - name: RELATED_IMAGE_TEMPO_QUERY
-                  value: docker.io/grafana/tempo-query:2.10.0
+                  value: docker.io/grafana/tempo-query:2.10.5
                 - name: RELATED_IMAGE_TEMPO_GATEWAY
                   value: quay.io/observatorium/api:main-2026-03-02-4f749a8
                 - name: RELATED_IMAGE_TEMPO_GATEWAY_OPA
@@ -1863,11 +1863,11 @@ spec:
   provider:
     name: Grafana Tempo Operator SIG
   relatedImages:
-  - image: docker.io/grafana/tempo:2.10.0
+  - image: docker.io/grafana/tempo:2.10.5
     name: tempo
   - image: docker.io/jaegertracing/jaeger-query:1.68.0
     name: jaeger-query
-  - image: docker.io/grafana/tempo-query:2.10.0
+  - image: docker.io/grafana/tempo-query:2.10.5
     name: tempo-query
   - image: quay.io/observatorium/api:main-2026-03-02-4f749a8
     name: tempo-gateway
