@@ -41,3 +41,17 @@ updates:
       interval: daily
       time: "03:00"
       timezone: "Europe/Berlin"
+
+  - package-ecosystem: docker
+    directory: /cmd/gather
+    schedule:
+      interval: daily
+      time: "03:00"
+      timezone: "Europe/Berlin"
+
+  - package-ecosystem: docker
+    directory: /tests
+    schedule:
+      interval: daily
+      time: "03:00"
+      timezone: "Europe/Berlin"

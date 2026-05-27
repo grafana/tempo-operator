@@ -236,7 +236,7 @@ $(LOCALBIN):
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v5.0.3
-CONTROLLER_GEN_VERSION ?= v0.16.5
+CONTROLLER_GEN_VERSION ?= v0.17.0
 GEN_API_DOCS_VERSION ?= v0.6.0
 OPERATOR_SDK_VERSION ?= 1.36.0
 OLM_VERSION ?= v0.28.0
@@ -268,7 +268,10 @@ BUNDLE_BUILD_GEN_FLAGS ?= $(BUNDLE_GEN_FLAGS) --output-dir . --kustomize-dir ../
 
 .PHONY: controller-gen
 controller-gen: ## Download controller-gen locally if necessary.
-	test -s $(CONTROLLER_GEN) || $(call go-get-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen,$(CONTROLLER_GEN_VERSION))
+	@[ -f $(CONTROLLER_GEN) ] || { \
+	GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_GEN_VERSION) ;\
+	mv $(LOCALBIN)/controller-gen $(CONTROLLER_GEN) ;\
+	}
 
 .PHONY: setup-envtest
 setup-envtest: ## Download envtest-setup locally if necessary.
@@ -305,14 +308,18 @@ bundle-push: ## Push the bundle image.
 
 .PHONY: opm
 OPM = ./bin/opm
+OPM_VERSION = v1.27.1
 opm: ## Download opm locally if necessary.
 ifeq (,$(wildcard $(OPM)))
 ifeq (,$(shell which opm 2>/dev/null))
 	@{ \
 	set -e ;\
 	mkdir -p $(dir $(OPM)) ;\
-	OS=$(shell go env GOOS) && ARCH=$(shell go env GOARCH) && \
-	curl -sSLo $(OPM) https://github.com/operator-framework/operator-registry/releases/download/v1.27.1/$${OS}-$${ARCH}-opm ;\
+	OS=$(shell go env GOOS) ; ARCH=$(shell go env GOARCH) ;\
+	curl -sSLo $(OPM) https://github.com/operator-framework/operator-registry/releases/download/$(OPM_VERSION)/$${OS}-$${ARCH}-opm ;\
+	EXPECTED=$$(curl -sSL https://github.com/operator-framework/operator-registry/releases/download/$(OPM_VERSION)/checksums.txt \
+	  | grep "^[^ ]*  $${OS}-$${ARCH}-opm$$" | awk '{print $$1}') ;\
+	echo "$${EXPECTED}  $(OPM)" | sha256sum -c - ;\
 	chmod +x $(OPM) ;\
 	}
 else
@@ -443,8 +450,16 @@ load-image-operator:
 .PHONY: operator-sdk
 operator-sdk: $(OPERATOR_SDK) ## Download operator-sdk locally if necessary.
 $(OPERATOR_SDK): $(LOCALBIN)
-	test -s $(OPERATOR_SDK) || curl -sLo $(OPERATOR_SDK) https://github.com/operator-framework/operator-sdk/releases/download/v${OPERATOR_SDK_VERSION}/operator-sdk_`go env GOOS`_`go env GOARCH`
-	@chmod +x $(OPERATOR_SDK)
+	@[ -f $(OPERATOR_SDK) ] || { \
+	set -e ;\
+	OS=$(shell go env GOOS) ; ARCH=$(shell go env GOARCH) ;\
+	BINARY="operator-sdk_$${OS}_$${ARCH}" ;\
+	curl -sLo $(OPERATOR_SDK) https://github.com/operator-framework/operator-sdk/releases/download/v$(OPERATOR_SDK_VERSION)/$${BINARY} ;\
+	EXPECTED=$$(curl -sL https://github.com/operator-framework/operator-sdk/releases/download/v$(OPERATOR_SDK_VERSION)/checksums.txt \
+	  | grep "^[^ ]*  $${BINARY}$$" | awk '{print $$1}') ;\
+	echo "$${EXPECTED}  $(OPERATOR_SDK)" | sha256sum -c - ;\
+	chmod +x $(OPERATOR_SDK) ;\
+	}
 
 .PHONY: olm-install
 olm-install: operator-sdk ## Install Operator Lifecycle Manager (OLM)
