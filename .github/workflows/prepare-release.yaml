@@ -23,7 +23,7 @@ jobs:
           # synchronizing the fork is fast, and avoids the need to fetch the full upstream repo
           # (fetching the upstream repo with "--depth 1" would lead to "shallow update not allowed"
           #  error when pushing back to the origin repo)
-          gh repo sync $OPERATOR_BOT_USER/${REPOSITORY_NAME} \
+          gh repo sync "$OPERATOR_BOT_USER/${REPOSITORY_NAME}" \
               --source ${{ github.repository }} \
               --force
 
@@ -61,12 +61,12 @@ jobs:
         run: |
           git config user.name "$OPERATOR_BOT_USER"
           git config user.email "41898282+$OPERATOR_BOT_USER@users.noreply.github.com"
-          git checkout -b releases/${VERSION}
+          git checkout -b "releases/${VERSION}"
           git add -A
           git commit -m "Prepare Release ${VERSION}" --author="${ACTOR} <${ACTOR}@users.noreply.github.com>"
           git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${OPERATOR_BOT_USER}/${REPOSITORY_NAME}"
-          git push -f --set-upstream origin releases/${VERSION}
-          gh pr create --title="Prepare release v${VERSION}" --body=v${VERSION} --repo ${{ github.repository }}
+          git push -f --set-upstream origin "releases/${VERSION}"
+          gh pr create --title="Prepare release v${VERSION}" --body="v${VERSION}" --repo ${{ github.repository }}
 
         env:
           GITHUB_TOKEN: ${{ secrets.TEMPOOPERATORBOT_GITHUB_TOKEN }}

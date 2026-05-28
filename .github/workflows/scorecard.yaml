@@ -47,11 +47,23 @@ jobs:
           make start-kind
 
       - name: "run community scorecard tests"
-        run: for i in {1..5}; do make scorecard-tests && break || sleep 10; done
+        run: |
+          for _ in {1..5}; do
+            if make scorecard-tests; then
+              break
+            fi
+            sleep 10
+          done
         env:
           BUNDLE_VARIANT: community
 
       - name: "run OpenShift scorecard tests"
-        run: for i in {1..5}; do make scorecard-tests && break || sleep 10; done
+        run: |
+          for _ in {1..5}; do
+            if make scorecard-tests; then
+              break
+            fi
+            sleep 10
+          done
         env:
           BUNDLE_VARIANT: openshift

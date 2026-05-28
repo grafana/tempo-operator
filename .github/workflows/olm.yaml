@@ -1,6 +1,10 @@
 name: "Publish to operatorHUB"
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: version of the operator to release
+        required: true
 
 permissions: {}
 
