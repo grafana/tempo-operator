@@ -355,6 +355,8 @@ spec:                                    # TempoStackSpec defines the desired st
             cpu: "500m"
             memory: "1Gi"
         tolerations: {}                  # Tolerations defines component-specific pod tolerations.
+      processors:                        # Processors defines the list of metrics-generator processors to enable. Supported processor names depend on the configured Tempo version.
+      - ""
       remoteWriteURLs:                   # RemoteWriteURLs defines the list of Prometheus remote write endpoints to which the metrics-generator will push generated metrics.
       - ""
     querier:                             # Querier defines the querier component spec.

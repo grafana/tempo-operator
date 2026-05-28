@@ -146,6 +146,7 @@ multitenancy_enabled: {{ .Multitenancy }}
   .GlobalRateLimits.MaxBytesPerTrace
   .GlobalRateLimits.MaxBytesPerTagValues
   (ne .GlobalRateLimits.MaxSearchDuration "0s")
+  .MetricsGenerator.Processors
   .TenantRateLimitsPath
 }}
 overrides:
@@ -166,6 +167,12 @@ overrides:
 {{- end }}
 {{- if ne .GlobalRateLimits.MaxSearchDuration "0s" }}
   max_search_duration: {{ .GlobalRateLimits.MaxSearchDuration }}
+{{- end }}
+{{- if .MetricsGenerator.Processors }}
+  metrics_generator_processors:
+{{- range .MetricsGenerator.Processors }}
+  - {{ . }}
+{{- end }}
 {{- end }}
 {{- if .TenantRateLimitsPath }}
   per_tenant_override_config: {{ .TenantRateLimitsPath }}

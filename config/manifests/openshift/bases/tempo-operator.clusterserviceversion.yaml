@@ -1144,6 +1144,11 @@ spec:
         displayName: PodSecurityContext
         path: template.metricsGenerator.podSecurityContext
       - description: |-
+          Processors defines the list of metrics-generator processors to enable.
+          Supported processor names depend on the configured Tempo version.
+        displayName: Processors
+        path: template.metricsGenerator.processors
+      - description: |-
           RemoteWriteURLs defines the list of Prometheus remote write endpoints
           to which the metrics-generator will push generated metrics.
         displayName: Remote Write URLs

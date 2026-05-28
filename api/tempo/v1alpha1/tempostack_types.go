@@ -637,6 +637,15 @@ type TempoMetricsGeneratorSpec struct {
 	// +kubebuilder:validation:MinItems=1
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Remote Write URLs"
 	RemoteWriteURLs []string `json:"remoteWriteURLs"`
+
+	// Processors defines the list of metrics-generator processors to enable.
+	// Supported processor names depend on the configured Tempo version.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:validation:MinItems=1
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Processors"
+	Processors []string `json:"processors,omitempty"`
 }
 
 // TempoDistributorSpec defines the template of all requirements to configure

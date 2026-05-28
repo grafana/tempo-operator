@@ -6,6 +6,7 @@ import (
 
 	openshiftconfigv1 "github.com/openshift/api/config/v1"
 	"github.com/stretchr/testify/require"
+	"gopkg.in/yaml.v3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/ptr"
 
@@ -129,6 +130,52 @@ query_frontend:
 	})
 	require.NoError(t, err)
 	require.YAMLEq(t, expCfg, string(cfg))
+}
+
+func TestBuildConfiguration_MetricsGeneratorProcessors(t *testing.T) {
+	cfg, err := buildConfiguration(manifestutils.Params{
+		Tempo: v1alpha1.TempoStack{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "test",
+			},
+			Spec: v1alpha1.TempoStackSpec{
+				Timeout: metav1.Duration{Duration: time.Second * 30},
+				Storage: v1alpha1.ObjectStorageSpec{
+					Secret: v1alpha1.ObjectStorageSecretSpec{
+						Type: v1alpha1.ObjectStorageSecretS3,
+					},
+				},
+				ReplicationFactor: 1,
+				Retention: v1alpha1.RetentionSpec{
+					Global: v1alpha1.RetentionConfig{
+						Traces: metav1.Duration{Duration: 48 * time.Hour},
+					},
+				},
+				Template: v1alpha1.TempoTemplateSpec{
+					MetricsGenerator: &v1alpha1.TempoMetricsGeneratorSpec{
+						RemoteWriteURLs: []string{"http://prometheus:9090/api/v1/write"},
+						Processors:      []string{"service-graphs", "span-metrics"},
+					},
+				},
+			},
+		},
+		StorageParams: manifestutils.StorageParams{
+			CredentialMode: v1alpha1.CredentialModeStatic,
+			S3: &manifestutils.S3{
+				Insecure: true,
+				Endpoint: "minio:9000",
+				Bucket:   "tempo",
+			},
+		},
+	})
+	require.NoError(t, err)
+
+	var rendered map[string]interface{}
+	require.NoError(t, yaml.Unmarshal(cfg, &rendered))
+
+	overrides, ok := rendered["overrides"].(map[string]interface{})
+	require.True(t, ok)
+	require.Equal(t, []interface{}{"service-graphs", "span-metrics"}, overrides["metrics_generator_processors"])
 }
 
 func TestBuildConfiguration_RateLimits(t *testing.T) {

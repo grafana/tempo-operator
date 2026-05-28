@@ -137,6 +137,7 @@ func buildConfiguration(params manifestutils.Params) ([]byte, error) {
 		opts.MetricsGenerator = metricsGeneratorOptions{
 			Enabled:         true,
 			RemoteWriteURLs: tempo.Spec.Template.MetricsGenerator.RemoteWriteURLs,
+			Processors:      tempo.Spec.Template.MetricsGenerator.Processors,
 		}
 	}
 

@@ -2640,6 +2640,14 @@ spec:
                             type: array
                             x-kubernetes-list-type: atomic
                         type: object
+                      processors:
+                        description: |-
+                          Processors defines the list of metrics-generator processors to enable.
+                          Supported processor names depend on the configured Tempo version.
+                        items:
+                          type: string
+                        minItems: 1
+                        type: array
                       remoteWriteURLs:
                         description: |-
                           RemoteWriteURLs defines the list of Prometheus remote write endpoints

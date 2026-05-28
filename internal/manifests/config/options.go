@@ -31,6 +31,7 @@ type options struct {
 type metricsGeneratorOptions struct {
 	Enabled         bool
 	RemoteWriteURLs []string
+	Processors      []string
 }
 
 type tempoQueryOptions struct {
