@@ -355,7 +355,6 @@ metrics_generator:
     kvstore:
       store: memberlist
   storage:
-    path: /var/tempo/wal
     remote_write:
 {{- range .MetricsGenerator.RemoteWriteURLs }}
     - url: {{ . }}
