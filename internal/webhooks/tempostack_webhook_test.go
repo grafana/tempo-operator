@@ -1298,7 +1298,7 @@ func TestValidateStorageCAConfigMap(t *testing.T) {
 				},
 			},
 			expected: field.ErrorList{
-				field.Invalid(path, "test", "CA ConfigMap must contain a 'service-ca.crt' key"),
+				field.Invalid(path, "test", "CA ConfigMap must contain a 'service-ca.crt', 'ca.crt', or 'ca-bundle.crt' key"),
 			},
 		},
 		{

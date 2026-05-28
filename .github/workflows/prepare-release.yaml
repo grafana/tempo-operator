@@ -28,15 +28,15 @@ jobs:
               --force
 
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           repository: ${{ env.OPERATOR_BOT_USER }}/${{ github.event.repository.name }}
           token: ${{ secrets.TEMPOOPERATORBOT_GITHUB_TOKEN }}
-          persist-credentials: true
+          persist-credentials: false
 
 
       - name: Set up Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6
         with:
           go-version-file: go.mod
 
@@ -64,6 +64,7 @@ jobs:
           git checkout -b releases/${VERSION}
           git add -A
           git commit -m "Prepare Release ${VERSION}" --author="${ACTOR} <${ACTOR}@users.noreply.github.com>"
+          git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${OPERATOR_BOT_USER}/${REPOSITORY_NAME}"
           git push -f --set-upstream origin releases/${VERSION}
           gh pr create --title="Prepare release v${VERSION}" --body=v${VERSION} --repo ${{ github.repository }}
 
@@ -71,3 +72,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.TEMPOOPERATORBOT_GITHUB_TOKEN }}
           VERSION: ${{ inputs.version }}
           ACTOR: ${{ github.actor }}
+          REPOSITORY_NAME: ${{ github.event.repository.name }}

@@ -1,0 +1,6 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: verify-mcp-tools
+status:
+  succeeded: 1

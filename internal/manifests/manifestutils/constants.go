@@ -168,6 +168,8 @@ const (
 
 	// StorageTLSCAFilename is the key name of the CA file in the ConfigMap for accessing object storage.
 	StorageTLSCAFilename = "ca.crt"
+	// OpenshiftTrustedCABundleFilename is the key name used by OpenShift's automatic CA bundle injection.
+	OpenshiftTrustedCABundleFilename = "ca-bundle.crt"
 
 	tokenAuthConfigVolumeName       = "token-auth-config"       //#nosec G101 -- False positive
 	tokenAuthConfigDirectory        = "/etc/storage/token-auth" //#nosec G101 -- False positive

@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring,Observability
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.20.0
-    createdAt: "2026-04-27T17:27:50Z"
+    createdAt: "2026-05-26T18:27:12Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -1202,34 +1202,6 @@ spec:
       - description: Tolerations defines component-specific pod tolerations.
         displayName: Tolerations
         path: template.ingester.tolerations
-      - description: |-
-          MetricsGenerator defines the metrics-generator component spec.
-          When non-nil, the metrics-generator component will be deployed.
-        displayName: Metrics Generator pods
-        path: template.metricsGenerator
-      - description: NodeSelector defines the simple form of the node-selection constraint.
-        displayName: Node Selector
-        path: template.metricsGenerator.nodeSelector
-      - description: PodSecurityContext defines security context will be applied to
-          all pods of this component.
-        displayName: PodSecurityContext
-        path: template.metricsGenerator.podSecurityContext
-      - description: |-
-          RemoteWriteURLs defines the list of Prometheus remote write endpoints
-          to which the metrics-generator will push generated metrics.
-        displayName: Remote Write URLs
-        path: template.metricsGenerator.remoteWriteURLs
-      - description: Replicas defines the number of replicas to be created for this
-          component.
-        displayName: Component Replicas
-        path: template.metricsGenerator.replicas
-      - description: Resources defines resources for this component, this will override
-          the calculated resources derived from total
-        displayName: Resources
-        path: template.metricsGenerator.resources
-      - description: Tolerations defines component-specific pod tolerations.
-        displayName: Tolerations
-        path: template.metricsGenerator.tolerations
       - description: Querier defines the querier component spec.
         displayName: Querier pods
         path: template.querier
@@ -1462,12 +1434,6 @@ spec:
           deployment
         displayName: Gateway
         path: components.gateway
-        x-descriptors:
-        - urn:alm:descriptor:com.tectonic.ui:podStatuses
-      - description: MetricsGenerator is a map to the per pod status of the metrics-generator
-          deployment.
-        displayName: Metrics Generator
-        path: components.metricsGenerator
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:podStatuses
       - description: Conditions of the Tempo deployment health.
@@ -1751,13 +1717,13 @@ spec:
                 - start
                 env:
                 - name: RELATED_IMAGE_TEMPO
-                  value: docker.io/grafana/tempo:2.10.0
+                  value: docker.io/grafana/tempo:2.10.5
                 - name: RELATED_IMAGE_JAEGER_QUERY
                   value: docker.io/jaegertracing/jaeger-query:1.68.0
                 - name: RELATED_IMAGE_TEMPO_QUERY
-                  value: docker.io/grafana/tempo-query:2.10.0
+                  value: docker.io/grafana/tempo-query:2.10.5
                 - name: RELATED_IMAGE_TEMPO_GATEWAY
-                  value: quay.io/observatorium/api:main-2026-03-02-4f749a8
+                  value: quay.io/observatorium/api:main-2026-05-19-489f301
                 - name: RELATED_IMAGE_TEMPO_GATEWAY_OPA
                   value: quay.io/observatorium/opa-openshift:main-2025-06-16-ecdeca0
                 - name: RELATED_IMAGE_OAUTH_PROXY
@@ -1874,13 +1840,13 @@ spec:
   provider:
     name: Grafana Tempo Operator SIG
   relatedImages:
-  - image: docker.io/grafana/tempo:2.10.0
+  - image: docker.io/grafana/tempo:2.10.5
     name: tempo
   - image: docker.io/jaegertracing/jaeger-query:1.68.0
     name: jaeger-query
-  - image: docker.io/grafana/tempo-query:2.10.0
+  - image: docker.io/grafana/tempo-query:2.10.5
     name: tempo-query
-  - image: quay.io/observatorium/api:main-2026-03-02-4f749a8
+  - image: quay.io/observatorium/api:main-2026-05-19-489f301
     name: tempo-gateway
   - image: quay.io/observatorium/opa-openshift:main-2025-06-16-ecdeca0
     name: tempo-gateway-opa

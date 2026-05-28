@@ -1,5 +1,6 @@
 # Build the manager binary
-FROM golang:1.25 as builder
+# Digest pinned to golang:1.25 as of 2026-05-26; Dependabot will raise PRs when it changes.
+FROM golang:1.25@sha256:c138bff780910acf4254ab3a6f7ff0f64bbd841f27bd82bfa986fe122c109538 AS builder
 
 WORKDIR /workspace
 # Cache tool dependencies
@@ -18,7 +19,7 @@ COPY . .
 RUN make must-gather
 
 
-FROM registry.access.redhat.com/ubi9-minimal:9.2
+FROM registry.access.redhat.com/ubi9-minimal:9.8
 
 RUN INSTALL_PKGS=" \
   rsync \

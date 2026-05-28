@@ -1,0 +1,38 @@
+name: "Validate test utils image"
+
+on:
+  pull_request:
+    paths:
+      - 'tests/Dockerfile.utils'
+      - '.github/workflows/validate-test-utils-image.yaml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  validate:
+    name: Build
+    runs-on: ubuntu-22.04
+    permissions: {}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@06116385d9baf250c9f4dcb4858b16962ea869c3 # v4.1.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
+
+      - name: Build
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf #v7.2.0
+        with:
+          context: tests/
+          file: tests/Dockerfile.utils
+          platforms: linux/arm64,linux/amd64,linux/s390x,linux/ppc64le
+          push: false

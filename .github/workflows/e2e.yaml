@@ -29,12 +29,12 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v6
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       with:
         persist-credentials: false
 
     - name: Set up Go
-      uses: actions/setup-go@v6
+      uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6
       with:
         go-version-file: go.mod
 
@@ -60,13 +60,13 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v6
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       with:
         fetch-depth: 0
         persist-credentials: false
 
     - name: Set up Go
-      uses: actions/setup-go@v6
+      uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6
       with:
         go-version-file: go.mod
 
@@ -75,10 +75,13 @@ jobs:
 
     - name: Start a local container registry with TLS
       run: |
-        # install mkcert
-        curl -JLO "https://dl.filippo.io/mkcert/latest?for=linux/amd64"
-        chmod +x mkcert-v*-linux-amd64
-        sudo cp mkcert-v*-linux-amd64 /usr/local/bin/mkcert
+        # install mkcert with pinned version and checksum for reproducible builds
+        MKCERT_VERSION=v1.4.4
+        MKCERT_SHA256=6d31c65b03972c6dc4a14ab429f2928300518b26503f58723e532d1b0a3bbb52
+        curl -sLo mkcert "https://github.com/FiloSottile/mkcert/releases/download/${MKCERT_VERSION}/mkcert-${MKCERT_VERSION}-linux-amd64"
+        echo "${MKCERT_SHA256}  mkcert" | sha256sum -c
+        chmod +x mkcert
+        sudo cp mkcert /usr/local/bin/mkcert
 
         # create and install root CA in system store
         sudo mkcert -install
