@@ -334,10 +334,9 @@ ingester_client:
     tls_min_version: {{ .TLS.Profile.MinTLSVersion }}
 {{- end }}
 {{- if .MetricsGenerator.Enabled }}
-{{- if or .Gates.GRPCEncryption .TLS.Profile.Ciphers }}
+{{- if .Gates.GRPCEncryption }}
 metrics_generator_client:
   grpc_client_config:
-{{- if .Gates.GRPCEncryption }}
     tls_enabled: true
     tls_cert_path: {{ .TLS.Paths.Certificate }}
     tls_key_path: {{ .TLS.Paths.Key }}
@@ -349,14 +348,16 @@ metrics_generator_client:
 {{- end }}
     tls_min_version: {{ .TLS.Profile.MinTLSVersion }}
 {{- end }}
-{{- end }}
 metrics_generator:
   ring:
     kvstore:
       store: memberlist
   storage:
+    path: /var/tempo/generator/wal
     remote_write:
 {{- range .MetricsGenerator.RemoteWriteURLs }}
     - url: {{ . }}
 {{- end }}
+  traces_storage:
+    path: /var/tempo/generator/traces
 {{- end }}

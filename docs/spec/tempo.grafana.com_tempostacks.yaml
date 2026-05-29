@@ -311,7 +311,8 @@ spec:                                    # TempoStackSpec defines the desired st
           cpu: "500m"
           memory: "1Gi"
       tolerations: {}                    # Tolerations defines component-specific pod tolerations.
-    metricsGenerator:                    # MetricsGenerator defines the metrics-generator component spec. When non-nil, the metrics-generator component will be deployed.
+    metricsGenerator:                    # MetricsGenerator defines the metrics-generator component spec.
+      enabled: false                     # Enabled defines if the Metrics Generator component should be deployed.
       component:                         # TempoComponentSpec is embedded to extend this definition with further options.  Currently, there is no way to inline this field. See: https://github.com/golang/go/issues/6213
         podSecurityContext:              # PodSecurityContext defines security context will be applied to all pods of this component.
           appArmorProfile:               # appArmorProfile is the AppArmor options to use by the containers in this pod. Note that this field cannot be set when spec.os.name is windows.
@@ -355,7 +356,7 @@ spec:                                    # TempoStackSpec defines the desired st
             cpu: "500m"
             memory: "1Gi"
         tolerations: {}                  # Tolerations defines component-specific pod tolerations.
-      processors:                        # Processors defines the list of metrics-generator processors to enable. Supported processor names depend on the configured Tempo version.
+      processors:                        # Processors defines the list of metrics-generator processors to enable. If empty, span-metrics, service-graphs and local-blocks are enabled by default.
       - ""
       remoteWriteURLs:                   # RemoteWriteURLs defines the list of Prometheus remote write endpoints to which the metrics-generator will push generated metrics.
       - ""

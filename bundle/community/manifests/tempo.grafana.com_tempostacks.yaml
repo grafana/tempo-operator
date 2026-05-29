@@ -2280,9 +2280,8 @@ spec:
                         x-kubernetes-list-type: atomic
                     type: object
                   metricsGenerator:
-                    description: |-
-                      MetricsGenerator defines the metrics-generator component spec.
-                      When non-nil, the metrics-generator component will be deployed.
+                    description: MetricsGenerator defines the metrics-generator component
+                      spec.
                     properties:
                       component:
                         description: |-
@@ -2640,13 +2639,16 @@ spec:
                             type: array
                             x-kubernetes-list-type: atomic
                         type: object
+                      enabled:
+                        description: Enabled defines if the Metrics Generator component
+                          should be deployed.
+                        type: boolean
                       processors:
                         description: |-
                           Processors defines the list of metrics-generator processors to enable.
-                          Supported processor names depend on the configured Tempo version.
+                          If empty, span-metrics, service-graphs and local-blocks are enabled by default.
                         items:
                           type: string
-                        minItems: 1
                         type: array
                       remoteWriteURLs:
                         description: |-
@@ -2654,10 +2656,7 @@ spec:
                           to which the metrics-generator will push generated metrics.
                         items:
                           type: string
-                        minItems: 1
                         type: array
-                    required:
-                    - remoteWriteURLs
                     type: object
                   querier:
                     description: Querier defines the querier component spec.

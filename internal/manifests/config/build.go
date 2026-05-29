@@ -133,7 +133,7 @@ func buildConfiguration(params manifestutils.Params) ([]byte, error) {
 		opts.TenantRateLimitsPath = tenantOverridesMountPath
 	}
 
-	if tempo.Spec.Template.MetricsGenerator != nil {
+	if tempo.Spec.Template.MetricsGenerator.Enabled {
 		opts.MetricsGenerator = metricsGeneratorOptions{
 			Enabled:         true,
 			RemoteWriteURLs: tempo.Spec.Template.MetricsGenerator.RemoteWriteURLs,

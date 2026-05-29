@@ -38,7 +38,7 @@ func GenerateOperandPolicies(params manifestutils.Params) []client.Object {
 		policies = append(policies, generatePolicyFor(params, manifestutils.GatewayComponentName))
 	}
 
-	if tempo.Spec.Template.MetricsGenerator != nil {
+	if tempo.Spec.Template.MetricsGenerator.Enabled {
 		policies = append(policies, generatePolicyFor(params, manifestutils.MetricsGeneratorComponentName))
 	}
 

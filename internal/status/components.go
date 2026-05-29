@@ -45,7 +45,7 @@ func componentsStatus(ctx context.Context, c StatusClient, s v1alpha1.TempoStack
 		return v1alpha1.ComponentStatus{}, kverrors.Wrap(err, "failed lookup TempoStack component pods status", "name", manifestutils.GatewayComponentName)
 	}
 
-	if s.Spec.Template.MetricsGenerator != nil {
+	if s.Spec.Template.MetricsGenerator.Enabled {
 		components.MetricsGenerator, err = appendPodStatus(ctx, c, manifestutils.MetricsGeneratorComponentName, s)
 		if err != nil {
 			return v1alpha1.ComponentStatus{}, kverrors.Wrap(err, "failed lookup TempoStack component pods status", "name", manifestutils.MetricsGeneratorComponentName)

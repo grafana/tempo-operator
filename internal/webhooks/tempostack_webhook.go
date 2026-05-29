@@ -212,6 +212,12 @@ func (d *Defaulter) Default(ctx context.Context, obj runtime.Object) error {
 		}
 	}
 
+	if r.Spec.Template.MetricsGenerator.Enabled {
+		if len(r.Spec.Template.MetricsGenerator.Processors) == 0 {
+			r.Spec.Template.MetricsGenerator.Processors = []string{"span-metrics", "service-graphs", "local-blocks"}
+		}
+	}
+
 	if r.Spec.Timeout.Duration == 0 {
 		r.Spec.Timeout = defaultTimeout
 	}
@@ -544,6 +550,20 @@ func (v *validator) validateSize(tempo v1alpha1.TempoStack) field.ErrorList {
 	}
 }
 
+func (v *validator) validateMetricsGenerator(tempo v1alpha1.TempoStack) field.ErrorList {
+	if !tempo.Spec.Template.MetricsGenerator.Enabled {
+		return nil
+	}
+
+	if len(tempo.Spec.Template.MetricsGenerator.RemoteWriteURLs) == 0 {
+		return field.ErrorList{
+			field.Required(field.NewPath("spec", "template", "metricsGenerator", "remoteWriteURLs"), "at least one remote write URL is required when the metrics-generator is enabled"),
+		}
+	}
+
+	return nil
+}
+
 func (v *validator) validateConflictWithMonolithic(ctx context.Context, tempo *v1alpha1.TempoStack) field.ErrorList {
 	return validateTempoNameConflict(func() error {
 		monolithic := &v1alpha1.TempoMonolithic{}
@@ -597,6 +617,7 @@ func (v *validator) validate(ctx context.Context, obj runtime.Object) (admission
 	allErrors = append(allErrors, v.validateObservability(*tempo)...)
 	allErrors = append(allErrors, v.validateDeprecatedFields(*tempo)...)
 	allErrors = append(allErrors, v.validateReceiverTLS(*tempo)...)
+	allErrors = append(allErrors, v.validateMetricsGenerator(*tempo)...)
 	allErrors = append(allErrors, v.validateConflictWithMonolithic(ctx, tempo)...)
 
 	if len(allErrors) == 0 {

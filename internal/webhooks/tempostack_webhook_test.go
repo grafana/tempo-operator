@@ -971,6 +971,58 @@ func TestDefault(t *testing.T) {
 	}
 }
 
+func TestDefaultMetricsGeneratorProcessors(t *testing.T) {
+	defaulter := &Defaulter{
+		ctrlConfig: configv1alpha1.ProjectConfig{},
+	}
+
+	t.Run("default processors when enabled and empty", func(t *testing.T) {
+		tempo := &v1alpha1.TempoStack{
+			Spec: v1alpha1.TempoStackSpec{
+				Template: v1alpha1.TempoTemplateSpec{
+					MetricsGenerator: v1alpha1.TempoMetricsGeneratorSpec{
+						Enabled: true,
+					},
+				},
+			},
+		}
+		err := defaulter.Default(context.Background(), tempo)
+		assert.NoError(t, err)
+		assert.Equal(t, []string{"span-metrics", "service-graphs", "local-blocks"}, tempo.Spec.Template.MetricsGenerator.Processors)
+	})
+
+	t.Run("keep explicit processors", func(t *testing.T) {
+		tempo := &v1alpha1.TempoStack{
+			Spec: v1alpha1.TempoStackSpec{
+				Template: v1alpha1.TempoTemplateSpec{
+					MetricsGenerator: v1alpha1.TempoMetricsGeneratorSpec{
+						Enabled:    true,
+						Processors: []string{"span-metrics"},
+					},
+				},
+			},
+		}
+		err := defaulter.Default(context.Background(), tempo)
+		assert.NoError(t, err)
+		assert.Equal(t, []string{"span-metrics"}, tempo.Spec.Template.MetricsGenerator.Processors)
+	})
+
+	t.Run("no processors when disabled", func(t *testing.T) {
+		tempo := &v1alpha1.TempoStack{
+			Spec: v1alpha1.TempoStackSpec{
+				Template: v1alpha1.TempoTemplateSpec{
+					MetricsGenerator: v1alpha1.TempoMetricsGeneratorSpec{
+						Enabled: false,
+					},
+				},
+			},
+		}
+		err := defaulter.Default(context.Background(), tempo)
+		assert.NoError(t, err)
+		assert.Nil(t, tempo.Spec.Template.MetricsGenerator.Processors)
+	})
+}
+
 func TestValidateStorageSecret(t *testing.T) {
 	tempoAzure := v1alpha1.TempoStack{
 		Spec: v1alpha1.TempoStackSpec{
@@ -2863,6 +2915,65 @@ func TestConflictMonolithicValidation(t *testing.T) {
 			v := &validator{ctrlConfig: configv1alpha1.ProjectConfig{}, client: test.client}
 			err := v.validateConflictWithMonolithic(ctx, tempoStack)
 			assert.Equal(t, test.expected, err)
+		})
+	}
+}
+
+func TestValidateMetricsGenerator(t *testing.T) {
+	v := &validator{ctrlConfig: configv1alpha1.ProjectConfig{}}
+
+	tests := []struct {
+		name     string
+		input    v1alpha1.TempoStack
+		expected field.ErrorList
+	}{
+		{
+			name: "disabled metrics-generator is valid",
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						MetricsGenerator: v1alpha1.TempoMetricsGeneratorSpec{
+							Enabled: false,
+						},
+					},
+				},
+			},
+			expected: nil,
+		},
+		{
+			name: "enabled with remote write URLs is valid",
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						MetricsGenerator: v1alpha1.TempoMetricsGeneratorSpec{
+							Enabled:         true,
+							RemoteWriteURLs: []string{"http://prometheus:9090/api/v1/write"},
+						},
+					},
+				},
+			},
+			expected: nil,
+		},
+		{
+			name: "enabled without remote write URLs is invalid",
+			input: v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						MetricsGenerator: v1alpha1.TempoMetricsGeneratorSpec{
+							Enabled: true,
+						},
+					},
+				},
+			},
+			expected: field.ErrorList{
+				field.Required(field.NewPath("spec", "template", "metricsGenerator", "remoteWriteURLs"), "at least one remote write URL is required when the metrics-generator is enabled"),
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.expected, v.validateMetricsGenerator(tc.input))
 		})
 	}
 }

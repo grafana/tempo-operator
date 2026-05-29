@@ -8,6 +8,8 @@ import (
 	routev1 "github.com/openshift/api/route/v1"
 	cloudcredentialv1 "github.com/openshift/cloud-credential-operator/pkg/apis/cloudcredential/v1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -159,8 +161,28 @@ func (r *TempoStackReconciler) findObjectsOwnedByTempoOperator(ctx context.Conte
 	// Add all resources where the operator can conditionally create an object.
 	// For example, Ingress and Route can be enabled or disabled in the CR.
 
+	// metrics generator deployment can be enabled/disabled in the CR
+	deploymentList := &appsv1.DeploymentList{}
+	err := r.List(ctx, deploymentList, listOps)
+	if err != nil {
+		return nil, fmt.Errorf("error listing deployments: %w", err)
+	}
+	for i := range deploymentList.Items {
+		ownedObjects[deploymentList.Items[i].GetUID()] = &deploymentList.Items[i]
+	}
+
+	// metrics generator service can be enabled/disabled in the CR
+	serviceList := &corev1.ServiceList{}
+	err = r.List(ctx, serviceList, listOps)
+	if err != nil {
+		return nil, fmt.Errorf("error listing services: %w", err)
+	}
+	for i := range serviceList.Items {
+		ownedObjects[serviceList.Items[i].GetUID()] = &serviceList.Items[i]
+	}
+
 	ingressList := &networkingv1.IngressList{}
-	err := r.List(ctx, ingressList, listOps)
+	err = r.List(ctx, ingressList, listOps)
 	if err != nil {
 		return nil, fmt.Errorf("error listing ingress: %w", err)
 	}

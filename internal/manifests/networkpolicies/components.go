@@ -269,7 +269,7 @@ func componentRelations(params manifestutils.Params) networkRelations {
 		fromTo[manifestutils.QueryFrontendComponentName][netPolicyOtelTargets] = otelExport
 		fromTo[manifestutils.CompactorComponentName][netPolicyOtelTargets] = otelExport
 
-		if tempo.Spec.Template.MetricsGenerator != nil {
+		if tempo.Spec.Template.MetricsGenerator.Enabled {
 			fromTo[manifestutils.MetricsGeneratorComponentName][netPolicyOtelTargets] = otelExport
 		}
 
@@ -405,7 +405,7 @@ func componentRelations(params manifestutils.Params) networkRelations {
 		}
 	}
 
-	if tempo.Spec.Template.MetricsGenerator != nil {
+	if tempo.Spec.Template.MetricsGenerator.Enabled {
 		// Distributor forwards spans to the metrics-generator via gRPC
 		fromTo[manifestutils.DistributorComponentName][manifestutils.MetricsGeneratorComponentName] = grpcConn
 

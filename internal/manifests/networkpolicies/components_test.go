@@ -462,7 +462,8 @@ func TestMetricsGeneratorPolicy(t *testing.T) {
 		},
 		Spec: v1alpha1.TempoStackSpec{
 			Template: v1alpha1.TempoTemplateSpec{
-				MetricsGenerator: &v1alpha1.TempoMetricsGeneratorSpec{
+				MetricsGenerator: v1alpha1.TempoMetricsGeneratorSpec{
+					Enabled:         true,
 					RemoteWriteURLs: []string{"http://prometheus:9090/api/v1/write"},
 				},
 			},

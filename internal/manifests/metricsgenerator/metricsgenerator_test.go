@@ -46,7 +46,7 @@ func newTempoStack(name, ns string, cfg v1alpha1.TempoMetricsGeneratorSpec) v1al
 				},
 			},
 			Template: v1alpha1.TempoTemplateSpec{
-				MetricsGenerator: &cfg,
+				MetricsGenerator: cfg,
 			},
 			Resources: v1alpha1.Resources{
 				Total: &corev1.ResourceRequirements{
@@ -228,7 +228,7 @@ func TestBuildMetricsGeneratorUsesDefaultImage(t *testing.T) {
 				Secret: v1alpha1.ObjectStorageSecretSpec{Name: "test-storage-secret", Type: "s3"},
 			},
 			Template: v1alpha1.TempoTemplateSpec{
-				MetricsGenerator: &v1alpha1.TempoMetricsGeneratorSpec{
+				MetricsGenerator: v1alpha1.TempoMetricsGeneratorSpec{
 					RemoteWriteURLs: []string{"http://prometheus:9090/api/v1/write"},
 				},
 			},

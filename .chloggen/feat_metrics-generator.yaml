@@ -20,20 +20,16 @@ subtext: |
   spec:
     template:
       metricsGenerator:
+        enabled: true
         remoteWriteURLs:
           - http://prometheus:9090/api/v1/write
         processors: ['service-graphs', 'span-metrics', 'local-blocks']
-    extraConfig:
-      tempo:
-        metrics_generator:
-          storage:
-            path: /var/tempo/generator/wal
-          traces_storage:
-            path: /var/tempo/generator/traces
   ```
 
+  `enabled` must be set to `true` to deploy the metrics-generator component.
   `remoteWriteURLs` is required and must contain at least one Prometheus remote write endpoint.
-  `processors` is required and must contain at least one processor.
-  Additional metrics-generator configuration is set via `extraConfig.tempo`. Refer to the
+  `processors` is optional. span-metrics, service-graphs, and local-blocks are enabled by default.
+
+  Additional metrics-generator configuration can be set via `extraConfig.tempo`. Refer to the
   [Tempo metrics-generator documentation](https://grafana.com/docs/tempo/latest/configuration/#metrics-generator)
   for all available options.

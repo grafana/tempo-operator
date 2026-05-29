@@ -65,7 +65,7 @@ func BuildAll(params manifestutils.Params) ([]client.Object, error) {
 	manifests = append(manifests, querierObjs...)
 	manifests = append(manifests, compactorObjs...)
 
-	if params.Tempo.Spec.Template.MetricsGenerator != nil {
+	if params.Tempo.Spec.Template.MetricsGenerator.Enabled {
 		mgObjs, err := metricsgenerator.BuildMetricsGenerator(params)
 		if err != nil {
 			return nil, err

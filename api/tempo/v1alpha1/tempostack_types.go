@@ -610,16 +610,22 @@ type TempoTemplateSpec struct {
 	Gateway TempoGatewaySpec `json:"gateway,omitempty"`
 
 	// MetricsGenerator defines the metrics-generator component spec.
-	// When non-nil, the metrics-generator component will be deployed.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Metrics Generator pods"
-	MetricsGenerator *TempoMetricsGeneratorSpec `json:"metricsGenerator,omitempty"`
+	MetricsGenerator TempoMetricsGeneratorSpec `json:"metricsGenerator,omitempty"`
 }
 
 // TempoMetricsGeneratorSpec defines the metrics-generator component spec.
 type TempoMetricsGeneratorSpec struct {
+	// Enabled defines if the Metrics Generator component should be deployed.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enable metrics generator",xDescriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
+	Enabled bool `json:"enabled"`
+
 	// TempoComponentSpec is embedded to extend this definition with further options.
 	//
 	// Currently, there is no way to inline this field.
@@ -632,18 +638,16 @@ type TempoMetricsGeneratorSpec struct {
 	// RemoteWriteURLs defines the list of Prometheus remote write endpoints
 	// to which the metrics-generator will push generated metrics.
 	//
-	// +required
-	// +kubebuilder:validation:Required
-	// +kubebuilder:validation:MinItems=1
+	// +optional
+	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Remote Write URLs"
-	RemoteWriteURLs []string `json:"remoteWriteURLs"`
+	RemoteWriteURLs []string `json:"remoteWriteURLs,omitempty"`
 
 	// Processors defines the list of metrics-generator processors to enable.
-	// Supported processor names depend on the configured Tempo version.
+	// If empty, span-metrics, service-graphs and local-blocks are enabled by default.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
-	// +kubebuilder:validation:MinItems=1
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Processors"
 	Processors []string `json:"processors,omitempty"`
 }
