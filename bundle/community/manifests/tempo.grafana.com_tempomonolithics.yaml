@@ -1769,7 +1769,6 @@ spec:
                     type: object
                 required:
                 - enabled
-                - mode
                 type: object
               nodeSelector:
                 additionalProperties:

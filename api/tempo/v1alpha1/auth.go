@@ -19,11 +19,11 @@ const (
 type TenantsSpec struct {
 	// Mode defines the multitenancy mode.
 	//
-	// +required
-	// +kubebuilder:validation:Required
+	// +optional
+	// +kubebuilder:validation:Optional
 	// +kubebuilder:default:=static
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors={"urn:alm:descriptor:com.tectonic.ui:select:static","urn:alm:descriptor:com.tectonic.ui:select:openshift"},displayName="Mode"
-	Mode ModeType `json:"mode"`
+	Mode ModeType `json:"mode,omitempty"`
 
 	// Authentication defines the tempo-gateway component authentication configuration spec per tenant.
 	//
