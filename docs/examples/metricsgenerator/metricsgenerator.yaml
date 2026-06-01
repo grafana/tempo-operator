@@ -1,0 +1,218 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: minio-test
+type: Opaque
+stringData:
+  endpoint: http://minio:9000
+  bucket: tempo
+  access_key_id: tempo
+  access_key_secret: supersecret
+---
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoStack
+metadata:
+  name: simplest
+spec:
+  storage:
+    secret:
+      name: minio-test
+      type: s3
+  storageSize: 1Gi
+  template:
+    metricsGenerator:
+      enabled: true
+      remoteWriteURLs:
+      - http://prometheus:9090/api/v1/write
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minio
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: minio
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: minio
+    spec:
+      containers:
+        - command:
+            - /bin/sh
+            - -c
+            - |
+              mkdir -p /storage/tempo && \
+              minio server /storage
+          env:
+            - name: MINIO_ACCESS_KEY
+              value: tempo
+            - name: MINIO_SECRET_KEY
+              value: supersecret
+          image: minio/minio
+          name: minio
+          ports:
+            - containerPort: 9000
+          volumeMounts:
+            - mountPath: /storage
+              name: storage
+      volumes:
+        - name: storage
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio
+spec:
+  ports:
+    - port: 9000
+      protocol: TCP
+      targetPort: 9000
+  selector:
+    app.kubernetes.io/name: minio
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus
+  labels:
+    app.kubernetes.io/name: prometheus
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: prometheus
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: prometheus
+    spec:
+      containers:
+      - name: prometheus
+        image: prom/prometheus:latest
+        args:
+        - --config.file=/etc/prometheus/prometheus.yml
+        - --web.enable-remote-write-receiver
+        volumeMounts:
+        - name: config
+          mountPath: /etc/prometheus
+        - name: data
+          mountPath: /prometheus
+      volumes:
+      - name: config
+        configMap:
+          name: prometheus-config
+      - name: data
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus
+spec:
+  selector:
+    app.kubernetes.io/name: prometheus
+  ports:
+  - port: 9090
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+    scrape_configs:
+      - job_name: prometheus
+        static_configs:
+          - targets: ["localhost:9090"]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  labels:
+    app.kubernetes.io/name: grafana
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: grafana
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: grafana
+    spec:
+      containers:
+      - name: grafana
+        image: grafana/grafana:latest
+        env:
+        - name: GF_AUTH_ANONYMOUS_ENABLED
+          value: "true"
+        - name: GF_AUTH_ANONYMOUS_ORG_ROLE
+          value: Admin
+        volumeMounts:
+        - name: datasources
+          mountPath: /etc/grafana/provisioning/datasources
+      volumes:
+      - name: datasources
+        configMap:
+          name: grafana-datasources
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+spec:
+  selector:
+    app.kubernetes.io/name: grafana
+  ports:
+  - port: 3000
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasources
+data:
+  datasources.yaml: |
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        uid: prometheus
+        url: http://prometheus:9090
+      - name: Tempo
+        type: tempo
+        uid: tempo
+        url: http://tempo-simplest-query-frontend:3200
+        isDefault: true
+        jsonData:
+          serviceMap:
+            datasourceUid: prometheus
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k6-tracing
+  labels:
+    app.kubernetes.io/name: k6-tracing
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: k6-tracing
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: k6-tracing
+    spec:
+      containers:
+      - name: k6-tracing
+        image: ghcr.io/grafana/xk6-client-tracing:v0.0.5
+        env:
+        - name: ENDPOINT
+          value: tempo-simplest-distributor:4317

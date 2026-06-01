@@ -146,6 +146,7 @@ multitenancy_enabled: {{ .Multitenancy }}
   .GlobalRateLimits.MaxBytesPerTrace
   .GlobalRateLimits.MaxBytesPerTagValues
   (ne .GlobalRateLimits.MaxSearchDuration "0s")
+  .MetricsGenerator.Processors
   .TenantRateLimitsPath
 }}
 overrides:
@@ -166,6 +167,12 @@ overrides:
 {{- end }}
 {{- if ne .GlobalRateLimits.MaxSearchDuration "0s" }}
   max_search_duration: {{ .GlobalRateLimits.MaxSearchDuration }}
+{{- end }}
+{{- if .MetricsGenerator.Processors }}
+  metrics_generator_processors:
+{{- range .MetricsGenerator.Processors }}
+  - {{ . }}
+{{- end }}
 {{- end }}
 {{- if .TenantRateLimitsPath }}
   per_tenant_override_config: {{ .TenantRateLimitsPath }}
@@ -325,4 +332,32 @@ ingester_client:
     tls_cipher_suites: {{ .TLS.Profile.Ciphers }}
 {{- end }}
     tls_min_version: {{ .TLS.Profile.MinTLSVersion }}
+{{- end }}
+{{- if .MetricsGenerator.Enabled }}
+{{- if .Gates.GRPCEncryption }}
+metrics_generator_client:
+  grpc_client_config:
+    tls_enabled: true
+    tls_cert_path: {{ .TLS.Paths.Certificate }}
+    tls_key_path: {{ .TLS.Paths.Key }}
+    tls_ca_path: {{ .TLS.Paths.CA }}
+    tls_server_name: {{ .TLS.ServerNames.MetricsGenerator }}
+    tls_insecure_skip_verify: false
+{{- if .TLS.Profile.Ciphers }}
+    tls_cipher_suites: {{ .TLS.Profile.Ciphers }}
+{{- end }}
+    tls_min_version: {{ .TLS.Profile.MinTLSVersion }}
+{{- end }}
+metrics_generator:
+  ring:
+    kvstore:
+      store: memberlist
+  storage:
+    path: /var/tempo/generator/wal
+    remote_write:
+{{- range .MetricsGenerator.RemoteWriteURLs }}
+    - url: {{ . }}
+{{- end }}
+  traces_storage:
+    path: /var/tempo/generator/traces
 {{- end }}

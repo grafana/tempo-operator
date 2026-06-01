@@ -123,6 +123,9 @@ const (
 	// PortMemberlist declares the port number of the tempo memberlist port.
 	PortMemberlist = 7946
 
+	// PortPrometheusServer declares the default port of a Prometheus server.
+	PortPrometheusServer = 9090
+
 	// CompactorComponentName declares the internal name of the compactor component.
 	CompactorComponentName = "compactor"
 	// QuerierComponentName declares the internal name of the querier component.
@@ -139,6 +142,8 @@ const (
 
 	// IngesterComponentName declares the internal name of the ingester component.
 	IngesterComponentName = "ingester"
+	// MetricsGeneratorComponentName declares the internal name of the metrics-generator component.
+	MetricsGeneratorComponentName = "metrics-generator"
 	// GatewayComponentName declares the internal name of the gateway component.
 	GatewayComponentName = "gateway"
 	// GatewayOpaComponentName declares the internal name of the gateway OPA sidecar component.

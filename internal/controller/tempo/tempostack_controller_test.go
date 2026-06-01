@@ -692,6 +692,86 @@ func TestPruneIngress(t *testing.T) {
 	require.True(t, apierrors.IsNotFound(err))
 }
 
+func TestPruneMetricsGenerator(t *testing.T) {
+	// Create object storage secret and Tempo CR with metrics generator enabled
+	nsn := types.NamespacedName{Name: "prune-mg-test", Namespace: "default"}
+	storageSecret := createSecret(t, nsn)
+	tempo := &v1alpha1.TempoStack{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      nsn.Name,
+			Namespace: nsn.Namespace,
+		},
+		Spec: v1alpha1.TempoStackSpec{
+			Images: configv1alpha1.ImagesSpec{
+				Tempo: "docker.io/grafana/tempo:1.5.0",
+			},
+			Storage: v1alpha1.ObjectStorageSpec{
+				Secret: v1alpha1.ObjectStorageSecretSpec{
+					Name: storageSecret.Name,
+					Type: "s3",
+				},
+			},
+			StorageSize: resource.MustParse("10Gi"),
+			Template: v1alpha1.TempoTemplateSpec{
+				MetricsGenerator: v1alpha1.TempoMetricsGeneratorSpec{
+					Enabled:         true,
+					RemoteWriteURLs: []string{"http://prometheus:9090/api/v1/write"},
+				},
+			},
+		},
+	}
+	err := k8sClient.Create(context.Background(), tempo)
+	require.NoError(t, err)
+
+	// Reconcile
+	reconciler := TempoStackReconciler{
+		Client:   k8sClient,
+		Scheme:   testScheme,
+		Recorder: record.NewFakeRecorder(1),
+		CtrlConfig: configv1alpha1.ProjectConfig{
+			Gates: configv1alpha1.FeatureGates{
+				TLSProfile: configv1alpha1.TLSProfileIntermediateType,
+			},
+		},
+		Version: version.Get(),
+	}
+	req := ctrl.Request{
+		NamespacedName: nsn,
+	}
+	reconcileResult, err := reconciler.Reconcile(context.Background(), req)
+	require.NoError(t, err)
+	assert.Equal(t, time.Duration(0), reconcileResult.RequeueAfter)
+
+	// Verify metrics-generator Deployment and Service are created
+	mgNsn := types.NamespacedName{Name: "tempo-prune-mg-test-metrics-generator", Namespace: "default"}
+	mgDeployment := appsv1.Deployment{}
+	err = k8sClient.Get(context.Background(), mgNsn, &mgDeployment)
+	require.NoError(t, err)
+	mgService := corev1.Service{}
+	err = k8sClient.Get(context.Background(), mgNsn, &mgService)
+	require.NoError(t, err)
+
+	// Disable metrics generator in CR
+	err = k8sClient.Get(context.Background(), nsn, tempo)
+	require.NoError(t, err)
+	tempo.Spec.Template.MetricsGenerator.Enabled = false
+	err = k8sClient.Update(context.Background(), tempo)
+	require.NoError(t, err)
+
+	// Reconcile
+	reconcileResult, err = reconciler.Reconcile(context.Background(), req)
+	require.NoError(t, err)
+	assert.Equal(t, time.Duration(0), reconcileResult.RequeueAfter)
+
+	// Verify metrics-generator Deployment and Service got deleted
+	err = k8sClient.Get(context.Background(), mgNsn, &mgDeployment)
+	require.Error(t, err)
+	require.True(t, apierrors.IsNotFound(err))
+	err = k8sClient.Get(context.Background(), mgNsn, &mgService)
+	require.Error(t, err)
+	require.True(t, apierrors.IsNotFound(err))
+}
+
 func TestK8SGatewaySecret(t *testing.T) {
 	nsn := types.NamespacedName{Name: "ocp-mode", Namespace: "default"}
 	storageSecret := createSecret(t, nsn)
