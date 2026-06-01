@@ -3,6 +3,92 @@ Changes by Version
 
 <!-- next version -->
 
+## 0.21.0
+
+### 💡 Enhancements 💡
+
+- `operator`: Bump Golang to 1.25 (#1427)
+- `operator`: Bump observatorium/api gateway image to main-2026-05-19-489f301 (#1459)
+- `operator`: Bump Tempo to 2.10.5 (#1459)
+- `tempostack, tempomonolithic`: Add env and envFrom fields to inject environment variables into Tempo containers from Kubernetes Secrets or ConfigMaps. (#1135)
+  The new `spec.env` and `spec.envFrom` fields allow injecting environment variables into all Tempo containers.
+  Combined with `spec.extraConfig` and the `-config.expand-env=true` flag, this enables referencing sensitive
+  values (e.g. a Redis cache password) stored in Kubernetes Secrets using `${VAR_NAME}` syntax in the Tempo configuration.
+  The `-config.expand-env=true` flag has also been added to TempoMonolithic for feature parity with TempoStack.
+  
+  Example TempoStack CR with a password-protected Redis cache:
+  ```yaml
+  apiVersion: tempo.grafana.com/v1alpha1
+  kind: TempoStack
+  metadata:
+    name: tempo
+  spec:
+    env:
+      - name: REDIS_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: redis-creds
+            key: password
+    extraConfig:
+      tempo:
+        cache:
+          caches:
+            - redis:
+                endpoint: "redis.host"
+                password: "${REDIS_PASSWORD}"
+  ```
+  
+- `tempostack, tempomonolithic`: Support ca-bundle.crt key in storage TLS CA ConfigMap for OpenShift trusted CA bundle injection (#1437)
+  ConfigMaps labeled with config.openshift.io/inject-trusted-cabundle use the key ca-bundle.crt,
+  which is now recognized in addition to service-ca.crt and ca.crt.
+  
+- `tempostack, tempomonolithic`: Use TLS profile (min version and ciphers) from the feature gate or OpenShift APIServer CR. (#1367)
+  When feature gate `openshift.clusterTLSPolicy` is enabled the TLS profile (min version and ciphers) are obtained from OpenShift APIServer CR.
+  The feature gate `tlsProfile` can set the profile explicitly and is active only when `openshift.clusterTLSPolicy` is disabled.
+  
+  The TLS profile is then used in all TLS connections, however it can be overridden if (min version or ciphers) are directly specified in the TLS config
+  for a given component in the CR.
+  
+  The `openshift.clusterTLSPolicy` can be enabled via `FEATURE_GATES` env variable
+  The `tlsProfile` feature gate can be enabled via `TLS_PROFILE` environment variable and valid values are: `Old`, `Intermediate`, `Modern`.
+  
+  On OpenShift the `openshift.clusterTLSPolicy` is enabled by default.
+
+### 🧰 Bug fixes 🧰
+
+- `tempostack, tempomonolithic`: Set AWS_DEFAULT_REGION environment variable on Tempo pods when using S3 with CCO credential mode (#1419)
+- `tempostack`: Add missing ports to NetworkPolicies for query-frontend (Jaeger gRPC port 16685) and gateway (internal HTTP port 8081) (#6061)
+- `tempostack, tempomonolithic`: Fix race condition causing resources to get stuck in terminating state during deletion (#1423)
+  Certificate management code paths were updating CR annotations (cert-hash,
+  certRotationRequiredAt) without checking if the resource was being deleted.
+  This caused conflicts with the foregroundDeletion finalizer, leaving resources
+  stuck in terminating state for 600+ seconds.
+  
+- `tempostack`: Add podAntiAffinity to gateway and compactor deployments to improve HA (#1422)
+  Previously, the gateway and compactor deployments did not set podAntiAffinity,
+  allowing all replicas to be scheduled on the same node. This reduces high availability.
+  All other components (distributor, ingester, querier, query-frontend) already had
+  podAntiAffinity configured.
+  
+- `tempomonolithic`: Fix gateway OTLP HTTP forwarding to use HTTPS when receiver TLS is enabled (#1394)
+- `tempomonolithic`: Fix OTLP HTTP receiver to use internal mTLS when gateway and HTTPEncryption are enabled (#1415)
+  When gateway and HTTPEncryption were both enabled, the OTLP HTTP receiver was not
+  configured with the internal mTLS certificate (unlike the gRPC receiver), and the
+  gateway always forwarded OTLP HTTP traffic over plain HTTP. This caused TLS
+  verification failures and all OTLP HTTP trace ingestion to be silently dropped.
+  The HTTP receiver and gateway OTLP HTTP upstream now match the gRPC behavior:
+  internal mTLS is used for the receiver and the gateway connects over HTTPS
+  whenever HTTPEncryption is enabled.
+  
+- `tempostack`: Add resource requests/limits to the tempo-gateway-opa container when using percentage-based resource calculation (#1408)
+- `tempostack`: Always use HTTPS for S3 storage when token-based authentication is enabled (#1410)
+
+### Components
+- Tempo: [v2.10.5](https://github.com/grafana/tempo/releases/tag/v2.10.5)
+
+### Support
+This release supports Kubernetes 1.25 to 1.34.
+
 ## 0.20.0
 
 ### 🛑 Breaking changes 🛑

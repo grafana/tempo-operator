@@ -37,8 +37,8 @@ jobs:
           # synchronizing the fork is fast, and avoids the need to fetch the full upstream repo
           # (fetching the upstream repo with "--depth 1" would lead to "shallow update not allowed"
           #  error when pushing back to the origin repo)
-          gh repo sync tempooperatorbot/${REPO} \
-              --source ${ORG}/${REPO} \
+          gh repo sync "tempooperatorbot/${REPO}" \
+              --source "${ORG}/${REPO}" \
               --force
 
       - name: Checkout operatorhub repo
@@ -65,8 +65,8 @@ jobs:
           VERSION: ${{ steps.operator-version.outputs.version }}
           BUNDLE_TYPE: ${{ inputs.bundletype }}
         run: |
-          mkdir operators/tempo-operator/${VERSION}
-          cp -R ./tmp/bundle/${BUNDLE_TYPE}/* operators/tempo-operator/${VERSION}
+          mkdir "operators/tempo-operator/${VERSION}"
+          cp -R "./tmp/bundle/${BUNDLE_TYPE}/"* "operators/tempo-operator/${VERSION}"
           rm -rf ./tmp
 
       - name: Use CLA approved github bot
@@ -92,9 +92,9 @@ jobs:
           # repositories currently, but it will implicitly pick up the head from a different
           # repository if you set up a tracking branch
 
-          git checkout -b $branch
+          git checkout -b "$branch"
           git add -A
           git commit -s -m "$message"
           git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/tempooperatorbot/${REPO}"
-          git push -f --set-upstream origin $branch
-          gh pr create --title "$message" --body "$body" --repo ${ORG}/${REPO} --base main
+          git push -f --set-upstream origin "$branch"
+          gh pr create --title "$message" --body "$body" --repo "${ORG}/${REPO}" --base main

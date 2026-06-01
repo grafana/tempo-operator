@@ -42,7 +42,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         OPERATOR_VERSION: ${{ steps.operator-version.outputs.version }}
       run: |
-        awk '/^## / {v=$2} v == "'${OPERATOR_VERSION}'" && !/^## / {print}' CHANGELOG.md > RELEASE_NOTES.md
+        awk '/^## / {v=$2} v == "'"${OPERATOR_VERSION}"'" && !/^## / {print}' CHANGELOG.md > RELEASE_NOTES.md
         gh release create \
             -t "Release v${OPERATOR_VERSION}" \
             -F RELEASE_NOTES.md \
