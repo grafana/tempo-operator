@@ -3429,8 +3429,6 @@ spec:
                     - static
                     - openshift
                     type: string
-                required:
-                - mode
                 type: object
               timeout:
                 description: |-
@@ -3439,7 +3437,6 @@ spec:
                   Defaults to 30 seconds.
                 type: string
             required:
-            - managementState
             - storage
             type: object
           status:

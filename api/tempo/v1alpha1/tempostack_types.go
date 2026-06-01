@@ -53,8 +53,8 @@ type TempoStackSpec struct {
 	// ManagementState defines if the CR should be managed by the operator or not.
 	// Default is managed.
 	//
-	// +required
-	// +kubebuilder:validation:Required
+	// +optional
+	// +kubebuilder:validation:Optional
 	// +kubebuilder:default:=Managed
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors={"urn:alm:descriptor:com.tectonic.ui:select:Managed","urn:alm:descriptor:com.tectonic.ui:select:Unmanaged"},displayName="Management State"
 	ManagementState ManagementStateType `json:"managementState,omitempty"`
