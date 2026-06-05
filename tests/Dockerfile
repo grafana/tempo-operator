@@ -91,6 +91,16 @@ RUN curl -fsSL "https://download.clis.cloud.ibm.com/ibm-cloud-cli-dn/${IBM_CLI_V
 # Add gcloud to PATH
 ENV PATH="/tmp/google-cloud-sdk/bin:${PATH}"
 
+# Install Claude Code CLI via signed apt repository
+RUN install -d -m 0755 /etc/apt/keyrings \
+    && curl -fsSL https://downloads.claude.ai/keys/claude-code.asc \
+         -o /etc/apt/keyrings/claude-code.asc \
+    && echo "deb [signed-by=/etc/apt/keyrings/claude-code.asc] https://downloads.claude.ai/claude-code/apt/stable stable main" \
+         > /etc/apt/sources.list.d/claude-code.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends claude-code \
+    && rm -rf /var/lib/apt/lists/*
+
 # Switch to non-root before the build step.
 # chown /tmp/tempo-operator: COPY above ran as root; make build writes bin/ inside this dir.
 # chown /tmp/google-cloud-sdk: install.sh writes update configs back here at runtime.
