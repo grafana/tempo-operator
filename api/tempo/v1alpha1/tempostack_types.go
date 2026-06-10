@@ -53,8 +53,8 @@ type TempoStackSpec struct {
 	// ManagementState defines if the CR should be managed by the operator or not.
 	// Default is managed.
 	//
-	// +required
-	// +kubebuilder:validation:Required
+	// +optional
+	// +kubebuilder:validation:Optional
 	// +kubebuilder:default:=Managed
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors={"urn:alm:descriptor:com.tectonic.ui:select:Managed","urn:alm:descriptor:com.tectonic.ui:select:Unmanaged"},displayName="Management State"
 	ManagementState ManagementStateType `json:"managementState,omitempty"`
@@ -346,6 +346,13 @@ type ComponentStatus struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=status,xDescriptors="urn:alm:descriptor:com.tectonic.ui:podStatuses",displayName="Gateway",order=6
 	Gateway PodStatusMap `json:"gateway"`
+
+	// MetricsGenerator is a map to the per pod status of the metrics-generator deployment.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=status,xDescriptors="urn:alm:descriptor:com.tectonic.ui:podStatuses",displayName="Metrics Generator",order=7
+	MetricsGenerator PodStatusMap `json:"metricsGenerator,omitempty"`
 }
 
 // TempoStackStatus defines the observed state of TempoStack.
@@ -601,6 +608,48 @@ type TempoTemplateSpec struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Gateway pods"
 	Gateway TempoGatewaySpec `json:"gateway,omitempty"`
+
+	// MetricsGenerator defines the metrics-generator component spec.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Metrics Generator pods"
+	MetricsGenerator TempoMetricsGeneratorSpec `json:"metricsGenerator,omitempty"`
+}
+
+// TempoMetricsGeneratorSpec defines the metrics-generator component spec.
+type TempoMetricsGeneratorSpec struct {
+	// Enabled defines if the Metrics Generator component should be deployed.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enable metrics generator",xDescriptors="urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
+	Enabled bool `json:"enabled"`
+
+	// TempoComponentSpec is embedded to extend this definition with further options.
+	//
+	// Currently, there is no way to inline this field.
+	// See: https://github.com/golang/go/issues/6213
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	TempoComponentSpec `json:"component,omitempty"`
+
+	// RemoteWriteURLs defines the list of Prometheus remote write endpoints
+	// to which the metrics-generator will push generated metrics.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Remote Write URLs"
+	RemoteWriteURLs []string `json:"remoteWriteURLs,omitempty"`
+
+	// Processors defines the list of metrics-generator processors to enable.
+	// If empty, span-metrics, service-graphs and local-blocks are enabled by default.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Processors"
+	Processors []string `json:"processors,omitempty"`
 }
 
 // TempoDistributorSpec defines the template of all requirements to configure

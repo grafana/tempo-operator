@@ -1,7 +1,7 @@
 # The Dockerfile's resulting image is purpose-built for executing Tempo Operator e2e tests within the OpenShift release (https://github.com/openshift/release) using Prow CI.
 
 # Digest pinned to golang:1.25 as of 2026-05-26; Dependabot will raise PRs when it changes.
-FROM golang:1.25@sha256:c138bff780910acf4254ab3a6f7ff0f64bbd841f27bd82bfa986fe122c109538
+FROM golang:1.25@sha256:dd7d32e19b28621cd982082397fc0510d396805b717d5e77466aa2dd692340de
 
 # Copy the repository files
 COPY . /tmp/tempo-operator
@@ -90,6 +90,16 @@ RUN curl -fsSL "https://download.clis.cloud.ibm.com/ibm-cloud-cli-dn/${IBM_CLI_V
 
 # Add gcloud to PATH
 ENV PATH="/tmp/google-cloud-sdk/bin:${PATH}"
+
+# Install Claude Code CLI via signed apt repository
+RUN install -d -m 0755 /etc/apt/keyrings \
+    && curl -fsSL https://downloads.claude.ai/keys/claude-code.asc \
+         -o /etc/apt/keyrings/claude-code.asc \
+    && echo "deb [signed-by=/etc/apt/keyrings/claude-code.asc] https://downloads.claude.ai/claude-code/apt/stable stable main" \
+         > /etc/apt/sources.list.d/claude-code.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends claude-code \
+    && rm -rf /var/lib/apt/lists/*
 
 # Switch to non-root before the build step.
 # chown /tmp/tempo-operator: COPY above ran as root; make build writes bin/ inside this dir.

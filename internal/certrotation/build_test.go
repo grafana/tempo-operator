@@ -34,7 +34,7 @@ func TestBuildAll(t *testing.T) {
 
 	objs, err := BuildAll(opts)
 	require.NoError(t, err)
-	require.Len(t, objs, 8)
+	require.Len(t, objs, 9)
 
 	for _, obj := range objs {
 		objectName := obj.GetName()

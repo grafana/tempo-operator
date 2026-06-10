@@ -25,6 +25,13 @@ type options struct {
 	S3StorageTLS           storageTLSOptions
 	Timeout                time.Duration
 	MCPServer              mcpserverOptions
+	MetricsGenerator       metricsGeneratorOptions
+}
+
+type metricsGeneratorOptions struct {
+	Enabled         bool
+	RemoteWriteURLs []string
+	Processors      []string
 }
 
 type tempoQueryOptions struct {
@@ -117,8 +124,9 @@ type tlsFilePaths struct {
 }
 
 type serverNames struct {
-	Compactor     string
-	Ingester      string
-	QueryFrontend string
-	Querier       string
+	Compactor        string
+	Ingester         string
+	QueryFrontend    string
+	Querier          string
+	MetricsGenerator string
 }
