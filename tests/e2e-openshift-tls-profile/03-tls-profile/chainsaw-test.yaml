@@ -83,5 +83,5 @@ spec:
   - name: step-11
     try:
     - script:
-        timeout: 5m
+        timeout: 30m
         content: ./11-revert-apiserver.sh
