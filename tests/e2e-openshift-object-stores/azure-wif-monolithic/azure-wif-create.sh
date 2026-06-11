@@ -77,30 +77,32 @@ fi
 FEDERATED_CRED_NAME="chainsaw-azurewif-mono"
 echo "Creating federated credentials for subject '$TEMPO_SA_SUBJECT' in managed identity '$IDENTITY_NAME' in resource group '$OCP_OIDC_RESOURCE_GROUP_NAME'..."
 if az identity federated-credential show --name "$FEDERATED_CRED_NAME" --identity-name "$IDENTITY_NAME" --resource-group "$OCP_OIDC_RESOURCE_GROUP_NAME" &>/dev/null; then
-    echo "Federated credential '$FEDERATED_CRED_NAME' already exists, deleting and recreating..."
-    az identity federated-credential delete --name "$FEDERATED_CRED_NAME" --identity-name "$IDENTITY_NAME" --resource-group "$OCP_OIDC_RESOURCE_GROUP_NAME" --yes
+    echo "Federated credential '$FEDERATED_CRED_NAME' already exists, reusing it."
+    az identity federated-credential show --name "$FEDERATED_CRED_NAME" --identity-name "$IDENTITY_NAME" --resource-group "$OCP_OIDC_RESOURCE_GROUP_NAME" | jq
+else
+    az identity federated-credential create \
+      --name "$FEDERATED_CRED_NAME" \
+      --identity-name "$IDENTITY_NAME" \
+      --resource-group "$OCP_OIDC_RESOURCE_GROUP_NAME" \
+      --issuer "$CLUSTER_ISSUER" \
+      --subject "$TEMPO_SA_SUBJECT" \
+      --audiences "$AUDIENCE" | jq
 fi
-az identity federated-credential create \
-  --name "$FEDERATED_CRED_NAME" \
-  --identity-name "$IDENTITY_NAME" \
-  --resource-group "$OCP_OIDC_RESOURCE_GROUP_NAME" \
-  --issuer "$CLUSTER_ISSUER" \
-  --subject "$TEMPO_SA_SUBJECT" \
-  --audiences "$AUDIENCE" | jq
 
 FEDERATED_CRED_QF_NAME="chainsaw-azurewif-mono-query-frontend"
 echo "Creating federated credentials for subject '$TEMPO_SA_QUERY_FRONTEND_SUBJECT' in managed identity '$IDENTITY_NAME' in resource group '$OCP_OIDC_RESOURCE_GROUP_NAME'..."
 if az identity federated-credential show --name "$FEDERATED_CRED_QF_NAME" --identity-name "$IDENTITY_NAME" --resource-group "$OCP_OIDC_RESOURCE_GROUP_NAME" &>/dev/null; then
-    echo "Federated credential '$FEDERATED_CRED_QF_NAME' already exists, deleting and recreating..."
-    az identity federated-credential delete --name "$FEDERATED_CRED_QF_NAME" --identity-name "$IDENTITY_NAME" --resource-group "$OCP_OIDC_RESOURCE_GROUP_NAME" --yes
+    echo "Federated credential '$FEDERATED_CRED_QF_NAME' already exists, reusing it."
+    az identity federated-credential show --name "$FEDERATED_CRED_QF_NAME" --identity-name "$IDENTITY_NAME" --resource-group "$OCP_OIDC_RESOURCE_GROUP_NAME" | jq
+else
+    az identity federated-credential create \
+      --name "$FEDERATED_CRED_QF_NAME" \
+      --identity-name "$IDENTITY_NAME" \
+      --resource-group "$OCP_OIDC_RESOURCE_GROUP_NAME" \
+      --issuer "$CLUSTER_ISSUER" \
+      --subject "$TEMPO_SA_QUERY_FRONTEND_SUBJECT" \
+      --audiences "$AUDIENCE" | jq
 fi
-az identity federated-credential create \
-  --name "$FEDERATED_CRED_QF_NAME" \
-  --identity-name "$IDENTITY_NAME" \
-  --resource-group "$OCP_OIDC_RESOURCE_GROUP_NAME" \
-  --issuer "$CLUSTER_ISSUER" \
-  --subject "$TEMPO_SA_QUERY_FRONTEND_SUBJECT" \
-  --audiences "$AUDIENCE" | jq
 
 echo "Wait for Azure resources"
 sleep 20
