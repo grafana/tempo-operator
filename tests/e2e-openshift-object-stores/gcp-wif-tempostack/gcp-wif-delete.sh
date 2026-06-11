@@ -32,13 +32,6 @@ gcloud storage buckets remove-iam-policy-binding "gs://$BUCKET_NAME" \
     --quiet
 echo "Bucket-level IAM policy binding removed."
 
-# Remove IAM policy bindings for the created service account (project level)
-echo "Removing project-level IAM policy bindings for service account '**$SERVICE_ACCOUNT_EMAIL**'..."
-gcloud projects remove-iam-policy-binding "$PROJECT_ID" \
-  --member="serviceAccount:$SERVICE_ACCOUNT_EMAIL" \
-  --role="roles/storage.objectAdmin" --quiet
-echo "Project-level IAM policy bindings for service account '**$SERVICE_ACCOUNT_EMAIL**' removed."
-
 # Remove IAM policy bindings for TempoStack service accounts (Workload Identity Principals)
 # These were added directly to the Google Service Account's IAM policy
 echo "Removing Workload Identity bindings from Google Service Account '**$SERVICE_ACCOUNT_EMAIL**'..."

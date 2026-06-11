@@ -6,27 +6,29 @@ SERVICE_ACCOUNT_NAME="ikanse-gcp-wif-tempo-sa"
 GCS_KEY_FILE="/tmp/gcp-wif-tempo.json"
 BUCKET_NAME="ikanse-gcp-wif-tempo"
 
-# Create GCP service account
-SERVICE_ACCOUNT_EMAIL=$(gcloud iam service-accounts create "$SERVICE_ACCOUNT_NAME" \
-    --display-name="TempoStack Account" \
-    --project "$PROJECT_ID" \
-    --format='value(email)' \
-    --quiet)
-
-# Wait for the service account to be ready
-echo "Waiting for service account $SERVICE_ACCOUNT_EMAIL to be ready..."
-MAX_RETRIES=10
-RETRY_COUNT=0
-while ! gcloud iam service-accounts describe "$SERVICE_ACCOUNT_EMAIL" --project "$PROJECT_ID" &> /dev/null; do
-    if [ $RETRY_COUNT -ge $MAX_RETRIES ]; then
-        echo "Error: Service account $SERVICE_ACCOUNT_EMAIL not found after $MAX_RETRIES retries. Exiting."
-        exit 1
-    fi
-    echo "Service account not yet available. Retrying in 5 seconds..."
-    sleep 5
-    RETRY_COUNT=$((RETRY_COUNT + 1))
-done
-echo "Service account $SERVICE_ACCOUNT_EMAIL is ready."
+# Create GCP service account (idempotent: reuse if already exists)
+SERVICE_ACCOUNT_EMAIL="${SERVICE_ACCOUNT_NAME}@${PROJECT_ID}.iam.gserviceaccount.com"
+if gcloud iam service-accounts describe "$SERVICE_ACCOUNT_EMAIL" --project "$PROJECT_ID" &>/dev/null; then
+    echo "Service account $SERVICE_ACCOUNT_EMAIL already exists, reusing it."
+else
+    gcloud iam service-accounts create "$SERVICE_ACCOUNT_NAME" \
+        --display-name="TempoStack Account" \
+        --project "$PROJECT_ID" \
+        --quiet
+    echo "Waiting for service account $SERVICE_ACCOUNT_EMAIL to be ready..."
+    MAX_RETRIES=10
+    RETRY_COUNT=0
+    while ! gcloud iam service-accounts describe "$SERVICE_ACCOUNT_EMAIL" --project "$PROJECT_ID" &>/dev/null; do
+        if [ $RETRY_COUNT -ge $MAX_RETRIES ]; then
+            echo "Error: Service account $SERVICE_ACCOUNT_EMAIL not found after $MAX_RETRIES retries. Exiting."
+            exit 1
+        fi
+        echo "Service account not yet available. Retrying in 5 seconds..."
+        sleep 5
+        RETRY_COUNT=$((RETRY_COUNT + 1))
+    done
+    echo "Service account $SERVICE_ACCOUNT_EMAIL is ready."
+fi
 
 # Set the GCP and TempoStack vars
 TEMPO_NAME="gcpwiftm"
@@ -34,13 +36,6 @@ TEMPO_NAMESPACE="chainsaw-gcpwif-tempo"
 PROJECT_NUMBER=$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')
 OIDC_ISSUER=$(oc get authentication.config cluster -o jsonpath='{.spec.serviceAccountIssuer}')
 POOL_ID=$(echo "$OIDC_ISSUER" | awk -F'/' '{print $NF}' | sed 's/-oidc$//')
-
-# Bind the required GCP roles to the created SA at the project level
-gcloud projects add-iam-policy-binding "$PROJECT_ID" \
-  --member="serviceAccount:$SERVICE_ACCOUNT_EMAIL" \
-  --role="roles/storage.objectAdmin" \
-  --format=none \
-  --quiet
 
 # Workload Identity Bindings: Allow Kubernetes Service Accounts to impersonate the Google Service Account
 gcloud iam service-accounts add-iam-policy-binding "$SERVICE_ACCOUNT_EMAIL" \
