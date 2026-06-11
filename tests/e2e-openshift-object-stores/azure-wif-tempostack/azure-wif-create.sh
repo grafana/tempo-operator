@@ -62,30 +62,47 @@ CLUSTER_ISSUER=$(oc get authentication cluster -o json | jq -r .spec.serviceAcco
 OIDC_REGION=$(az group show --name "$OCP_OIDC_RESOURCE_GROUP_NAME" --query location -o tsv)
 AUDIENCE="api://AzureADTokenExchange"
 
-echo "Creating managed identity '$IDENTITY_NAME' in resource group '$OCP_OIDC_RESOURCE_GROUP_NAME'..."
-az identity create \
-  --name "$IDENTITY_NAME" \
-  --resource-group "$OCP_OIDC_RESOURCE_GROUP_NAME" \
-  --location "$OIDC_REGION" \
-  --subscription "$SUBSCRIPTION_ID" | jq
+if az identity show --name "$IDENTITY_NAME" --resource-group "$OCP_OIDC_RESOURCE_GROUP_NAME" &>/dev/null; then
+    echo "Managed identity '$IDENTITY_NAME' already exists, reusing it."
+    az identity show --name "$IDENTITY_NAME" --resource-group "$OCP_OIDC_RESOURCE_GROUP_NAME" | jq
+else
+    echo "Creating managed identity '$IDENTITY_NAME' in resource group '$OCP_OIDC_RESOURCE_GROUP_NAME'..."
+    az identity create \
+      --name "$IDENTITY_NAME" \
+      --resource-group "$OCP_OIDC_RESOURCE_GROUP_NAME" \
+      --location "$OIDC_REGION" \
+      --subscription "$SUBSCRIPTION_ID" | jq
+fi
 
+FEDERATED_CRED_NAME="chainsaw-azurewif-tempo"
 echo "Creating federated credentials for subject '$TEMPO_SA_SUBJECT' in managed identity '$IDENTITY_NAME' in resource group '$OCP_OIDC_RESOURCE_GROUP_NAME'..."
-az identity federated-credential create \
-  --name chainsaw-azurewif-tempo \
-  --identity-name "$IDENTITY_NAME" \
-  --resource-group "$OCP_OIDC_RESOURCE_GROUP_NAME" \
-  --issuer "$CLUSTER_ISSUER" \
-  --subject "$TEMPO_SA_SUBJECT" \
-  --audiences "$AUDIENCE" | jq
+if az identity federated-credential show --name "$FEDERATED_CRED_NAME" --identity-name "$IDENTITY_NAME" --resource-group "$OCP_OIDC_RESOURCE_GROUP_NAME" &>/dev/null; then
+    echo "Federated credential '$FEDERATED_CRED_NAME' already exists, reusing it."
+    az identity federated-credential show --name "$FEDERATED_CRED_NAME" --identity-name "$IDENTITY_NAME" --resource-group "$OCP_OIDC_RESOURCE_GROUP_NAME" | jq
+else
+    az identity federated-credential create \
+      --name "$FEDERATED_CRED_NAME" \
+      --identity-name "$IDENTITY_NAME" \
+      --resource-group "$OCP_OIDC_RESOURCE_GROUP_NAME" \
+      --issuer "$CLUSTER_ISSUER" \
+      --subject "$TEMPO_SA_SUBJECT" \
+      --audiences "$AUDIENCE" | jq
+fi
 
+FEDERATED_CRED_QF_NAME="chainsaw-azurewif-tempo-query-frontend"
 echo "Creating federated credentials for subject '$TEMPO_SA_QUERY_FRONTEND_SUBJECT' in managed identity '$IDENTITY_NAME' in resource group '$OCP_OIDC_RESOURCE_GROUP_NAME'..."
-az identity federated-credential create \
-  --name chainsaw-azurewif-tempo-query-frontend \
-  --identity-name "$IDENTITY_NAME" \
-  --resource-group "$OCP_OIDC_RESOURCE_GROUP_NAME" \
-  --issuer "$CLUSTER_ISSUER" \
-  --subject "$TEMPO_SA_QUERY_FRONTEND_SUBJECT" \
-  --audiences "$AUDIENCE" | jq
+if az identity federated-credential show --name "$FEDERATED_CRED_QF_NAME" --identity-name "$IDENTITY_NAME" --resource-group "$OCP_OIDC_RESOURCE_GROUP_NAME" &>/dev/null; then
+    echo "Federated credential '$FEDERATED_CRED_QF_NAME' already exists, reusing it."
+    az identity federated-credential show --name "$FEDERATED_CRED_QF_NAME" --identity-name "$IDENTITY_NAME" --resource-group "$OCP_OIDC_RESOURCE_GROUP_NAME" | jq
+else
+    az identity federated-credential create \
+      --name "$FEDERATED_CRED_QF_NAME" \
+      --identity-name "$IDENTITY_NAME" \
+      --resource-group "$OCP_OIDC_RESOURCE_GROUP_NAME" \
+      --issuer "$CLUSTER_ISSUER" \
+      --subject "$TEMPO_SA_QUERY_FRONTEND_SUBJECT" \
+      --audiences "$AUDIENCE" | jq
+fi
 
 echo "Wait for Azure resources"
 sleep 20
@@ -93,11 +110,21 @@ sleep 20
 ASSIGNEE_NAME=$(az ad sp list --all --filter "servicePrincipalType eq 'ManagedIdentity'" | jq -r --arg idName "$IDENTITY_NAME" '.[] | select(.displayName == $idName) | .appId')
 echo "Assignee name is $ASSIGNEE_NAME"
 
-echo "Assigning role Storage Blob Data Contributor to managed identity's '$IDENTITY_NAME' service principal '$ASSIGNEE_NAME'"
-az role assignment create \
+EXISTING_ROLE=$(az role assignment list \
   --assignee "$ASSIGNEE_NAME" \
   --role "Storage Blob Data Contributor" \
-  --scope "/subscriptions/$SUBSCRIPTION_ID" | jq
+  --scope "/subscriptions/$SUBSCRIPTION_ID" \
+  --query "[0].id" -o tsv 2>/dev/null || true)
+
+if [ -z "$EXISTING_ROLE" ]; then
+    echo "Assigning role Storage Blob Data Contributor to managed identity's '$IDENTITY_NAME' service principal '$ASSIGNEE_NAME'"
+    az role assignment create \
+      --assignee "$ASSIGNEE_NAME" \
+      --role "Storage Blob Data Contributor" \
+      --scope "/subscriptions/$SUBSCRIPTION_ID" | jq
+else
+    echo "Role 'Storage Blob Data Contributor' already assigned to '$ASSIGNEE_NAME', skipping."
+fi
 
 # Fetch the Client ID of the existing managed identity
 CLIENT_ID=$(az identity show \
@@ -106,12 +133,13 @@ CLIENT_ID=$(az identity show \
   --query clientId \
   -o tsv)
 
-# Create Kubernetes secret for Azure WIF
-kubectl create -n $TEMPO_NAMESPACE secret generic azure-secret \
+# Create Kubernetes secret for Azure WIF (delete first if it exists to ensure fresh values)
+kubectl delete secret azure-secret -n "$TEMPO_NAMESPACE" --ignore-not-found=true
+kubectl create -n "$TEMPO_NAMESPACE" secret generic azure-secret \
   --from-literal=container="$AZURE_STORAGE_AZURE_CONTAINER" \
   --from-literal=account_name="$AZURE_STORAGE_AZURE_ACCOUNTNAME" \
   --from-literal=client_id="$CLIENT_ID" \
   --from-literal=audience="$AUDIENCE" \
   --from-literal=tenant_id="$TENANT_ID" || { echo "Failed to create secret"; exit 1; }
 
-  echo "Script executed successfully"
+echo "Script executed successfully"
