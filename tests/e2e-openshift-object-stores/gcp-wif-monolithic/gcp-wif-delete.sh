@@ -32,31 +32,14 @@ gcloud storage buckets remove-iam-policy-binding "gs://$BUCKET_NAME" \
     --quiet
 echo "Bucket-level IAM policy binding removed."
 
-# Remove IAM policy bindings for the created service account (project level)
-echo "Removing project-level IAM policy bindings for service account '**$SERVICE_ACCOUNT_EMAIL**'..."
-gcloud projects remove-iam-policy-binding "$PROJECT_ID" \
-  --member="serviceAccount:$SERVICE_ACCOUNT_EMAIL" \
-  --role="roles/storage.objectAdmin" --quiet
-echo "Project-level IAM policy bindings for service account '**$SERVICE_ACCOUNT_EMAIL**' removed."
-
-# Remove IAM policy bindings for TempoStack service accounts (Workload Identity Principals)
-# These were added directly to the Google Service Account's IAM policy
-echo "Removing Workload Identity bindings from Google Service Account '**$SERVICE_ACCOUNT_EMAIL**'..."
-
-# tempo-${TEMPO_NAME} bindings
+# Remove Workload Identity binding from the Google Service Account
+echo "Removing Workload Identity binding from Google Service Account '**$SERVICE_ACCOUNT_EMAIL**'..."
 gcloud iam service-accounts remove-iam-policy-binding "$SERVICE_ACCOUNT_EMAIL" \
   --role="roles/iam.workloadIdentityUser" \
   --member="principal://iam.googleapis.com/projects/$PROJECT_NUMBER/locations/global/workloadIdentityPools/$POOL_ID/subject/system:serviceaccount:${TEMPO_NAMESPACE}:tempo-${TEMPO_NAME}" \
   --project="$PROJECT_ID" \
   --quiet
-
-# tempo-${TEMPO_NAME}-query-frontend bindings
-gcloud iam service-accounts remove-iam-policy-binding "$SERVICE_ACCOUNT_EMAIL" \
-  --role="roles/iam.workloadIdentityUser" \
-  --member="principal://iam.googleapis.com/projects/$PROJECT_NUMBER/locations/global/workloadIdentityPools/$POOL_ID/subject/system:serviceaccount:${TEMPO_NAMESPACE}:tempo-${TEMPO_NAME}-query-frontend" \
-  --project="$PROJECT_ID" \
-  --quiet
-echo "Workload Identity bindings removed from Google Service Account '**$SERVICE_ACCOUNT_EMAIL**'."
+echo "Workload Identity binding removed from Google Service Account '**$SERVICE_ACCOUNT_EMAIL**'."
 
 # Delete the GCP service account
 echo "Deleting service account '**$SERVICE_ACCOUNT_EMAIL**'..."
