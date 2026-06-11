@@ -8,10 +8,10 @@ spec:
   description: Test TempoStack support for Azure WIF using STS.
   namespace: chainsaw-azurewif-mono
   steps:
-  - name: reate Azure WIF bucket
+  - name: Create Azure WIF bucket
     try:
     - script:
-        timeout: 2m
+        timeout: 10m
         content: ./azure-wif-create.sh
     - assert:
         file: azure-wif-create-assert.yaml

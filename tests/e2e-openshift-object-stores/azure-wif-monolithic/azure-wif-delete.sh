@@ -42,7 +42,7 @@ az identity federated-credential delete \
 # Delete the second federated credential
 echo "Deleting federated credential 'chainsaw-azurewif-tempo-query-frontend'..."
 az identity federated-credential delete \
-  --name chainsaw-azurewif-monoo-query-frontend \
+  --name chainsaw-azurewif-mono-query-frontend \
   --identity-name "$IDENTITY_NAME" \
   --resource-group "$OCP_OIDC_RESOURCE_GROUP_NAME" \
   --yes || {
