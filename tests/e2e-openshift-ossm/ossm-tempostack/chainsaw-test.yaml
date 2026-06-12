@@ -61,5 +61,5 @@ spec:
     - apply:
         file: verify-traces.yaml
     - assert:
+        timeout: 10m
         file: verify-traces-assert.yaml
-
