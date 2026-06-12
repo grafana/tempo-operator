@@ -140,12 +140,20 @@ echo "Deployment FEATURE_GATES: $FEATURE_GATES"
 if [ -n "$TEMPO_OPERATOR_SUB" ] || [ -n "$TEMPO_OPERATOR_CSV" ]; then
   # Verify the CSV is still healthy (for OLM-managed installs)
   CSV_NAME="${TEMPO_OPERATOR_CSV:-$(oc get csv -n "$TEMPO_OPERATOR_NAMESPACE" -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' | grep tempo)}"
-  if oc get csv "$CSV_NAME" -n "$TEMPO_OPERATOR_NAMESPACE" -o jsonpath='{.status.phase}' | grep -qi "Succeeded"; then
-      echo "CSV $CSV_NAME is healthy"
-  else
-      echo "Operator CSV update failed, exiting with error."
+  echo "Waiting for CSV $CSV_NAME to reach Succeeded phase..."
+  for i in $(seq 1 30); do
+    CSV_PHASE=$(oc get csv "$CSV_NAME" -n "$TEMPO_OPERATOR_NAMESPACE" -o jsonpath='{.status.phase}' 2>/dev/null || echo "")
+    if echo "$CSV_PHASE" | grep -qi "Succeeded"; then
+      echo "CSV $CSV_NAME is healthy (attempt $i)"
+      break
+    fi
+    if [ "$i" -eq 30 ]; then
+      echo "Operator CSV update failed after 30 attempts, phase: $CSV_PHASE"
       exit 1
-  fi
+    fi
+    echo "  CSV phase: $CSV_PHASE, waiting... (attempt $i/30)"
+    sleep 10
+  done
 fi
 
 echo "PASS: Operator patched with TLS_PROFILE=Modern (openshift.clusterTLSPolicy disabled)"
