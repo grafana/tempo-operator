@@ -13,7 +13,7 @@ spec:
             - name: TEMPOMONOLITHIC_THRESHOLD
               value: "1000"
             - name: TEMPOSTACK_THRESHOLD
-              value: "1000"
+              value: "2500"
           command:
             - /bin/bash
             - -eux
