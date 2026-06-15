@@ -4,7 +4,7 @@
 MUST_GATHER_DIR=$(mktemp -d)
 
 # Run the must-gather script
-oc adm must-gather --dest-dir=$MUST_GATHER_DIR --image=quay.io/rhn_support_ikanse/tempo-must-gather:latest -- /usr/bin/must-gather --operator-namespace $temponamespace
+oc adm must-gather --dest-dir=$MUST_GATHER_DIR --image=ghcr.io/grafana/tempo-operator/must-gather:v0.21.0 -- /usr/bin/must-gather --operator-namespace $temponamespace
 
 # Define required files and directories
 REQUIRED_ITEMS=(
