@@ -1,7 +1,7 @@
 # The Dockerfile's resulting image is purpose-built for executing Tempo Operator e2e tests within the OpenShift release (https://github.com/openshift/release) using Prow CI.
 
 # Digest pinned to golang:1.25 as of 2026-05-26; Dependabot will raise PRs when it changes.
-FROM golang:1.25@sha256:dd7d32e19b28621cd982082397fc0510d396805b717d5e77466aa2dd692340de
+FROM golang:1.26@sha256:68cb6d68bed024785b69195b89af7ac7a444f27791435f98647edff595aa0479
 
 # Copy the repository files
 COPY . /tmp/tempo-operator
