@@ -12,7 +12,7 @@ require (
 	github.com/imdario/mergo v0.3.16
 	github.com/novln/docker-parser v1.0.0
 	github.com/onsi/ginkgo/v2 v2.30.0
-	github.com/onsi/gomega v1.40.0
+	github.com/onsi/gomega v1.42.0
 	github.com/openshift/cloud-credential-operator v0.0.0-20250417173756-8ff60a024ed9
 	github.com/openshift/library-go v0.0.0-20260210145149-d0e860e8d752
 	github.com/operator-framework/api v0.31.0
