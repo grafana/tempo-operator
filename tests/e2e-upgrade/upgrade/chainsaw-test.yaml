@@ -25,6 +25,7 @@ spec:
   - name: step-21
     try:
     - apply:
+        timeout: 2m
         file: tempostack.yaml
     - delete:
         ref:
