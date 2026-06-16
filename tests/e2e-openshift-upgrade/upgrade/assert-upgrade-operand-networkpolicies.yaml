@@ -1,6 +1,5 @@
 # Operand NetworkPolicy assertions post-upgrade for TempoStack
 # These policies are created by the operator for the TempoStack simplst in chainsaw-rbac namespace
-# Note: OTLP egress rules (4317/4318) are present because the TempoStack has observability.tracing.otlp_http_endpoint configured
 ---
 # DNS policy for OpenShift (port 5353 to openshift-dns namespace)
 apiVersion: networking.k8s.io/v1
@@ -115,18 +114,6 @@ metadata:
   namespace: chainsaw-rbac
 spec:
   egress:
-  - ports:
-    - port: 4318
-      protocol: TCP
-    to:
-    - ipBlock:
-        cidr: 0.0.0.0/0
-  - ports:
-    - port: 4317
-      protocol: TCP
-    to:
-    - ipBlock:
-        cidr: 0.0.0.0/0
   - to:
     - ipBlock:
         cidr: 0.0.0.0/0
@@ -188,19 +175,6 @@ spec:
     - ipBlock:
         cidr: 0.0.0.0/0
     - namespaceSelector: {}
-  # Gateway OTLP export (telemetry)
-  - ports:
-    - port: 4318
-      protocol: TCP
-    to:
-    - ipBlock:
-        cidr: 0.0.0.0/0
-  - ports:
-    - port: 4317
-      protocol: TCP
-    to:
-    - ipBlock:
-        cidr: 0.0.0.0/0
   # Gateway to Query-Frontend
   - ports:
     - port: 9095
@@ -275,18 +249,6 @@ spec:
           app.kubernetes.io/instance: simplst
           app.kubernetes.io/managed-by: tempo-operator
           app.kubernetes.io/name: tempo
-  - ports:
-    - port: 4318
-      protocol: TCP
-    to:
-    - ipBlock:
-        cidr: 0.0.0.0/0
-  - ports:
-    - port: 4317
-      protocol: TCP
-    to:
-    - ipBlock:
-        cidr: 0.0.0.0/0
   ingress:
   - from:
     - podSelector:
@@ -323,18 +285,6 @@ metadata:
   namespace: chainsaw-rbac
 spec:
   egress:
-  - ports:
-    - port: 4318
-      protocol: TCP
-    to:
-    - ipBlock:
-        cidr: 0.0.0.0/0
-  - ports:
-    - port: 4317
-      protocol: TCP
-    to:
-    - ipBlock:
-        cidr: 0.0.0.0/0
   - to:
     - ipBlock:
         cidr: 0.0.0.0/0
@@ -408,18 +358,6 @@ spec:
           app.kubernetes.io/managed-by: tempo-operator
           app.kubernetes.io/name: tempo
   - ports:
-    - port: 4318
-      protocol: TCP
-    to:
-    - ipBlock:
-        cidr: 0.0.0.0/0
-  - ports:
-    - port: 4317
-      protocol: TCP
-    to:
-    - ipBlock:
-        cidr: 0.0.0.0/0
-  - ports:
     - port: 9095
       protocol: TCP
     to:
@@ -479,18 +417,6 @@ metadata:
   namespace: chainsaw-rbac
 spec:
   egress:
-  - ports:
-    - port: 4318
-      protocol: TCP
-    to:
-    - ipBlock:
-        cidr: 0.0.0.0/0
-  - ports:
-    - port: 4317
-      protocol: TCP
-    to:
-    - ipBlock:
-        cidr: 0.0.0.0/0
   - ports:
     - port: 9095
       protocol: TCP
