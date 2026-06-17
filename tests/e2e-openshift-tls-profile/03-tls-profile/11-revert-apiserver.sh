@@ -1,5 +1,13 @@
 #!/bin/bash
 set -euo pipefail
+
+# If Modern TLS profile was not supported, nothing was patched — skip revert.
+if [ -f /tmp/modern-tls-unsupported ]; then
+  echo "SKIP: Modern TLS profile was not applied (unsupported on this cluster) — no revert needed"
+  rm -f /tmp/modern-tls-unsupported
+  exit 0
+fi
+
 oc patch apiserver cluster --type json \
   -p '[{"op":"remove","path":"/spec/tlsSecurityProfile"}]'
 echo "APIServer TLS profile reverted to default (nil)"
