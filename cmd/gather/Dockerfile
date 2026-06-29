@@ -1,6 +1,6 @@
 # Build the manager binary
 # Digest pinned to golang:1.25 as of 2026-05-26; Dependabot will raise PRs when it changes.
-FROM golang:1.25@sha256:dd7d32e19b28621cd982082397fc0510d396805b717d5e77466aa2dd692340de AS builder
+FROM golang:1.25@sha256:f188e8c16ea47a8b22d2bdcf6d9bcd07b63ea7876c199749c07bf31e0ab33bad AS builder
 
 WORKDIR /workspace
 # Cache tool dependencies
