@@ -9,8 +9,8 @@ spec:
   - name: Install env Secret and Tempo Monolithic
     try:
     - apply:
-        file: install-env-secret.yaml
+        file: 00-install-env-secret.yaml
     - apply:
-        file: install-tempo.yaml
+        file: 00-install-tempo.yaml
     - assert:
-        file: install-tempo-assert.yaml
+        file: 00-install-tempo-assert.yaml

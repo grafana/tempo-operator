@@ -26,7 +26,7 @@ spec:
     try:
     - apply:
         timeout: 2m
-        file: tempostack.yaml
+        file: 03-tempostack.yaml
     - delete:
         ref:
           apiVersion: tempo.grafana.com/v1alpha1

@@ -8,9 +8,9 @@ spec:
   - name: Create Tempo Monolithic instance
     try:
     - apply:
-        file: install-tempo.yaml
+        file: 00-install-tempo.yaml
     - assert:
-        file: install-tempo-assert.yaml
+        file: 00-install-tempo-assert.yaml
   - name: Run the must-gather and verify the contents
     try:
     - command:

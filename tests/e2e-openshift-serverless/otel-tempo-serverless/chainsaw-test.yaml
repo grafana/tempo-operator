@@ -10,51 +10,51 @@ spec:
   - name: Install Minio object store
     try:
     - apply:
-        file: install-minio.yaml
+        file: 00-install-minio.yaml
     - assert:
-        file: install-minio-assert.yaml
+        file: 00-install-minio-assert.yaml
   - name: Install TempoStack
     try:
     - apply:
-        file: install-tempo.yaml
+        file: 01-install-tempo.yaml
     - assert:
-        file: install-tempo-assert.yaml
+        file: 01-install-tempo-assert.yaml
   - name: Create the OTEL collector instance
     try:
     - apply:
-        file: create-otel-collector.yaml
+        file: 02-create-otel-collector.yaml
     - assert:
-        file: create-otel-collector-assert.yaml
+        file: 02-create-otel-collector-assert.yaml
   - name: Create Knative serving instance
     try:
     - apply:
-        file: create-knative-serving.yaml
+        file: 03-create-knative-serving.yaml
     - assert:
-        file: create-knative-serving-assert.yaml
+        file: 03-create-knative-serving-assert.yaml
   - name: Create Knative eventing instance
     try:
     - apply:
-        file: create-knative-eventing.yaml
+        file: 04-create-knative-eventing.yaml
     - assert:
-        file: create-knative-eventing-assert.yaml
+        file: 04-create-knative-eventing-assert.yaml
   - name: Create Knative service app instance
     try:
     - apply:
-        file: create-knative-app.yaml
+        file: 05-create-knative-app.yaml
     - assert:
-        file: create-knative-app-assert.yaml
+        file: 05-create-knative-app-assert.yaml
   - name: Generate Traces by probing the Knative service app instance
     try:
     - apply:
-        file: generate-traces.yaml
+        file: 06-generate-traces.yaml
     - assert:
-        file: generate-traces-assert.yaml
+        file: 06-generate-traces-assert.yaml
   - name: Verify the Traces in Tempo instance
     try:
     - apply:
-        file: verify-traces.yaml
+        file: 07-verify-traces.yaml
     - assert:
-        file: verify-traces-assert.yaml
+        file: 07-verify-traces-assert.yaml
     cleanup:
     - delete:
         ref:

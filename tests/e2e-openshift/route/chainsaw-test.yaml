@@ -9,15 +9,15 @@ spec:
   - name: Install Minio storage
     try:
     - apply:
-        file: install-storage.yaml
+        file: 00-install-storage.yaml
     - assert:
-        file: install-storage-assert.yaml
+        file: 00-install-storage-assert.yaml
   - name: Install TempoStack with ingress type route
     try:
     - apply:
-        file: install-tempo.yaml
+        file: 01-install-tempo.yaml
     - assert:
-        file: install-tempo-assert.yaml
+        file: 01-install-tempo-assert.yaml
   - name: Check the status of TempoStack
     try:
     - script:

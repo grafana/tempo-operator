@@ -20,30 +20,30 @@ spec:
   - name: Create non-admin SAs with namespace level access
     try:
     - apply:
-        file: create-SAs-with-namespace-access.yaml
+        file: 02-create-SAs-with-namespace-access.yaml
     - assert:
-        file: assert-create-sas.yaml
+        file: 02-assert-create-sas.yaml
   - name: Generate traces from namespace chainsaw-mono-rbac-1
     try:
     - apply:
-        file: tempo-rbac-sa-1-traces-gen.yaml
+        file: 03-tempo-rbac-sa-1-traces-gen.yaml
     - assert:
-        file: assert-tempo-rbac-sa-1-traces-gen.yaml
+        file: 03-assert-tempo-rbac-sa-1-traces-gen.yaml
   - name: Generate traces from namespace chainsaw-mono-rbac-2
     try:
     - apply:
-        file: tempo-rbac-sa-2-traces-gen.yaml
+        file: 04-tempo-rbac-sa-2-traces-gen.yaml
     - assert:
-        file: assert-tempo-rbac-sa-2-traces-gen.yaml
+        file: 04-assert-tempo-rbac-sa-2-traces-gen.yaml
   - name: Assert tracess using RBAC
     try:
     - apply:
-        file: tempo-rbac-sa-1-traces-verify.yaml
+        file: 05-tempo-rbac-sa-1-traces-verify.yaml
     - assert:
-        file: assert-tempo-rbac-sa-1-traces-verify.yaml
+        file: 05-assert-tempo-rbac-sa-1-traces-verify.yaml
   - name: Verify kubeadmin can view traces from all projects
     try:
     - apply:
-        file: kubeadmin-traces-verify.yaml
+        file: 06-kubeadmin-traces-verify.yaml
     - assert:
-        file: assert-kubeadmin-traces-verify.yaml
+        file: 06-assert-kubeadmin-traces-verify.yaml
