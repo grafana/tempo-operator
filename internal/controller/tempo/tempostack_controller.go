@@ -248,8 +248,8 @@ func (r *TempoStackReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&corev1.ServiceAccount{}).
 		Owns(&corev1.Service{}).
 		Owns(&corev1.Secret{}).
-		Owns(&appsv1.StatefulSet{}).
-		Owns(&appsv1.Deployment{}).
+		Owns(&appsv1.StatefulSet{}, updateOrDeleteWithStatusPred).
+		Owns(&appsv1.Deployment{}, updateOrDeleteWithStatusPred).
 		Owns(&networkingv1.Ingress{}).
 		Owns(&rbacv1.ClusterRole{}).
 		Owns(&rbacv1.ClusterRoleBinding{}).
