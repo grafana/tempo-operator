@@ -1,6 +1,17 @@
 #!/bin/bash
 set -euo pipefail
 
+# Check if Modern TLS profile is supported on this cluster version.
+# OCP < 4.15 only supports Old, Intermediate, and Custom.
+if ! oc patch apiserver cluster --type merge --dry-run=server \
+  -p '{"spec":{"tlsSecurityProfile":{"type":"Modern","modern":{}}}}' 2>/dev/null; then
+  echo "SKIP: Modern TLS profile not supported on this cluster (OCP $(oc get clusterversion version -o jsonpath='{.status.desired.version}' 2>/dev/null || echo 'unknown'))"
+  echo "Supported types: Old, Intermediate, Custom"
+  echo "unsupported" > /tmp/modern-tls-unsupported
+  exit 0
+fi
+rm -f /tmp/modern-tls-unsupported
+
 # Patch APIServer to Modern profile
 oc patch apiserver cluster --type merge \
   -p '{"spec":{"tlsSecurityProfile":{"type":"Modern","modern":{}}}}'

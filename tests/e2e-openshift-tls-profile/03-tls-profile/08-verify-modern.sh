@@ -1,6 +1,12 @@
 #!/bin/bash
 set -euo pipefail
 
+# Skip if Modern TLS profile is not supported on this cluster
+if [ -f /tmp/modern-tls-unsupported ]; then
+  echo "SKIP: Modern TLS profile not supported on this cluster — skipping verification"
+  exit 0
+fi
+
 # Detect FIPS mode from machineconfig
 IS_FIPS=false
 if kubectl get machineconfig 99-master-fips -o jsonpath='{.spec.fips}' 2>/dev/null | grep -q true; then
