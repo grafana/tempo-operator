@@ -8,7 +8,7 @@ component: tempostack, tempomonolithic
 note: Bump Tempo to 2.10.7 and gateway to main-2026-07-01-c9e5509
 
 # One or more tracking issues related to the change
-issues: []
+issues: [1531]
 
 # (Optional) One or more lines of additional information to render under the primary note.
 # These lines will be padded with 2 spaces and then inserted directly into the document.
