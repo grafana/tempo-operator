@@ -29,16 +29,9 @@ esac
 export IMG_PREFIX=${IMG_PREFIX:-quay.io/$USER}
 export OPERATOR_VERSION=$(date +%s).0.0
 case "$PLATFORM" in
-    openshift-olm)
-        export OPERATOR_NAMESPACE=openshift-tempo-operator
-        ;;
-    *)
-        export OPERATOR_NAMESPACE=tempo-operator-system
-        ;;
-esac
-case "$PLATFORM" in
     openshift|openshift-olm)
         export BUNDLE_VARIANT=openshift
+        ;;
 esac
 
 log "Building operator image ${IMG_PREFIX}/tempo-operator:v${OPERATOR_VERSION}"
@@ -57,6 +50,8 @@ esac
 
 case "$PLATFORM" in
     openshift-olm)
+        export OPERATOR_NAMESPACE=openshift-tempo-operator
+
         log "Building and pushing bundle"
         make bundle bundle-build bundle-push
 
@@ -76,8 +71,5 @@ case "$PLATFORM" in
 esac
 
 make reset
-
-log "Waiting for operator rollout"
-kubectl -n "$OPERATOR_NAMESPACE" rollout status deployment/tempo-operator-controller
 
 log "Deploy complete"
