@@ -5,18 +5,22 @@ log() {
     echo -e "\033[1;34m==>\033[0m \033[1m$1\033[0m"
 }
 
-if kubectl api-resources --api-group=route.openshift.io &>/dev/null; then
-    PLATFORM=openshift
-elif kind get clusters &>/dev/null 2>&1; then
-    PLATFORM=kind
+PLATFORM=${PLATFORM:-auto}
+if [ "$PLATFORM" = "auto" ]; then
+    if kubectl api-resources --api-group=route.openshift.io &>/dev/null; then
+        PLATFORM=openshift
+    elif kind get clusters &>/dev/null 2>&1; then
+        PLATFORM=kind
+    else
+        PLATFORM=kubernetes
+    fi
+    log "Detected platform: $PLATFORM"
 else
-    PLATFORM=kubernetes
+    log "Using platform: $PLATFORM"
 fi
 
-log "Detected platform: $PLATFORM"
-
 case "$PLATFORM" in
-    kind|kubernetes)
+    kind|kubernetes|openshift)
         log "Installing cert-manager"
         make cert-manager
         ;;
@@ -24,12 +28,18 @@ esac
 
 export IMG_PREFIX=${IMG_PREFIX:-quay.io/$USER}
 export OPERATOR_VERSION=$(date +%s).0.0
-if [ "$PLATFORM" = "openshift" ]; then
-    export BUNDLE_VARIANT=openshift
-    export OPERATOR_NAMESPACE=openshift-tempo-operator
-else
-    export OPERATOR_NAMESPACE=tempo-operator-system
-fi
+case "$PLATFORM" in
+    openshift-olm)
+        export OPERATOR_NAMESPACE=openshift-tempo-operator
+        ;;
+    *)
+        export OPERATOR_NAMESPACE=tempo-operator-system
+        ;;
+esac
+case "$PLATFORM" in
+    openshift|openshift-olm)
+        export BUNDLE_VARIANT=openshift
+esac
 
 log "Building operator image ${IMG_PREFIX}/tempo-operator:v${OPERATOR_VERSION}"
 make docker-build
@@ -46,7 +56,7 @@ case "$PLATFORM" in
 esac
 
 case "$PLATFORM" in
-    openshift)
+    openshift-olm)
         log "Building and pushing bundle"
         make bundle bundle-build bundle-push
 
