@@ -47,6 +47,15 @@ spec:
         file: 06-tempo-rbac-sa-1-traces-verify.yaml
     - assert:
         file: 06-assert-tempo-rbac-sa-1-traces-verify.yaml
+    catch:
+    - podLogs:
+        selector: job-name=verify-traces-traceql-grpc-sa-1
+        namespace: chainsaw-test-rbac-1
+        tail: 50
+    - podLogs:
+        selector: job-name=verify-traces-traceql-http-sa-1
+        namespace: chainsaw-test-rbac-1
+        tail: 50
   - name: Verify kubeadmin can view traces from all projects
     try:
     - apply:
