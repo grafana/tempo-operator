@@ -48,12 +48,12 @@ spec:
   - name: The number of traces must be 0 post the retention period
     try:
     - apply:
-        file: verify-traces-jaeger-ret.yaml
+        file: 07-verify-traces-jaeger-ret.yaml
     - assert:
-        file: verify-traces-jaeger-ret-assert.yaml
+        file: 07-verify-traces-jaeger-ret-assert.yaml
   - name: The number of traces must be 0 post the retention period
     try:
     - apply:
-        file: verify-traces-grafana-ret.yaml
+        file: 08-verify-traces-grafana-ret.yaml
     - assert:
-        file: verify-traces-grafana-ret-assert.yaml
+        file: 08-verify-traces-grafana-ret-assert.yaml

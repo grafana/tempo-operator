@@ -10,17 +10,17 @@ spec:
   - name: Install env Secret and Minio storage
     try:
     - apply:
-        file: install-env-secret.yaml
+        file: 00-install-env-secret.yaml
     - apply:
-        file: install-storage.yaml
+        file: 00-install-storage.yaml
     - assert:
-        file: install-storage-assert.yaml
+        file: 00-install-storage-assert.yaml
   - name: Install TempoStack
     try:
     - apply:
-        file: install-tempostack.yaml
+        file: 01-install-tempostack.yaml
     - assert:
-        file: install-tempostack-assert.yaml
+        file: 01-install-tempostack-assert.yaml
   - name: Verify extraConfig in ConfigMap
     try:
     - script:

@@ -9,24 +9,24 @@ spec:
   - name: Create Tempo Monolithic instance
     try:
     - apply:
-        file: install-tempo.yaml
+        file: 00-install-tempo.yaml
     - assert:
-        file: install-tempo-assert.yaml
+        file: 00-install-tempo-assert.yaml
   - name: Generate traces
     try:
     - apply:
-        file: generate-traces.yaml
+        file: 01-generate-traces.yaml
     - assert:
-        file: generate-traces-assert.yaml
+        file: 01-generate-traces-assert.yaml
   - name: Verify traces using Jaeger UI
     try:
     - apply:
-        file: verify-traces-jaeger.yaml
+        file: 02-verify-traces-jaeger.yaml
     - assert:
-        file: verify-traces-jaeger-assert.yaml
+        file: 02-verify-traces-jaeger-assert.yaml
   - name: Verify traces from TraceQL
     try:
     - apply:
-        file: verify-traces-traceql.yaml
+        file: 03-verify-traces-traceql.yaml
     - assert:
-        file: verify-traces-traceql-assert.yaml
+        file: 03-verify-traces-traceql-assert.yaml

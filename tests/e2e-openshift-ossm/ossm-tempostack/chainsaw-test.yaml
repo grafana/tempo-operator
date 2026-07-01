@@ -10,43 +10,43 @@ spec:
   - name: Install OSSM
     try:
     - apply:
-        file: install-ossm.yaml
+        file: 00-install-ossm.yaml
     - assert:
-        file: install-ossm-assert.yaml
+        file: 00-install-ossm-assert.yaml
   - name: Install Minio object store
     try:
     - apply:
-        file: install-minio.yaml
+        file: 01-install-minio.yaml
     - assert:
-        file: install-minio-assert.yaml
+        file: 01-install-minio-assert.yaml
   - name: Install TempoStack
     try:
     - apply:
-        file: install-tempo.yaml
+        file: 02-install-tempo.yaml
     - assert:
-        file: install-tempo-assert.yaml
+        file: 02-install-tempo-assert.yaml
   - name: Update Kiali config
     try:
     - patch:
-        file: update-kiali.yaml
+        file: 03-update-kiali.yaml
     - sleep:
         duration: 10s
     - assert:
-        file: update-kiali-assert.yaml
+        file: 03-update-kiali-assert.yaml
   - name: Enable OSSM Tempo provider
     try:
     - apply:
-        file: apply-telemetry-cr.yaml
+        file: 04-apply-telemetry-cr.yaml
     - sleep:
         duration: 10s
     - assert:
-        file: apply-telemetry-cr-assert.yaml
+        file: 04-apply-telemetry-cr-assert.yaml
   - name: Install Bookinfo app
     try:
     - apply:
-        file: install-bookinfo.yaml
+        file: 05-install-bookinfo.yaml
     - assert:
-        file: install-bookinfo-assert.yaml
+        file: 05-install-bookinfo-assert.yaml
   - name: Generate traces from the bookinfo app
     try:
     - script:
@@ -59,7 +59,7 @@ spec:
   - name: Check traces in Kiali
     try:
     - apply:
-        file: verify-traces.yaml
+        file: 07-verify-traces.yaml
     - assert:
         timeout: 10m
-        file: verify-traces-assert.yaml
+        file: 07-verify-traces-assert.yaml

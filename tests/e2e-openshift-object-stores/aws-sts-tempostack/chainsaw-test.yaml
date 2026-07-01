@@ -15,13 +15,13 @@ spec:
         timeout: 2m
         content: ./aws-sts-s3-create.sh tmstack chainsaw-awssts-tempo
     - assert:
-        file: aws-sts-s3-create-assert.yaml
+        file: 00-aws-sts-s3-create-assert.yaml
   - name: Install TempoStack
     try:
     - apply:
-        file: install-tempostack.yaml
+        file: 01-install-tempostack.yaml
     - assert:
-        file: install-tempostack-assert.yaml
+        file: 01-install-tempostack-assert.yaml
   - name: Wait for the TempoStack to be ready
     try:
     - script:
@@ -30,15 +30,15 @@ spec:
   - name: Generate traces
     try:
     - apply:
-        file: generate-traces.yaml
+        file: 03-generate-traces.yaml
     - assert:
-        file: generate-traces-assert.yaml
+        file: 03-generate-traces-assert.yaml
   - name: Verify traces
     try:
     - apply:
-        file: verify-traces.yaml
+        file: 04-verify-traces.yaml
     - assert:
-        file: verify-traces-assert.yaml
+        file: 04-verify-traces-assert.yaml
     cleanup:
     - script:
         timeout: 2m

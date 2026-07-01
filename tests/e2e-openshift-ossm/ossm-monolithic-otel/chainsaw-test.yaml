@@ -9,43 +9,43 @@ spec:
   - name: Install OSSM
     try:
     - apply:
-        file: install-ossm.yaml
+        file: 00-install-ossm.yaml
     - assert:
-        file: install-ossm-assert.yaml
+        file: 00-install-ossm-assert.yaml
   - name: Install TempoStack
     try:
     - apply:
-        file: install-tempo.yaml
+        file: 01-install-tempo.yaml
     - assert:
-        file: install-tempo-assert.yaml
+        file: 01-install-tempo-assert.yaml
   - name: Update Kiali config
     try:
     - patch:
-        file: update-kiali.yaml
+        file: 02-update-kiali.yaml
     - sleep:
         duration: 10s
     - assert:
-        file: update-kiali-assert.yaml
+        file: 02-update-kiali-assert.yaml
   - name: Install OTEL collector
     try:
     - apply: 
-        file: install-otel-collector.yaml
+        file: 03-install-otel-collector.yaml
     - assert:
-        file: install-otel-collector-assert.yaml
+        file: 03-install-otel-collector-assert.yaml
   - name: Enable OSSM Tempo provider
     try:
     - apply:
-        file: apply-telemetry-cr.yaml
+        file: 04-apply-telemetry-cr.yaml
     - sleep:
         duration: 10s
     - assert:
-        file: apply-telemetry-cr-assert.yaml
+        file: 04-apply-telemetry-cr-assert.yaml
   - name: Install Bookinfo app
     try:
     - apply:
-        file: install-bookinfo.yaml
+        file: 05-install-bookinfo.yaml
     - assert:
-        file: install-bookinfo-assert.yaml
+        file: 05-install-bookinfo-assert.yaml
   - name: Generate traces from the bookinfo app
     try:
     - script:
@@ -58,18 +58,18 @@ spec:
   - name: Check traces in Kiali
     try:
     - apply:
-        file: verify-traces.yaml
+        file: 07-verify-traces.yaml
     - assert:
-        file: verify-traces-assert.yaml
+        file: 07-verify-traces-assert.yaml
   - name: Generate traces and send it to OTEL collector via OTLP GRPC and HTTP
     try:
     - apply:
-        file: generate-traces-otel.yaml
+        file: 08-generate-traces-otel.yaml
     - assert:
-        file: generate-traces-otel-assert.yaml
+        file: 08-generate-traces-otel-assert.yaml
   - name: Verify the traces sent to OTEL collector in Tempo Monolithic instance.
     try:
     - apply: 
-        file: verify-traces-otel.yaml
+        file: 09-verify-traces-otel.yaml
     - assert:
-        file: verify-traces-otel-assert.yaml
+        file: 09-verify-traces-otel-assert.yaml
