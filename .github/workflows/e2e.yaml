@@ -116,15 +116,25 @@ jobs:
         make chainsaw olm-install
 
     - name: Build and push operator and bundle image to local container registry
+      id: build
       run: |
+        LATEST_VERSION=$(curl -sS --max-time 10 \
+          "https://operatorhub.io/api/operator?packageName=tempo-operator" \
+          | jq -r '.operator.version // empty' 2>/dev/null) || true
+
+        if [ -z "$LATEST_VERSION" ]; then
+          echo "::warning::OperatorHub API is unavailable, skipping upgrade tests"
+          exit 0
+        fi
+
         make opm
-        LATEST_VERSION="v$(curl -sS "https://operatorhub.io/api/operator?packageName=tempo-operator" | jq -r .operator.version)"
-        export LATEST_VERSION
-        export BUNDLE_IMGS=ghcr.io/grafana/tempo-operator/tempo-operator-bundle:${LATEST_VERSION},${IMG_PREFIX}/tempo-operator-bundle:v${OPERATOR_VERSION}
+        export BUNDLE_IMGS=ghcr.io/grafana/tempo-operator/tempo-operator-bundle:v${LATEST_VERSION},${IMG_PREFIX}/tempo-operator-bundle:v${OPERATOR_VERSION}
         make bundle docker-build docker-push bundle-build bundle-push catalog-build catalog-push
+        echo "run-upgrade=true" >> "$GITHUB_OUTPUT"
       env:
         IMG_PREFIX: localregistry:5000
         OPERATOR_VERSION: 100.0.0
 
     - name: Run tests
+      if: steps.build.outputs.run-upgrade == 'true'
       run: make e2e-upgrade
