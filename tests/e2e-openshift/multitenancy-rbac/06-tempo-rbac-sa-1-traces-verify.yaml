@@ -142,7 +142,9 @@ spec:
                               --data-urlencode 'q={ resource.service.name="http-rbac-1" }' | jq -r '.traces[0].traceID')
 
               echo "Use the trace ID to fetch the complete trace"
+              # Using zstd encoding here to simulate a modern browser
               traceOutput=$(curl -G --header "Authorization: Bearer $token" \
+                                    --header "Accept-Encoding: zstd" \
                                     --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
                                     https://tempo-simplst-gateway.chainsaw-rbac.svc:8080/api/traces/v1/dev/tempo/api/traces/$traceID)
 
@@ -205,4 +207,14 @@ spec:
                       echo "Trace output for service http-rbac-2 does not contain: $searchString"
                   fi
               done
+
+              echo "Verify that the /api/v2/traces endpoint returns 403"
+              http_code=$(curl -s -o /dev/null -w "%{http_code}" \
+                --header "Authorization: Bearer $token" \
+                --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
+                https://tempo-simplst-gateway.chainsaw-rbac.svc:8080/api/traces/v1/dev/tempo/api/v2/traces/$traceID)
+              if [[ "$http_code" != "403" ]]; then
+                echo "Expected 403 for /api/v2/traces, got $http_code"
+                exit 1
+              fi
       restartPolicy: Never
