@@ -7,7 +7,7 @@ log() {
 
 PLATFORM=${PLATFORM:-auto}
 if [ "$PLATFORM" = "auto" ]; then
-    if kubectl api-resources --api-group=route.openshift.io &>/dev/null; then
+    if kubectl get clusterversion.config.openshift.io &>/dev/null; then
         PLATFORM=openshift
     elif kind get clusters &>/dev/null 2>&1; then
         PLATFORM=kind
