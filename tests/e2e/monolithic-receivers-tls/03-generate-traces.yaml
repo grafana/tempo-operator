@@ -7,7 +7,7 @@ spec:
     spec:
       containers:
         - name: telemetrygen
-          image: ghcr.io/open-telemetry/opentelemetry-collector-contrib/telemetrygen:v0.92.0
+          image: ghcr.io/open-telemetry/opentelemetry-collector-contrib/telemetrygen:v0.135.0
           args:
             - traces
             - --otlp-endpoint=opentelemetry-collector:4317
@@ -25,7 +25,7 @@ spec:
     spec:
       containers:
         - name: telemetrygen
-          image: ghcr.io/open-telemetry/opentelemetry-collector-contrib/telemetrygen:v0.92.0
+          image: ghcr.io/open-telemetry/opentelemetry-collector-contrib/telemetrygen:v0.135.0
           args:
             - traces
             - --otlp-endpoint=opentelemetry-collector:4318
