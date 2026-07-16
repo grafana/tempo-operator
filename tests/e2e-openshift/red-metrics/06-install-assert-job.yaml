@@ -7,7 +7,7 @@ spec:
     spec:
       containers:
         - name: verify-metrics
-          image: registry.access.redhat.com/ubi9/ubi:9.1
+          image: ghcr.io/grafana/tempo-operator/test-utils:main
           command:
             - /bin/bash
             - -eux

@@ -8,8 +8,9 @@ spec:
     spec:
       containers:
       - name: telemetrygen
-        image: ghcr.io/open-telemetry/opentelemetry-collector-contrib/telemetrygen:v0.92.0
-        args:
+        image: ghcr.io/grafana/tempo-operator/test-utils:main
+        command:
+        - telemetrygen
         - traces
         - --otlp-endpoint=dev-collector:4317
         - --service=grpc
@@ -27,8 +28,9 @@ spec:
     spec:
       containers:
         - name: telemetrygen
-          image: ghcr.io/open-telemetry/opentelemetry-collector-contrib/telemetrygen:v0.92.0
-          args:
+          image: ghcr.io/grafana/tempo-operator/test-utils:main
+          command:
+            - telemetrygen
             - traces
             - --otlp-endpoint=dev-collector:4318
             - --otlp-http
@@ -47,8 +49,9 @@ spec:
     spec:
       containers:
       - name: telemetrygen
-        image: ghcr.io/open-telemetry/opentelemetry-collector-contrib/telemetrygen:v0.92.0
-        args:
+        image: ghcr.io/grafana/tempo-operator/test-utils:main
+        command:
+        - telemetrygen
         - traces
         - --otlp-endpoint=dev-mono-collector:4317
         - --service=grpc-mono
@@ -66,8 +69,9 @@ spec:
     spec:
       containers:
         - name: telemetrygen
-          image: ghcr.io/open-telemetry/opentelemetry-collector-contrib/telemetrygen:v0.92.0
-          args:
+          image: ghcr.io/grafana/tempo-operator/test-utils:main
+          command:
+            - telemetrygen
             - traces
             - --otlp-endpoint=dev-mono-collector:4318
             - --otlp-http

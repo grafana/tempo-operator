@@ -94,7 +94,7 @@ spec:
               value: tempo
             - name: MINIO_SECRET_KEY
               value: supersecret
-          image: quay.io/minio/minio:latest
+          image: ghcr.io/grafana/tempo-operator/test-utils:main
           name: minio
           ports:
             - containerPort: 9000
@@ -283,8 +283,9 @@ spec:
     spec:
       containers:
       - name: telemetrygen
-        image: ghcr.io/open-telemetry/opentelemetry-collector-contrib/telemetrygen:v0.92.0
-        args:
+        image: ghcr.io/grafana/tempo-operator/test-utils:main
+        command:
+        - telemetrygen
         - traces
         - --otlp-endpoint=dev-collector:4317
         - --otlp-insecure

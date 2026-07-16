@@ -7,7 +7,7 @@ This directory contains end-to-end tests for TLS profile management in the Tempo
 - OpenShift cluster with OLM-managed Tempo Operator
 - `oc` and `kubectl` CLI tools
 - Chainsaw test runner (`chainsaw`)
-- The `tls-scanner` image (`quay.io/rhn_support_ikanse/tls-scanner:latest`)
+- The `tls-scanner` image (`ghcr.io/grafana/tempo-operator/test-utils:main`)
 
 ## Running the Tests
 
