@@ -1,0 +1,63 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoStack
+metadata:
+  name: foo
+spec:
+  storage:
+    secret:
+      type: s3
+      name: minio
+  storageSize: 200M
+  template:
+    gateway:
+      enabled: true
+  tenants:
+    mode: static
+    authentication:
+      - tenantName: tenant1
+        tenantId: tenant1
+        oidc:
+          issuerURL: http://hydra:4444
+          redirectURL: http://tempo-foo-gateway.svc:8080/oidc/tenant1/callback
+          secret:
+            name: tenant1-secret
+    authorization:
+      roleBindings:
+      - name: test
+        roles:
+        - read-write
+        subjects:
+        - kind: user
+          name: tenant1-client
+      roles:
+      - name: read-write
+        permissions:
+        - read
+        - write
+        resources:
+        - traces
+        tenants:
+        - tenant1
+---
+# Allow the gateway to reach Hydra.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: tempo-foo-gateway-oidc
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: gateway
+      app.kubernetes.io/instance: foo
+      app.kubernetes.io/managed-by: tempo-operator
+      app.kubernetes.io/name: tempo
+  policyTypes:
+  - Egress
+  egress:
+  - ports:
+    - port: 4444
+      protocol: TCP
+    to:
+    - podSelector:
+        matchLabels:
+          app: hydra

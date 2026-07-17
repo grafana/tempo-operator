@@ -1,0 +1,40 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: verify-traces
+spec:
+  template:
+    spec:
+      containers:
+      - name: verify-traces
+        image: ghcr.io/grafana/tempo-operator/test-utils:main
+        command: ["/bin/bash", "-eux", "-c"]
+        args:
+        - |
+          curl -sS \
+            --user tenant1-client:ZXhhbXBsZS1hcHAtc2VjcmV0 \
+            --data grant_type=client_credentials \
+            --data audience=tenant1-client \
+            http://hydra:4444/oauth2/token \
+            | tee /tmp/token.out
+
+          token=$(jq -r .access_token /tmp/token.out)
+
+          for i in $(seq 1 30); do
+            curl -sS -G \
+              --header "Authorization: Bearer $token" \
+              http://tempo-foo-gateway:8080/api/traces/v1/tenant1/tempo/api/search \
+              --data-urlencode 'q={ resource.service.name="test-service" }' \
+              | tee /tmp/tempo.out
+
+            num_traces=$(jq ".traces | length" /tmp/tempo.out)
+            if [ "$num_traces" -gt "0" ]; then
+              exit 0
+            fi
+
+            sleep 2
+          done
+
+          echo "No traces found after 30 retries"
+          exit 1
+      restartPolicy: Never

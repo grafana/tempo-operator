@@ -1,39 +1,6 @@
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  labels:
-    app: dex
-  name: dex
-spec:
-  selector:
-    matchLabels:
-      app: dex
-  template:
-    metadata:
-      labels:
-        app: dex
-    spec:
-      containers:
-      - args:
-        - dex
-        - serve
-        - /data/dex/dex.yaml
-        # How to build this image: https://gist.github.com/iblancasa/bc5bae33fa14736b367716205229defb
-        # TODO: https://github.com/grafana/tempo-operator/issues/643
-        image: ghcr.io/iblancasa/dex:v2.37.0
-        ports:
-        - containerPort: 5556
-          name: public
-          protocol: TCP
-        volumeMounts:
-        - mountPath: /data/dex/
-          name: dex-config
-          readOnly: true
-      volumes:
-      - configMap:
-          defaultMode: 420
-          name: dex-config
-        name: dex-config
+  name: minio
 status:
   readyReplicas: 1
