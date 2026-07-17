@@ -1,0 +1,49 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: generate-traces
+spec:
+  template:
+    spec:
+      containers:
+      - name: generate-traces
+        image: ghcr.io/grafana/tempo-operator/test-utils:main
+        command: ["/bin/bash", "-eux", "-c"]
+        args:
+        - |
+          curl -sS \
+            --user tenant1-client:ZXhhbXBsZS1hcHAtc2VjcmV0 \
+            --data grant_type=client_credentials \
+            --data audience=tenant1-client \
+            http://hydra:4444/oauth2/token \
+            | tee /tmp/token.out
+
+          token=$(jq -r .access_token /tmp/token.out)
+
+          traceid=$(head -c 16 /dev/urandom | od -An -tx1 | tr -d ' \n')
+          spanid=$(head -c 8 /dev/urandom | od -An -tx1 | tr -d ' \n')
+          now=$(date +%s)000000000
+          end=$(($(date +%s) + 1))000000000
+
+          curl -sS -w "\nHTTP status: %{http_code}\n" \
+            --header "Authorization: Bearer $token" \
+            --header "Content-Type: application/json" \
+            http://tempo-foo-gateway:8080/api/traces/v1/tenant1/v1/traces \
+            --data '{
+              "resourceSpans": [{
+                "resource": {"attributes": [{"key": "service.name", "value": {"stringValue": "test-service"}}]},
+                "scopeSpans": [{
+                  "spans": [{
+                    "traceId": "'"$traceid"'",
+                    "spanId": "'"$spanid"'",
+                    "name": "test-span",
+                    "kind": 2,
+                    "startTimeUnixNano": "'"$now"'",
+                    "endTimeUnixNano": "'"$end"'",
+                    "status": {}
+                  }]
+                }]
+              }]
+            }'
+      restartPolicy: Never
+  backoffLimit: 4
