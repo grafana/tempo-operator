@@ -7,7 +7,7 @@ RUN go install github.com/open-telemetry/opentelemetry-collector-contrib/cmd/tel
 RUN go install github.com/openshift/tls-scanner/cmd/tls-scanner@b6d99c72ebb7d781fe234ba93c972c787cc980cf
 
 FROM alpine:3.23@sha256:25109184c71bdad752c8312a8623239686a9a2071e8825f20acb8f2198c3f659
-RUN apk add --no-cache coreutils procps curl jq bash minio nmap
+RUN apk add --no-cache coreutils procps curl jq bash minio nmap nmap-scripts
 COPY --from=builder /go/bin/hydra /usr/local/bin/hydra
 COPY --from=builder /go/bin/telemetrygen /usr/local/bin/telemetrygen
 COPY --from=builder /go/bin/tls-scanner /usr/local/bin/tls-scanner
