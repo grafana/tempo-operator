@@ -106,7 +106,7 @@ spec:
               value: tempo
             - name: MINIO_SECRET_KEY
               value: supersecret
-          image: quay.io/minio/minio:latest
+          image: ghcr.io/grafana/tempo-operator/test-utils:main
           name: minio
           ports:
             - containerPort: 9000
@@ -319,7 +319,7 @@ TEMPO_NAMESPACE=$(oc get pods -A \
 # Execute comprehensive must-gather
 oc adm must-gather \
   --dest-dir=$MUST_GATHER_DIR \
-  --image=quay.io/rhn_support_ikanse/tempo-must-gather:latest \
+  --image=ghcr.io/grafana/tempo-operator/must-gather:latest \
   -- /usr/bin/must-gather --operator-namespace $TEMPO_NAMESPACE
 ```
 
@@ -686,7 +686,7 @@ kind: Tenant
 metadata:
   name: tempo-storage
 spec:
-  image: quay.io/minio/minio:latest
+  image: ghcr.io/grafana/tempo-operator/test-utils:main
   pools:
   - servers: 4
     volumesPerServer: 4

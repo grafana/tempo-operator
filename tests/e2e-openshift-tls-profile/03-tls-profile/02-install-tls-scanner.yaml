@@ -54,7 +54,7 @@ spec:
   serviceAccountName: tls-scanner
   containers:
   - name: tls-scanner
-    image: quay.io/rhn_support_ikanse/tls-scanner:latest
+    image: ghcr.io/grafana/tempo-operator/test-utils:main
     command: ["sleep", "infinity"]
     securityContext:
       privileged: true

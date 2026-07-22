@@ -132,14 +132,14 @@ TEMPO_NAMESPACE=$(oc get pods -A \
 # Execute must-gather
 oc adm must-gather \
   --dest-dir=$MUST_GATHER_DIR \
-  --image=quay.io/rhn_support_ikanse/tempo-must-gather:latest \
+  --image=ghcr.io/grafana/tempo-operator/must-gather:latest \
   -- /usr/bin/must-gather --operator-namespace $TEMPO_NAMESPACE
 ```
 
 **Must-Gather Execution Details**:
 
 #### Must-Gather Image
-- **Container Image**: `quay.io/rhn_support_ikanse/tempo-must-gather:latest`
+- **Container Image**: `ghcr.io/grafana/tempo-operator/must-gather:latest`
 - **Purpose**: Specialized data collection for Tempo Operator
 - **Scope**: Comprehensive resource and configuration collection
 
@@ -439,7 +439,7 @@ OUTPUT_DIR="/support-data/${CLUSTER_NAME}-${TIMESTAMP}"
 # Run must-gather with automatic cleanup
 oc adm must-gather \
   --dest-dir="$OUTPUT_DIR" \
-  --image=quay.io/rhn_support_ikanse/tempo-must-gather:latest \
+  --image=ghcr.io/grafana/tempo-operator/must-gather:latest \
   -- /usr/bin/must-gather --all-namespaces
 
 # Create support bundle
@@ -463,7 +463,7 @@ spec:
         spec:
           containers:
           - name: health-check
-            image: quay.io/rhn_support_ikanse/tempo-must-gather:latest
+            image: ghcr.io/grafana/tempo-operator/must-gather:latest
             command:
             - /bin/bash
             - -c
@@ -474,7 +474,7 @@ spec:
               
               # Collect must-gather if issues detected
               if ! oc get tempomonolithic -A --no-headers | grep -q Ready; then
-                oc adm must-gather --image=quay.io/rhn_support_ikanse/tempo-must-gather:latest
+                oc adm must-gather --image=ghcr.io/grafana/tempo-operator/must-gather:latest
               fi
           restartPolicy: OnFailure
 ```
@@ -515,7 +515,7 @@ if [[ "$SEVERITY" == "critical" ]]; then
   TIMESTAMP=$(date +%Y%m%d-%H%M%S)
   oc adm must-gather \
     --dest-dir="/tmp/critical-${ALERT_NAME}-${TIMESTAMP}" \
-    --image=quay.io/rhn_support_ikanse/tempo-must-gather:latest
+    --image=ghcr.io/grafana/tempo-operator/must-gather:latest
     
   # Upload to support system or S3 bucket
   # Send notification to support team
@@ -558,7 +558,7 @@ oc get secret -n openshift-ingress | grep router-certs
 #### Image Pull Problems
 ```bash
 # Check must-gather image availability
-oc run test-must-gather --image=quay.io/rhn_support_ikanse/tempo-must-gather:latest --rm -it -- /bin/bash
+oc run test-must-gather --image=ghcr.io/grafana/tempo-operator/must-gather:latest --rm -it -- /bin/bash
 
 # Verify image registry access
 oc describe pod <must-gather-pod-name> | grep -A10 "Events:"

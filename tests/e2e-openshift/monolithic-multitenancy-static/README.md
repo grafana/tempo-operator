@@ -66,7 +66,7 @@ spec:
     spec:
       containers:
       - name: hydra
-        image: docker.io/oryd/hydra:v2.2.0
+        image: ghcr.io/grafana/tempo-operator/test-utils:main
         command: ["hydra", "serve", "all", "--dev", "--sqa-opt-out"]
         env:
         - name: DSN
@@ -744,7 +744,7 @@ spec:
     spec:
       containers:
       - name: hydra
-        image: docker.io/oryd/hydra:v2.2.0
+        image: ghcr.io/grafana/tempo-operator/test-utils:main
         env:
         - name: DSN
           value: postgres://user:password@postgres:5432/hydra

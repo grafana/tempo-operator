@@ -291,8 +291,9 @@ spec:
     spec:
       containers:
       - name: telemetrygen
-        image: ghcr.io/open-telemetry/opentelemetry-collector-contrib/telemetrygen:v0.92.0
-        args:
+        image: ghcr.io/grafana/tempo-operator/test-utils:main
+        command:
+        - telemetrygen
         - traces
         - --otlp-endpoint=dev-collector.chainsaw-mmo-rbac.svc:4317
         - --service=grpc-rbac-1
@@ -312,8 +313,9 @@ spec:
     spec:
       containers:
         - name: telemetrygen
-          image: ghcr.io/open-telemetry/opentelemetry-collector-contrib/telemetrygen:v0.92.0
-          args:
+          image: ghcr.io/grafana/tempo-operator/test-utils:main
+          command:
+            - telemetrygen
             - traces
             - --otlp-endpoint=dev-collector.chainsaw-mmo-rbac.svc:4318
             - --otlp-http

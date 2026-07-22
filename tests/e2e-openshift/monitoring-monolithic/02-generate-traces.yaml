@@ -7,8 +7,9 @@ spec:
     spec:
       containers:
       - name: telemetrygen
-        image: ghcr.io/open-telemetry/opentelemetry-collector-contrib/telemetrygen:v0.92.0
-        args:
+        image: ghcr.io/grafana/tempo-operator/test-utils:main
+        command:
+        - telemetrygen
         - traces
         - --otlp-endpoint=tempo-monitor:4317
         - --otlp-insecure

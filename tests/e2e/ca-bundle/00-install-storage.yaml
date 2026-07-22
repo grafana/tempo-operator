@@ -65,13 +65,13 @@ spec:
             - -c
             - |
               mkdir -p /storage/tempo && \
-              minio server --certs-dir=/root/.minio/certs /storage
+              minio server --certs-dir=/tmp/.minio/certs /storage
           env:
             - name: MINIO_ACCESS_KEY
               value: tempo
             - name: MINIO_SECRET_KEY
               value: supersecret
-          image: quay.io/minio/minio:latest
+          image: ghcr.io/grafana/tempo-operator/test-utils:main
           name: minio
           ports:
             - containerPort: 9000
@@ -79,7 +79,7 @@ spec:
             - mountPath: /storage
               name: storage
             - name: cert
-              mountPath: /root/.minio/certs
+              mountPath: /tmp/.minio/certs
       volumes:
         - name: storage
           emptyDir: {}
