@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	authorizationv1 "k8s.io/api/authorization/v1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
@@ -844,12 +845,12 @@ func TestDefault(t *testing.T) {
 					},
 					Template: v1alpha1.TempoTemplateSpec{
 						Compactor: v1alpha1.TempoComponentSpec{
-							Replicas:           ptr.To(int32(1)),
+							Replicas:           ptr.To(int32(2)), // pico defaults every component to 2 for HA
 							PodSecurityContext: defaultPodSecurityContext,
 						},
 						Distributor: v1alpha1.TempoDistributorSpec{
 							TempoComponentSpec: v1alpha1.TempoComponentSpec{
-								Replicas:           ptr.To(int32(1)),
+								Replicas:           ptr.To(int32(2)),
 								PodSecurityContext: defaultPodSecurityContext,
 							},
 							TLS: v1alpha1.TLSSpec{},
@@ -859,12 +860,12 @@ func TestDefault(t *testing.T) {
 							PodSecurityContext: defaultPodSecurityContext,
 						},
 						Querier: v1alpha1.TempoComponentSpec{
-							Replicas:           ptr.To(int32(1)),
+							Replicas:           ptr.To(int32(2)),
 							PodSecurityContext: defaultPodSecurityContext,
 						},
 						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
 							TempoComponentSpec: v1alpha1.TempoComponentSpec{
-								Replicas:           ptr.To(int32(1)),
+								Replicas:           ptr.To(int32(2)),
 								PodSecurityContext: defaultPodSecurityContext,
 							},
 							JaegerQuery: v1alpha1.JaegerQuerySpec{
@@ -873,8 +874,13 @@ func TestDefault(t *testing.T) {
 						},
 						Gateway: v1alpha1.TempoGatewaySpec{
 							TempoComponentSpec: v1alpha1.TempoComponentSpec{
-								Replicas:           ptr.To(int32(1)),
+								Replicas:           ptr.To(int32(2)),
 								PodSecurityContext: defaultPodSecurityContext,
+							},
+						},
+						MetricsGenerator: v1alpha1.TempoMetricsGeneratorSpec{
+							TempoComponentSpec: v1alpha1.TempoComponentSpec{
+								Replicas: ptr.To(int32(2)),
 							},
 						},
 					},
@@ -968,6 +974,72 @@ func TestDefault(t *testing.T) {
 			assert.Equal(t, test.expected, test.input)
 		})
 	}
+}
+
+func TestDefaultSizeReplicas(t *testing.T) {
+	defaulter := &Defaulter{ctrlConfig: configv1alpha1.ProjectConfig{Distribution: "upstream"}}
+
+	// componentReplicas runs the defaulter and returns the resolved replica count
+	// for each component, dereferencing the pointers for easy comparison.
+	componentReplicas := func(t *testing.T, spec v1alpha1.TempoStackSpec) map[string]int32 {
+		t.Helper()
+		tempo := &v1alpha1.TempoStack{
+			ObjectMeta: metav1.ObjectMeta{Name: "test"},
+			Spec:       spec,
+		}
+		require.NoError(t, defaulter.Default(context.Background(), tempo))
+		tpl := tempo.Spec.Template
+		return map[string]int32{
+			"distributor":    *tpl.Distributor.Replicas,
+			"ingester":       *tpl.Ingester.Replicas,
+			"querier":        *tpl.Querier.Replicas,
+			"query-frontend": *tpl.QueryFrontend.Replicas,
+			"compactor":      *tpl.Compactor.Replicas,
+			"gateway":        *tpl.Gateway.Replicas,
+		}
+	}
+
+	t.Run("small scales throughput-bound components", func(t *testing.T) {
+		got := componentReplicas(t, v1alpha1.TempoStackSpec{Size: v1alpha1.SizeSmall})
+		assert.Equal(t, map[string]int32{
+			"distributor":    3,
+			"ingester":       2, // quorum for RF=2
+			"querier":        3,
+			"query-frontend": 2,
+			"compactor":      2,
+			"gateway":        2,
+		}, got)
+	})
+
+	t.Run("medium scales throughput-bound components", func(t *testing.T) {
+		got := componentReplicas(t, v1alpha1.TempoStackSpec{Size: v1alpha1.SizeMedium})
+		assert.Equal(t, map[string]int32{
+			"distributor":    4,
+			"ingester":       2,
+			"querier":        5,
+			"query-frontend": 2,
+			"compactor":      3,
+			"gateway":        2,
+		}, got)
+	})
+
+	t.Run("no size keeps all components at a single replica", func(t *testing.T) {
+		got := componentReplicas(t, v1alpha1.TempoStackSpec{})
+		for component, replicas := range got {
+			assert.Equal(t, int32(1), replicas, "component %s should default to 1 without a size", component)
+		}
+	})
+
+	t.Run("explicit component replicas override the size default", func(t *testing.T) {
+		got := componentReplicas(t, v1alpha1.TempoStackSpec{
+			Size: v1alpha1.SizeMedium,
+			Template: v1alpha1.TempoTemplateSpec{
+				Querier: v1alpha1.TempoComponentSpec{Replicas: ptr.To(int32(1))},
+			},
+		})
+		assert.Equal(t, int32(1), got["querier"], "explicit querier replicas must win over the size default")
+		assert.Equal(t, int32(4), got["distributor"], "other components still follow the size default")
+	})
 }
 
 func TestDefaultMetricsGeneratorProcessors(t *testing.T) {

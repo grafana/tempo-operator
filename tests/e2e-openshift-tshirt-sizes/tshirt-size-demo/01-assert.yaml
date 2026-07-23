@@ -18,23 +18,33 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tempo-demo-distributor
+spec:
+  replicas: 1
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tempo-demo-querier
+spec:
+  replicas: 1
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tempo-demo-query-frontend
+spec:
+  replicas: 1
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tempo-demo-compactor
+spec:
+  replicas: 1
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tempo-demo-gateway
+spec:
+  replicas: 1
