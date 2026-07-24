@@ -140,18 +140,16 @@ echo "PASS: monolithic gateway:8090 TLS functional"
 MONO_GATEWAY_IP=$(kubectl get pod -n $NAMESPACE tempo-mono-0 -o jsonpath='{.status.podIP}')
 verify_nmap_tls_profile "$MONO_GATEWAY_IP" "8080,8090" intermediate "Monolithic Gateway"
 
-# --- 9. Internal gRPC TLS profile verification via -all-pods ---
-echo "=== Scanning all Tempo pods in $NAMESPACE ==="
-SCAN_OUTPUT=$(kubectl exec tls-scanner -n $NAMESPACE -- tls-scanner \
-  -all-pods \
-  -namespace-filter $NAMESPACE \
-  -json-file /tmp/intermediate-scan.json 2>&1) || true
-echo "$SCAN_OUTPUT"
+# --- 9. Internal gRPC TLS profile verification via targeted nmap ---
+# Use targeted nmap on specific pod IPs instead of -all-pods scan for reliability
+# (-all-pods output format may not include "Found TLS information" for all ports).
+echo "=== Targeted internal gRPC scan (Intermediate profile) ==="
 
-kubectl cp $NAMESPACE/tls-scanner:/tmp/intermediate-scan.json /tmp/intermediate-scan.json 2>/dev/null || true
+INGESTER_IP=$(kubectl get pod -n $NAMESPACE -l app.kubernetes.io/component=ingester -o jsonpath='{.items[0].status.podIP}')
+verify_nmap_tls_profile "$INGESTER_IP" "9095" intermediate "Ingester internal gRPC"
 
-# Verify internal gRPC TLS profile matches Intermediate on components with port 9095 (ingester, query-frontend)
-verify_tls_profile "$SCAN_OUTPUT" 9095 intermediate "Internal gRPC" 2
+QF_IP=$(kubectl get pod -n $NAMESPACE -l app.kubernetes.io/component=query-frontend -o jsonpath='{.items[0].status.podIP}')
+verify_nmap_tls_profile "$QF_IP" "9095" intermediate "Query-frontend internal gRPC"
 
 # --- 6. Operator webhook and metrics ---
 OPERATOR_NS="openshift-tempo-operator"
