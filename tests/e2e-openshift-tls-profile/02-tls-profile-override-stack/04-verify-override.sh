@@ -132,17 +132,15 @@ echo "PASS: gateway:8090 TLS functional"
 GATEWAY_IP=$(kubectl get pod -n $NAMESPACE -l app.kubernetes.io/component=gateway -o jsonpath='{.items[0].status.podIP}')
 verify_nmap_tls_profile "$GATEWAY_IP" "8080,8090" modern "Gateway (subscription TLS_PROFILE=Modern)"
 
-# --- 5. Internal gRPC TLS profile verification via -all-pods ---
-echo "=== Scanning all Tempo pods in $NAMESPACE ==="
-SCAN_OUTPUT=$(kubectl exec tls-scanner -n $NAMESPACE -- tls-scanner \
-  -all-pods \
-  -namespace-filter $NAMESPACE \
-  -json-file /tmp/override-scan.json 2>&1) || true
-echo "$SCAN_OUTPUT"
+# --- 5. Internal gRPC TLS profile verification via targeted nmap ---
+# Use targeted nmap on specific pod IPs instead of -all-pods scan for reliability
+# (-all-pods output format may not include "Found TLS information" for all ports).
+echo "=== Targeted internal gRPC scan (Modern profile from subscription TLS_PROFILE=Modern) ==="
 
-kubectl cp $NAMESPACE/tls-scanner:/tmp/override-scan.json /tmp/override-scan.json 2>/dev/null || true
+INGESTER_IP=$(kubectl get pod -n $NAMESPACE -l app.kubernetes.io/component=ingester -o jsonpath='{.items[0].status.podIP}')
+verify_nmap_tls_profile "$INGESTER_IP" "9095" modern "Ingester internal gRPC (subscription TLS_PROFILE=Modern)"
 
-# Internal gRPC (port 9095) uses Modern profile from subscription TLS_PROFILE=Modern
-verify_tls_profile "$SCAN_OUTPUT" 9095 modern "Internal gRPC (subscription TLS_PROFILE=Modern)" 2
+QF_IP=$(kubectl get pod -n $NAMESPACE -l app.kubernetes.io/component=query-frontend -o jsonpath='{.items[0].status.podIP}')
+verify_nmap_tls_profile "$QF_IP" "9095" modern "Query-frontend internal gRPC (subscription TLS_PROFILE=Modern)"
 
 echo "PASS: All TLS profile settings verified from subscription TLS_PROFILE=Modern - storage=VersionTLS13, gateway=Modern, internal gRPC=Modern, distributor receivers=1.3"
