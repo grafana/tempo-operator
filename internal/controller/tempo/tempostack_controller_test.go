@@ -17,7 +17,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/tools/record"
+	"k8s.io/client-go/tools/events"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -98,7 +98,7 @@ func TestReconcile(t *testing.T) {
 	reconciler := TempoStackReconciler{
 		Client:   k8sClient,
 		Scheme:   testScheme,
-		Recorder: record.NewFakeRecorder(1),
+		Recorder: events.NewFakeRecorder(1),
 		CtrlConfig: configv1alpha1.ProjectConfig{
 			Gates: configv1alpha1.FeatureGates{
 				TLSProfile: configv1alpha1.TLSProfileIntermediateType,
@@ -168,7 +168,7 @@ func TestReadyToConfigurationError(t *testing.T) {
 	reconciler := TempoStackReconciler{
 		Client:   k8sClient,
 		Scheme:   testScheme,
-		Recorder: record.NewFakeRecorder(1),
+		Recorder: events.NewFakeRecorder(1),
 		CtrlConfig: configv1alpha1.ProjectConfig{
 			Gates: configv1alpha1.FeatureGates{
 				TLSProfile: configv1alpha1.TLSProfileIntermediateType,
@@ -246,7 +246,7 @@ func TestConfigurationErrorToConfigurationError(t *testing.T) {
 	reconciler := TempoStackReconciler{
 		Client:   k8sClient,
 		Scheme:   testScheme,
-		Recorder: record.NewFakeRecorder(1),
+		Recorder: events.NewFakeRecorder(1),
 		CtrlConfig: configv1alpha1.ProjectConfig{
 			Gates: configv1alpha1.FeatureGates{
 				TLSProfile: configv1alpha1.TLSProfileIntermediateType,
@@ -314,7 +314,7 @@ func TestConfigurationErrorToReady(t *testing.T) {
 	reconciler := TempoStackReconciler{
 		Client:   k8sClient,
 		Scheme:   testScheme,
-		Recorder: record.NewFakeRecorder(1),
+		Recorder: events.NewFakeRecorder(1),
 		CtrlConfig: configv1alpha1.ProjectConfig{
 			Gates: configv1alpha1.FeatureGates{
 				TLSProfile: configv1alpha1.TLSProfileIntermediateType,
@@ -386,7 +386,7 @@ func TestReconcileGenericError(t *testing.T) {
 	reconciler := TempoStackReconciler{
 		Client:   k8sClient,
 		Scheme:   testScheme,
-		Recorder: record.NewFakeRecorder(1),
+		Recorder: events.NewFakeRecorder(1),
 		CtrlConfig: configv1alpha1.ProjectConfig{
 			Gates: configv1alpha1.FeatureGates{
 				TLSProfile: configv1alpha1.TLSProfileIntermediateType,
@@ -421,7 +421,7 @@ func TestStorageCustomCA(t *testing.T) {
 	reconciler := TempoStackReconciler{
 		Client:   k8sClient,
 		Scheme:   testScheme,
-		Recorder: record.NewFakeRecorder(1),
+		Recorder: events.NewFakeRecorder(1),
 		CtrlConfig: configv1alpha1.ProjectConfig{
 			Gates: configv1alpha1.FeatureGates{
 				TLSProfile: configv1alpha1.TLSProfileIntermediateType,
@@ -537,7 +537,7 @@ func TestTLSEnable(t *testing.T) {
 	reconciler := TempoStackReconciler{
 		Client:   k8sClient,
 		Scheme:   testScheme,
-		Recorder: record.NewFakeRecorder(1),
+		Recorder: events.NewFakeRecorder(1),
 		CtrlConfig: configv1alpha1.ProjectConfig{
 			Gates: configv1alpha1.FeatureGates{
 				BuiltInCertManagement: configv1alpha1.BuiltInCertManagement{
@@ -653,7 +653,7 @@ func TestPruneIngress(t *testing.T) {
 	reconciler := TempoStackReconciler{
 		Client:   k8sClient,
 		Scheme:   testScheme,
-		Recorder: record.NewFakeRecorder(1),
+		Recorder: events.NewFakeRecorder(1),
 		CtrlConfig: configv1alpha1.ProjectConfig{
 			Gates: configv1alpha1.FeatureGates{
 				TLSProfile: configv1alpha1.TLSProfileIntermediateType,
@@ -727,7 +727,7 @@ func TestPruneMetricsGenerator(t *testing.T) {
 	reconciler := TempoStackReconciler{
 		Client:   k8sClient,
 		Scheme:   testScheme,
-		Recorder: record.NewFakeRecorder(1),
+		Recorder: events.NewFakeRecorder(1),
 		CtrlConfig: configv1alpha1.ProjectConfig{
 			Gates: configv1alpha1.FeatureGates{
 				TLSProfile: configv1alpha1.TLSProfileIntermediateType,
@@ -865,7 +865,7 @@ func TestK8SGatewaySecret(t *testing.T) {
 	reconciler := TempoStackReconciler{
 		Client:   k8sClient,
 		Scheme:   testScheme,
-		Recorder: record.NewFakeRecorder(1),
+		Recorder: events.NewFakeRecorder(1),
 		CtrlConfig: configv1alpha1.ProjectConfig{
 			Gates: configv1alpha1.FeatureGates{
 				BuiltInCertManagement: configv1alpha1.BuiltInCertManagement{
@@ -966,7 +966,7 @@ func TestOpenShiftMode_finalizer(t *testing.T) {
 	reconciler := TempoStackReconciler{
 		Client:   k8sClient,
 		Scheme:   testScheme,
-		Recorder: record.NewFakeRecorder(1),
+		Recorder: events.NewFakeRecorder(1),
 		CtrlConfig: configv1alpha1.ProjectConfig{
 			DefaultImages: configv1alpha1.ImagesSpec{
 				TempoGatewayOpa: "opa:latest",
@@ -1117,7 +1117,7 @@ func TestUpgrade(t *testing.T) {
 	reconciler := TempoStackReconciler{
 		Client:   k8sClient,
 		Scheme:   testScheme,
-		Recorder: record.NewFakeRecorder(1),
+		Recorder: events.NewFakeRecorder(1),
 		CtrlConfig: configv1alpha1.ProjectConfig{
 			DefaultImages: configv1alpha1.ImagesSpec{
 				Tempo: "docker.io/grafana/tempo:1.5.0",

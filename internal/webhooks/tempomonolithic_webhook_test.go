@@ -12,7 +12,6 @@ import (
 	authorizationv1 "k8s.io/api/authorization/v1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
@@ -455,7 +454,7 @@ func TestConflictTempoStackValidation(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		input    runtime.Object
+		input    *v1alpha1.TempoMonolithic
 		expected field.ErrorList
 		client   client.Client
 	}{

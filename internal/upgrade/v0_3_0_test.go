@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"k8s.io/client-go/tools/record"
+	"k8s.io/client-go/tools/events"
 
 	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/version"
@@ -39,7 +39,7 @@ func TestRemoveDeprecatedFields(t *testing.T) {
 	version.OperatorVersion = "0.3.0"
 	upgrade := &Upgrade{
 		Client:   k8sClient,
-		Recorder: record.NewFakeRecorder(1),
+		Recorder: events.NewFakeRecorder(1),
 		Version:  version,
 		Log:      logger,
 	}

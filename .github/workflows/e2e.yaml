@@ -25,7 +25,7 @@ jobs:
           - name: min
             kube-version: "1.25"
           - name: max
-            kube-version: "1.34"
+            kube-version: "1.36"
 
     steps:
     - name: Checkout
@@ -50,6 +50,12 @@ jobs:
         make prepare-e2e e2e test-operator-metrics KUBE_VERSION="$KUBE_VERSION"
         make e2e-reconcile-count
 
+    - name: Collect diagnostics on failure
+      if: failure()
+      run: |
+        echo "=== Operator logs ==="
+        kubectl logs -n tempo-operator-system deployment/tempo-operator-controller --tail=100
+
 
   upgrade-tests:
     name: Upgrade tests ${{ matrix.name }}
@@ -58,7 +64,7 @@ jobs:
       matrix:
         include:
           - name: max
-            kube-version: "1.34"
+            kube-version: "1.36"
 
     steps:
     - name: Checkout
@@ -140,3 +146,9 @@ jobs:
     - name: Run tests
       if: steps.build.outputs.run-upgrade == 'true'
       run: make e2e-upgrade
+
+    - name: Collect diagnostics on failure
+      if: failure()
+      run: |
+        echo "=== Operator logs ==="
+        kubectl logs -n tempo-operator-system deployment/tempo-operator-controller --tail=100

@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/tools/record"
+	"k8s.io/client-go/tools/events"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
@@ -59,7 +59,7 @@ func TestUpgradeTempoStackToLatest(t *testing.T) {
 
 	upgrade := &Upgrade{
 		Client:   k8sClient,
-		Recorder: record.NewFakeRecorder(1),
+		Recorder: events.NewFakeRecorder(1),
 		CtrlConfig: configv1alpha1.ProjectConfig{
 			DefaultImages: configv1alpha1.ImagesSpec{
 				Tempo:           "docker.io/grafana/tempo:latest",
@@ -112,7 +112,7 @@ func TestUpgradeTempoMonolithicToLatest(t *testing.T) {
 
 	upgrade := &Upgrade{
 		Client:     k8sClient,
-		Recorder:   record.NewFakeRecorder(1),
+		Recorder:   events.NewFakeRecorder(1),
 		CtrlConfig: ctrlConfig,
 		Version:    currentV,
 		Log:        logger,
@@ -157,7 +157,7 @@ func TestSkipUpgrade(t *testing.T) {
 
 			upgrade := &Upgrade{
 				Client:   k8sClient,
-				Recorder: record.NewFakeRecorder(1),
+				Recorder: events.NewFakeRecorder(1),
 				CtrlConfig: configv1alpha1.ProjectConfig{
 					DefaultImages: configv1alpha1.ImagesSpec{
 						Tempo:           "docker.io/grafana/tempo:latest",

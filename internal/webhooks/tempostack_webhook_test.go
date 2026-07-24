@@ -13,7 +13,6 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/utils/ptr"
@@ -2418,14 +2417,9 @@ func TestValidatorValidate(t *testing.T) {
 	}
 	tt := []struct {
 		name     string
-		input    runtime.Object
+		input    *v1alpha1.TempoStack
 		expected error
 	}{
-		{
-			name:     "not a tempo object",
-			input:    new(corev1.Pod),
-			expected: apierrors.NewBadRequest("expected a TempoStack object but got *v1.Pod"),
-		},
 		{
 			name: "pass all validators",
 			input: &v1alpha1.TempoStack{
@@ -2720,7 +2714,7 @@ func TestWarning(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		input    runtime.Object
+		input    *v1alpha1.TempoStack
 		expected admission.Warnings
 		client   client.Client
 	}{
@@ -2881,7 +2875,7 @@ func TestConflictMonolithicValidation(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		input    runtime.Object
+		input    *v1alpha1.TempoStack
 		expected field.ErrorList
 		client   client.Client
 	}{

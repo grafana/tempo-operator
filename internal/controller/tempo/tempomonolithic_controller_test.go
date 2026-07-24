@@ -15,7 +15,7 @@ import (
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/tools/record"
+	"k8s.io/client-go/tools/events"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -126,7 +126,7 @@ func TestOpenShiftModeMonolithic_finalizer(t *testing.T) {
 	reconciler := TempoMonolithicReconciler{
 		Client:   k8sClient,
 		Scheme:   testScheme,
-		Recorder: record.NewFakeRecorder(1),
+		Recorder: events.NewFakeRecorder(1),
 		CtrlConfig: configv1alpha1.ProjectConfig{
 			DefaultImages: mockDefaultImages,
 			Gates: configv1alpha1.FeatureGates{
