@@ -1,8 +1,9 @@
 # This was original taken from: https://raw.githubusercontent.com/open-telemetry/opentelemetry-operator/main/.github/workflows/changelog.yaml
 # This action requires that any PR targeting the main branch should add a
 # yaml file to the ./.chloggen/ directory. If a CHANGELOG entry is not required,
-# or if performing maintance on the Changelog, add either "[chore]" to the title of
+# or if performing maintenance on the Changelog, add either "[chore]" to the title of
 # the pull request or add the "Skip Changelog" label to disable this action.
+# PRs from bots (dependabot, renovate, tempooperatorbot) are also skipped.
 
 name: changelog
 
@@ -28,12 +29,11 @@ jobs:
   changelog:
     runs-on: ubuntu-22.04
     if: |
-      !contains(github.event.pull_request.labels.*.name, 'dependencies') &&
+      github.event.pull_request.user.login != 'dependabot[bot]' &&
+      github.event.pull_request.user.login != 'renovate-sh-app[bot]' &&
+      github.event.pull_request.user.login != 'tempooperatorbot' &&
       !contains(github.event.pull_request.labels.*.name, 'Skip Changelog') &&
-      !contains(github.event.pull_request.title, 'fix(deps)') &&
-      !contains(github.event.pull_request.title, 'chore(deps)') &&
-      !contains(github.event.pull_request.title, '[chore]') &&
-      !contains(github.event.pull_request.title, 'Prepare release')
+      !contains(github.event.pull_request.title, '[chore]')
 
     steps:
       - name: Checkout
