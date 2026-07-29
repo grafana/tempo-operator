@@ -20,11 +20,9 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
-	ctrlbuilder "sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
-	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
@@ -416,39 +414,39 @@ func (r *TempoMonolithicReconciler) findTempoMonolithicForStorageSecret(ctx cont
 func (r *TempoMonolithicReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	builder := ctrl.NewControllerManagedBy(mgr).
 		Named("tempomonolithic").
-		For(&v1alpha1.TempoMonolithic{}).
-		Owns(&corev1.ConfigMap{}).
-		Owns(&corev1.Secret{}).
-		Owns(&corev1.Service{}).
-		Owns(&corev1.ServiceAccount{}).
+		For(&v1alpha1.TempoMonolithic{}, createOrUpdateOnlyPred).
+		Owns(&corev1.ConfigMap{}, updateOrDeleteOnlyPred).
+		Owns(&corev1.Secret{}, updateOrDeleteOnlyPred).
+		Owns(&corev1.Service{}, updateOrDeleteOnlyPred).
+		Owns(&corev1.ServiceAccount{}, updateOrDeleteOnlyPred).
 		Owns(&appsv1.StatefulSet{}, updateOrDeleteWithStatusPred).
-		Owns(&networkingv1.Ingress{}).
-		Owns(&rbacv1.ClusterRole{}).
-		Owns(&rbacv1.ClusterRoleBinding{}).
-		Owns(&rbacv1.Role{}).
-		Owns(&rbacv1.RoleBinding{}).
+		Owns(&networkingv1.Ingress{}, updateOrDeleteOnlyPred).
+		Owns(&rbacv1.ClusterRole{}, updateOrDeleteOnlyPred).
+		Owns(&rbacv1.ClusterRoleBinding{}, updateOrDeleteOnlyPred).
+		Owns(&rbacv1.Role{}, updateOrDeleteOnlyPred).
+		Owns(&rbacv1.RoleBinding{}, updateOrDeleteOnlyPred).
 		Watches(
 			&corev1.Secret{},
 			handler.EnqueueRequestsFromMapFunc(r.findTempoMonolithicForStorageSecret),
-			ctrlbuilder.WithPredicates(predicate.ResourceVersionChangedPredicate{}),
+			createUpdateOrDeletePred,
 		)
 
 	if r.CtrlConfig.Gates.OpenShift.OpenShiftRoute {
-		builder = builder.Owns(&routev1.Route{})
+		builder = builder.Owns(&routev1.Route{}, updateOrDeleteOnlyPred)
 	}
 
 	if r.CtrlConfig.Gates.PrometheusOperator {
-		builder = builder.Owns(&monitoringv1.ServiceMonitor{})
-		builder = builder.Owns(&monitoringv1.PrometheusRule{})
+		builder = builder.Owns(&monitoringv1.ServiceMonitor{}, updateOrDeleteOnlyPred)
+		builder = builder.Owns(&monitoringv1.PrometheusRule{}, updateOrDeleteOnlyPred)
 	}
 
 	if r.CtrlConfig.Gates.GrafanaOperator {
-		builder = builder.Owns(&grafanav1.GrafanaDatasource{})
+		builder = builder.Owns(&grafanav1.GrafanaDatasource{}, updateOrDeleteOnlyPred)
 	}
 
 	tokenCCOAuthEnv := cloudcredentials.DiscoverTokenCCOAuthConfig()
 	if tokenCCOAuthEnv != nil {
-		builder = builder.Owns(&cloudcredentialv1.CredentialsRequest{})
+		builder = builder.Owns(&cloudcredentialv1.CredentialsRequest{}, updateOrDeleteOnlyPred)
 	}
 
 	return builder.Complete(r)

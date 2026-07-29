@@ -31,7 +31,41 @@ import (
 	"github.com/grafana/tempo-operator/internal/webhooks"
 )
 
+// Predicates originally from https://github.com/grafana/loki/blob/c4c0b7b833ed1ba45f613494748e25208c37beb5/operator/internal/controller/loki/lokistack_controller.go
+// Licensed under AGPL-3.0.
 var (
+	createOrUpdateOnlyPred = ctrlbuilder.WithPredicates(predicate.Funcs{
+		UpdateFunc: func(e event.UpdateEvent) bool {
+			// Update only if generation, annotations, or deletionTimestamp change,
+			// filter out anything else. Generation is only updated on spec changes.
+			// On the other hand ResourceVersion changes also on status changes.
+			// We want to omit reconciliation for status updates.
+			// DeletionTimestamp must be included so that finalizers can execute.
+			return e.ObjectOld.GetGeneration() != e.ObjectNew.GetGeneration() ||
+				!cmp.Equal(e.ObjectOld.GetAnnotations(), e.ObjectNew.GetAnnotations()) ||
+				e.ObjectNew.GetDeletionTimestamp() != nil
+		},
+		CreateFunc:  func(e event.CreateEvent) bool { return true },
+		DeleteFunc:  func(e event.DeleteEvent) bool { return false },
+		GenericFunc: func(e event.GenericEvent) bool { return false },
+	})
+	updateOrDeleteOnlyPred = ctrlbuilder.WithPredicates(predicate.Funcs{
+		UpdateFunc: func(e event.UpdateEvent) bool {
+			// Update only if generation change, filter out anything else.
+			// We only need to check generation change here, because it is only
+			// updated on spec changes. On the other hand RevisionVersion
+			// changes also on status changes. We want to omit reconciliation
+			// for status updates for now.
+			return e.ObjectOld.GetGeneration() != e.ObjectNew.GetGeneration()
+		},
+		CreateFunc: func(e event.CreateEvent) bool { return false },
+		DeleteFunc: func(e event.DeleteEvent) bool {
+			// DeleteStateUnknown evaluates to false only if the object
+			// has been confirmed as deleted by the api server.
+			return !e.DeleteStateUnknown
+		},
+		GenericFunc: func(e event.GenericEvent) bool { return false },
+	})
 	updateOrDeleteWithStatusPred = ctrlbuilder.WithPredicates(predicate.Funcs{
 		UpdateFunc: func(e event.UpdateEvent) bool {
 			return e.ObjectOld.GetGeneration() != e.ObjectNew.GetGeneration() || statusDifferent(e)
@@ -47,6 +81,14 @@ var (
 		GenericFunc: func(_ event.GenericEvent) bool {
 			return false
 		},
+	})
+	createUpdateOrDeletePred = ctrlbuilder.WithPredicates(predicate.Funcs{
+		UpdateFunc: func(e event.UpdateEvent) bool {
+			return e.ObjectOld.GetResourceVersion() != e.ObjectNew.GetResourceVersion()
+		},
+		CreateFunc:  func(e event.CreateEvent) bool { return true },
+		DeleteFunc:  func(e event.DeleteEvent) bool { return true },
+		GenericFunc: func(e event.GenericEvent) bool { return false },
 	})
 )
 

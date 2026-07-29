@@ -1,0 +1,66 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/kyverno/chainsaw/main/.schemas/json/test-chainsaw-v1alpha1.json
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  creationTimestamp: null
+  name: reconcile-count
+spec:
+  steps:
+  - name: step-00
+    try:
+    - apply:
+        file: 00-install-storage.yaml
+    - assert:
+        file: 00-assert.yaml
+
+  - name: step-01
+    try:
+    - apply:
+        file: 01-install-tempo.yaml
+    - assert:
+        file: 01-assert.yaml
+
+  - name: step-02
+    try:
+    - sleep:
+        duration: 15s
+
+  - name: step-03
+    try:
+    - script:
+        timeout: 60s
+        content: |
+          set -eu
+
+          OPERATOR_NS=$(kubectl get pods -A \
+            -l control-plane=controller-manager \
+            -l app.kubernetes.io/name=tempo-operator \
+            -o jsonpath='{.items[0].metadata.namespace}')
+
+          echo "Operator namespace: $OPERATOR_NS"
+          echo "Test namespace: $NAMESPACE"
+
+          LOGS=$(kubectl logs -n "$OPERATOR_NS" \
+            -l control-plane=controller-manager \
+            -l app.kubernetes.io/name=tempo-operator \
+            --tail=-1)
+
+          THRESHOLD=30
+          COUNT=$(echo "$LOGS" | grep "$NAMESPACE" | grep "tempostack-reconcile" | grep -c "starting reconcile loop" || true)
+
+          echo "Reconcile count for namespace $NAMESPACE: $COUNT"
+          echo "Threshold: $THRESHOLD"
+
+          if [ "$COUNT" -eq 0 ]; then
+            echo "FAIL: Reconcile count is 0, operator may not be running with --zap-log-level=1"
+            echo "Sample log lines:"
+            echo "$LOGS" | grep "$NAMESPACE" | head -5
+            exit 1
+          fi
+
+          if [ "$COUNT" -gt "$THRESHOLD" ]; then
+            echo "FAIL: Reconcile count ($COUNT) exceeds threshold ($THRESHOLD)."
+            exit 1
+          fi
+
+          echo "PASS: Reconcile count ($COUNT) is within the acceptable threshold ($THRESHOLD)."
