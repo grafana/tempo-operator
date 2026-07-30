@@ -426,6 +426,14 @@ e2e-openshift:
 e2e-openshift-tshirt-sizes:
 	$(CHAINSAW) test --test-dir ./tests/e2e-openshift-tshirt-sizes --config .chainsaw-openshift.yaml
 
+# reconcile count tests
+.PHONY: e2e-reconcile-count
+e2e-reconcile-count: chainsaw
+	kubectl patch deployment -n $(OPERATOR_NAMESPACE) tempo-operator-controller --type=json \
+		-p '[{"op":"replace","path":"/spec/template/spec/containers/0/args/0","value":"--zap-log-level=1"}]'
+	kubectl rollout --namespace $(OPERATOR_NAMESPACE) status deployment/tempo-operator-controller
+	$(CHAINSAW) test --test-dir ./tests/e2e-reconcile-count
+
 # upgrade tests
 e2e-upgrade:
 	$(CHAINSAW) test --test-dir ./tests/e2e-upgrade --config .chainsaw-upgrade.yaml

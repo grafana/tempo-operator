@@ -1,0 +1,10 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoStack
+metadata:
+  name: simplest
+spec:
+  storage:
+    secret:
+      name: minio-test
+      type: s3
+  storageSize: 200M
