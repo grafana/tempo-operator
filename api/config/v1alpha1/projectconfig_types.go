@@ -324,10 +324,6 @@ type ProjectConfig struct {
 	Distribution string `json:"distribution"`
 }
 
-func init() {
-	SchemeBuilder.Register(&ProjectConfig{})
-}
-
 // DefaultProjectConfig returns the default operator config.
 // These values match the community distribution defaults.
 func DefaultProjectConfig() ProjectConfig {

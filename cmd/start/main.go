@@ -80,7 +80,7 @@ func start(c *cobra.Command, args []string) {
 	if err = (&controllers.TempoStackReconciler{
 		Client:     mgr.GetClient(),
 		Scheme:     mgr.GetScheme(),
-		Recorder:   mgr.GetEventRecorderFor("tempostack-controller"),
+		Recorder:   mgr.GetEventRecorder("tempostack-controller"),
 		CtrlConfig: ctrlConfig,
 		Version:    version,
 	}).SetupWithManager(mgr); err != nil {
@@ -91,7 +91,7 @@ func start(c *cobra.Command, args []string) {
 	if err = (&controllers.TempoMonolithicReconciler{
 		Client:     mgr.GetClient(),
 		Scheme:     mgr.GetScheme(),
-		Recorder:   mgr.GetEventRecorderFor("tempomonolithic-controller"),
+		Recorder:   mgr.GetEventRecorder("tempomonolithic-controller"),
 		CtrlConfig: ctrlConfig,
 		Version:    version,
 	}).SetupWithManager(mgr); err != nil {

@@ -7,7 +7,6 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -27,8 +26,7 @@ type TempoMonolithicWebhook struct {
 
 // SetupWebhookWithManager will setup the manager to manage the webhooks.
 func (w *TempoMonolithicWebhook) SetupWebhookWithManager(mgr ctrl.Manager, ctrlConfig configv1alpha1.ProjectConfig) error {
-	return ctrl.NewWebhookManagedBy(mgr).
-		For(&tempov1alpha1.TempoMonolithic{}).
+	return ctrl.NewWebhookManagedBy(mgr, &tempov1alpha1.TempoMonolithic{}).
 		WithValidator(&monolithicValidator{client: mgr.GetClient(), ctrlConfig: ctrlConfig}).
 		Complete()
 }
@@ -41,20 +39,12 @@ type monolithicValidator struct {
 }
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type.
-func (v *monolithicValidator) ValidateCreate(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
-	return v.validate(ctx, obj)
+func (v *monolithicValidator) ValidateCreate(ctx context.Context, tempo *tempov1alpha1.TempoMonolithic) (admission.Warnings, error) {
+	return v.validate(ctx, tempo)
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type.
-func (v *monolithicValidator) ValidateUpdate(ctx context.Context, oldObj, newObj runtime.Object) (admission.Warnings, error) {
-	oldTempo, ok := oldObj.(*tempov1alpha1.TempoMonolithic)
-	if !ok {
-		return nil, apierrors.NewBadRequest(fmt.Sprintf("expected a TempoMonolithic object but got %T", oldObj))
-	}
-	newTempo, ok := newObj.(*tempov1alpha1.TempoMonolithic)
-	if !ok {
-		return nil, apierrors.NewBadRequest(fmt.Sprintf("expected a TempoMonolithic object but got %T", newObj))
-	}
+func (v *monolithicValidator) ValidateUpdate(ctx context.Context, oldTempo, newTempo *tempov1alpha1.TempoMonolithic) (admission.Warnings, error) {
 	if newTempo.GetDeletionTimestamp() != nil &&
 		controllerutil.ContainsFinalizer(oldTempo, tempov1alpha1.TempoFinalizer) && !controllerutil.ContainsFinalizer(newTempo, tempov1alpha1.TempoFinalizer) {
 		// Do not validate if the specs are the same and only finalizer was removed
@@ -62,25 +52,16 @@ func (v *monolithicValidator) ValidateUpdate(ctx context.Context, oldObj, newObj
 		// Tempo CR and custom SA or storage secret. The reconcile loop will remove the finalizer and trigger the webhook which would fail.
 		return nil, nil
 	}
-	return v.validate(ctx, newObj)
+	return v.validate(ctx, newTempo)
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type.
-func (v *monolithicValidator) ValidateDelete(_ context.Context, obj runtime.Object) (admission.Warnings, error) {
-	tempo, ok := obj.(*tempov1alpha1.TempoMonolithic)
-	if !ok {
-		return nil, apierrors.NewBadRequest(fmt.Sprintf("expected a TempoMonolithic object but got %T", obj))
-	}
+func (v *monolithicValidator) ValidateDelete(_ context.Context, tempo *tempov1alpha1.TempoMonolithic) (admission.Warnings, error) {
 	status.ClearMonolithicMetrics(tempo.Namespace, tempo.Name)
 	return nil, nil
 }
 
-func (v *monolithicValidator) validate(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
-	tempo, ok := obj.(*tempov1alpha1.TempoMonolithic)
-	if !ok {
-		return nil, apierrors.NewBadRequest(fmt.Sprintf("expected a TempoMonolithic object but got %T", obj))
-	}
-
+func (v *monolithicValidator) validate(ctx context.Context, tempo *tempov1alpha1.TempoMonolithic) (admission.Warnings, error) {
 	log := ctrl.LoggerFrom(ctx).WithName("tempomonolithic-webhook")
 	log.V(1).Info("running validating webhook", "name", tempo.Name)
 

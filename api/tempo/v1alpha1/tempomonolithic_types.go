@@ -589,10 +589,6 @@ type TempoMonolithicList struct {
 	Items           []TempoMonolithic `json:"items"`
 }
 
-func init() {
-	SchemeBuilder.Register(&TempoMonolithic{}, &TempoMonolithicList{})
-}
-
 // GetOperatorVersion returns the operator version from the status field.
 func (tempo *TempoMonolithic) GetOperatorVersion() string {
 	return tempo.Status.OperatorVersion

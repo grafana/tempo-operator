@@ -4,9 +4,9 @@ TEMPO_VERSION ?= 2.10.7
 JAEGER_QUERY_VERSION ?= 1.68.0
 TEMPO_QUERY_VERSION ?= $(TEMPO_VERSION)
 # https://quay.io/repository/observatorium/api
-TEMPO_GATEWAY_VERSION ?= main-2026-07-01-c9e5509
+TEMPO_GATEWAY_VERSION ?= main-2026-07-24-292b613
 # https://quay.io/repository/observatorium/opa-openshift
-TEMPO_GATEWAY_OPA_VERSION ?= main-2025-06-16-ecdeca0
+TEMPO_GATEWAY_OPA_VERSION ?= main-2026-07-01-dbb77e0
 OAUTH_PROXY_VERSION=4.14
 
 MIN_KUBERNETES_VERSION ?= 1.25.0
@@ -241,7 +241,7 @@ GEN_API_DOCS_VERSION ?= v0.7.2
 OPERATOR_SDK_VERSION ?= 1.36.0
 OLM_VERSION ?= v0.28.0
 CERTMANAGER_VERSION ?= 1.9.1
-CHAINSAW_VERSION ?= v0.2.13
+CHAINSAW_VERSION ?= v0.2.15
 #ENVTEST_VERSION is the version of controller-runtime release branch to fetch the envtest setup script (i.e. release-0.20)
 ENVTEST_VERSION ?= $(shell go list -m -f "{{ .Version }}" sigs.k8s.io/controller-runtime | awk -F'[v.]' '{printf "release-%d.%d", $$2, $$3}')
 #ENVTEST_K8S_VERSION is the version of Kubernetes to use for setting up ENVTEST binaries (i.e. 1.31)

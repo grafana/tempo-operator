@@ -13,7 +13,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/client-go/tools/record"
+	"k8s.io/client-go/tools/events"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/metrics"
 
@@ -39,7 +39,7 @@ var (
 // Upgrade contains required objects to perform version upgrades.
 type Upgrade struct {
 	Client     client.Client
-	Recorder   record.EventRecorder
+	Recorder   events.EventRecorder
 	CtrlConfig configv1alpha1.ProjectConfig
 	Version    version.Version
 	Log        logr.Logger
@@ -70,7 +70,7 @@ func (u Upgrade) Upgrade(ctx context.Context, original UpgradeableCR) (Upgradeab
 	if err != nil {
 		msg := "automated upgrade is not possible, the CR instance must be corrected manually"
 		itemLogger.Info(msg)
-		u.Recorder.Event(original, corev1.EventTypeWarning, "FailedUpgrade", msg)
+		u.Recorder.Eventf(original, nil, corev1.EventTypeWarning, "FailedUpgrade", "Upgrade", msg)
 		metricUpgrades.WithLabelValues(kind, metricUpgradesStateFailed).Inc()
 		return original, &status.ConfigurationError{
 			Message: fmt.Sprintf("error during upgrade: %s", err),

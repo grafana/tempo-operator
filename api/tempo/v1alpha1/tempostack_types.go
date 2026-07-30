@@ -1074,10 +1074,6 @@ type TempoStackList struct {
 	Items           []TempoStack `json:"items"`
 }
 
-func init() {
-	SchemeBuilder.Register(&TempoStack{}, &TempoStackList{})
-}
-
 // GetOperatorVersion returns the operator version from the status field.
 func (tempo *TempoStack) GetOperatorVersion() string {
 	return tempo.Status.OperatorVersion
