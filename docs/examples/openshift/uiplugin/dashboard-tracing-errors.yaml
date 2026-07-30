@@ -1,0 +1,85 @@
+apiVersion: perses.dev/v1alpha2
+kind: PersesDashboard
+metadata:
+  name: tracing-errors
+  namespace: tracing
+spec:
+  config:
+    display:
+      name: Error Traces
+    panels:
+      428680305a2542fc803eb829ba10201e:
+        kind: Panel
+        spec:
+          display:
+            name: Error Traces
+          plugin:
+            kind: TraceTable
+            spec:
+              visual:
+                palette:
+                  mode: categorical
+              links:
+                trace: /observe/traces/${traceId}?namespace=tracing&name=tempo&tenant=project1
+
+                # Will work once https://github.com/perses/plugins/commit/6c98c0b95f35bd4bf151d4cb8e70ae6360c8f5ba is part of COO
+                #trace: /monitoring/v2/dashboards/view?dashboard=tracing-detail&project=tracing&start=1h&refresh=30s&var-traceid=${traceId}
+          queries:
+            - kind: TraceQuery
+              spec:
+                plugin:
+                  kind: TempoTraceQuery
+                  spec:
+                    datasource:
+                      kind: TempoDatasource
+                      name: tempo-project1
+                    limit: 20
+                    query: "{status=error}"
+      18aeab0188df42f58666204837bdaecc:
+        kind: Panel
+        spec:
+          display:
+            name: Error rate (errors/s)
+          plugin:
+            kind: BarChart
+            spec:
+              calculation: last
+              format:
+                unit: decimal
+                shortValues: true
+              sort: desc
+              mode: value
+          queries:
+            - kind: TimeSeriesQuery
+              spec:
+                plugin:
+                  kind: PrometheusTimeSeriesQuery
+                  spec:
+                    query: topk(10,
+                      sum(rate(traces_span_metrics_calls_total{status_code="STATUS_CODE_ERROR"}[$__rate_interval]))
+                      by (service_name))
+                    seriesNameFormat: "{{service_name}}"
+    layouts:
+      - kind: Grid
+        spec:
+          display:
+            title: Panel Group
+            collapse:
+              open: true
+          items:
+            - x: 0
+              "y": 6
+              width: 24
+              height: 13
+              content:
+                $ref: "#/spec/panels/428680305a2542fc803eb829ba10201e"
+            - x: 0
+              "y": 0
+              width: 24
+              height: 6
+              content:
+                $ref: "#/spec/panels/18aeab0188df42f58666204837bdaecc"
+    variables: []
+    duration: 1h
+    refreshInterval: 30s
+    datasources: {}

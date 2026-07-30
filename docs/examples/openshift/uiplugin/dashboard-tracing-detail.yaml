@@ -1,0 +1,53 @@
+apiVersion: perses.dev/v1alpha2
+kind: PersesDashboard
+metadata:
+  name: tracing-detail
+  namespace: tracing
+spec:
+  config:
+    display:
+      name: Single Trace
+    panels:
+      1cfd696e99a94d1abe36ebe306641713:
+        kind: Panel
+        spec:
+          display:
+            name: Trace
+          plugin:
+            kind: TracingGanttChart
+            spec:
+              visual:
+                palette:
+                  mode: categorical
+          queries:
+            - kind: TraceQuery
+              spec:
+                plugin:
+                  kind: TempoTraceQuery
+                  spec:
+                    query: ${traceid}
+                    limit: 20
+    layouts:
+      - kind: Grid
+        spec:
+          display:
+            title: Panel Group
+            collapse:
+              open: true
+          items:
+            - x: 0
+              "y": 0
+              width: 24
+              height: 8
+              content:
+                $ref: "#/spec/panels/1cfd696e99a94d1abe36ebe306641713"
+    variables:
+      - kind: TextVariable
+        spec:
+          name: traceid
+          display:
+            name: Trace ID
+          value: ""
+    duration: 1h
+    refreshInterval: 30s
+    datasources: {}
