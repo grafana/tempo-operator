@@ -236,7 +236,7 @@ func NewOpaContainer(ctrlConfig configv1alpha1.ProjectConfig, tenants v1alpha1.T
 		Args:  args,
 		Ports: []corev1.ContainerPort{
 			{
-				Name:          "public",
+				Name:          "opa-http",
 				ContainerPort: gatewayOPAHTTPPort,
 				Protocol:      corev1.ProtocolTCP,
 			},

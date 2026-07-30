@@ -107,7 +107,7 @@ func CreateOrRotateCertificates(ctx context.Context, log logr.Logger,
 		return kverrors.Wrap(err, "failed to add certificate hash annotations", "name", req.String())
 	}
 
-	ll.Info("certificate rotation completed successfully, hash annotations added")
+	ll.V(1).Info("certificate rotation completed successfully, hash annotations added")
 	return nil
 }
 

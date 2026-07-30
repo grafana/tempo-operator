@@ -246,8 +246,8 @@ func getTenantParams(
 
 		tenantsData, err := gateway.GetGatewayTenantsData(ctx, k8sclient, namespace, name)
 		if err != nil {
-			// just log the error the secret is not created if the loop for an instance runs for the first time.
-			log.Info("Failed to get gateway secret and/or tenants.yaml", "error", err)
+			// The gateway secret is created during reconciliation, so it won't exist on the first reconcile.
+			log.Info("Failed to get gateway secret and/or tenants.yaml. This is expected during the first reconcile", "error", err)
 		}
 
 		return nil, tenantsData, nil

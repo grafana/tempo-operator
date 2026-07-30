@@ -79,7 +79,7 @@ func DiscoverKubernetesAPIServer(ctx context.Context, k8sClient client.Client) m
 		return fallbackKubeAPIServerInfo()
 	}
 
-	logger.Info("discovered Kubernetes API server endpoints",
+	logger.V(1).Info("discovered Kubernetes API server endpoints",
 		"ports", len(ports), "ips", len(ips))
 
 	return manifestutils.KubeAPIServerInfo{

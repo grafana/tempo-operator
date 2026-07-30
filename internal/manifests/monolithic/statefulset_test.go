@@ -958,7 +958,7 @@ func TestStatefulsetGateway(t *testing.T) {
 		},
 		Ports: []corev1.ContainerPort{
 			{
-				Name:          "public",
+				Name:          "opa-http",
 				ContainerPort: 8082,
 				Protocol:      corev1.ProtocolTCP,
 			},
@@ -1244,7 +1244,7 @@ func TestStatefulsetGatewayRBAC(t *testing.T) {
 		},
 		Ports: []corev1.ContainerPort{
 			{
-				Name:          "public",
+				Name:          "opa-http",
 				ContainerPort: 8082,
 				Protocol:      corev1.ProtocolTCP,
 			},
