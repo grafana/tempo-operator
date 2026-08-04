@@ -11,6 +11,7 @@ import (
 )
 
 func podStatus(pod *corev1.Pod) v1alpha1.PodStatus {
+	//exhaustive:ignore
 	switch pod.Status.Phase {
 	case corev1.PodFailed:
 		return v1alpha1.PodFailed
