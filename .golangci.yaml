@@ -25,7 +25,7 @@ linters:
       - linters:
           - staticcheck
         text: "(QF1001|QF1003|QF1008)"
-      # spec.replicationFactor is deprecated in favour of spec.replication.factor, but the operator
+      # spec.replicationFactor is deprecated in favor of spec.replication.factor, but the operator
       # still has to read and default it to stay backwards compatible.
       - linters:
           - staticcheck

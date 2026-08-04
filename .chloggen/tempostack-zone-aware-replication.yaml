@@ -31,4 +31,4 @@ subtext: |
   working. If both are set, `spec.replication.factor` takes precedence and the operator emits a
   warning.
 
-  The API and its behaviour follow the Grafana Loki Operator.
+  The API and its behavior follow the Grafana Loki Operator.

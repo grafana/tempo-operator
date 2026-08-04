@@ -2992,7 +2992,7 @@ func TestDefaultReplicationSpec(t *testing.T) {
 			expectedIngesters:    1,
 		},
 		{
-			name:                 "replication.factor alone is honoured",
+			name:                 "replication.factor alone is honored",
 			input:                v1alpha1.TempoStackSpec{Size: v1alpha1.SizeSmall, Replication: &v1alpha1.ReplicationSpec{Factor: 3}},
 			expectedFactor:       3,
 			expectedDeprecatedRF: 3,

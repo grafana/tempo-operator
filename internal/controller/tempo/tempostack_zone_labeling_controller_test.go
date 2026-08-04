@@ -28,8 +28,8 @@ func zoneAwarePod(nodeName string, annotations map[string]string) *corev1.Pod {
 	}
 }
 
-func node(name string, labels map[string]string) *corev1.Node {
-	return &corev1.Node{ObjectMeta: metav1.ObjectMeta{Name: name, Labels: labels}}
+func node(labels map[string]string) *corev1.Node {
+	return &corev1.Node{ObjectMeta: metav1.ObjectMeta{Name: "node-1", Labels: labels}}
 }
 
 func zoneReconciler(objs ...client.Object) *TempoStackZoneAwarePodReconciler {
@@ -58,7 +58,7 @@ func TestZoneAwarePodAnnotatedWithAvailabilityZone(t *testing.T) {
 		zoneAwarePod("node-1", map[string]string{
 			v1alpha1.AnnotationAvailabilityZoneLabels: "topology.kubernetes.io/zone",
 		}),
-		node("node-1", map[string]string{"topology.kubernetes.io/zone": "eu-west-1a"}),
+		node(map[string]string{"topology.kubernetes.io/zone": "eu-west-1a"}),
 	)
 
 	pod, err := reconcilePod(t, r)
@@ -71,7 +71,7 @@ func TestZoneAwarePodMultipleTopologyKeysAreJoined(t *testing.T) {
 		zoneAwarePod("node-1", map[string]string{
 			v1alpha1.AnnotationAvailabilityZoneLabels: "topology.kubernetes.io/region,topology.kubernetes.io/zone",
 		}),
-		node("node-1", map[string]string{
+		node(map[string]string{
 			"topology.kubernetes.io/region": "eu-west-1",
 			"topology.kubernetes.io/zone":   "eu-west-1a",
 		}),
@@ -101,7 +101,7 @@ func TestZoneAwarePodOnNodeWithoutTopologyLabel(t *testing.T) {
 		zoneAwarePod("node-1", map[string]string{
 			v1alpha1.AnnotationAvailabilityZoneLabels: "topology.kubernetes.io/zone",
 		}),
-		node("node-1", map[string]string{}),
+		node(map[string]string{}),
 	)
 
 	_, err := reconcilePod(t, r)
@@ -111,7 +111,7 @@ func TestZoneAwarePodOnNodeWithoutTopologyLabel(t *testing.T) {
 func TestZoneAwarePodWithoutTopologyKeysAnnotation(t *testing.T) {
 	r := zoneReconciler(
 		zoneAwarePod("node-1", nil),
-		node("node-1", map[string]string{"topology.kubernetes.io/zone": "eu-west-1a"}),
+		node(map[string]string{"topology.kubernetes.io/zone": "eu-west-1a"}),
 	)
 
 	_, err := reconcilePod(t, r)
@@ -134,5 +134,5 @@ func TestEventPodHasLabel(t *testing.T) {
 	pod.Labels = nil
 	assert.False(t, eventPodHasLabel(pod))
 
-	assert.False(t, eventPodHasLabel(node("node-1", nil)))
+	assert.False(t, eventPodHasLabel(node(nil)))
 }
