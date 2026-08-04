@@ -52,7 +52,7 @@ spec:
           echo "Threshold: $THRESHOLD"
 
           if [ "$COUNT" -eq 0 ]; then
-            echo "FAIL: Reconcile count is 0, operator may not be running with --zap-log-level=1"
+            echo "FAIL: Reconcile count is 0, operator may not be running with --zap-log-level=debug"
             echo "Sample log lines:"
             echo "$LOGS" | grep "$NAMESPACE" | head -5
             exit 1
