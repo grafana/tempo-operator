@@ -106,7 +106,10 @@ func (r *certificateRotation) NeedNewCertificate(annotations map[string]string, 
 	if !existingHostnames.Equal(requiredHostnames) {
 		existingNotRequired := existingHostnames.Difference(requiredHostnames)
 		requiredNotExisting := requiredHostnames.Difference(existingHostnames)
-		return fmt.Sprintf("hostnames %q are existing and not required, %q are required and not existing", strings.Join(existingNotRequired.UnsortedList(), ","), strings.Join(requiredNotExisting.UnsortedList(), ","))
+		return fmt.Sprintf("hostnames %q are existing and not required, %q are required and not existing",
+			strings.Join(sets.List[string](existingNotRequired), ","),
+			strings.Join(sets.List[string](requiredNotExisting), ","),
+		)
 	}
 
 	return ""
@@ -125,7 +128,7 @@ func (r *certificateRotation) SetAnnotations(cert *crypto.TLSCertificateConfig, 
 	annotations[CertificateNotBeforeAnnotation] = cert.Certs[0].NotBefore.Format(time.RFC3339)
 	annotations[CertificateIssuer] = cert.Certs[0].Issuer.CommonName
 	// List does a sort so that we have a consistent representation
-	annotations[CertificateHostnames] = strings.Join(hostnames.UnsortedList(), ",")
+	annotations[CertificateHostnames] = strings.Join(sets.List[string](hostnames), ",")
 }
 
 func needNewCertificate(annotations map[string]string, clock clockFunc, refresh time.Duration, signer *crypto.CA) string {
