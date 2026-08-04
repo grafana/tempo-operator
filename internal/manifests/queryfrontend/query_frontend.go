@@ -123,6 +123,8 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 		manifests = append(manifests, rbac...)
 	}
 
+	manifests = append(manifests, manifestutils.NewPodDisruptionBudget(tempo, manifestutils.QueryFrontendComponentName))
+
 	return manifests, nil
 }
 

@@ -134,6 +134,7 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 	}
 
 	objs = append(objs, dep)
+	objs = append(objs, manifestutils.NewPodDisruptionBudget(params.Tempo, manifestutils.GatewayComponentName))
 	return objs, nil
 }
 
