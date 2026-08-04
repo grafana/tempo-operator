@@ -117,17 +117,19 @@ func (d *Defaulter) Default(ctx context.Context, r *v1alpha1.TempoStack) error {
 	defaultReplicationFactor := 1
 
 	// Default replication factor if not specified.
-	// If size is specified, use size's default RF, otherwise use 1.
+	// spec.replication.factor takes precedence over the deprecated spec.replicationFactor.
+	// If neither is set and size is specified, use size's default RF, otherwise use 1.
 	effectiveRF := defaultReplicationFactor
-	if r.Spec.ReplicationFactor == 0 {
-		if r.Spec.Size != "" {
-			sizeRF := manifestutils.ReplicationFactorForSize(r.Spec.Size)
-			if sizeRF > 0 {
-				effectiveRF = sizeRF
-			}
-		}
-	} else {
+	switch {
+	case r.Spec.Replication != nil && r.Spec.Replication.Factor > 0:
+		effectiveRF = r.Spec.Replication.Factor
+	case r.Spec.ReplicationFactor > 0:
 		effectiveRF = r.Spec.ReplicationFactor
+	case r.Spec.Size != "":
+		sizeRF := manifestutils.ReplicationFactorForSize(r.Spec.Size)
+		if sizeRF > 0 {
+			effectiveRF = sizeRF
+		}
 	}
 
 	// Default replicas for all components if not specified.
@@ -160,6 +162,9 @@ func (d *Defaulter) Default(ctx context.Context, r *v1alpha1.TempoStack) error {
 	}
 
 	// Set replication factor (we already computed effectiveRF above).
+	// Only the deprecated field is defaulted, so that a CR which does not use zone awareness is left
+	// untouched. Readers should use TempoStackSpec.EffectiveReplicationFactor, which prefers
+	// spec.replication.factor over it.
 	if r.Spec.ReplicationFactor == 0 {
 		r.Spec.ReplicationFactor = effectiveRF
 	}
@@ -286,7 +291,7 @@ func (v *validator) validateStorage(ctx context.Context, tempo v1alpha1.TempoSta
 
 func (v *validator) validateReplicationFactor(tempo v1alpha1.TempoStack) field.ErrorList {
 	// Validate minimum quorum on ingestors according to replicas and replication factor
-	replicatonFactor := tempo.Spec.ReplicationFactor
+	replicatonFactor := tempo.Spec.EffectiveReplicationFactor()
 	// Ingester replicas should not be nil at this point, due defauler.
 	ingesterReplicas := int(*tempo.Spec.Template.Ingester.Replicas)
 	quorum := int(math.Floor(float64(replicatonFactor)/2.0) + 1)
@@ -295,10 +300,32 @@ func (v *validator) validateReplicationFactor(tempo v1alpha1.TempoStack) field.E
 	if ingesterReplicas < quorum {
 		path := field.NewPath("spec").Child("ReplicationFactor")
 		return field.ErrorList{
-			field.Invalid(path, tempo.Spec.ReplicationFactor,
+			field.Invalid(path, replicatonFactor,
 				fmt.Sprintf("replica factor of %d requires at least %d ingester replicas", replicatonFactor, quorum),
 			)}
 	}
+	return nil
+}
+
+// validateReplicationZones validates that the replication factor does not exceed the number of
+// configured zones, as otherwise the ingester pods can never satisfy the topology spread constraints.
+func (v *validator) validateReplicationZones(tempo v1alpha1.TempoStack) field.ErrorList {
+	if !tempo.Spec.ZoneAwarenessEnabled() {
+		return nil
+	}
+
+	topologyKeys := map[string]bool{}
+	for i, zone := range tempo.Spec.Replication.Zones {
+		if topologyKeys[zone.TopologyKey] {
+			return field.ErrorList{
+				field.Duplicate(
+					field.NewPath("spec").Child("replication").Child("zones").Index(i).Child("topologyKey"),
+					zone.TopologyKey,
+				)}
+		}
+		topologyKeys[zone.TopologyKey] = true
+	}
+
 	return nil
 }
 
@@ -586,7 +613,16 @@ func (v *validator) validate(ctx context.Context, tempo *v1alpha1.TempoStack) (a
 		}...)
 	}
 
+	// Warn if both replication factor fields are specified (spec.replication.factor takes precedence)
+	if tempo.Spec.Replication != nil && tempo.Spec.Replication.Factor > 0 &&
+		tempo.Spec.ReplicationFactor > 0 && tempo.Spec.Replication.Factor != tempo.Spec.ReplicationFactor {
+		allWarnings = append(allWarnings, admission.Warnings{
+			"both spec.replicationFactor and spec.replication.factor are specified; spec.replication.factor takes precedence",
+		}...)
+	}
+
 	allErrors = append(allErrors, v.validateReplicationFactor(*tempo)...)
+	allErrors = append(allErrors, v.validateReplicationZones(*tempo)...)
 	allErrors = append(allErrors, v.validateQueryFrontend(*tempo)...)
 	addValidationResults(v.validateGateway(ctx, *tempo))
 	allErrors = append(allErrors, v.validateTenantConfigs(*tempo)...)

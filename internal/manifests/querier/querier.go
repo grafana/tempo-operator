@@ -34,6 +34,10 @@ func BuildQuerier(params manifestutils.Params) ([]client.Object, error) {
 	gates := params.CtrlConfig.Gates
 	tempo := params.Tempo
 
+	if err := manifestutils.ConfigureReplication(&d.Spec.Template, tempo.Spec.Replication, manifestutils.QuerierComponentName, tempo.Name); err != nil {
+		return nil, err
+	}
+
 	if gates.HTTPEncryption || gates.GRPCEncryption {
 		caBundleName := naming.SigningCABundleName(tempo.Name)
 		if err := manifestutils.ConfigureServiceCA(&d.Spec.Template.Spec, caBundleName); err != nil {

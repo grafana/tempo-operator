@@ -18,14 +18,16 @@ type options struct {
 	MemberList             memberlistOptions
 	Search                 searchOptions
 	ReplicationFactor      int
-	Multitenancy           bool
-	Gateway                bool
-	Gates                  featureGates
-	ReceiverTLS            receiverTLSOptions
-	S3StorageTLS           storageTLSOptions
-	Timeout                time.Duration
-	MCPServer              mcpserverOptions
-	MetricsGenerator       metricsGeneratorOptions
+	// EnableInstanceAvailabilityZone enables zone-aware replication of the ingester ring.
+	EnableInstanceAvailabilityZone bool
+	Multitenancy                   bool
+	Gateway                        bool
+	Gates                          featureGates
+	ReceiverTLS                    receiverTLSOptions
+	S3StorageTLS                   storageTLSOptions
+	Timeout                        time.Duration
+	MCPServer                      mcpserverOptions
+	MetricsGenerator               metricsGeneratorOptions
 }
 
 type metricsGeneratorOptions struct {

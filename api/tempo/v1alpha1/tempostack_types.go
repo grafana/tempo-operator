@@ -145,9 +145,18 @@ type TempoStackSpec struct {
 
 	// The replication factor is a configuration setting that determines how many ingesters need to acknowledge the data from the distributors before accepting a span.
 	//
+	// Deprecated: Please use replication.factor instead.
+	//
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Replication Factor"
 	ReplicationFactor int `json:"replicationFactor,omitempty"`
+
+	// Replication defines the configuration of the replication factor and zone awareness.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Replication Spec"
+	Replication *ReplicationSpec `json:"replication,omitempty"`
 
 	// Tenants defines the per-tenant authentication and authorization spec.
 	//
@@ -562,6 +571,46 @@ type HashRingSpec struct {
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Memberlist Config"
 	MemberList MemberListSpec `json:"memberlist,omitempty"`
+}
+
+// ReplicationSpec defines the configuration of the replication factor and zone awareness.
+type ReplicationSpec struct {
+	// Factor defines the number of ingesters that need to acknowledge the data from the distributors
+	// before accepting a span.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:validation:Minimum:=1
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors="urn:alm:descriptor:com.tectonic.ui:number",displayName="Replication Factor"
+	Factor int `json:"factor,omitempty"`
+
+	// Zones defines an array of ZoneSpec that the scheduler will try to satisfy.
+	//
+	// IMPORTANT: Make sure that the replication factor defined is less than or equal to the number of
+	// available zones.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Zones Spec"
+	Zones []ZoneSpec `json:"zones,omitempty"`
+}
+
+// ZoneSpec defines the spec to support zone-aware component deployments.
+type ZoneSpec struct {
+	// MaxSkew describes the maximum degree to which Pods can be unevenly distributed.
+	//
+	// +required
+	// +kubebuilder:default:=1
+	// +kubebuilder:validation:Minimum:=1
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors="urn:alm:descriptor:com.tectonic.ui:number",displayName="Max Skew"
+	MaxSkew int `json:"maxSkew"`
+
+	// TopologyKey is the key that defines a topology in the Nodes' labels.
+	//
+	// +required
+	// +kubebuilder:validation:Required
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Topology Key"
+	TopologyKey string `json:"topologyKey"`
 }
 
 // TempoTemplateSpec defines the template of all requirements to configure

@@ -61,6 +61,10 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 
 	dep := deployment(params, rbacCfgHash, tenantsCfgHash)
 
+	if err := manifestutils.ConfigureReplication(&dep.Spec.Template, tempo.Spec.Replication, manifestutils.GatewayComponentName, tempo.Name); err != nil {
+		return nil, err
+	}
+
 	if params.CtrlConfig.Gates.HTTPEncryption || params.CtrlConfig.Gates.GRPCEncryption {
 		caBundleName := naming.SigningCABundleName(params.Tempo.Name)
 		if err := manifestutils.ConfigureServiceCA(&dep.Spec.Template.Spec, caBundleName); err != nil {
