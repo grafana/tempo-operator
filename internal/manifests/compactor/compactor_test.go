@@ -102,7 +102,7 @@ func TestBuildCompactor(t *testing.T) {
 			require.NoError(t, err)
 
 			labels := manifestutils.ComponentLabels("compactor", "test")
-			annotations := manifestutils.CommonAnnotations("")
+			annotations := manifestutils.CommonAnnotations(manifestutils.Params{})
 			assert.Equal(t, 2, len(objects))
 
 			assert.Equal(t, &corev1.Service{

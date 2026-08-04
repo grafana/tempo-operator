@@ -219,7 +219,7 @@ func TestOAuthProxyServiceAccount_aws_sts(t *testing.T) {
 
 func TestPatchDeploymentForOauthProxy(t *testing.T) {
 	labels := manifestutils.ComponentLabels("query-frontend", "test")
-	annotations := manifestutils.CommonAnnotations("")
+	annotations := manifestutils.CommonAnnotations(manifestutils.Params{})
 	defaultImage := "myrepo/oauth_proxy:1.1"
 
 	dep := &v1.Deployment{
@@ -361,7 +361,7 @@ func TestPatchDeploymentForOauthProxy(t *testing.T) {
 
 func TestPatchStatefulSetForOauthProxy(t *testing.T) {
 	labels := manifestutils.ComponentLabels("query-frontend", "test")
-	annotations := manifestutils.CommonAnnotations("")
+	annotations := manifestutils.CommonAnnotations(manifestutils.Params{})
 	defaultImage := "myrepo/oauth_proxy:1.1"
 
 	statefulSet := &v1.StatefulSet{

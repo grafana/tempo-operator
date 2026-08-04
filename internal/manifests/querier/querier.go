@@ -60,8 +60,7 @@ func resources(tempo v1alpha1.TempoStack) corev1.ResourceRequirements {
 func deployment(params manifestutils.Params) (*v1.Deployment, error) {
 	tempo := params.Tempo
 	labels := manifestutils.ComponentLabels(manifestutils.QuerierComponentName, tempo.Name)
-	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
-	annotations = manifestutils.AddCertificateHashAnnotations(tempo.GetAnnotations(), annotations)
+	annotations := manifestutils.CommonAnnotations(params)
 	cfg := tempo.Spec.Template.Querier
 	image := tempo.Spec.Images.Tempo
 	if image == "" {

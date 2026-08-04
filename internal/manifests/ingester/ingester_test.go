@@ -152,7 +152,7 @@ func TestBuildIngester(t *testing.T) {
 			require.NoError(t, err)
 
 			labels := manifestutils.ComponentLabels("ingester", "test")
-			annotations := manifestutils.CommonAnnotations("")
+			annotations := manifestutils.CommonAnnotations(manifestutils.Params{})
 			assert.Equal(t, 2, len(objects))
 
 			assert.Equal(t, &v1.StatefulSet{

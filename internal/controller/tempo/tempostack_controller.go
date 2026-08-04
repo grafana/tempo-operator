@@ -145,8 +145,10 @@ func (r *TempoStackReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		tempo = *upgraded.(*v1alpha1.TempoStack)
 	}
 
+	var certHashAnnotations map[string]string
 	if r.CtrlConfig.Gates.BuiltInCertManagement.Enabled {
-		err := handlers.CreateOrRotateCertificates(ctx, log, req, r.Client, r.Scheme, r.CtrlConfig.Gates, certrotation.TempoStackComponentCertSecretNames(req.Name))
+		var err error
+		certHashAnnotations, err = handlers.CreateOrRotateCertificates(ctx, log, req, r.Client, r.Scheme, r.CtrlConfig.Gates, certrotation.TempoStackComponentCertSecretNames(req.Name))
 		if err != nil {
 			return r.handleReconcileStatus(ctx, log, tempo, fmt.Errorf("built in cert manager error: %w", err))
 		}
@@ -162,7 +164,7 @@ func (r *TempoStackReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		}
 	}
 
-	err := r.createOrUpdate(ctx, tempo)
+	err := r.createOrUpdate(ctx, tempo, certHashAnnotations)
 	if err != nil {
 		return r.handleReconcileStatus(ctx, log, tempo, err)
 	}

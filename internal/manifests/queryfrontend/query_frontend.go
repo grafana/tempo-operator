@@ -160,8 +160,7 @@ func jaegerQueryResources(tempo v1alpha1.TempoStack) corev1.ResourceRequirements
 func deployment(params manifestutils.Params) (*appsv1.Deployment, error) {
 	tempo := params.Tempo
 	labels := manifestutils.ComponentLabels(manifestutils.QueryFrontendComponentName, tempo.Name)
-	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
-	annotations = manifestutils.AddCertificateHashAnnotations(tempo.GetAnnotations(), annotations)
+	annotations := manifestutils.CommonAnnotations(params)
 	cfg := tempo.Spec.Template.QueryFrontend
 	tempoImage := tempo.Spec.Images.Tempo
 	if tempoImage == "" {

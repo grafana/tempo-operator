@@ -27,10 +27,11 @@ import (
 	"github.com/grafana/tempo-operator/internal/tlsprofile"
 )
 
-func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, tempo v1alpha1.TempoStack) error {
+func (r *TempoStackReconciler) createOrUpdate(ctx context.Context, tempo v1alpha1.TempoStack, certHashAnnotations map[string]string) error {
 	params := manifestutils.Params{
-		Tempo:      tempo,
-		CtrlConfig: r.CtrlConfig,
+		Tempo:               tempo,
+		CtrlConfig:          r.CtrlConfig,
+		CertHashAnnotations: certHashAnnotations,
 	}
 
 	tokenCCOAuthEnv := cloudcredentials.DiscoverTokenCCOAuthConfig()

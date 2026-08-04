@@ -12,6 +12,7 @@ type Options struct {
 	CtrlConfig                configv1alpha1.ProjectConfig
 	Tempo                     v1alpha1.TempoMonolithic
 	StorageParams             manifestutils.StorageParams
+	CertHashAnnotations       map[string]string
 	GatewayTenantSecret       []*manifestutils.GatewayTenantOIDCSecret
 	GatewayTenantsData        []*manifestutils.GatewayTenantsData
 	TLSProfile                tlsprofile.TLSProfileOptions
