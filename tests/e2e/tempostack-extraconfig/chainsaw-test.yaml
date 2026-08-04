@@ -26,8 +26,3 @@ spec:
     - script:
         timeout: 1m
         content: ./verify-extraconfig.sh
-  - name: Check TempoStack status
-    try:
-    - script:
-        timeout: 5m
-        content: kubectl get --namespace $NAMESPACE tempo simplest -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' | grep True

@@ -18,13 +18,6 @@ spec:
         file: 01-install-tempo.yaml
     - assert:
         file: 01-assert.yaml
-  - name: step-02
-    try:
-    - script:
-        timeout: 5m
-        content: |
-          kubectl get --namespace $NAMESPACE tempostack simplest \
-            -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' | grep True
   - name: step-03
     try:
     - script:

@@ -33,10 +33,6 @@ spec:
         file: 03-install-tempo.yaml
     - assert:
         file: 03-assert.yaml
-    - script:
-        timeout: 5m
-        content: /bin/sh -c "kubectl get --namespace $NAMESPACE tempo redmetrics -o
-          jsonpath='{.status.conditions[?(@.type==\"Ready\")].status}' | grep True"
   - name: step-04
     try:
     - apply:

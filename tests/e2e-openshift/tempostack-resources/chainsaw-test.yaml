@@ -17,20 +17,10 @@ spec:
         file: 01-install-tempostack.yaml
     - assert:
         file: 01-install-tempostack-assert.yaml
-  - name: Check the status of TempoStack
-    try:
-    - script:
-        timeout: 5m
-        content: kubectl get --namespace $NAMESPACE tempo tmrs -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}'
   - name: Update TempoStack with per-component resource allocation
     try:
     - apply:
         file: 03-update-tempostack.yaml
     - assert:
         file: 03-update-tempostack-assert.yaml
-  - name: Check the status of TempoStack
-    try:
-    - script:
-        timeout: 5m
-        content: kubectl get --namespace $NAMESPACE tempo tmrs -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}'
  

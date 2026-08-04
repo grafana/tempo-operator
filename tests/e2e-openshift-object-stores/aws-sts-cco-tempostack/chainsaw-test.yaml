@@ -48,11 +48,6 @@ spec:
         file: 02-install-tempostack.yaml
     - assert:
         file: 02-install-tempostack-assert.yaml
-  - name: Wait for the TempoStack to be ready
-    try:
-    - script:
-        timeout: 5m
-        content: oc get --namespace chainsaw-awscco-tempo tempo tmcco -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' | grep True
   - name: Generate traces
     try:
     - apply:

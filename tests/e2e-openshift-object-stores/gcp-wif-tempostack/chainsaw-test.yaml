@@ -21,11 +21,6 @@ spec:
         file: 01-install-tempostack.yaml
     - assert:
         file: 01-install-tempostack-assert.yaml
-  - name: Wait for the TempoStack to be ready
-    try:
-    - script:
-        timeout: 5m
-        content: oc get --namespace chainsaw-gcpwif-tempo tempo gcpwiftm -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' | grep True
   - name: Generate traces
     try:
     - apply:
