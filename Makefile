@@ -429,9 +429,12 @@ e2e-openshift-tshirt-sizes:
 # reconcile count tests
 .PHONY: e2e-reconcile-count
 e2e-reconcile-count: chainsaw
+	@echo "Patching operator deployment to set log level to debug"
 	kubectl patch deployment -n $(OPERATOR_NAMESPACE) tempo-operator-controller --type=json \
 		-p '[{"op":"replace","path":"/spec/template/spec/containers/0/args/0","value":"--zap-log-level=1"}]'
 	kubectl rollout --namespace $(OPERATOR_NAMESPACE) status deployment/tempo-operator-controller
+	@echo "Waiting for webhook to become ready..."
+	@until kubectl create -n default --dry-run=server -f ./tests/e2e-reconcile-count/01-install-tempo.yaml > /dev/null 2>&1; do sleep 2; done
 	$(CHAINSAW) test --test-dir ./tests/e2e-reconcile-count
 
 # upgrade tests
