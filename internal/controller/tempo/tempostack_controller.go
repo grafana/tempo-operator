@@ -86,40 +86,51 @@ func (r *TempoStackReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	tempo := v1alpha1.TempoStack{}
 	if err := r.Get(ctx, req.NamespacedName, &tempo); err != nil {
-		if !apierrors.IsNotFound(err) {
-			log.Error(err, "unable to fetch TempoStack")
-			return ctrl.Result{}, fmt.Errorf("could not fetch tempo: %w", err)
-		}
-		// instance is not found, metrics can be cleared
-		status.ClearTempoStackMetrics(req.Namespace, req.Name)
+		if apierrors.IsNotFound(err) {
+			// instance is not found, metrics can be cleared
+			status.ClearTempoStackMetrics(req.Namespace, req.Name)
 
-		// we'll ignore not-found errors, since they can't be fixed by an immediate
-		// requeue (we'll need to wait for a new notification), and we can get them
-		// on deleted requests.
-		return ctrl.Result{}, nil
+			// we'll ignore not-found errors, since they can't be fixed by an immediate
+			// requeue (we'll need to wait for a new notification), and we can get them
+			// on deleted requests.
+			return ctrl.Result{}, nil
+		}
+
+		log.Error(err, "unable to fetch TempoStack")
+		return ctrl.Result{}, fmt.Errorf("could not fetch tempo: %w", err)
 	}
 
-	// We have a deletion, short circuit and let the deletion happen
-	if deletionTimestamp := tempo.GetDeletionTimestamp(); deletionTimestamp != nil {
+	// examine DeletionTimestamp to determine if object is under deletion
+	if tempo.ObjectMeta.DeletionTimestamp.IsZero() {
+		// The object is not being deleted, so if it does not have our finalizer,
+		// then let's add the finalizer and update the object. This is equivalent
+		// to registering our finalizer.
+		if !controllerutil.ContainsFinalizer(&tempo, v1alpha1.TempoFinalizer) {
+			controllerutil.AddFinalizer(&tempo, v1alpha1.TempoFinalizer)
+			if err := r.Update(ctx, &tempo); err != nil {
+				return ctrl.Result{}, err
+			}
+		}
+	} else {
+		// The object is being deleted
 		if controllerutil.ContainsFinalizer(&tempo, v1alpha1.TempoFinalizer) {
-			// If the finalization logic fails, don't remove the finalizer so
-			// that we can retry during the next reconciliation.
+			// our finalizer is present, so let's handle any external dependency
 			if err := finalize(ctx, r.Client, log, manifestutils.ClusterScopedCommonLabels(tempo.ObjectMeta)); err != nil {
+				// if fail to delete the external dependency here, return with error
+				// so that it can be retried.
 				log.Error(err, "failed to finalize, re-reconciling")
 				return ctrl.Result{}, err
 			}
 
-			// Once all finalizers have been
-			// removed, the object will be deleted.
-			if controllerutil.RemoveFinalizer(&tempo, v1alpha1.TempoFinalizer) {
-				err := r.Update(ctx, &tempo)
-				if err != nil {
-					log.Error(err, "failed to remove finalizer, re-reconciling")
-					return ctrl.Result{}, err
-				}
+			// remove our finalizer from the list and update it.
+			controllerutil.RemoveFinalizer(&tempo, v1alpha1.TempoFinalizer)
+			if err := r.Update(ctx, &tempo); err != nil {
+				log.Error(err, "failed to remove finalizer, re-reconciling")
+				return ctrl.Result{}, err
 			}
 		}
 
+		// Stop reconciliation as the item is being deleted
 		return ctrl.Result{}, nil
 	}
 
@@ -149,16 +160,6 @@ func (r *TempoStackReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		err := handlers.CreateOrRotateCertificates(ctx, log, req, r.Client, r.Scheme, r.CtrlConfig.Gates, certrotation.TempoStackComponentCertSecretNames(req.Name))
 		if err != nil {
 			return r.handleReconcileStatus(ctx, log, tempo, fmt.Errorf("built in cert manager error: %w", err))
-		}
-	}
-
-	// Add finalizer for this CR
-	if !controllerutil.ContainsFinalizer(&tempo, v1alpha1.TempoFinalizer) {
-		if controllerutil.AddFinalizer(&tempo, v1alpha1.TempoFinalizer) {
-			err := r.Update(ctx, &tempo)
-			if err != nil {
-				return ctrl.Result{}, err
-			}
 		}
 	}
 
