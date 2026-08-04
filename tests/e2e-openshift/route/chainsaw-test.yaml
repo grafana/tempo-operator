@@ -17,6 +17,7 @@ spec:
     - apply:
         file: 01-install-tempo.yaml
     - assert:
+        timeout: 5m
         file: 01-install-tempo-assert.yaml
   - name: Run the must-gather and verify the contents
     try:

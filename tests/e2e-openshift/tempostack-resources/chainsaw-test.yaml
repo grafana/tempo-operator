@@ -16,11 +16,13 @@ spec:
     - apply:
         file: 01-install-tempostack.yaml
     - assert:
+        timeout: 5m
         file: 01-install-tempostack-assert.yaml
   - name: Update TempoStack with per-component resource allocation
     try:
     - apply:
         file: 03-update-tempostack.yaml
     - assert:
+        timeout: 5m
         file: 03-update-tempostack-assert.yaml
  

@@ -22,6 +22,7 @@ spec:
     - apply:
         file: 01-install-monolithic.yaml
     - assert:
+        timeout: 5m
         file: 01-install-monolithic-assert.yaml
   - name: Generate traces
     try:

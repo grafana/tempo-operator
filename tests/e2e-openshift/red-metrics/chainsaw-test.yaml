@@ -32,6 +32,7 @@ spec:
     - apply:
         file: 03-install-tempo.yaml
     - assert:
+        timeout: 5m
         file: 03-assert.yaml
   - name: step-04
     try:

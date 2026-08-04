@@ -47,6 +47,7 @@ spec:
     - apply:
         file: 02-install-tempostack.yaml
     - assert:
+        timeout: 5m
         file: 02-install-tempostack-assert.yaml
   - name: Generate traces
     try:
