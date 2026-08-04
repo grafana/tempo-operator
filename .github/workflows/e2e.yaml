@@ -59,7 +59,7 @@ jobs:
       if: failure()
       run: |
         echo "=== Operator logs ==="
-        kubectl logs -n tempo-operator-system deployment/tempo-operator-controller --tail=100
+        kubectl logs -n tempo-operator-system deployment/tempo-operator-controller
 
 
   upgrade-tests:
@@ -156,4 +156,4 @@ jobs:
       if: failure()
       run: |
         echo "=== Operator logs ==="
-        kubectl logs -n tempo-operator-system deployment/tempo-operator-controller --tail=100
+        kubectl logs -n tempo-operator-system deployment/tempo-operator-controller
