@@ -5,6 +5,7 @@ metadata:
   name: configuration
 spec:
   timeouts:
+    apply: 30s
     assert: 2m30s
     cleanup: 2m30s
     delete: 2m30s
