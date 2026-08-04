@@ -83,6 +83,9 @@ func TestSetComponentsStatus_WhenSomePodPending(t *testing.T) {
 					},
 					Status: corev1.PodStatus{
 						Phase: corev1.PodRunning,
+						ContainerStatuses: []corev1.ContainerStatus{{
+							Ready: true,
+						}},
 					},
 				},
 			},
@@ -100,7 +103,7 @@ func TestSetComponentsStatus_WhenSomePodPending(t *testing.T) {
 
 	expectedComponents := v1alpha1.PodStatusMap{
 		"Pending": []string{"pod-a"},
-		"Running": []string{"pod-b"},
+		"Ready":   []string{"pod-b"},
 	}
 
 	expected := v1alpha1.TempoStackStatus{
@@ -151,6 +154,9 @@ func TestSetComponentsStatus_WhenSomePodFailed(t *testing.T) {
 					},
 					Status: corev1.PodStatus{
 						Phase: corev1.PodRunning,
+						ContainerStatuses: []corev1.ContainerStatus{{
+							Ready: true,
+						}},
 					},
 				},
 			},
@@ -167,8 +173,8 @@ func TestSetComponentsStatus_WhenSomePodFailed(t *testing.T) {
 	}
 
 	expectedComponents := v1alpha1.PodStatusMap{
-		"Failed":  []string{"pod-a"},
-		"Running": []string{"pod-b"},
+		"Failed": []string{"pod-a"},
+		"Ready":  []string{"pod-b"},
 	}
 
 	expected := v1alpha1.TempoStackStatus{
@@ -219,6 +225,9 @@ func TestSetComponentsStatus_WhenSomePodUnknow(t *testing.T) {
 					},
 					Status: corev1.PodStatus{
 						Phase: corev1.PodRunning,
+						ContainerStatuses: []corev1.ContainerStatus{{
+							Ready: true,
+						}},
 					},
 				},
 			},
@@ -236,7 +245,7 @@ func TestSetComponentsStatus_WhenSomePodUnknow(t *testing.T) {
 
 	expectedComponents := v1alpha1.PodStatusMap{
 		"Unknown": []string{"pod-a"},
-		"Running": []string{"pod-b"},
+		"Ready":   []string{"pod-b"},
 	}
 
 	expected := v1alpha1.TempoStackStatus{
@@ -267,7 +276,7 @@ func TestSetComponentsStatus_WhenSomePodUnknow(t *testing.T) {
 	assert.Equal(t, expected, components)
 }
 
-func TestSetComponentsStatus_WhenAllReady(t *testing.T) {
+func TestSetComponentsStatus_WhenSomePodRunningNotReady(t *testing.T) {
 	k := &statusClientStub{}
 
 	k.GetPodsComponentStub = func(ctx context.Context, componentName string, stack v1alpha1.TempoStack) (*corev1.PodList, error) {
@@ -279,6 +288,9 @@ func TestSetComponentsStatus_WhenAllReady(t *testing.T) {
 					},
 					Status: corev1.PodStatus{
 						Phase: corev1.PodRunning,
+						ContainerStatuses: []corev1.ContainerStatus{{
+							Ready: false,
+						}},
 					},
 				},
 				{
@@ -287,6 +299,9 @@ func TestSetComponentsStatus_WhenAllReady(t *testing.T) {
 					},
 					Status: corev1.PodStatus{
 						Phase: corev1.PodRunning,
+						ContainerStatuses: []corev1.ContainerStatus{{
+							Ready: true,
+						}},
 					},
 				},
 			},
@@ -303,7 +318,81 @@ func TestSetComponentsStatus_WhenAllReady(t *testing.T) {
 	}
 
 	expectedComponents := v1alpha1.PodStatusMap{
-		"Running": []string{"pod-a", "pod-b"},
+		"Running": []string{"pod-a"},
+		"Ready":   []string{"pod-b"},
+	}
+
+	expected := v1alpha1.TempoStackStatus{
+		Components: v1alpha1.ComponentStatus{
+			Compactor:     expectedComponents,
+			Ingester:      expectedComponents,
+			Distributor:   expectedComponents,
+			Querier:       expectedComponents,
+			QueryFrontend: expectedComponents,
+			Gateway:       expectedComponents,
+		},
+	}
+
+	components, err := GetComponentsStatus(context.TODO(), k, s)
+
+	// Don't care about timing
+	now := metav1.Now()
+	expected.Conditions = append(expected.Conditions, metav1.Condition{
+		Type:               string(v1alpha1.ConditionPending),
+		Message:            messagePending,
+		Reason:             string(v1alpha1.ReasonPendingComponents),
+		LastTransitionTime: now,
+		Status:             metav1.ConditionTrue,
+	})
+	components.Conditions[0].LastTransitionTime = now
+
+	require.NoError(t, err)
+	assert.Equal(t, expected, components)
+}
+
+func TestSetComponentsStatus_WhenAllReady(t *testing.T) {
+	k := &statusClientStub{}
+
+	k.GetPodsComponentStub = func(ctx context.Context, componentName string, stack v1alpha1.TempoStack) (*corev1.PodList, error) {
+		pods := corev1.PodList{
+			Items: []corev1.Pod{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "pod-a",
+					},
+					Status: corev1.PodStatus{
+						Phase: corev1.PodRunning,
+						ContainerStatuses: []corev1.ContainerStatus{{
+							Ready: true,
+						}},
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "pod-b",
+					},
+					Status: corev1.PodStatus{
+						Phase: corev1.PodRunning,
+						ContainerStatuses: []corev1.ContainerStatus{{
+							Ready: true,
+						}},
+					},
+				},
+			},
+		}
+		return &pods, nil
+
+	}
+
+	s := v1alpha1.TempoStack{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "my-stack",
+			Namespace: "some-ns",
+		},
+	}
+
+	expectedComponents := v1alpha1.PodStatusMap{
+		"Ready": []string{"pod-a", "pod-b"},
 	}
 
 	expected := v1alpha1.TempoStackStatus{

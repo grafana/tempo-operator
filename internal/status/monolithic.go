@@ -20,15 +20,6 @@ import (
 	"github.com/grafana/tempo-operator/internal/version"
 )
 
-func isPodReady(pod corev1.Pod) bool {
-	for _, c := range pod.Status.ContainerStatuses {
-		if !c.Ready {
-			return false
-		}
-	}
-	return true
-}
-
 func getStatefulSetStatus(ctx context.Context, c client.Client, namespace string, name string, component string) (v1alpha1.PodStatusMap, error) {
 	psm := v1alpha1.PodStatusMap{}
 
@@ -42,7 +33,7 @@ func getStatefulSetStatus(ctx context.Context, c client.Client, namespace string
 	// therefore we additionally check if the StatefulSet has the required number of readyReplicas.
 	//
 	// This additional check also helps with Pods in terminating state, which otherwise would show up
-	// as Pods with PodPhase = Running.
+	// as running Pods.
 	stss := &appsv1.StatefulSetList{}
 	err := c.List(ctx, stss, opts...)
 	if err != nil {
@@ -50,7 +41,7 @@ func getStatefulSetStatus(ctx context.Context, c client.Client, namespace string
 	}
 	for _, sts := range stss.Items {
 		if sts.Status.ReadyReplicas < ptr.Deref(sts.Spec.Replicas, 1) {
-			psm[corev1.PodPending] = append(psm[corev1.PodPending], sts.Name)
+			psm[v1alpha1.PodPending] = append(psm[v1alpha1.PodPending], sts.Name)
 			return psm, nil
 		}
 	}
@@ -61,14 +52,8 @@ func getStatefulSetStatus(ctx context.Context, c client.Client, namespace string
 		return nil, err
 	}
 	for _, pod := range pods.Items {
-		phase := pod.Status.Phase
-		if phase == corev1.PodRunning {
-			// for the component status consider running, but not ready, pods as pending
-			if !isPodReady(pod) {
-				phase = corev1.PodPending
-			}
-		}
-		psm[phase] = append(psm[phase], pod.Name)
+		status := podStatus(&pod)
+		psm[status] = append(psm[status], pod.Name)
 	}
 
 	return psm, nil
@@ -122,7 +107,8 @@ func updateConditions(conditions *[]metav1.Condition, componentsStatus v1alpha1.
 		Reason:  string(v1alpha1.ReasonPendingComponents),
 		Message: messagePending,
 		Status: conditionStatus(
-			len(componentsStatus.Tempo[corev1.PodPending]) > 0,
+			len(componentsStatus.Tempo[v1alpha1.PodPending]) > 0 ||
+				len(componentsStatus.Tempo[v1alpha1.PodRunning]) > 0,
 		),
 	}
 
@@ -151,7 +137,7 @@ func updateConditions(conditions *[]metav1.Condition, componentsStatus v1alpha1.
 			Message: reconcileError.Error(),
 			Status:  metav1.ConditionTrue,
 		}
-	} else if len(componentsStatus.Tempo[corev1.PodFailed]) > 0 {
+	} else if len(componentsStatus.Tempo[v1alpha1.PodFailed]) > 0 {
 		failed = metav1.Condition{
 			Type:    string(v1alpha1.ConditionFailed),
 			Reason:  string(v1alpha1.ReasonFailedComponents),

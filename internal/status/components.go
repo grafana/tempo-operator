@@ -10,6 +10,24 @@ import (
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 )
 
+func podStatus(pod *corev1.Pod) v1alpha1.PodStatus {
+	switch pod.Status.Phase {
+	case corev1.PodFailed:
+		return v1alpha1.PodFailed
+	case corev1.PodPending:
+		return v1alpha1.PodPending
+	case corev1.PodRunning:
+		for _, c := range pod.Status.ContainerStatuses {
+			if !c.Ready {
+				return v1alpha1.PodRunning
+			}
+		}
+		return v1alpha1.PodReady
+	default:
+		return v1alpha1.PodStatusUnknown
+	}
+}
+
 // SetComponentsStatus updates the pod status map component.
 func componentsStatus(ctx context.Context, c StatusClient, s v1alpha1.TempoStack) (v1alpha1.ComponentStatus, error) {
 
@@ -64,8 +82,8 @@ func appendPodStatus(ctx context.Context, c StatusClient, componentName string, 
 	}
 
 	for _, pod := range pods.Items {
-		phase := pod.Status.Phase
-		psm[phase] = append(psm[phase], pod.Name)
+		status := podStatus(&pod)
+		psm[status] = append(psm[status], pod.Name)
 	}
 	return psm, nil
 }
@@ -82,19 +100,19 @@ func GetComponentsStatus(ctx context.Context, k StatusClient, s v1alpha1.TempoSt
 	s.Status.Components = cs
 
 	// Check for failed pods first
-	failed := len(cs.Compactor[corev1.PodFailed]) +
-		len(cs.Distributor[corev1.PodFailed]) +
-		len(cs.Ingester[corev1.PodFailed]) +
-		len(cs.Querier[corev1.PodFailed]) +
-		len(cs.QueryFrontend[corev1.PodFailed]) +
-		len(cs.MetricsGenerator[corev1.PodFailed])
+	failed := len(cs.Compactor[v1alpha1.PodFailed]) +
+		len(cs.Distributor[v1alpha1.PodFailed]) +
+		len(cs.Ingester[v1alpha1.PodFailed]) +
+		len(cs.Querier[v1alpha1.PodFailed]) +
+		len(cs.QueryFrontend[v1alpha1.PodFailed]) +
+		len(cs.MetricsGenerator[v1alpha1.PodFailed])
 
-	unknown := len(cs.Compactor[corev1.PodUnknown]) +
-		len(cs.Distributor[corev1.PodUnknown]) +
-		len(cs.Ingester[corev1.PodUnknown]) +
-		len(cs.Querier[corev1.PodUnknown]) +
-		len(cs.QueryFrontend[corev1.PodUnknown]) +
-		len(cs.MetricsGenerator[corev1.PodUnknown])
+	unknown := len(cs.Compactor[v1alpha1.PodStatusUnknown]) +
+		len(cs.Distributor[v1alpha1.PodStatusUnknown]) +
+		len(cs.Ingester[v1alpha1.PodStatusUnknown]) +
+		len(cs.Querier[v1alpha1.PodStatusUnknown]) +
+		len(cs.QueryFrontend[v1alpha1.PodStatusUnknown]) +
+		len(cs.MetricsGenerator[v1alpha1.PodStatusUnknown])
 
 	if failed != 0 || unknown != 0 {
 		s.Status.Conditions = FailedCondition(s)
@@ -102,14 +120,22 @@ func GetComponentsStatus(ctx context.Context, k StatusClient, s v1alpha1.TempoSt
 	}
 
 	// Check for pending pods
-	pending := len(cs.Compactor[corev1.PodPending]) +
-		len(cs.Distributor[corev1.PodPending]) +
-		len(cs.Ingester[corev1.PodPending]) +
-		len(cs.Querier[corev1.PodPending]) +
-		len(cs.QueryFrontend[corev1.PodPending]) +
-		len(cs.MetricsGenerator[corev1.PodPending])
+	pending := len(cs.Compactor[v1alpha1.PodPending]) +
+		len(cs.Distributor[v1alpha1.PodPending]) +
+		len(cs.Ingester[v1alpha1.PodPending]) +
+		len(cs.Querier[v1alpha1.PodPending]) +
+		len(cs.QueryFrontend[v1alpha1.PodPending]) +
+		len(cs.MetricsGenerator[v1alpha1.PodPending])
 
-	if pending != 0 {
+	// Check for running (not ready) pods
+	running := len(cs.Compactor[v1alpha1.PodRunning]) +
+		len(cs.Distributor[v1alpha1.PodRunning]) +
+		len(cs.Ingester[v1alpha1.PodRunning]) +
+		len(cs.Querier[v1alpha1.PodRunning]) +
+		len(cs.QueryFrontend[v1alpha1.PodRunning]) +
+		len(cs.MetricsGenerator[v1alpha1.PodRunning])
+
+	if pending != 0 || running != 0 {
 		s.Status.Conditions = PendingCondition(s)
 		return s.Status, nil
 
