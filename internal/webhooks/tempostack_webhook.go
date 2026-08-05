@@ -324,6 +324,18 @@ func (v *validator) validateReplicationFactor(tempo v1alpha1.TempoStack) field.E
 	return nil
 }
 
+// jaegerQueryDeprecationWarning is returned when the deprecated Jaeger Query component is enabled.
+const jaegerQueryDeprecationWarning = "spec.template.queryFrontend.jaegerQuery.enabled is deprecated and will be removed in a future release"
+
+// validateJaegerQueryDeprecation warns that the Jaeger Query component is deprecated.
+// The stack keeps working, therefore this is a warning and not an error.
+func (v *validator) validateJaegerQueryDeprecation(tempo v1alpha1.TempoStack) admission.Warnings {
+	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled {
+		return admission.Warnings{jaegerQueryDeprecationWarning}
+	}
+	return nil
+}
+
 func (v *validator) validateQueryFrontend(tempo v1alpha1.TempoStack) field.ErrorList {
 	path := field.NewPath("spec").Child("template").Child("queryFrontend").Child("jaegerQuery").Child("ingress").Child("type")
 
@@ -610,6 +622,7 @@ func (v *validator) validate(ctx context.Context, tempo *v1alpha1.TempoStack) (a
 
 	allErrors = append(allErrors, v.validateReplicationFactor(*tempo)...)
 	allErrors = append(allErrors, v.validateQueryFrontend(*tempo)...)
+	allWarnings = append(allWarnings, v.validateJaegerQueryDeprecation(*tempo)...)
 	addValidationResults(v.validateGateway(ctx, *tempo))
 	allErrors = append(allErrors, v.validateTenantConfigs(*tempo)...)
 	allErrors = append(allErrors, v.validateObservability(*tempo)...)
