@@ -28,6 +28,7 @@ kind: Deployment
 metadata:
   name: tempo-extra-small-distributor
 spec:
+  replicas: 2
   template:
     spec:
       containers:
@@ -42,6 +43,7 @@ kind: Deployment
 metadata:
   name: tempo-extra-small-querier
 spec:
+  replicas: 2
   template:
     spec:
       containers:
@@ -56,6 +58,7 @@ kind: Deployment
 metadata:
   name: tempo-extra-small-query-frontend
 spec:
+  replicas: 2
   template:
     spec:
       containers:
@@ -80,6 +83,7 @@ kind: Deployment
 metadata:
   name: tempo-extra-small-compactor
 spec:
+  replicas: 2
   template:
     spec:
       containers:
@@ -94,6 +98,7 @@ kind: Deployment
 metadata:
   name: tempo-extra-small-gateway
 spec:
+  replicas: 2
   template:
     spec:
       containers:

@@ -1,0 +1,35 @@
+# One of 'breaking', 'deprecation', 'new_component', 'enhancement', 'bug_fix'
+change_type: enhancement
+
+# The name of the component, or a single word describing the area of concern, (e.g. tempostack, tempomonolithic, github action)
+component: tempostack
+
+# A brief description of the change. Surround your text with quotes ("") if it needs to start with a backtick (`).
+note: Default per-component replica counts from the t-shirt size so non-demo sizes are highly available.
+
+# One or more tracking issues related to the change
+issues: [1345]
+
+# (Optional) One or more lines of additional information to render under the primary note.
+# These lines will be padded with 2 spaces and then inserted directly into the document.
+# Use pipe (|) for multiline entries.
+subtext: |
+  Previously only the ingester replica count was derived from the size (via the replication
+  factor quorum); all other components defaulted to a single replica, leaving them as single
+  points of failure. Now every non-demo size (`1x.pico`, `1x.extra-small`, `1x.small`,
+  `1x.medium`) defaults each component to at least 2 replicas, and scales the throughput-bound
+  components (distributor, querier, metrics-generator) at the larger sizes:
+
+  | component        | pico | extra-small | small | medium |
+  |------------------|------|-------------|-------|--------|
+  | distributor      | 2    | 2           | 3     | 4      |
+  | querier          | 2    | 2           | 3     | 5      |
+  | query-frontend   | 2    | 2           | 2     | 2      |
+  | compactor        | 2    | 2           | 2     | 3      |
+  | gateway          | 2    | 2           | 2     | 2      |
+  | metrics-generator| 2    | 2           | 3     | 3      |
+
+  The ingester replica count continues to be derived from the replication factor
+  (quorum = floor(RF/2)+1). `1x.demo` is unchanged and runs a single replica of every
+  component. Explicit per-component `replicas` overrides always take precedence over the
+  size defaults.

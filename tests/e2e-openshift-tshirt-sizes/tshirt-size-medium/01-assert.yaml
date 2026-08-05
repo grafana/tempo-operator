@@ -28,6 +28,7 @@ kind: Deployment
 metadata:
   name: tempo-medium-distributor
 spec:
+  replicas: 4
   template:
     spec:
       containers:
@@ -42,6 +43,7 @@ kind: Deployment
 metadata:
   name: tempo-medium-querier
 spec:
+  replicas: 5
   template:
     spec:
       containers:
@@ -56,6 +58,7 @@ kind: Deployment
 metadata:
   name: tempo-medium-query-frontend
 spec:
+  replicas: 2
   template:
     spec:
       containers:
@@ -80,6 +83,7 @@ kind: Deployment
 metadata:
   name: tempo-medium-compactor
 spec:
+  replicas: 3
   template:
     spec:
       containers:
@@ -94,6 +98,7 @@ kind: Deployment
 metadata:
   name: tempo-medium-gateway
 spec:
+  replicas: 2
   template:
     spec:
       containers:
