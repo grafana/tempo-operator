@@ -2776,6 +2776,38 @@ func TestWarning(t *testing.T) {
 			},
 		},
 		{
+			name: "warning for the deprecated jaeger query",
+			input: &v1alpha1.TempoStack{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-obj",
+					Namespace: "abc",
+				},
+				TypeMeta: gvType,
+				Spec: v1alpha1.TempoStackSpec{
+					ServiceAccount: naming.DefaultServiceAccountName("test-obj"),
+					Storage: v1alpha1.ObjectStorageSpec{
+						Secret: v1alpha1.ObjectStorageSecretSpec{
+							Name: "not-found",
+						},
+					},
+					Template: v1alpha1.TempoTemplateSpec{
+						Ingester: v1alpha1.TempoComponentSpec{
+							Replicas: func(i int32) *int32 { return &i }(1),
+						},
+						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+							JaegerQuery: v1alpha1.JaegerQuerySpec{
+								Enabled: true,
+							},
+						},
+					},
+				},
+			},
+			client: &k8sFake{
+				secret: &corev1.Secret{},
+			},
+			expected: admission.Warnings{jaegerQueryDeprecationWarning},
+		},
+		{
 			name: "no extra config used",
 			input: &v1alpha1.TempoStack{
 				ObjectMeta: metav1.ObjectMeta{
@@ -2968,6 +3000,42 @@ func TestValidateMetricsGenerator(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			assert.Equal(t, tc.expected, v.validateMetricsGenerator(tc.input))
+		})
+	}
+}
+
+func TestValidateJaegerQueryDeprecation(t *testing.T) {
+	validator := &validator{}
+
+	tests := []struct {
+		name     string
+		enabled  bool
+		expected admission.Warnings
+	}{
+		{
+			name:     "jaegerQuery disabled",
+			enabled:  false,
+			expected: nil,
+		},
+		{
+			name:     "jaegerQuery enabled",
+			enabled:  true,
+			expected: admission.Warnings{jaegerQueryDeprecationWarning},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			tempo := v1alpha1.TempoStack{
+				Spec: v1alpha1.TempoStackSpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+							JaegerQuery: v1alpha1.JaegerQuerySpec{Enabled: test.enabled},
+						},
+					},
+				},
+			}
+			assert.Equal(t, test.expected, validator.validateJaegerQueryDeprecation(tempo))
 		})
 	}
 }
