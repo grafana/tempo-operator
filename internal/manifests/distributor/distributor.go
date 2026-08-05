@@ -73,6 +73,8 @@ func BuildDistributor(params manifestutils.Params) ([]client.Object, error) {
 
 	}
 
+	objects = append(objects, manifestutils.NewPodDisruptionBudget(tempo, manifestutils.DistributorComponentName))
+
 	return objects, nil
 }
 

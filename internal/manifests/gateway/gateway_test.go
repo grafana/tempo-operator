@@ -189,7 +189,7 @@ func TestBuildGateway_openshift(t *testing.T) {
 		},
 	})
 	require.NoError(t, err)
-	assert.Equal(t, 9, len(objects))
+	assert.Equal(t, 10, len(objects))
 	obj := getObjectByTypeAndName(objects, "tempo-simplest-gateway", reflect.TypeOf(&appsv1.Deployment{}))
 	require.NotNil(t, obj)
 	dep, ok := obj.(*appsv1.Deployment)
@@ -700,7 +700,7 @@ func TestTLSParameters(t *testing.T) {
 	})
 
 	require.NoError(t, err)
-	assert.Equal(t, 4, len(objects))
+	assert.Equal(t, 5, len(objects))
 	obj := getObjectByTypeAndName(objects, "tempo-simplest-gateway", reflect.TypeOf(&appsv1.Deployment{}))
 	require.NotNil(t, obj)
 
@@ -730,7 +730,7 @@ func TestTLSParameters(t *testing.T) {
 		},
 	})
 	require.NoError(t, err)
-	assert.Equal(t, 4, len(objects))
+	assert.Equal(t, 5, len(objects))
 	obj = getObjectByTypeAndName(objects, "tempo-simplest-gateway", reflect.TypeOf(&appsv1.Deployment{}))
 	require.NotNil(t, obj)
 
@@ -799,7 +799,7 @@ func TestIngress(t *testing.T) {
 	}})
 
 	require.NoError(t, err)
-	require.Equal(t, 5, len(objects))
+	require.Equal(t, 6, len(objects))
 	pathType := networkingv1.PathTypePrefix
 	assert.Equal(t, &networkingv1.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
@@ -888,7 +888,7 @@ func TestRoute(t *testing.T) {
 	}})
 
 	require.NoError(t, err)
-	require.Equal(t, 5, len(objects))
+	require.Equal(t, 6, len(objects))
 	assert.Equal(t, &routev1.Route{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      naming.Name(manifestutils.GatewayComponentName, "test"),

@@ -39,7 +39,7 @@ func TestBuildDistributor(t *testing.T) {
 		{
 			name:            "Gateway disabled",
 			enableGateway:   false,
-			expectedObjects: 2,
+			expectedObjects: 3,
 			expectedContainerPorts: []corev1.ContainerPort{
 				{
 					Name:          manifestutils.PortOtlpHttpName,
@@ -185,7 +185,7 @@ func TestBuildDistributor(t *testing.T) {
 		},
 		{
 			name:            "Receiver TLS enable",
-			expectedObjects: 2,
+			expectedObjects: 3,
 			enableGateway:   false,
 			receiverTLS: v1alpha1.TLSSpec{
 				Enabled: true,
@@ -365,7 +365,7 @@ func TestBuildDistributor(t *testing.T) {
 		},
 		{
 			name:            "Receiver TLS enable with ServingCertsService feature enabled",
-			expectedObjects: 2,
+			expectedObjects: 3,
 			enableGateway:   false,
 			receiverTLS: v1alpha1.TLSSpec{
 				Enabled: true,
@@ -550,7 +550,7 @@ func TestBuildDistributor(t *testing.T) {
 			expectedServiceAnnotations: map[string]string{
 				"service.beta.openshift.io/serving-cert-secret-name": "tempo-test-distributor-serving-cert",
 			},
-			expectedObjects: 3,
+			expectedObjects: 4,
 			receiverTLS: v1alpha1.TLSSpec{
 				Enabled: true,
 			},
@@ -730,7 +730,7 @@ func TestBuildDistributor(t *testing.T) {
 		{
 			name:            "Gateway enable",
 			enableGateway:   true,
-			expectedObjects: 2,
+			expectedObjects: 3,
 			expectedContainerPorts: []corev1.ContainerPort{
 				{
 					Name:          manifestutils.PortOtlpHttpName,
@@ -822,7 +822,7 @@ func TestBuildDistributor(t *testing.T) {
 		{
 			name:            "set InstanceAddrType to PodIP",
 			enableGateway:   false,
-			expectedObjects: 2,
+			expectedObjects: 3,
 			expectedContainerPorts: []corev1.ContainerPort{
 				{
 					Name:          manifestutils.PortOtlpHttpName,

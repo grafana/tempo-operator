@@ -47,7 +47,11 @@ func BuildQuerier(params manifestutils.Params) ([]client.Object, error) {
 
 	manifestutils.PatchEnvVars(&d.Spec.Template.Spec, "tempo", tempo.Spec.Env, tempo.Spec.EnvFrom)
 
-	return []client.Object{d, service(tempo)}, nil
+	return []client.Object{
+		d,
+		service(tempo),
+		manifestutils.NewPodDisruptionBudget(tempo, manifestutils.QuerierComponentName),
+	}, nil
 }
 
 func resources(tempo v1alpha1.TempoStack) corev1.ResourceRequirements {

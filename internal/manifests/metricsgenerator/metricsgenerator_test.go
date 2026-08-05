@@ -73,7 +73,7 @@ func TestBuildMetricsGenerator(t *testing.T) {
 
 	objects, err := BuildMetricsGenerator(newParams(tempo))
 	require.NoError(t, err)
-	assert.Len(t, objects, 2)
+	assert.Len(t, objects, 3)
 
 	labels := manifestutils.ComponentLabels(manifestutils.MetricsGeneratorComponentName, "test")
 	annotations := manifestutils.CommonAnnotations("")
@@ -246,7 +246,7 @@ func TestBuildMetricsGeneratorUsesDefaultImage(t *testing.T) {
 
 	objects, err := BuildMetricsGenerator(params)
 	require.NoError(t, err)
-	require.Len(t, objects, 2)
+	require.Len(t, objects, 3)
 
 	d, ok := objects[0].(*v1.Deployment)
 	require.True(t, ok)
@@ -270,7 +270,7 @@ func TestBuildMetricsGeneratorOverrideResources(t *testing.T) {
 
 	objects, err := BuildMetricsGenerator(newParams(tempo))
 	require.NoError(t, err)
-	require.Len(t, objects, 2)
+	require.Len(t, objects, 3)
 
 	d, ok := objects[0].(*v1.Deployment)
 	require.True(t, ok)
@@ -289,7 +289,7 @@ func TestBuildMetricsGeneratorHashRingPodIP(t *testing.T) {
 
 	objects, err := BuildMetricsGenerator(newParams(tempo))
 	require.NoError(t, err)
-	require.Len(t, objects, 2)
+	require.Len(t, objects, 3)
 
 	d, ok := objects[0].(*v1.Deployment)
 	require.True(t, ok)
