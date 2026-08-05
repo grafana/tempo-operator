@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring,Observability
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.21.0
-    createdAt: "2026-07-24T12:47:09Z"
+    createdAt: "2026-08-04T04:54:05Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -906,9 +906,40 @@ spec:
           The SamplingFraction has to be defined to enable tracing.
         displayName: Sampling Fraction
         path: observability.tracing.sampling_fraction
-      - description: The replication factor is a configuration setting that determines
-          how many ingesters need to acknowledge the data from the distributors before
-          accepting a span.
+      - description: Replication defines the configuration of the replication factor
+          and zone awareness.
+        displayName: Replication Spec
+        path: replication
+      - description: |-
+          Factor defines the number of ingesters that need to acknowledge the data from the distributors
+          before accepting a span.
+        displayName: Replication Factor
+        path: replication.factor
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:number
+      - description: |-
+          Zones defines an array of ZoneSpec that the scheduler will try to satisfy.
+
+
+          IMPORTANT: Make sure that the replication factor defined is less than or equal to the number of
+          available zones.
+        displayName: Zones Spec
+        path: replication.zones
+      - description: MaxSkew describes the maximum degree to which Pods can be unevenly
+          distributed.
+        displayName: Max Skew
+        path: replication.zones[0].maxSkew
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:number
+      - description: TopologyKey is the key that defines a topology in the Nodes'
+          labels.
+        displayName: Topology Key
+        path: replication.zones[0].topologyKey
+      - description: |-
+          The replication factor is a configuration setting that determines how many ingesters need to acknowledge the data from the distributors before accepting a span.
+
+
+          Deprecated: Please use replication.factor instead.
         displayName: Replication Factor
         path: replicationFactor
       - description: Resources defines resources configuration.
@@ -1544,6 +1575,7 @@ spec:
           - ""
           resources:
           - namespaces
+          - nodes
           verbs:
           - get
           - list

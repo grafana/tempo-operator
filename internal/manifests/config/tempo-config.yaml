@@ -121,9 +121,15 @@ ingester:
       kvstore:
         store: memberlist
       replication_factor: {{ .ReplicationFactor }}
+      {{- if .EnableInstanceAvailabilityZone }}
+      zone_awareness_enabled: true
+      {{- end }}
 {{- with .MemberList.InstanceAddr }}
     address: {{ . }}
 {{- end }}
+    {{- if .EnableInstanceAvailabilityZone }}
+    availability_zone: ${INSTANCE_AVAILABILITY_ZONE}
+    {{- end }}
     tokens_file_path: /var/tempo/tokens.json
     {{- if .MemberList.EnableIPv6 }}
     enable_inet6: true

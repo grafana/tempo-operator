@@ -546,10 +546,47 @@ spec:
                         type: string
                     type: object
                 type: object
+              replication:
+                description: Replication defines the configuration of the replication
+                  factor and zone awareness.
+                properties:
+                  factor:
+                    description: |-
+                      Factor defines the number of ingesters that need to acknowledge the data from the distributors
+                      before accepting a span.
+                    minimum: 1
+                    type: integer
+                  zones:
+                    description: |-
+                      Zones defines an array of ZoneSpec that the scheduler will try to satisfy.
+
+                      IMPORTANT: Make sure that the replication factor defined is less than or equal to the number of
+                      available zones.
+                    items:
+                      description: ZoneSpec defines the spec to support zone-aware
+                        component deployments.
+                      properties:
+                        maxSkew:
+                          default: 1
+                          description: MaxSkew describes the maximum degree to which
+                            Pods can be unevenly distributed.
+                          minimum: 1
+                          type: integer
+                        topologyKey:
+                          description: TopologyKey is the key that defines a topology
+                            in the Nodes' labels.
+                          type: string
+                      required:
+                      - maxSkew
+                      - topologyKey
+                      type: object
+                    type: array
+                type: object
               replicationFactor:
-                description: The replication factor is a configuration setting that
-                  determines how many ingesters need to acknowledge the data from
-                  the distributors before accepting a span.
+                description: |-
+                  The replication factor is a configuration setting that determines how many ingesters need to acknowledge the data from the distributors before accepting a span.
+
+                  Deprecated: Please use replication.factor instead.
                 type: integer
               resources:
                 description: Resources defines resources configuration.

@@ -3043,3 +3043,106 @@ func TestValidateMetricsGenerator(t *testing.T) {
 		})
 	}
 }
+
+func TestDefaultReplicationSpec(t *testing.T) {
+	defaulter := &Defaulter{ctrlConfig: configv1alpha1.DefaultProjectConfig()}
+
+	tests := []struct {
+		name                 string
+		input                v1alpha1.TempoStackSpec
+		expectedFactor       int
+		expectedDeprecatedRF int
+		expectedIngesters    int32
+	}{
+		{
+			name:  "replication.factor takes precedence over the deprecated replicationFactor",
+			input: v1alpha1.TempoStackSpec{ReplicationFactor: 2, Replication: &v1alpha1.ReplicationSpec{Factor: 3}},
+			// a user-set value is never overwritten, the validating webhook warns about the conflict
+			expectedFactor:       3,
+			expectedDeprecatedRF: 2,
+			expectedIngesters:    1,
+		},
+		{
+			name:                 "replication.factor alone is honored",
+			input:                v1alpha1.TempoStackSpec{Size: v1alpha1.SizeSmall, Replication: &v1alpha1.ReplicationSpec{Factor: 3}},
+			expectedFactor:       3,
+			expectedDeprecatedRF: 3,
+			expectedIngesters:    2,
+		},
+		{
+			name:                 "the deprecated replicationFactor keeps working",
+			input:                v1alpha1.TempoStackSpec{ReplicationFactor: 3},
+			expectedFactor:       3,
+			expectedDeprecatedRF: 3,
+			expectedIngesters:    1,
+		},
+		{
+			name:                 "neither field set falls back to the default",
+			input:                v1alpha1.TempoStackSpec{},
+			expectedFactor:       1,
+			expectedDeprecatedRF: 1,
+			expectedIngesters:    1,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			tempo := &v1alpha1.TempoStack{
+				ObjectMeta: metav1.ObjectMeta{Name: "test"},
+				Spec:       test.input,
+			}
+			require.NoError(t, defaulter.Default(context.Background(), tempo))
+
+			assert.Equal(t, test.expectedFactor, tempo.Spec.EffectiveReplicationFactor())
+			// the deprecated field is defaulted only when the user did not set it
+			assert.Equal(t, test.expectedDeprecatedRF, tempo.Spec.ReplicationFactor) //nolint:staticcheck // the defaulting of the deprecated field is exactly what this asserts.
+			assert.Equal(t, test.expectedIngesters, *tempo.Spec.Template.Ingester.Replicas)
+		})
+	}
+}
+
+func TestValidateReplicationZones(t *testing.T) {
+	validator := &validator{}
+
+	tests := []struct {
+		name     string
+		input    v1alpha1.TempoStack
+		expected field.ErrorList
+	}{
+		{
+			name:     "no zones",
+			input:    v1alpha1.TempoStack{Spec: v1alpha1.TempoStackSpec{Replication: &v1alpha1.ReplicationSpec{Factor: 3}}},
+			expected: nil,
+		},
+		{
+			name: "distinct topology keys",
+			input: v1alpha1.TempoStack{Spec: v1alpha1.TempoStackSpec{Replication: &v1alpha1.ReplicationSpec{
+				Zones: []v1alpha1.ZoneSpec{
+					{MaxSkew: 1, TopologyKey: "topology.kubernetes.io/zone"},
+					{MaxSkew: 1, TopologyKey: "kubernetes.io/hostname"},
+				},
+			}}},
+			expected: nil,
+		},
+		{
+			name: "duplicate topology key",
+			input: v1alpha1.TempoStack{Spec: v1alpha1.TempoStackSpec{Replication: &v1alpha1.ReplicationSpec{
+				Zones: []v1alpha1.ZoneSpec{
+					{MaxSkew: 1, TopologyKey: "topology.kubernetes.io/zone"},
+					{MaxSkew: 2, TopologyKey: "topology.kubernetes.io/zone"},
+				},
+			}}},
+			expected: field.ErrorList{
+				field.Duplicate(
+					field.NewPath("spec").Child("replication").Child("zones").Index(1).Child("topologyKey"),
+					"topology.kubernetes.io/zone",
+				)},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			assert.Equal(t, test.expected, validator.validateReplicationZones(test.input))
+		})
+	}
+}

@@ -99,6 +99,14 @@ func start(c *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
+	if err = (&controllers.TempoStackZoneAwarePodReconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("TempoStackZoneAwarePod"),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "TempoStackZoneAwarePod")
+		os.Exit(1)
+	}
+
 	// Setup TLS profile watcher to trigger graceful restart when the cluster TLS profile changes.
 	// This uses the recommended OpenShift controller-runtime-common package which triggers
 	// a graceful shutdown (via context cancellation) ensuring all connections use the new TLS settings.
