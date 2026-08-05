@@ -7,8 +7,10 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/util/retry"
 	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -167,13 +169,6 @@ func updateConditions(conditions *[]metav1.Condition, componentsStatus v1alpha1.
 	return isTerminalError
 }
 
-func patchStatus(ctx context.Context, c client.Client, original v1alpha1.TempoMonolithic, status v1alpha1.TempoMonolithicStatus) error {
-	patch := client.MergeFrom(&original)
-	updated := original.DeepCopy()
-	updated.Status = status
-	return c.Status().Patch(ctx, updated, patch)
-}
-
 // HandleTempoMonolithicStatus updates the .status field of a TempoMonolithic CR
 // Status Conditions API conventions: https://github.com/kubernetes/community/blob/c04227d209633696ad49d7f4546fc8cfd9c660ab/contributors/devel/sig-architecture/api-conventions.md#typical-status-properties
 func HandleTempoMonolithicStatus(ctx context.Context, client client.Client, tempo v1alpha1.TempoMonolithic, reconcileError error) error {
@@ -203,10 +198,35 @@ func HandleTempoMonolithicStatus(ctx context.Context, client client.Client, temp
 
 	updateMetrics(metricTempoMonolithicStatusCondition, status.Conditions, tempo.Namespace, tempo.Name)
 
-	err = patchStatus(ctx, client, tempo, status)
+	err = updateStatus(ctx, client, tempo, &status)
 	if err != nil {
 		return err
 	}
 
 	return reconcileError
+}
+
+func updateStatus(ctx context.Context, k client.Client, tempo v1alpha1.TempoMonolithic, status *v1alpha1.TempoMonolithicStatus) error {
+	statusUpdater := func(tempo *v1alpha1.TempoMonolithic) {
+		tempo.Status = *status
+	}
+
+	statusUpdater(&tempo)
+	// happy path: avoid extra k.Get()
+	// Use Update instead of Patch: a strategic merge patch merges maps and cannot remove keys, but PodStatusMap needs to drop entries for removed pods.
+	err := k.Status().Update(ctx, &tempo)
+	if err == nil || !apierrors.IsConflict(err) {
+		return err
+	}
+
+	// retry on conflict
+	objectKey := client.ObjectKeyFromObject(&tempo)
+	return retry.RetryOnConflict(retry.DefaultRetry, func() error {
+		if err := k.Get(ctx, objectKey, &tempo); err != nil {
+			return err
+		}
+
+		statusUpdater(&tempo)
+		return k.Status().Update(ctx, &tempo)
+	})
 }

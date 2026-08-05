@@ -335,6 +335,5 @@ func (r *TempoStackReconciler) GetPodsComponent(ctx context.Context, componentNa
 
 // UpdateStatus updates the status field of the CR.
 func (r *TempoStackReconciler) UpdateStatus(ctx context.Context, obj client.Object, opts ...client.SubResourceUpdateOption) error {
-	// Use Update instead of Patch: a strategic merge patch merges maps and cannot remove keys, but PodStatusMap needs to drop entries for removed pods.
 	return r.Client.Status().Update(ctx, obj, opts...)
 }

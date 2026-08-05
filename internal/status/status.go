@@ -13,20 +13,23 @@ import (
 
 // Refresh updates the status field with the Tempo versions and updates the tempostack_status_condition metric.
 func Refresh(ctx context.Context, k StatusClient, tempo v1alpha1.TempoStack, status *v1alpha1.TempoStackStatus) error {
-	statusUpdater := func(stack *v1alpha1.TempoStack) {
-		stack.Status = *status
-		if status.OperatorVersion == "" {
-			stack.Status.OperatorVersion = version.Get().OperatorVersion
-		}
-		if status.TempoVersion == "" {
-			stack.Status.TempoVersion = version.Get().TempoVersion
-		}
+	// The version fields in the status are empty for new CRs
+	if status.OperatorVersion == "" {
+		status.OperatorVersion = version.Get().OperatorVersion
+	}
+	if status.TempoVersion == "" {
+		status.TempoVersion = version.Get().TempoVersion
 	}
 
 	updateMetrics(metricTempoStackStatusCondition, status.Conditions, tempo.Namespace, tempo.Name)
 
+	statusUpdater := func(tempo *v1alpha1.TempoStack) {
+		tempo.Status = *status
+	}
+
 	statusUpdater(&tempo)
 	// happy path: avoid extra k.Get()
+	// Use Update instead of Patch: a strategic merge patch merges maps and cannot remove keys, but PodStatusMap needs to drop entries for removed pods.
 	err := k.UpdateStatus(ctx, &tempo)
 	if err == nil || !errors.IsConflict(err) {
 		return err
