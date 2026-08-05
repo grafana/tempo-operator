@@ -3024,7 +3024,7 @@ func TestDefaultReplicationSpec(t *testing.T) {
 
 			assert.Equal(t, test.expectedFactor, tempo.Spec.EffectiveReplicationFactor())
 			// the deprecated field is defaulted only when the user did not set it
-			assert.Equal(t, test.expectedDeprecatedRF, tempo.Spec.ReplicationFactor)
+			assert.Equal(t, test.expectedDeprecatedRF, tempo.Spec.ReplicationFactor) //nolint:staticcheck // the defaulting of the deprecated field is exactly what this asserts.
 			assert.Equal(t, test.expectedIngesters, *tempo.Spec.Template.Ingester.Replicas)
 		})
 	}

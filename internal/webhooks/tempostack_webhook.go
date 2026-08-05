@@ -123,8 +123,9 @@ func (d *Defaulter) Default(ctx context.Context, r *v1alpha1.TempoStack) error {
 	switch {
 	case r.Spec.Replication != nil && r.Spec.Replication.Factor > 0:
 		effectiveRF = r.Spec.Replication.Factor
+	//nolint:staticcheck // spec.replicationFactor is deprecated, but still has to be read for backwards compatibility.
 	case r.Spec.ReplicationFactor > 0:
-		effectiveRF = r.Spec.ReplicationFactor
+		effectiveRF = r.Spec.ReplicationFactor //nolint:staticcheck // See above.
 	case r.Spec.Size != "":
 		sizeRF := manifestutils.ReplicationFactorForSize(r.Spec.Size)
 		if sizeRF > 0 {
@@ -165,8 +166,9 @@ func (d *Defaulter) Default(ctx context.Context, r *v1alpha1.TempoStack) error {
 	// Only the deprecated field is defaulted, so that a CR which does not use zone awareness is left
 	// untouched. Readers should use TempoStackSpec.EffectiveReplicationFactor, which prefers
 	// spec.replication.factor over it.
+	//nolint:staticcheck // spec.replicationFactor is deprecated, but still has to be defaulted for backwards compatibility.
 	if r.Spec.ReplicationFactor == 0 {
-		r.Spec.ReplicationFactor = effectiveRF
+		r.Spec.ReplicationFactor = effectiveRF //nolint:staticcheck // See above.
 	}
 
 	// if tenant mode is Openshift, ingress type should be route by default.
@@ -614,6 +616,7 @@ func (v *validator) validate(ctx context.Context, tempo *v1alpha1.TempoStack) (a
 	}
 
 	// Warn if both replication factor fields are specified (spec.replication.factor takes precedence)
+	//nolint:staticcheck // spec.replicationFactor is deprecated, but the warning is about a CR which still sets it.
 	if tempo.Spec.Replication != nil && tempo.Spec.Replication.Factor > 0 &&
 		tempo.Spec.ReplicationFactor > 0 && tempo.Spec.Replication.Factor != tempo.Spec.ReplicationFactor {
 		allWarnings = append(allWarnings, admission.Warnings{
