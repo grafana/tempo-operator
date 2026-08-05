@@ -357,7 +357,7 @@ type ComponentStatus struct {
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=status,xDescriptors="urn:alm:descriptor:com.tectonic.ui:podStatuses",displayName="Metrics Generator",order=7
-	MetricsGenerator PodStatusMap `json:"metricsGenerator,omitempty"`
+	MetricsGenerator PodStatusMap `json:"metricsGenerator"`
 }
 
 // TempoStackStatus defines the observed state of TempoStack.
