@@ -65,6 +65,31 @@ for i in $(seq 1 90); do
   sleep 10
 done
 
+# Wait for MachineConfigPools to report fully updated.
+# Nodes can appear Ready before MCPs finish — a subsequent MCP cycle can drain them again,
+# evicting the operator pod and making webhooks unavailable during verification.
+echo "Waiting for MachineConfigPools to finish updating..."
+for pool in master worker; do
+  for i in $(seq 1 90); do
+    UPDATED=$(kubectl get mcp "$pool" -o jsonpath='{.status.conditions[?(@.type=="Updated")].status}' 2>/dev/null || echo "")
+    UPDATING=$(kubectl get mcp "$pool" -o jsonpath='{.status.conditions[?(@.type=="Updating")].status}' 2>/dev/null || echo "")
+    if [ "$UPDATED" = "True" ] && [ "$UPDATING" = "False" ]; then
+      echo "MCP $pool: UPDATED=True UPDATING=False"
+      break
+    fi
+    if [ $i -eq 90 ]; then
+      echo "WARNING: MCP $pool not fully updated after 15 minutes (UPDATED=$UPDATED UPDATING=$UPDATING)"
+      break
+    fi
+    echo "  MCP $pool: UPDATED=$UPDATED UPDATING=$UPDATING (attempt $i/60)"
+    sleep 10
+  done
+done
+
+# After MCP stabilizes the operator pod may have been re-evicted; wait for its rollout again.
+echo "Waiting for operator deployment to be stable after MCP stabilization..."
+kubectl rollout status deployment/tempo-operator-controller -n openshift-tempo-operator --timeout=5m
+
 # Second pass: wait for all Tempo pods to be Running and Ready after node reconciliation.
 # This pass uses strict error checking - failures here are real failures.
 echo "Second rollout pass (post node reconciliation, strict)..."

@@ -61,7 +61,7 @@ spec:
   - name: step-07
     try:
     - script:
-        timeout: 30m
+        timeout: 40m
         content: ./07-patch-modern.sh
   - name: step-08
     try:
