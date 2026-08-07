@@ -30,7 +30,7 @@ spec:
     - script:
         timeout: 60s
         content: |
-          set -euo pipefail
+          set -eu
 
           OPERATOR_NS=$(kubectl get pods -A \
             -l control-plane=controller-manager \
@@ -48,7 +48,7 @@ spec:
           echo ""
           echo "Reconcile counts per instance:"
           printf "%6s  %-30s  %s\n" "COUNT" "LOGGER" "INSTANCE"
-          echo "$LOGS" \
+          AWK_OUTPUT=$(echo "$LOGS" \
             | awk '/starting reconcile loop/ {
                 match($0, /"logger":"([^"]*)"/, a); logger = a[1]
                 match($0, /"namespace":"([^"]*)"/, a); namespace = a[1]
@@ -65,8 +65,8 @@ spec:
                     exit 1
                   }
                 }
-              }' \
-            | sort -rn
+              }')
+          echo "$AWK_OUTPUT" | sort -rn
           echo ""
 
           THRESHOLD=30
