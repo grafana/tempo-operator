@@ -19,6 +19,13 @@ spec:
     - assert:
         timeout: 5m
         file: 01-install-tempo-assert.yaml
+    catch:
+    - get:
+        apiVersion: tempo.grafana.com/v1alpha1
+        kind: TempoStack
+        format: yaml
+    - podLogs:
+        selector: app.kubernetes.io/managed-by=tempo-operator
   - name: Run the must-gather and verify the contents
     try:
     - command:

@@ -18,6 +18,13 @@ spec:
     - assert:
         timeout: 5m
         file: 01-install-tempostack-assert.yaml
+    catch:
+    - get:
+        apiVersion: tempo.grafana.com/v1alpha1
+        kind: TempoStack
+        format: yaml
+    - podLogs:
+        selector: app.kubernetes.io/managed-by=tempo-operator
   - name: Update TempoStack with per-component resource allocation
     try:
     - apply:
@@ -25,4 +32,10 @@ spec:
     - assert:
         timeout: 5m
         file: 03-update-tempostack-assert.yaml
- 
+    catch:
+    - get:
+        apiVersion: tempo.grafana.com/v1alpha1
+        kind: TempoStack
+        format: yaml
+    - podLogs:
+        selector: app.kubernetes.io/managed-by=tempo-operator
