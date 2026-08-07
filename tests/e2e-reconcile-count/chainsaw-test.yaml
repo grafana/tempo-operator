@@ -45,6 +45,30 @@ spec:
             -l app.kubernetes.io/name=tempo-operator \
             --tail=-1)
 
+          echo ""
+          echo "Reconcile counts per instance:"
+          printf "%6s  %-30s  %s\n" "COUNT" "LOGGER" "INSTANCE"
+          AWK_OUTPUT=$(echo "$LOGS" \
+            | awk '/starting reconcile loop/ {
+                match($0, /"logger":"([^"]*)"/, a); logger = a[1]
+                match($0, /"namespace":"([^"]*)"/, a); namespace = a[1]
+                match($0, /"name":"([^"]*)"/, a); name = a[1]
+                if (logger && namespace && name) {
+                  count[logger " " namespace "/" name]++
+                }
+              } END {
+                for (k in count) {
+                  split(k, p, " ")
+                  printf "%6d  %-30s  %s\n", count[k], p[1], p[2]
+                  if (count[k] > 100) {
+                    printf "FAIL: %s %s reconcile count (%d) exceeds 100.\n", p[1], p[2], count[k] > "/dev/stderr"
+                    exit 1
+                  }
+                }
+              }')
+          echo "$AWK_OUTPUT" | sort -rn
+          echo ""
+
           THRESHOLD=30
           COUNT=$(echo "$LOGS" | grep "$NAMESPACE" | grep "tempostack-reconcile" | grep -c "starting reconcile loop" || true)
 
