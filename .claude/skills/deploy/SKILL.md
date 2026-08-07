@@ -15,4 +15,10 @@ Build and deploy the operator to the connected cluster (kind, Kubernetes, or Ope
 .claude/skills/deploy/deploy.sh
 ```
 
-2. Report the result to the user.
+2. Check if the OpenTelemetry operator is already installed (`kubectl get crd opentelemetrycollectors.opentelemetry.io`). If not installed, ask the user if they want to deploy it (default: no). If yes, run:
+
+```bash
+.claude/skills/deploy/deploy-otel.sh
+```
+
+3. Report the result to the user.
