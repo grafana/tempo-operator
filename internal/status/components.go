@@ -11,12 +11,15 @@ import (
 )
 
 func podStatus(pod *corev1.Pod) v1alpha1.PodStatus {
-	//exhaustive:ignore
 	switch pod.Status.Phase {
 	case corev1.PodFailed:
 		return v1alpha1.PodFailed
 	case corev1.PodPending:
 		return v1alpha1.PodPending
+	case corev1.PodSucceeded:
+		return v1alpha1.PodSucceeded
+	case corev1.PodUnknown:
+		return v1alpha1.PodStatusUnknown
 	case corev1.PodRunning:
 		for _, c := range pod.Status.ContainerStatuses {
 			if !c.Ready {

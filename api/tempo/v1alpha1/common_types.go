@@ -17,6 +17,8 @@ const (
 	PodRunning PodStatus = "Running"
 	// PodReady means the pod has been started and the readiness probe reports a successful status.
 	PodReady PodStatus = "Ready"
+	// PodSucceeded means that all containers in the pod have terminated in success, and will not be restarted.
+	PodSucceeded PodStatus = "Succeeded"
 	// PodFailed means that all containers in the pod have terminated, and at least one container has
 	// terminated in a failure.
 	PodFailed PodStatus = "Failed"
