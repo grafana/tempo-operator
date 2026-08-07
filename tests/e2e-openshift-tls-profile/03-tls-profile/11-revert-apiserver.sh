@@ -37,18 +37,37 @@ for i in $(seq 1 90); do
   sleep 10
 done
 
+# Wait for MCO to detect the APIServer change and begin MCP updates.
+# Without this, the MCP check below can see stale UPDATED=True from the previous cycle
+# and exit immediately — then MCP starts draining nodes during chainsaw cleanup.
+echo "Waiting for MCO to start processing the APIServer revert..."
+for i in $(seq 1 30); do
+  UPDATING_MASTER=$(kubectl get mcp master -o jsonpath='{.status.conditions[?(@.type=="Updating")].status}' 2>/dev/null || echo "")
+  UPDATING_WORKER=$(kubectl get mcp worker -o jsonpath='{.status.conditions[?(@.type=="Updating")].status}' 2>/dev/null || echo "")
+  if [ "$UPDATING_MASTER" = "True" ] || [ "$UPDATING_WORKER" = "True" ]; then
+    echo "MCP update cycle started (master=$UPDATING_MASTER worker=$UPDATING_WORKER)"
+    break
+  fi
+  if [ $i -eq 30 ]; then
+    echo "MCPs did not start updating after 5 minutes — APIServer revert may not require node rollout"
+    break
+  fi
+  echo "  MCPs not yet updating (attempt $i/30)"
+  sleep 10
+done
+
 # Wait for MachineConfigPool to report fully updated for both pools.
 echo "Waiting for MachineConfigPools to finish updating..."
 for pool in master worker; do
-  for i in $(seq 1 60); do
+  for i in $(seq 1 90); do
     UPDATED=$(kubectl get mcp "$pool" -o jsonpath='{.status.conditions[?(@.type=="Updated")].status}' 2>/dev/null || echo "")
     UPDATING=$(kubectl get mcp "$pool" -o jsonpath='{.status.conditions[?(@.type=="Updating")].status}' 2>/dev/null || echo "")
     if [ "$UPDATED" = "True" ] && [ "$UPDATING" = "False" ]; then
       echo "MCP $pool: UPDATED=True UPDATING=False"
       break
     fi
-    if [ $i -eq 60 ]; then
-      echo "WARNING: MCP $pool not fully updated after 10 minutes (UPDATED=$UPDATED UPDATING=$UPDATING)"
+    if [ $i -eq 90 ]; then
+      echo "WARNING: MCP $pool not fully updated after 15 minutes (UPDATED=$UPDATED UPDATING=$UPDATING)"
       break
     fi
     echo "  MCP $pool: UPDATED=$UPDATED UPDATING=$UPDATING (attempt $i/60)"
