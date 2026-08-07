@@ -91,11 +91,13 @@ func (r *TempoMonolithicReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		// The object is being deleted
 		if controllerutil.ContainsFinalizer(&tempo, v1alpha1.TempoFinalizer) {
 			// our finalizer is present, so let's handle any external dependency
-			if err := finalize(ctx, r.Client, log, monolithic.ClusterScopedCommonLabels(tempo.ObjectMeta)); err != nil {
-				// if fail to delete the external dependency here, return with error
-				// so that it can be retried.
-				log.Error(err, "failed to finalize, re-reconciling")
-				return ctrl.Result{}, err
+			if tempo.Spec.Management != v1alpha1.ManagementStateUnmanaged {
+				if err := finalize(ctx, r.Client, log, monolithic.ClusterScopedCommonLabels(tempo.ObjectMeta)); err != nil {
+					// if fail to delete the external dependency here, return with error
+					// so that it can be retried.
+					log.Error(err, "failed to finalize, re-reconciling")
+					return ctrl.Result{}, err
+				}
 			}
 
 			// remove our finalizer from the list and update it.
