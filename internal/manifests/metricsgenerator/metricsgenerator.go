@@ -46,7 +46,11 @@ func BuildMetricsGenerator(params manifestutils.Params) ([]client.Object, error)
 		}
 	}
 
-	return []client.Object{d, service(tempo)}, nil
+	return []client.Object{
+		d,
+		service(tempo),
+		manifestutils.NewPodDisruptionBudget(tempo, manifestutils.MetricsGeneratorComponentName),
+	}, nil
 }
 
 func resources(tempo v1alpha1.TempoStack) corev1.ResourceRequirements {

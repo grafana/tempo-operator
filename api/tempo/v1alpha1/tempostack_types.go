@@ -25,14 +25,17 @@ const (
 
 // TempoStackSize defines predefined deployment size profiles for TempoStack.
 // Each size maps to pre-tested resource configurations for all components.
+// Non-demo sizes also default a per-component replica count (at least 2 for
+// every component) and a replication factor of 2, so the deployment is highly
+// available and can survive a single pod or node failure.
 //
 // +kubebuilder:validation:Enum="1x.demo";"1x.pico";"1x.extra-small";"1x.small";"1x.medium"
 type TempoStackSize string
 
 const (
 	// SizeDemo is for development and demos, single-node clusters.
-	// No resources are assigned, and replication factor is 1.
-	// DO NOT USE IN PRODUCTION.
+	// No resources are assigned, all components run a single replica, and
+	// replication factor is 1. DO NOT USE IN PRODUCTION.
 	SizeDemo TempoStackSize = "1x.demo"
 
 	// SizePico is for small production workloads with HA support.
@@ -62,7 +65,9 @@ type TempoStackSpec struct {
 	// Size defines a predefined deployment size profile for this TempoStack.
 	// The operator will apply pre-tested resource configurations based on the selected size.
 	// When not set, resources are determined by spec.resources.total or component-level overrides.
-	// Size also sets a default replication factor (1 for demo, 2 for others) if not explicitly specified.
+	// Size also sets a default replication factor (1 for demo, 2 for others) and default
+	// per-component replica counts for high availability (non-demo sizes run at least 2
+	// replicas of every component), unless these are explicitly specified.
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
@@ -352,7 +357,7 @@ type ComponentStatus struct {
 	// +optional
 	// +kubebuilder:validation:Optional
 	// +operator-sdk:csv:customresourcedefinitions:type=status,xDescriptors="urn:alm:descriptor:com.tectonic.ui:podStatuses",displayName="Metrics Generator",order=7
-	MetricsGenerator PodStatusMap `json:"metricsGenerator,omitempty"`
+	MetricsGenerator PodStatusMap `json:"metricsGenerator"`
 }
 
 // TempoStackStatus defines the observed state of TempoStack.

@@ -904,7 +904,9 @@ spec:
           Size defines a predefined deployment size profile for this TempoStack.
           The operator will apply pre-tested resource configurations based on the selected size.
           When not set, resources are determined by spec.resources.total or component-level overrides.
-          Size also sets a default replication factor (1 for demo, 2 for others) if not explicitly specified.
+          Size also sets a default replication factor (1 for demo, 2 for others) and default
+          per-component replica counts for high availability (non-demo sizes run at least 2
+          replicas of every component), unless these are explicitly specified.
         displayName: Deployment Size
         path: size
         x-descriptors:

@@ -54,7 +54,7 @@ func TestBuildQuerier(t *testing.T) {
 
 	labels := manifestutils.ComponentLabels("querier", "test")
 	annotations := manifestutils.CommonAnnotations(manifestutils.Params{})
-	assert.Equal(t, 2, len(objects))
+	assert.Equal(t, 3, len(objects))
 
 	assert.Equal(t, &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{

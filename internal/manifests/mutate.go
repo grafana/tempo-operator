@@ -14,6 +14,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
+	policyv1 "k8s.io/api/policy/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -141,6 +142,10 @@ func MutateFuncFor(existing, desired client.Object) controllerutil.MutateFn {
 			ds := existing.(*networkingv1.NetworkPolicy)
 			wantDs := desired.(*networkingv1.NetworkPolicy)
 			mutateNetworkPolicy(ds, wantDs)
+		case *policyv1.PodDisruptionBudget:
+			pdb := existing.(*policyv1.PodDisruptionBudget)
+			wantPdb := desired.(*policyv1.PodDisruptionBudget)
+			mutatePodDisruptionBudget(pdb, wantPdb)
 		default:
 			t := reflect.TypeOf(existing).String()
 			return kverrors.New("missing mutate implementation for resource type", "type", t)
@@ -263,6 +268,12 @@ func mutateService(existing, desired *corev1.Service) error {
 }
 
 func mutateNetworkPolicy(existing, desired *networkingv1.NetworkPolicy) {
+	existing.Annotations = desired.Annotations
+	existing.Labels = desired.Labels
+	existing.Spec = desired.Spec
+}
+
+func mutatePodDisruptionBudget(existing, desired *policyv1.PodDisruptionBudget) {
 	existing.Annotations = desired.Annotations
 	existing.Labels = desired.Labels
 	existing.Spec = desired.Spec

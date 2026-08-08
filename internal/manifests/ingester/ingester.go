@@ -48,7 +48,11 @@ func BuildIngester(params manifestutils.Params) ([]client.Object, error) {
 
 	manifestutils.PatchEnvVars(&ss.Spec.Template.Spec, "tempo", tempo.Spec.Env, tempo.Spec.EnvFrom)
 
-	return []client.Object{ss, service(tempo)}, nil
+	return []client.Object{
+		ss,
+		service(tempo),
+		manifestutils.NewPodDisruptionBudget(tempo, manifestutils.IngesterComponentName),
+	}, nil
 }
 
 func statefulSet(params manifestutils.Params) (*v1.StatefulSet, error) {

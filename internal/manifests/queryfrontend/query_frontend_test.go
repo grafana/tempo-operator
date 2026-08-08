@@ -369,7 +369,7 @@ func TestBuildQueryFrontend(t *testing.T) {
 		},
 	}})
 	require.NoError(t, err)
-	require.Equal(t, 3, len(objects))
+	require.Equal(t, 4, len(objects))
 
 	// Test the services
 	frontendService := objects[0].(*corev1.Service)
@@ -426,7 +426,7 @@ func TestBuildQueryFrontendWithJaeger(t *testing.T) {
 	}})
 
 	require.NoError(t, err)
-	require.Equal(t, 3, len(objects))
+	require.Equal(t, 4, len(objects))
 
 	// Test the services
 	frontendService := objects[0].(*corev1.Service)
@@ -468,7 +468,7 @@ func TestQueryFrontendJaegerIngress(t *testing.T) {
 	}})
 
 	require.NoError(t, err)
-	require.Equal(t, 4, len(objects))
+	require.Equal(t, 5, len(objects))
 	pathType := networkingv1.PathTypePrefix
 	assert.Equal(t, &networkingv1.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
@@ -531,7 +531,7 @@ func TestQueryFrontendJaegerRoute(t *testing.T) {
 	}})
 
 	require.NoError(t, err)
-	require.Equal(t, 4, len(objects))
+	require.Equal(t, 5, len(objects))
 	assert.Equal(t, &routev1.Route{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      naming.Name(manifestutils.QueryFrontendComponentName, "test"),
@@ -584,7 +584,7 @@ func TestQueryFrontendJaegerTLS(t *testing.T) {
 		}})
 
 	require.NoError(t, err)
-	require.Equal(t, 3, len(objects))
+	require.Equal(t, 4, len(objects))
 	deployment := objects[2].(*v1.Deployment)
 	require.Len(t, deployment.Spec.Template.Spec.Containers, 3)
 	jaegerContainer := deployment.Spec.Template.Spec.Containers[1]
@@ -743,7 +743,7 @@ func TestBuildQueryFrontendWithJaegerMonitorTab(t *testing.T) {
 					Tempo: test.tempo,
 				})
 				require.NoError(t, err)
-				assert.Equal(t, 5, len(objects))
+				assert.Equal(t, 6, len(objects))
 
 				assert.Equal(t, "tempo-simplest-metrics-reader", objects[3].GetName())
 				assert.Equal(t, "tempo-simplest-metrics-reader", objects[4].GetName())
@@ -829,7 +829,7 @@ func TestQueryFrontendJaegerRouteSecured(t *testing.T) {
 	}})
 
 	require.NoError(t, err)
-	require.Equal(t, 5, len(objects))
+	require.Equal(t, 6, len(objects))
 	assert.Equal(t, &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      naming.Name(manifestutils.QueryFrontendComponentName, "test"),

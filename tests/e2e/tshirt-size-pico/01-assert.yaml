@@ -28,6 +28,7 @@ kind: Deployment
 metadata:
   name: tempo-pico-distributor
 spec:
+  replicas: 2
   template:
     spec:
       containers:
@@ -42,6 +43,7 @@ kind: Deployment
 metadata:
   name: tempo-pico-querier
 spec:
+  replicas: 2
   template:
     spec:
       containers:
@@ -56,6 +58,7 @@ kind: Deployment
 metadata:
   name: tempo-pico-query-frontend
 spec:
+  replicas: 2
   template:
     spec:
       containers:
@@ -70,6 +73,7 @@ kind: Deployment
 metadata:
   name: tempo-pico-compactor
 spec:
+  replicas: 2
   template:
     spec:
       containers:

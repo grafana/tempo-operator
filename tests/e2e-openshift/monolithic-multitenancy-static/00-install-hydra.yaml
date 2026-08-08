@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
       - name: hydra
-        image: ghcr.io/grafana/tempo-operator/test-utils:main
+        image: ghcr.io/grafana/tempo-operator/test-utils:sha-0fc5ef0
         command: ["hydra", "serve", "all", "--dev", "--sqa-opt-out"]
         env:
         - name: DSN

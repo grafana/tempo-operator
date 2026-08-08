@@ -8,7 +8,7 @@ spec:
     spec:
       containers:
       - name: verify-traces
-        image: ghcr.io/grafana/tempo-operator/test-utils:main
+        image: ghcr.io/grafana/tempo-operator/test-utils:sha-0fc5ef0
         command:
         - /bin/bash
         - -eux
@@ -41,7 +41,7 @@ spec:
     spec:
       containers:
         - name: verify-traces
-          image: ghcr.io/grafana/tempo-operator/test-utils:main
+          image: ghcr.io/grafana/tempo-operator/test-utils:sha-0fc5ef0
           command:
             - /bin/bash
             - -eux
@@ -73,7 +73,7 @@ spec:
     spec:
       containers:
         - name: verify-traces
-          image: ghcr.io/grafana/tempo-operator/test-utils:main
+          image: ghcr.io/grafana/tempo-operator/test-utils:sha-0fc5ef0
           command:
             - /bin/bash
             - -eux
@@ -106,7 +106,7 @@ spec:
     spec:
       containers:
         - name: verify-traces
-          image: ghcr.io/grafana/tempo-operator/test-utils:main
+          image: ghcr.io/grafana/tempo-operator/test-utils:sha-0fc5ef0
           command:
             - /bin/bash
             - -eux
@@ -138,7 +138,7 @@ spec:
     spec:
       containers:
       - name: verify-traces
-        image: ghcr.io/grafana/tempo-operator/test-utils:main
+        image: ghcr.io/grafana/tempo-operator/test-utils:sha-0fc5ef0
         command:
         - /bin/bash
         - -eux
@@ -171,7 +171,7 @@ spec:
     spec:
       containers:
         - name: verify-traces
-          image: ghcr.io/grafana/tempo-operator/test-utils:main
+          image: ghcr.io/grafana/tempo-operator/test-utils:sha-0fc5ef0
           command:
             - /bin/bash
             - -eux
@@ -203,7 +203,7 @@ spec:
     spec:
       containers:
         - name: verify-traces
-          image: ghcr.io/grafana/tempo-operator/test-utils:main
+          image: ghcr.io/grafana/tempo-operator/test-utils:sha-0fc5ef0
           command:
             - /bin/bash
             - -eux
@@ -236,7 +236,7 @@ spec:
     spec:
       containers:
         - name: verify-traces
-          image: ghcr.io/grafana/tempo-operator/test-utils:main
+          image: ghcr.io/grafana/tempo-operator/test-utils:sha-0fc5ef0
           command:
             - /bin/bash
             - -eux

@@ -13,6 +13,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
+	policyv1 "k8s.io/api/policy/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -64,6 +65,7 @@ type TempoStackReconciler struct {
 // +kubebuilder:rbac:groups=monitoring.coreos.com,resources=servicemonitors;prometheusrules,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=grafana.integreatly.org,resources=grafanadatasources,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=networking.k8s.io,resources=networkpolicies,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=policy,resources=poddisruptionbudgets,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=discovery.k8s.io,resources=endpointslices,verbs=get;list;watch
 
 // Upgrate for 0.11.0 to Tempo 2.5
@@ -251,6 +253,7 @@ func (r *TempoStackReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&appsv1.StatefulSet{}, updateOrDeleteWithStatusPred).
 		Owns(&appsv1.Deployment{}, updateOrDeleteWithStatusPred).
 		Owns(&networkingv1.Ingress{}, updateOrDeleteOnlyPred).
+		Owns(&policyv1.PodDisruptionBudget{}, updateOrDeleteOnlyPred).
 		Owns(&rbacv1.ClusterRole{}, updateOrDeleteOnlyPred).
 		Owns(&rbacv1.ClusterRoleBinding{}, updateOrDeleteOnlyPred).
 		Owns(&rbacv1.Role{}, updateOrDeleteOnlyPred).

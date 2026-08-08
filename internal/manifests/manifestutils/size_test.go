@@ -369,6 +369,86 @@ func TestBurstSizeIsTwiceRateLimit(t *testing.T) {
 	}
 }
 
+func TestGetReplicaProfile(t *testing.T) {
+	tests := []struct {
+		name    string
+		size    v1alpha1.TempoStackSize
+		wantNil bool
+	}{
+		{name: "empty size returns nil", size: "", wantNil: true},
+		{name: "demo size returns nil (single replica)", size: v1alpha1.SizeDemo, wantNil: true},
+		{name: "pico size returns profile", size: v1alpha1.SizePico, wantNil: false},
+		{name: "extra-small size returns profile", size: v1alpha1.SizeExtraSmall, wantNil: false},
+		{name: "small size returns profile", size: v1alpha1.SizeSmall, wantNil: false},
+		{name: "medium size returns profile", size: v1alpha1.SizeMedium, wantNil: false},
+		{name: "unknown size returns nil", size: v1alpha1.TempoStackSize("unknown"), wantNil: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			profile := GetReplicaProfile(tt.size)
+			if tt.wantNil {
+				assert.Nil(t, profile)
+			} else {
+				require.NotNil(t, profile)
+				// Non-demo sizes must run at least 2 replicas of every component for HA.
+				assert.GreaterOrEqual(t, profile.Distributor, int32(2))
+				assert.GreaterOrEqual(t, profile.Querier, int32(2))
+				assert.GreaterOrEqual(t, profile.QueryFrontend, int32(2))
+				assert.GreaterOrEqual(t, profile.Compactor, int32(2))
+				assert.GreaterOrEqual(t, profile.Gateway, int32(2))
+				assert.GreaterOrEqual(t, profile.MetricsGenerator, int32(2))
+			}
+		})
+	}
+}
+
+func TestReplicasForComponent(t *testing.T) {
+	// Expected replica counts per size and component, matching the HA replica table.
+	// The ingester is intentionally excluded (its replicas are quorum-derived).
+	expected := map[v1alpha1.TempoStackSize]map[string]int32{
+		v1alpha1.SizePico: {
+			DistributorComponentName: 2, QuerierComponentName: 2, QueryFrontendComponentName: 2,
+			CompactorComponentName: 2, GatewayComponentName: 2, MetricsGeneratorComponentName: 2,
+		},
+		v1alpha1.SizeExtraSmall: {
+			DistributorComponentName: 2, QuerierComponentName: 2, QueryFrontendComponentName: 2,
+			CompactorComponentName: 2, GatewayComponentName: 2, MetricsGeneratorComponentName: 2,
+		},
+		v1alpha1.SizeSmall: {
+			DistributorComponentName: 3, QuerierComponentName: 3, QueryFrontendComponentName: 2,
+			CompactorComponentName: 2, GatewayComponentName: 2, MetricsGeneratorComponentName: 3,
+		},
+		v1alpha1.SizeMedium: {
+			DistributorComponentName: 4, QuerierComponentName: 5, QueryFrontendComponentName: 2,
+			CompactorComponentName: 3, GatewayComponentName: 2, MetricsGeneratorComponentName: 3,
+		},
+	}
+
+	for size, components := range expected {
+		for component, want := range components {
+			t.Run(string(size)+"/"+component, func(t *testing.T) {
+				got := ReplicasForComponent(size, component)
+				require.NotNil(t, got)
+				assert.Equal(t, want, *got)
+			})
+		}
+	}
+
+	t.Run("empty size returns nil", func(t *testing.T) {
+		assert.Nil(t, ReplicasForComponent("", DistributorComponentName))
+	})
+	t.Run("demo size returns nil (single replica fallback)", func(t *testing.T) {
+		assert.Nil(t, ReplicasForComponent(v1alpha1.SizeDemo, DistributorComponentName))
+	})
+	t.Run("ingester is not scaled by size", func(t *testing.T) {
+		assert.Nil(t, ReplicasForComponent(v1alpha1.SizeMedium, IngesterComponentName))
+	})
+	t.Run("unknown component returns nil", func(t *testing.T) {
+		assert.Nil(t, ReplicasForComponent(v1alpha1.SizeMedium, "unknown"))
+	})
+}
+
 func intToPointer(i int) *int {
 	return &i
 }

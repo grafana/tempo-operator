@@ -28,6 +28,8 @@ kind: Deployment
 metadata:
   name: tempo-override-distributor
 spec:
+  # Not overridden, so it keeps the 1x.pico size default of 2 replicas.
+  replicas: 2
   template:
     spec:
       containers:
