@@ -183,6 +183,106 @@ var replicationFactors = map[v1alpha1.TempoStackSize]int{
 	v1alpha1.SizeMedium:     2,
 }
 
+// ComponentReplicas defines the default replica counts for the stateless
+// components of a given size. The ingester is intentionally omitted: its replica
+// count is derived from the replication factor (quorum = floor(RF/2)+1) so that
+// the replication factor remains the single source of truth for ingester HA.
+type ComponentReplicas struct {
+	Distributor      int32
+	Querier          int32
+	QueryFrontend    int32
+	Compactor        int32
+	Gateway          int32
+	MetricsGenerator int32
+}
+
+// replicaProfiles maps each size to its default per-component replica counts.
+// Non-demo sizes run at least 2 replicas of every stateless component so a single
+// pod/node failure cannot break the ingest or query path, and scale the
+// throughput-bound components (distributor, querier, metrics-generator) at the
+// larger sizes. 1x.demo has no profile (nil) and falls back to a single replica.
+var replicaProfiles = map[v1alpha1.TempoStackSize]*ComponentReplicas{
+	// 1x.demo: single replica, no HA (development/demo environment).
+	v1alpha1.SizeDemo: nil,
+
+	// 1x.pico: HA with the minimum 2 replicas per component.
+	v1alpha1.SizePico: {
+		Distributor:      2,
+		Querier:          2,
+		QueryFrontend:    2,
+		Compactor:        2,
+		Gateway:          2,
+		MetricsGenerator: 2,
+	},
+
+	// 1x.extra-small: HA with the minimum 2 replicas per component.
+	v1alpha1.SizeExtraSmall: {
+		Distributor:      2,
+		Querier:          2,
+		QueryFrontend:    2,
+		Compactor:        2,
+		Gateway:          2,
+		MetricsGenerator: 2,
+	},
+
+	// 1x.small: HA, with throughput-bound components scaled up (~500GB/day).
+	v1alpha1.SizeSmall: {
+		Distributor:      3,
+		Querier:          3,
+		QueryFrontend:    2,
+		Compactor:        2,
+		Gateway:          2,
+		MetricsGenerator: 3,
+	},
+
+	// 1x.medium: HA, with throughput-bound components scaled up (~2TB/day).
+	v1alpha1.SizeMedium: {
+		Distributor:      4,
+		Querier:          5,
+		QueryFrontend:    2,
+		Compactor:        3,
+		Gateway:          2,
+		MetricsGenerator: 3,
+	},
+}
+
+// GetReplicaProfile returns the replica profile for the given size.
+// Returns nil if size is empty or is SizeDemo (which uses a single replica).
+func GetReplicaProfile(size v1alpha1.TempoStackSize) *ComponentReplicas {
+	if size == "" {
+		return nil
+	}
+	return replicaProfiles[size]
+}
+
+// ReplicasForComponent returns the default replica count for a specific component
+// based on size. Returns nil when the size has no replica profile (empty size or
+// SizeDemo) or the component is not scaled by size, so the caller keeps its own
+// default. The ingester is not scaled here; its replicas are quorum-derived.
+func ReplicasForComponent(size v1alpha1.TempoStackSize, component string) *int32 {
+	profile := GetReplicaProfile(size)
+	if profile == nil {
+		return nil
+	}
+
+	switch component {
+	case DistributorComponentName:
+		return ptr.To(profile.Distributor)
+	case QuerierComponentName:
+		return ptr.To(profile.Querier)
+	case QueryFrontendComponentName:
+		return ptr.To(profile.QueryFrontend)
+	case CompactorComponentName:
+		return ptr.To(profile.Compactor)
+	case GatewayComponentName:
+		return ptr.To(profile.Gateway)
+	case MetricsGeneratorComponentName:
+		return ptr.To(profile.MetricsGenerator)
+	default:
+		return nil
+	}
+}
+
 // GetSizeProfile returns the resource profile for the given size.
 // Returns nil if size is empty or is SizeDemo (which has no resources).
 func GetSizeProfile(size v1alpha1.TempoStackSize) *SizeProfile {

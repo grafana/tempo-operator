@@ -11,6 +11,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
+	policyv1 "k8s.io/api/policy/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
@@ -206,6 +207,17 @@ func (r *TempoStackReconciler) findObjectsOwnedByTempoOperator(ctx context.Conte
 	}
 	for i := range networkPolicyList.Items {
 		ownedObjects[networkPolicyList.Items[i].GetUID()] = &networkPolicyList.Items[i]
+	}
+
+	// a pod disruption budget is created per component, and the gateway and
+	// metrics-generator components can be enabled/disabled in the CR
+	podDisruptionBudgetList := &policyv1.PodDisruptionBudgetList{}
+	err = r.List(ctx, podDisruptionBudgetList, listOps)
+	if err != nil {
+		return nil, fmt.Errorf("error listing pod disruption budgets: %w", err)
+	}
+	for i := range podDisruptionBudgetList.Items {
+		ownedObjects[podDisruptionBudgetList.Items[i].GetUID()] = &podDisruptionBudgetList.Items[i]
 	}
 
 	// metrics reader for Jaeger UI Monitor Tab

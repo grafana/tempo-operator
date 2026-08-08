@@ -83,6 +83,16 @@ type Defaulter struct {
 	ctrlConfig configv1alpha1.ProjectConfig
 }
 
+// replicasForComponent returns the size's default replica count for the given
+// component, or the provided fallback when the size does not scale that component
+// (empty size or 1x.demo).
+func replicasForComponent(size v1alpha1.TempoStackSize, component string, fallback *int32) *int32 {
+	if replicas := manifestutils.ReplicasForComponent(size, component); replicas != nil {
+		return replicas
+	}
+	return fallback
+}
+
 // Default applies default values to a Kubernetes object.
 func (d *Defaulter) Default(ctx context.Context, r *v1alpha1.TempoStack) error {
 	log := ctrl.LoggerFrom(ctx).WithName("tempostack-webhook")
@@ -141,22 +151,34 @@ func (d *Defaulter) Default(ctx context.Context, r *v1alpha1.TempoStack) error {
 			r.Spec.Template.Ingester.Replicas = defaultComponentReplicas
 		}
 	}
+	// Default replicas for the stateless components. When a size is set, use the
+	// size's per-component replica count (>=2 for HA on non-demo sizes); otherwise
+	// fall back to a single replica. User-set replicas are preserved.
 	if r.Spec.Template.Distributor.Replicas == nil {
-		r.Spec.Template.Distributor.Replicas = defaultComponentReplicas
+		r.Spec.Template.Distributor.Replicas = replicasForComponent(r.Spec.Size, manifestutils.DistributorComponentName, defaultComponentReplicas)
 	}
 	if r.Spec.Template.Compactor.Replicas == nil {
-		r.Spec.Template.Compactor.Replicas = defaultComponentReplicas
+		r.Spec.Template.Compactor.Replicas = replicasForComponent(r.Spec.Size, manifestutils.CompactorComponentName, defaultComponentReplicas)
 	}
 	if r.Spec.Template.Querier.Replicas == nil {
-		r.Spec.Template.Querier.Replicas = defaultComponentReplicas
+		r.Spec.Template.Querier.Replicas = replicasForComponent(r.Spec.Size, manifestutils.QuerierComponentName, defaultComponentReplicas)
 	}
 
 	if r.Spec.Template.QueryFrontend.Replicas == nil {
-		r.Spec.Template.QueryFrontend.Replicas = defaultComponentReplicas
+		r.Spec.Template.QueryFrontend.Replicas = replicasForComponent(r.Spec.Size, manifestutils.QueryFrontendComponentName, defaultComponentReplicas)
 	}
 
 	if r.Spec.Template.Gateway.Replicas == nil {
-		r.Spec.Template.Gateway.Replicas = defaultComponentReplicas
+		r.Spec.Template.Gateway.Replicas = replicasForComponent(r.Spec.Size, manifestutils.GatewayComponentName, defaultComponentReplicas)
+	}
+
+	// The metrics-generator is only deployed when enabled; unlike the other
+	// components it is not defaulted to a single replica when no size is set, so
+	// only apply the size-derived replica count here.
+	if r.Spec.Template.MetricsGenerator.Replicas == nil {
+		if replicas := manifestutils.ReplicasForComponent(r.Spec.Size, manifestutils.MetricsGeneratorComponentName); replicas != nil {
+			r.Spec.Template.MetricsGenerator.Replicas = replicas
+		}
 	}
 
 	// Set replication factor (we already computed effectiveRF above).
@@ -298,6 +320,18 @@ func (v *validator) validateReplicationFactor(tempo v1alpha1.TempoStack) field.E
 			field.Invalid(path, tempo.Spec.ReplicationFactor,
 				fmt.Sprintf("replica factor of %d requires at least %d ingester replicas", replicatonFactor, quorum),
 			)}
+	}
+	return nil
+}
+
+// jaegerQueryDeprecationWarning is returned when the deprecated Jaeger Query component is enabled.
+const jaegerQueryDeprecationWarning = "spec.template.queryFrontend.jaegerQuery.enabled is deprecated and will be removed in a future release"
+
+// validateJaegerQueryDeprecation warns that the Jaeger Query component is deprecated.
+// The stack keeps working, therefore this is a warning and not an error.
+func (v *validator) validateJaegerQueryDeprecation(tempo v1alpha1.TempoStack) admission.Warnings {
+	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled {
+		return admission.Warnings{jaegerQueryDeprecationWarning}
 	}
 	return nil
 }
@@ -588,6 +622,7 @@ func (v *validator) validate(ctx context.Context, tempo *v1alpha1.TempoStack) (a
 
 	allErrors = append(allErrors, v.validateReplicationFactor(*tempo)...)
 	allErrors = append(allErrors, v.validateQueryFrontend(*tempo)...)
+	allWarnings = append(allWarnings, v.validateJaegerQueryDeprecation(*tempo)...)
 	addValidationResults(v.validateGateway(ctx, *tempo))
 	allErrors = append(allErrors, v.validateTenantConfigs(*tempo)...)
 	allErrors = append(allErrors, v.validateObservability(*tempo)...)

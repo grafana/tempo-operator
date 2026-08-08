@@ -8,7 +8,7 @@ spec:
     spec:
       containers:
       - name: telemetrygen
-        image: ghcr.io/grafana/tempo-operator/test-utils:main
+        image: ghcr.io/grafana/tempo-operator/test-utils:sha-0fc5ef0
         command:
         - telemetrygen
         - traces
@@ -28,7 +28,7 @@ spec:
     spec:
       containers:
         - name: telemetrygen
-          image: ghcr.io/grafana/tempo-operator/test-utils:main
+          image: ghcr.io/grafana/tempo-operator/test-utils:sha-0fc5ef0
           command:
             - telemetrygen
             - traces
@@ -49,7 +49,7 @@ spec:
     spec:
       containers:
       - name: telemetrygen
-        image: ghcr.io/grafana/tempo-operator/test-utils:main
+        image: ghcr.io/grafana/tempo-operator/test-utils:sha-0fc5ef0
         command:
         - telemetrygen
         - traces
@@ -69,7 +69,7 @@ spec:
     spec:
       containers:
         - name: telemetrygen
-          image: ghcr.io/grafana/tempo-operator/test-utils:main
+          image: ghcr.io/grafana/tempo-operator/test-utils:sha-0fc5ef0
           command:
             - telemetrygen
             - traces

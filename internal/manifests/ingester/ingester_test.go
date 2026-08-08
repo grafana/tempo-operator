@@ -153,7 +153,7 @@ func TestBuildIngester(t *testing.T) {
 
 			labels := manifestutils.ComponentLabels("ingester", "test")
 			annotations := manifestutils.CommonAnnotations("")
-			assert.Equal(t, 2, len(objects))
+			assert.Equal(t, 3, len(objects))
 
 			assert.Equal(t, &v1.StatefulSet{
 				ObjectMeta: metav1.ObjectMeta{

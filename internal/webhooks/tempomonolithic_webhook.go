@@ -94,6 +94,7 @@ func (v *monolithicValidator) validateTempoMonolithic(ctx context.Context, tempo
 	errors = append(errors, v.validateConflictWithTempoStack(ctx, tempo)...)
 
 	warnings = append(warnings, v.validateExtraConfig(tempo)...)
+	warnings = append(warnings, v.validateJaegerUIDeprecation(tempo)...)
 
 	return warnings, errors
 }
@@ -106,6 +107,18 @@ func (v *monolithicValidator) validateStorage(ctx context.Context, tempo tempov1
 		return admission.Warnings{errs[0].Detail}, field.ErrorList{}
 	}
 	return nil, errs
+}
+
+// jaegerUIDeprecationWarning is returned when the deprecated Jaeger UI is enabled.
+const jaegerUIDeprecationWarning = "spec.jaegerui.enabled is deprecated and will be removed in a future release"
+
+// validateJaegerUIDeprecation warns that the Jaeger UI is deprecated.
+// The deployment keeps working, therefore this is a warning and not an error.
+func (v *monolithicValidator) validateJaegerUIDeprecation(tempo tempov1alpha1.TempoMonolithic) admission.Warnings {
+	if tempo.Spec.JaegerUI != nil && tempo.Spec.JaegerUI.Enabled {
+		return admission.Warnings{jaegerUIDeprecationWarning}
+	}
+	return nil
 }
 
 func (v *monolithicValidator) validateJaegerUI(tempo tempov1alpha1.TempoMonolithic) field.ErrorList {

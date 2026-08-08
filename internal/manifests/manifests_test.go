@@ -84,5 +84,6 @@ func TestBuildAll(t *testing.T) {
 	})
 	require.NoError(t, err)
 	// 17 base objects + 9 network policies (gossip, metrics, DNS, distributor, ingester, compactor, querier, query-frontend, gateway)
-	assert.Len(t, objects, 26)
+	// + 5 pod disruption budgets (distributor, ingester, querier, query-frontend, gateway; no PDB for the compactor)
+	assert.Len(t, objects, 31)
 }
