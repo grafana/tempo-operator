@@ -336,8 +336,7 @@ func (r *TempoStackReconciler) GetPodsComponent(ctx context.Context, componentNa
 	return pods, err
 }
 
-// PatchStatus patches the status field of the CR.
-func (r *TempoStackReconciler) PatchStatus(ctx context.Context, changed, original *v1alpha1.TempoStack) error {
-	statusPatch := client.MergeFrom(original)
-	return r.Client.Status().Patch(ctx, changed, statusPatch)
+// UpdateStatus updates the status field of the CR.
+func (r *TempoStackReconciler) UpdateStatus(ctx context.Context, obj client.Object, opts ...client.SubResourceUpdateOption) error {
+	return r.Client.Status().Update(ctx, obj, opts...)
 }

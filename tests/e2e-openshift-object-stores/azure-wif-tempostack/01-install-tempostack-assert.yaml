@@ -3,6 +3,8 @@ kind: TempoStack
 metadata:
   name: azurewiftm
   namespace: chainsaw-azurewif-tempo
+status:
+  (conditions[?type=='Ready'] | [0].status): "True"
 
 ---
 apiVersion: apps/v1

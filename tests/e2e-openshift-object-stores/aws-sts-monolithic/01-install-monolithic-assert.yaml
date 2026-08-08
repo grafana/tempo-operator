@@ -110,3 +110,12 @@ status:
     ready: true
     started: true
   phase: Running
+
+---
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoMonolithic
+metadata:
+  name: tmmono
+  namespace: chainsaw-awssts-mono
+status:
+  (conditions[?type=='Ready'] | [0].status): "True"

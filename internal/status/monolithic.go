@@ -7,8 +7,10 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/util/retry"
 	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -19,15 +21,6 @@ import (
 	"github.com/grafana/tempo-operator/internal/manifests/monolithic"
 	"github.com/grafana/tempo-operator/internal/version"
 )
-
-func isPodReady(pod corev1.Pod) bool {
-	for _, c := range pod.Status.ContainerStatuses {
-		if !c.Ready {
-			return false
-		}
-	}
-	return true
-}
 
 func getStatefulSetStatus(ctx context.Context, c client.Client, namespace string, name string, component string) (v1alpha1.PodStatusMap, error) {
 	psm := v1alpha1.PodStatusMap{}
@@ -42,7 +35,7 @@ func getStatefulSetStatus(ctx context.Context, c client.Client, namespace string
 	// therefore we additionally check if the StatefulSet has the required number of readyReplicas.
 	//
 	// This additional check also helps with Pods in terminating state, which otherwise would show up
-	// as Pods with PodPhase = Running.
+	// as running Pods.
 	stss := &appsv1.StatefulSetList{}
 	err := c.List(ctx, stss, opts...)
 	if err != nil {
@@ -50,7 +43,7 @@ func getStatefulSetStatus(ctx context.Context, c client.Client, namespace string
 	}
 	for _, sts := range stss.Items {
 		if sts.Status.ReadyReplicas < ptr.Deref(sts.Spec.Replicas, 1) {
-			psm[corev1.PodPending] = append(psm[corev1.PodPending], sts.Name)
+			psm[v1alpha1.PodPending] = append(psm[v1alpha1.PodPending], sts.Name)
 			return psm, nil
 		}
 	}
@@ -61,14 +54,8 @@ func getStatefulSetStatus(ctx context.Context, c client.Client, namespace string
 		return nil, err
 	}
 	for _, pod := range pods.Items {
-		phase := pod.Status.Phase
-		if phase == corev1.PodRunning {
-			// for the component status consider running, but not ready, pods as pending
-			if !isPodReady(pod) {
-				phase = corev1.PodPending
-			}
-		}
-		psm[phase] = append(psm[phase], pod.Name)
+		status := podStatus(&pod)
+		psm[status] = append(psm[status], pod.Name)
 	}
 
 	return psm, nil
@@ -122,7 +109,8 @@ func updateConditions(conditions *[]metav1.Condition, componentsStatus v1alpha1.
 		Reason:  string(v1alpha1.ReasonPendingComponents),
 		Message: messagePending,
 		Status: conditionStatus(
-			len(componentsStatus.Tempo[corev1.PodPending]) > 0,
+			len(componentsStatus.Tempo[v1alpha1.PodPending]) > 0 ||
+				len(componentsStatus.Tempo[v1alpha1.PodRunning]) > 0,
 		),
 	}
 
@@ -151,7 +139,7 @@ func updateConditions(conditions *[]metav1.Condition, componentsStatus v1alpha1.
 			Message: reconcileError.Error(),
 			Status:  metav1.ConditionTrue,
 		}
-	} else if len(componentsStatus.Tempo[corev1.PodFailed]) > 0 {
+	} else if len(componentsStatus.Tempo[v1alpha1.PodFailed]) > 0 {
 		failed = metav1.Condition{
 			Type:    string(v1alpha1.ConditionFailed),
 			Reason:  string(v1alpha1.ReasonFailedComponents),
@@ -179,13 +167,6 @@ func updateConditions(conditions *[]metav1.Condition, componentsStatus v1alpha1.
 	meta.SetStatusCondition(conditions, failed)
 	meta.SetStatusCondition(conditions, ready)
 	return isTerminalError
-}
-
-func patchStatus(ctx context.Context, c client.Client, original v1alpha1.TempoMonolithic, status v1alpha1.TempoMonolithicStatus) error {
-	patch := client.MergeFrom(&original)
-	updated := original.DeepCopy()
-	updated.Status = status
-	return c.Status().Patch(ctx, updated, patch)
 }
 
 // HandleTempoMonolithicStatus updates the .status field of a TempoMonolithic CR
@@ -217,10 +198,35 @@ func HandleTempoMonolithicStatus(ctx context.Context, client client.Client, temp
 
 	updateMetrics(metricTempoMonolithicStatusCondition, status.Conditions, tempo.Namespace, tempo.Name)
 
-	err = patchStatus(ctx, client, tempo, status)
+	err = updateStatus(ctx, client, tempo, &status)
 	if err != nil {
 		return err
 	}
 
 	return reconcileError
+}
+
+func updateStatus(ctx context.Context, k client.Client, tempo v1alpha1.TempoMonolithic, status *v1alpha1.TempoMonolithicStatus) error {
+	statusUpdater := func(tempo *v1alpha1.TempoMonolithic) {
+		tempo.Status = *status
+	}
+
+	statusUpdater(&tempo)
+	// happy path: avoid extra k.Get()
+	// Use Update instead of Patch: a strategic merge patch merges maps and cannot remove keys, but PodStatusMap needs to drop entries for removed pods.
+	err := k.Status().Update(ctx, &tempo)
+	if err == nil || !apierrors.IsConflict(err) {
+		return err
+	}
+
+	// retry on conflict
+	objectKey := client.ObjectKeyFromObject(&tempo)
+	return retry.RetryOnConflict(retry.DefaultRetry, func() error {
+		if err := k.Get(ctx, objectKey, &tempo); err != nil {
+			return err
+		}
+
+		statusUpdater(&tempo)
+		return k.Status().Update(ctx, &tempo)
+	})
 }

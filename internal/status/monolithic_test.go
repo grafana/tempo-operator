@@ -39,8 +39,8 @@ func TestGetStatefulSetStatus(t *testing.T) {
 					}},
 				},
 			},
-			expected: map[corev1.PodPhase][]string{
-				corev1.PodPending: {"tempo"},
+			expected: v1alpha1.PodStatusMap{
+				v1alpha1.PodPending: {"tempo"},
 			},
 		},
 		{
@@ -70,8 +70,8 @@ func TestGetStatefulSetStatus(t *testing.T) {
 					}},
 				},
 			},
-			expected: map[corev1.PodPhase][]string{
-				corev1.PodPending: {"tempo-xyz"},
+			expected: v1alpha1.PodStatusMap{
+				v1alpha1.PodPending: {"tempo-xyz"},
 			},
 		},
 		{
@@ -104,8 +104,8 @@ func TestGetStatefulSetStatus(t *testing.T) {
 					}},
 				},
 			},
-			expected: map[corev1.PodPhase][]string{
-				corev1.PodPending: {"tempo-xyz"},
+			expected: v1alpha1.PodStatusMap{
+				v1alpha1.PodRunning: {"tempo-xyz"},
 			},
 		},
 		{
@@ -138,8 +138,8 @@ func TestGetStatefulSetStatus(t *testing.T) {
 					}},
 				},
 			},
-			expected: map[corev1.PodPhase][]string{
-				corev1.PodRunning: {"tempo-xyz"},
+			expected: v1alpha1.PodStatusMap{
+				v1alpha1.PodReady: {"tempo-xyz"},
 			},
 		},
 	}
@@ -166,7 +166,7 @@ func TestUpdateConditions(t *testing.T) {
 			name: "pod pending",
 			componentsStatus: v1alpha1.MonolithicComponentStatus{
 				Tempo: v1alpha1.PodStatusMap{
-					corev1.PodPending: []string{"tempo-1"},
+					v1alpha1.PodPending: []string{"tempo-1"},
 				},
 			},
 			expectedConditions: []metav1.Condition{
@@ -199,7 +199,7 @@ func TestUpdateConditions(t *testing.T) {
 			name: "pod failed",
 			componentsStatus: v1alpha1.MonolithicComponentStatus{
 				Tempo: v1alpha1.PodStatusMap{
-					corev1.PodFailed: []string{"tempo-1"},
+					v1alpha1.PodFailed: []string{"tempo-1"},
 				},
 			},
 			expectedConditions: []metav1.Condition{
@@ -232,7 +232,7 @@ func TestUpdateConditions(t *testing.T) {
 			name: "configuration error",
 			componentsStatus: v1alpha1.MonolithicComponentStatus{
 				Tempo: v1alpha1.PodStatusMap{
-					corev1.PodRunning: []string{"tempo-1"},
+					v1alpha1.PodReady: []string{"tempo-1"},
 				},
 			},
 			reconcileError: &ConfigurationError{
@@ -297,7 +297,7 @@ func TestUpdateConditions(t *testing.T) {
 			},
 			componentsStatus: v1alpha1.MonolithicComponentStatus{
 				Tempo: v1alpha1.PodStatusMap{
-					corev1.PodRunning: []string{"tempo-1"},
+					v1alpha1.PodReady: []string{"tempo-1"},
 				},
 			},
 			expectedConditions: []metav1.Condition{
@@ -331,7 +331,7 @@ func TestUpdateConditions(t *testing.T) {
 			name: "other reconcile error",
 			componentsStatus: v1alpha1.MonolithicComponentStatus{
 				Tempo: v1alpha1.PodStatusMap{
-					corev1.PodRunning: []string{"tempo-1"},
+					v1alpha1.PodReady: []string{"tempo-1"},
 				},
 			},
 			reconcileError: errors.New("permission denied"),
