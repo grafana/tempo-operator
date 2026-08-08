@@ -58,9 +58,8 @@ func BuildIngester(params manifestutils.Params) ([]client.Object, error) {
 func statefulSet(params manifestutils.Params) (*v1.StatefulSet, error) {
 	tempo := params.Tempo
 	labels := manifestutils.ComponentLabels(manifestutils.IngesterComponentName, tempo.Name)
-	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
+	annotations := manifestutils.CommonAnnotations(params)
 	annotations = manifestutils.StorageSecretHash(params.StorageParams, annotations)
-	annotations = manifestutils.AddCertificateHashAnnotations(tempo.GetAnnotations(), annotations)
 
 	filesystem := corev1.PersistentVolumeFilesystem
 	cfg := tempo.Spec.Template.Ingester

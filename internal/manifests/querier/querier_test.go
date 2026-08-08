@@ -53,7 +53,7 @@ func TestBuildQuerier(t *testing.T) {
 	require.NoError(t, err)
 
 	labels := manifestutils.ComponentLabels("querier", "test")
-	annotations := manifestutils.CommonAnnotations("")
+	annotations := manifestutils.CommonAnnotations(manifestutils.Params{})
 	assert.Equal(t, 3, len(objects))
 
 	assert.Equal(t, &corev1.Service{

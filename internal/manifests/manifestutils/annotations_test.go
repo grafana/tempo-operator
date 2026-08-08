@@ -17,66 +17,51 @@ func TestAzureShortLiveTokenAnnotation(t *testing.T) {
 	assert.Equal(t, "test-tenant", annotations["azure.workload.identity/tenant-id"])
 }
 
-func TestPodRestartAnnotations(t *testing.T) {
+func TestCommonAnnotations(t *testing.T) {
 	tests := []struct {
-		name          string
-		crAnnotations map[string]string
-		existing      map[string]string
-		expected      map[string]string
+		name     string
+		params   Params
+		expected map[string]string
 	}{
 		{
-			name: "no cert hash annotation in CR",
-			crAnnotations: map[string]string{
-				"other.annotation": "value",
-			},
-			existing: map[string]string{
-				"existing.annotation": "existing-value",
+			name: "config checksum only",
+			params: Params{
+				ConfigChecksum: "abc123",
 			},
 			expected: map[string]string{
-				"existing.annotation": "existing-value",
+				"tempo.grafana.com/config.hash": "abc123",
 			},
 		},
 		{
-			name: "cert hash annotation present in CR",
-			crAnnotations: map[string]string{
-				"tempo.grafana.com/cert-hash-distributor": "abc123def456",
-				"tempo.grafana.com/cert-hash-gateway":     "def456abc789",
-				"other.annotation":                        "value",
-			},
-			existing: map[string]string{
-				"existing.annotation": "existing-value",
+			name: "config checksum and cert hash annotations",
+			params: Params{
+				ConfigChecksum: "abc123",
+				CertHashAnnotations: map[string]string{
+					"tempo.grafana.com/cert-hash-distributor": "hash1",
+					"tempo.grafana.com/cert-hash-gateway":     "hash2",
+				},
 			},
 			expected: map[string]string{
-				"existing.annotation":                     "existing-value",
-				"tempo.grafana.com/cert-hash-distributor": "abc123def456",
-				"tempo.grafana.com/cert-hash-gateway":     "def456abc789",
+				"tempo.grafana.com/config.hash":           "abc123",
+				"tempo.grafana.com/cert-hash-distributor": "hash1",
+				"tempo.grafana.com/cert-hash-gateway":     "hash2",
 			},
 		},
 		{
-			name: "nil existing annotations",
-			crAnnotations: map[string]string{
-				"tempo.grafana.com/cert-hash-distributor": "abc123def456",
-			},
-			existing: nil,
-			expected: map[string]string{
-				"tempo.grafana.com/cert-hash-distributor": "abc123def456",
-			},
-		},
-		{
-			name:          "nil CR annotations",
-			crAnnotations: nil,
-			existing: map[string]string{
-				"existing.annotation": "existing-value",
+			name: "nil cert hash annotations",
+			params: Params{
+				ConfigChecksum:      "abc123",
+				CertHashAnnotations: nil,
 			},
 			expected: map[string]string{
-				"existing.annotation": "existing-value",
+				"tempo.grafana.com/config.hash": "abc123",
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := AddCertificateHashAnnotations(tt.crAnnotations, tt.existing)
+			result := CommonAnnotations(tt.params)
 			assert.Equal(t, tt.expected, result)
 		})
 	}
