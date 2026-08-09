@@ -86,7 +86,8 @@ func appendPodStatus(ctx context.Context, c StatusClient, componentName string, 
 	}
 
 	for _, pod := range pods.Items {
-		if !pod.GetDeletionTimestamp().IsZero() {
+		// Skip terminating pods
+		if !pod.ObjectMeta.DeletionTimestamp.IsZero() {
 			continue
 		}
 
