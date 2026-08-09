@@ -48,9 +48,6 @@ spec:
         filename: "/var/run/secrets/kubernetes.io/serviceaccount/token"
 
     receivers:
-      otlp/grpc:
-        protocols:
-          grpc:
       otlp/http:
         protocols:
           http:
@@ -75,15 +72,6 @@ spec:
     exporters:
       debug:
         verbosity: detailed
-      otlp:
-        endpoint: tempo-simplst-gateway.chainsaw-rbac.svc.cluster.local:8090
-        tls:
-          insecure: false
-          ca_file: "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt"
-        auth:
-          authenticator: bearertokenauth
-        headers:
-          X-Scope-OrgID: "dev"
       otlphttp:
         endpoint: https://tempo-simplst-gateway.chainsaw-rbac.svc.cluster.local:8080/api/traces/v1/dev
         tls:
@@ -101,10 +89,6 @@ spec:
           development: true
       extensions: [bearertokenauth]
       pipelines:
-        traces/grpc:
-          receivers: [otlp/grpc]
-          processors: [k8sattributes]
-          exporters: [otlp,debug]
         traces/http:
           receivers: [otlp/http]
           processors: [k8sattributes]

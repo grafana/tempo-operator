@@ -1,29 +1,30 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: generate-traces-grpc-sa-2
-  namespace: chainsaw-test-rbac-2
+  name: generate-traces-sa-1
+  namespace: chainsaw-test-rbac-1
 spec:
   template:
     spec:
       containers:
-      - name: telemetrygen
-        image: ghcr.io/grafana/tempo-operator/test-utils:sha-0fc5ef0
-        command:
-        - telemetrygen
-        - traces
-        - --otlp-endpoint=dev-collector.chainsaw-rbac.svc:4317
-        - --service=grpc-rbac-2
-        - --otlp-insecure
-        - --traces=2
-        - --otlp-attributes=k8s.container.name="telemetrygen"
-        - --otlp-attributes=k8s.namespace.name="chainsaw-test-rbac-2"
+        - name: telemetrygen
+          image: ghcr.io/grafana/tempo-operator/test-utils:sha-0fc5ef0
+          command:
+            - telemetrygen
+            - traces
+            - --otlp-endpoint=dev-collector.chainsaw-rbac.svc:4318
+            - --otlp-http
+            - --otlp-insecure
+            - --service=rbac-1
+            - --traces=2
+            - --otlp-attributes=k8s.container.name="telemetrygen"
+            - --otlp-attributes=k8s.namespace.name="chainsaw-test-rbac-1"
       restartPolicy: Never
 ---
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: generate-traces-http-sa-2
+  name: generate-traces-sa-2
   namespace: chainsaw-test-rbac-2
 spec:
   template:
@@ -37,7 +38,7 @@ spec:
             - --otlp-endpoint=dev-collector.chainsaw-rbac.svc:4318
             - --otlp-http
             - --otlp-insecure
-            - --service=http-rbac-2
+            - --service=rbac-2
             - --traces=2
             - --otlp-attributes=k8s.container.name="telemetrygen"
             - --otlp-attributes=k8s.namespace.name="chainsaw-test-rbac-2"

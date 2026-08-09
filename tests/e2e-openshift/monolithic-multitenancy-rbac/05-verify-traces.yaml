@@ -1,0 +1,142 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: verify-traces-sa-1
+  namespace: chainsaw-mono-rbac-1
+spec:
+  template:
+    spec:
+      serviceAccountName: tempo-rbac-sa-1
+      containers:
+        - name: verify-traces
+          image: ghcr.io/grafana/tempo-operator/test-utils:sha-0fc5ef0
+          command:
+            - /bin/bash
+            - -eux
+            - -c
+          args:
+            - |
+              API_BASE="https://tempo-mmo-rbac-gateway.chainsaw-mmo-rbac.svc:8080/api/traces/v1/dev/tempo/api"
+
+              curl_tempo() {
+                curl -fsS -G \
+                  --header "Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" \
+                  --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
+                  "$@"
+              }
+
+              assert_attributes() {
+                local endpoint=$1
+                local service=$2
+                local expect=$3
+                local result=$(curl_tempo "$API_BASE/search" --data-urlencode "q={ resource.service.name=\"$service\" }")
+
+                num_traces=$(echo "$result" | jq ".traces | length")
+                if [[ "$num_traces" != "2" ]]; then
+                  echo "Expected 2 traces for $service, got $num_traces"
+                  exit 1
+                fi
+
+                traceID=$(echo "$result" | jq -r '.traces[0].traceID')
+                trace=$(curl_tempo "$endpoint/$traceID")
+
+                for pattern in \
+                  '"key":"net.sock.peer.addr"' \
+                  '"stringValue":"1.2.3.4"' \
+                  '"key":"peer.service"' \
+                  '"stringValue":"telemetrygen-client"' \
+                  '"key":"k8s.pod.ip"' \
+                  '"key":"k8s.container.name"' \
+                ; do
+                  if echo "$trace" | grep -q "$pattern"; then
+                    if [[ "$expect" == "absent" ]]; then
+                      echo "$pattern should be stripped for $service"
+                      exit 1
+                    fi
+                  else
+                    if [[ "$expect" == "present" ]]; then
+                      echo "$pattern missing for $service"
+                      exit 1
+                    fi
+                  fi
+                done
+              }
+
+              # sa-1 should see full attributes for own namespace traces
+              assert_attributes "$API_BASE/traces" "rbac-1" "present"
+
+              # sa-1 should see traces from other namespace but with attributes stripped
+              assert_attributes "$API_BASE/traces" "rbac-2" "absent"
+
+              # /api/v2/traces should apply the same RBAC filtering
+              assert_attributes "$API_BASE/v2/traces" "rbac-1" "present"
+              assert_attributes "$API_BASE/v2/traces" "rbac-2" "absent"
+
+              # Verify trace retrieval with zstd encoding to simulate a modern browser
+              traceID=$(curl_tempo "$API_BASE/search" --data-urlencode "q={ resource.service.name=\"rbac-1\" }" | jq -r '.traces[0].traceID')
+              trace=$(curl_tempo --header "Accept-Encoding: zstd" "$API_BASE/traces/$traceID")
+              if ! echo "$trace" | grep -q '"key":"net.sock.peer.addr"'; then
+                echo "zstd response does not contain net.sock.peer.addr"
+                exit 1
+              fi
+      restartPolicy: Never
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: verify-traces-kubeadmin
+  namespace: chainsaw-mmo-rbac
+spec:
+  template:
+    spec:
+      serviceAccountName: tempo-rbac-cluster-admin
+      containers:
+        - name: verify-traces
+          image: ghcr.io/grafana/tempo-operator/test-utils:sha-0fc5ef0
+          command:
+            - /bin/bash
+            - -eux
+            - -c
+          args:
+            - |
+              API_BASE="https://tempo-mmo-rbac-gateway.chainsaw-mmo-rbac.svc:8080/api/traces/v1/dev/tempo/api"
+
+              curl_tempo() {
+                curl -fsS -G \
+                  --header "Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" \
+                  --cacert /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt \
+                  "$@"
+              }
+
+              assert_attributes_present() {
+                local service=$1
+                local result=$(curl_tempo "$API_BASE/search" --data-urlencode "q={ resource.service.name=\"$service\" }")
+
+                num_traces=$(echo "$result" | jq ".traces | length")
+                if [[ "$num_traces" != "2" ]]; then
+                  echo "Expected 2 traces for $service, got $num_traces"
+                  exit 1
+                fi
+
+                traceID=$(echo "$result" | jq -r '.traces[0].traceID')
+                trace=$(curl_tempo "$API_BASE/traces/$traceID")
+
+                for pattern in \
+                  '"key":"net.sock.peer.addr"' \
+                  '"stringValue":"1.2.3.4"' \
+                  '"key":"peer.service"' \
+                  '"stringValue":"telemetrygen-client"' \
+                  '"key":"k8s.pod.ip"' \
+                  '"key":"k8s.container.name"' \
+                ; do
+                  if ! echo "$trace" | grep -q "$pattern"; then
+                    echo "$pattern missing for $service"
+                    exit 1
+                  fi
+                done
+              }
+
+              # cluster-admin should see full attributes for traces from all namespaces
+              assert_attributes_present "rbac-1"
+              assert_attributes_present "rbac-2"
+      restartPolicy: Never

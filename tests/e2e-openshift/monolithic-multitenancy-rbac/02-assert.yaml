@@ -14,11 +14,6 @@ metadata:
   namespace: chainsaw-mmo-rbac
 spec:
   ports:
-  - appProtocol: grpc
-    name: otlp-grpc-grpc
-    port: 4317
-    protocol: TCP
-    targetPort: 4317
   - appProtocol: http
     name: otlp-http-http
     port: 4318
