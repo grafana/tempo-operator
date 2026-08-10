@@ -18,17 +18,20 @@ spec:
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
-    - jsonPath: .metadata.creationTimestamp
-      name: Age
-      type: date
-    - description: Tempo Version
-      jsonPath: .status.tempoVersion
-      name: Tempo Version
-      type: string
     - description: Management State
       jsonPath: .spec.managementState
       name: Management
       type: string
+    - description: Tempo Version
+      jsonPath: .status.tempoVersion
+      name: Tempo Version
+      type: string
+    - jsonPath: .status.conditions[?(@.type=="Ready")].status
+      name: Ready
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
     name: v1alpha1
     schema:
       openAPIV3Schema:
