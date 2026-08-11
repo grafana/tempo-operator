@@ -983,3 +983,44 @@ func TestOverrideResources(t *testing.T) {
 	assert.Equal(t, dep.Spec.Template.Spec.Containers[0].Resources, overrideResources)
 
 }
+
+func TestBuildGatewayZoneAwarenessDoesNotChangeSelector(t *testing.T) {
+	tempo := v1alpha1.TempoStack{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "simplest",
+			Namespace: "observability",
+		},
+		Spec: v1alpha1.TempoStackSpec{
+			Template: v1alpha1.TempoTemplateSpec{
+				Gateway: v1alpha1.TempoGatewaySpec{
+					TempoComponentSpec: v1alpha1.TempoComponentSpec{
+						Replicas: ptr.To(int32(2)),
+					},
+					Enabled: true,
+				},
+			},
+			ReplicationZones: []v1alpha1.ZoneSpec{{MaxSkew: 1, TopologyKey: "topology.kubernetes.io/zone"}},
+			Tenants: &v1alpha1.TenantsSpec{
+				Mode: v1alpha1.ModeOpenShift,
+				Authentication: []v1alpha1.AuthenticationSpec{
+					{TenantName: "dev", TenantID: "abcd1"},
+				},
+			},
+		},
+	}
+	objects, err := BuildGateway(manifestutils.Params{Tempo: tempo})
+	require.NoError(t, err)
+
+	obj := getObjectByTypeAndName(objects, "tempo-simplest-gateway", reflect.TypeOf(&appsv1.Deployment{}))
+	require.NotNil(t, obj)
+	dep, ok := obj.(*appsv1.Deployment)
+	require.True(t, ok)
+
+	// the pod template opts into the zone awareness
+	assert.Equal(t, "enabled", dep.Spec.Template.Labels[v1alpha1.LabelZoneAwarePod])
+
+	// the selector of a Deployment is immutable, therefore it must not gain the label
+	assert.NotContains(t, dep.Spec.Selector.MatchLabels, v1alpha1.LabelZoneAwarePod)
+	assert.Equal(t, map[string]string(manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name)),
+		dep.Spec.Selector.MatchLabels)
+}

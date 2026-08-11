@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring,Observability
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.21.0
-    createdAt: "2026-08-07T17:08:00Z"
+    createdAt: "2026-08-12T00:25:15Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -911,6 +911,26 @@ spec:
           accepting a span.
         displayName: Replication Factor
         path: replicationFactor
+      - description: |-
+          ReplicationZones defines an array of ZoneSpec that the scheduler will try to satisfy.
+          The pods of every component are spread across these topology domains, and the ingester
+          ring replicates spans across them.
+
+
+          IMPORTANT: Make sure that spec.replicationFactor is less than or equal to the number of
+          available zones.
+        displayName: Replication Zones
+        path: replicationZones
+      - description: MaxSkew describes the maximum degree to which Pods can be unevenly
+          distributed.
+        displayName: Max Skew
+        path: replicationZones[0].maxSkew
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:number
+      - description: TopologyKey is the key that defines a topology in the Nodes'
+          labels.
+        displayName: Topology Key
+        path: replicationZones[0].topologyKey
       - description: Resources defines resources configuration.
         displayName: Resources
         path: resources
@@ -1534,6 +1554,7 @@ spec:
           - ""
           resources:
           - namespaces
+          - nodes
           verbs:
           - get
           - list

@@ -669,6 +669,44 @@ func TestGeMutateFunc_MutateDeploymentSpec(t *testing.T) {
 	}
 }
 
+func TestGeMutateFunc_MutateDeploymentSpecRemovesZoneAwareness(t *testing.T) {
+	// an existing Deployment of a zone-aware TempoStack
+	existing := &appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{CreationTimestamp: metav1.Now()},
+		Spec: appsv1.DeploymentSpec{
+			Template: corev1.PodTemplateSpec{
+				Spec: corev1.PodSpec{
+					Containers:     []corev1.Container{{Name: "tempo"}},
+					InitContainers: []corev1.Container{{Name: "az-annotation-check"}},
+					TopologySpreadConstraints: []corev1.TopologySpreadConstraint{{
+						MaxSkew:           1,
+						TopologyKey:       "topology.kubernetes.io/zone",
+						WhenUnsatisfiable: corev1.DoNotSchedule,
+					}},
+				},
+			},
+		},
+	}
+
+	// spec.replication.zones has been removed from the TempoStack
+	desired := &appsv1.Deployment{
+		Spec: appsv1.DeploymentSpec{
+			Template: corev1.PodTemplateSpec{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{{Name: "tempo"}},
+				},
+			},
+		},
+	}
+
+	f := manifests.MutateFuncFor(existing, desired)
+	require.NoError(t, f())
+
+	// the scheduling constraints must be gone, otherwise the pods can never be scheduled again
+	assert.Empty(t, existing.Spec.Template.Spec.TopologySpreadConstraints)
+	assert.Empty(t, existing.Spec.Template.Spec.InitContainers)
+}
+
 func TestGeMutateFunc_MutateStatefulSetSpec(t *testing.T) {
 	one := int32(1)
 	two := int32(2)

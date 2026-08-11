@@ -317,10 +317,32 @@ func (v *validator) validateReplicationFactor(tempo v1alpha1.TempoStack) field.E
 	if ingesterReplicas < quorum {
 		path := field.NewPath("spec").Child("ReplicationFactor")
 		return field.ErrorList{
-			field.Invalid(path, tempo.Spec.ReplicationFactor,
+			field.Invalid(path, replicatonFactor,
 				fmt.Sprintf("replica factor of %d requires at least %d ingester replicas", replicatonFactor, quorum),
 			)}
 	}
+	return nil
+}
+
+// validateReplicationZones validates that every zone defines a distinct topology key, as otherwise
+// the ingester pods can never satisfy the topology spread constraints.
+func (v *validator) validateReplicationZones(tempo v1alpha1.TempoStack) field.ErrorList {
+	if !tempo.Spec.ZoneAwarenessEnabled() {
+		return nil
+	}
+
+	topologyKeys := map[string]bool{}
+	for i, zone := range tempo.Spec.ReplicationZones {
+		if topologyKeys[zone.TopologyKey] {
+			return field.ErrorList{
+				field.Duplicate(
+					field.NewPath("spec").Child("replicationZones").Index(i).Child("topologyKey"),
+					zone.TopologyKey,
+				)}
+		}
+		topologyKeys[zone.TopologyKey] = true
+	}
+
 	return nil
 }
 
@@ -621,6 +643,7 @@ func (v *validator) validate(ctx context.Context, tempo *v1alpha1.TempoStack) (a
 	}
 
 	allErrors = append(allErrors, v.validateReplicationFactor(*tempo)...)
+	allErrors = append(allErrors, v.validateReplicationZones(*tempo)...)
 	allErrors = append(allErrors, v.validateQueryFrontend(*tempo)...)
 	allWarnings = append(allWarnings, v.validateJaegerQueryDeprecation(*tempo)...)
 	addValidationResults(v.validateGateway(ctx, *tempo))

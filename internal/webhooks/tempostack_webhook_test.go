@@ -3076,6 +3076,52 @@ func TestValidateMetricsGenerator(t *testing.T) {
 	}
 }
 
+func TestValidateReplicationZones(t *testing.T) {
+	validator := &validator{}
+
+	tests := []struct {
+		name     string
+		input    v1alpha1.TempoStack
+		expected field.ErrorList
+	}{
+		{
+			name:     "no zones",
+			input:    v1alpha1.TempoStack{Spec: v1alpha1.TempoStackSpec{}},
+			expected: nil,
+		},
+		{
+			name: "distinct topology keys",
+			input: v1alpha1.TempoStack{Spec: v1alpha1.TempoStackSpec{
+				ReplicationZones: []v1alpha1.ZoneSpec{
+					{MaxSkew: 1, TopologyKey: "topology.kubernetes.io/zone"},
+					{MaxSkew: 1, TopologyKey: "kubernetes.io/hostname"},
+				},
+			}},
+			expected: nil,
+		},
+		{
+			name: "duplicate topology key",
+			input: v1alpha1.TempoStack{Spec: v1alpha1.TempoStackSpec{
+				ReplicationZones: []v1alpha1.ZoneSpec{
+					{MaxSkew: 1, TopologyKey: "topology.kubernetes.io/zone"},
+					{MaxSkew: 2, TopologyKey: "topology.kubernetes.io/zone"},
+				},
+			}},
+			expected: field.ErrorList{
+				field.Duplicate(
+					field.NewPath("spec").Child("replicationZones").Index(1).Child("topologyKey"),
+					"topology.kubernetes.io/zone",
+				)},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			assert.Equal(t, test.expected, validator.validateReplicationZones(test.input))
+		})
+	}
+}
+
 func TestValidateJaegerQueryDeprecation(t *testing.T) {
 	validator := &validator{}
 
