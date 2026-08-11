@@ -17,33 +17,28 @@ spec:
         file: 02-install-otelcol.yaml
     - assert:
         file: 02-assert.yaml
-  - name: Create non-admin SAs with namespace level access
+  - name: step-03
     try:
     - apply:
-        file: 02-create-SAs-with-namespace-access.yaml
+        file: 03-create-serviceaccounts.yaml
     - assert:
-        file: 02-assert-create-sas.yaml
-  - name: Generate traces from namespace chainsaw-mono-rbac-1
+        file: 03-assert.yaml
+  - name: step-04
     try:
     - apply:
-        file: 03-tempo-rbac-sa-1-traces-gen.yaml
+        file: 04-generate-traces.yaml
     - assert:
-        file: 03-assert-tempo-rbac-sa-1-traces-gen.yaml
-  - name: Generate traces from namespace chainsaw-mono-rbac-2
+        file: 04-assert.yaml
+  - name: step-05
     try:
     - apply:
-        file: 04-tempo-rbac-sa-2-traces-gen.yaml
+        file: 05-verify-traces.yaml
     - assert:
-        file: 04-assert-tempo-rbac-sa-2-traces-gen.yaml
-  - name: Assert tracess using RBAC
-    try:
-    - apply:
-        file: 05-tempo-rbac-sa-1-traces-verify.yaml
-    - assert:
-        file: 05-assert-tempo-rbac-sa-1-traces-verify.yaml
-  - name: Verify kubeadmin can view traces from all projects
-    try:
-    - apply:
-        file: 06-kubeadmin-traces-verify.yaml
-    - assert:
-        file: 06-assert-kubeadmin-traces-verify.yaml
+        file: 05-assert.yaml
+    catch:
+    - podLogs:
+        selector: job-name=verify-traces-sa-1
+        namespace: chainsaw-mono-rbac-1
+    - podLogs:
+        selector: job-name=verify-traces-kubeadmin
+        namespace: chainsaw-mmo-rbac
