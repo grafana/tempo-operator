@@ -9,16 +9,17 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
 	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 )
 
-func TestRefreshPatchError(t *testing.T) {
+func TestRefreshUpdateError(t *testing.T) {
 	c := &statusClientStub{}
-	c.PatchStatusStub = func(ctx context.Context, changed, original *v1alpha1.TempoStack) error {
-		return apierrors.NewConflict(schema.GroupResource{}, original.Name,
-			errors.New("patching error, likely some other thing modified this and the patch was rejected"))
+	c.UpdateStatusStub = func(ctx context.Context, obj client.Object, opts ...client.SubResourceUpdateOption) error {
+		return apierrors.NewConflict(schema.GroupResource{}, obj.GetName(),
+			errors.New("update error, likely some other thing modified this and the update was rejected"))
 	}
 
 	stack := v1alpha1.TempoStack{
@@ -39,7 +40,7 @@ func TestRefreshPatchError(t *testing.T) {
 
 func TestRefreshNoError(t *testing.T) {
 	c := &statusClientStub{}
-	callPatchCount := 0
+	callUpdateCount := 0
 
 	stack := v1alpha1.TempoStack{
 		ObjectMeta: metav1.ObjectMeta{
@@ -59,9 +60,10 @@ func TestRefreshNoError(t *testing.T) {
 		Conditions:      ReadyCondition(stack),
 	}
 
-	c.PatchStatusStub = func(ctx context.Context, changed, original *v1alpha1.TempoStack) error {
-		assert.Equal(t, s, changed.Status)
-		callPatchCount++
+	c.UpdateStatusStub = func(ctx context.Context, obj client.Object, opts ...client.SubResourceUpdateOption) error {
+		tempo := obj.(*v1alpha1.TempoStack)
+		assert.Equal(t, s, tempo.Status)
+		callUpdateCount++
 		return nil
 	}
 

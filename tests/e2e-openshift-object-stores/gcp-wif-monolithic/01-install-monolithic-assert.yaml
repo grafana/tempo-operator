@@ -108,3 +108,11 @@ status:
     ready: true
     started: true
   phase: Running
+
+---
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoMonolithic
+metadata:
+  name: gcpwifmn
+status:
+  (conditions[?type=='Ready'] | [0].status): "True"
