@@ -20,14 +20,17 @@ spec:
     - apply:
         file: 01-install-tempostack.yaml
     - assert:
+        timeout: 5m
         file: 01-install-tempostack-assert.yaml
+    catch:
+    - get:
+        apiVersion: tempo.grafana.com/v1alpha1
+        kind: TempoStack
+        format: yaml
+    - podLogs:
+        selector: app.kubernetes.io/managed-by=tempo-operator
   - name: Verify extraConfig in ConfigMap
     try:
     - script:
         timeout: 1m
         content: ./verify-extraconfig.sh
-  - name: Check TempoStack status
-    try:
-    - script:
-        timeout: 5m
-        content: kubectl get --namespace $NAMESPACE tempo simplest -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' | grep True

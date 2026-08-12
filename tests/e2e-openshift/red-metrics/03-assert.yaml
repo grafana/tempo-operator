@@ -92,3 +92,10 @@ metadata:
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-redmetrics-query-frontend
+---
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoStack
+metadata:
+  name: redmetrics
+status:
+  (conditions[?type=='Ready'] | [0].status): "True"

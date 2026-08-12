@@ -76,6 +76,8 @@ spec:
           requests:
             cpu: 49m
             memory: 29Mi
+status:
+  (conditions[?type=='Ready'] | [0].status): "True"
 
 ---
 apiVersion: apps/v1
