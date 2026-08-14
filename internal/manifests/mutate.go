@@ -286,7 +286,9 @@ func mutateDeployment(existing, desired *appsv1.Deployment) error {
 		existing.Spec.Selector = desired.Spec.Selector
 	}
 	existing.Spec.Replicas = desired.Spec.Replicas
-	if err := mergeWithOverride(&existing.Spec.Template, desired.Spec.Template); err != nil {
+	// Empty values must overwrite the existing ones, otherwise removing a setting from the CR
+	// (for example spec.replication.zones) would never clear the fields it added to the pod template.
+	if err := mergeWithOverrideEmptyValue(&existing.Spec.Template, desired.Spec.Template); err != nil {
 		return err
 	}
 	if err := mergeWithOverride(&existing.Spec.Strategy, desired.Spec.Strategy); err != nil {

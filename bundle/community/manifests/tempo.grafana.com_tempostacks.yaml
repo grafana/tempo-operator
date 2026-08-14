@@ -554,6 +554,34 @@ spec:
                   determines how many ingesters need to acknowledge the data from
                   the distributors before accepting a span.
                 type: integer
+              replicationZones:
+                description: |-
+                  ReplicationZones defines an array of ZoneSpec that the scheduler will try to satisfy.
+                  The pods of every component are spread across these topology domains, and the ingester
+                  ring replicates spans across them.
+
+                  IMPORTANT: Make sure that spec.replicationFactor is less than or equal to the number of
+                  available zones.
+                items:
+                  description: ZoneSpec defines the spec to support zone-aware component
+                    deployments.
+                  properties:
+                    maxSkew:
+                      default: 1
+                      description: MaxSkew describes the maximum degree to which Pods
+                        can be unevenly distributed.
+                      maximum: 2147483647
+                      minimum: 1
+                      type: integer
+                    topologyKey:
+                      description: TopologyKey is the key that defines a topology
+                        in the Nodes' labels.
+                      type: string
+                  required:
+                  - maxSkew
+                  - topologyKey
+                  type: object
+                type: array
               resources:
                 description: Resources defines resources configuration.
                 properties:
