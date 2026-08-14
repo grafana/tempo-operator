@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: generate-traces-grpc-sa-1
+  name: verify-traces-sa-1
   namespace: chainsaw-test-rbac-1
 status:
   succeeded: 1
@@ -9,7 +9,7 @@ status:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: generate-traces-http-sa-1
-  namespace: chainsaw-test-rbac-1
+  name: verify-traces-kubeadmin
+  namespace: chainsaw-rbac
 status:
   succeeded: 1

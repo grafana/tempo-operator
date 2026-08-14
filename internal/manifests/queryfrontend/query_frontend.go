@@ -59,6 +59,10 @@ func BuildQueryFrontend(params manifestutils.Params) ([]client.Object, error) {
 	tempo := params.Tempo
 	targets := []string{containerNameTempo, containerNameJaegerQuery, containerNameTempoQuery}
 
+	if err := manifestutils.ConfigureReplication(&d.Spec.Template, tempo.Spec.ReplicationZones, manifestutils.QueryFrontendComponentName, tempo.Name); err != nil {
+		return nil, err
+	}
+
 	if gates.HTTPEncryption || gates.GRPCEncryption {
 		caBundleName := naming.SigningCABundleName(tempo.Name)
 		if err := manifestutils.ConfigureServiceCAByContainerName(&d.Spec.Template.Spec, caBundleName, targets...); err != nil {

@@ -154,6 +154,18 @@ type TempoStackSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Replication Factor"
 	ReplicationFactor int `json:"replicationFactor,omitempty"`
 
+	// ReplicationZones defines an array of ZoneSpec that the scheduler will try to satisfy.
+	// The pods of every component are spread across these topology domains, and the ingester
+	// ring replicates spans across them.
+	//
+	// IMPORTANT: Make sure that spec.replicationFactor is less than or equal to the number of
+	// available zones.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Replication Zones"
+	ReplicationZones []ZoneSpec `json:"replicationZones,omitempty"`
+
 	// Tenants defines the per-tenant authentication and authorization spec.
 	//
 	// +optional
@@ -569,6 +581,25 @@ type HashRingSpec struct {
 	MemberList MemberListSpec `json:"memberlist,omitempty"`
 }
 
+// ZoneSpec defines the spec to support zone-aware component deployments.
+type ZoneSpec struct {
+	// MaxSkew describes the maximum degree to which Pods can be unevenly distributed.
+	//
+	// +required
+	// +kubebuilder:default:=1
+	// +kubebuilder:validation:Minimum:=1
+	// +kubebuilder:validation:Maximum:=2147483647
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors="urn:alm:descriptor:com.tectonic.ui:number",displayName="Max Skew"
+	MaxSkew int `json:"maxSkew"`
+
+	// TopologyKey is the key that defines a topology in the Nodes' labels.
+	//
+	// +required
+	// +kubebuilder:validation:Required
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Topology Key"
+	TopologyKey string `json:"topologyKey"`
+}
+
 // TempoTemplateSpec defines the template of all requirements to configure
 // scheduling of all Tempo components to be deployed.
 type TempoTemplateSpec struct {
@@ -888,7 +919,7 @@ type JaegerQueryMonitor struct {
 // IngressSpec defines Jaeger Query Ingress options.
 type IngressSpec struct {
 	// Type defines the type of Ingress for the Jaeger Query UI.
-	// Currently ingress, route and none are supported.
+	// Supported values: ingress, route, none
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
@@ -1055,9 +1086,10 @@ type RetentionConfig struct {
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
-//+kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
-//+kubebuilder:printcolumn:name="Tempo Version",type="string",JSONPath=".status.tempoVersion",description="Tempo Version"
 //+kubebuilder:printcolumn:name="Management",type="string",JSONPath=".spec.managementState",description="Management State"
+//+kubebuilder:printcolumn:name="Tempo Version",type="string",JSONPath=".status.tempoVersion",description="Tempo Version"
+//+kubebuilder:printcolumn:name="Ready",type="string",JSONPath=`.status.conditions[?(@.type=="Ready")].status`
+//+kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 
 // TempoStack manages a Tempo deployment in microservices mode.
 //

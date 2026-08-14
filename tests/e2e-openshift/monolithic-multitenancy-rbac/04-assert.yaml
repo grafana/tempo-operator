@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: verify-traces-traceql-grpc-sa-1
+  name: generate-traces-sa-1
   namespace: chainsaw-mono-rbac-1
 status:
   succeeded: 1
@@ -9,7 +9,7 @@ status:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: verify-traces-traceql-http-sa-1
-  namespace: chainsaw-mono-rbac-1
+  name: generate-traces-sa-2
+  namespace: chainsaw-mono-rbac-2
 status:
   succeeded: 1

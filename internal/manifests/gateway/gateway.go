@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"maps"
 	"net/url"
 	"path"
 
@@ -60,6 +61,10 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 	}
 
 	dep := deployment(params, rbacCfgHash, tenantsCfgHash)
+
+	if err := manifestutils.ConfigureReplication(&dep.Spec.Template, tempo.Spec.ReplicationZones, manifestutils.GatewayComponentName, tempo.Name); err != nil {
+		return nil, err
+	}
 
 	if params.CtrlConfig.Gates.HTTPEncryption || params.CtrlConfig.Gates.GRPCEncryption {
 		caBundleName := naming.SigningCABundleName(params.Tempo.Name)
@@ -245,7 +250,9 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      labels,
+					// The pod template must not share the label map with the immutable selector:
+					// ConfigureReplication adds the zone-awareness label to the pod template in place.
+					Labels:      maps.Clone(labels),
 					Annotations: annotations,
 				},
 				Spec: corev1.PodSpec{

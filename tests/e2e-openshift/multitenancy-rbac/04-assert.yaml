@@ -1,15 +1,15 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: generate-traces-grpc-sa-2
-  namespace: chainsaw-test-rbac-2
+  name: generate-traces-sa-1
+  namespace: chainsaw-test-rbac-1
 status:
   succeeded: 1
 ---
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: generate-traces-http-sa-2
+  name: generate-traces-sa-2
   namespace: chainsaw-test-rbac-2
 status:
   succeeded: 1

@@ -5,8 +5,29 @@ import (
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 )
 
+// PodStatus is a short description of the status a Pod can be in.
+type PodStatus string
+
+const (
+	// PodPending means the pod has been accepted by the system, but one or more of the containers
+	// has not been started.
+	PodPending PodStatus = "Pending"
+	// PodRunning means the pod has been bound to a node and all of the containers have been started.
+	// At least one container is still running or is in the process of being restarted.
+	PodRunning PodStatus = "Running"
+	// PodReady means the pod has been started and the readiness probe reports a successful status.
+	PodReady PodStatus = "Ready"
+	// PodSucceeded means that all containers in the pod have terminated in success, and will not be restarted.
+	PodSucceeded PodStatus = "Succeeded"
+	// PodFailed means that all containers in the pod have terminated, and at least one container has
+	// terminated in a failure.
+	PodFailed PodStatus = "Failed"
+	// PodStatusUnknown is used when none of the other statuses apply or the information is not ready yet.
+	PodStatusUnknown PodStatus = "Unknown"
+)
+
 // PodStatusMap defines the type for mapping pod status to pod name.
-type PodStatusMap map[corev1.PodPhase][]string
+type PodStatusMap map[PodStatus][]string
 
 // TLSSpec is the TLS configuration.
 type TLSSpec struct {

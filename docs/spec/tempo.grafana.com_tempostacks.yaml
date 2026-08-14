@@ -93,6 +93,9 @@ spec:                                    # TempoStackSpec defines the desired st
       otlp_http_endpoint: ""             # OTLPHttpEndpoint defines the OTLP/http endpoint data gets send to. For example, "http://localhost:4320". The default OTLP/http port 4318 collides with the distributor ports, therefore it is recommended to use a different port on the sidecar injected to the Tempo (e.g. 4320).
       sampling_fraction: ""              # SamplingFraction defines the sampling ratio. Valid values are 0 to 1. The SamplingFraction has to be defined to enable tracing.
   replicationFactor: 0                   # The replication factor is a configuration setting that determines how many ingesters need to acknowledge the data from the distributors before accepting a span.
+  replicationZones:                      # ReplicationZones defines an array of ZoneSpec that the scheduler will try to satisfy. The pods of every component are spread across these topology domains, and the ingester ring replicates spans across them.  IMPORTANT: Make sure that spec.replicationFactor is less than or equal to the number of available zones.
+  - maxSkew: 1                           # MaxSkew describes the maximum degree to which Pods can be unevenly distributed.
+    topologyKey: ""                      # TopologyKey is the key that defines a topology in the Nodes' labels.
   retention:                             # Retention period defined by dataset. User can specify how long data should be stored.
     global:                              # Global is used to configure global retention.
       traces: ""                         # Traces defines retention period. Supported parameter suffixes are "s", "m" and "h". example: 336h default: value is 48h.
@@ -265,7 +268,7 @@ spec:                                    # TempoStackSpec defines the desired st
         ingressClassName: ""             # IngressClassName defines the name of an IngressClass cluster resource. Defines which ingress controller serves this ingress resource.
         route:                           # Route defines the options for the OpenShift route.
           termination: ""                # Termination defines the termination type. The default is "edge".
-        type: ""                         # Type defines the type of Ingress for the Jaeger Query UI. Currently ingress, route and none are supported.
+        type: ""                         # Type defines the type of Ingress for the Jaeger Query UI. Supported values: ingress, route, none
       rbac:                              # RBAC defines query RBAC options.
         enabled: false                   # Enabled defines if the query RBAC should be enabled.
     ingester:                            # Ingester defines the ingester component spec.
@@ -469,7 +472,7 @@ spec:                                    # TempoStackSpec defines the desired st
           ingressClassName: ""           # IngressClassName defines the name of an IngressClass cluster resource. Defines which ingress controller serves this ingress resource.
           route:                         # Route defines the options for the OpenShift route.
             termination: ""              # Termination defines the termination type. The default is "edge".
-          type: ""                       # Type defines the type of Ingress for the Jaeger Query UI. Currently ingress, route and none are supported.
+          type: ""                       # Type defines the type of Ingress for the Jaeger Query UI. Supported values: ingress, route, none
         monitorTab:                      # MonitorTab defines the monitor tab configuration.
           enabled: false                 # Enabled enables the monitor tab in the Jaeger console. The PrometheusEndpoint must be configured to enable this feature.
           prometheusEndpoint: ""         # PrometheusEndpoint defines the endpoint to the Prometheus instance that contains the span rate, error, and duration (RED) metrics. For instance on OpenShift this is set to https://thanos-querier.openshift-monitoring.svc.cluster.local:9091

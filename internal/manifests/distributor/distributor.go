@@ -34,6 +34,11 @@ func BuildDistributor(params manifestutils.Params) ([]client.Object, error) {
 	}
 	gates := params.CtrlConfig.Gates
 	tempo := params.Tempo
+
+	if err := manifestutils.ConfigureReplication(&dep.Spec.Template, tempo.Spec.ReplicationZones, manifestutils.DistributorComponentName, tempo.Name); err != nil {
+		return nil, err
+	}
+
 	if gates.HTTPEncryption || gates.GRPCEncryption {
 		caBundleName := naming.SigningCABundleName(tempo.Name)
 		if err := manifestutils.ConfigureServiceCA(&dep.Spec.Template.Spec, caBundleName); err != nil {

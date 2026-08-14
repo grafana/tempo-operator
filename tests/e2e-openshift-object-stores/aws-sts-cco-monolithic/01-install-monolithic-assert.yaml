@@ -136,3 +136,12 @@ spec:
 status:
   lastSyncGeneration: 1
   provisioned: true
+
+---
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoMonolithic
+metadata:
+  name: tmonocco
+  namespace: chainsaw-awscco-mono
+status:
+  (conditions[?type=='Ready'] | [0].status): "True"

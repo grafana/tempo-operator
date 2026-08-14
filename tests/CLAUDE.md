@@ -55,15 +55,19 @@ docker run --rm -v /path/to/kubeconfig:/kubeconfig tempo-operator-tests
 - **e2e-long-running/**: Long-duration tests (retention policies)
 - **operator-metrics/**: Operator metrics validation
 
-### Test Structure Pattern
+### Test Conventions
 
 Each test directory follows this pattern:
 - `chainsaw-test.yaml`: Main test definition with steps
 - `XX-install*.yaml`: Resource installation steps (numbered)
-- `XX-assert*.yaml`: Assertion files to verify state
+- `XX-assert.yaml`: Assertion files to verify state
 - `XX-generate-traces.yaml`: Trace generation jobs
 - `XX-verify-traces*.yaml`: Trace verification steps
 - `*.sh`: Shell scripts for complex setup/teardown
+
+Use step names "step-XX".
+Use a single apply manifest per step.
+Prefer manifest asserts instead of scripts.
 
 ### Key Test Components
 

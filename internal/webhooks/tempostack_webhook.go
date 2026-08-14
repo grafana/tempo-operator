@@ -317,10 +317,32 @@ func (v *validator) validateReplicationFactor(tempo v1alpha1.TempoStack) field.E
 	if ingesterReplicas < quorum {
 		path := field.NewPath("spec").Child("ReplicationFactor")
 		return field.ErrorList{
-			field.Invalid(path, tempo.Spec.ReplicationFactor,
+			field.Invalid(path, replicatonFactor,
 				fmt.Sprintf("replica factor of %d requires at least %d ingester replicas", replicatonFactor, quorum),
 			)}
 	}
+	return nil
+}
+
+// validateReplicationZones validates that every zone defines a distinct topology key, as otherwise
+// the ingester pods can never satisfy the topology spread constraints.
+func (v *validator) validateReplicationZones(tempo v1alpha1.TempoStack) field.ErrorList {
+	if !tempo.Spec.ZoneAwarenessEnabled() {
+		return nil
+	}
+
+	topologyKeys := map[string]bool{}
+	for i, zone := range tempo.Spec.ReplicationZones {
+		if topologyKeys[zone.TopologyKey] {
+			return field.ErrorList{
+				field.Duplicate(
+					field.NewPath("spec").Child("replicationZones").Index(i).Child("topologyKey"),
+					zone.TopologyKey,
+				)}
+		}
+		topologyKeys[zone.TopologyKey] = true
+	}
+
 	return nil
 }
 
@@ -339,7 +361,7 @@ func (v *validator) validateJaegerQueryDeprecation(tempo v1alpha1.TempoStack) ad
 func (v *validator) validateQueryFrontend(tempo v1alpha1.TempoStack) field.ErrorList {
 	path := field.NewPath("spec").Child("template").Child("queryFrontend").Child("jaegerQuery").Child("ingress").Child("type")
 
-	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type != v1alpha1.IngressTypeNone && !tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled {
+	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type.IsEnabled() && !tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled {
 		return field.ErrorList{field.Invalid(
 			path,
 			tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type,
@@ -372,7 +394,7 @@ func (v *validator) validateQueryFrontend(tempo v1alpha1.TempoStack) field.Error
 func (v *validator) validateGateway(ctx context.Context, tempo v1alpha1.TempoStack) (admission.Warnings, field.ErrorList) {
 	path := field.NewPath("spec").Child("template").Child("gateway").Child("enabled")
 	if tempo.Spec.Template.Gateway.Enabled {
-		if tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type != v1alpha1.IngressTypeNone {
+		if tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type.IsEnabled() {
 			return nil, field.ErrorList{
 				field.Invalid(path, tempo.Spec.Template.Gateway.Enabled,
 					"cannot enable gateway and jaeger query ingress at the same time, please use the Jaeger UI from the gateway",
@@ -621,6 +643,7 @@ func (v *validator) validate(ctx context.Context, tempo *v1alpha1.TempoStack) (a
 	}
 
 	allErrors = append(allErrors, v.validateReplicationFactor(*tempo)...)
+	allErrors = append(allErrors, v.validateReplicationZones(*tempo)...)
 	allErrors = append(allErrors, v.validateQueryFrontend(*tempo)...)
 	allWarnings = append(allWarnings, v.validateJaegerQueryDeprecation(*tempo)...)
 	addValidationResults(v.validateGateway(ctx, *tempo))

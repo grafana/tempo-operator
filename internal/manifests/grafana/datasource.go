@@ -29,7 +29,7 @@ func NewGrafanaDatasource(
 ) *grafanav1.GrafanaDatasource {
 	return &grafanav1.GrafanaDatasource{
 		TypeMeta: metav1.TypeMeta{
-			APIVersion: grafanav1.GroupVersion.String(),
+			APIVersion: grafanav1.SchemeGroupVersion.String(),
 			Kind:       "GrafanaDatasource",
 		},
 		ObjectMeta: metav1.ObjectMeta{

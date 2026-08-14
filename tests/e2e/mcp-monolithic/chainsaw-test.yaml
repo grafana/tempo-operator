@@ -11,14 +11,15 @@ spec:
     - apply:
         file: 01-install-tempo.yaml
     - assert:
-        file: 01-assert.yaml
-  - name: step-02
-    try:
-    - script:
         timeout: 5m
-        content: |
-          kubectl get --namespace $NAMESPACE tempomonolithic simplest \
-            -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' | grep True
+        file: 01-assert.yaml
+    catch:
+    - get:
+        apiVersion: tempo.grafana.com/v1alpha1
+        kind: TempoMonolithic
+        format: yaml
+    - podLogs:
+        selector: app.kubernetes.io/managed-by=tempo-operator
   - name: step-03
     try:
     - script:
