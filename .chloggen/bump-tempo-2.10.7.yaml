@@ -5,10 +5,10 @@ change_type: enhancement
 component: tempostack, tempomonolithic
 
 # A brief description of the change. Surround your text with quotes ("") if it needs to start with a backtick (`).
-note: Bump Tempo to 2.10.7 and gateway to main-2026-07-01-c9e5509
+note: Bump Tempo to 2.10.8 and gateway to main-2026-08-13-db2b289
 
 # One or more tracking issues related to the change
-issues: [1531]
+issues: [1611]
 
 # (Optional) One or more lines of additional information to render under the primary note.
 # These lines will be padded with 2 spaces and then inserted directly into the document.
