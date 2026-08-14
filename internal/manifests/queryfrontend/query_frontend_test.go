@@ -120,7 +120,7 @@ func getExpectedFrontendDiscoveryService(withJaeger bool) *corev1.Service {
 
 func getExpectedDeployment(withJaeger bool) *v1.Deployment {
 	labels := manifestutils.ComponentLabels("query-frontend", "test")
-	annotations := manifestutils.CommonAnnotations("")
+	annotations := manifestutils.CommonAnnotations(manifestutils.Params{})
 
 	expectedDeployment := &v1.Deployment{
 		TypeMeta: metav1.TypeMeta{

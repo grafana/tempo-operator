@@ -206,8 +206,7 @@ func ReadinessProbe(tls bool) *corev1.Probe {
 func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash string) *appsv1.Deployment {
 	tempo := params.Tempo
 	labels := manifestutils.ComponentLabels(manifestutils.GatewayComponentName, tempo.Name)
-	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
-	annotations = manifestutils.AddCertificateHashAnnotations(tempo.GetAnnotations(), annotations)
+	annotations := manifestutils.CommonAnnotations(params)
 	annotations["tempo.grafana.com/rbacConfig.hash"] = rbacCfgHash
 	annotations["tempo.grafana.com/tenantsConfig.hash"] = tenantsCfgHash
 

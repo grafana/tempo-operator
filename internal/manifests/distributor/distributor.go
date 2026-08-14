@@ -166,8 +166,7 @@ func configureReceiversTLS(dep *v1.Deployment, caSecretName, certSecretName stri
 func deployment(params manifestutils.Params) *v1.Deployment {
 	tempo := params.Tempo
 	labels := manifestutils.ComponentLabels(manifestutils.DistributorComponentName, tempo.Name)
-	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
-	annotations = manifestutils.AddCertificateHashAnnotations(tempo.GetAnnotations(), annotations)
+	annotations := manifestutils.CommonAnnotations(params)
 	cfg := tempo.Spec.Template.Distributor
 	image := tempo.Spec.Images.Tempo
 	if image == "" {

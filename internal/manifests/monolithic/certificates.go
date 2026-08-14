@@ -8,10 +8,7 @@ import (
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/util/retry"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	ctrlutil "sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -28,7 +25,7 @@ import (
 // including the signing CA and a ca bundle or else returns an error. It returns only a degrade-condition-worthy
 // error if building the manifests fails for any reason.
 func CreateOrRotateCertificates(ctx context.Context, log logr.Logger,
-	req ctrl.Request, k client.Client, s *runtime.Scheme, fg configv1alpha1.FeatureGates, cs map[string]string) error {
+	req ctrl.Request, k client.Client, s *runtime.Scheme, fg configv1alpha1.FeatureGates, cs map[string]string) (map[string]string, error) {
 	ll := log.WithValues("monolithic", req.String(), "event", "createOrRotateCerts")
 	var stack v1alpha1.TempoMonolithic
 
@@ -36,27 +33,27 @@ func CreateOrRotateCertificates(ctx context.Context, log logr.Logger,
 		if apierrors.IsNotFound(err) {
 			// maybe the user deleted it before we could react? Either way this isn't an issue
 			ll.Error(err, "could not find the requested tempo tempomonolithic", "name", req.String())
-			return nil
+			return nil, nil
 		}
-		return kverrors.Wrap(err, "failed to lookup tempomonolithic", "name", req.String())
+		return nil, kverrors.Wrap(err, "failed to lookup tempomonolithic", "name", req.String())
 	}
 
 	opts, err := handlers.GetOptions(ctx, k, req, cs)
 	if err != nil {
-		return kverrors.Wrap(err, "failed to lookup certificates secrets", "name", req.String())
+		return nil, kverrors.Wrap(err, "failed to lookup certificates secrets", "name", req.String())
 	}
 
 	if optErr := certrotation.ApplyDefaultSettings(&opts, fg.BuiltInCertManagement,
 		certrotation.MonolithicComponentCertSecretNames(opts.StackName)); optErr != nil {
 		ll.Error(optErr, "failed to conform options to build settings")
-		return kverrors.Wrap(err, "failed to conform options to build settings", "name", req.String())
+		return nil, kverrors.Wrap(err, "failed to conform options to build settings", "name", req.String())
 	}
 
 	objects, err := certrotation.BuildAll(opts)
 
 	if err != nil {
 		ll.Error(err, "failed to build certificate manifests")
-		return kverrors.Wrap(err, "failed to build certificate manifests", "name", req.String())
+		return nil, kverrors.Wrap(err, "failed to build certificate manifests", "name", req.String())
 	}
 
 	ll.V(1).Info("certificate manifests built", "count", len(objects))
@@ -100,34 +97,16 @@ func CreateOrRotateCertificates(ctx context.Context, log logr.Logger,
 	}
 
 	if errCount > 0 {
-		return kverrors.New("failed to create or rotate TempoMonolithic certificates", "name", req.String())
+		return nil, kverrors.New("failed to create or rotate TempoMonolithic certificates", "name", req.String())
 	}
 
-	// Add certificate hash annotations to trigger pod restart after successful certificate rotation
-	if err := addCertificateHashAnnotationsMonolithic(ctx, k, &stack, opts); err != nil {
-		ll.Error(err, "failed to add certificate hash annotations after certificate rotation")
-		return kverrors.Wrap(err, "failed to add certificate hash annotations", "name", req.String())
-	}
-
-	ll.Info("certificate rotation completed successfully, hash annotations added")
-	return nil
-}
-
-// addCertificateHashAnnotationsMonolithic adds certificate hash annotations to trigger pod restart after certificate rotation.
-func addCertificateHashAnnotationsMonolithic(ctx context.Context, k client.Client, stack *v1alpha1.TempoMonolithic, opts certrotation.Options) error {
-	certSecrets := make(map[string]*corev1.Secret, len(opts.Certificates))
-	for name, cert := range opts.Certificates {
-		certSecrets[name] = cert.Secret
-	}
-
-	hashAnnotations := manifestutils.CertificateHashAnnotations(certSecrets)
-
-	return retry.RetryOnConflict(retry.DefaultRetry, func() error {
-		current := &v1alpha1.TempoMonolithic{}
-		if err := k.Get(ctx, types.NamespacedName{Name: stack.Name, Namespace: stack.Namespace}, current); err != nil {
-			return err
+	certSecrets := make(map[string]*corev1.Secret, len(objects))
+	for _, obj := range objects {
+		if secret, ok := obj.(*corev1.Secret); ok && secret.Type == corev1.SecretTypeTLS {
+			certSecrets[secret.Name] = secret
 		}
-		current.Annotations = labels.Merge(current.Annotations, hashAnnotations)
-		return k.Update(ctx, current)
-	})
+	}
+
+	ll.V(1).Info("certificate rotation completed successfully")
+	return manifestutils.CertificateHashAnnotations(certSecrets), nil
 }

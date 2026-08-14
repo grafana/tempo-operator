@@ -76,7 +76,7 @@ func TestBuildMetricsGenerator(t *testing.T) {
 	assert.Len(t, objects, 3)
 
 	labels := manifestutils.ComponentLabels(manifestutils.MetricsGeneratorComponentName, "test")
-	annotations := manifestutils.CommonAnnotations("")
+	annotations := manifestutils.CommonAnnotations(manifestutils.Params{})
 
 	d, ok := objects[0].(*v1.Deployment)
 	require.True(t, ok)

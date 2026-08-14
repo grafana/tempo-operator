@@ -1041,7 +1041,7 @@ func TestBuildDistributor(t *testing.T) {
 			require.NoError(t, err)
 
 			labels := manifestutils.ComponentLabels("distributor", "test")
-			annotations := manifestutils.CommonAnnotations("")
+			annotations := manifestutils.CommonAnnotations(manifestutils.Params{})
 			assert.Equal(t, ts.expectedObjects, len(objects))
 			assert.Equal(t, &v1.Deployment{
 				TypeMeta: metav1.TypeMeta{

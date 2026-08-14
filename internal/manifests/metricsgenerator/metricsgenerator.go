@@ -67,8 +67,7 @@ func resources(tempo v1alpha1.TempoStack) corev1.ResourceRequirements {
 func deployment(params manifestutils.Params) *v1.Deployment {
 	tempo := params.Tempo
 	labels := manifestutils.ComponentLabels(manifestutils.MetricsGeneratorComponentName, tempo.Name)
-	annotations := manifestutils.CommonAnnotations(params.ConfigChecksum)
-	annotations = manifestutils.AddCertificateHashAnnotations(tempo.GetAnnotations(), annotations)
+	annotations := manifestutils.CommonAnnotations(params)
 	cfg := tempo.Spec.Template.MetricsGenerator
 	image := tempo.Spec.Images.Tempo
 	if image == "" {

@@ -133,8 +133,10 @@ func (r *TempoMonolithicReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		tempo = *upgraded.(*v1alpha1.TempoMonolithic)
 	}
 
+	var certHashAnnotations map[string]string
 	if r.CtrlConfig.Gates.BuiltInCertManagement.Enabled {
-		err := monolithic.CreateOrRotateCertificates(ctx, log, req, r.Client, r.Scheme, r.CtrlConfig.Gates, certrotation.MonolithicComponentCertSecretNames(req.Name))
+		var err error
+		certHashAnnotations, err = monolithic.CreateOrRotateCertificates(ctx, log, req, r.Client, r.Scheme, r.CtrlConfig.Gates, certrotation.MonolithicComponentCertSecretNames(req.Name))
 		if err != nil {
 			return ctrl.Result{}, status.HandleTempoMonolithicStatus(ctx, r.Client, tempo, fmt.Errorf("built in cert manager error: %w", err))
 		}
@@ -170,7 +172,7 @@ func (r *TempoMonolithicReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 			errors.New("cannot configure tempo in CCO mode without CCO environment"))
 	}
 
-	err := r.createOrUpdate(ctx, tempo)
+	err := r.createOrUpdate(ctx, tempo, certHashAnnotations)
 	if err != nil {
 		return ctrl.Result{}, status.HandleTempoMonolithicStatus(ctx, r.Client, tempo, err)
 	}
@@ -190,10 +192,11 @@ func (r *TempoMonolithicReconciler) getCredentialMode(tempo v1alpha1.TempoMonoli
 	return ""
 }
 
-func (r *TempoMonolithicReconciler) createOrUpdate(ctx context.Context, tempo v1alpha1.TempoMonolithic) error {
+func (r *TempoMonolithicReconciler) createOrUpdate(ctx context.Context, tempo v1alpha1.TempoMonolithic, certHashAnnotations map[string]string) error {
 	opts := monolithic.Options{
-		CtrlConfig: r.CtrlConfig,
-		Tempo:      tempo,
+		CtrlConfig:          r.CtrlConfig,
+		Tempo:               tempo,
+		CertHashAnnotations: certHashAnnotations,
 	}
 
 	var errs field.ErrorList

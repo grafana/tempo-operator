@@ -18,6 +18,7 @@ type KubeAPIServerInfo struct {
 type Params struct {
 	StorageParams       StorageParams
 	ConfigChecksum      string
+	CertHashAnnotations map[string]string
 	Tempo               v1alpha1.TempoStack
 	CtrlConfig          configv1alpha1.ProjectConfig
 	TLSProfile          tlsprofile.TLSProfileOptions

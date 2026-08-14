@@ -1101,9 +1101,89 @@ func TestReconcileManifestsValidateModes(t *testing.T) {
 			err := k8sClient.Update(context.Background(), tempo)
 			require.NoError(t, err)
 			reconciler := TempoStackReconciler{Client: k8sClient, Scheme: testScheme}
-			err = reconciler.createOrUpdate(context.Background(), *tempo)
+			err = reconciler.createOrUpdate(context.Background(), *tempo, nil)
 			tc.validate(t, err)
 		})
+	}
+}
+
+func TestCertHashAnnotationsPropagatedToPodTemplates(t *testing.T) {
+	nsn := types.NamespacedName{Name: "cert-hash-test", Namespace: "default"}
+	storageSecret := createSecret(t, nsn)
+	createTempoCR(t, nsn, storageSecret)
+
+	reconciler := TempoStackReconciler{
+		Client:   k8sClient,
+		Scheme:   testScheme,
+		Recorder: events.NewFakeRecorder(1),
+		CtrlConfig: configv1alpha1.ProjectConfig{
+			Gates: configv1alpha1.FeatureGates{
+				BuiltInCertManagement: configv1alpha1.BuiltInCertManagement{
+					Enabled:        true,
+					CACertValidity: metav1.Duration{Duration: time.Hour * 43830},
+					CACertRefresh:  metav1.Duration{Duration: time.Hour * 35064},
+					CertValidity:   metav1.Duration{Duration: time.Hour * 2160},
+					CertRefresh:    metav1.Duration{Duration: time.Hour * 1728},
+				},
+				HTTPEncryption: true,
+				GRPCEncryption: true,
+				TLSProfile:     configv1alpha1.TLSProfileIntermediateType,
+			},
+		},
+		Version: version.Get(),
+	}
+	req := ctrl.Request{NamespacedName: nsn}
+	reconcileResult, err := reconciler.Reconcile(context.Background(), req)
+	require.NoError(t, err)
+	assert.Equal(t, time.Duration(0), reconcileResult.RequeueAfter)
+
+	opts := []client.ListOption{
+		client.InNamespace(nsn.Namespace),
+		client.MatchingLabels(map[string]string{
+			"app.kubernetes.io/instance":   nsn.Name,
+			"app.kubernetes.io/managed-by": "tempo-operator",
+		}),
+	}
+
+	// Verify cert hash annotations are present on pod templates
+	deployments := &appsv1.DeploymentList{}
+	err = k8sClient.List(context.Background(), deployments, opts...)
+	require.NoError(t, err)
+	require.NotEmpty(t, deployments.Items)
+	for _, d := range deployments.Items {
+		annotations := d.Spec.Template.Annotations
+		hasCertHash := false
+		for key := range annotations {
+			if strings.HasPrefix(key, "tempo.grafana.com/cert-hash-") {
+				hasCertHash = true
+				break
+			}
+		}
+		assert.True(t, hasCertHash, "deployment %s should have cert hash annotations on pod template", d.Name)
+	}
+
+	statefulSets := &appsv1.StatefulSetList{}
+	err = k8sClient.List(context.Background(), statefulSets, opts...)
+	require.NoError(t, err)
+	require.NotEmpty(t, statefulSets.Items)
+	for _, s := range statefulSets.Items {
+		annotations := s.Spec.Template.Annotations
+		hasCertHash := false
+		for key := range annotations {
+			if strings.HasPrefix(key, "tempo.grafana.com/cert-hash-") {
+				hasCertHash = true
+				break
+			}
+		}
+		assert.True(t, hasCertHash, "statefulset %s should have cert hash annotations on pod template", s.Name)
+	}
+
+	// Verify cert hash annotations are NOT on the TempoStack CR
+	updatedTempo := v1alpha1.TempoStack{}
+	err = k8sClient.Get(context.Background(), nsn, &updatedTempo)
+	require.NoError(t, err)
+	for key := range updatedTempo.Annotations {
+		assert.False(t, strings.HasPrefix(key, "tempo.grafana.com/cert-hash-"), "cert hash annotation %s should not be on CR", key)
 	}
 }
 
