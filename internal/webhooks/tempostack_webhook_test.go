@@ -962,6 +962,199 @@ func TestDefault(t *testing.T) {
 			},
 			ctrlConfig: defaultCfgConfig,
 		},
+		{
+			name: "set ingress type to route if tenant mode is OpenShift and ingress type is not specified",
+			input: &v1alpha1.TempoStack{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+				},
+				Spec: v1alpha1.TempoStackSpec{
+					Tenants: &v1alpha1.TenantsSpec{
+						Mode: v1alpha1.ModeOpenShift,
+					},
+					Template: v1alpha1.TempoTemplateSpec{
+						Gateway: v1alpha1.TempoGatewaySpec{
+							Ingress: v1alpha1.IngressSpec{
+								Type: "",
+							},
+						},
+					},
+				},
+			},
+			expected: &v1alpha1.TempoStack{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+					Labels: map[string]string{
+						"app.kubernetes.io/managed-by":   "tempo-operator",
+						"tempo.grafana.com/distribution": "upstream",
+					},
+				},
+				Spec: v1alpha1.TempoStackSpec{
+					ReplicationFactor: 1,
+					Timeout:           metav1.Duration{Duration: time.Second * 30},
+					Images:            configv1alpha1.ImagesSpec{},
+					ServiceAccount:    "tempo-test",
+					Retention: v1alpha1.RetentionSpec{
+						Global: v1alpha1.RetentionConfig{
+							Traces: metav1.Duration{Duration: 48 * time.Hour},
+						},
+					},
+					StorageSize: resource.MustParse("10Gi"),
+					LimitSpec: v1alpha1.LimitSpec{
+						Global: v1alpha1.RateLimitSpec{
+							Query: v1alpha1.QueryLimit{
+								MaxSearchDuration: metav1.Duration{Duration: 0},
+							},
+						},
+					},
+					SearchSpec: v1alpha1.SearchSpec{
+						MaxDuration:        metav1.Duration{Duration: 0},
+						DefaultResultLimit: &defaultDefaultResultLimit,
+					},
+					Template: v1alpha1.TempoTemplateSpec{
+						Compactor: v1alpha1.TempoComponentSpec{
+							Replicas:           ptr.To(int32(1)),
+							PodSecurityContext: defaultPodSecurityContext,
+						},
+						Distributor: v1alpha1.TempoDistributorSpec{
+							TempoComponentSpec: v1alpha1.TempoComponentSpec{
+								Replicas:           ptr.To(int32(1)),
+								PodSecurityContext: defaultPodSecurityContext,
+							},
+							TLS: v1alpha1.TLSSpec{},
+						},
+						Ingester: v1alpha1.TempoComponentSpec{
+							Replicas:           ptr.To(int32(1)),
+							PodSecurityContext: defaultPodSecurityContext,
+						},
+						Querier: v1alpha1.TempoComponentSpec{
+							Replicas:           ptr.To(int32(1)),
+							PodSecurityContext: defaultPodSecurityContext,
+						},
+						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+							TempoComponentSpec: v1alpha1.TempoComponentSpec{
+								Replicas:           ptr.To(int32(1)),
+								PodSecurityContext: defaultPodSecurityContext,
+							},
+							JaegerQuery: v1alpha1.JaegerQuerySpec{
+								ServicesQueryDuration: &defaultServicesDuration,
+							},
+						},
+						Gateway: v1alpha1.TempoGatewaySpec{
+							TempoComponentSpec: v1alpha1.TempoComponentSpec{
+								Replicas:           ptr.To(int32(1)),
+								PodSecurityContext: defaultPodSecurityContext,
+							},
+							Ingress: v1alpha1.IngressSpec{
+								Type: v1alpha1.IngressTypeRoute,
+								Route: v1alpha1.RouteSpec{
+									Termination: "reencrypt",
+								},
+							},
+						},
+					},
+					Tenants: &v1alpha1.TenantsSpec{
+						Mode: v1alpha1.ModeOpenShift,
+					},
+				},
+			},
+			ctrlConfig: defaultCfgConfig,
+		},
+		{
+			name: "honor explicit disabling of ingress if tenant mode is OpenShift",
+			input: &v1alpha1.TempoStack{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+				},
+				Spec: v1alpha1.TempoStackSpec{
+					Tenants: &v1alpha1.TenantsSpec{
+						Mode: v1alpha1.ModeOpenShift,
+					},
+					Template: v1alpha1.TempoTemplateSpec{
+						Gateway: v1alpha1.TempoGatewaySpec{
+							Ingress: v1alpha1.IngressSpec{
+								Type: "none",
+							},
+						},
+					},
+				},
+			},
+			expected: &v1alpha1.TempoStack{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test",
+					Labels: map[string]string{
+						"app.kubernetes.io/managed-by":   "tempo-operator",
+						"tempo.grafana.com/distribution": "upstream",
+					},
+				},
+				Spec: v1alpha1.TempoStackSpec{
+					ReplicationFactor: 1,
+					Timeout:           metav1.Duration{Duration: time.Second * 30},
+					Images:            configv1alpha1.ImagesSpec{},
+					ServiceAccount:    "tempo-test",
+					Retention: v1alpha1.RetentionSpec{
+						Global: v1alpha1.RetentionConfig{
+							Traces: metav1.Duration{Duration: 48 * time.Hour},
+						},
+					},
+					StorageSize: resource.MustParse("10Gi"),
+					LimitSpec: v1alpha1.LimitSpec{
+						Global: v1alpha1.RateLimitSpec{
+							Query: v1alpha1.QueryLimit{
+								MaxSearchDuration: metav1.Duration{Duration: 0},
+							},
+						},
+					},
+					SearchSpec: v1alpha1.SearchSpec{
+						MaxDuration:        metav1.Duration{Duration: 0},
+						DefaultResultLimit: &defaultDefaultResultLimit,
+					},
+					Template: v1alpha1.TempoTemplateSpec{
+						Compactor: v1alpha1.TempoComponentSpec{
+							Replicas:           ptr.To(int32(1)),
+							PodSecurityContext: defaultPodSecurityContext,
+						},
+						Distributor: v1alpha1.TempoDistributorSpec{
+							TempoComponentSpec: v1alpha1.TempoComponentSpec{
+								Replicas:           ptr.To(int32(1)),
+								PodSecurityContext: defaultPodSecurityContext,
+							},
+							TLS: v1alpha1.TLSSpec{},
+						},
+						Ingester: v1alpha1.TempoComponentSpec{
+							Replicas:           ptr.To(int32(1)),
+							PodSecurityContext: defaultPodSecurityContext,
+						},
+						Querier: v1alpha1.TempoComponentSpec{
+							Replicas:           ptr.To(int32(1)),
+							PodSecurityContext: defaultPodSecurityContext,
+						},
+						QueryFrontend: v1alpha1.TempoQueryFrontendSpec{
+							TempoComponentSpec: v1alpha1.TempoComponentSpec{
+								Replicas:           ptr.To(int32(1)),
+								PodSecurityContext: defaultPodSecurityContext,
+							},
+							JaegerQuery: v1alpha1.JaegerQuerySpec{
+								ServicesQueryDuration: &defaultServicesDuration,
+							},
+						},
+						Gateway: v1alpha1.TempoGatewaySpec{
+							TempoComponentSpec: v1alpha1.TempoComponentSpec{
+								Replicas:           ptr.To(int32(1)),
+								PodSecurityContext: defaultPodSecurityContext,
+							},
+							Ingress: v1alpha1.IngressSpec{
+								Type: v1alpha1.IngressTypeNone,
+							},
+						},
+					},
+					Tenants: &v1alpha1.TenantsSpec{
+						Mode: v1alpha1.ModeOpenShift,
+					},
+				},
+			},
+			ctrlConfig: defaultCfgConfig,
+		},
 	}
 
 	for _, test := range tests {

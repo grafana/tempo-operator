@@ -919,7 +919,7 @@ type JaegerQueryMonitor struct {
 // IngressSpec defines Jaeger Query Ingress options.
 type IngressSpec struct {
 	// Type defines the type of Ingress for the Jaeger Query UI.
-	// Currently ingress, route and none are supported.
+	// Supported values: ingress, route, none
 	//
 	// +optional
 	// +kubebuilder:validation:Optional
