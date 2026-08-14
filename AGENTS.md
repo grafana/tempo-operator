@@ -26,6 +26,10 @@ The Tempo Operator is a Kubernetes operator for managing [Grafana Tempo](https:/
 - `tests/`: End-to-end test suites
 - `hack/`: Development and build automation scripts
 
+## Changelog
+
+Every PR that affects user-facing behavior must include a changelog entry. Create a new YAML file in the `.chloggen/` directory, using `.chloggen/TEMPLATE.yaml` as the template. Name the file after the change (e.g. `fix-query-timeout.yaml`). Do **not** edit `CHANGELOG.md` directly; it is generated from `.chloggen/` entries at release time.
+
 ## Development Commands
 
 ### Build and Test
@@ -42,22 +46,9 @@ make reset              # Update all generated files
 ```
 
 ### Development Deployment
+Use the `/deploy` skill, or invoke the script directly:
 ```bash
-# Deploy cert-manager and a MinIO object storage instance for development
-make cert-manager deploy-minio
-
-# Local development (webhooks disabled)
-make run
-
-# Build a custom image and deploy it to a connected Kubernetes cluster
-IMG_PREFIX=quay.io/${USER} OPERATOR_VERSION=$(date +%s).0.0 make docker-build docker-push deploy reset
-
-# Build a custom image and deploy it to an OpenShift cluster
-kubectl create namespace openshift-tempo-operator
-IMG_PREFIX=quay.io/${USER} OPERATOR_VERSION=$(date +%s).0.0 BUNDLE_VARIANT=openshift OPERATOR_NAMESPACE=openshift-tempo-operator make build docker-build docker-push bundle bundle-build bundle-push olm-deploy reset
-
-# Build a custom image and upgrade the operator in the OpenShift cluster
-IMG_PREFIX=quay.io/${USER} OPERATOR_VERSION=$(date +%s).0.0 BUNDLE_VARIANT=openshift OPERATOR_NAMESPACE=openshift-tempo-operator make build docker-build docker-push bundle bundle-build bundle-push olm-upgrade reset
+.claude/skills/deploy/deploy.sh
 ```
 
 ### Testing
