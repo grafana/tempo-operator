@@ -361,7 +361,7 @@ func (v *validator) validateJaegerQueryDeprecation(tempo v1alpha1.TempoStack) ad
 func (v *validator) validateQueryFrontend(tempo v1alpha1.TempoStack) field.ErrorList {
 	path := field.NewPath("spec").Child("template").Child("queryFrontend").Child("jaegerQuery").Child("ingress").Child("type")
 
-	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type != v1alpha1.IngressTypeNone && !tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled {
+	if tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type.IsEnabled() && !tempo.Spec.Template.QueryFrontend.JaegerQuery.Enabled {
 		return field.ErrorList{field.Invalid(
 			path,
 			tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type,
@@ -394,7 +394,7 @@ func (v *validator) validateQueryFrontend(tempo v1alpha1.TempoStack) field.Error
 func (v *validator) validateGateway(ctx context.Context, tempo v1alpha1.TempoStack) (admission.Warnings, field.ErrorList) {
 	path := field.NewPath("spec").Child("template").Child("gateway").Child("enabled")
 	if tempo.Spec.Template.Gateway.Enabled {
-		if tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type != v1alpha1.IngressTypeNone {
+		if tempo.Spec.Template.QueryFrontend.JaegerQuery.Ingress.Type.IsEnabled() {
 			return nil, field.ErrorList{
 				field.Invalid(path, tempo.Spec.Template.Gateway.Enabled,
 					"cannot enable gateway and jaeger query ingress at the same time, please use the Jaeger UI from the gateway",

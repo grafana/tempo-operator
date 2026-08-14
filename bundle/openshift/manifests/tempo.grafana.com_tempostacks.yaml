@@ -1947,10 +1947,11 @@ spec:
                           type:
                             description: |-
                               Type defines the type of Ingress for the Jaeger Query UI.
-                              Currently ingress, route and none are supported.
+                              Supported values: ingress, route, none
                             enum:
                             - ingress
                             - route
+                            - none
                             - ""
                             type: string
                         type: object
@@ -3540,10 +3541,11 @@ spec:
                               type:
                                 description: |-
                                   Type defines the type of Ingress for the Jaeger Query UI.
-                                  Currently ingress, route and none are supported.
+                                  Supported values: ingress, route, none
                                 enum:
                                 - ingress
                                 - route
+                                - none
                                 - ""
                                 type: string
                             type: object

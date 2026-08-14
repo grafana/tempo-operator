@@ -1103,7 +1103,7 @@ spec:
         path: template.gateway.ingress.route.termination
       - description: |-
           Type defines the type of Ingress for the Jaeger Query UI.
-          Currently ingress, route and none are supported.
+          Supported values: ingress, route, none
         displayName: Type
         path: template.gateway.ingress.type
       - description: NodeSelector defines the simple form of the node-selection constraint.
@@ -1270,7 +1270,7 @@ spec:
         path: template.queryFrontend.jaegerQuery.ingress.route.termination
       - description: |-
           Type defines the type of Ingress for the Jaeger Query UI.
-          Currently ingress, route and none are supported.
+          Supported values: ingress, route, none
         displayName: Type
         path: template.queryFrontend.jaegerQuery.ingress.type
       - description: MonitorTab defines the monitor tab configuration.
