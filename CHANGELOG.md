@@ -3,6 +3,120 @@ Changes by Version
 
 <!-- next version -->
 
+## 0.22.0
+
+### 🚩 Deprecations 🚩
+
+- `tempostack, tempomonolithic`: Warn that the Jaeger UI is deprecated when it is enabled. (#1587)
+  The validating webhook now returns a warning when `spec.template.queryFrontend.jaegerQuery.enabled`
+  of a TempoStack or `spec.jaegerui.enabled` of a TempoMonolithic is set to `true`:
+  
+  ```
+  Warning: spec.template.queryFrontend.jaegerQuery.enabled is deprecated and will be removed in a future release
+  ```
+  
+  This is only a warning, existing instances keep working and nothing else changes.
+  
+
+### 🚀 New components 🚀
+
+- `metrics-generator`: Add support for deploying metrics-generator via TempoStack resource. (#1120)
+  To enable the metrics-generator, add a `metricsGenerator` section to the TempoStack spec:
+  
+  ```yaml
+  spec:
+    template:
+      metricsGenerator:
+        enabled: true
+        remoteWriteURLs:
+          - http://prometheus:9090/api/v1/write
+        processors: ['service-graphs', 'span-metrics', 'local-blocks']
+  ```
+  
+  `enabled` must be set to `true` to deploy the metrics-generator component.
+  `remoteWriteURLs` is required and must contain at least one Prometheus remote write endpoint.
+  `processors` is optional. span-metrics, service-graphs, and local-blocks are enabled by default.
+  
+  Additional metrics-generator configuration can be set via `extraConfig.tempo`. Refer to the
+  [Tempo metrics-generator documentation](https://grafana.com/docs/tempo/latest/configuration/#metrics-generator)
+  for all available options.
+  
+
+### 💡 Enhancements 💡
+
+- `tempostack, tempomonolithic`: Add READY column to the output of `kubectl get` (#1600)
+- `tempostack`: Make it possible to disable the gateway's Ingress when tenant mode is OpenShift (#1416)
+- `operator`: Update Kubernetes dependencies to 1.36, Golang to 1.26 and update gateway images (#1552)
+- `tempostack, tempomonolithic`: Bump Tempo to 2.10.8 and gateway to main-2026-08-13-db2b289 (#1611)
+- `operator`: Speed up initial pod rollout (#1581)
+  Previously, certificate hash annotations were written to the TempoStack/TempoMonolithic CR
+  and propagated to pod templates in a subsequent reconcile. This required three reconcile
+  loops before pods were rolled out with the correct annotations. Now, hashes are passed
+  directly through to the pod, completing the rollout in a single reconcile.
+  
+- `operator`: Reduce the number of reconciliations by filtering events on owned resources (#1567)
+- `tempostack`: The TempoStack status condition should only be ready if all pods are ready (#1582)
+- `tempostack`: Create a PodDisruptionBudget for each TempoStack component to protect availability during voluntary disruptions. (#1577)
+  A PodDisruptionBudget with `maxUnavailable: 1` is now created for the distributor, ingester,
+  querier, query-frontend, gateway and metrics-generator components (the gateway and
+  metrics-generator budgets are only created when those components are enabled). This ensures
+  that voluntary disruptions such as node drains during cluster upgrades can only take down a
+  single replica of a component at a time. Following the Grafana Loki Operator, no budget is
+  created for the compactor.
+  
+- `tempostack`: Support zone-aware replication of a TempoStack via the new spec.replicationZones field. (#1585)
+  `spec.replicationZones` spreads the pods of every component across the given topology domains
+  using topology spread constraints, and configures the ingester ring to replicate spans across
+  those zones:
+  
+  ```yaml
+  spec:
+    replicationFactor: 3
+    replicationZones:
+    - maxSkew: 1
+      topologyKey: topology.kubernetes.io/zone
+  ```
+  
+  Make sure that `spec.replicationFactor` is less than or equal to the number of available zones.
+  
+  The behavior follows the Grafana Loki Operator, which configures the zones under
+  `spec.replication.zones` instead.
+  
+- `tempostack`: Default per-component replica counts from the t-shirt size so non-demo sizes are highly available. (#1345)
+  Previously only the ingester replica count was derived from the size (via the replication
+  factor quorum); all other components defaulted to a single replica, leaving them as single
+  points of failure. Now every non-demo size (`1x.pico`, `1x.extra-small`, `1x.small`,
+  `1x.medium`) defaults each component to at least 2 replicas, and scales the throughput-bound
+  components (distributor, querier, metrics-generator) at the larger sizes:
+  
+  | component        | pico | extra-small | small | medium |
+  |------------------|------|-------------|-------|--------|
+  | distributor      | 2    | 2           | 3     | 4      |
+  | querier          | 2    | 2           | 3     | 5      |
+  | query-frontend   | 2    | 2           | 2     | 2      |
+  | compactor        | 2    | 2           | 2     | 3      |
+  | gateway          | 2    | 2           | 2     | 2      |
+  | metrics-generator| 2    | 2           | 3     | 3      |
+  
+  The ingester replica count continues to be derived from the replication factor
+  (quorum = floor(RF/2)+1). `1x.demo` is unchanged and runs a single replica of every
+  component. Explicit per-component `replicas` overrides always take precedence over the
+  size defaults.
+  
+
+### 🧰 Bug fixes 🧰
+
+- `operator`: Fix stale status field by watching Deployment/StatefulSet status changes. (#1533)
+- `tempostack`: Mark `spec.managementState` and `spec.tenants.mode` optional so they are no longer listed as required in the generated CRDs. Both have defaults, so offline validators (e.g. kubeconform) no longer reject valid resources that omit them. (#1491)
+- `operator`: Refactor finalizer logic to avoid concurrent writes (#1579)
+- `operator`: Sort hostnames in certificates (#1584)
+
+### Components
+- Tempo: [v2.10.8](https://github.com/grafana/tempo/releases/tag/v2.10.8)
+
+### Support
+This release supports Kubernetes 1.25 to 1.36.
+
 ## 0.21.0
 
 ### 💡 Enhancements 💡
