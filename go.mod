@@ -39,7 +39,7 @@ require (
 )
 
 require (
-	github.com/openshift/api v0.0.0-20260130140113-71e91db96ffc
+	github.com/openshift/api v0.0.0-20260820183036-3db6c4b03286
 	github.com/openshift/controller-runtime-common v0.0.0-20260210092218-8eef974290cd
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.74.0
 	github.com/stretchr/testify v1.11.1
@@ -86,7 +86,6 @@ require (
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
 	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
 	github.com/gobuffalo/flect v1.0.3 // indirect
-	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/google/cel-go v0.30.0 // indirect
 	github.com/google/gnostic-models v0.7.1 // indirect
 	github.com/google/pprof v0.0.0-20260709232956-b9395ee17fa0 // indirect
@@ -135,7 +134,7 @@ require (
 	google.golang.org/protobuf v1.36.12-0.20260120151049-f2248ac996af // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.13.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
-	k8s.io/kube-openapi v0.0.0-20260317180543-43fb72c5454a // indirect
+	k8s.io/kube-openapi v0.0.0-20260519202549-bbf5c5577288 // indirect
 	k8s.io/streaming v0.36.2 // indirect
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.34.0 // indirect
 	sigs.k8s.io/gateway-api v1.5.1 // indirect
