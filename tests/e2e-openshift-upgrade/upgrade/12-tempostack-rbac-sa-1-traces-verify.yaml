@@ -43,7 +43,7 @@ spec:
 
               echo "Check for the strings in the trace output"
               stringsToSearch=(
-                  "\"key\":\"net.peer.ip\""
+                  "\"key\":\"net.sock.peer.addr\""
                   "\"stringValue\":\"1.2.3.4\""
                   "\"key\":\"peer.service\""
                   "\"stringValue\":\"telemetrygen-client\""
@@ -86,7 +86,7 @@ spec:
 
               echo "Check for the strings in the trace output"
               stringsToSearch=(
-                  "\"key\":\"net.peer.ip\""
+                  "\"key\":\"net.sock.peer.addr\""
                   "\"stringValue\":\"1.2.3.4\""
                   "\"key\":\"peer.service\""
                   "\"stringValue\":\"telemetrygen-client\""
@@ -148,7 +148,7 @@ spec:
 
               echo "Check for the strings in the trace output"
               stringsToSearch=(
-                  "\"key\":\"net.peer.ip\""
+                  "\"key\":\"net.sock.peer.addr\""
                   "\"stringValue\":\"1.2.3.4\""
                   "\"key\":\"peer.service\""
                   "\"stringValue\":\"telemetrygen-client\""
@@ -190,7 +190,7 @@ spec:
 
               echo "Check for the strings in the trace output"
               stringsToSearch=(
-                  "\"key\":\"net.peer.ip\""
+                  "\"key\":\"net.sock.peer.addr\""
                   "\"stringValue\":\"1.2.3.4\""
                   "\"key\":\"peer.service\""
                   "\"stringValue\":\"telemetrygen-client\""
