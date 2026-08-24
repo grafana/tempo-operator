@@ -60,19 +60,32 @@ func (c *cluster) getOperatorNamespace() (string, error) {
 }
 
 func (c *cluster) getOperatorDeployment() (appsv1.Deployment, error) {
-	operatorDeployments := appsv1.DeploymentList{}
-	err := c.config.KubernetesClient.List(context.TODO(), &operatorDeployments, &client.ListOptions{
-		LabelSelector: labels.SelectorFromSet(labels.Set{
-			"app.kubernetes.io/name": "tempo-operator",
+	listOptions := []client.ListOption{
+		client.MatchingLabels(map[string]string{
+			"app.kubernetes.io/name": c.config.OperatorName,
 		}),
-	})
+	}
+	if c.config.OperatorNamespace != "" {
+		listOptions = append(listOptions, client.InNamespace(c.config.OperatorNamespace))
+	}
+
+	operatorDeployments := appsv1.DeploymentList{}
+	err := c.config.KubernetesClient.List(context.TODO(), &operatorDeployments, listOptions...)
 
 	if err != nil {
 		return appsv1.Deployment{}, err
 	}
 
 	if len(operatorDeployments.Items) == 0 {
-		return appsv1.Deployment{}, fmt.Errorf("operator not found")
+		return appsv1.Deployment{}, fmt.Errorf("operator deployment with app.kubernetes.io/name=%q not found", c.config.OperatorName)
+	}
+
+	if len(operatorDeployments.Items) > 1 {
+		deployments := make([]string, 0, len(operatorDeployments.Items))
+		for _, deployment := range operatorDeployments.Items {
+			deployments = append(deployments, fmt.Sprintf("%s/%s", deployment.Namespace, deployment.Name))
+		}
+		return appsv1.Deployment{}, fmt.Errorf("found multiple operator deployments for app.kubernetes.io/name=%q: %s", c.config.OperatorName, strings.Join(deployments, ", "))
 	}
 
 	return operatorDeployments.Items[0], nil
@@ -93,6 +106,10 @@ func (c *cluster) GetOperatorLogs() error {
 	})
 	if err != nil {
 		return err
+	}
+
+	if len(operatorPods.Items) == 0 {
+		return fmt.Errorf("no pods found for operator deployment %s/%s", deployment.Namespace, deployment.Name)
 	}
 
 	pod := operatorPods.Items[0]
