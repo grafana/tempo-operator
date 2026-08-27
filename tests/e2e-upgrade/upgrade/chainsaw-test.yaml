@@ -5,6 +5,7 @@ metadata:
   creationTimestamp: null
   name: upgrade
 spec:
+  concurrent: false
   steps:
   - name: step-00
     try:

@@ -33,13 +33,3 @@ spec:
         file: 04-verify-traces.yaml
     - assert:
         file: 04-assert.yaml
-    catch:
-    - events: {}
-    - podLogs:
-        selector: job-name=verify-traces-jaegerui-http
-        tail: 50
-    - podLogs:
-        selector: job-name=verify-traces-traceql-http
-        tail: 50
-    - podLogs:
-        selector: app.kubernetes.io/name=tempo-monolithic
