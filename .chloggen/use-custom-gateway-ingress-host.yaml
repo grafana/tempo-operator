@@ -1,0 +1,19 @@
+# One of 'breaking', 'deprecation', 'new_component', 'enhancement', 'bug_fix'
+change_type: bug_fix
+
+# The name of the component, or a single word describing the area of concern, (e.g. tempostack, tempomonolithic, github action)
+component: tempostack
+
+# A brief description of the change. Surround your text with quotes ("") if it needs to start with a backtick (`).
+note: Use the configured gateway ingress host in OpenShift tenant redirect URLs.
+
+# One or more tracking issues related to the change
+issues: []
+
+# (Optional) One or more lines of additional information to render under the primary note.
+# These lines will be padded with 2 spaces and then inserted directly into the document.
+# Use pipe (|) for multiline entries.
+subtext: |
+  When spec.template.gateway.ingress.host is set, the OpenShift Route already uses that
+  hostname. Tenant redirectURL values in tenants.yaml now use the same host instead of
+  the generated default Route hostname.
