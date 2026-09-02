@@ -37,7 +37,7 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 		tempo.Namespace,
 		tempo.Name,
 		gatewayObjectName,
-		naming.RouteFqdn(tempo.Namespace, tempo.Name, manifestutils.GatewayComponentName, params.CtrlConfig.Gates.OpenShift.BaseDomain),
+		gatewayRouteHost(tempo, params.CtrlConfig.Gates.OpenShift.BaseDomain),
 		"tempostack",
 		*tempo.Spec.Tenants,
 		params.GatewayTenantSecret,
@@ -141,6 +141,16 @@ func BuildGateway(params manifestutils.Params) ([]client.Object, error) {
 	objs = append(objs, dep)
 	objs = append(objs, manifestutils.NewPodDisruptionBudget(params.Tempo, manifestutils.GatewayComponentName))
 	return objs, nil
+}
+
+// gatewayRouteHost returns the hostname used for OpenShift tenant redirect URLs.
+// It uses spec.template.gateway.ingress.host when configured so the redirect URL
+// matches the OpenShift Route, otherwise it falls back to the generated Route FQDN.
+func gatewayRouteHost(tempo v1alpha1.TempoStack, baseDomain string) string {
+	if host := tempo.Spec.Template.Gateway.Ingress.Host; host != "" {
+		return host
+	}
+	return naming.RouteFqdn(tempo.Namespace, tempo.Name, manifestutils.GatewayComponentName, baseDomain)
 }
 
 // HttpScheme determines the HTTP scheme based on the provided TLS flag.
