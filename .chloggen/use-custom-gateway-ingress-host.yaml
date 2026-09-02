@@ -8,7 +8,7 @@ component: tempostack
 note: Use the configured gateway ingress host in OpenShift tenant redirect URLs.
 
 # One or more tracking issues related to the change
-issues: []
+issues: [1629]
 
 # (Optional) One or more lines of additional information to render under the primary note.
 # These lines will be padded with 2 spaces and then inserted directly into the document.
