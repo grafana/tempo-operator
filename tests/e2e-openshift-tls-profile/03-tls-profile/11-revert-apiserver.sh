@@ -57,20 +57,22 @@ for i in $(seq 1 30); do
 done
 
 # Wait for MachineConfigPool to report fully updated for both pools.
+# Use 30-minute timeout per pool: MCP node-by-node rollout can take 40+ minutes on 3-node
+# clusters due to drain + reboot + rejoin per node (~10-15 minutes each).
 echo "Waiting for MachineConfigPools to finish updating..."
 for pool in master worker; do
-  for i in $(seq 1 90); do
+  for i in $(seq 1 180); do
     UPDATED=$(kubectl get mcp "$pool" -o jsonpath='{.status.conditions[?(@.type=="Updated")].status}' 2>/dev/null || echo "")
     UPDATING=$(kubectl get mcp "$pool" -o jsonpath='{.status.conditions[?(@.type=="Updating")].status}' 2>/dev/null || echo "")
     if [ "$UPDATED" = "True" ] && [ "$UPDATING" = "False" ]; then
       echo "MCP $pool: UPDATED=True UPDATING=False"
       break
     fi
-    if [ $i -eq 90 ]; then
-      echo "WARNING: MCP $pool not fully updated after 15 minutes (UPDATED=$UPDATED UPDATING=$UPDATING)"
+    if [ $i -eq 180 ]; then
+      echo "WARNING: MCP $pool not fully updated after 30 minutes (UPDATED=$UPDATED UPDATING=$UPDATING)"
       break
     fi
-    echo "  MCP $pool: UPDATED=$UPDATED UPDATING=$UPDATING (attempt $i/60)"
+    echo "  MCP $pool: UPDATED=$UPDATED UPDATING=$UPDATING (attempt $i/180)"
     sleep 10
   done
 done
