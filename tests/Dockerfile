@@ -19,10 +19,10 @@ RUN curl -fL -o kubectl-kuttl \
     && mv kubectl-kuttl /usr/local/bin/kuttl
 
 # Install chainsaw
-# SHA256 from https://github.com/kyverno/chainsaw/releases/download/v0.2.13/checksums.txt
+# SHA256 from https://github.com/kyverno/chainsaw/releases/download/v0.2.15/checksums.txt
 RUN curl -fL -o chainsaw.tar.gz \
-      https://github.com/kyverno/chainsaw/releases/download/v0.2.13/chainsaw_linux_amd64.tar.gz \
-    && echo "6c8d4cdccacbea7100a8354893b3176d874eecfe70c930fbe0496b7967d61ca4  chainsaw.tar.gz" | sha256sum -c - \
+      https://github.com/kyverno/chainsaw/releases/download/v0.2.15/chainsaw_linux_amd64.tar.gz \
+    && echo "295d226c89f126c0a97775d364be149f47a810c8a3f9829ee410583d0c1abe3c  chainsaw.tar.gz" | sha256sum -c - \
     && tar -xzf chainsaw.tar.gz chainsaw \
     && chmod +x chainsaw \
     && mv chainsaw /usr/local/bin/ \
