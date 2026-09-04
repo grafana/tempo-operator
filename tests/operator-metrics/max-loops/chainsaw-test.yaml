@@ -46,7 +46,6 @@ spec:
       - assert:
           file: 01-assert-job.yaml
     catch:
-      - events: {}
       - podLogs:
           selector: job-name=verify-metrics
           namespace: tempo-operator-system

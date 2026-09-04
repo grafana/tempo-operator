@@ -11,3 +11,27 @@ spec:
     delete: 5m0s
     error: 5m0s
     exec: 5m0s
+  catch:
+    - get:
+        apiVersion: tempo.grafana.com/v1alpha1
+        kind: TempoStack
+        format: yaml
+    - get:
+        apiVersion: tempo.grafana.com/v1alpha1
+        kind: TempoMonolithic
+        format: yaml
+    - podLogs:
+        selector: app.kubernetes.io/managed-by=tempo-operator
+        tail: 100
+    - podLogs:
+        selector: job-name
+        tail: 100
+    - podLogs:
+        namespace: tempo-operator-system
+        selector: app.kubernetes.io/part-of=tempo-operator
+        tail: 100
+    - podLogs:
+        namespace: openshift-tempo-operator
+        selector: app.kubernetes.io/part-of=tempo-operator
+        tail: 100
+    - events: {}
