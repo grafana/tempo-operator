@@ -29,7 +29,9 @@ spec:
     
     exporters:
       prometheus:
-        add_metric_suffixes: false
+        # Collector >=0.154.0 ignores add_metric_suffixes by default (DisableAddMetricSuffixes
+        # gate promoted to Beta); set translation_strategy explicitly to keep unsuffixed names.
+        translation_strategy: "UnderscoreEscapingWithoutSuffixes"
         endpoint: 0.0.0.0:8889
         resource_to_telemetry_conversion: 
           enabled: true # by default resource attributes are dropped
