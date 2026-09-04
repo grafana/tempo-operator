@@ -442,7 +442,7 @@ e2e-openshift-tshirt-sizes:
 
 # upgrade tests
 e2e-upgrade:
-	$(CHAINSAW) test --test-dir ./tests/e2e-upgrade --config .chainsaw-upgrade.yaml
+	$(CHAINSAW) test --test-dir ./tests/e2e-upgrade
 
 .PHONY: scorecard-tests
 scorecard-tests: operator-sdk
