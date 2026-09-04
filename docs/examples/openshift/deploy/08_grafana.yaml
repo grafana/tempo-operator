@@ -1,0 +1,451 @@
+# =============================================================================
+# Grafana on OpenShift, authenticating against the cluster's built-in OAuth
+# server using the "Service Account as OAuth client" pattern.
+# =============================================================================
+#
+# How OpenShift OAuth integration works here, in one paragraph:
+#
+#   OpenShift ships with its own OAuth 2.0 server (oauth-openshift). Instead
+#   of registering a separate OAuthClient object, OpenShift lets you turn a
+#   ServiceAccount into a valid OAuth client by adding a single annotation
+#   declaring the redirect URI(s). The OAuth client_id is the SA's full name
+#   ("system:serviceaccount:<ns>:<name>"), and the client_secret is *the SA's
+#   own bearer token* (the file mounted at /var/run/secrets/.../token).
+#   Grafana's generic_oauth connector handles the rest of the OIDC-style
+#   dance against /oauth/authorize and /oauth/token, then calls api_url to
+#   fetch the user's profile.
+#
+# Where each value below comes from (run these on the cluster you're
+# targeting; the literals here are for CRC / OpenShift Local):
+#
+#   - root_url:
+#       The public Grafana URL. On OpenShift this is the host of the Route
+#       defined at the bottom of this file. Find it with:
+#         oc -n <ns> get route grafana -o jsonpath='{.spec.host}'
+#       and prefix with https:// (the Route below uses edge TLS termination).
+#
+#   - The OAuth server hostname (used by auth_url and token_url):
+#       The cluster-wide OAuth server runs in the openshift-authentication
+#       namespace and is exposed via a Route. Discover it with:
+#         oc get route -n openshift-authentication oauth-openshift \
+#             -o jsonpath='{.spec.host}'
+#       On CRC this resolves to "oauth-openshift.apps-crc.testing".
+#       The standard OAuth endpoints under that host are:
+#         /oauth/authorize   (auth_url)
+#         /oauth/token       (token_url)
+#       You can also discover them programmatically from:
+#         curl -k https://api.<cluster>:6443/.well-known/oauth-authorization-server
+#
+#   - api_url:
+#       Grafana calls this URL after the OAuth dance to fetch the user's
+#       profile. We point it at the in-cluster Kubernetes API at the
+#       OpenShift "User" subresource of the authenticated user, accessed via
+#       the in-pod kubernetes.default.svc service:
+#         https://kubernetes.default.svc/apis/user.openshift.io/v1/users/~
+#       IMPORTANT: do *not* point it at .../users/~/emails. That subresource
+#       requires extra OAuth scopes that the SA-as-OAuth-client cannot grant
+#       and will return 403 (see the email_attribute_path note below).
+#
+#   - client_id:
+#       Format is fixed by OpenShift:
+#         system:serviceaccount:<namespace>:<sa-name>
+#       So for the SA created here ("grafana" in "tracing") it is:
+#         system:serviceaccount:tracing:grafana
+#
+#   - client_secret:
+#       For SA-as-OAuth-client, the secret is the SA's projected bearer
+#       token. Grafana reads it from disk at runtime with the $__file{}
+#       directive so we never have to copy/paste a secret value.
+#
+#   - The redirect URI annotation on the SA:
+#       OpenShift will only redirect back to URIs explicitly declared on the
+#       SA via annotations of the form
+#         serviceaccounts.openshift.io/oauth-redirecturi.<key>: <url>
+#       The <key> is arbitrary; the <url> must exactly match Grafana's
+#       OAuth callback, which for the generic_oauth provider named "OpenShift"
+#       below is <root_url>/login/generic_oauth.
+#
+# CRC-specific gotchas:
+#
+#   - CRC's API server and ingress use self-signed certificates issued by an
+#     internal CA, so we set tls_skip_verify_insecure = true. In a real
+#     cluster you should mount the CA bundle and remove this flag.
+#   - The OpenShift token format is opaque ("sha256~..."), not a JWT, so
+#     Grafana logs a benign warning "token is not in JWT format" when it
+#     tries to parse it for an id_token. It does not block authentication.
+#   - kubeadmin has no email address. We handle that with email_attribute_path
+#     below; if you switch to a user with a real email, you can drop it.
+#
+# Bringing up the stack from scratch:
+#
+#   1. Apply this manifest after the TempoStack is Ready and the gateway
+#      Route is up. Grafana is provisioned via two ConfigMaps:
+#        - grafana-config       (config.ini, including [auth.generic_oauth])
+#        - grafana-datasources  (the Tempo datasource pointing at the gateway)
+#   2. Grafana mounts the SA token via the default projected volume; the
+#      OAuth client_secret resolves to that file at startup.
+#   3. The first time you hit the Grafana Route you will be redirected to
+#      oauth-openshift, log in (e.g. as kubeadmin), approve the scopes, and
+#      land back on Grafana as an Admin (auto_assign_org_role = Admin).
+#
+# =============================================================================
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  annotations:
+    # This annotation is what turns the ServiceAccount into a valid OAuth
+    # client for the OpenShift OAuth server. The annotation key suffix
+    # (".grafana") is an arbitrary label - what matters is the value, which
+    # MUST exactly match Grafana's generic_oauth callback URL:
+    #   <root_url>/login/<provider name lowercased>
+    # Our provider is registered as [auth.generic_oauth] (named "OpenShift"
+    # in the UI), so the callback path is /login/generic_oauth, and the host
+    # is the public Grafana Route declared at the bottom of this file.
+    # If you change the Route host or the provider name, update this URI or
+    # OAuth login will fail with "redirect_uri did not match".
+    serviceaccounts.openshift.io/oauth-redirecturi.grafana: https://grafana-tracing.apps-crc.testing/login/generic_oauth
+  name: grafana
+  namespace: tracing
+---
+# Grants the Grafana SA permission to call TokenReview / SubjectAccessReview
+# against the Kubernetes API. Not strictly required for the OAuth login flow
+# itself (Grafana never calls TokenReview), but it lets the same SA be reused
+# for any future server-side checks (e.g. validating bearer tokens forwarded
+# from clients) without changing RBAC. Safe to keep.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: grafana-auth-delegator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:auth-delegator
+subjects:
+- kind: ServiceAccount
+  name: grafana
+  namespace: tracing
+---
+apiVersion: v1
+data:
+  config.ini: |
+    [analytics]
+    check_for_updates = false
+    reporting_enabled = false
+
+    [server]
+    # Public URL Grafana sees itself at. Must match the host of the Route at
+    # the bottom of this file (https because the Route uses edge TLS).
+    # Discover with: oc -n tracing get route grafana -o jsonpath='{.spec.host}'
+    root_url = https://grafana-tracing.apps-crc.testing/
+
+    [auth]
+    # Hide the local username/password form so users can only log in via
+    # OpenShift OAuth. Combined with oauth_auto_login below, hitting "/" or
+    # "/login" goes straight to the OpenShift login screen.
+    disable_login_form = true
+    disable_signout_menu = false
+    oauth_auto_login = true
+
+    [auth.basic]
+    enabled = false
+
+    [auth.generic_oauth]
+    enabled = true
+    # Display name for the provider in the UI / on the login button.
+    # Also determines the callback path: /login/<name lowercased>, which
+    # must match the redirect URI annotation on the ServiceAccount above.
+    name = OpenShift
+    allow_sign_up = true
+
+    # ----- Client credentials -----
+    # OpenShift SA-as-OAuth-client convention. The SA's full name is the
+    # client_id; the SA's projected bearer token (mounted by the default
+    # service account token volume at the path below) is the client_secret.
+    # $__file{} tells Grafana to read the secret from disk at startup.
+    client_id = system:serviceaccount:tracing:grafana
+    client_secret = $__file{/var/run/secrets/kubernetes.io/serviceaccount/token}
+
+    # ----- OAuth scopes -----
+    # OpenShift's OAuth scopes are *much* more restrictive than typical OIDC
+    # scopes - they map to specific permissions, not just identity claims.
+    # Common ones:
+    #   user:info           - read the user's identity (username, UID, groups)
+    #   user:check-access   - perform SubjectAccessReview as the user
+    #   user:list-projects  - list the projects the user has access to
+    #   user:full           - everything the user can do (DO NOT USE here)
+    # user:info is the minimum we need so api_url below can return the User
+    # object. Do NOT add user:full unless you understand the implications.
+    scopes = user:info user:check-access user:list-projects
+    empty_scopes = false
+
+    # ----- OAuth endpoints -----
+    # These come from the cluster's OAuth server Route in
+    # openshift-authentication. Discover them with:
+    #   oc get route -n openshift-authentication oauth-openshift \
+    #       -o jsonpath='{.spec.host}'
+    # On CRC the host is oauth-openshift.apps-crc.testing. The /oauth/authorize
+    # and /oauth/token paths are the OpenShift OAuth server's standard
+    # endpoints; you can confirm them via the OAuth discovery document:
+    #   curl -k https://api.crc.testing:6443/.well-known/oauth-authorization-server
+    auth_url  = https://oauth-openshift.apps-crc.testing/oauth/authorize
+    token_url = https://oauth-openshift.apps-crc.testing/oauth/token
+
+    # ----- User info endpoint -----
+    # After the OAuth dance Grafana calls this URL with the access token to
+    # fetch the user profile. We hit the in-cluster Kubernetes API directly
+    # at the OpenShift User subresource for the *currently authenticated*
+    # user (the "~" segment). The User object's metadata.name is the
+    # OpenShift username, which is what we use for login/name/email below.
+    #
+    # IMPORTANT: do NOT point this at .../users/~/emails. Grafana will then
+    # try to fetch private emails from a separate /emails subresource that
+    # requires scopes the SA token cannot grant - the call returns 403 and
+    # the whole login fails. With the "/users/~" path the User object is
+    # returned and we read fields out of it via the *_attribute_path settings.
+    api_url = https://kubernetes.default.svc/apis/user.openshift.io/v1/users/~
+
+    # CRC serves both the API and the ingress with internally signed certs.
+    # In a real cluster, instead of skipping TLS verification you should
+    # mount the cluster CA bundle (the "openshift-service-ca.crt" or
+    # "router-ca" depending on what you are validating) and reference it
+    # via tls_client_ca / system trust store, then drop this flag.
+    tls_skip_verify_insecure = true
+
+    # PKCE is recommended even for confidential clients and OpenShift's OAuth
+    # server supports it. Costs nothing, mitigates auth code interception.
+    use_pkce = true
+
+    # ----- Mapping User object fields to Grafana user attributes -----
+    # The User object returned by api_url looks roughly like:
+    #   {
+    #     "metadata": { "name": "kubeadmin", ... },
+    #     "fullName": "",
+    #     "identities": ["..."],
+    #     "groups": [...]
+    #   }
+    # The OpenShift User object does NOT have an "email" field, so we use
+    # metadata.name as the login, name and (synthetic) email.
+    login_attribute_path = metadata.name
+    name_attribute_path  = metadata.name
+
+    # WHY this exists:
+    # If userInfo.Email is left empty after parsing api_url, Grafana's
+    # generic_oauth connector falls back to GET <api_url>/emails, which on
+    # OpenShift means /apis/user.openshift.io/v1/users/~/emails. That
+    # subresource is gated by OAuth scopes the SA-as-OAuth-client cannot
+    # provide, so the call returns 403 ("users.user.openshift.io \"~\" is
+    # forbidden ... scopes [user:info ...] prevent this action") and the
+    # whole login is rejected with "Failed to authenticate request".
+    # Setting this attribute path makes Grafana populate userInfo.Email
+    # from metadata.name, the fallback never fires, and login succeeds.
+    # Reference: pkg/login/social/connectors/generic_oauth.go,
+    #            canFetchPrivateEmail() and fetchPrivateEmail().
+    email_attribute_path = metadata.name
+
+    [paths]
+    data         = /var/lib/grafana
+    logs         = /var/lib/grafana/logs
+    plugins      = /var/lib/grafana/plugins
+    provisioning = /etc/grafana/provisioning
+
+    [security]
+    # The local admin user is intentionally set to a value that nobody can
+    # log in as, because the local login form is disabled and we only want
+    # OpenShift identities. cookie_secure is required because we serve over
+    # HTTPS via the Route.
+    admin_user    = system:does-not-exist
+    cookie_secure = true
+
+    [users]
+    viewers_can_edit     = true
+    default_theme        = light
+    auto_assign_org      = true
+    # Anyone who can sign in via OpenShift OAuth becomes an Admin. Tighten
+    # this in production - typical patterns are role_attribute_path on a
+    # group claim, or org mapping driven by groups returned by the User
+    # object's "groups" field.
+    auto_assign_org_role = Admin
+
+    [log]
+    mode = console
+kind: ConfigMap
+metadata:
+  name: grafana-config
+  namespace: tracing
+---
+apiVersion: v1
+data:
+  tempo.yaml: |
+    # Tempo datasource provisioning. The two ${...} placeholders are
+    # expanded by Grafana from environment variables defined on the
+    # Deployment below:
+    #   GATEWAY_ADDRESS    -> "tempo-tempo1-gateway.<ns>.svc:8080"
+    #   GATEWAY_SERVICE_CA -> the PEM contents of the OpenShift service CA
+    # Both are sourced from the openshift-service-ca.crt ConfigMap that
+    # OpenShift auto-injects into every namespace.
+    apiVersion: 1
+    datasources:
+      - name: Tempo (project1)
+        isDefault: true
+        type: tempo
+        access: proxy
+
+        # NOTE: NO trailing slash. The Tempo plugin's getTrace handler in
+        # pkg/tsdb/tempo/trace.go uses raw
+        #   fmt.Sprintf("%s/api/v2/traces/%s", url, id)
+        # which produces "//" when the URL ends in "/", and the
+        # observatorium-api gateway treats "tempo//api/..." as a different
+        # (non-existent) route -> 404 page not found. Search uses
+        # url.JoinPath so it tolerates the slash; trace-by-id and TraceQL
+        # metrics do not.
+        url: https://${GATEWAY_ADDRESS}/api/traces/v1/project1/tempo
+
+        jsonData:
+          tlsAuthWithCACert: true
+          # Forwards the logged-in user's OAuth access token as
+          # "Authorization: Bearer ..." on every request to the Tempo gateway.
+          # The gateway (observatorium-api in OpenShift mode) validates the
+          # bearer token against OpenShift OAuth and authorizes the request
+          # via SubjectAccessReview against the tenant's RBAC rules
+          # (see 05-tenant-rbac.yaml).
+          oauthPassThru: true
+        secureJsonData:
+          # PEM contents of the OpenShift service-serving CA, used to verify
+          # the gateway's serving certificate. Injected from the env var
+          # GATEWAY_SERVICE_CA, which itself comes from the
+          # openshift-service-ca.crt ConfigMap mounted on the Deployment.
+          tlsCACert: ${GATEWAY_SERVICE_CA}
+kind: ConfigMap
+metadata:
+  name: grafana-datasources
+  namespace: tracing
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: grafana
+  name: grafana
+  namespace: tracing
+spec:
+  ports:
+  - name: http-grafana
+    port: 3000
+    protocol: TCP
+    targetPort: http-grafana
+  selector:
+    app: grafana
+  sessionAffinity: None
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: grafana
+  name: grafana
+  namespace: tracing
+spec:
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      containers:
+      - args:
+        - -config=/etc/grafana/config.ini
+        env:
+        # The OpenShift service-serving CA bundle is published into every
+        # namespace as a ConfigMap named "openshift-service-ca.crt". We
+        # expose its content as an env var so the datasource provisioning
+        # YAML can interpolate it via ${GATEWAY_SERVICE_CA}.
+        - name: GATEWAY_SERVICE_CA
+          valueFrom:
+            configMapKeyRef:
+              key: service-ca.crt
+              name: openshift-service-ca.crt
+        # In-cluster DNS name + port of the Tempo gateway service. Same
+        # interpolation pattern: referenced from datasource provisioning
+        # YAML via ${GATEWAY_ADDRESS}. Discover with:
+        #   oc -n tracing get svc tempo-tempo1-gateway
+        - name: GATEWAY_ADDRESS
+          value: tempo-tempo1-gateway.tracing.svc:8080
+        image: docker.io/grafana/grafana:12.3.0
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          successThreshold: 1
+          tcpSocket:
+            port: 3000
+          timeoutSeconds: 1
+        name: grafana
+        ports:
+        - containerPort: 3000
+          name: http-grafana
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /robots.txt
+            port: 3000
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          successThreshold: 1
+          timeoutSeconds: 2
+        resources:
+          requests:
+            cpu: 250m
+            memory: 256Mi
+        volumeMounts:
+        - mountPath: /etc/grafana
+          name: grafana-config
+        - mountPath: /var/lib/grafana
+          name: grafana
+        - mountPath: /etc/grafana/provisioning/datasources
+          name: grafana-datasources
+      # Use the SA defined at the top of this file. This is the SA whose
+      # bearer token doubles as the OAuth client_secret, and whose
+      # redirect-URI annotation registers the OAuth callback. Without this
+      # the default SA is used and OAuth login will fail.
+      serviceAccountName: grafana
+      volumes:
+      - configMap:
+          name: grafana-config
+        name: grafana-config
+      - configMap:
+          name: grafana-datasources
+        name: grafana-datasources
+      - emptyDir: {}
+        name: grafana
+---
+# Public Route. The host this gets assigned MUST match what is referenced
+# in two places earlier in this file:
+#   - root_url in [server] of the Grafana config
+#   - the serviceaccounts.openshift.io/oauth-redirecturi.grafana annotation
+#     on the ServiceAccount
+# On OpenShift the host defaults to <route-name>-<namespace>.<apps-domain>,
+# e.g. grafana-tracing.apps-crc.testing on CRC. Find your apps domain
+# with:  oc get ingresses.config cluster -o jsonpath='{.spec.domain}'
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: grafana
+  namespace: tracing
+spec:
+  port:
+    targetPort: http-grafana
+  tls:
+    insecureEdgeTerminationPolicy: Redirect
+    termination: edge
+  to:
+    kind: Service
+    name: grafana
+    weight: 100
+  wildcardPolicy: None
