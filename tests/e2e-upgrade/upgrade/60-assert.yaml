@@ -21,3 +21,4 @@ metadata:
   name: simplest
 status:
   operatorVersion: 100.0.0
+  (conditions[?type=='Ready'] | [0].status): "True"
