@@ -109,12 +109,13 @@ func TestSetComponentsStatus_WhenSomePodPending(t *testing.T) {
 
 	expected := v1alpha1.TempoStackStatus{
 		Components: v1alpha1.ComponentStatus{
-			Compactor:     expectedComponents,
-			Ingester:      expectedComponents,
-			Distributor:   expectedComponents,
-			Querier:       expectedComponents,
-			QueryFrontend: expectedComponents,
-			Gateway:       expectedComponents,
+			Compactor:        expectedComponents,
+			Ingester:         expectedComponents,
+			Distributor:      expectedComponents,
+			Querier:          expectedComponents,
+			QueryFrontend:    expectedComponents,
+			Gateway:          expectedComponents,
+			MetricsGenerator: v1alpha1.PodStatusMap{},
 		},
 	}
 
@@ -180,12 +181,13 @@ func TestSetComponentsStatus_WhenSomePodFailed(t *testing.T) {
 
 	expected := v1alpha1.TempoStackStatus{
 		Components: v1alpha1.ComponentStatus{
-			Compactor:     expectedComponents,
-			Ingester:      expectedComponents,
-			Distributor:   expectedComponents,
-			Querier:       expectedComponents,
-			QueryFrontend: expectedComponents,
-			Gateway:       expectedComponents,
+			Compactor:        expectedComponents,
+			Ingester:         expectedComponents,
+			Distributor:      expectedComponents,
+			Querier:          expectedComponents,
+			QueryFrontend:    expectedComponents,
+			Gateway:          expectedComponents,
+			MetricsGenerator: v1alpha1.PodStatusMap{},
 		},
 	}
 
@@ -251,12 +253,13 @@ func TestSetComponentsStatus_WhenSomePodUnknow(t *testing.T) {
 
 	expected := v1alpha1.TempoStackStatus{
 		Components: v1alpha1.ComponentStatus{
-			Compactor:     expectedComponents,
-			Ingester:      expectedComponents,
-			Distributor:   expectedComponents,
-			Querier:       expectedComponents,
-			QueryFrontend: expectedComponents,
-			Gateway:       expectedComponents,
+			Compactor:        expectedComponents,
+			Ingester:         expectedComponents,
+			Distributor:      expectedComponents,
+			Querier:          expectedComponents,
+			QueryFrontend:    expectedComponents,
+			Gateway:          expectedComponents,
+			MetricsGenerator: v1alpha1.PodStatusMap{},
 		},
 	}
 
@@ -325,12 +328,13 @@ func TestSetComponentsStatus_WhenSomePodRunningNotReady(t *testing.T) {
 
 	expected := v1alpha1.TempoStackStatus{
 		Components: v1alpha1.ComponentStatus{
-			Compactor:     expectedComponents,
-			Ingester:      expectedComponents,
-			Distributor:   expectedComponents,
-			Querier:       expectedComponents,
-			QueryFrontend: expectedComponents,
-			Gateway:       expectedComponents,
+			Compactor:        expectedComponents,
+			Ingester:         expectedComponents,
+			Distributor:      expectedComponents,
+			Querier:          expectedComponents,
+			QueryFrontend:    expectedComponents,
+			Gateway:          expectedComponents,
+			MetricsGenerator: v1alpha1.PodStatusMap{},
 		},
 	}
 
@@ -398,12 +402,13 @@ func TestSetComponentsStatus_WhenAllReady(t *testing.T) {
 
 	expected := v1alpha1.TempoStackStatus{
 		Components: v1alpha1.ComponentStatus{
-			Compactor:     expectedComponents,
-			Ingester:      expectedComponents,
-			Distributor:   expectedComponents,
-			Querier:       expectedComponents,
-			QueryFrontend: expectedComponents,
-			Gateway:       expectedComponents,
+			Compactor:        expectedComponents,
+			Ingester:         expectedComponents,
+			Distributor:      expectedComponents,
+			Querier:          expectedComponents,
+			QueryFrontend:    expectedComponents,
+			Gateway:          expectedComponents,
+			MetricsGenerator: v1alpha1.PodStatusMap{},
 		},
 	}
 
