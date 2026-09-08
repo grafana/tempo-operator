@@ -2,6 +2,7 @@ package status
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -421,4 +422,37 @@ func TestSetComponentsStatus_WhenAllReady(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.Equal(t, expected, components)
+}
+
+func TestComponentStatus_Serialization(t *testing.T) {
+	k := &statusClientStub{}
+
+	k.GetPodsComponentStub = func(ctx context.Context, componentName string, stack v1alpha1.TempoStack) (*corev1.PodList, error) {
+		return &corev1.PodList{}, nil
+	}
+
+	s := v1alpha1.TempoStack{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "my-stack",
+			Namespace: "some-ns",
+		},
+	}
+
+	status, err := GetComponentsStatus(context.TODO(), k, s)
+	require.NoError(t, err)
+
+	// Components must serialize to empty maps ({}) rather than null.
+	// A null map would be pruned by the API server, dropping the field from the status,
+	// which results in "The field components.<name> is invalid." in the OCP console.
+	serialized, err := json.Marshal(status.Components)
+	require.NoError(t, err)
+	assert.JSONEq(t, `{
+		"compactor": {},
+		"distributor": {},
+		"ingester": {},
+		"querier": {},
+		"queryFrontend": {},
+		"gateway": {},
+		"metricsGenerator": {}
+	}`, string(serialized))
 }
