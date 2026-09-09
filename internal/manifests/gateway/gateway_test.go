@@ -259,6 +259,132 @@ func TestBuildGateway_openshift(t *testing.T) {
 	}, caConfigMap.Annotations)
 }
 
+func TestGatewayRouteHost(t *testing.T) {
+	tempo := v1alpha1.TempoStack{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "sample",
+			Namespace: "tracing-system",
+		},
+	}
+	baseDomain := "apps.mycluster.mydomain"
+
+	assert.Equal(t,
+		naming.RouteFqdn(tempo.Namespace, tempo.Name, manifestutils.GatewayComponentName, baseDomain),
+		gatewayRouteHost(tempo, baseDomain),
+	)
+
+	tempo.Spec.Template.Gateway.Ingress.Host = "mytempo.apps.mycluster.mydomain"
+	assert.Equal(t, "mytempo.apps.mycluster.mydomain", gatewayRouteHost(tempo, baseDomain))
+}
+
+func TestBuildGateway_openshiftRedirectURL(t *testing.T) {
+	tests := []struct {
+		name             string
+		ingressHost      string
+		tenants          []v1alpha1.AuthenticationSpec
+		wantRouteHost    string
+		wantRedirectURLs []string
+	}{
+		{
+			name:        "custom ingress host",
+			ingressHost: "mytempo.apps.mycluster.mydomain",
+			tenants: []v1alpha1.AuthenticationSpec{
+				{TenantName: "dev", TenantID: "1610b0c3-c509-4592-a256-a1871353dbfa"},
+			},
+			wantRouteHost: "mytempo.apps.mycluster.mydomain",
+			wantRedirectURLs: []string{
+				"https://mytempo.apps.mycluster.mydomain/openshift/dev/callback",
+			},
+		},
+		{
+			name: "default generated ingress host",
+			tenants: []v1alpha1.AuthenticationSpec{
+				{TenantName: "dev", TenantID: "1610b0c3-c509-4592-a256-a1871353dbfa"},
+			},
+			wantRouteHost: "",
+			wantRedirectURLs: []string{
+				"https://" + naming.RouteFqdn("tracing-system", "sample", manifestutils.GatewayComponentName, "apps.mycluster.mydomain") + "/openshift/dev/callback",
+			},
+		},
+		{
+			name:        "multiple tenants share the same gateway host",
+			ingressHost: "mytempo.apps.mycluster.mydomain",
+			tenants: []v1alpha1.AuthenticationSpec{
+				{TenantName: "dev", TenantID: "1610b0c3-c509-4592-a256-a1871353dbfa"},
+				{TenantName: "test", TenantID: "2610b0c3-c509-4592-a256-a1871353dbfb"},
+			},
+			wantRouteHost: "mytempo.apps.mycluster.mydomain",
+			wantRedirectURLs: []string{
+				"https://mytempo.apps.mycluster.mydomain/openshift/dev/callback",
+				"https://mytempo.apps.mycluster.mydomain/openshift/test/callback",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tempo := v1alpha1.TempoStack{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "sample",
+					Namespace: "tracing-system",
+				},
+				Spec: v1alpha1.TempoStackSpec{
+					Template: v1alpha1.TempoTemplateSpec{
+						Gateway: v1alpha1.TempoGatewaySpec{
+							Enabled: true,
+							Ingress: v1alpha1.IngressSpec{
+								Type: v1alpha1.IngressTypeRoute,
+								Host: tt.ingressHost,
+								Route: v1alpha1.RouteSpec{
+									Termination: v1alpha1.TLSRouteTerminationTypeReencrypt,
+								},
+							},
+						},
+					},
+					Tenants: &v1alpha1.TenantsSpec{
+						Mode:           v1alpha1.ModeOpenShift,
+						Authentication: tt.tenants,
+					},
+				},
+			}
+
+			objects, err := BuildGateway(manifestutils.Params{
+				Tempo: tempo,
+				CtrlConfig: configv1alpha1.ProjectConfig{
+					Gates: configv1alpha1.FeatureGates{
+						OpenShift: configv1alpha1.OpenShiftFeatureGates{
+							ServingCertsService: true,
+							OpenShiftRoute:      true,
+							BaseDomain:          "apps.mycluster.mydomain",
+						},
+					},
+				},
+			})
+			require.NoError(t, err)
+
+			obj := getObjectByTypeAndName(objects, "tempo-sample-gateway", reflect.TypeOf(&routev1.Route{}))
+			require.NotNil(t, obj)
+			route, ok := obj.(*routev1.Route)
+			require.True(t, ok)
+			assert.Equal(t, tt.wantRouteHost, route.Spec.Host)
+
+			obj = getObjectByTypeAndName(objects, "tempo-sample-gateway", reflect.TypeOf(&corev1.Secret{}))
+			require.NotNil(t, obj)
+			secret, ok := obj.(*corev1.Secret)
+			require.True(t, ok)
+			tenantsCfg := string(secret.Data[manifestutils.GatewayTenantFileName])
+			require.NotEmpty(t, tenantsCfg)
+			for _, redirectURL := range tt.wantRedirectURLs {
+				assert.Contains(t, tenantsCfg, "redirectURL: "+redirectURL)
+			}
+			if tt.ingressHost != "" {
+				generatedHost := naming.RouteFqdn("tracing-system", "sample", manifestutils.GatewayComponentName, "apps.mycluster.mydomain")
+				assert.NotContains(t, tenantsCfg, generatedHost)
+			}
+		})
+	}
+}
+
 func getObjectByTypeAndName(objects []client.Object, name string, t reflect.Type) client.Object { // nolint: unparam
 	for _, o := range objects {
 		objType := reflect.TypeOf(o)
