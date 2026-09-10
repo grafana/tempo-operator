@@ -16,7 +16,7 @@ chainsaw test --test-dir ./tests/e2e --config .chainsaw.yaml
 chainsaw test --test-dir ./tests/e2e-openshift --config .chainsaw-openshift.yaml
 
 # Run upgrade tests
-chainsaw test --test-dir ./tests/e2e-upgrade --config .chainsaw-upgrade.yaml
+chainsaw test --test-dir ./tests/e2e-upgrade
 
 # Run specific test
 chainsaw test --test-dir ./tests/e2e/compatibility
@@ -67,7 +67,7 @@ Each test directory follows this pattern:
 
 Use step names "step-XX".
 Use a single apply manifest per step.
-Prefer manifest asserts instead of scripts.
+Prefer manifest asserts instead of chainsaw script:/exec:.
 
 ### Key Test Components
 

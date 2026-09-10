@@ -26,5 +26,5 @@ export BUNDLE_IMGS=ghcr.io/grafana/tempo-operator/tempo-operator-bundle:${LATEST
 make bundle docker-build docker-push bundle-build bundle-push catalog-build catalog-push
 
 sed -i "s@localregistry:5000@${IMG_PREFIX}@g" tests/e2e-upgrade/upgrade/10-setup-olm.yaml
-chainsaw test --test-dir ./tests/e2e-upgrade --config .chainsaw-upgrade.yaml --skip-delete
+chainsaw test --test-dir ./tests/e2e-upgrade --skip-delete
 ```
