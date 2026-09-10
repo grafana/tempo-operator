@@ -1,7 +1,6 @@
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
-  creationTimestamp: null
   name: ossm-tempostack
 spec:
   # Avoid running this test case in parallel as it uses high resources and uses static namespaces. 
