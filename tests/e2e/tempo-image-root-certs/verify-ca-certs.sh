@@ -1,12 +1,16 @@
 #!/bin/bash
 set -euo pipefail
 
-OUTPUT=$(kubectl debug -n "$NAMESPACE" tempo-simplest-ingester-0 \
+POD=tempo-simplest-ingester-0
+CONTAINER=verify-root-certs
+
+# Start ephemeral container with ubi to check if the tempo container has root certificates installed
+kubectl debug -n "$NAMESPACE" "$POD" \
   --image=registry.access.redhat.com/ubi9/ubi-minimal \
   --target=tempo \
-  --container=verify-root-certs \
+  --container="$CONTAINER" \
   --profile=sysadmin \
-  --attach \
+  --quiet \
   -- /bin/bash -c '
 for bundle in /etc/ssl/certs/ca-certificates.crt \
               /etc/pki/tls/certs/ca-bundle.crt \
@@ -27,8 +31,17 @@ for bundle in /etc/ssl/certs/ca-certificates.crt \
     break
   fi
 done
-')
+'
 
+# Wait for the ephemeral container to terminate.
+for _ in $(seq 1 60); do
+  reason=$(kubectl get pod -n "$NAMESPACE" "$POD" \
+    -o jsonpath="{.status.ephemeralContainerStatuses[?(@.name==\"$CONTAINER\")].state.terminated.reason}")
+  [ -n "$reason" ] && break
+  sleep 5
+done
+
+OUTPUT=$(kubectl logs -n "$NAMESPACE" "$POD" -c "$CONTAINER")
 echo "$OUTPUT"
 
 if ! echo "$OUTPUT" | grep -q "^PASS$"; then
