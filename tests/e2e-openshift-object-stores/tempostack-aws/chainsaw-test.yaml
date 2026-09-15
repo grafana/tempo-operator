@@ -8,9 +8,13 @@ spec:
     try:
     - script:
         timeout: 5m
-        content: ./create-bucket.sh
+        content: ./bucket.sh create
     - assert:
         file: 00-assert.yaml
+    cleanup:
+    - script:
+        timeout: 5m
+        content: ./bucket.sh delete
   - name: step-01
     try:
     - apply:
