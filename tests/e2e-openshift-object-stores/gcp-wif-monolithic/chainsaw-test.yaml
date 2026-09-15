@@ -22,13 +22,6 @@ spec:
     - assert:
         timeout: 5m
         file: 01-install-monolithic-assert.yaml
-    catch:
-    - get:
-        apiVersion: tempo.grafana.com/v1alpha1
-        kind: TempoMonolithic
-        format: yaml
-    - podLogs:
-        selector: app.kubernetes.io/managed-by=tempo-operator
   - name: Generate traces
     try:
     - apply:
