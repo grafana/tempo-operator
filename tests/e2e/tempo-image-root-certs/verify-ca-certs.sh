@@ -5,7 +5,7 @@ OUTPUT=$(kubectl debug -n "$NAMESPACE" tempo-simplest-ingester-0 \
   --image=registry.access.redhat.com/ubi9/ubi-minimal \
   --target=tempo \
   --container=verify-root-certs \
-  --profile=general \
+  --profile=sysadmin \
   --quiet \
   --attach \
   -- /bin/bash -c '
@@ -16,7 +16,10 @@ for bundle in /etc/ssl/certs/ca-certificates.crt \
               /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem \
               /etc/ssl/cert.pem; do
   path="/proc/1/root$bundle"
-  [ -f "$path" ] || continue
+  if [ ! -f "$path" ]; then
+    echo "$bundle: skipped (not a readable file)"
+    continue
+  fi
 
   count=$(grep -c "BEGIN CERTIFICATE" "$path" || true)
   echo "$bundle: $count certificates"
