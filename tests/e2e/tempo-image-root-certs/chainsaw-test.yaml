@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/kyverno/chainsaw/main/.schemas/json/test-chainsaw-v1alpha1.json
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: tempo-image-root-certs
+spec:
+  description: Verify that the Tempo container image ships with a root CA certificate bundle.
+  steps:
+  - name: step-00
+    try:
+    - apply:
+        file: 00-install-storage.yaml
+    - assert:
+        file: 00-assert.yaml
+  - name: step-01
+    try:
+    - apply:
+        file: 01-install-tempo.yaml
+    - assert:
+        timeout: 5m
+        file: 01-assert.yaml
+  - name: step-02
+    try:
+    - script:
+        timeout: 1m
+        content: ./verify-ca-certs.sh
