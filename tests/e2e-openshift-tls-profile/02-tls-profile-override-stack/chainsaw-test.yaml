@@ -2,7 +2,6 @@
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
-  creationTimestamp: null
   name: tls-profile-override-stack
 spec:
   # Must run alone because it patches the operator subscription.
