@@ -2,9 +2,16 @@
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
-  creationTimestamp: null
   name: upgrade
 spec:
+  concurrent: false
+  timeouts:
+    apply: 30s
+    assert: 5m
+    cleanup: 5m
+    delete: 5m
+    error: 5m
+    exec: 5m
   steps:
   - name: step-00
     try:
@@ -26,7 +33,7 @@ spec:
     try:
     - apply:
         timeout: 2m
-        file: 03-tempostack.yaml
+        file: 21-check-operator-ready.yaml
     - delete:
         ref:
           apiVersion: tempo.grafana.com/v1alpha1
@@ -38,17 +45,6 @@ spec:
         file: 30-install-tempo.yaml
     - assert:
         file: 30-assert.yaml
-  - name: step-31
-    try:
-    - assert:
-        resource:
-          apiVersion: tempo.grafana.com/v1alpha1
-          kind: TempoStack
-          metadata:
-            name: simplest
-          status:
-            (conditions[?type == 'Ready']):
-            - status: 'True'
   - name: step-40
     try:
     - apply:
@@ -79,18 +75,6 @@ spec:
         namespace: chainsaw-operator-upgrade
         name: tempo
         format: yaml
-  - name: step-61
-    try:
-    - assert:
-        resource:
-          apiVersion: tempo.grafana.com/v1alpha1
-          kind: TempoStack
-          metadata:
-            name: simplest
-          status:
-            (conditions[?type == 'Ready']):
-            - status: 'True'
-    finally:
     - get:
         apiVersion: apps/v1
         kind: Deployment
