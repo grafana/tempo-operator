@@ -60,7 +60,7 @@ spec:
   - name: step-07
     try:
     - script:
-        timeout: 40m
+        timeout: 75m
         content: ./07-patch-modern.sh
   - name: step-08
     try:
@@ -82,5 +82,5 @@ spec:
   - name: step-11
     try:
     - script:
-        timeout: 30m
+        timeout: 75m
         content: ./11-revert-apiserver.sh
