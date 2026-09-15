@@ -6,7 +6,6 @@ OUTPUT=$(kubectl debug -n "$NAMESPACE" tempo-simplest-ingester-0 \
   --target=tempo \
   --container=verify-root-certs \
   --profile=sysadmin \
-  --quiet \
   --attach \
   -- /bin/bash -c '
 for bundle in /etc/ssl/certs/ca-certificates.crt \
