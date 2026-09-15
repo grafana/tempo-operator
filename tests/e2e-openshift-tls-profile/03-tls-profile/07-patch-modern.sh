@@ -68,20 +68,22 @@ done
 # Wait for MachineConfigPools to report fully updated.
 # Nodes can appear Ready before MCPs finish — a subsequent MCP cycle can drain them again,
 # evicting the operator pod and making webhooks unavailable during verification.
+# Use 30-minute timeout per pool: MCP node-by-node rollout can take 40+ minutes on 3-node
+# clusters due to drain + reboot + rejoin per node (~10-15 minutes each).
 echo "Waiting for MachineConfigPools to finish updating..."
 for pool in master worker; do
-  for i in $(seq 1 90); do
+  for i in $(seq 1 180); do
     UPDATED=$(kubectl get mcp "$pool" -o jsonpath='{.status.conditions[?(@.type=="Updated")].status}' 2>/dev/null || echo "")
     UPDATING=$(kubectl get mcp "$pool" -o jsonpath='{.status.conditions[?(@.type=="Updating")].status}' 2>/dev/null || echo "")
     if [ "$UPDATED" = "True" ] && [ "$UPDATING" = "False" ]; then
       echo "MCP $pool: UPDATED=True UPDATING=False"
       break
     fi
-    if [ $i -eq 90 ]; then
-      echo "WARNING: MCP $pool not fully updated after 15 minutes (UPDATED=$UPDATED UPDATING=$UPDATING)"
+    if [ $i -eq 180 ]; then
+      echo "WARNING: MCP $pool not fully updated after 30 minutes (UPDATED=$UPDATED UPDATING=$UPDATING)"
       break
     fi
-    echo "  MCP $pool: UPDATED=$UPDATED UPDATING=$UPDATING (attempt $i/60)"
+    echo "  MCP $pool: UPDATED=$UPDATED UPDATING=$UPDATING (attempt $i/180)"
     sleep 10
   done
 done
@@ -89,6 +91,24 @@ done
 # After MCP stabilizes the operator pod may have been re-evicted; wait for its rollout again.
 echo "Waiting for operator deployment to be stable after MCP stabilization..."
 kubectl rollout status deployment/tempo-operator-controller -n openshift-tempo-operator --timeout=5m
+
+# Wait for OpenTelemetry operator to be ready — its conversion webhook is required by
+# subsequent steps that create/get OpenTelemetryCollector resources. Node drains during
+# MCP updates can evict the OTEL operator pod, making the webhook unavailable.
+echo "Waiting for OpenTelemetry operator deployment to be ready after MCP stabilization..."
+kubectl rollout status deployment/opentelemetry-operator-controller-manager -n openshift-opentelemetry-operator --timeout=5m || true
+# Verify the webhook endpoint is reachable
+for i in $(seq 1 30); do
+  OTEL_EP=$(kubectl get endpoints opentelemetry-operator-controller-manager-service -n openshift-opentelemetry-operator -o jsonpath='{.subsets[0].addresses[0].ip}' 2>/dev/null || echo "")
+  if [ -n "$OTEL_EP" ]; then
+    echo "OpenTelemetry operator webhook endpoint available at $OTEL_EP"
+    break
+  fi
+  if [ $i -eq 30 ]; then
+    echo "WARNING: OpenTelemetry operator webhook not available after 2.5 minutes"
+  fi
+  sleep 5
+done
 
 # Second pass: wait for all Tempo pods to be Running and Ready after node reconciliation.
 # This pass uses strict error checking - failures here are real failures.

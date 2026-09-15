@@ -4,7 +4,7 @@ metadata:
   annotations:
     alm-examples: '[]'
     capabilities: Deep Insights
-    categories: Logging & Tracing,Monitoring,Observability
+    categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.22.0
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.

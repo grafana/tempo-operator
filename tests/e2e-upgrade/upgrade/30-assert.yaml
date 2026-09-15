@@ -32,3 +32,10 @@ metadata:
   name: tempo-simplest-ingester
 status:
   readyReplicas: 1
+---
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoStack
+metadata:
+  name: simplest
+status:
+  (conditions[?type=='Ready'] | [0].status): "True"
