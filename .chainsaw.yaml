@@ -4,6 +4,7 @@ kind: Configuration
 metadata:
   name: configuration
 spec:
+  parallel: 4
   timeouts:
     apply: 30s
     assert: 2m30s
