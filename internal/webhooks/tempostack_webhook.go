@@ -296,14 +296,23 @@ func (v *validator) validateServiceAccount(ctx context.Context, tempo v1alpha1.T
 	return allErrs
 }
 
-func (v *validator) validateStorage(ctx context.Context, tempo v1alpha1.TempoStack) (admission.Warnings, field.ErrorList) { //nolint:unparam
-	_, errs := storage.GetStorageParamsForTempoStack(ctx, v.client, tempo)
+func (v *validator) validateStorage(ctx context.Context, tempo v1alpha1.TempoStack) (admission.Warnings, field.ErrorList) {
+	var warnings admission.Warnings
+
+	params, errs := storage.GetStorageParamsForTempoStack(ctx, v.client, tempo)
 	if len(errs) == 1 && (strings.HasPrefix(errs[0].Detail, storage.ErrFetchingSecret) || strings.HasPrefix(errs[0].Detail, storage.ErrFetchingConfigMap)) {
 		// Do not fail the validation if the storage secret or TLS CA ConfigMap is not found, the user can create these objects later.
 		// The operator will remain in a ConfigurationError status condition until the storage secret is created.
 		return admission.Warnings{errs[0].Detail}, field.ErrorList{}
 	}
-	return nil, errs
+
+	// An https:// S3 endpoint connects over TLS regardless of spec.storage.tls.enabled,
+	// which only controls the custom CA/certificate configuration.
+	if params.CredentialMode == v1alpha1.CredentialModeStatic && params.S3 != nil && !params.S3.Insecure && !tempo.Spec.Storage.TLS.Enabled {
+		warnings = append(warnings, "the S3 endpoint uses https://, therefore the connection to object storage will use TLS even though spec.storage.tls.enabled is false")
+	}
+
+	return warnings, errs
 }
 
 func (v *validator) validateReplicationFactor(tempo v1alpha1.TempoStack) field.ErrorList {

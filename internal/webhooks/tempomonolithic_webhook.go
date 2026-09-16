@@ -100,13 +100,23 @@ func (v *monolithicValidator) validateTempoMonolithic(ctx context.Context, tempo
 }
 
 func (v *monolithicValidator) validateStorage(ctx context.Context, tempo tempov1alpha1.TempoMonolithic) (admission.Warnings, field.ErrorList) {
-	_, errs := storage.GetStorageParamsForTempoMonolithic(ctx, v.client, tempo)
+	var warnings admission.Warnings
+
+	params, errs := storage.GetStorageParamsForTempoMonolithic(ctx, v.client, tempo)
 	if len(errs) == 1 && (strings.HasPrefix(errs[0].Detail, storage.ErrFetchingSecret) || strings.HasPrefix(errs[0].Detail, storage.ErrFetchingConfigMap)) {
 		// Do not fail the validation if the storage secret or TLS CA ConfigMap is not found, the user can create these objects later.
 		// The operator will remain in a ConfigurationError status condition until the storage secret is created.
 		return admission.Warnings{errs[0].Detail}, field.ErrorList{}
 	}
-	return nil, errs
+
+	// An https:// S3 endpoint connects over TLS regardless of the storage TLS toggle,
+	// which only controls the custom CA/certificate configuration.
+	tlsEnabled := tempo.Spec.Storage.Traces.S3 != nil && tempo.Spec.Storage.Traces.S3.TLS != nil && tempo.Spec.Storage.Traces.S3.TLS.Enabled
+	if params.CredentialMode == tempov1alpha1.CredentialModeStatic && params.S3 != nil && !params.S3.Insecure && !tlsEnabled {
+		warnings = append(warnings, "the S3 endpoint uses https://, therefore the connection to object storage will use TLS even though spec.storage.traces.s3.tls.enabled is false")
+	}
+
+	return warnings, errs
 }
 
 // jaegerUIDeprecationWarning is returned when the deprecated Jaeger UI is enabled.

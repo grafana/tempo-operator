@@ -1646,6 +1646,71 @@ func TestValidateStorageCAConfigMap(t *testing.T) {
 	}
 }
 
+func TestValidateStorageTLSWarning(t *testing.T) {
+	newTempo := func(tlsEnabled bool) v1alpha1.TempoStack {
+		return v1alpha1.TempoStack{
+			Spec: v1alpha1.TempoStackSpec{
+				Storage: v1alpha1.ObjectStorageSpec{
+					Secret: v1alpha1.ObjectStorageSecretSpec{
+						Name: "testsecret",
+						Type: "s3",
+					},
+					TLS: v1alpha1.TLSSpec{
+						Enabled: tlsEnabled,
+					},
+				},
+			},
+		}
+	}
+	newSecret := func(endpoint string) *corev1.Secret {
+		return &corev1.Secret{
+			Data: map[string][]byte{
+				"endpoint":          []byte(endpoint),
+				"bucket":            []byte("bucket"),
+				"access_key_id":     []byte("id"),
+				"access_key_secret": []byte("secret"),
+			},
+		}
+	}
+
+	warning := "the S3 endpoint uses https://, therefore the connection to object storage will use TLS even though spec.storage.tls.enabled is false"
+
+	tests := []struct {
+		name         string
+		endpoint     string
+		tlsEnabled   bool
+		wantWarnings admission.Warnings
+	}{
+		{
+			name:         "https endpoint without TLS enabled warns",
+			endpoint:     "https://minio:9000",
+			tlsEnabled:   false,
+			wantWarnings: admission.Warnings{warning},
+		},
+		{
+			name:         "https endpoint with TLS enabled does not warn",
+			endpoint:     "https://minio:9000",
+			tlsEnabled:   true,
+			wantWarnings: nil,
+		},
+		{
+			name:         "http endpoint without TLS enabled does not warn",
+			endpoint:     "http://minio:9000",
+			tlsEnabled:   false,
+			wantWarnings: nil,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			v := &validator{client: &k8sFake{secret: newSecret(test.endpoint)}}
+			warnings, errs := v.validateStorage(context.Background(), newTempo(test.tlsEnabled))
+			assert.Empty(t, errs)
+			assert.Equal(t, test.wantWarnings, warnings)
+		})
+	}
+}
+
 func TestValidateReplicationFactor(t *testing.T) {
 	validator := &validator{}
 	path := field.NewPath("spec").Child("ReplicationFactor")
