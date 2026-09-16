@@ -18,6 +18,10 @@ spec:
         content: ./aws-sts-s3-create.sh tmcco chainsaw-awscco-tempo
     - assert:
         file: 00-aws-sts-s3-create-assert.yaml
+    cleanup:
+    - script:
+        timeout: 2m
+        content: ./aws-sts-s3-delete.sh tmcco chainsaw-awscco-tempo
   - name: Verify operator env config feature
     try:
     - command:
@@ -68,7 +72,3 @@ spec:
         file: 05-verify-traces.yaml
     - assert:
         file: 05-verify-traces-assert.yaml
-    cleanup:
-    - script:
-        timeout: 2m
-        content: ./aws-sts-s3-delete.sh tmcco chainsaw-awscco-tempo
