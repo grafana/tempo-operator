@@ -15,6 +15,10 @@ spec:
         content: ./azure-wif-create.sh
     - assert:
         file: 00-azure-wif-create-assert.yaml
+    cleanup:
+    - script:
+        timeout: 5m
+        content: ./azure-wif-delete.sh
   - name: Install Tempo Monolithic
     try:
     - apply:
@@ -41,8 +45,3 @@ spec:
         file: 04-verify-traces.yaml
     - assert:
         file: 04-verify-traces-assert.yaml
-  - name: Delete resource group
-    try:
-    - script:
-        timeout: 5m
-        content: ./azure-wif-delete.sh

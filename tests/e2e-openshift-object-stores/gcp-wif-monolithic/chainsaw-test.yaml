@@ -15,6 +15,10 @@ spec:
         content: ./gcp-wif-create.sh
     - assert:
         file: 00-gcp-wif-create-assert.yaml
+    cleanup:
+    - script:
+        timeout: 2m
+        content: ./gcp-wif-delete.sh
   - name: Install Tempo Monolithic
     try:
     - apply:
@@ -41,7 +45,3 @@ spec:
         file: 04-verify-traces.yaml
     - assert:
         file: 04-verify-traces-assert.yaml
-    cleanup:
-    - script:
-        timeout: 2m
-        content: ./gcp-wif-delete.sh
