@@ -87,34 +87,36 @@ func TestGetStorageParamsForTempoStack_S3TokenModeAlwaysHTTPS(t *testing.T) {
 	}
 }
 
-func TestGetStorageParamsForTempoStack_S3StaticModeRespectsStorageTLS(t *testing.T) {
-	secret := &corev1.Secret{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "storage-secret",
-			Namespace: "default",
-		},
-		Data: map[string][]byte{
-			"bucket":            []byte("my-bucket"),
-			"endpoint":          []byte("https://minio:9000"),
-			"access_key_id":     []byte("key"),
-			"access_key_secret": []byte("secret"),
-		},
-	}
-
+func TestGetStorageParamsForTempoStack_S3StaticMode(t *testing.T) {
 	tests := []struct {
 		name         string
+		endpoint     string
 		tlsEnabled   bool
 		wantInsecure bool
 	}{
 		{
-			name:         "static mode with TLS enabled uses HTTPS",
+			name:         "https endpoint without TLS enabled uses HTTPS",
+			endpoint:     "https://minio:9000",
+			tlsEnabled:   false,
+			wantInsecure: false,
+		},
+		{
+			name:         "https endpoint with TLS enabled uses HTTPS",
+			endpoint:     "https://minio:9000",
 			tlsEnabled:   true,
 			wantInsecure: false,
 		},
 		{
-			name:         "static mode without TLS enabled uses HTTP",
+			name:         "http endpoint without TLS enabled uses HTTP",
+			endpoint:     "http://minio:9000",
 			tlsEnabled:   false,
 			wantInsecure: true,
+		},
+		{
+			name:         "http endpoint with TLS enabled uses HTTPS",
+			endpoint:     "http://minio:9000",
+			tlsEnabled:   true,
+			wantInsecure: false,
 		},
 	}
 
@@ -124,7 +126,20 @@ func TestGetStorageParamsForTempoStack_S3StaticModeRespectsStorageTLS(t *testing
 			err := scheme.AddToScheme(s)
 			require.NoError(t, err)
 
-			cl := fake.NewClientBuilder().WithScheme(s).WithObjects(secret.DeepCopy()).Build()
+			secret := &corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "storage-secret",
+					Namespace: "default",
+				},
+				Data: map[string][]byte{
+					"bucket":            []byte("my-bucket"),
+					"endpoint":          []byte(tt.endpoint),
+					"access_key_id":     []byte("key"),
+					"access_key_secret": []byte("secret"),
+				},
+			}
+
+			cl := fake.NewClientBuilder().WithScheme(s).WithObjects(secret).Build()
 
 			tempo := v1alpha1.TempoStack{
 				ObjectMeta: metav1.ObjectMeta{
