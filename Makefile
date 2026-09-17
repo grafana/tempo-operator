@@ -227,6 +227,9 @@ otel-deploy: operator-sdk ## Deploy OpenTelemetry operator via OLM
 	kubectl create namespace otel-operator-system
 	$(OPERATOR_SDK) run bundle --timeout=5m --security-context-config=restricted -n $(OTEL_OPERATOR_NAMESPACE) $(OTEL_BUNDLE_IMG)
 
+otel-deploy-kubectl:
+	kubectl apply -f https://github.com/open-telemetry/opentelemetry-operator/releases/download/v0.146.0/opentelemetry-operator.yaml
+
 ##@ Build Dependencies
 
 ## Location to install dependencies to
