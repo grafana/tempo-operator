@@ -34,6 +34,7 @@ type StorageParams struct {
 	S3               *S3
 	CredentialMode   v1alpha1.CredentialMode
 	CloudCredentials CloudCredentials
+	SecretHash       string
 }
 
 // CloudCredentials secret details.

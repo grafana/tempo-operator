@@ -25,7 +25,15 @@ func GetStorageParamsForTempoStack(ctx context.Context, client client.Client, te
 		return manifestutils.StorageParams{}, errs
 	}
 
-	storageParams := manifestutils.StorageParams{}
+	secretHash, err := hashSecretData(&storageSecret)
+	if err != nil {
+		return manifestutils.StorageParams{}, field.ErrorList{field.Invalid(secretNamePath,
+			tempo.Spec.Storage.Secret.Name, fmt.Sprintf("%s: %v", ErrFetchingSecret, err))}
+	}
+
+	storageParams := manifestutils.StorageParams{
+		SecretHash: secretHash,
+	}
 	switch tempo.Spec.Storage.Secret.Type {
 	case v1alpha1.ObjectStorageSecretS3:
 
@@ -180,6 +188,13 @@ func GetStorageParamsForTempoMonolithic(ctx context.Context, client client.Clien
 			return manifestutils.StorageParams{}, errs
 		}
 
+		secretHash, err := hashSecretData(&storageSecret)
+		if err != nil {
+			return manifestutils.StorageParams{}, field.ErrorList{field.Invalid(secretNamePath,
+				tempo.Spec.Storage.Traces.S3.Secret, fmt.Sprintf("%s: %v", ErrFetchingSecret, err))}
+		}
+		storageParams.SecretHash = secretHash
+
 		credentialMode := tempo.Spec.Storage.Traces.S3.CredentialMode
 
 		if credentialMode == "" {
@@ -231,6 +246,13 @@ func GetStorageParamsForTempoMonolithic(ctx context.Context, client client.Clien
 			return manifestutils.StorageParams{}, errs
 		}
 
+		secretHash, err := hashSecretData(&storageSecret)
+		if err != nil {
+			return manifestutils.StorageParams{}, field.ErrorList{field.Invalid(secretNamePath,
+				tempo.Spec.Storage.Traces.Azure.Secret, fmt.Sprintf("%s: %v", ErrFetchingSecret, err))}
+		}
+		storageParams.SecretHash = secretHash
+
 		credentialMode, errs := discoverAzureCredentialType(storageSecret, secretNamePath)
 		if len(errs) > 0 {
 			return manifestutils.StorageParams{}, errs
@@ -266,6 +288,13 @@ func GetStorageParamsForTempoMonolithic(ctx context.Context, client client.Clien
 		if len(errs) > 0 {
 			return manifestutils.StorageParams{}, errs
 		}
+
+		secretHash, err := hashSecretData(&storageSecret)
+		if err != nil {
+			return manifestutils.StorageParams{}, field.ErrorList{field.Invalid(secretNamePath,
+				tempo.Spec.Storage.Traces.GCS.Secret, fmt.Sprintf("%s: %v", ErrFetchingSecret, err))}
+		}
+		storageParams.SecretHash = secretHash
 
 		credentialMode, errs := discoverGCSCredentialType(storageSecret, secretNamePath)
 		if len(errs) > 0 {
