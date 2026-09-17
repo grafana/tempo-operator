@@ -13,6 +13,12 @@ func CommonAnnotations(params Params) map[string]string {
 	annotations := map[string]string{
 		"tempo.grafana.com/config.hash": params.ConfigChecksum,
 	}
+	if params.StorageParams.SecretHash != "" {
+		annotations["tempo.grafana.com/storageSecret.hash"] = params.StorageParams.SecretHash
+	}
+	if params.StorageParams.CloudCredentials.ContentHash != "" {
+		annotations["tempo.grafana.com/token.cco.auth.hash"] = params.StorageParams.CloudCredentials.ContentHash
+	}
 	maps.Copy(annotations, params.CertHashAnnotations)
 	return annotations
 }
@@ -31,15 +37,6 @@ func AzureShortLiveTokenAnnotation(secret AzureStorage) map[string]string {
 		"azure.workload.identity/client-id": secret.ClientID,
 		"azure.workload.identity/tenant-id": secret.TenantID,
 	}
-}
-
-// StorageSecretHash return annotations for secret storage content hashes.
-func StorageSecretHash(params StorageParams, annotations map[string]string) map[string]string {
-	if params.CloudCredentials.ContentHash != "" {
-		annotations["tempo.grafana.com/token.cco.auth.hash"] = params.CloudCredentials.ContentHash
-	}
-
-	return annotations
 }
 
 // CertificateHashAnnotations calculates and returns certificate hash annotations from certificate secrets.
