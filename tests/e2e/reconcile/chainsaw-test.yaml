@@ -38,13 +38,11 @@ spec:
         file: 03-assert.yaml
   - name: step-04
     try:
-    - command:
+    # ensure bucket name in ConfigMap was updated
+    - script:
         timeout: 60s
-        args:
-        - -c
-        - 'kubectl get --namespace $NAMESPACE configmap tempo-simplest -o jsonpath="{.data.tempo\\.yaml}"
-          | grep "bucket: tempo2"'
-        entrypoint: /bin/sh
+        content: |
+          kubectl get --namespace $NAMESPACE configmap tempo-simplest -o jsonpath="{.data.tempo\.yaml}" | grep "bucket: tempo2"
   - name: step-05
     try:
     - apply:
@@ -53,10 +51,8 @@ spec:
         file: 05-assert.yaml
   - name: step-06
     try:
-    - command:
+    # ensure ConfigMap contains no trailing whitespace
+    - script:
         timeout: 60s
-        args:
-        - -c
-        - '! kubectl get --namespace $NAMESPACE configmap tempo-simplest -o jsonpath=''{.data.tempo\.yaml}''
-          | grep ''[[:blank:]]$'''
-        entrypoint: /bin/sh
+        content: |
+          ! kubectl get --namespace $NAMESPACE configmap tempo-simplest -o jsonpath='{.data.tempo\.yaml}' | grep '[[:blank:]]$'
