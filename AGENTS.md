@@ -103,3 +103,4 @@ go test ./internal/manifests/... -run TestManifests
 **Bundle Variants:**
 - `community`: Standard Kubernetes deployment
 - `openshift`: OpenShift-specific features and configurations
+- Security issues should be reported via [Grafana's security issue reporting page](https://grafana.com/legal/report-a-security-issue/) and not directly in this repository.
