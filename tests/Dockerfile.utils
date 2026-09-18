@@ -1,4 +1,4 @@
-FROM golang:1.26-alpine AS builder
+FROM golang:1.27-alpine AS builder
 RUN apk add --no-cache git gcc musl-dev
 # SQLite (needed for memory DSN) requires CGO
 RUN git clone --depth 1 --branch v26.2.0 https://github.com/ory/hydra.git /hydra && \
