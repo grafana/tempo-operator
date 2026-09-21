@@ -741,6 +741,15 @@ type TempoComponentSpec struct {
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="PodSecurityContext"
 	PodSecurityContext *corev1.PodSecurityContext `json:"podSecurityContext,omitempty"`
+
+	// PodAntiAffinity defines the pod anti affinity scheduling rules to schedule pods
+	// of a component. It replaces the default anti affinity of the component, which
+	// prefers to schedule its pods onto different nodes and failure domains.
+	//
+	// +optional
+	// +kubebuilder:validation:Optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,xDescriptors="urn:alm:descriptor:com.tectonic.ui:podAntiAffinity",displayName="PodAntiAffinity"
+	PodAntiAffinity *corev1.PodAntiAffinity `json:"podAntiAffinity,omitempty"`
 }
 
 // TempoGatewaySpec extends TempoComponentSpec with gateway parameters.
