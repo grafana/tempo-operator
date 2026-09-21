@@ -121,3 +121,25 @@ Patching pods was already granted to the operator.
   with `mergo.WithOverwriteWithEmptyValue` in `internal/manifests/mutate.go`; a merge that ignores
   empty values would leave the old constraints in place and the pods would stay unschedulable.
 * **Changing the zones** of a running stack restarts the pods, since the pod template changes.
+* **The spread across zones does not keep two pods of a component off the same node.** Topology
+  spread constraints balance the pods across the configured topology domains, but inside a domain
+  the scheduler is only nudged apart by the *preferred* anti affinity of
+  `manifestutils.DefaultAffinity`, which it may ignore. A stack that needs a hard guarantee sets its
+  own anti affinity per component:
+
+  ```yaml
+  spec:
+    template:
+      ingester:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app.kubernetes.io/component: ingester
+                app.kubernetes.io/instance: sample
+            topologyKey: kubernetes.io/hostname
+  ```
+
+  That replaces the default anti affinity of the component rather than adding to it. Note that a
+  required term leaves the surplus pods `Pending` when a component has more replicas than
+  schedulable nodes. The Loki Operator exposes the same field, under the same name.

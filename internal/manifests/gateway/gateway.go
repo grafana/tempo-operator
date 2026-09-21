@@ -269,7 +269,7 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 					ServiceAccountName: tempo.Spec.ServiceAccount,
 					NodeSelector:       cfg.NodeSelector,
 					Tolerations:        cfg.Tolerations,
-					Affinity:           manifestutils.DefaultAffinity(labels),
+					Affinity:           manifestutils.ConfigureAffinity(labels, cfg.PodAntiAffinity),
 					Containers: []corev1.Container{
 						{
 							Name:  containerNameTempoGateway,
