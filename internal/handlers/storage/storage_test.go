@@ -12,6 +12,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
+	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 )
 
 func TestGetStorageParamsForTempoStack_S3TokenModeAlwaysHTTPS(t *testing.T) {
@@ -85,6 +86,84 @@ func TestGetStorageParamsForTempoStack_S3TokenModeAlwaysHTTPS(t *testing.T) {
 			require.Equal(t, tt.wantInsecure, params.S3.Insecure)
 		})
 	}
+}
+
+func TestGetStorageParamsForTempoStack_S3TokenCCOContentHash(t *testing.T) {
+	storageSecret := &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "storage-secret",
+			Namespace: "default",
+		},
+		Data: map[string][]byte{
+			"bucket":   []byte("my-bucket"),
+			"region":   []byte("us-east-1"),
+			"role_arn": []byte("arn:aws:iam::123456789012:role/my-role"),
+		},
+	}
+
+	tempo := v1alpha1.TempoStack{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test",
+			Namespace: "default",
+		},
+		Spec: v1alpha1.TempoStackSpec{
+			Storage: v1alpha1.ObjectStorageSpec{
+				Secret: v1alpha1.ObjectStorageSecretSpec{
+					Name:           "storage-secret",
+					Type:           v1alpha1.ObjectStorageSecretS3,
+					CredentialMode: v1alpha1.CredentialModeTokenCCO,
+				},
+			},
+		},
+	}
+
+	// The managed credentials secret is populated asynchronously by the Cloud Credential
+	// Operator, so it may not exist yet. In that case the hash is empty.
+	t.Run("managed credentials secret missing yields empty hash", func(t *testing.T) {
+		s := runtime.NewScheme()
+		require.NoError(t, scheme.AddToScheme(s))
+		cl := fake.NewClientBuilder().WithScheme(s).WithObjects(storageSecret.DeepCopy()).Build()
+
+		params, errs := GetStorageParamsForTempoStack(context.Background(), cl, tempo)
+		require.Empty(t, errs)
+		require.Empty(t, params.CloudCredentials.ContentHash)
+	})
+
+	// The hash must track the CCO-managed credentials secret, not the user storage secret,
+	// so that pods roll out when the CCO rotates the credentials.
+	t.Run("hash tracks the managed credentials secret", func(t *testing.T) {
+		managedSecret := &corev1.Secret{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      manifestutils.ManagedCredentialsSecretName(tempo.Name),
+				Namespace: "default",
+			},
+			Data: map[string][]byte{
+				"credentials": []byte("initial-credentials"),
+			},
+		}
+
+		s := runtime.NewScheme()
+		require.NoError(t, scheme.AddToScheme(s))
+		cl := fake.NewClientBuilder().WithScheme(s).
+			WithObjects(storageSecret.DeepCopy(), managedSecret.DeepCopy()).Build()
+
+		params, errs := GetStorageParamsForTempoStack(context.Background(), cl, tempo)
+		require.Empty(t, errs)
+
+		wantHash, err := hashSecretData(managedSecret)
+		require.NoError(t, err)
+		require.Equal(t, wantHash, params.CloudCredentials.ContentHash)
+
+		// Rotating the managed credentials must change the hash.
+		rotatedSecret := managedSecret.DeepCopy()
+		rotatedSecret.Data["credentials"] = []byte("rotated-credentials")
+		cl = fake.NewClientBuilder().WithScheme(s).
+			WithObjects(storageSecret.DeepCopy(), rotatedSecret).Build()
+
+		rotatedParams, errs := GetStorageParamsForTempoStack(context.Background(), cl, tempo)
+		require.Empty(t, errs)
+		require.NotEqual(t, wantHash, rotatedParams.CloudCredentials.ContentHash)
+	})
 }
 
 func TestGetStorageParamsForTempoStack_S3StaticModeRespectsStorageTLS(t *testing.T) {

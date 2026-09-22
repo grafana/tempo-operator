@@ -7,6 +7,7 @@ import (
 	"sort"
 
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -41,6 +42,22 @@ func ensureNotEmpty(storageSecret corev1.Secret, fields []string, path *field.Pa
 		}
 	}
 	return allErrs
+}
+
+// hashSecret returns a hash of the secret's data. A missing secret yields an empty hash
+// rather than an error, so callers can tolerate secrets that are populated asynchronously
+// (e.g. the CCO-managed credentials secret): no rollout is triggered until the secret appears.
+func hashSecret(ctx context.Context, client client.Client, namespace string, secretName string) (string, error) {
+	var secret corev1.Secret
+	err := client.Get(ctx, types.NamespacedName{Namespace: namespace, Name: secretName}, &secret)
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			return "", nil
+		}
+		return "", err
+	}
+
+	return hashSecretData(&secret)
 }
 
 func hashSecretData(s *corev1.Secret) (string, error) {
