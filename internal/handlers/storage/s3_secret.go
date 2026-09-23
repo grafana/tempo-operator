@@ -30,17 +30,33 @@ var s3LongLivedFields = []string{
 	"access_key_secret",
 }
 
+// s3ShortLivedDiscoveryFields are the fields which identify a secret holding short lived
+// credentials. "bucket" is not part of it, because it is common to both credential types.
+var s3ShortLivedDiscoveryFields = []string{
+	"region",
+	"role_arn",
+}
+
+// s3LongLivedDiscoveryFields are the fields which identify a secret holding long lived
+// credentials. Neither "bucket" nor "endpoint" are part of it, because both are common
+// to long lived credentials and to short lived credentials outside of the commercial
+// AWS partition.
+var s3LongLivedDiscoveryFields = []string{
+	"access_key_id",
+	"access_key_secret",
+}
+
 func discoverS3CredentialType(storageSecret corev1.Secret, path *field.Path) (v1alpha1.CredentialMode, field.ErrorList) {
 
 	var isShortLived bool
-	for _, v := range s3ShortLivedFields[1:] {
+	for _, v := range s3ShortLivedDiscoveryFields {
 		_, ok := storageSecret.Data[v]
 		if ok {
 			isShortLived = true
 		}
 	}
 	var isLongLived bool
-	for _, v := range s3LongLivedFields[1:] {
+	for _, v := range s3LongLivedDiscoveryFields {
 		_, ok := storageSecret.Data[v]
 		if ok {
 			isLongLived = true
@@ -67,23 +83,18 @@ func validateS3Secret(storageSecret corev1.Secret, path *field.Path, credentialM
 	case v1alpha1.CredentialModeStatic:
 		var allErrs field.ErrorList
 		allErrs = append(allErrs, ensureNotEmpty(storageSecret, s3LongLivedFields, path)...)
-		if endpoint, ok := storageSecret.Data["endpoint"]; ok {
-			u, err := url.ParseRequestURI(string(endpoint))
-
-			// ParseRequestURI also accepts absolute paths, therefore we need to check if the URL scheme is set
-			if err != nil || u.Scheme == "" {
-				allErrs = append(allErrs, field.Invalid(
-					path,
-					storageSecret.Name,
-					"\"endpoint\" field of storage secret must be a valid URL",
-				))
-			}
-		}
+		allErrs = append(allErrs, validateS3Endpoint(storageSecret, path)...)
 		return allErrs
 	case v1alpha1.CredentialModeToken:
-		return ensureNotEmpty(storageSecret, s3ShortLivedFields, path)
+		var allErrs field.ErrorList
+		allErrs = append(allErrs, ensureNotEmpty(storageSecret, s3ShortLivedFields, path)...)
+		allErrs = append(allErrs, validateS3Endpoint(storageSecret, path)...)
+		return allErrs
 	case v1alpha1.CredentialModeTokenCCO:
-		return ensureNotEmpty(storageSecret, s3CCOShortLivedFields, path)
+		var allErrs field.ErrorList
+		allErrs = append(allErrs, ensureNotEmpty(storageSecret, s3CCOShortLivedFields, path)...)
+		allErrs = append(allErrs, validateS3Endpoint(storageSecret, path)...)
+		return allErrs
 	}
 
 	return field.ErrorList{}
@@ -97,30 +108,15 @@ func getS3Params(storageSecret corev1.Secret, path *field.Path, mode v1alpha1.Cr
 
 	switch mode {
 	case v1alpha1.CredentialModeStatic:
-		endpoint := string(storageSecret.Data["endpoint"])
-		insecure := !strings.HasPrefix(endpoint, "https://")
-		endpoint = strings.TrimPrefix(endpoint, "https://")
-		endpoint = strings.TrimPrefix(endpoint, "http://")
+		endpoint, insecure := parseS3Endpoint(string(storageSecret.Data["endpoint"]))
 		return &manifestutils.S3{
 			Insecure: insecure,
 			Endpoint: endpoint,
 			Bucket:   string(storageSecret.Data["bucket"]),
 		}, nil
 
-	case v1alpha1.CredentialModeToken:
-		return &manifestutils.S3{
-			Insecure: false, // Token-based auth (STS/IRSA) requires HTTPS to communicate with AWS endpoints.
-			Bucket:   string(storageSecret.Data["bucket"]),
-			RoleARN:  string(storageSecret.Data["role_arn"]),
-			Region:   string(storageSecret.Data["region"]),
-		}, nil
-
-	case v1alpha1.CredentialModeTokenCCO:
-		return &manifestutils.S3{
-			Insecure: false, // Token-based auth (STS/IRSA) requires HTTPS to communicate with AWS endpoints.
-			Bucket:   string(storageSecret.Data["bucket"]),
-			Region:   string(storageSecret.Data["region"]),
-		}, nil
+	case v1alpha1.CredentialModeToken, v1alpha1.CredentialModeTokenCCO:
+		return getS3ShortLivedParams(storageSecret, mode), nil
 
 	default:
 		return nil, field.ErrorList{field.Invalid(
@@ -129,4 +125,81 @@ func getS3Params(storageSecret corev1.Secret, path *field.Path, mode v1alpha1.Cr
 			fmt.Sprintf("unsupported credential mode %q", mode),
 		)}
 	}
+}
+
+// getS3ShortLivedParams returns the S3 parameters of the token and token-cco credential modes.
+func getS3ShortLivedParams(storageSecret corev1.Secret, mode v1alpha1.CredentialMode) *manifestutils.S3 {
+	region := string(storageSecret.Data["region"])
+	partition := manifestutils.AWSPartitionForRegion(region)
+
+	// The endpoint is optional for short lived credentials: by default it is derived from the
+	// region and the partition it belongs to. An explicit endpoint supports private endpoints,
+	// and its scheme is the only way to reach S3 over plain HTTP in these modes.
+	endpoint := partition.S3Endpoint(region)
+	insecure := false
+	if rawEndpoint, ok := storageSecret.Data["endpoint"]; ok {
+		endpoint, insecure = parseS3Endpoint(string(rawEndpoint))
+	}
+
+	// The audience must match a client ID of the IAM OIDC identity provider of the cluster.
+	// ccoctl registers sts.amazonaws.com in every partition, and it is the default of the
+	// pod identity webhook, therefore it is not derived from the partition.
+	audience := manifestutils.AWSDefaultAudience
+	if rawAudience, ok := storageSecret.Data["audience"]; ok {
+		audience = string(rawAudience)
+	}
+
+	// Tempo obtains its AWS credentials through the credential chain of the minio-go client,
+	// which resolves the STS endpoint to sts.<region>.amazonaws.com. Partitions serving their
+	// endpoints under a different DNS suffix must override it, see ConfigureS3Storage.
+	stsEndpoint := ""
+	if !partition.IsCommercial() {
+		stsEndpoint = "https://" + partition.STSEndpoint(region)
+	}
+
+	s3 := &manifestutils.S3{
+		Bucket:      string(storageSecret.Data["bucket"]),
+		Region:      region,
+		Endpoint:    endpoint,
+		Insecure:    insecure,
+		Partition:   partition.ID,
+		Audience:    audience,
+		STSEndpoint: stsEndpoint,
+	}
+
+	if mode == v1alpha1.CredentialModeToken {
+		s3.RoleARN = string(storageSecret.Data["role_arn"])
+	}
+
+	return s3
+}
+
+// validateS3Endpoint ensures the optional "endpoint" field of a storage secret is a valid URL.
+func validateS3Endpoint(storageSecret corev1.Secret, path *field.Path) field.ErrorList {
+	endpoint, ok := storageSecret.Data["endpoint"]
+	if !ok {
+		return nil
+	}
+
+	u, err := url.ParseRequestURI(string(endpoint))
+
+	// ParseRequestURI also accepts absolute paths, therefore we need to check if the URL scheme is set
+	if err != nil || u.Scheme == "" {
+		return field.ErrorList{field.Invalid(
+			path,
+			storageSecret.Name,
+			"\"endpoint\" field of storage secret must be a valid URL",
+		)}
+	}
+
+	return nil
+}
+
+// parseS3Endpoint splits an endpoint URL into the host[:port] expected by Tempo and the
+// insecure flag derived from its scheme.
+func parseS3Endpoint(rawEndpoint string) (string, bool) {
+	insecure := !strings.HasPrefix(rawEndpoint, "https://")
+	endpoint := strings.TrimPrefix(rawEndpoint, "https://")
+	endpoint = strings.TrimPrefix(endpoint, "http://")
+	return endpoint, insecure
 }

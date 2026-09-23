@@ -451,7 +451,7 @@ func extractStoragePorts(storageParams manifestutils.StorageParams) []networking
 		port := 0
 		endpoint := storageParams.S3.Endpoint
 
-		if storageParams.CredentialMode == "static" && endpoint != "" {
+		if endpoint != "" {
 			// Endpoint format is "hostname:port" (scheme already stripped)
 			if colonIdx := strings.LastIndexByte(endpoint, ':'); colonIdx != -1 {
 				portStr := endpoint[colonIdx+1:]
