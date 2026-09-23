@@ -1556,13 +1556,50 @@ func TestValidateStorageSecret(t *testing.T) {
 					Name: tempoS3.Spec.Storage.Secret.Name,
 				},
 				Data: map[string][]byte{
+					"bucket":        []byte("bucket"),
+					"role_arn":      []byte("role"),
+					"region":        []byte("us-east-1"),
+					"access_key_id": []byte("id"),
+				},
+			},
+			expected: field.ErrorList{
+				field.Invalid(secretNamePath, tempoS3.Spec.Storage.Secret.Name, "storage secret contains fields for long lived and short lived configuration"),
+			},
+		},
+		{
+			// The endpoint is optional for short lived credentials, it must not make the
+			// secret look like it holds long lived credentials.
+			name:  "S3 short lived with a custom endpoint",
+			tempo: tempoS3,
+			input: corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: tempoS3.Spec.Storage.Secret.Name,
+				},
+				Data: map[string][]byte{
+					"bucket":   []byte("bucket"),
+					"role_arn": []byte("role"),
+					"region":   []byte("us-iso-east-1"),
+					"endpoint": []byte("http://s3.us-iso-east-1.c2s.ic.gov"),
+				},
+			},
+			expected: nil,
+		},
+		{
+			name:  "S3 short lived with an invalid endpoint",
+			tempo: tempoS3,
+			input: corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: tempoS3.Spec.Storage.Secret.Name,
+				},
+				Data: map[string][]byte{
+					"bucket":   []byte("bucket"),
 					"role_arn": []byte("role"),
 					"region":   []byte("us-east-1"),
 					"endpoint": []byte("us-east-1"),
 				},
 			},
 			expected: field.ErrorList{
-				field.Invalid(secretNamePath, tempoS3.Spec.Storage.Secret.Name, "storage secret contains fields for long lived and short lived configuration"),
+				field.Invalid(secretNamePath, tempoS3.Spec.Storage.Secret.Name, "\"endpoint\" field of storage secret must be a valid URL"),
 			},
 		},
 	}

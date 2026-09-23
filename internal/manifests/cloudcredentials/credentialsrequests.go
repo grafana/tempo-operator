@@ -1,6 +1,8 @@
 package cloudcredentials
 
 import (
+	"fmt"
+
 	"github.com/ViaQ/logerr/v2/kverrors"
 	cloudcredentialv1 "github.com/openshift/cloud-credential-operator/pkg/apis/cloudcredential/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -10,6 +12,9 @@ import (
 
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 )
+
+// defaultAWSPartition is the partition assumed when the role ARN does not name a known one.
+const defaultAWSPartition = "aws"
 
 // BuildCredentialsRequest return new CCO object.
 func BuildCredentialsRequest(obj metav1.Object, serviceAccount string, env *manifestutils.TokenCCOAuthConfig) ([]client.Object, error) {
@@ -46,6 +51,11 @@ func encodeProviderSpec(env *manifestutils.TokenCCOAuthConfig) (*runtime.RawExte
 	var spec runtime.Object
 
 	if env.AWS != nil {
+		partition := env.AWS.Partition
+		if partition == "" {
+			partition = defaultAWSPartition
+		}
+
 		spec = &cloudcredentialv1.AWSProviderSpec{
 			StatementEntries: []cloudcredentialv1.StatementEntry{
 				{
@@ -56,7 +66,7 @@ func encodeProviderSpec(env *manifestutils.TokenCCOAuthConfig) (*runtime.RawExte
 						"s3:DeleteObject",
 					},
 					Effect:   "Allow",
-					Resource: "arn:aws:s3:*:*:*",
+					Resource: fmt.Sprintf("arn:%s:s3:*:*:*", partition),
 				},
 			},
 			STSIAMRoleARN: env.AWS.RoleARN,

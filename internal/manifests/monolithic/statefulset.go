@@ -296,13 +296,9 @@ func configureStorage(opts Options, sts *appsv1.StatefulSet) error {
 			return errors.New("please configure .spec.storage.traces.s3")
 		}
 
-		var region string
-		if opts.StorageParams.S3 != nil {
-			region = opts.StorageParams.S3.Region
-		}
 		err := manifestutils.ConfigureS3Storage(&sts.Spec.Template.Spec,
 			"tempo", tempo.Spec.Storage.Traces.S3.Secret,
-			tempo.Spec.Storage.Traces.S3.TLS, opts.StorageParams.CredentialMode, tempo.Name, opts.StorageParams.CloudCredentials.Environment, region)
+			tempo.Spec.Storage.Traces.S3.TLS, opts.StorageParams.CredentialMode, tempo.Name, opts.StorageParams.CloudCredentials.Environment, opts.StorageParams.S3)
 		if err != nil {
 			return err
 		}
