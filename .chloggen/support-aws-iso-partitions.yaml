@@ -1,0 +1,27 @@
+# One of 'breaking', 'deprecation', 'new_component', 'enhancement', 'bug_fix'
+change_type: enhancement
+
+# The name of the component, or a single word describing the area of concern, (e.g. tempostack, tempomonolithic, github action)
+component: tempostack, tempomonolithic
+
+# A brief description of the change. Surround your text with quotes ("") if it needs to start with a backtick (`).
+note: Support the AWS ISO and ISOB partitions for S3 object storage with short lived credentials
+
+# One or more tracking issues related to the change
+issues: [1109]
+
+# (Optional) One or more lines of additional information to render under the primary note.
+# These lines will be padded with 2 spaces and then inserted directly into the document.
+# Use pipe (|) for multiline entries.
+subtext: |
+  The S3 endpoint, the STS endpoint and the ARN of the CredentialsRequest are now derived from the
+  AWS partition of the configured region, instead of always assuming the commercial partition.
+  The generated configuration of the commercial and GovCloud partitions is unchanged.
+
+  The storage secret of the `token` and `token-cco` credential modes accepts two new optional fields:
+
+  * `endpoint` overrides the auto-generated S3 endpoint, and selects the transport: an `http://`
+    endpoint configures Tempo to reach S3 over plain HTTP, which is required in the ISO partitions,
+    where service control policies block HTTPS access to S3. It was previously rejected, because it
+    made the secret look like it held long lived credentials.
+  * `audience` overrides the audience of the projected service account token.

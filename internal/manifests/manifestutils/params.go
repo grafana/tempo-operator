@@ -67,6 +67,29 @@ type S3 struct {
 	RoleARN  string
 	Region   string
 	Insecure bool
+	// Partition is the ID of the AWS partition the region belongs to, e.g. aws-iso.
+	// An empty value is treated as the commercial partition.
+	Partition string
+	// Audience of the projected service account token. Empty means AWSDefaultAudience.
+	Audience string
+	// STSEndpoint is the URL of the regional STS endpoint of the partition.
+	// It is only set for partitions which do not serve their endpoints under
+	// amazonaws.com, because only those need to override the endpoint the AWS
+	// credential chain of Tempo defaults to.
+	STSEndpoint string
+}
+
+// RequiresExplicitRegion reports whether the region must be set explicitly in the Tempo
+// configuration. Tempo lets the minio-go client derive the signing region from the endpoint
+// host, which only works for the auto-generated endpoints of the partitions served under
+// the amazonaws.com DNS suffix.
+func (s S3) RequiresExplicitRegion() bool {
+	if s.Region == "" {
+		return false
+	}
+
+	partition := AWSPartitionForRegion(s.Region)
+	return !partition.IsCommercial() || s.Endpoint != partition.S3Endpoint(s.Region)
 }
 
 // StorageTLS holds StorageTLS configuration.

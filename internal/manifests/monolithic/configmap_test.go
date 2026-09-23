@@ -455,6 +455,110 @@ usage_report:
 `,
 		},
 		{
+			name: "S3 storage with short lived credentials",
+			spec: v1alpha1.TempoMonolithicSpec{
+				Storage: &v1alpha1.MonolithicStorageSpec{
+					Traces: v1alpha1.MonolithicTracesStorageSpec{
+						Backend: v1alpha1.MonolithicTracesStorageBackendS3,
+						S3: &v1alpha1.MonolithicTracesStorageS3Spec{
+							CredentialMode: v1alpha1.CredentialModeToken,
+						},
+					},
+				},
+			},
+			opts: Options{
+				StorageParams: manifestutils.StorageParams{
+					CredentialMode: v1alpha1.CredentialModeToken,
+					S3: &manifestutils.S3{
+						Endpoint: "s3.us-east-2.amazonaws.com",
+						Bucket:   "tempo",
+						Region:   "us-east-2",
+					},
+				},
+			},
+			expected: `
+server:
+  http_listen_port: 3200
+  http_server_read_timeout: 30s
+  http_server_write_timeout: 30s
+internal_server:
+  enable: true
+  http_listen_address: 0.0.0.0
+storage:
+  trace:
+    backend: s3
+    wal:
+      path: /var/tempo/wal
+    s3:
+      endpoint: s3.us-east-2.amazonaws.com
+      bucket: tempo
+      insecure: false
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
+usage_report:
+  reporting_enabled: false
+`,
+		},
+		{
+			name: "S3 storage with short lived credentials in the ISO partition",
+			spec: v1alpha1.TempoMonolithicSpec{
+				Storage: &v1alpha1.MonolithicStorageSpec{
+					Traces: v1alpha1.MonolithicTracesStorageSpec{
+						Backend: v1alpha1.MonolithicTracesStorageBackendS3,
+						S3: &v1alpha1.MonolithicTracesStorageS3Spec{
+							CredentialMode: v1alpha1.CredentialModeTokenCCO,
+						},
+					},
+				},
+			},
+			opts: Options{
+				StorageParams: manifestutils.StorageParams{
+					CredentialMode: v1alpha1.CredentialModeTokenCCO,
+					S3: &manifestutils.S3{
+						Endpoint: "s3.us-iso-east-1.c2s.ic.gov",
+						Bucket:   "tempo",
+						Region:   "us-iso-east-1",
+						Insecure: true,
+					},
+				},
+			},
+			expected: `
+server:
+  http_listen_port: 3200
+  http_server_read_timeout: 30s
+  http_server_write_timeout: 30s
+internal_server:
+  enable: true
+  http_listen_address: 0.0.0.0
+storage:
+  trace:
+    backend: s3
+    wal:
+      path: /var/tempo/wal
+    s3:
+      endpoint: s3.us-iso-east-1.c2s.ic.gov
+      bucket: tempo
+      insecure: true
+      region: us-iso-east-1
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
+usage_report:
+  reporting_enabled: false
+`,
+		},
+		{
 			name: "azure federated token",
 			spec: v1alpha1.TempoMonolithicSpec{
 				Storage: &v1alpha1.MonolithicStorageSpec{

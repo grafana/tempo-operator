@@ -39,6 +39,7 @@ type tempoS3Config struct {
 	Endpoint        string `yaml:"endpoint"`
 	Insecure        bool   `yaml:"insecure"`
 	Bucket          string `yaml:"bucket"`
+	Region          string `yaml:"region,omitempty"`
 	TLSCAPath       string `yaml:"tls_ca_path,omitempty"`
 	TLSCertPath     string `yaml:"tls_cert_path,omitempty"`
 	TLSKeyPath      string `yaml:"tls_key_path,omitempty"`
@@ -267,7 +268,11 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 				}
 			} else if opts.StorageParams.CredentialMode == v1alpha1.CredentialModeToken || opts.StorageParams.CredentialMode == v1alpha1.CredentialModeTokenCCO {
 				config.Storage.Trace.S3.Bucket = opts.StorageParams.S3.Bucket
-				config.Storage.Trace.S3.Endpoint = fmt.Sprintf("s3.%s.amazonaws.com", opts.StorageParams.S3.Region)
+				config.Storage.Trace.S3.Endpoint = opts.StorageParams.S3.Endpoint
+				config.Storage.Trace.S3.Insecure = opts.StorageParams.S3.Insecure
+				if opts.StorageParams.S3.RequiresExplicitRegion() {
+					config.Storage.Trace.S3.Region = opts.StorageParams.S3.Region
+				}
 			}
 
 		case v1alpha1.MonolithicTracesStorageBackendAzure:
