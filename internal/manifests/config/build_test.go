@@ -2663,6 +2663,7 @@ query_frontend:
 				Insecure: true,
 				Bucket:   "tempo",
 				Region:   "us-east-2",
+				Endpoint: "s3.us-east-2.amazonaws.com",
 			},
 		},
 		TLSProfile: tlsprofile.TLSProfileOptions{
@@ -2775,6 +2776,7 @@ query_frontend:
 				Insecure: false,
 				Bucket:   "tempo",
 				Region:   "us-east-2",
+				Endpoint: "s3.us-east-2.amazonaws.com",
 			},
 		},
 		TLSProfile: tlsprofile.TLSProfileOptions{
@@ -3157,5 +3159,126 @@ func TestApplyRateLimitDefaults(t *testing.T) {
 				require.Equal(t, *tt.wantMaxBytesPerTrace, *result.Ingestion.MaxBytesPerTrace)
 			}
 		})
+	}
+}
+
+// TestBuildConfiguration_S3_partitions asserts the rendered S3 storage block of every
+// credential mode across AWS partitions. The commercial and GovCloud partitions must keep
+// rendering exactly what they rendered before partition support was added, because any
+// change of the configuration rolls every pod of existing deployments.
+func TestBuildConfiguration_S3_partitions(t *testing.T) {
+	tests := []struct {
+		name     string
+		s3       manifestutils.S3
+		expected map[string]interface{}
+	}{
+		{
+			name: "commercial partition",
+			s3: manifestutils.S3{
+				Bucket:   "tempo",
+				Region:   "us-east-2",
+				Endpoint: "s3.us-east-2.amazonaws.com",
+			},
+			expected: map[string]interface{}{
+				"bucket":   "tempo",
+				"endpoint": "s3.us-east-2.amazonaws.com",
+				"insecure": false,
+			},
+		},
+		{
+			name: "govcloud partition",
+			s3: manifestutils.S3{
+				Bucket:   "tempo",
+				Region:   "us-gov-west-1",
+				Endpoint: "s3.us-gov-west-1.amazonaws.com",
+			},
+			expected: map[string]interface{}{
+				"bucket":   "tempo",
+				"endpoint": "s3.us-gov-west-1.amazonaws.com",
+				"insecure": false,
+			},
+		},
+		{
+			name: "iso partition over http",
+			s3: manifestutils.S3{
+				Bucket:   "tempo",
+				Region:   "us-iso-east-1",
+				Endpoint: "s3.us-iso-east-1.c2s.ic.gov",
+				Insecure: true,
+			},
+			expected: map[string]interface{}{
+				"bucket":   "tempo",
+				"endpoint": "s3.us-iso-east-1.c2s.ic.gov",
+				"insecure": true,
+				"region":   "us-iso-east-1",
+			},
+		},
+		{
+			name: "isob partition",
+			s3: manifestutils.S3{
+				Bucket:   "tempo",
+				Region:   "us-isob-east-1",
+				Endpoint: "s3.us-isob-east-1.sc2s.sgov.gov",
+			},
+			expected: map[string]interface{}{
+				"bucket":   "tempo",
+				"endpoint": "s3.us-isob-east-1.sc2s.sgov.gov",
+				"insecure": false,
+				"region":   "us-isob-east-1",
+			},
+		},
+		{
+			name: "commercial partition with a custom endpoint",
+			s3: manifestutils.S3{
+				Bucket:   "tempo",
+				Region:   "us-east-2",
+				Endpoint: "bucket.vpce-1234.s3.us-east-2.vpce.amazonaws.com",
+			},
+			expected: map[string]interface{}{
+				"bucket":   "tempo",
+				"endpoint": "bucket.vpce-1234.s3.us-east-2.vpce.amazonaws.com",
+				"insecure": false,
+				"region":   "us-east-2",
+			},
+		},
+	}
+
+	for _, mode := range []v1alpha1.CredentialMode{v1alpha1.CredentialModeToken, v1alpha1.CredentialModeTokenCCO} {
+		for _, tt := range tests {
+			t.Run(string(mode)+"/"+tt.name, func(t *testing.T) {
+				s3 := tt.s3
+				cfg, err := buildConfiguration(manifestutils.Params{
+					Tempo: v1alpha1.TempoStack{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      "test",
+							Namespace: "project1",
+						},
+						Spec: v1alpha1.TempoStackSpec{
+							Storage: v1alpha1.ObjectStorageSpec{
+								Secret: v1alpha1.ObjectStorageSecretSpec{
+									Type: v1alpha1.ObjectStorageSecretS3,
+								},
+							},
+							ReplicationFactor: 1,
+						},
+					},
+					StorageParams: manifestutils.StorageParams{
+						CredentialMode: mode,
+						S3:             &s3,
+					},
+					TLSProfile: tlsprofile.TLSProfileOptions{
+						MinTLSVersion: string(openshiftconfigv1.VersionTLS13),
+					},
+				})
+				require.NoError(t, err)
+
+				var parsed map[string]interface{}
+				require.NoError(t, yaml.Unmarshal(cfg, &parsed))
+
+				storage := parsed["storage"].(map[string]interface{})
+				trace := storage["trace"].(map[string]interface{})
+				require.Equal(t, tt.expected, trace["s3"])
+			})
+		}
 	}
 }

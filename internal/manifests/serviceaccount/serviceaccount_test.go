@@ -62,6 +62,32 @@ func TestBuildDefaultServiceAccount_aws_sts(t *testing.T) {
 	}, serviceAccount)
 }
 
+func TestBuildDefaultServiceAccount_aws_sts_iso_partition(t *testing.T) {
+	serviceAccount := BuildDefaultServiceAccount(manifestutils.Params{
+		Tempo: v1alpha1.TempoStack{ObjectMeta: metav1.ObjectMeta{Name: "test", Namespace: "ns1"}},
+		StorageParams: manifestutils.StorageParams{
+			CredentialMode: v1alpha1.CredentialModeToken,
+			S3: &manifestutils.S3{
+				RoleARN:  "arn:aws-iso:iam::123456777012:role/aws-service-role",
+				Audience: "sts.us-iso-east-1.c2s.ic.gov",
+			},
+		}})
+
+	labels := manifestutils.ComponentLabels("serviceaccount", "test")
+	require.NotNil(t, serviceAccount)
+	assert.Equal(t, &v1.ServiceAccount{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "tempo-test",
+			Namespace: "ns1",
+			Labels:    labels,
+			Annotations: map[string]string{
+				"eks.amazonaws.com/audience": "sts.us-iso-east-1.c2s.ic.gov",
+				"eks.amazonaws.com/role-arn": "arn:aws-iso:iam::123456777012:role/aws-service-role",
+			},
+		},
+	}, serviceAccount)
+}
+
 func TestBuildDefaultServiceAccount_azure_sts(t *testing.T) {
 	serviceAccount := BuildDefaultServiceAccount(manifestutils.Params{
 		Tempo: v1alpha1.TempoStack{

@@ -52,6 +52,10 @@ spec:
 
 For more information on setting up object storage, please refer to the [Object storage docs](https://grafana.com/docs/tempo/latest/setup/operator/object-storage/).
 
+When using short lived credentials on Amazon S3, see [AWS partitions](designdocs/aws-partitions.md)
+for the settings the operator derives from the region, and for the optional `endpoint` and
+`audience` fields of the storage secret.
+
 ## Jaeger UI
 The following manifests enables Jaeger UI.
 

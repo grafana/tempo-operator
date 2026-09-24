@@ -282,8 +282,11 @@ storage:
     {{- if and .StorageParams.S3 (or (eq .StorageParams.CredentialMode "token") (eq .StorageParams.CredentialMode "token-cco")) }}
     s3:
       bucket: {{ .StorageParams.S3.Bucket }}
-      endpoint: s3.{{ .StorageParams.S3.Region }}.amazonaws.com
+      endpoint: {{ .StorageParams.S3.Endpoint }}
       insecure: {{ .StorageParams.S3.Insecure }}
+    {{- if .StorageParams.S3.RequiresExplicitRegion }}
+      region: {{ .StorageParams.S3.Region }}
+    {{- end }}
     {{- if .S3StorageTLS.Enabled }}
     {{- if .S3StorageTLS.CA }}
       tls_ca_path: {{ .S3StorageTLS.CA }}

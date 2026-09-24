@@ -66,11 +66,10 @@ func GetStorageParamsForTempoStack(ctx context.Context, client client.Client, te
 			return manifestutils.StorageParams{}, errs
 		}
 
-		// Token-based auth (STS/IRSA) requires HTTPS to communicate with AWS endpoints.
-		// Only fall back to the user-controlled TLS toggle for static credentials.
-		if credentialMode == v1alpha1.CredentialModeToken || credentialMode == v1alpha1.CredentialModeTokenCCO {
-			storageParams.S3.Insecure = false
-		} else {
+		// For token-based auth (STS/IRSA) the transport is derived from the scheme of the
+		// optional endpoint field of the storage secret, and defaults to HTTPS. Only static
+		// credentials fall back to the user-controlled TLS toggle.
+		if credentialMode == v1alpha1.CredentialModeStatic {
 			storageParams.S3.Insecure = !tempo.Spec.Storage.TLS.Enabled
 		}
 

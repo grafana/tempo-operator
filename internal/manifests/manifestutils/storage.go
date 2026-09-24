@@ -165,7 +165,11 @@ func ConfigureGCS(pod *corev1.PodSpec, containerName string, storageSecretName s
 	return nil
 }
 
-func configureS3StorageWithCOOAuth(pod *corev1.PodSpec, containerIdx int, tempo string, config *TokenCCOAuthConfig, region string) {
+func configureS3StorageWithCOOAuth(pod *corev1.PodSpec, containerIdx int, tempo string, config *TokenCCOAuthConfig, s3 *S3) {
+	var region string
+	if s3 != nil {
+		region = s3.Region
+	}
 
 	pod.Containers[containerIdx].Env = append(pod.Containers[containerIdx].Env, []corev1.EnvVar{
 		{
@@ -190,9 +194,13 @@ func configureS3StorageWithCOOAuth(pod *corev1.PodSpec, containerIdx int, tempo 
 		},
 	}...)
 
+	if s3 != nil && s3.STSEndpoint != "" {
+		pod.Containers[containerIdx].Env = append(pod.Containers[containerIdx].Env, stsEndpointEnvVar(s3))
+	}
+
 	// Define volume with credentials
 	pod.Volumes = append(pod.Volumes, tokenCCOAuthConfigVolume(tempo))
-	pod.Volumes = append(pod.Volumes, saTokenVolume(awsDefaultAudience))
+	pod.Volumes = append(pod.Volumes, saTokenVolume(awsAudience(s3)))
 
 	// Mount volume
 	pod.Containers[containerIdx].VolumeMounts = append(pod.Containers[containerIdx].VolumeMounts, corev1.VolumeMount{
@@ -237,11 +245,43 @@ func configureS3StorageStatic(pod *corev1.PodSpec, containerIdx int, storageSecr
 	}...)
 }
 
+// awsAudience returns the audience of the projected service account token.
+func awsAudience(s3 *S3) string {
+	if s3 != nil && s3.Audience != "" {
+		return s3.Audience
+	}
+	return AWSDefaultAudience
+}
+
+// stsEndpointEnvVar overrides the STS endpoint the credential chain of Tempo resolves
+// internally. Tempo obtains AWS credentials through the minio-go client, which builds the
+// endpoint of the token exchange as sts.<region>.amazonaws.com, with the DNS suffix
+// hardcoded (minio-go, pkg/credentials/iam_aws.go). TEST_IAM_ENDPOINT is the only hook
+// Tempo exposes to override it (tempo, tempodb/backend/s3/s3.go, fetchCreds), and it is
+// required in partitions serving their endpoints under a different DNS suffix, such as
+// the ISO and ISOB partitions.
+func stsEndpointEnvVar(s3 *S3) corev1.EnvVar {
+	return corev1.EnvVar{
+		Name:  "TEST_IAM_ENDPOINT",
+		Value: s3.STSEndpoint,
+	}
+}
+
 // ConfigureS3Storage mounts the Amazon S3 credentials and TLS certs in a pod.
 func ConfigureS3Storage(pod *corev1.PodSpec, containerName string, storageSecretName string,
-	tlsSpec *v1alpha1.TLSSpec, credentialMode v1alpha1.CredentialMode, tempoName string, config *TokenCCOAuthConfig, region string) error {
+	tlsSpec *v1alpha1.TLSSpec, credentialMode v1alpha1.CredentialMode, tempoName string, config *TokenCCOAuthConfig, s3 *S3) error {
 
 	if credentialMode == v1alpha1.CredentialModeToken {
+		// In token mode the credentials are injected by the pod identity webhook of the
+		// cloud provider, the operator only needs to point the token exchange at the
+		// STS endpoint of the partition when it is not served under amazonaws.com.
+		if s3 != nil && s3.STSEndpoint != "" {
+			containerIdx, err := findContainerIndex(pod, containerName)
+			if err != nil {
+				return err
+			}
+			pod.Containers[containerIdx].Env = append(pod.Containers[containerIdx].Env, stsEndpointEnvVar(s3))
+		}
 		return nil
 	}
 
@@ -251,7 +291,7 @@ func ConfigureS3Storage(pod *corev1.PodSpec, containerName string, storageSecret
 	}
 
 	if credentialMode == v1alpha1.CredentialModeTokenCCO {
-		configureS3StorageWithCOOAuth(pod, containerIdx, tempoName, config, region)
+		configureS3StorageWithCOOAuth(pod, containerIdx, tempoName, config, s3)
 	} else {
 		configureS3StorageStatic(pod, containerIdx, storageSecretName)
 	}
@@ -275,12 +315,8 @@ func ConfigureStorage(storage StorageParams, tempo v1alpha1.TempoStack, pod *cor
 			return ConfigureGCS(pod, containerName, tempo.Spec.Storage.Secret.Name, storage.GCS.Audience,
 				storage.CredentialMode)
 		case v1alpha1.ObjectStorageSecretS3:
-			var region string
-			if storage.S3 != nil {
-				region = storage.S3.Region
-			}
 			return ConfigureS3Storage(pod, containerName, tempo.Spec.Storage.Secret.Name, &tempo.Spec.Storage.TLS,
-				storage.CredentialMode, tempo.Name, storage.CloudCredentials.Environment, region)
+				storage.CredentialMode, tempo.Name, storage.CloudCredentials.Environment, storage.S3)
 		}
 	}
 	return nil
