@@ -1,0 +1,41 @@
+# One of 'breaking', 'deprecation', 'new_component', 'enhancement', 'bug_fix'
+change_type: enhancement
+
+# The name of the component, or a single word describing the area of concern, (e.g. tempostack, tempomonolithic, github action)
+component: tempostack
+
+# A brief description of the change. Surround your text with quotes ("") if it needs to start with a backtick (`).
+note: Support overriding the pod anti affinity of a TempoStack component via the new spec.template.<component>.podAntiAffinity field
+
+# One or more tracking issues related to the change
+issues: [1662]
+
+# (Optional) One or more lines of additional information to render under the primary note.
+# These lines will be padded with 2 spaces and then inserted directly into the document.
+# Use pipe (|) for multiline entries.
+subtext: |
+  By default the pods of a component only *prefer* to be scheduled onto different nodes and failure
+  domains, which the scheduler may ignore. This is true of zone-aware stacks as well: topology
+  spread constraints balance the pods across zones, but inside a zone several replicas of a
+  component can still land on the same node.
+
+  A stack that needs a hard guarantee now sets its own anti affinity, per component:
+
+  ```yaml
+  spec:
+    template:
+      ingester:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app.kubernetes.io/component: ingester
+                app.kubernetes.io/instance: sample
+            topologyKey: kubernetes.io/hostname
+  ```
+
+  The field replaces the default anti affinity of that component rather than adding to it. Note
+  that a required term leaves the surplus pods `Pending` when a component has more replicas than
+  schedulable nodes.
+
+  The behavior follows the Grafana Loki Operator, which exposes the same field per component.

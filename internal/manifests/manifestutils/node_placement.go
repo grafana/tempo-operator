@@ -62,12 +62,7 @@ func ConfigureReplication(podTemplate *corev1.PodTemplateSpec, zones []v1alpha1.
 			MaxSkew:           int32(zone.MaxSkew), //nolint:gosec // maxSkew is validated to be within [1, math.MaxInt32] by the API
 			TopologyKey:       zone.TopologyKey,
 			WhenUnsatisfiable: corev1.DoNotSchedule,
-			LabelSelector: &metav1.LabelSelector{
-				MatchLabels: map[string]string{
-					"app.kubernetes.io/component": component,
-					"app.kubernetes.io/instance":  stackName,
-				},
-			},
+			LabelSelector:     componentSelector(component, stackName),
 		})
 	}
 
@@ -97,6 +92,16 @@ func ConfigureReplication(podTemplate *corev1.PodTemplateSpec, zones []v1alpha1.
 	}
 
 	return mergo.Merge(podTemplate, template)
+}
+
+// componentSelector selects the pods of one component of a TempoStack.
+func componentSelector(component string, stackName string) *metav1.LabelSelector {
+	return &metav1.LabelSelector{
+		MatchLabels: map[string]string{
+			"app.kubernetes.io/component": component,
+			"app.kubernetes.io/instance":  stackName,
+		},
+	}
 }
 
 // initContainerAZAnnotationCheck returns an init container blocking the start of the pod until the
