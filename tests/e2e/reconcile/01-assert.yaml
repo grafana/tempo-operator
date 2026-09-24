@@ -1,3 +1,51 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoStack
+metadata:
+  name: simplest
+  generation: 1
+status:
+  (conditions[?type=='Ready'] | [0].status): "True"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-simplest-compactor
+  generation: 1
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-simplest-distributor
+  generation: 1
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: tempo-simplest-ingester
+  generation: 1
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-simplest-querier
+  generation: 1
+status:
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo-simplest-query-frontend
+  generation: 1
+status:
+  readyReplicas: 1
+---
 apiVersion: v1
 kind: Service
 metadata:
