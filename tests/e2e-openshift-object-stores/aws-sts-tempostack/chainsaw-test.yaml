@@ -16,6 +16,10 @@ spec:
         content: ./aws-sts-s3-create.sh tmstack chainsaw-awssts-tempo
     - assert:
         file: 00-aws-sts-s3-create-assert.yaml
+    cleanup:
+    - script:
+        timeout: 2m
+        content: ./aws-sts-s3-delete.sh tmstack chainsaw-awssts-tempo
   - name: Install TempoStack
     try:
     - apply:
@@ -35,7 +39,3 @@ spec:
         file: 04-verify-traces.yaml
     - assert:
         file: 04-verify-traces-assert.yaml
-    cleanup:
-    - script:
-        timeout: 2m
-        content: ./aws-sts-s3-delete.sh tmstack chainsaw-awssts-tempo
