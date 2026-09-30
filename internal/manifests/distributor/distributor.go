@@ -250,7 +250,7 @@ func deployment(params manifestutils.Params) *v1.Deployment {
 					ServiceAccountName: tempo.Spec.ServiceAccount,
 					NodeSelector:       cfg.NodeSelector,
 					Tolerations:        cfg.Tolerations,
-					Affinity:           manifestutils.DefaultAffinity(labels),
+					Affinity:           manifestutils.ConfigureAffinity(labels, cfg.PodAntiAffinity),
 					Containers: []corev1.Container{
 						{
 							Name:  "tempo",
