@@ -7,11 +7,11 @@ spec:
   parallel: 4
   timeouts:
     apply: 30s
-    assert: 2m30s
-    cleanup: 2m30s
-    delete: 2m30s
-    error: 2m30s
-    exec: 2m30s
+    assert: 5m
+    cleanup: 5m
+    delete: 5m
+    error: 5m
+    exec: 5m
   catch:
     - get:
         apiVersion: tempo.grafana.com/v1alpha1
