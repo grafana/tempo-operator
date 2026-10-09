@@ -1,22 +1,7 @@
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  labels:
-    app.kubernetes.io/name: minio
-  name: minio
-  namespace: tracing
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 10Gi
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: minio
-  namespace: tracing
 spec:
   selector:
     matchLabels:
@@ -33,14 +18,15 @@ spec:
             - /bin/sh
             - -c
             - |
-              mkdir -p /storage/bucket1 && \
+              mkdir -p /storage/tempo && \
+              mkdir -p /storage/tempo2 && \
               minio server /storage
           env:
             - name: MINIO_ACCESS_KEY
               value: tempo
             - name: MINIO_SECRET_KEY
               value: supersecret
-          image: ghcr.io/grafana/tempo-operator/test-utils:main
+          image: ghcr.io/grafana/tempo-operator/test-utils:sha-0fc5ef0
           name: minio
           ports:
             - containerPort: 9000
@@ -49,14 +35,12 @@ spec:
               name: storage
       volumes:
         - name: storage
-          persistentVolumeClaim:
-            claimName: minio
+          emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: minio
-  namespace: tracing
 spec:
   ports:
     - port: 9000
@@ -65,3 +49,14 @@ spec:
   selector:
     app.kubernetes.io/name: minio
   type: ClusterIP
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: minio
+stringData:
+  endpoint: http://minio:9000
+  bucket: tempo
+  access_key_id: tempo
+  access_key_secret: supersecret
+type: Opaque

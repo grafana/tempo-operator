@@ -25,7 +25,15 @@ func GetStorageParamsForTempoStack(ctx context.Context, client client.Client, te
 		return manifestutils.StorageParams{}, errs
 	}
 
-	storageParams := manifestutils.StorageParams{}
+	secretHash, err := hashSecretData(&storageSecret)
+	if err != nil {
+		return manifestutils.StorageParams{}, field.ErrorList{field.Invalid(secretNamePath,
+			tempo.Spec.Storage.Secret.Name, fmt.Sprintf("%s: %v", ErrFetchingSecret, err))}
+	}
+
+	storageParams := manifestutils.StorageParams{
+		SecretHash: secretHash,
+	}
 	switch tempo.Spec.Storage.Secret.Type {
 	case v1alpha1.ObjectStorageSecretS3:
 
@@ -52,21 +60,20 @@ func GetStorageParamsForTempoStack(ctx context.Context, client client.Client, te
 			}
 			storageParams.CloudCredentials.ContentHash = contentHash
 		}
+
+		// getS3Params() sets S3.Insecure:
+		// - for static credentials, S3.Insecure is derived from the endpoint scheme (http:// means insecure)
+		// - for token-based credentials, S3.Insecure is false (TLS is always enabled)
 		storageParams.S3, errs = getS3Params(storageSecret, secretNamePath, credentialMode)
 
 		if len(errs) > 0 {
 			return manifestutils.StorageParams{}, errs
 		}
 
-		// Token-based auth (STS/IRSA) requires HTTPS to communicate with AWS endpoints.
-		// Only fall back to the user-controlled TLS toggle for static credentials.
-		if credentialMode == v1alpha1.CredentialModeToken || credentialMode == v1alpha1.CredentialModeTokenCCO {
-			storageParams.S3.Insecure = false
-		} else {
-			storageParams.S3.Insecure = !tempo.Spec.Storage.TLS.Enabled
-		}
-
 		if tempo.Spec.Storage.TLS.Enabled {
+			// Enabling TLS forces the connection to object storage over HTTPS.
+			storageParams.S3.Insecure = false
+
 			storageParams.S3.TLS, errs = getTLSParams(ctx, client, tempo.Namespace, tempo.Spec.Storage.TLS, tlsPath.Child("caName"))
 			if len(errs) > 0 {
 				return manifestutils.StorageParams{}, errs
@@ -180,6 +187,13 @@ func GetStorageParamsForTempoMonolithic(ctx context.Context, client client.Clien
 			return manifestutils.StorageParams{}, errs
 		}
 
+		secretHash, err := hashSecretData(&storageSecret)
+		if err != nil {
+			return manifestutils.StorageParams{}, field.ErrorList{field.Invalid(secretNamePath,
+				tempo.Spec.Storage.Traces.S3.Secret, fmt.Sprintf("%s: %v", ErrFetchingSecret, err))}
+		}
+		storageParams.SecretHash = secretHash
+
 		credentialMode := tempo.Spec.Storage.Traces.S3.CredentialMode
 
 		if credentialMode == "" {
@@ -206,6 +220,9 @@ func GetStorageParamsForTempoMonolithic(ctx context.Context, client client.Clien
 			storageParams.CloudCredentials.ContentHash = contentHash
 		}
 
+		// getS3Params() sets S3.Insecure:
+		// - for static credentials, S3.Insecure is derived from the endpoint scheme (http:// means insecure)
+		// - for token-based credentials, S3.Insecure is false (TLS is always enabled)
 		storageParams.S3, errs = getS3Params(storageSecret, secretNamePath, credentialMode)
 
 		if len(errs) > 0 {
@@ -213,6 +230,9 @@ func GetStorageParamsForTempoMonolithic(ctx context.Context, client client.Clien
 		}
 
 		if tempo.Spec.Storage.Traces.S3.TLS != nil && tempo.Spec.Storage.Traces.S3.TLS.Enabled {
+			// Enabling TLS forces the connection to object storage over HTTPS.
+			storageParams.S3.Insecure = false
+
 			caPath := tracesPath.Child("s3", "tls", "caName")
 			storageParams.S3.TLS, errs = getTLSParams(ctx, client, tempo.Namespace, *tempo.Spec.Storage.Traces.S3.TLS, caPath)
 			if len(errs) > 0 {
@@ -230,6 +250,13 @@ func GetStorageParamsForTempoMonolithic(ctx context.Context, client client.Clien
 		if len(errs) > 0 {
 			return manifestutils.StorageParams{}, errs
 		}
+
+		secretHash, err := hashSecretData(&storageSecret)
+		if err != nil {
+			return manifestutils.StorageParams{}, field.ErrorList{field.Invalid(secretNamePath,
+				tempo.Spec.Storage.Traces.Azure.Secret, fmt.Sprintf("%s: %v", ErrFetchingSecret, err))}
+		}
+		storageParams.SecretHash = secretHash
 
 		credentialMode, errs := discoverAzureCredentialType(storageSecret, secretNamePath)
 		if len(errs) > 0 {
@@ -266,6 +293,13 @@ func GetStorageParamsForTempoMonolithic(ctx context.Context, client client.Clien
 		if len(errs) > 0 {
 			return manifestutils.StorageParams{}, errs
 		}
+
+		secretHash, err := hashSecretData(&storageSecret)
+		if err != nil {
+			return manifestutils.StorageParams{}, field.ErrorList{field.Invalid(secretNamePath,
+				tempo.Spec.Storage.Traces.GCS.Secret, fmt.Sprintf("%s: %v", ErrFetchingSecret, err))}
+		}
+		storageParams.SecretHash = secretHash
 
 		credentialMode, errs := discoverGCSCredentialType(storageSecret, secretNamePath)
 		if len(errs) > 0 {

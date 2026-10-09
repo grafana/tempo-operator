@@ -2,8 +2,9 @@
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
-  name: compatibility
+  name: tempo-image-root-certs
 spec:
+  description: Verify that the Tempo container image ships with a root CA certificate bundle.
   steps:
   - name: step-00
     try:
@@ -14,25 +15,12 @@ spec:
   - name: step-01
     try:
     - apply:
-        file: 01-install.yaml
+        file: 01-install-tempo.yaml
     - assert:
         timeout: 5m
         file: 01-assert.yaml
-  - name: step-03
+  - name: step-02
     try:
-    - apply:
-        file: 03-generate-traces.yaml
-    - assert:
-        file: 03-assert.yaml
-  - name: step-04
-    try:
-    - apply:
-        file: 04-verify-traces-jaeger.yaml
-    - assert:
-        file: 04-assert.yaml
-  - name: step-05
-    try:
-    - apply:
-        file: 05-verify-traces-grafana.yaml
-    - assert:
-        file: 05-assert.yaml
+    - script:
+        timeout: 1m
+        content: ./verify-ca-certs.sh

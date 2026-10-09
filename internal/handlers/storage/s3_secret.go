@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"fmt"
 	"net/url"
 	"strings"
 
@@ -89,13 +90,13 @@ func validateS3Secret(storageSecret corev1.Secret, path *field.Path, credentialM
 }
 
 func getS3Params(storageSecret corev1.Secret, path *field.Path, mode v1alpha1.CredentialMode) (*manifestutils.S3, field.ErrorList) {
-
 	errs := validateS3Secret(storageSecret, path, mode)
 	if len(errs) != 0 {
 		return nil, errs
 	}
 
-	if mode == v1alpha1.CredentialModeStatic {
+	switch mode {
+	case v1alpha1.CredentialModeStatic:
 		endpoint := string(storageSecret.Data["endpoint"])
 		insecure := !strings.HasPrefix(endpoint, "https://")
 		endpoint = strings.TrimPrefix(endpoint, "https://")
@@ -105,18 +106,27 @@ func getS3Params(storageSecret corev1.Secret, path *field.Path, mode v1alpha1.Cr
 			Endpoint: endpoint,
 			Bucket:   string(storageSecret.Data["bucket"]),
 		}, nil
-	}
 
-	if mode == v1alpha1.CredentialModeToken {
+	case v1alpha1.CredentialModeToken:
 		return &manifestutils.S3{
-			Bucket:  string(storageSecret.Data["bucket"]),
-			RoleARN: string(storageSecret.Data["role_arn"]),
-			Region:  string(storageSecret.Data["region"]),
+			Insecure: false, // Token-based auth (STS/IRSA) requires HTTPS to communicate with AWS endpoints.
+			Bucket:   string(storageSecret.Data["bucket"]),
+			RoleARN:  string(storageSecret.Data["role_arn"]),
+			Region:   string(storageSecret.Data["region"]),
 		}, nil
-	}
 
-	return &manifestutils.S3{
-		Bucket: string(storageSecret.Data["bucket"]),
-		Region: string(storageSecret.Data["region"]),
-	}, nil
+	case v1alpha1.CredentialModeTokenCCO:
+		return &manifestutils.S3{
+			Insecure: false, // Token-based auth (STS/IRSA) requires HTTPS to communicate with AWS endpoints.
+			Bucket:   string(storageSecret.Data["bucket"]),
+			Region:   string(storageSecret.Data["region"]),
+		}, nil
+
+	default:
+		return nil, field.ErrorList{field.Invalid(
+			path,
+			mode,
+			fmt.Sprintf("unsupported credential mode %q", mode),
+		)}
+	}
 }
