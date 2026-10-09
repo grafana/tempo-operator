@@ -124,6 +124,7 @@ spec:                                    # TempoStackSpec defines the desired st
   storageSize: "10Gi"                    # StorageSize for PVCs used by ingester. Defaults to 10Gi.
   template:                              # Template defines requirements for a set of tempo components.
     compactor:                           # Compactor defines the tempo compactor component spec.
+      podAntiAffinity: {}                # PodAntiAffinity defines the pod anti affinity scheduling rules to schedule pods of a component. It replaces the default anti affinity of the component, which prefers to schedule its pods onto different nodes and failure domains.
       podSecurityContext:                # PodSecurityContext defines security context will be applied to all pods of this component.
         appArmorProfile:                 # appArmorProfile is the AppArmor options to use by the containers in this pod. Note that this field cannot be set when spec.os.name is windows.
           localhostProfile: ""           # localhostProfile indicates a profile loaded on the node that should be used. The profile must be preconfigured on the node to work. Must match the loaded name of the profile. Must be set if and only if type is "Localhost".
@@ -168,6 +169,7 @@ spec:                                    # TempoStackSpec defines the desired st
       tolerations: {}                    # Tolerations defines component-specific pod tolerations.
     distributor:                         # Distributor defines the distributor component spec.
       component:                         # TempoComponentSpec is embedded to extend this definition with further options.  Currently, there is no way to inline this field. See: https://github.com/golang/go/issues/6213
+        podAntiAffinity: {}              # PodAntiAffinity defines the pod anti affinity scheduling rules to schedule pods of a component. It replaces the default anti affinity of the component, which prefers to schedule its pods onto different nodes and failure domains.
         podSecurityContext:              # PodSecurityContext defines security context will be applied to all pods of this component.
           appArmorProfile:               # appArmorProfile is the AppArmor options to use by the containers in this pod. Note that this field cannot be set when spec.os.name is windows.
             localhostProfile: ""         # localhostProfile indicates a profile loaded on the node that should be used. The profile must be preconfigured on the node to work. Must match the loaded name of the profile. Must be set if and only if type is "Localhost".
@@ -220,6 +222,7 @@ spec:                                    # TempoStackSpec defines the desired st
     gateway:                             # Gateway defines the tempo gateway spec.
       enabled: false
       component:                         # TempoComponentSpec is embedded to extend this definition with further options.  Currently there is no way to inline this field. See: https://github.com/golang/go/issues/6213
+        podAntiAffinity: {}              # PodAntiAffinity defines the pod anti affinity scheduling rules to schedule pods of a component. It replaces the default anti affinity of the component, which prefers to schedule its pods onto different nodes and failure domains.
         podSecurityContext:              # PodSecurityContext defines security context will be applied to all pods of this component.
           appArmorProfile:               # appArmorProfile is the AppArmor options to use by the containers in this pod. Note that this field cannot be set when spec.os.name is windows.
             localhostProfile: ""         # localhostProfile indicates a profile loaded on the node that should be used. The profile must be preconfigured on the node to work. Must match the loaded name of the profile. Must be set if and only if type is "Localhost".
@@ -272,6 +275,7 @@ spec:                                    # TempoStackSpec defines the desired st
       rbac:                              # RBAC defines query RBAC options.
         enabled: false                   # Enabled defines if the query RBAC should be enabled.
     ingester:                            # Ingester defines the ingester component spec.
+      podAntiAffinity: {}                # PodAntiAffinity defines the pod anti affinity scheduling rules to schedule pods of a component. It replaces the default anti affinity of the component, which prefers to schedule its pods onto different nodes and failure domains.
       podSecurityContext:                # PodSecurityContext defines security context will be applied to all pods of this component.
         appArmorProfile:                 # appArmorProfile is the AppArmor options to use by the containers in this pod. Note that this field cannot be set when spec.os.name is windows.
           localhostProfile: ""           # localhostProfile indicates a profile loaded on the node that should be used. The profile must be preconfigured on the node to work. Must match the loaded name of the profile. Must be set if and only if type is "Localhost".
@@ -317,6 +321,7 @@ spec:                                    # TempoStackSpec defines the desired st
     metricsGenerator:                    # MetricsGenerator defines the metrics-generator component spec.
       enabled: false                     # Enabled defines if the Metrics Generator component should be deployed.
       component:                         # TempoComponentSpec is embedded to extend this definition with further options.  Currently, there is no way to inline this field. See: https://github.com/golang/go/issues/6213
+        podAntiAffinity: {}              # PodAntiAffinity defines the pod anti affinity scheduling rules to schedule pods of a component. It replaces the default anti affinity of the component, which prefers to schedule its pods onto different nodes and failure domains.
         podSecurityContext:              # PodSecurityContext defines security context will be applied to all pods of this component.
           appArmorProfile:               # appArmorProfile is the AppArmor options to use by the containers in this pod. Note that this field cannot be set when spec.os.name is windows.
             localhostProfile: ""         # localhostProfile indicates a profile loaded on the node that should be used. The profile must be preconfigured on the node to work. Must match the loaded name of the profile. Must be set if and only if type is "Localhost".
@@ -364,6 +369,7 @@ spec:                                    # TempoStackSpec defines the desired st
       remoteWriteURLs:                   # RemoteWriteURLs defines the list of Prometheus remote write endpoints to which the metrics-generator will push generated metrics.
       - ""
     querier:                             # Querier defines the querier component spec.
+      podAntiAffinity: {}                # PodAntiAffinity defines the pod anti affinity scheduling rules to schedule pods of a component. It replaces the default anti affinity of the component, which prefers to schedule its pods onto different nodes and failure domains.
       podSecurityContext:                # PodSecurityContext defines security context will be applied to all pods of this component.
         appArmorProfile:                 # appArmorProfile is the AppArmor options to use by the containers in this pod. Note that this field cannot be set when spec.os.name is windows.
           localhostProfile: ""           # localhostProfile indicates a profile loaded on the node that should be used. The profile must be preconfigured on the node to work. Must match the loaded name of the profile. Must be set if and only if type is "Localhost".
@@ -408,6 +414,7 @@ spec:                                    # TempoStackSpec defines the desired st
       tolerations: {}                    # Tolerations defines component-specific pod tolerations.
     queryFrontend:                       # TempoQueryFrontendSpec defines the query frontend spec.
       component:                         # TempoComponentSpec is embedded to extend this definition with further options.  Currently there is no way to inline this field. See: https://github.com/golang/go/issues/6213
+        podAntiAffinity: {}              # PodAntiAffinity defines the pod anti affinity scheduling rules to schedule pods of a component. It replaces the default anti affinity of the component, which prefers to schedule its pods onto different nodes and failure domains.
         podSecurityContext:              # PodSecurityContext defines security context will be applied to all pods of this component.
           appArmorProfile:               # appArmorProfile is the AppArmor options to use by the containers in this pod. Note that this field cannot be set when spec.os.name is windows.
             localhostProfile: ""         # localhostProfile indicates a profile loaded on the node that should be used. The profile must be preconfigured on the node to work. Must match the loaded name of the profile. Must be set if and only if type is "Localhost".

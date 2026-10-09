@@ -74,7 +74,7 @@ metadata:
     capabilities: Deep Insights
     categories: Logging & Tracing,Monitoring
     containerImage: ghcr.io/grafana/tempo-operator/tempo-operator:v0.22.0
-    createdAt: "2026-08-19T14:17:44Z"
+    createdAt: "2026-09-22T15:22:48Z"
     description: Create and manage deployments of Tempo, a high-scale distributed
       tracing backend.
     operatorframework.io/cluster-monitoring: "true"
@@ -1076,6 +1076,14 @@ spec:
       - description: NodeSelector defines the simple form of the node-selection constraint.
         displayName: Node Selector
         path: template.compactor.nodeSelector
+      - description: |-
+          PodAntiAffinity defines the pod anti affinity scheduling rules to schedule pods
+          of a component. It replaces the default anti affinity of the component, which
+          prefers to schedule its pods onto different nodes and failure domains.
+        displayName: PodAntiAffinity
+        path: template.compactor.podAntiAffinity
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:podAntiAffinity
       - description: PodSecurityContext defines security context will be applied to
           all pods of this component.
         displayName: PodSecurityContext
@@ -1097,6 +1105,14 @@ spec:
       - description: NodeSelector defines the simple form of the node-selection constraint.
         displayName: Node Selector
         path: template.distributor.nodeSelector
+      - description: |-
+          PodAntiAffinity defines the pod anti affinity scheduling rules to schedule pods
+          of a component. It replaces the default anti affinity of the component, which
+          prefers to schedule its pods onto different nodes and failure domains.
+        displayName: PodAntiAffinity
+        path: template.distributor.podAntiAffinity
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:podAntiAffinity
       - description: PodSecurityContext defines security context will be applied to
           all pods of this component.
         displayName: PodSecurityContext
@@ -1180,6 +1196,14 @@ spec:
       - description: NodeSelector defines the simple form of the node-selection constraint.
         displayName: Node Selector
         path: template.gateway.nodeSelector
+      - description: |-
+          PodAntiAffinity defines the pod anti affinity scheduling rules to schedule pods
+          of a component. It replaces the default anti affinity of the component, which
+          prefers to schedule its pods onto different nodes and failure domains.
+        displayName: PodAntiAffinity
+        path: template.gateway.podAntiAffinity
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:podAntiAffinity
       - description: PodSecurityContext defines security context will be applied to
           all pods of this component.
         displayName: PodSecurityContext
@@ -1209,6 +1233,14 @@ spec:
       - description: NodeSelector defines the simple form of the node-selection constraint.
         displayName: Node Selector
         path: template.ingester.nodeSelector
+      - description: |-
+          PodAntiAffinity defines the pod anti affinity scheduling rules to schedule pods
+          of a component. It replaces the default anti affinity of the component, which
+          prefers to schedule its pods onto different nodes and failure domains.
+        displayName: PodAntiAffinity
+        path: template.ingester.podAntiAffinity
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:podAntiAffinity
       - description: PodSecurityContext defines security context will be applied to
           all pods of this component.
         displayName: PodSecurityContext
@@ -1236,6 +1268,14 @@ spec:
       - description: NodeSelector defines the simple form of the node-selection constraint.
         displayName: Node Selector
         path: template.metricsGenerator.nodeSelector
+      - description: |-
+          PodAntiAffinity defines the pod anti affinity scheduling rules to schedule pods
+          of a component. It replaces the default anti affinity of the component, which
+          prefers to schedule its pods onto different nodes and failure domains.
+        displayName: PodAntiAffinity
+        path: template.metricsGenerator.podAntiAffinity
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:podAntiAffinity
       - description: PodSecurityContext defines security context will be applied to
           all pods of this component.
         displayName: PodSecurityContext
@@ -1267,6 +1307,14 @@ spec:
       - description: NodeSelector defines the simple form of the node-selection constraint.
         displayName: Node Selector
         path: template.querier.nodeSelector
+      - description: |-
+          PodAntiAffinity defines the pod anti affinity scheduling rules to schedule pods
+          of a component. It replaces the default anti affinity of the component, which
+          prefers to schedule its pods onto different nodes and failure domains.
+        displayName: PodAntiAffinity
+        path: template.querier.podAntiAffinity
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:podAntiAffinity
       - description: PodSecurityContext defines security context will be applied to
           all pods of this component.
         displayName: PodSecurityContext
@@ -1392,6 +1440,14 @@ spec:
       - description: NodeSelector defines the simple form of the node-selection constraint.
         displayName: Node Selector
         path: template.queryFrontend.nodeSelector
+      - description: |-
+          PodAntiAffinity defines the pod anti affinity scheduling rules to schedule pods
+          of a component. It replaces the default anti affinity of the component, which
+          prefers to schedule its pods onto different nodes and failure domains.
+        displayName: PodAntiAffinity
+        path: template.queryFrontend.podAntiAffinity
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:podAntiAffinity
       - description: PodSecurityContext defines security context will be applied to
           all pods of this component.
         displayName: PodSecurityContext
