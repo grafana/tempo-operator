@@ -4,15 +4,11 @@
 # The following changes trigger a new generation of the manifests:
 # * initial deployment
 # * secret change in step 03-update-storage-secret.yaml
-# * annotation change by the certrotation controller
-#
-# Depending on the timing, we observe either three generations or two generations in case
-# the changes by the tempostack controller and certrotation controller are batched into a single update.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tempo-simplest-compactor
-  (generation >= `2`): true
+  generation: 2
 status:
   readyReplicas: 1
 ---
@@ -20,7 +16,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tempo-simplest-distributor
-  (generation >= `2`): true
+  generation: 2
 status:
   readyReplicas: 1
 ---
@@ -28,7 +24,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: tempo-simplest-ingester
-  (generation >= `2`): true
+  generation: 2
 status:
   readyReplicas: 1
 ---
@@ -36,7 +32,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tempo-simplest-querier
-  (generation >= `2`): true
+  generation: 2
 status:
   readyReplicas: 1
 ---
@@ -44,6 +40,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tempo-simplest-query-frontend
-  (generation >= `2`): true
+  generation: 2
 status:
   readyReplicas: 1

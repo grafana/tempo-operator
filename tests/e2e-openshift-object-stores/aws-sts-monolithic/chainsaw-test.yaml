@@ -15,6 +15,10 @@ spec:
         content: ./aws-sts-s3-create.sh tmmono chainsaw-awssts-mono
     - assert:
         file: 00-aws-sts-s3-create-assert.yaml
+    cleanup:
+    - script:
+        timeout: 2m
+        content: ./aws-sts-s3-delete.sh tmmono chainsaw-awssts-mono
   - name: Install Tempo Monolithic
     try:
     - apply:
@@ -22,13 +26,6 @@ spec:
     - assert:
         timeout: 5m
         file: 01-install-monolithic-assert.yaml
-    catch:
-    - get:
-        apiVersion: tempo.grafana.com/v1alpha1
-        kind: TempoMonolithic
-        format: yaml
-    - podLogs:
-        selector: app.kubernetes.io/managed-by=tempo-operator
   - name: Generate traces
     try:
     - apply:
@@ -41,7 +38,3 @@ spec:
         file: 04-verify-traces.yaml
     - assert:
         file: 04-verify-traces-assert.yaml
-    cleanup:
-    - script:
-        timeout: 2m
-        content: ./aws-sts-s3-delete.sh tmmono chainsaw-awssts-mono

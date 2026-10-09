@@ -11,6 +11,10 @@ spec:
         content: ./create-bucket.sh
     - assert:
         file: 00-assert.yaml
+    cleanup:
+    - script:
+        timeout: 5m
+        content: ./delete-bucket.sh
   - name: step-01
     try:
     - apply:
@@ -18,13 +22,6 @@ spec:
     - assert:
         timeout: 5m
         file: 01-assert.yaml
-    catch:
-    - get:
-        apiVersion: tempo.grafana.com/v1alpha1
-        kind: TempoMonolithic
-        format: yaml
-    - podLogs:
-        selector: app.kubernetes.io/managed-by=tempo-operator
   - name: step-03
     try:
     - apply:
@@ -37,8 +34,3 @@ spec:
         file: 04-verify-traces.yaml
     - assert:
         file: 04-assert.yaml
-  - name: Delete bucket
-    try:
-    - script:
-        timeout: 5m
-        content: ./delete-bucket.sh

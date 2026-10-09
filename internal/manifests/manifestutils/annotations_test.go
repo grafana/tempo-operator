@@ -57,6 +57,23 @@ func TestCommonAnnotations(t *testing.T) {
 				"tempo.grafana.com/config.hash": "abc123",
 			},
 		},
+		{
+			name: "storage secret and cco hash",
+			params: Params{
+				ConfigChecksum: "abc123",
+				StorageParams: StorageParams{
+					SecretHash: "storagehash",
+					CloudCredentials: CloudCredentials{
+						ContentHash: "ccohash",
+					},
+				},
+			},
+			expected: map[string]string{
+				"tempo.grafana.com/config.hash":         "abc123",
+				"tempo.grafana.com/storageSecret.hash":  "storagehash",
+				"tempo.grafana.com/token.cco.auth.hash": "ccohash",
+			},
+		},
 	}
 
 	for _, tt := range tests {
