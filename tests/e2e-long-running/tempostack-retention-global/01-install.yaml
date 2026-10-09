@@ -15,7 +15,23 @@ spec:
         cpu: 2000m
   retention:
     global:
-      traces: "32m"
+      traces: "3m"
+  # Shrink the ingester/compactor timings so expired traces are purged quickly
+  # and the sleep step can be short. A trace is fully gone only once both elapse:
+  #   - ingester: max_block_duration + complete_block_timeout    (= 2m)
+  #   - backend:  retention + 2x blocklist_poll                  (= 5m)
+  #               (compactor poll marks the block, querier poll then drops it)
+  # Without these overrides complete_block_timeout defaults to 15m (3x the 5m
+  # blocklist_poll), so the ingester keeps serving flushed blocks from memory
+  # long after retention.
+  extraConfig:
+    tempo:
+      ingester:
+        max_block_duration: 1m
+        complete_block_timeout: 1m
+      storage:
+        trace:
+          blocklist_poll: 1m
   template:
     queryFrontend:
       jaegerQuery:
