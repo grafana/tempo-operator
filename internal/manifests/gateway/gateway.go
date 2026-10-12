@@ -236,6 +236,9 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 			fmt.Sprintf("--traces.tls.ca-file=%s", path.Join(manifestutils.TempoInternalTLSCADir, manifestutils.TLSCAFilename)),
 			"--traces.tls.watch-certs=true",
 		}
+		if params.TLSProfile.Groups != nil {
+			tlsArgs = append(tlsArgs, fmt.Sprintf("--tls.curve-preferences=%s", params.TLSProfile.CurvePreferences()))
+		}
 		if params.TLSProfile.Ciphers != nil {
 			tlsArgs = append(tlsArgs, fmt.Sprintf("--tls.cipher-suites=%s", params.TLSProfile.CipherSuites()))
 		}

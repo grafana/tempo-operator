@@ -1,0 +1,4 @@
+change_type: enhancement
+component: operator
+note: Apply curve preferences of OpenShift cluster TLS profile to gateway and webhook
+issues: [1674]

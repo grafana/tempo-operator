@@ -16,6 +16,7 @@ import (
 	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
 	"github.com/grafana/tempo-operator/api/tempo/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
+	"github.com/grafana/tempo-operator/internal/tlsprofile"
 )
 
 func TestStatefulsetMemoryStorage(t *testing.T) {
@@ -725,12 +726,18 @@ func TestStatefulsetCustomServiceAccount(t *testing.T) {
 
 func TestStatefulsetGateway(t *testing.T) {
 	opts := Options{
+		TLSProfile: tlsprofile.TLSProfileOptions{
+			MinTLSVersion: "VersionTLS12",
+			Ciphers:       []string{"TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"},
+			Groups:        []string{"curve1", "curve2"},
+		},
 		CtrlConfig: configv1alpha1.ProjectConfig{
 			DefaultImages: configv1alpha1.ImagesSpec{
 				TempoGateway:    "quay.io/observatorium/api:x.y.z",
 				TempoGatewayOpa: "quay.io/observatorium/opa-openshift:x.y.z",
 			},
 			Gates: configv1alpha1.FeatureGates{
+				HTTPEncryption: true,
 				OpenShift: configv1alpha1.OpenShiftFeatureGates{
 					ServingCertsService: true,
 				},
@@ -800,14 +807,23 @@ func TestStatefulsetGateway(t *testing.T) {
 			"--web.listen=0.0.0.0:8080",
 			"--web.internal.listen=0.0.0.0:8081",
 			"--traces.tenant-header=x-scope-orgid",
-			"--traces.tempo.endpoint=http://localhost:3200",
+			"--traces.tempo.endpoint=https://localhost:3200",
 			"--traces.write-timeout=5s",
 			"--rbac.config=/etc/tempo-gateway/rbac/rbac.yaml",
 			"--tenants.config=/etc/tempo-gateway/tenants/tenants.yaml",
 			"--log.level=info",
+			"--tls.internal.server.key-file=/var/run/tls/server/tls.key",
+			"--tls.internal.server.cert-file=/var/run/tls/server/tls.crt",
+			"--traces.tls.key-file=/var/run/tls/server/tls.key",
+			"--traces.tls.cert-file=/var/run/tls/server/tls.crt",
+			"--traces.tls.ca-file=/var/run/ca/service-ca.crt",
+			"--traces.tls.watch-certs=true",
+			"--tls.curve-preferences=curve1,curve2",
+			"--tls.cipher-suites=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+			"--tls.min-version=VersionTLS12",
 			"--grpc.listen=0.0.0.0:8090",
 			"--traces.write.otlpgrpc.endpoint=localhost:4317",
-			"--traces.write.otlphttp.endpoint=http://localhost:4318",
+			"--traces.write.otlphttp.endpoint=https://localhost:4318",
 			"--traces.read.endpoint=http://localhost:16686",
 			"--tls.server.cert-file=/etc/tempo-gateway/serving-cert/tls.crt",
 			"--tls.server.key-file=/etc/tempo-gateway/serving-cert/tls.key",
@@ -838,7 +854,7 @@ func TestStatefulsetGateway(t *testing.T) {
 				HTTPGet: &corev1.HTTPGetAction{
 					Path:   "/live",
 					Port:   intstr.FromString("internal"),
-					Scheme: corev1.URISchemeHTTP,
+					Scheme: corev1.URISchemeHTTPS,
 				},
 			},
 			TimeoutSeconds:   2,
@@ -850,7 +866,7 @@ func TestStatefulsetGateway(t *testing.T) {
 				HTTPGet: &corev1.HTTPGetAction{
 					Path:   "/ready",
 					Port:   intstr.FromString("internal"),
-					Scheme: corev1.URISchemeHTTP,
+					Scheme: corev1.URISchemeHTTPS,
 				},
 			},
 			TimeoutSeconds:   1,
@@ -877,6 +893,14 @@ func TestStatefulsetGateway(t *testing.T) {
 				Name:      "tempo-sample-gateway-serving-cert",
 				ReadOnly:  true,
 				MountPath: "/etc/tempo-gateway/serving-cert",
+			},
+			{
+				Name:      "tempo-sample-ca-bundle",
+				MountPath: "/var/run/ca",
+			},
+			{
+				Name:      "tempo-sample-mtls",
+				MountPath: "/var/run/tls/server",
 			},
 		},
 		Resources: corev1.ResourceRequirements{
@@ -940,6 +964,16 @@ func TestStatefulsetGateway(t *testing.T) {
 					SecretName: "tempo-sample-gateway-serving-cert",
 				},
 			},
+		},
+		{
+			Name: "tempo-sample-ca-bundle",
+			VolumeSource: corev1.VolumeSource{ConfigMap: &corev1.ConfigMapVolumeSource{
+				LocalObjectReference: corev1.LocalObjectReference{Name: "tempo-sample-ca-bundle"},
+			}},
+		},
+		{
+			Name:         "tempo-sample-mtls",
+			VolumeSource: corev1.VolumeSource{Secret: &corev1.SecretVolumeSource{SecretName: "tempo-sample-mtls"}},
 		},
 	}, sts.Spec.Template.Spec.Volumes[3:])
 

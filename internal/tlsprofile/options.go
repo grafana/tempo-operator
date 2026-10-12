@@ -18,6 +18,13 @@ type TLSProfileOptions struct {
 	// MinTLSVersion is used to specify the minimal version of the TLS protocol
 	// that is negotiated during the TLS handshake.
 	MinTLSVersion string
+	// Groups contains IANA TLS Supported Groups names for key exchange.
+	Groups []string
+}
+
+// CurvePreferences returns the key exchange groups as a comma-separated list.
+func (o TLSProfileOptions) CurvePreferences() string {
+	return strings.Join(o.Groups, ",")
 }
 
 // CipherSuites transforms TLSProfileSpec.Ciphers from a slice

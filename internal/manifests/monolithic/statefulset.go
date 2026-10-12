@@ -464,6 +464,15 @@ func configureGateway(opts Options, sts *appsv1.StatefulSet) error {
 			fmt.Sprintf("--traces.tls.ca-file=%s", path.Join(manifestutils.TempoInternalTLSCADir, manifestutils.TLSCAFilename)),
 			"--traces.tls.watch-certs=true",
 		}...)
+		if opts.TLSProfile.Groups != nil {
+			args = append(args, fmt.Sprintf("--tls.curve-preferences=%s", opts.TLSProfile.CurvePreferences()))
+		}
+		if opts.TLSProfile.Ciphers != nil {
+			args = append(args, fmt.Sprintf("--tls.cipher-suites=%s", opts.TLSProfile.CipherSuites()))
+		}
+		if opts.TLSProfile.MinTLSVersion != "" {
+			args = append(args, fmt.Sprintf("--tls.min-version=%s", opts.TLSProfile.MinTLSVersion))
+		}
 	}
 
 	ports := []corev1.ContainerPort{
@@ -512,13 +521,6 @@ func configureGateway(opts Options, sts *appsv1.StatefulSet) error {
 			"--web.healthchecks.url=https://localhost:8080",
 			"--tls.client-auth-type=NoClientCert",
 		}...)
-
-		if opts.TLSProfile.Ciphers != nil {
-			args = append(args, fmt.Sprintf("--tls.cipher-suites=%s", opts.TLSProfile.CipherSuites()))
-		}
-		if opts.TLSProfile.MinTLSVersion != "" {
-			args = append(args, fmt.Sprintf("--tls.min-version=%s", opts.TLSProfile.MinTLSVersion))
-		}
 	}
 
 	gatewayContainer := corev1.Container{

@@ -812,9 +812,16 @@ func TestTLSParameters(t *testing.T) {
 		},
 	}
 
+	profile := tlsprofile.TLSProfileOptions{
+		MinTLSVersion: "VersionTLS12",
+		Ciphers:       []string{"TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"},
+		Groups:        []string{"curve1", "curve2"},
+	}
+
 	// test with TLS
 	objects, err := BuildGateway(manifestutils.Params{
-		Tempo: tempo,
+		Tempo:      tempo,
+		TLSProfile: profile,
 		CtrlConfig: configv1alpha1.ProjectConfig{
 			Gates: configv1alpha1.FeatureGates{
 				HTTPEncryption: true,
@@ -841,11 +848,15 @@ func TestTLSParameters(t *testing.T) {
 	assert.Contains(t, args, fmt.Sprintf("--traces.tls.ca-file=%s/service-ca.crt", manifestutils.TempoInternalTLSCADir))
 	assert.Contains(t, args, fmt.Sprintf("--traces.tempo.endpoint=https://%s:%d",
 		naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.QueryFrontendComponentName), manifestutils.PortHTTPServer))
+	assert.Contains(t, args, "--tls.min-version=VersionTLS12")
+	assert.Contains(t, args, "--tls.cipher-suites=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384")
+	assert.Contains(t, args, "--tls.curve-preferences=curve1,curve2")
 	assert.Equal(t, corev1.URISchemeHTTPS, dep.Spec.Template.Spec.Containers[0].ReadinessProbe.HTTPGet.Scheme)
 
 	// test without TLS
 	objects, err = BuildGateway(manifestutils.Params{
-		Tempo: tempo,
+		Tempo:      tempo,
+		TLSProfile: profile,
 		CtrlConfig: configv1alpha1.ProjectConfig{
 			Gates: configv1alpha1.FeatureGates{
 				HTTPEncryption: false,
@@ -871,6 +882,9 @@ func TestTLSParameters(t *testing.T) {
 	assert.NotContains(t, args, fmt.Sprintf("--traces.tls.ca-file=%s/service-ca.crt", manifestutils.TempoInternalTLSCADir))
 	assert.Contains(t, args, fmt.Sprintf("--traces.read.endpoint=http://%s:16686",
 		naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.QueryFrontendComponentName)))
+	assert.NotContains(t, args, "--tls.min-version=VersionTLS12")
+	assert.NotContains(t, args, "--tls.cipher-suites=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384")
+	assert.NotContains(t, args, "--tls.curve-preferences=curve1,curve2")
 	assert.Equal(t, corev1.URISchemeHTTP, dep.Spec.Template.Spec.Containers[0].ReadinessProbe.HTTPGet.Scheme)
 }
 
