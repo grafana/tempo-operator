@@ -948,7 +948,7 @@ func TestStatefulsetGateway(t *testing.T) {
 		Image: "quay.io/observatorium/opa-openshift:x.y.z",
 		Args: []string{
 			"--log.level=warn",
-			"--web.listen=:8082",
+			"--web.listen=127.0.0.1:8082",
 			"--web.internal.listen=:8083",
 			"--web.healthchecks.url=http://localhost:8082",
 			"--opa.package=tempomonolithic",
@@ -1233,7 +1233,7 @@ func TestStatefulsetGatewayRBAC(t *testing.T) {
 		Image: "quay.io/observatorium/opa-openshift:x.y.z",
 		Args: []string{
 			"--log.level=warn",
-			"--web.listen=:8082",
+			"--web.listen=127.0.0.1:8082",
 			"--web.internal.listen=:8083",
 			"--web.healthchecks.url=http://localhost:8082",
 			"--opa.package=tempomonolithic",
