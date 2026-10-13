@@ -13,8 +13,8 @@ require (
 	github.com/novln/docker-parser v1.0.0
 	github.com/onsi/ginkgo/v2 v2.32.1
 	github.com/onsi/gomega v1.43.0
-	github.com/openshift/cloud-credential-operator v0.0.0-20250417173756-8ff60a024ed9
-	github.com/openshift/library-go v0.0.0-20260210145149-d0e860e8d752
+	github.com/openshift/cloud-credential-operator v0.0.0-20260923223624-82a5b4459331
+	github.com/openshift/library-go v0.0.0-20260716104731-fdf18b82797f
 	github.com/operator-framework/api v0.45.0
 	github.com/operator-framework/operator-lib v0.19.0
 	github.com/prometheus/client_golang v1.24.0
@@ -39,12 +39,12 @@ require (
 )
 
 require (
-	github.com/openshift/api v0.0.0-20260130140113-71e91db96ffc
-	github.com/openshift/controller-runtime-common v0.0.0-20260210092218-8eef974290cd
-	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.74.0
+	github.com/openshift/api v0.0.0-20260804180423-23bc60074236
+	github.com/openshift/controller-runtime-common v0.0.0-20260318085703-1812aed6dbd2
+	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.86.1
 	github.com/stretchr/testify v1.11.1
 	gopkg.in/yaml.v3 v3.0.1
-	k8s.io/utils v0.0.0-20260626114624-be93311217bd
+	k8s.io/utils v0.0.0-20260707023825-cf1189d6abe3
 	sigs.k8s.io/controller-tools v0.22.0
 )
 
@@ -87,7 +87,6 @@ require (
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
 	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
 	github.com/gobuffalo/flect v1.0.3 // indirect
-	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/google/cel-go v0.30.0 // indirect
 	github.com/google/gnostic-models v0.7.1 // indirect
 	github.com/google/pprof v0.0.0-20260709232956-b9395ee17fa0 // indirect
