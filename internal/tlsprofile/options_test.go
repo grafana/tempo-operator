@@ -17,6 +17,33 @@ func TestOptionsCiphers(t *testing.T) {
 	assert.Equal(t, expected, ops.CipherSuites())
 }
 
+func TestServerCurvePreferences(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		groups []string
+		want   string
+	}{
+		{name: "unset"},
+		{name: "empty", groups: []string{}},
+		{
+			name:   "classical groups preserve order",
+			groups: []string{"secp521r1", "X25519", "secp256r1", "secp384r1"},
+			want:   "CurveP521,X25519,CurveP256,CurveP384",
+		},
+		{
+			name:   "unsupported groups are omitted",
+			groups: []string{"X25519MLKEM768", "X25519", "SecP256r1MLKEM768", "secp256r1", "SecP384r1MLKEM1024"},
+			want:   "X25519,CurveP256",
+		},
+		{name: "only unsupported groups", groups: []string{"X25519MLKEM768"}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			opts := TLSProfileOptions{Groups: tc.groups}
+			assert.Equal(t, tc.want, opts.CurvePreferencesDSKit())
+		})
+	}
+}
+
 func TestShortVersion(t *testing.T) {
 	type testCase struct {
 		version  openshiftconfigv1.TLSProtocolVersion
@@ -53,4 +80,30 @@ func TestShortVersion(t *testing.T) {
 		})
 	}
 
+}
+
+func TestOTELCurvePreferences(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		groups []string
+		want   []string
+	}{
+		{name: "unset"},
+		{name: "empty", groups: []string{}},
+		{
+			name:   "supported groups preserve order",
+			groups: []string{"X25519MLKEM768", "secp521r1", "X25519", "secp256r1", "secp384r1"},
+			want:   []string{"X25519MLKEM768", "P521", "X25519", "P256", "P384"},
+		},
+		{
+			name:   "unsupported groups are omitted",
+			groups: []string{"SecP256r1MLKEM768", "secp256r1", "SecP384r1MLKEM1024", "unknown"},
+			want:   []string{"P256"},
+		},
+		{name: "only unsupported groups", groups: []string{"unknown"}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.want, (TLSProfileOptions{Groups: tc.groups}).CurvePreferencesOTEL())
+		})
+	}
 }

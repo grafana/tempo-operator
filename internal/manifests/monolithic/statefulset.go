@@ -464,14 +464,14 @@ func configureGateway(opts Options, sts *appsv1.StatefulSet) error {
 			fmt.Sprintf("--traces.tls.ca-file=%s", path.Join(manifestutils.TempoInternalTLSCADir, manifestutils.TLSCAFilename)),
 			"--traces.tls.watch-certs=true",
 		}...)
-		if opts.TLSProfile.Groups != nil {
-			args = append(args, fmt.Sprintf("--tls.curve-preferences=%s", opts.TLSProfile.CurvePreferences()))
+		if opts.TLSProfile.MinTLSVersion != "" {
+			args = append(args, fmt.Sprintf("--tls.min-version=%s", opts.TLSProfile.MinTLSVersion))
 		}
 		if opts.TLSProfile.Ciphers != nil {
 			args = append(args, fmt.Sprintf("--tls.cipher-suites=%s", opts.TLSProfile.CipherSuites()))
 		}
-		if opts.TLSProfile.MinTLSVersion != "" {
-			args = append(args, fmt.Sprintf("--tls.min-version=%s", opts.TLSProfile.MinTLSVersion))
+		if opts.TLSProfile.Groups != nil {
+			args = append(args, fmt.Sprintf("--tls.curve-preferences=%s", opts.TLSProfile.CurvePreferencesIANA()))
 		}
 	}
 

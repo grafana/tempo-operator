@@ -93,11 +93,12 @@ type mcpserverOptions struct {
 }
 
 type receiverTLSOptions struct {
-	Enabled         bool
-	ClientCAEnabled bool
-	Paths           tlsFilePaths
-	MinTLSVersion   string
-	Ciphers         string
+	Enabled          bool
+	ClientCAEnabled  bool
+	Paths            tlsFilePaths
+	MinTLSVersion    string
+	Ciphers          string
+	CurvePreferences string
 }
 
 type storageTLSOptions struct {
@@ -109,14 +110,18 @@ type storageTLSOptions struct {
 
 // TLSProfileSpec is the desired behavior of a TLSProfileType.
 type tlsProfileOptions struct {
-	// Ciphers is used to specify the cipher algorithms that are negotiated
-	// during the TLS handshake.
-	Ciphers string
 	// MinTLSVersion is used to specify the minimal version of the TLS protocol
 	// that is negotiated during the TLS handshake.
 	MinTLSVersion string
 	// Same as MinTLSVersion but instead of VersionTLS12 will be 1.2
 	MinTLSVersionShort string
+	// Ciphers is used to specify the cipher algorithms that are negotiated
+	// during the TLS handshake.
+	Ciphers string
+	// CurvePreferencesOTEL contains the comma-separated OpenTelemetry receiver curve names.
+	CurvePreferencesOTEL string
+	// CurvePreferencesDSKit contains the comma-separated dskit server curve names.
+	CurvePreferencesDSKit string
 }
 
 type tlsFilePaths struct {

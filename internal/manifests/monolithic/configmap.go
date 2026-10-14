@@ -20,11 +20,12 @@ import (
 )
 
 type tempoReceiverTLSConfig struct {
-	CAFile       string   `yaml:"client_ca_file,omitempty"`
-	CertFile     string   `yaml:"cert_file,omitempty"`
-	KeyFile      string   `yaml:"key_file,omitempty"`
-	MinVersion   string   `yaml:"min_version,omitempty"`
-	CipherSuites []string `yaml:"cipher_suites,omitempty"`
+	CAFile           string   `yaml:"client_ca_file,omitempty"`
+	CertFile         string   `yaml:"cert_file,omitempty"`
+	KeyFile          string   `yaml:"key_file,omitempty"`
+	MinVersion       string   `yaml:"min_version,omitempty"`
+	CipherSuites     []string `yaml:"cipher_suites,omitempty"`
+	CurvePreferences []string `yaml:"curve_preferences,omitempty"`
 }
 
 type tempoReceiverConfig struct {
@@ -69,6 +70,7 @@ type tempoConfig struct {
 		HttpServerWriteTimeout time.Duration       `yaml:"http_server_write_timeout,omitempty"`
 		TLSMinVersion          string              `yaml:"tls_min_version,omitempty"`
 		TLSCipherSuites        string              `yaml:"tls_cipher_suites,omitempty"`
+		TLSCurvePreferences    string              `yaml:"tls_curve_preferences,omitempty"`
 		HTTPTLSConfig          *tempoHTTPTLSConfig `yaml:"http_tls_config,omitempty"`
 	} `yaml:"server"`
 
@@ -191,6 +193,7 @@ func configureReceiverTLS(tlsSpec *v1alpha1.TLSSpec, tlsProfile tlsprofile.TLSPr
 			ciphers = tlsSpec.CipherSuites
 		}
 		tlsCfg.CipherSuites = ciphers
+		tlsCfg.CurvePreferences = tlsProfile.CurvePreferencesOTEL()
 	}
 	return tlsCfg
 }
@@ -212,6 +215,9 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 		if opts.CtrlConfig.Gates.HTTPEncryption {
 			config.Server.TLSMinVersion = opts.TLSProfile.MinTLSVersion
 			config.Server.TLSCipherSuites = opts.TLSProfile.CipherSuites()
+			if opts.CtrlConfig.Gates.TempoTLSCurvePreferences {
+				config.Server.TLSCurvePreferences = opts.TLSProfile.CurvePreferencesDSKit()
+			}
 			config.Server.HTTPTLSConfig = &tempoHTTPTLSConfig{
 				CertFile:       path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSCertFilename),
 				KeyFile:        path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSKeyFilename),
@@ -301,11 +307,12 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 				}
 				config.Distributor.Receivers.OTLP.Protocols.GRPC = &tempoReceiverConfig{
 					TLS: tempoReceiverTLSConfig{
-						CertFile:     path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSCertFilename),
-						CAFile:       path.Join(manifestutils.TempoInternalTLSCADir, manifestutils.TLSCAFilename),
-						KeyFile:      path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSKeyFilename),
-						MinVersion:   minVersion,
-						CipherSuites: ciphers,
+						CertFile:         path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSCertFilename),
+						CAFile:           path.Join(manifestutils.TempoInternalTLSCADir, manifestutils.TLSCAFilename),
+						KeyFile:          path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSKeyFilename),
+						MinVersion:       minVersion,
+						CipherSuites:     ciphers,
+						CurvePreferences: opts.TLSProfile.CurvePreferencesOTEL(),
 					},
 				}
 			} else {
@@ -341,11 +348,12 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 				}
 				config.Distributor.Receivers.OTLP.Protocols.HTTP = &tempoReceiverConfig{
 					TLS: tempoReceiverTLSConfig{
-						CertFile:     path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSCertFilename),
-						CAFile:       path.Join(manifestutils.TempoInternalTLSCADir, manifestutils.TLSCAFilename),
-						KeyFile:      path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSKeyFilename),
-						MinVersion:   minVersion,
-						CipherSuites: ciphers,
+						CertFile:         path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSCertFilename),
+						CAFile:           path.Join(manifestutils.TempoInternalTLSCADir, manifestutils.TLSCAFilename),
+						KeyFile:          path.Join(manifestutils.TempoInternalTLSCertDir, manifestutils.TLSKeyFilename),
+						MinVersion:       minVersion,
+						CipherSuites:     ciphers,
+						CurvePreferences: opts.TLSProfile.CurvePreferencesOTEL(),
 					},
 					Endpoint: fmt.Sprintf("localhost:%d", manifestutils.PortOtlpHttp),
 				}
