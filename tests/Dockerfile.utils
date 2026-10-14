@@ -4,7 +4,7 @@ RUN apk add --no-cache git gcc musl-dev
 RUN git clone --depth 1 --branch v26.2.0 https://github.com/ory/hydra.git /hydra && \
     cd /hydra && CGO_ENABLED=1 go build -tags sqlite -ldflags="-s -w" -o /go/bin/hydra .
 RUN go install -ldflags="-s -w" github.com/open-telemetry/opentelemetry-collector-contrib/cmd/telemetrygen@v0.135.0
-RUN go install -ldflags="-s -w" github.com/openshift/tls-scanner/cmd/tls-scanner@b6d99c72ebb7d781fe234ba93c972c787cc980cf
+RUN go install -ldflags="-s -w" github.com/openshift/tls-scanner/cmd/tls-scanner@5633675debd89aed3a3b3dcec3090aeaec74da25
 
 FROM alpine:3.24@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b
 # coreutils, procps: required by testssl.sh
