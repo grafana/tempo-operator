@@ -116,6 +116,7 @@ func mergeOptionsFromFile(o manager.Options, cfg *configv1alpha1.ProjectConfig) 
 		tlsProfileSpec = configv1.TLSProfileSpec{
 			Ciphers:       tlsProfileOpts.Ciphers,
 			MinTLSVersion: configv1.TLSProtocolVersion(tlsProfileOpts.MinTLSVersion),
+			Groups:        tlsprofile.StringsToTLSGroups(tlsProfileOpts.Groups),
 		}
 
 		// Create TLS config function using the library with the converted spec
