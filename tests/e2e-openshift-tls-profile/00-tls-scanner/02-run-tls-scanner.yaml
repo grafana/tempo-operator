@@ -1,0 +1,100 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: tls-scanner
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: (join('-', ['tls-scanner-pods-reader', $namespace]))
+rules:
+# The scanner lists pods cluster-wide before applying the namespace filter.
+- apiGroups: [""]
+  resources: [pods]
+  verbs: [get, list]
+- apiGroups: [config.openshift.io]
+  resources: [apiservers]
+  resourceNames: [cluster]
+  verbs: [get]
+- apiGroups: [machineconfiguration.openshift.io]
+  resources: [kubeletconfigs]
+  verbs: [list]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: (join('-', ['tls-scanner-pods-reader', $namespace]))
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: (join('-', ['tls-scanner-pods-reader', $namespace]))
+subjects:
+- kind: ServiceAccount
+  name: tls-scanner
+  namespace: ($namespace)
+---
+apiVersion: security.openshift.io/v1
+kind: SecurityContextConstraints
+metadata:
+  name: (join('-', ['tls-scanner-scc', $namespace]))
+allowPrivilegedContainer: true
+allowPrivilegeEscalation: true
+allowHostNetwork: false
+allowHostPorts: false
+runAsUser:
+  type: RunAsAny
+seLinuxContext:
+  type: RunAsAny
+seccompProfiles:
+- '*'
+users:
+- (join(':', ['system:serviceaccount', $namespace, 'tls-scanner']))
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: tls-scanner
+  labels:
+    app: tls-scanner
+spec:
+  serviceAccountName: tls-scanner
+  containers:
+  - name: tls-scanner
+    image: ghcr.io/grafana/tempo-operator/test-utils:sha-e9b1e73
+    env:
+    - name: NAMESPACE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace
+    command:
+    - /bin/sh
+    - -eu
+    - -c
+    - |
+      tls-scanner \
+        -all-pods -namespace-filter "$NAMESPACE" \
+        -tls-profile-type Intermediate \
+        -artifact-dir /tmp -json-file results.json
+      scanner_exit_code=$?
+
+      cat /tmp/results.json
+      echo
+
+      jq -r '
+        def reported: sort | join(", ") | if . == "" then "not reported" else . end;
+        .ip_results[] |
+        "\(.pod.Name // "unknown") (\(.ip))",
+        ((.port_results // [] | sort_by(.port))[] |
+          "  \(.port): Status: \(.status // "unknown")",
+          "    TLS versions: \(.tls_versions // [] | sort)",
+          "    Ciphers: \(.tls_ciphers // [] | reported)",
+          "    Groups: \(.tls_key_exchange.groups // [] | reported)"
+        ),
+        ""
+      ' /tmp/results.json
+
+      exit "$scanner_exit_code"
+    securityContext:
+      privileged: true
+      runAsUser: 0
+  restartPolicy: Never
