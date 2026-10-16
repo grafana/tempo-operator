@@ -12,18 +12,14 @@ var ErrInvalidTLSVersion = errors.New("invalid TLS version")
 
 // TLSProfileOptions is the desired behavior of a TLSProfileType.
 type TLSProfileOptions struct {
-	// Ciphers is used to specify the cipher algorithms that are negotiated
-	// during the TLS handshake.
-	Ciphers []string
 	// MinTLSVersion is used to specify the minimal version of the TLS protocol
 	// that is negotiated during the TLS handshake.
 	MinTLSVersion string
-}
-
-// CipherSuites transforms TLSProfileSpec.Ciphers from a slice
-// to a string of elements joined with a comma.
-func (o TLSProfileOptions) CipherSuites() string {
-	return strings.Join(o.Ciphers, ",")
+	// Ciphers is used to specify the cipher algorithms that are negotiated
+	// during the TLS handshake.
+	Ciphers []string
+	// Groups contains IANA TLS Supported Groups names for key exchange.
+	Groups []string
 }
 
 // MinVersionOTELFormat returns the min TLS version but only the number instead of VersionTLS10 it will return 1.0.
@@ -40,4 +36,18 @@ func (o TLSProfileOptions) MinVersionOTELFormat() string {
 	default:
 		return ""
 	}
+}
+
+// CipherSuites transforms TLSProfileSpec.Ciphers from a slice
+// to a string of elements joined with a comma.
+func (o TLSProfileOptions) CipherSuites() string {
+	return strings.Join(o.Ciphers, ",")
+}
+
+// CurvePreferencesGateway returns the a comma-separated list of IANA group names.
+//
+// Supported curves:
+// https://github.com/observatorium/api/blob/c73556f/tls/config.go
+func (o TLSProfileOptions) CurvePreferencesGateway() string {
+	return strings.Join(o.Groups, ",")
 }
