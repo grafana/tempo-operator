@@ -5,7 +5,7 @@ change_type: enhancement
 component: tempostack, tempomonolithic
 
 # A brief description of the change. Surround your text with quotes ("") if it needs to start with a backtick (`).
-note: Update the gateway image to main-2026-09-30-c73556f and the opa-openshift image to main-2026-09-22-cc6817a.
+note: Update the gateway image to main-2026-10-13-d17ce87 and the opa-openshift image to main-2026-09-22-cc6817a.
 
 # One or more tracking issues related to the change
 issues: [1672]
