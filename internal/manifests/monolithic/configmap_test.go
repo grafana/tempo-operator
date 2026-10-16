@@ -327,6 +327,7 @@ usage_report:
 			opts: Options{
 				TLSProfile: tlsprofile.TLSProfileOptions{
 					MinTLSVersion: "VersionTLS12",
+					Groups:        []string{"X25519MLKEM768", "secp256r1"},
 					Ciphers:       []string{"abc"},
 				},
 			},
@@ -357,6 +358,7 @@ distributor:
             key_file: /var/run/tls/receiver/grpc/tls.key
             min_version: "1.2"
             cipher_suites: [abc]
+            curve_preferences: [X25519MLKEM768, P256]
 usage_report:
   reporting_enabled: false
 `,
@@ -572,6 +574,9 @@ usage_report:
 				},
 			},
 			opts: Options{
+				TLSProfile: tlsprofile.TLSProfileOptions{
+					Groups: []string{"X25519MLKEM768", "secp256r1", "X25519"},
+				},
 				CtrlConfig: configv1alpha1.ProjectConfig{
 					Gates: configv1alpha1.FeatureGates{
 						HTTPEncryption: true,
@@ -612,8 +617,10 @@ distributor:
             client_ca_file: /var/run/ca/service-ca.crt
             key_file: /var/run/tls/server/tls.key
             min_version: "1.3"
+            curve_preferences: [X25519MLKEM768, P256, X25519]
         grpc:
           tls:
+            curve_preferences: [X25519MLKEM768, P256, X25519]
             cert_file: /var/run/tls/server/tls.crt
             client_ca_file: /var/run/ca/service-ca.crt
             key_file: /var/run/tls/server/tls.key
@@ -639,4 +646,81 @@ usage_report:
 			require.YAMLEq(t, test.expected, string(cfg))
 		})
 	}
+}
+
+func TestBuildTempoConfigTempoTLSCurvePreferences(t *testing.T) {
+	opts := Options{
+		CtrlConfig: configv1alpha1.ProjectConfig{
+			Gates: configv1alpha1.FeatureGates{
+				HTTPEncryption:           true,
+				TempoTLSCurvePreferences: true,
+			},
+		},
+		Tempo: v1alpha1.TempoMonolithic{
+			Spec: v1alpha1.TempoMonolithicSpec{
+				Multitenancy: &v1alpha1.MonolithicMultitenancySpec{
+					Enabled: true,
+					TenantsSpec: v1alpha1.TenantsSpec{
+						Mode:           v1alpha1.ModeOpenShift,
+						Authentication: []v1alpha1.AuthenticationSpec{{TenantName: "dev", TenantID: "abc"}},
+					},
+				},
+			},
+		},
+		TLSProfile: tlsprofile.TLSProfileOptions{
+			MinTLSVersion: "VersionTLS12",
+			Groups:        []string{"X25519MLKEM768", "secp256r1", "X25519"},
+		},
+	}
+	opts.Tempo.Default(opts.CtrlConfig)
+	cfg, err := buildTempoConfig(opts)
+	require.NoError(t, err)
+
+	require.YAMLEq(t, `
+multitenancy_enabled: true
+server:
+  http_listen_address: 0.0.0.0
+  http_listen_port: 3200
+  grpc_listen_address: localhost
+  http_server_read_timeout: 30s
+  http_server_write_timeout: 30s
+  tls_min_version: VersionTLS12
+  tls_curve_preferences: CurveP256,X25519
+  http_tls_config:
+    cert_file: /var/run/tls/server/tls.crt
+    key_file: /var/run/tls/server/tls.key
+    client_auth_type: RequireAndVerifyClientCert
+    client_ca_file: /var/run/ca/service-ca.crt
+internal_server:
+  enable: true
+  http_listen_address: 0.0.0.0
+storage:
+  trace:
+    backend: local
+    wal:
+      path: /var/tempo/wal
+    local:
+      path: /var/tempo/blocks
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          tls:
+            client_ca_file: /var/run/ca/service-ca.crt
+            cert_file: /var/run/tls/server/tls.crt
+            key_file: /var/run/tls/server/tls.key
+            min_version: "1.2"
+            curve_preferences: [X25519MLKEM768, P256, X25519]
+        http:
+          tls:
+            client_ca_file: /var/run/ca/service-ca.crt
+            cert_file: /var/run/tls/server/tls.crt
+            key_file: /var/run/tls/server/tls.key
+            min_version: "1.2"
+            curve_preferences: [X25519MLKEM768, P256, X25519]
+          endpoint: localhost:4318
+usage_report:
+  reporting_enabled: false
+`, string(cfg))
 }

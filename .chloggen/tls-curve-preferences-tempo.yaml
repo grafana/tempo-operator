@@ -1,0 +1,7 @@
+change_type: enhancement
+component: operator
+note: Apply curve preferences of the OpenShift cluster TLS profile to Tempo components
+issues: [1685]
+subtext: |
+  Curve preferences are always applied to Tempo receivers. To apply them to internal Tempo servers,
+  enable `featureGates.tempoTLSCurvePreferences` (note that this requires a patched Tempo image).
