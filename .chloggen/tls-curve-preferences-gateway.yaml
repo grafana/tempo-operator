@@ -1,0 +1,4 @@
+change_type: enhancement
+component: operator
+note: Apply curve preferences of the TLS profile to the gateway and webhook
+issues: [1684]
