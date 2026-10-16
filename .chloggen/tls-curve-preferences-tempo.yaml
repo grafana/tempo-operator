@@ -1,0 +1,8 @@
+change_type: enhancement
+component: operator
+note: Apply curve preferences of the TLS profile to Tempo components
+issues: [1685]
+subtext: |
+  Curve preferences are always applied to Tempo receivers and the gateway.
+  To apply them to Tempo HTTP/gRPC servers, enable the `tempo.tlsCurvePreferences`
+  feature gate (this requires a patched Tempo image).

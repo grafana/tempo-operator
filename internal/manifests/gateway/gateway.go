@@ -243,7 +243,7 @@ func deployment(params manifestutils.Params, rbacCfgHash string, tenantsCfgHash 
 			tlsArgs = append(tlsArgs, fmt.Sprintf("--tls.cipher-suites=%s", params.TLSProfile.CipherSuites()))
 		}
 		if params.TLSProfile.Groups != nil {
-			tlsArgs = append(tlsArgs, fmt.Sprintf("--tls.curve-preferences=%s", params.TLSProfile.CurvePreferencesIANA()))
+			tlsArgs = append(tlsArgs, fmt.Sprintf("--tls.curve-preferences=%s", params.TLSProfile.CurvePreferencesGateway()))
 		}
 	}
 

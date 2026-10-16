@@ -173,8 +173,9 @@ func buildReceiverTLSConfig(tempo v1alpha1.TempoStack, tlsProfile tlsprofile.TLS
 			Key:         path.Join(manifestutils.ReceiverTLSCertDir, manifestutils.TLSKeyFilename),
 			Certificate: path.Join(manifestutils.ReceiverTLSCertDir, manifestutils.TLSCertFilename),
 		},
-		MinTLSVersion: minVersion,
-		Ciphers:       strings.Join(ciphers, ","),
+		MinTLSVersion:    minVersion,
+		Ciphers:          strings.Join(ciphers, ","),
+		CurvePreferences: strings.Join(tlsProfile.CurvePreferencesOTEL(), ","),
 	}
 }
 
@@ -205,6 +206,10 @@ func buildS3StorageTLSConfig(params manifestutils.Params) storageTLSOptions {
 
 func buildTempoServerTLSConfig(params manifestutils.Params) tlsOptions {
 	tempo := params.Tempo
+	var curvePreferencesDSKit string
+	if params.CtrlConfig.Gates.Tempo.TLSCurvePreferences {
+		curvePreferencesDSKit = params.TLSProfile.CurvePreferencesDSKit()
+	}
 	return tlsOptions{
 		Paths: tlsFilePaths{
 			CA:          path.Join(manifestutils.TempoInternalTLSCADir, manifestutils.TLSCAFilename),
@@ -217,9 +222,11 @@ func buildTempoServerTLSConfig(params manifestutils.Params) tlsOptions {
 			MetricsGenerator: naming.ServiceFqdn(tempo.Namespace, tempo.Name, manifestutils.MetricsGeneratorComponentName),
 		},
 		Profile: tlsProfileOptions{
-			MinTLSVersion:      params.TLSProfile.MinTLSVersion,
-			Ciphers:            params.TLSProfile.CipherSuites(),
-			MinTLSVersionShort: params.TLSProfile.MinVersionOTELFormat(),
+			MinTLSVersion:         params.TLSProfile.MinTLSVersion,
+			MinTLSVersionShort:    params.TLSProfile.MinVersionOTELFormat(),
+			Ciphers:               params.TLSProfile.CipherSuites(),
+			CurvePreferencesDSKit: curvePreferencesDSKit,
+			CurvePreferencesOTEL:  strings.Join(params.TLSProfile.CurvePreferencesOTEL(), ","),
 		},
 	}
 }

@@ -1439,6 +1439,7 @@ func TestBuildConfigurationTLS(t *testing.T) {
 					"TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
 					"TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384"},
 				MinTLSVersion: "VersionTLS12",
+				Groups:        []string{"X25519MLKEM768", "X25519", "secp256r1", "secp384r1"},
 			},
 			expect: `
 ---
@@ -1494,16 +1495,16 @@ querier:
       tls_key_path: /var/run/tls/server/tls.key
       tls_ca_path: /var/run/ca/service-ca.crt
       tls_server_name: tempo-test-query-frontend.nstest.svc.cluster.local
-      tls_cipher_suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
       tls_min_version: VersionTLS12
+      tls_cipher_suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
 internal_server:
   enable: true
   http_listen_address: ""
   http_tls_config:
     cert_file: /var/run/tls/server/tls.crt
     key_file: /var/run/tls/server/tls.key
-  tls_cipher_suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
   tls_min_version: VersionTLS12
+  tls_cipher_suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
 server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
@@ -1511,8 +1512,8 @@ server:
   http_server_read_timeout: 3m0s
   http_server_write_timeout: 3m0s
   log_format: logfmt
-  tls_cipher_suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
   tls_min_version: VersionTLS12
+  tls_cipher_suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
   grpc_tls_config:
     cert_file: /var/run/tls/server/tls.crt
     client_auth_type: RequireAndVerifyClientCert
@@ -1550,8 +1551,8 @@ ingester_client:
     tls_ca_path: /var/run/ca/service-ca.crt
     tls_server_name: tempo-test-ingester.nstest.svc.cluster.local
     tls_insecure_skip_verify: false
-    tls_cipher_suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
     tls_min_version: VersionTLS12
+    tls_cipher_suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
 `,
 		},
 		{
@@ -1734,18 +1735,20 @@ distributor:
           endpoint: "0.0.0.0:4317"
           tls:
             cert_file: /var/run/tls/server/tls.crt
+            min_version: "1.2"
             cipher_suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+            curve_preferences: "P256"
             client_ca_file: /var/run/ca/service-ca.crt
             key_file: /var/run/tls/server/tls.key
-            min_version: "1.2"
         http:
           endpoint: "0.0.0.0:4318"
           tls:
             cert_file: /var/run/tls/server/tls.crt
+            min_version: "1.2"
             cipher_suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+            curve_preferences: "P256"
             client_ca_file: /var/run/ca/service-ca.crt
             key_file: /var/run/tls/server/tls.key
-            min_version: "1.2"
 
   ring:
     kvstore:
@@ -1773,16 +1776,16 @@ querier:
       tls_key_path: /var/run/tls/server/tls.key
       tls_ca_path: /var/run/ca/service-ca.crt
       tls_server_name: tempo-test-query-frontend.nstest.svc.cluster.local
-      tls_cipher_suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
       tls_min_version: VersionTLS12
+      tls_cipher_suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
 internal_server:
   enable: true
   http_listen_address: ""
   http_tls_config:
     cert_file: /var/run/tls/server/tls.crt
     key_file: /var/run/tls/server/tls.key
-  tls_cipher_suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
   tls_min_version: VersionTLS12
+  tls_cipher_suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
 server:
   grpc_server_max_recv_msg_size: 4194304
   grpc_server_max_send_msg_size: 4194304
@@ -1790,8 +1793,8 @@ server:
   http_server_read_timeout: 3m0s
   http_server_write_timeout: 3m0s
   log_format: logfmt
-  tls_cipher_suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
   tls_min_version: VersionTLS12
+  tls_cipher_suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
   grpc_tls_config:
     cert_file: /var/run/tls/server/tls.crt
     client_auth_type: RequireAndVerifyClientCert
@@ -1829,8 +1832,8 @@ ingester_client:
     tls_ca_path: /var/run/ca/service-ca.crt
     tls_server_name: tempo-test-ingester.nstest.svc.cluster.local
     tls_insecure_skip_verify: false
-    tls_cipher_suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
     tls_min_version: VersionTLS12
+    tls_cipher_suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
 `
 	cfg, err := buildConfiguration(manifestutils.Params{
 		Tempo: v1alpha1.TempoStack{
@@ -1872,6 +1875,7 @@ ingester_client:
 				"TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
 				"TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384"},
 			MinTLSVersion: "VersionTLS12",
+			Groups:        []string{"secp256r1"},
 		},
 		CtrlConfig: configv1alpha1.ProjectConfig{
 			Gates: configv1alpha1.FeatureGates{
@@ -2001,6 +2005,7 @@ distributor:
             cert_file: /var/run/tls/receiver/tls.crt
             key_file: /var/run/tls/receiver/tls.key
             min_version: VersionTLS13
+            curve_preferences: "X25519MLKEM768,P256,P384"
         thrift_binary:
           endpoint: 0.0.0.0:6832
         thrift_compact:
@@ -2011,12 +2016,14 @@ distributor:
             cert_file: /var/run/tls/receiver/tls.crt
             key_file: /var/run/tls/receiver/tls.key
             min_version: VersionTLS13
+            curve_preferences: "X25519MLKEM768,P256,P384"
     zipkin:
        endpoint: 0.0.0.0:9411
        tls:
          cert_file: /var/run/tls/receiver/tls.crt
          key_file: /var/run/tls/receiver/tls.key
          min_version: VersionTLS13
+         curve_preferences: "X25519MLKEM768,P256,P384"
     otlp:
       protocols:
         grpc:
@@ -2025,6 +2032,7 @@ distributor:
             cert_file: /var/run/tls/receiver/tls.crt
             key_file: /var/run/tls/receiver/tls.key
             min_version: VersionTLS13
+            curve_preferences: "X25519MLKEM768,P256,P384"
 
         http:
           endpoint: "0.0.0.0:4318"
@@ -2032,6 +2040,7 @@ distributor:
             cert_file: /var/run/tls/receiver/tls.crt
             key_file: /var/run/tls/receiver/tls.key
             min_version: VersionTLS13
+            curve_preferences: "X25519MLKEM768,P256,P384"
   ring:
     kvstore:
       store: memberlist
@@ -2109,6 +2118,7 @@ distributor:
             cert_file: /var/run/tls/receiver/tls.crt
             key_file: /var/run/tls/receiver/tls.key
             min_version: VersionTLS13
+            curve_preferences: "X25519MLKEM768,P256,P384"
         thrift_binary:
           endpoint: 0.0.0.0:6832
         thrift_compact:
@@ -2120,6 +2130,7 @@ distributor:
             cert_file: /var/run/tls/receiver/tls.crt
             key_file: /var/run/tls/receiver/tls.key
             min_version: VersionTLS13
+            curve_preferences: "X25519MLKEM768,P256,P384"
     zipkin:
        endpoint: 0.0.0.0:9411
        tls:
@@ -2127,6 +2138,7 @@ distributor:
          cert_file: /var/run/tls/receiver/tls.crt
          key_file: /var/run/tls/receiver/tls.key
          min_version: VersionTLS13
+         curve_preferences: "X25519MLKEM768,P256,P384"
     otlp:
       protocols:
         grpc:
@@ -2136,6 +2148,7 @@ distributor:
             cert_file: /var/run/tls/receiver/tls.crt
             key_file: /var/run/tls/receiver/tls.key
             min_version: VersionTLS13
+            curve_preferences: "X25519MLKEM768,P256,P384"
 
         http:
           endpoint: "0.0.0.0:4318"
@@ -2144,6 +2157,7 @@ distributor:
             cert_file: /var/run/tls/receiver/tls.crt
             key_file: /var/run/tls/receiver/tls.key
             min_version: VersionTLS13
+            curve_preferences: "X25519MLKEM768,P256,P384"
   ring:
     kvstore:
       store: memberlist
@@ -2221,6 +2235,7 @@ distributor:
             key_file: /var/run/tls/receiver/tls.key
             min_version: VersionTLS12
             cipher_suites: "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"
+            curve_preferences: "X25519MLKEM768,P256,P384"
         thrift_binary:
           endpoint: 0.0.0.0:6832
         thrift_compact:
@@ -2232,6 +2247,7 @@ distributor:
             key_file: /var/run/tls/receiver/tls.key
             min_version: VersionTLS12
             cipher_suites: "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"
+            curve_preferences: "X25519MLKEM768,P256,P384"
     zipkin:
        endpoint: 0.0.0.0:9411
        tls:
@@ -2239,6 +2255,7 @@ distributor:
          key_file: /var/run/tls/receiver/tls.key
          min_version: VersionTLS12
          cipher_suites: "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"
+         curve_preferences: "X25519MLKEM768,P256,P384"
     otlp:
       protocols:
         grpc:
@@ -2248,6 +2265,7 @@ distributor:
             key_file: /var/run/tls/receiver/tls.key
             min_version: VersionTLS12
             cipher_suites: "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"
+            curve_preferences: "X25519MLKEM768,P256,P384"
 
         http:
           endpoint: "0.0.0.0:4318"
@@ -2256,6 +2274,7 @@ distributor:
             key_file: /var/run/tls/receiver/tls.key
             min_version: VersionTLS12
             cipher_suites: "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"
+            curve_preferences: "X25519MLKEM768,P256,P384"
   ring:
     kvstore:
       store: memberlist
@@ -2341,6 +2360,7 @@ query_frontend:
 				},
 				TLSProfile: tlsprofile.TLSProfileOptions{
 					MinTLSVersion: string(openshiftconfigv1.VersionTLS13),
+					Groups:        []string{"X25519MLKEM768", "secp256r1", "secp384r1"},
 				},
 			})
 			require.NoError(t, err)
@@ -3158,4 +3178,137 @@ func TestApplyRateLimitDefaults(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestBuildConfigurationTempoTLSCurvePreferences(t *testing.T) {
+	cfg, err := buildConfiguration(manifestutils.Params{
+		CtrlConfig: configv1alpha1.ProjectConfig{
+			Gates: configv1alpha1.FeatureGates{
+				HTTPEncryption: true,
+				GRPCEncryption: true,
+				Tempo:          configv1alpha1.TempoFeatureGates{TLSCurvePreferences: true},
+			},
+		},
+		Tempo: v1alpha1.TempoStack{
+			ObjectMeta: metav1.ObjectMeta{Name: "test", Namespace: "default"},
+			Spec: v1alpha1.TempoStackSpec{
+				Storage: v1alpha1.ObjectStorageSpec{
+					Secret: v1alpha1.ObjectStorageSecretSpec{Type: v1alpha1.ObjectStorageSecretS3},
+				},
+			},
+		},
+		StorageParams: manifestutils.StorageParams{S3: &manifestutils.S3{}},
+		TLSProfile: tlsprofile.TLSProfileOptions{
+			MinTLSVersion: "VersionTLS12",
+			Groups:        []string{"X25519MLKEM768", "secp256r1", "X25519"},
+		},
+	})
+	require.NoError(t, err)
+
+	require.YAMLEq(t, `
+compactor:
+  compaction:
+    block_retention: 0s
+  ring:
+    kvstore:
+      store: memberlist
+distributor:
+  receivers:
+    jaeger:
+      protocols:
+        thrift_http:
+          endpoint: 0.0.0.0:14268
+        thrift_binary:
+          endpoint: 0.0.0.0:6832
+        thrift_compact:
+          endpoint: 0.0.0.0:6831
+        grpc:
+          endpoint: 0.0.0.0:14250
+    zipkin:
+      endpoint: 0.0.0.0:9411
+    otlp:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
+  ring:
+    kvstore:
+      store: memberlist
+ingester:
+  lifecycler:
+    ring:
+      kvstore:
+        store: memberlist
+      replication_factor: 0
+    tokens_file_path: /var/tempo/tokens.json
+  max_block_duration: 10m
+memberlist:
+  abort_if_cluster_join_fails: false
+  join_members:
+  - tempo-test-gossip-ring
+multitenancy_enabled: false
+querier:
+  max_concurrent_queries: 20
+  frontend_worker:
+    frontend_address: tempo-test-query-frontend-discovery:9095
+    grpc_client_config:
+      tls_enabled: true
+      tls_cert_path: /var/run/tls/server/tls.crt
+      tls_key_path: /var/run/tls/server/tls.key
+      tls_ca_path: /var/run/ca/service-ca.crt
+      tls_server_name: tempo-test-query-frontend.default.svc.cluster.local
+      tls_min_version: VersionTLS12
+internal_server:
+  enable: true
+  http_listen_address: ""
+  tls_min_version: VersionTLS12
+  tls_curve_preferences: X25519MLKEM768,CurveP256,X25519
+  http_tls_config:
+    cert_file: /var/run/tls/server/tls.crt
+    key_file: /var/run/tls/server/tls.key
+server:
+  grpc_server_max_recv_msg_size: 4194304
+  grpc_server_max_send_msg_size: 4194304
+  http_listen_port: 3200
+  http_server_read_timeout: 0s
+  http_server_write_timeout: 0s
+  log_format: logfmt
+  tls_min_version: VersionTLS12
+  tls_curve_preferences: X25519MLKEM768,CurveP256,X25519
+  grpc_tls_config:
+    cert_file: /var/run/tls/server/tls.crt
+    key_file: /var/run/tls/server/tls.key
+    client_ca_file: /var/run/ca/service-ca.crt
+    client_auth_type: RequireAndVerifyClientCert
+  http_tls_config:
+    cert_file: /var/run/tls/server/tls.crt
+    client_auth_type: RequireAndVerifyClientCert
+    key_file: /var/run/tls/server/tls.key
+    client_ca_file: /var/run/ca/service-ca.crt
+storage:
+  trace:
+    backend: s3
+    blocklist_poll: 5m
+    local:
+      path: /var/tempo/traces
+    wal:
+      path: /var/tempo/wal
+usage_report:
+  reporting_enabled: false
+query_frontend:
+  search:
+    max_spans_per_span_set: 0
+    concurrent_jobs: 2000
+    max_duration: 0s
+ingester_client:
+  grpc_client_config:
+    tls_enabled: true
+    tls_cert_path: /var/run/tls/server/tls.crt
+    tls_key_path: /var/run/tls/server/tls.key
+    tls_ca_path: /var/run/ca/service-ca.crt
+    tls_server_name: tempo-test-ingester.default.svc.cluster.local
+    tls_insecure_skip_verify: false
+    tls_min_version: VersionTLS12
+`, string(cfg))
 }

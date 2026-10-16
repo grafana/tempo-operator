@@ -471,7 +471,7 @@ func configureGateway(opts Options, sts *appsv1.StatefulSet) error {
 			args = append(args, fmt.Sprintf("--tls.cipher-suites=%s", opts.TLSProfile.CipherSuites()))
 		}
 		if opts.TLSProfile.Groups != nil {
-			args = append(args, fmt.Sprintf("--tls.curve-preferences=%s", opts.TLSProfile.CurvePreferencesIANA()))
+			args = append(args, fmt.Sprintf("--tls.curve-preferences=%s", opts.TLSProfile.CurvePreferencesGateway()))
 		}
 	}
 
