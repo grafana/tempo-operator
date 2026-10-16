@@ -111,6 +111,7 @@ func TestGetTLSSettings(t *testing.T) {
 				expected := TLSProfileOptions{
 					MinTLSVersion: string(openshiftconfigv1.TLSProfiles[tc.profile.Type].MinTLSVersion),
 					Ciphers:       crypto.OpenSSLToIANACipherSuites(openshiftconfigv1.TLSProfiles[tc.profile.Type].Ciphers),
+					Groups:        []string{"X25519MLKEM768", "X25519", "secp256r1", "secp384r1"},
 				}
 				assert.EqualValues(t, expected, options)
 			}
@@ -125,6 +126,7 @@ func TestGetTLSSettingsCustom(t *testing.T) {
 			TLSProfileSpec: openshiftconfigv1.TLSProfileSpec{
 				Ciphers:       []string{"DES-CBC3-SHA"},
 				MinTLSVersion: "TLSv1.1",
+				Groups:        []openshiftconfigv1.TLSGroup{openshiftconfigv1.TLSGroupSecP384r1, openshiftconfigv1.TLSGroupX25519MLKEM768},
 			},
 		},
 	}
@@ -132,6 +134,7 @@ func TestGetTLSSettingsCustom(t *testing.T) {
 	expected := TLSProfileOptions{
 		Ciphers:       crypto.OpenSSLToIANACipherSuites([]string{"DES-CBC3-SHA"}),
 		MinTLSVersion: "TLSv1.1",
+		Groups:        []string{"secp384r1", "X25519MLKEM768"},
 	}
 
 	options, err := GetTLSSettings(&profile)
