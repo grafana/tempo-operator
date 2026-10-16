@@ -156,8 +156,18 @@ type OauthProxyFeatureGates struct {
 	DefaultEnabled bool `json:"defaultEnabled,omitempty"`
 }
 
+// TempoFeatureGates configures Tempo component features.
+type TempoFeatureGates struct {
+	// TLSCurvePreferences enables applying TLS profile curve preferences to Tempo components.
+	// This requires a patched Tempo image.
+	TLSCurvePreferences bool `json:"tlsCurvePreferences,omitempty"`
+}
+
 // FeatureGates is the supported set of all operator feature gates.
 type FeatureGates struct {
+	// Tempo configures Tempo component features.
+	Tempo TempoFeatureGates `json:"tempo,omitempty"`
+
 	// OpenShift contains a set of feature gates supported only on OpenShift.
 	OpenShift OpenShiftFeatureGates `json:"openshift,omitempty"`
 
