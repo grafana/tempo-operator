@@ -20,10 +20,7 @@ spec:
                 palette:
                   mode: categorical
               links:
-                trace: /observe/traces/${traceId}?namespace=tracing&name=tempo&tenant=project1
-
-                # Will work once https://github.com/perses/plugins/commit/6c98c0b95f35bd4bf151d4cb8e70ae6360c8f5ba is part of COO
-                #trace: /monitoring/v2/dashboards/view?dashboard=tracing-detail&project=tracing&start=1h&refresh=30s&var-traceid=${traceId}
+                trace: /monitoring/v2/dashboards/view?dashboard=tracing-detail&project=tracing&start=1h&refresh=30s&var-traceid=${traceId}
           queries:
             - kind: TraceQuery
               spec:
