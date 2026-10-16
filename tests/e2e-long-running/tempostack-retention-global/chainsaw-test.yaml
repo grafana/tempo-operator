@@ -39,7 +39,7 @@ spec:
   - name: Wait for the TempoStack global retention time period
     try:
     - sleep:
-        duration: 45m
+        duration: 5m
   - name: The number of traces must be 0 post the retention period
     try:
     - apply:
