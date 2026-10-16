@@ -1,6 +1,7 @@
 package tlsprofile
 
 import (
+	"crypto/tls"
 	"errors"
 	"strings"
 
@@ -47,4 +48,42 @@ func (o TLSProfileOptions) CipherSuites() string {
 // CurvePreferencesIANA returns the key exchange groups as a comma-separated list of IANA group names.
 func (o TLSProfileOptions) CurvePreferencesIANA() string {
 	return strings.Join(o.Groups, ",")
+}
+
+// CurvePreferencesDSKit converts IANA group names to dskit server TLS curve names.
+// Groups unsupported by dskit are omitted.
+func (o TLSProfileOptions) CurvePreferencesDSKit() string {
+	var curves []string
+	for _, group := range o.Groups {
+		switch openshiftconfigv1.TLSGroup(group) {
+		case openshiftconfigv1.TLSGroupSecP256r1:
+			curves = append(curves, tls.CurveP256.String())
+		case openshiftconfigv1.TLSGroupSecP384r1:
+			curves = append(curves, tls.CurveP384.String())
+		case openshiftconfigv1.TLSGroupSecP521r1:
+			curves = append(curves, tls.CurveP521.String())
+		case openshiftconfigv1.TLSGroupX25519:
+			curves = append(curves, group)
+		}
+	}
+	return strings.Join(curves, ",")
+}
+
+// CurvePreferencesOTEL converts IANA group names to OpenTelemetry TLS curve names.
+// Groups unsupported by Tempo's OpenTelemetry receivers are omitted.
+func (o TLSProfileOptions) CurvePreferencesOTEL() []string {
+	var curves []string
+	for _, group := range o.Groups {
+		switch openshiftconfigv1.TLSGroup(group) {
+		case openshiftconfigv1.TLSGroupSecP256r1:
+			curves = append(curves, "P256")
+		case openshiftconfigv1.TLSGroupSecP384r1:
+			curves = append(curves, "P384")
+		case openshiftconfigv1.TLSGroupSecP521r1:
+			curves = append(curves, "P521")
+		case openshiftconfigv1.TLSGroupX25519, openshiftconfigv1.TLSGroupX25519MLKEM768:
+			curves = append(curves, group)
+		}
+	}
+	return curves
 }

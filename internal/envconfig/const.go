@@ -83,8 +83,9 @@ const (
 	featureGateOpenShiftClusterTLSPolicy = "openshift.clusterTLSPolicy"
 
 	// TLS/Encryption feature gates.
-	featureGateHTTPEncryption = "httpEncryption"
-	featureGateGRPCEncryption = "grpcEncryption"
+	featureGateHTTPEncryption           = "httpEncryption"
+	featureGateGRPCEncryption           = "grpcEncryption"
+	featureGateTempoTLSCurvePreferences = "tempoTLSCurvePreferences"
 
 	// Operator integration feature gates.
 	featureGatePrometheusOperator = "prometheusOperator"

@@ -49,6 +49,10 @@ var featureGates = []featureGateDef{
 		cfg.Gates.GRPCEncryption = enabled
 	}},
 
+	{featureGateTempoTLSCurvePreferences, func(cfg *configv1alpha1.ProjectConfig, enabled bool) {
+		cfg.Gates.TempoTLSCurvePreferences = enabled
+	}},
+
 	// Operators & Observability feature gates.
 	{featureGatePrometheusOperator, func(cfg *configv1alpha1.ProjectConfig, enabled bool) {
 		cfg.Gates.PrometheusOperator = enabled

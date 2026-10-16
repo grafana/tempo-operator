@@ -25,6 +25,9 @@ distributor:
 {{- if .ReceiverTLS.Ciphers }}
             cipher_suites: "{{ .ReceiverTLS.Ciphers }}"
 {{- end }}
+{{- if .ReceiverTLS.CurvePreferences }}
+            curve_preferences: "{{ .ReceiverTLS.CurvePreferences }}"
+{{- end }}
 {{- end }}
         thrift_binary:
           endpoint: 0.0.0.0:6832
@@ -43,6 +46,9 @@ distributor:
 {{- if .ReceiverTLS.Ciphers }}
             cipher_suites: "{{ .ReceiverTLS.Ciphers }}"
 {{- end }}
+{{- if .ReceiverTLS.CurvePreferences }}
+            curve_preferences: "{{ .ReceiverTLS.CurvePreferences }}"
+{{- end }}
 {{- end }}
     zipkin:
       endpoint: 0.0.0.0:9411
@@ -56,6 +62,9 @@ distributor:
         min_version: "{{ .ReceiverTLS.MinTLSVersion }}"
 {{- if .ReceiverTLS.Ciphers }}
         cipher_suites: "{{ .ReceiverTLS.Ciphers }}"
+{{- end }}
+{{- if .ReceiverTLS.CurvePreferences }}
+        curve_preferences: "{{ .ReceiverTLS.CurvePreferences }}"
 {{- end }}
   {{- end }}
 {{- end }}
@@ -72,6 +81,9 @@ distributor:
 {{- if .TLS.Profile.Ciphers }}
             cipher_suites: "{{ .TLS.Profile.Ciphers }}"
 {{- end }}
+{{- if .TLS.Profile.CurvePreferencesOTEL }}
+            curve_preferences: "{{ .TLS.Profile.CurvePreferencesOTEL }}"
+{{- end }}
 {{- end }}
 {{- if .ReceiverTLS.Enabled }}
           tls:
@@ -83,6 +95,9 @@ distributor:
             min_version: "{{ .ReceiverTLS.MinTLSVersion }}"
 {{- if .ReceiverTLS.Ciphers }}
             cipher_suites: "{{ .ReceiverTLS.Ciphers }}"
+{{- end }}
+{{- if .ReceiverTLS.CurvePreferences }}
+            curve_preferences: "{{ .ReceiverTLS.CurvePreferences }}"
 {{- end }}
 {{- end }}
         http:
@@ -96,6 +111,9 @@ distributor:
 {{- if .TLS.Profile.Ciphers }}
             cipher_suites: "{{ .TLS.Profile.Ciphers }}"
 {{- end }}
+{{- if .TLS.Profile.CurvePreferencesOTEL }}
+            curve_preferences: "{{ .TLS.Profile.CurvePreferencesOTEL }}"
+{{- end }}
 {{- end }}
 {{- if .ReceiverTLS.Enabled }}
           tls:
@@ -107,6 +125,9 @@ distributor:
             min_version: "{{ .ReceiverTLS.MinTLSVersion }}"
 {{- if .ReceiverTLS.Ciphers }}
             cipher_suites: "{{ .ReceiverTLS.Ciphers }}"
+{{- end }}
+{{- if .ReceiverTLS.CurvePreferences }}
+            curve_preferences: "{{ .ReceiverTLS.CurvePreferences }}"
 {{- end }}
 {{- end }}
   ring:
@@ -195,10 +216,10 @@ querier:
       tls_key_path: {{ .TLS.Paths.Key }}
       tls_ca_path: {{ .TLS.Paths.CA }}
       tls_server_name: {{ .TLS.ServerNames.QueryFrontend }}
+      tls_min_version: {{ .TLS.Profile.MinTLSVersion }}
 {{- if .TLS.Profile.Ciphers }}
       tls_cipher_suites: {{ .TLS.Profile.Ciphers }}
 {{- end }}
-      tls_min_version: {{ .TLS.Profile.MinTLSVersion }}
 {{- end }}
 {{- if .Search.QueryTimeout }}
   search:
@@ -208,10 +229,13 @@ querier:
 internal_server:
   enable: true
   http_listen_address: ""
+  tls_min_version: {{ .TLS.Profile.MinTLSVersion }}
 {{- if .TLS.Profile.Ciphers }}
   tls_cipher_suites: {{ .TLS.Profile.Ciphers }}
 {{- end }}
-  tls_min_version: {{ .TLS.Profile.MinTLSVersion }}
+{{- if .TLS.Profile.CurvePreferencesDSKit }}
+  tls_curve_preferences: {{ .TLS.Profile.CurvePreferencesDSKit }}
+{{- end }}
   http_tls_config:
     cert_file: {{ .TLS.Paths.Certificate }}
     key_file: {{ .TLS.Paths.Key }}
@@ -224,10 +248,13 @@ server:
   http_server_write_timeout: {{ .Timeout }}
   log_format: logfmt
 {{- if or .Gates.GRPCEncryption .Gates.HTTPEncryption }}
+  tls_min_version: {{ .TLS.Profile.MinTLSVersion }}
 {{- if .TLS.Profile.Ciphers }}
   tls_cipher_suites: {{ .TLS.Profile.Ciphers }}
 {{- end }}
-  tls_min_version: {{ .TLS.Profile.MinTLSVersion }}
+{{- if .TLS.Profile.CurvePreferencesDSKit }}
+  tls_curve_preferences: {{ .TLS.Profile.CurvePreferencesDSKit }}
+{{- end }}
 {{- end }}
 {{- if .Gates.GRPCEncryption }}
   grpc_tls_config:
@@ -334,10 +361,10 @@ ingester_client:
     tls_ca_path: {{ .TLS.Paths.CA }}
     tls_server_name: {{ .TLS.ServerNames.Ingester }}
     tls_insecure_skip_verify: false
+    tls_min_version: {{ .TLS.Profile.MinTLSVersion }}
 {{- if .TLS.Profile.Ciphers }}
     tls_cipher_suites: {{ .TLS.Profile.Ciphers }}
 {{- end }}
-    tls_min_version: {{ .TLS.Profile.MinTLSVersion }}
 {{- end }}
 {{- if .MetricsGenerator.Enabled }}
 {{- if .Gates.GRPCEncryption }}
@@ -349,10 +376,10 @@ metrics_generator_client:
     tls_ca_path: {{ .TLS.Paths.CA }}
     tls_server_name: {{ .TLS.ServerNames.MetricsGenerator }}
     tls_insecure_skip_verify: false
+    tls_min_version: {{ .TLS.Profile.MinTLSVersion }}
 {{- if .TLS.Profile.Ciphers }}
     tls_cipher_suites: {{ .TLS.Profile.Ciphers }}
 {{- end }}
-    tls_min_version: {{ .TLS.Profile.MinTLSVersion }}
 {{- end }}
 metrics_generator:
   ring:

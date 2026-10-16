@@ -219,6 +219,10 @@ type FeatureGates struct {
 	// when using HTTPEncryption or GRPCEncryption.
 	TLSProfile TLSProfileType `json:"tlsProfile,omitempty"`
 
+	// TempoTLSCurvePreferences enables applying TLS profile curve preferences to Tempo components.
+	// This only works with a patched Tempo image.
+	TempoTLSCurvePreferences bool `json:"tempoTLSCurvePreferences,omitempty"`
+
 	// PrometheusOperator defines whether the Prometheus Operator CRD exists in the cluster.
 	// This CRD is part of prometheus-operator.
 	PrometheusOperator bool `json:"prometheusOperator,omitempty"`
