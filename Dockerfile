@@ -1,5 +1,5 @@
 # Build the manager binary
-FROM golang:1.26@sha256:26326682769ca980f8f1d3b1f52be2dd1c1d25270e3de3fe0c97d6bb65df3556 AS builder
+FROM golang:1.26@sha256:37cfcca63222ec499bec5e8ad7aad52dbf7529db36d5812b8eae2f0621aa92d6 AS builder
 
 WORKDIR /workspace
 # Cache tool dependencies
