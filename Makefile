@@ -3,9 +3,9 @@ OPERATOR_VERSION ?= 0.22.0
 TEMPO_VERSION ?= 2.10.8
 JAEGER_QUERY_VERSION ?= 1.68.0
 TEMPO_QUERY_VERSION ?= $(TEMPO_VERSION)
-# https://quay.io/repository/observatorium/api
-TEMPO_GATEWAY_VERSION ?= main-2026-09-30-c73556f
-# https://quay.io/repository/observatorium/opa-openshift
+# https://quay.io/repository/observatorium/api?tab=tags
+TEMPO_GATEWAY_VERSION ?= main-2026-10-13-d17ce87
+# https://quay.io/repository/observatorium/opa-openshift?tab=tags
 TEMPO_GATEWAY_OPA_VERSION ?= main-2026-09-22-cc6817a
 OAUTH_PROXY_VERSION=4.14
 
