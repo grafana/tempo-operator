@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/kyverno/chainsaw/main/.schemas/json/test-chainsaw-v1alpha1.json
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: gateway-tls-scanner
+spec:
+  # Other tests in this suite change the cluster-wide TLS profile.
+  concurrent: false
+  template: true
+  steps:
+  - name: install-storage
+    try:
+    - apply:
+        file: 00-install-storage.yaml
+    - assert:
+        file: 00-assert.yaml
+  - name: install-tempo
+    try:
+    - apply:
+        file: 01-install-tempo.yaml
+    - assert:
+        file: 01-assert.yaml
+  - name: scan-and-summarize
+    try:
+    - apply:
+        file: 02-run-tls-scanner.yaml
+    - assert:
+        file: 02-assert.yaml
+    finally:
+    - script:
+        content: |
+          set -eu
+          oc logs tls-scanner -n "$NAMESPACE"
