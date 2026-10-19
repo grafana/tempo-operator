@@ -82,7 +82,7 @@ spec:
 
       jq -r '
         def reported: sort | join(", ") | if . == "" then "not reported" else . end;
-        .ip_results[] |
+        (.ip_results | sort_by(.pod.Name // "unknown"))[] |
         "\(.pod.Name // "unknown") (\(.ip))",
         ((.port_results // [] | sort_by(.port))[] |
           "  \(.port): Status: \(.status // "unknown")",
