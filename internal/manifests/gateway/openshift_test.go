@@ -42,7 +42,7 @@ func TestPatchOPAContainer(t *testing.T) {
 	require.Equal(t, 1, len(dep.Spec.Template.Spec.Containers))
 	assert.Equal(t, []string{
 		"--log.level=warn",
-		"--web.listen=:8082", "--web.internal.listen=:8083",
+		"--web.listen=127.0.0.1:8082", "--web.internal.listen=:8083",
 		"--web.healthchecks.url=http://localhost:8082",
 		"--opa.package=tempostack",
 		"--opa.ssar",
