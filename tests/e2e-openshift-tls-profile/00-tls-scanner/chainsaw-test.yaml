@@ -2,7 +2,7 @@
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
-  name: gateway-tls-scanner
+  name: 00-tls-scanner
 spec:
   # Other tests in this suite change the cluster-wide TLS profile.
   concurrent: false

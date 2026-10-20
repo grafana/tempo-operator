@@ -1,7 +1,7 @@
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
-  name: monolithic-monitoring
+  name: monitoring-monolithic
 spec:
   description: Test metrics produced by Tempo Monolithc can be scraped by in-cluster monitoring
   # Avoid running this test case in parallel to prevent the deletion of shared resources used by multiple tests, specifically in the context of OpenShift user workload monitoring.

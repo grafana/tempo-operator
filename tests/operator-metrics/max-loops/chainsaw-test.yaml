@@ -2,7 +2,7 @@
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
-  name: operator-metrics
+  name: max-loops
 spec:
   steps:
   - name: step-00

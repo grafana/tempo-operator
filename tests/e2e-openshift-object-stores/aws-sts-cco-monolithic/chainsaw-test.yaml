@@ -1,7 +1,7 @@
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
-  name: aws-sts-monolithic-cco
+  name: aws-sts-cco-monolithic
   labels:
     type: aws-sts-cco
 spec:
