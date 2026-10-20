@@ -1,4 +1,0 @@
-change_type: bug_fix
-component: gateway
-note: Bind opa-openshift endpoint to localhost
-issues: [1673]
