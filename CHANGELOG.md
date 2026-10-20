@@ -3,6 +3,62 @@ Changes by Version
 
 <!-- next version -->
 
+## 0.23.0
+
+### 💡 Enhancements 💡
+
+- `tempostack, tempomonolithic`: Update the gateway image to main-2026-10-13-d17ce87 and the opa-openshift image to main-2026-09-22-cc6817a. (#1672)
+- `operator`: Update Kubernetes dependencies to 1.37 (#1675)
+- `tempostack, tempomonolithic`: Roll out pods when the storage secret changes (#1655)
+- `tempostack`: Support overriding the pod anti affinity of a TempoStack component via the new spec.template.<component>.podAntiAffinity field (#1662)
+  By default the pods of a component only *prefer* to be scheduled onto different nodes and failure
+  domains, which the scheduler may ignore. This is true of zone-aware stacks as well: topology
+  spread constraints balance the pods across zones, but inside a zone several replicas of a
+  component can still land on the same node.
+  
+  A stack that needs a hard guarantee now sets its own anti affinity, per component:
+  
+  ```yaml
+  spec:
+    template:
+      ingester:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app.kubernetes.io/component: ingester
+                app.kubernetes.io/instance: sample
+            topologyKey: kubernetes.io/hostname
+  ```
+  
+  The field replaces the default anti affinity of that component rather than adding to it. Note
+  that a required term leaves the surplus pods `Pending` when a component has more replicas than
+  schedulable nodes.
+  
+  The behavior follows the Grafana Loki Operator, which exposes the same field per component.
+  
+
+### 🧰 Bug fixes 🧰
+
+- `tempostack`: Fix invalid `components.metricsGenerator` status field (#1642)
+  Fixes the "The field components.metricsGenerator is invalid." error in the OpenShift console.
+- `tempostack, tempomonolithic`: Roll out pods when the Cloud Credential Operator rotates the managed credentials secret (#1650)
+- `gateway`: Bind opa-openshift endpoint to localhost (#1673)
+- `tempostack`: For S3 static credentials, derive the HTTP/HTTPS transport from the storage secret endpoint scheme instead of the storage TLS toggle (#1649)
+  An `https://` endpoint now connects over HTTPS even when `spec.storage.tls.enabled` is false.
+  
+- `tempostack`: Use the configured gateway ingress host in OpenShift tenant redirect URLs. (#1629)
+  When spec.template.gateway.ingress.host is set, the OpenShift Route already uses that
+  hostname. Tenant redirectURL values in tenants.yaml now use the same host instead of
+  the generated default Route hostname.
+  
+
+### Components
+- Tempo: [v2.10.8](https://github.com/grafana/tempo/releases/tag/v2.10.8)
+
+### Support
+This release supports Kubernetes 1.25 to 1.36.
+
 ## 0.22.0
 
 ### 🚩 Deprecations 🚩
