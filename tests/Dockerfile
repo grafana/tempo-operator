@@ -1,5 +1,5 @@
 # The Dockerfile's resulting image is purpose-built for executing Tempo Operator e2e tests within the OpenShift release (https://github.com/openshift/release) using Prow CI.
-FROM golang:1.27@sha256:65b6f280bf050ec5af12716857e8ea8439d694dbba8f31ceeb7630670071f2bb
+FROM golang:1.26@sha256:37cfcca63222ec499bec5e8ad7aad52dbf7529db36d5812b8eae2f0621aa92d6
 
 # Copy the repository files
 COPY . /tmp/tempo-operator
@@ -49,7 +49,7 @@ RUN curl -fL -o awscliv2.zip \
     && rm -rf awscliv2.zip aws/
 
 # Install Azure CLI 2.86.0 via APT repo (replaces curl|bash pipe)
-# golang:1.27 base is Debian trixie; azure-cli apt repo has no trixie dist entry, bookworm packages work on trixie.
+# golang:1.26 base is Debian trixie; azure-cli apt repo has no trixie dist entry, bookworm packages work on trixie.
 # GPG key SHA256: 2fa9c05d591a1582a9aba276272478c262e95ad00acf60eaee1644d93941e3c6
 # If sha256sum fails here, Microsoft rotated their GPG key - update the hash and verify the new key.
 RUN mkdir -p /etc/apt/keyrings \
