@@ -131,13 +131,12 @@ jobs:
     - name: Build and push operator and bundle image to local container registry
       id: build
       run: |
-        LATEST_VERSION=$(curl -sS --max-time 10 \
-          "https://operatorhub.io/api/operator?packageName=tempo-operator" \
-          | jq -r '.operator.version // empty' 2>/dev/null) || true
+        kubectl wait --for=create packagemanifest/tempo-operator -n olm --timeout=5m
+        LATEST_VERSION=$(kubectl get packagemanifest tempo-operator -n olm -o jsonpath='{.status.channels[?(@.name=="alpha")].currentCSVDesc.version}')
 
         if [ -z "$LATEST_VERSION" ]; then
-          echo "::warning::OperatorHub API is unavailable, skipping upgrade tests"
-          exit 0
+          echo "::error::Could not resolve the Tempo Operator version from OLM"
+          exit 1
         fi
 
         make opm
