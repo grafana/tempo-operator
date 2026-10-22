@@ -3,6 +3,19 @@ Changes by Version
 
 <!-- next version -->
 
+## 0.23.1
+
+### 💡 Enhancements 💡
+
+- `operator`: Upgrade Go to 1.26.10 (#1691)
+- `tempostack, tempomonolithic`: Update Tempo to 2.10.10 (#1689)
+
+### Components
+- Tempo: [v2.10.10](https://github.com/grafana/tempo/releases/tag/v2.10.10)
+
+### Support
+This release supports Kubernetes 1.25 to 1.36.
+
 ## 0.23.0
 
 ### 💡 Enhancements 💡
