@@ -65,7 +65,7 @@ spec:
             - -c
             - |
               mkdir -p /storage/tempo && \
-              minio server --certs-dir=/tmp/.minio/certs /storage
+              exec minio server --certs-dir=/tmp/.minio/certs /storage
           env:
             - name: MINIO_ACCESS_KEY
               value: tempo
