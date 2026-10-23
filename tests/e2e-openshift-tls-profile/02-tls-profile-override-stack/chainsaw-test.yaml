@@ -2,7 +2,7 @@
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
-  name: tls-profile-override-stack
+  name: 02-tls-profile-override-stack
 spec:
   # Must run alone because it patches the operator subscription.
   concurrent: false

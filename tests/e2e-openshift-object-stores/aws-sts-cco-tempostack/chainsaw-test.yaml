@@ -1,8 +1,7 @@
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
-  name: aws-sts-tempostack-cco
-  
+  name: aws-sts-cco-tempostack
   labels:
     type: aws-sts-cco
 spec:

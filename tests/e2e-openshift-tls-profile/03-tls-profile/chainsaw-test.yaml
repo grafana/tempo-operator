@@ -2,7 +2,7 @@
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
-  name: tls-profile
+  name: 03-tls-profile
 spec:
   # Must run alone because it patches the cluster-wide APIServer resource.
   concurrent: false

@@ -2,7 +2,7 @@
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
-  name: operator-networkpolicies
+  name: networkpolicies-operator
 spec:
   timeouts:
     assert: 120s
@@ -24,4 +24,3 @@ spec:
           value: ($stdout)
     - assert:
         file: 00-asserts.yaml
-

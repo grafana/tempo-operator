@@ -31,7 +31,7 @@ func TestGenerateOperatorPolicies(t *testing.T) {
 
 	policies := GenerateOperatorPolicies(namespace, apiServerInfo)
 
-	expectedPolicies, err := loadExpectedPolicies(t, "../../../tests/e2e/networkpolicies/00-asserts.yaml")
+	expectedPolicies, err := loadExpectedPolicies(t, "../../../tests/e2e/networkpolicies-operator/00-asserts.yaml")
 	require.NoError(t, err, "Failed to load expected policies from YAML")
 
 	assert.Equal(t, expectedPolicies, policies, "Generated policies do not match expected policies")
