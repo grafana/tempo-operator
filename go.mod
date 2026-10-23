@@ -11,7 +11,7 @@ require (
 	github.com/grafana/grafana-operator/v5 v5.24.0
 	github.com/imdario/mergo v0.3.16
 	github.com/novln/docker-parser v1.0.0
-	github.com/onsi/ginkgo/v2 v2.32.1
+	github.com/onsi/ginkgo/v2 v2.33.0
 	github.com/onsi/gomega v1.44.0
 	github.com/openshift/cloud-credential-operator v0.0.0-20250417173756-8ff60a024ed9
 	github.com/openshift/library-go v0.0.0-20261001144932-192662696fc7
@@ -45,7 +45,7 @@ require (
 	github.com/stretchr/testify v1.12.1
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/utils v0.0.0-20260707023825-cf1189d6abe3
-	sigs.k8s.io/controller-tools v0.22.0
+	sigs.k8s.io/controller-tools v0.23.0
 )
 
 require (
