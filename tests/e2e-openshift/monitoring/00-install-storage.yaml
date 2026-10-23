@@ -42,7 +42,7 @@ spec:
             - -c
             - |
               mkdir -p /storage/tempo && \
-              minio server /storage
+              exec minio server /storage
           env:
             - name: MINIO_ACCESS_KEY
               value: tempo
