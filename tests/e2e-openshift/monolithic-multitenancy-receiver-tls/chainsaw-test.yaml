@@ -4,8 +4,6 @@ kind: Test
 metadata:
   name: monolithic-multitenancy-receiver-tls
 spec:
-  # Avoid running this test case in parallel to prevent the deletion of shared resources used by multiple tests.
-  concurrent: false
   namespace: chainsaw-mono-mt-tls
   steps:
   - name: step-01
