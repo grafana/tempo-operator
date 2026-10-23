@@ -48,6 +48,7 @@ func GetTLSSettings(profile *openshiftconfigv1.TLSSecurityProfile) (TLSProfileOp
 	var (
 		minTLSVersion openshiftconfigv1.TLSProtocolVersion
 		ciphers       []string
+		groups        []openshiftconfigv1.TLSGroup
 	)
 
 	if profile == nil {
@@ -63,10 +64,12 @@ func GetTLSSettings(profile *openshiftconfigv1.TLSSecurityProfile) (TLSProfileOp
 		}
 		minTLSVersion = profile.Custom.MinTLSVersion
 		ciphers = profile.Custom.Ciphers
+		groups = profile.Custom.Groups
 	case openshiftconfigv1.TLSProfileOldType, openshiftconfigv1.TLSProfileIntermediateType, openshiftconfigv1.TLSProfileModernType:
 		spec := openshiftconfigv1.TLSProfiles[profile.Type]
 		minTLSVersion = spec.MinTLSVersion
 		ciphers = spec.Ciphers
+		groups = spec.Groups
 	default:
 		return TLSProfileOptions{}, kverrors.New("unable to determine tls profile settings %s", profile.Type)
 	}
@@ -75,5 +78,30 @@ func GetTLSSettings(profile *openshiftconfigv1.TLSSecurityProfile) (TLSProfileOp
 	return TLSProfileOptions{
 		MinTLSVersion: string(minTLSVersion),
 		Ciphers:       crypto.OpenSSLToIANACipherSuites(ciphers),
+		// Groups use IANA "TLS Supported Groups" names, which the operands accept directly.
+		Groups: tlsGroupsToStrings(groups),
 	}, nil
+}
+
+func tlsGroupsToStrings(groups []openshiftconfigv1.TLSGroup) []string {
+	if len(groups) == 0 {
+		return nil
+	}
+	result := make([]string, len(groups))
+	for i, group := range groups {
+		result[i] = string(group)
+	}
+	return result
+}
+
+// StringsToTLSGroups converts IANA TLS Supported Groups names to OpenShift TLS groups.
+func StringsToTLSGroups(groups []string) []openshiftconfigv1.TLSGroup {
+	if len(groups) == 0 {
+		return nil
+	}
+	result := make([]openshiftconfigv1.TLSGroup, len(groups))
+	for i, group := range groups {
+		result[i] = openshiftconfigv1.TLSGroup(group)
+	}
+	return result
 }
