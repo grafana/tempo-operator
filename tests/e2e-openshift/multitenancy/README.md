@@ -68,7 +68,7 @@ EOF
 - `enableUserWorkload`: Enables monitoring for user namespaces
 - `enableUserAlertmanagerConfig`: Allows user-defined alerting rules
 
-**Reference**: [`00-workload-monitoring.yaml`](./00-workload-monitoring.yaml)
+**Reference**: [shared workload monitoring configuration](../_common/user-workload-monitoring.yaml)
 
 ### Step 2: Deploy MinIO Object Storage with TLS
 
@@ -351,7 +351,17 @@ EOF
 Run the metrics validation script:
 
 ```bash
-./check_metrics.sh
+set -euo pipefail
+../_common/verify-metrics.sh \
+  "tempo_query_frontend_queries_total{namespace=\"$NAMESPACE\"}" \
+  "tempo_request_duration_seconds_count{namespace=\"$NAMESPACE\"}" \
+  "tempo_request_duration_seconds_sum{namespace=\"$NAMESPACE\"}" \
+  "tempo_request_duration_seconds_bucket{namespace=\"$NAMESPACE\"}" \
+  "tempo_build_info{namespace=\"$NAMESPACE\"}" \
+  "tempo_ingester_bytes_received_total{namespace=\"$NAMESPACE\"}" \
+  "tempo_ingester_flush_failed_retries_total{namespace=\"$NAMESPACE\"}" \
+  "tempo_ingester_failed_flushes_total{namespace=\"$NAMESPACE\"}" \
+  "tempo_ring_members{namespace=\"$NAMESPACE\"}"
 ```
 
 This script validates the presence of key Tempo metrics:
@@ -359,9 +369,8 @@ This script validates the presence of key Tempo metrics:
 - `tempo_request_duration_seconds_*`
 - `tempo_build_info`
 - `tempo_ingester_bytes_received_total`
-- `tempo_operator_tempostack_*`
 
-**Reference**: [`check_metrics.sh`](./check_metrics.sh)
+**Reference**: [`verify-metrics.sh`](../_common/verify-metrics.sh)
 
 ## Key Features Demonstrated
 
@@ -562,4 +571,4 @@ chainsaw test --test-dir ./tests/e2e-openshift/multitenancy --config .chainsaw-o
 
 **Test Definition**: [`chainsaw-test.yaml`](./chainsaw-test.yaml)
 
-**Note**: This test runs with `concurrent: false` to prevent conflicts with shared OpenShift monitoring resources.
+**Note**: This test can run concurrently using the [shared monitoring fixtures](../_common/README.md). Monitoring configuration remains enabled after the tests.

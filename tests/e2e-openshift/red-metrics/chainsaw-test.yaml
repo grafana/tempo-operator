@@ -5,8 +5,6 @@ metadata:
   name: red-metrics
 spec:
   namespace: chainsaw-redmetrics
-  # Avoid running this test case in parallel to prevent the deletion of shared resources used by multiple tests, specifically in the context of OpenShift user workload monitoring.
-  concurrent: false
   steps:
   - name: step-00
     try:
@@ -15,11 +13,13 @@ spec:
     - assert:
         file: 00-assert.yaml
   - name: step-01
+    # Monitoring is shared by concurrent tests and remains enabled after the suite.
+    skipDelete: true
     try:
     - apply:
-        file: 01-install-workload-monitoring.yaml
+        file: ../_common/user-workload-monitoring.yaml
     - assert:
-        file: 01-assert.yaml
+        file: ../_common/user-workload-monitoring-assert.yaml
   - name: step-02
     try:
     - apply:
@@ -56,6 +56,14 @@ spec:
         content: ./check_alert.sh
   - name: step-07
     try:
+    - apply:
+        file: ../_common/e2e-metrics-reader.yaml
     - script:
         timeout: 5m
-        content: ./check_metrics.sh
+        content: |
+          set -euo pipefail
+          ../_common/verify-metrics.sh \
+            "traces_span_metrics_duration_bucket{namespace='$NAMESPACE'}" \
+            "traces_span_metrics_duration_count{namespace='$NAMESPACE'}" \
+            "traces_span_metrics_duration_sum{namespace='$NAMESPACE'}" \
+            "traces_span_metrics_calls{namespace='$NAMESPACE'}"

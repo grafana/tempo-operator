@@ -11,7 +11,7 @@ spec:
         command:
         - telemetrygen
         - traces
-        - --otlp-endpoint=tempo-tempostack-distributor.chainsaw-monitoring.svc:4317
+        - --otlp-endpoint=tempo-tempostack-distributor:4317
         - --otlp-insecure
         - --duration=3m
         - --workers=1
