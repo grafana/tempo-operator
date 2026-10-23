@@ -6,7 +6,7 @@ RUN git clone --depth 1 --branch v26.2.0 https://github.com/ory/hydra.git /hydra
 RUN go install -ldflags="-s -w" github.com/open-telemetry/opentelemetry-collector-contrib/cmd/telemetrygen@v0.135.0
 RUN go install -ldflags="-s -w" github.com/openshift/tls-scanner/cmd/tls-scanner@5633675debd89aed3a3b3dcec3090aeaec74da25
 
-FROM alpine:3.24@sha256:71e9b7bae160ba167fa17414401b94cbcdaf3c32feeab9298bd794a2a0614c35
+FROM alpine:3.24@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a
 # coreutils, procps: required by testssl.sh
 # curl, jq, bash: required by most e2e test scripts
 # minio: s3 storage for e2e tests
