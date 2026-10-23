@@ -76,7 +76,7 @@ data:
 EOF
 ```
 
-**Reference**: [`00-workload-monitoring.yaml`](./00-workload-monitoring.yaml)
+**Reference**: [shared workload monitoring configuration](../_common/user-workload-monitoring.yaml)
 
 ### Step 2: Deploy MinIO Object Storage with TLS
 
@@ -480,12 +480,18 @@ Check that metrics are properly collected for multi-tenant deployment:
 
 ```bash
 # Run metrics validation script
-./check_metrics.sh
+../_common/verify-metrics.sh \
+  "tempo_query_frontend_queries_total{namespace=\"$NAMESPACE\"}" \
+  "tempo_distributor_bytes_received_total{namespace=\"$NAMESPACE\"}" \
+  "tempo_distributor_spans_received_total{namespace=\"$NAMESPACE\"}" \
+  "tempo_ingester_bytes_received_total{namespace=\"$NAMESPACE\"}" \
+  "tempo_distributor_traces_per_batch_count{namespace=\"$NAMESPACE\"}" \
+  "tempo_build_info{namespace=\"$NAMESPACE\"}"
 ```
 
 The script validates multi-tenant specific metrics through OpenShift monitoring.
 
-**Reference**: [`check_metrics.sh`](./check_metrics.sh)
+**Reference**: [`verify-metrics.sh`](../_common/verify-metrics.sh)
 
 ## OpenShift Multitenancy Features
 
@@ -828,5 +834,5 @@ chainsaw test --test-dir ./tests/e2e-openshift/monolithic-multitenancy-openshift
 
 **Test Definition**: [`chainsaw-test.yaml`](./chainsaw-test.yaml)
 
-**Note**: This test requires OpenShift cluster administrator privileges for RBAC configuration and runs sequentially (`concurrent: false`) to avoid conflicts with shared monitoring resources. The test validates complete multi-tenant isolation including authentication, authorization, and data separation.
+**Note**: This test requires OpenShift cluster administrator privileges for RBAC configuration and runs concurrently using the [shared monitoring fixtures](../_common/README.md), which remain enabled after the tests. The test validates complete multi-tenant isolation including authentication, authorization, and data separation.
 

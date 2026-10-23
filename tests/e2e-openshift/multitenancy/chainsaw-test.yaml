@@ -4,8 +4,6 @@ kind: Test
 metadata:
   name: multitenancy
 spec:
-  # Avoid running this test case in parallel to prevent the deletion of shared resources used by multiple tests, specifically in the context of OpenShift user workload monitoring.
-  concurrent: false
   namespace: chainsaw-multitenancy
   steps:
   - name: step-00
@@ -15,11 +13,13 @@ spec:
     - assert:
         file: 00-assert.yaml
   - name: step-00-workload-monitoring
+    # Monitoring is shared by concurrent tests and remains enabled after the suite.
+    skipDelete: true
     try:
     - apply:
-        file: 00-workload-monitoring.yaml
+        file: ../_common/user-workload-monitoring.yaml
     - assert:
-        file: 00-workload-monitoring-assert.yaml
+        file: ../_common/user-workload-monitoring-assert.yaml
   - name: step-01
     try:
     - apply:
@@ -46,6 +46,19 @@ spec:
         file: 04-assert.yaml
   - name: step-05-check-metrics
     try:
+    - apply:
+        file: ../_common/e2e-metrics-reader.yaml
     - script:
         timeout: 5m
-        content: ./check_metrics.sh
+        content: |
+          set -euo pipefail
+          ../_common/verify-metrics.sh \
+            "tempo_query_frontend_queries_total{namespace='$NAMESPACE'}" \
+            "tempo_request_duration_seconds_count{namespace='$NAMESPACE'}" \
+            "tempo_request_duration_seconds_sum{namespace='$NAMESPACE'}" \
+            "tempo_request_duration_seconds_bucket{namespace='$NAMESPACE'}" \
+            "tempo_build_info{namespace='$NAMESPACE'}" \
+            "tempo_ingester_bytes_received_total{namespace='$NAMESPACE'}" \
+            "tempo_ingester_flush_failed_retries_total{namespace='$NAMESPACE'}" \
+            "tempo_ingester_failed_flushes_total{namespace='$NAMESPACE'}" \
+            "tempo_ring_members{namespace='$NAMESPACE'}"

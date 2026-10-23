@@ -2,7 +2,7 @@
 
 # Run the command and save its output
 while true; do
-    output=$(oc -n openshift-monitoring exec alertmanager-main-0 -- amtool --alertmanager.url http://localhost:9093 alert query SpanREDFrontendAPIRequestLatency 2>&1)
+    output=$(oc -n openshift-monitoring exec alertmanager-main-0 -- amtool --alertmanager.url http://localhost:9093 alert query SpanREDFrontendAPIRequestLatency "namespace=$NAMESPACE" 2>&1)
 
     # Check if the command was successful
     if [ $? -ne 0 ]; then

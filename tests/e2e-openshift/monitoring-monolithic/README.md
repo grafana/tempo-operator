@@ -80,7 +80,7 @@ oc get thanos-ruler -n openshift-user-workload-monitoring
 oc get configmap cluster-monitoring-config -n openshift-monitoring -o yaml
 ```
 
-**Reference**: [`workload-monitoring.yaml`](./workload-monitoring.yaml)
+**Reference**: [`user-workload-monitoring.yaml`](../_common/user-workload-monitoring.yaml)
 
 ### Step 2: Deploy TempoMonolithic with Monitoring Features
 
@@ -212,7 +212,13 @@ Execute comprehensive monitoring validation through OpenShift's Thanos Querier:
 
 ```bash
 # Run the monitoring validation script
-./check_metrics.sh
+../_common/verify-metrics.sh \
+  "tempo_query_frontend_queries_total{namespace=\"$NAMESPACE\"}" \
+  "tempo_distributor_bytes_received_total{namespace=\"$NAMESPACE\"}" \
+  "tempo_distributor_spans_received_total{namespace=\"$NAMESPACE\"}" \
+  "tempo_ingester_bytes_received_total{namespace=\"$NAMESPACE\"}" \
+  "tempo_distributor_traces_per_batch_count{namespace=\"$NAMESPACE\"}" \
+  "tempo_build_info{namespace=\"$NAMESPACE\"}"
 ```
 
 **Metrics Validation Script Details**:
@@ -220,14 +226,14 @@ Execute comprehensive monitoring validation through OpenShift's Thanos Querier:
 #### Service Account and RBAC Setup
 ```bash
 # Create service account for metrics access
-oc create serviceaccount e2e-test-metrics-reader -n $NAMESPACE
+oc create serviceaccount e2e-metrics-reader -n $NAMESPACE
 
 # Grant cluster monitoring view permissions
 oc adm policy add-cluster-role-to-user cluster-monitoring-view \
-  system:serviceaccount:$NAMESPACE:e2e-test-metrics-reader
+  system:serviceaccount:$NAMESPACE:e2e-metrics-reader
 
 # Generate access token for Thanos Querier
-TOKEN=$(oc create token e2e-test-metrics-reader -n $NAMESPACE)
+TOKEN=$(oc create token e2e-metrics-reader -n $NAMESPACE)
 ```
 
 #### Thanos Querier Access
@@ -250,7 +256,7 @@ The script validates these key Tempo metrics:
 - `tempo_distributor_traces_per_batch_count`: Batch size metrics
 - `tempo_build_info`: Version and build information
 
-**Reference**: [`check_metrics.sh`](./check_metrics.sh)
+**Reference**: [`verify-metrics.sh`](../_common/verify-metrics.sh)
 
 ## OpenShift Monitoring Integration Features
 
@@ -437,7 +443,7 @@ oc logs -n openshift-user-workload-monitoring -l app.kubernetes.io/name=promethe
 ```bash
 # Check Thanos Querier access
 THANOS_HOST=$(oc get route thanos-querier -n openshift-monitoring -o jsonpath='{.spec.host}')
-oc create token e2e-test-metrics-reader | xargs -I {} \
+oc create token e2e-metrics-reader | xargs -I {} \
   curl -k -H "Authorization: Bearer {}" \
   "https://$THANOS_HOST/api/v1/label/__name__/values" | grep tempo
 ```
@@ -447,13 +453,13 @@ oc create token e2e-test-metrics-reader | xargs -I {} \
 #### RBAC Troubleshooting
 ```bash
 # Check service account permissions
-oc auth can-i get metrics --as=system:serviceaccount:$NAMESPACE:e2e-test-metrics-reader
+oc auth can-i get metrics --as=system:serviceaccount:$NAMESPACE:e2e-metrics-reader
 
 # Verify cluster role binding
-oc get clusterrolebinding | grep e2e-test-metrics-reader
+oc get clusterrolebinding | grep e2e-metrics-reader
 
 # Check token validity
-oc create token e2e-test-metrics-reader -n $NAMESPACE --duration=1h
+oc create token e2e-metrics-reader -n $NAMESPACE --duration=1h
 ```
 
 ## Production Monitoring Best Practices
@@ -554,5 +560,5 @@ chainsaw test --test-dir ./tests/e2e-openshift/monitoring-monolithic
 
 **Test Definition**: [`chainsaw-test.yaml`](./chainsaw-test.yaml)
 
-**Note**: This test requires OpenShift cluster administrator privileges to enable user workload monitoring. The test runs sequentially (`concurrent: false`) to avoid conflicts with shared monitoring resources. The monitoring validation may take several minutes as metrics need time to be scraped and become available in Thanos.
+**Note**: This test requires OpenShift cluster administrator privileges to enable user workload monitoring. The test runs concurrently using the [shared monitoring fixtures](../_common/README.md), which remain enabled after the tests. The monitoring validation may take several minutes as metrics need time to be scraped and become available in Thanos.
 

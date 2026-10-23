@@ -76,7 +76,7 @@ oc get pods -n openshift-user-workload-monitoring
 oc get route thanos-querier -n openshift-monitoring
 ```
 
-**Reference**: [`01-workload-monitoring.yaml`](./01-workload-monitoring.yaml)
+**Reference**: [shared workload monitoring configuration](../_common/user-workload-monitoring.yaml)
 
 ### Step 2: Deploy MinIO Object Storage
 
@@ -214,11 +214,11 @@ Run the comprehensive metrics validation script:
 #!/bin/bash
 
 # Create service account for metrics access
-oc create serviceaccount e2e-test-metrics-reader -n $NAMESPACE
-oc adm policy add-cluster-role-to-user cluster-monitoring-view system:serviceaccount:$NAMESPACE:e2e-test-metrics-reader
+oc create serviceaccount e2e-metrics-reader -n $NAMESPACE
+oc adm policy add-cluster-role-to-user cluster-monitoring-view system:serviceaccount:$NAMESPACE:e2e-metrics-reader
 
 # Get access credentials
-TOKEN=$(oc create token e2e-test-metrics-reader -n $NAMESPACE)
+TOKEN=$(oc create token e2e-metrics-reader -n $NAMESPACE)
 THANOS_QUERIER_HOST=$(oc get route thanos-querier -n openshift-monitoring -o json | jq -r '.spec.host')
 
 # Validate key Tempo metrics
@@ -234,7 +234,7 @@ metrics=(
   "tempo_ring_members"
   "tempo_operator_tempostack_managed"
   "tempo_operator_tempostack_storage_backend"
-  "tempo_operator_tempostack_multi_tenancy"
+  'tempo_operator_tempostack_multi_tenancy{type="disabled"}'
 )
 
 for metric in "${metrics[@]}"; do
@@ -260,7 +260,7 @@ done
 echo "All metrics validation completed successfully!"
 ```
 
-**Reference**: [`check_metrics.sh`](./check_metrics.sh)
+**Reference**: [`verify-metrics.sh`](../_common/verify-metrics.sh)
 
 ## Key Features Demonstrated
 
@@ -363,7 +363,7 @@ Access Prometheus via OpenShift console or API:
 THANOS_HOST=$(oc get route thanos-querier -n openshift-monitoring -o jsonpath='{.spec.host}')
 
 # Create metrics reader token
-TOKEN=$(oc create token e2e-test-metrics-reader -n chainsaw-monitoring)
+TOKEN=$(oc create token e2e-metrics-reader -n chainsaw-monitoring)
 
 # Query specific metrics
 curl -k -H "Authorization: Bearer $TOKEN" \
@@ -500,4 +500,4 @@ chainsaw test --test-dir ./tests/e2e-openshift/monitoring --config .chainsaw-ope
 
 **Test Definition**: [`chainsaw-test.yaml`](./chainsaw-test.yaml)
 
-**Note**: This test runs with `concurrent: false` to prevent conflicts with shared OpenShift monitoring resources.
+**Note**: This test can run concurrently using the [shared monitoring fixtures](../_common/README.md). Monitoring configuration remains enabled after the tests.
