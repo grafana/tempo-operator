@@ -6,13 +6,13 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"reflect"
 	"strings"
 
 	operatorsv1 "github.com/operator-framework/api/pkg/operators/v1"
 	operatorsv1alpha1 "github.com/operator-framework/api/pkg/operators/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
@@ -393,9 +393,15 @@ func (c *cluster) getOwnerResources(objList client.ObjectList, owner interface{}
 
 	resources := []client.Object{}
 
-	items := reflect.ValueOf(objList).Elem().FieldByName("Items")
-	for i := 0; i < items.Len(); i++ {
-		item := items.Index(i).Addr().Interface().(client.Object)
+	items, err := meta.ExtractList(objList)
+	if err != nil {
+		return nil, fmt.Errorf("failed to extract list items: %w", err)
+	}
+	for _, obj := range items {
+		item, ok := obj.(client.Object)
+		if !ok {
+			return nil, fmt.Errorf("list item %T is not a client.Object", obj)
+		}
 		if hasOwnerReference(item, owner) {
 			resources = append(resources, item)
 		}
