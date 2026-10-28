@@ -4,15 +4,15 @@ metadata:
   name: monitoring-monolithic
 spec:
   description: Test metrics produced by Tempo Monolithc can be scraped by in-cluster monitoring
-  # Avoid running this test case in parallel to prevent the deletion of shared resources used by multiple tests, specifically in the context of OpenShift user workload monitoring.
-  concurrent: false
   steps:
   - name: Enable user workload monitoring
+    # Monitoring is shared by concurrent tests and remains enabled after the suite.
+    skipDelete: true
     try:
     - apply:
-        file: 00-workload-monitoring.yaml
+        file: ../_common/user-workload-monitoring.yaml
     - assert:
-        file: 00-workload-monitoring-assert.yaml
+        file: ../_common/user-workload-monitoring-assert.yaml
   - name: Create Tempo Monolithc instance
     try:
     - apply:
@@ -33,6 +33,16 @@ spec:
         file: 03-verify-traces-assert.yaml
   - name: Check Tempo Monolithc metrics scraped by user workload monitoring
     try:
+    - apply:
+        file: ../_common/e2e-metrics-reader.yaml
     - script:
         timeout: 5m
-        content: ./check_metrics.sh
+        content: |
+          set -euo pipefail
+          ../_common/verify-metrics.sh \
+            "tempo_query_frontend_queries_total{namespace='$NAMESPACE'}" \
+            "tempo_distributor_bytes_received_total{namespace='$NAMESPACE'}" \
+            "tempo_distributor_spans_received_total{namespace='$NAMESPACE'}" \
+            "tempo_ingester_bytes_received_total{namespace='$NAMESPACE'}" \
+            "tempo_distributor_traces_per_batch_count{namespace='$NAMESPACE'}" \
+            "tempo_build_info{namespace='$NAMESPACE'}"

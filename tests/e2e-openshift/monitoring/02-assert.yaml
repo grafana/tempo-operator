@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tempo-tempostack-compactor
-  namespace: chainsaw-monitoring
 status:
   availableReplicas: 1
   readyReplicas: 1
@@ -13,7 +12,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tempo-tempostack-distributor
-  namespace: chainsaw-monitoring
 status:
   availableReplicas: 1
   readyReplicas: 1
@@ -24,7 +22,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tempo-tempostack-querier
-  namespace: chainsaw-monitoring
 status:
   availableReplicas: 1
   readyReplicas: 1
@@ -35,7 +32,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tempo-tempostack-query-frontend
-  namespace: chainsaw-monitoring
 status:
   availableReplicas: 1
   readyReplicas: 1
@@ -46,7 +42,6 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: tempo-tempostack-ingester
-  namespace: chainsaw-monitoring
 status:
   availableReplicas: 1
   currentReplicas: 1
@@ -63,7 +58,6 @@ metadata:
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-tempostack-query-frontend
-  namespace: chainsaw-monitoring
 spec:
   ports:
   - name: http
@@ -106,7 +100,6 @@ metadata:
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-tempostack-query-frontend
-  namespace: chainsaw-monitoring
 spec:
   port:
     targetPort: oauth-proxy
@@ -126,7 +119,6 @@ metadata:
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-tempostack-compactor
-  namespace: chainsaw-monitoring
 spec:
   endpoints:
   - path: /metrics
@@ -173,7 +165,6 @@ metadata:
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-tempostack-distributor
-  namespace: chainsaw-monitoring
 spec:
   endpoints:
   - path: /metrics
@@ -220,7 +211,6 @@ metadata:
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-tempostack-ingester
-  namespace: chainsaw-monitoring
 spec:
   endpoints:
   - path: /metrics
@@ -267,7 +257,6 @@ metadata:
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-tempostack-querier
-  namespace: chainsaw-monitoring
 spec:
   endpoints:
   - path: /metrics
@@ -315,7 +304,6 @@ metadata:
     app.kubernetes.io/managed-by: tempo-operator
     app.kubernetes.io/name: tempo
   name: tempo-tempostack-query-frontend
-  namespace: chainsaw-monitoring
 spec:
   endpoints:
   - path: /metrics

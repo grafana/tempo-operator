@@ -4,8 +4,6 @@ kind: Test
 metadata:
   name: monitoring
 spec:
-  # Avoid running this test case in parallel to prevent the deletion of shared resources used by multiple tests, specifically in the context of OpenShift user workload monitoring.
-  concurrent: false
   namespace: chainsaw-monitoring
   steps:
   - name: step-00
@@ -15,37 +13,22 @@ spec:
     - assert:
         file: 00-assert.yaml
   - name: step-01
+    # Monitoring is shared by concurrent tests and remains enabled after the suite.
+    skipDelete: true
     try:
     - apply:
-        file: 01-workload-monitoring.yaml
+        file: ../_common/user-workload-monitoring.yaml
     - assert:
-        file: 01-assert.yaml
+        file: ../_common/user-workload-monitoring-assert.yaml
   - name: Enable OpenShift platform monitoring on the Tempo operator namespace
     try:
-    - command:
-        entrypoint: oc
-        args:
-        - get
-        - pods
-        - -A
-        - -l control-plane=controller-manager
-        - -l app.kubernetes.io/name=tempo-operator
-        - -o
-        - jsonpath={.items[0].metadata.namespace}
-        outputs:
-        - name: TEMPO_NAMESPACE
-          value: ($stdout)
-    - command:
-        env:
-        - name: temponamespace
-          value: ($TEMPO_NAMESPACE)
-        entrypoint: oc
-        args:
-        - --overwrite=true
-        - label
-        - namespace
-        - $temponamespace 
-        - openshift.io/cluster-monitoring=true
+    - script:
+        content: |
+          set -euo pipefail
+          namespace=$(oc get pods -A \
+            -l control-plane=controller-manager,app.kubernetes.io/name=tempo-operator \
+            -o jsonpath='{.items[0].metadata.namespace}')
+          oc label namespace "$namespace" openshift.io/cluster-monitoring=true --overwrite
   - name: step-02
     try:
     - apply:
@@ -74,13 +57,30 @@ spec:
         - -A
         - -l control-plane=controller-manager
         - -l app.kubernetes.io/name=tempo-operator
-        - -o 
+        - -o
         - jsonpath={.items[0].metadata.namespace}
         outputs:
         - name: TEMPO_NAMESPACE
           value: ($stdout)
+    - apply:
+        file: ../_common/e2e-metrics-reader.yaml
     - script:
         timeout: 5m
-        content: ./check_metrics.sh
+        content: |
+          set -euo pipefail
+          ../_common/verify-metrics.sh \
+            "tempo_operator_tempostack_managed" \
+            "tempo_operator_tempostack_storage_backend{type='s3'}" \
+            "tempo_operator_tempostack_multi_tenancy{type='disabled'}" \
+            "tempostack_status_condition{stack_namespace='$NAMESPACE',stack_name='tempostack',condition='Ready'} == 1" \
+            "tempo_query_frontend_queries_total{namespace='$NAMESPACE'}" \
+            "tempo_request_duration_seconds_count{namespace='$NAMESPACE'}" \
+            "tempo_request_duration_seconds_sum{namespace='$NAMESPACE'}" \
+            "tempo_request_duration_seconds_bucket{namespace='$NAMESPACE'}" \
+            "tempo_build_info{namespace='$NAMESPACE'}" \
+            "tempo_ingester_bytes_received_total{namespace='$NAMESPACE'}" \
+            "tempo_ingester_flush_failed_retries_total{namespace='$NAMESPACE'}" \
+            "tempo_ingester_failed_flushes_total{namespace='$NAMESPACE'}" \
+            "tempo_ring_members{namespace='$NAMESPACE'}"
     - assert:
-        file: 06-check_operator_servicemonitor.yaml
+        file: 05-assert-operator-servicemonitor.yaml

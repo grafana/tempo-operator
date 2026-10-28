@@ -51,10 +51,10 @@ This test validates a comprehensive observability stack featuring:
 Configure OpenShift monitoring to collect user-defined metrics:
 
 ```bash
-oc apply -f 01-install-workload-monitoring.yaml
+oc apply -f ../_common/user-workload-monitoring.yaml
 ```
 
-**Reference**: [`01-install-workload-monitoring.yaml`](./01-install-workload-monitoring.yaml)
+**Reference**: [shared workload monitoring configuration](../_common/user-workload-monitoring.yaml)
 
 ### Step 2: Deploy MinIO Object Storage
 
@@ -145,10 +145,14 @@ This validation job checks for:
 Run the metrics validation script to ensure all metrics are properly collected:
 
 ```bash
-./check_metrics.sh
+../_common/verify-metrics.sh \
+  "traces_span_metrics_duration_bucket{namespace=\"$NAMESPACE\"}" \
+  "traces_span_metrics_duration_count{namespace=\"$NAMESPACE\"}" \
+  "traces_span_metrics_duration_sum{namespace=\"$NAMESPACE\"}" \
+  "traces_span_metrics_calls{namespace=\"$NAMESPACE\"}"
 ```
 
-**Script Details from [`check_metrics.sh`](./check_metrics.sh)**:
+**Script Details from [`verify-metrics.sh`](../_common/verify-metrics.sh)**:
 - Creates service account for metrics access
 - Queries Thanos for span-derived metrics
 - Validates presence of RED metrics:
@@ -328,4 +332,4 @@ chainsaw test --test-dir ./tests/e2e-openshift/red-metrics --config .chainsaw-op
 
 **Test Definition**: [`chainsaw-test.yaml`](./chainsaw-test.yaml)
 
-**Note**: This test runs with `concurrent: false` to prevent conflicts with shared OpenShift monitoring resources and requires the HotROD application for realistic load generation.
+**Note**: This test can run concurrently using the [shared monitoring fixtures](../_common/README.md), which remain enabled after the tests. It requires the HotROD application for realistic load generation.

@@ -6,7 +6,6 @@ metadata:
 (status.replicas == spec.replicas): true
 spec:
   (replicas >= `1`): true
-
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -16,7 +15,6 @@ metadata:
 (status.replicas == spec.replicas): true
 spec:
   (replicas >= `1`): true
-
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -25,4 +23,4 @@ metadata:
   namespace: openshift-user-workload-monitoring
 (status.replicas == spec.replicas): true
 spec:
-  (replicas >= `1`): true 
+  (replicas >= `1`): true
