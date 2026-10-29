@@ -10,6 +10,7 @@ import (
 	authorizationv1 "k8s.io/api/authorization/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
@@ -51,9 +52,16 @@ func validateTempoNameConflict(getFn func() error, instanceName string, to strin
 	return allErrs
 }
 
-func subjectAccessReviewsForClusterRole(user authenticationv1.UserInfo, clusterRole rbacv1.ClusterRole) []authorizationv1.SubjectAccessReview {
+// subjectAccessReviewsForRules returns a SubjectAccessReview for every apiGroup/resource/verb combination of the given rules.
+// An empty namespace checks the permissions cluster-wide.
+func subjectAccessReviewsForRules(user authenticationv1.UserInfo, namespace string, rules []rbacv1.PolicyRule) []authorizationv1.SubjectAccessReview {
+	extra := make(map[string]authorizationv1.ExtraValue, len(user.Extra))
+	for k, v := range user.Extra {
+		extra[k] = authorizationv1.ExtraValue(v)
+	}
+
 	reviews := []authorizationv1.SubjectAccessReview{}
-	for _, rule := range clusterRole.Rules {
+	for _, rule := range rules {
 		for _, apiGroup := range rule.APIGroups {
 			for _, resource := range rule.Resources {
 				for _, verb := range rule.Verbs {
@@ -62,10 +70,12 @@ func subjectAccessReviewsForClusterRole(user authenticationv1.UserInfo, clusterR
 							UID:    user.UID,
 							User:   user.Username,
 							Groups: user.Groups,
+							Extra:  extra,
 							ResourceAttributes: &authorizationv1.ResourceAttributes{
-								Group:    apiGroup,
-								Resource: resource,
-								Verb:     verb,
+								Namespace: namespace,
+								Group:     apiGroup,
+								Resource:  resource,
+								Verb:      verb,
 							},
 						},
 					})
@@ -75,6 +85,27 @@ func subjectAccessReviewsForClusterRole(user authenticationv1.UserInfo, clusterR
 	}
 
 	return reviews
+}
+
+// checkSubjectAccessReviews creates the SubjectAccessReviews and returns an error if any of them is not allowed.
+func checkSubjectAccessReviews(ctx context.Context, client client.Client, user authenticationv1.UserInfo, sars []authorizationv1.SubjectAccessReview) error {
+	for _, sar := range sars {
+		err := client.Create(ctx, &sar)
+		if err != nil {
+			return fmt.Errorf("failed to create subject access review: %w", err)
+		}
+
+		if !sar.Status.Allowed {
+			attrs := sar.Spec.ResourceAttributes
+			resource := schema.GroupResource{Group: attrs.Group, Resource: attrs.Resource}
+			if attrs.Namespace != "" {
+				return fmt.Errorf("user %s does not have permission to %s %s in namespace %s", user.Username, attrs.Verb, resource, attrs.Namespace)
+			}
+			return fmt.Errorf("user %s does not have permission to %s %s", user.Username, attrs.Verb, resource)
+		}
+	}
+
+	return nil
 }
 
 // validateGatewayOpenShiftModeRBAC checks if the user requesting the change on the CR
@@ -89,20 +120,28 @@ func validateGatewayOpenShiftModeRBAC(ctx context.Context, client client.Client)
 		return err
 	}
 
-	user := req.UserInfo
 	clusterRole := gateway.NewAccessReviewClusterRole("", map[string]string{})
-	reviews := subjectAccessReviewsForClusterRole(user, *clusterRole)
+	sars := subjectAccessReviewsForRules(req.UserInfo, "", clusterRole.Rules)
+	return checkSubjectAccessReviews(ctx, client, req.UserInfo, sars)
+}
 
-	for _, sar := range reviews {
-		err := client.Create(ctx, &sar)
-		if err != nil {
-			return fmt.Errorf("failed to create subject access review: %w", err)
-		}
-
-		if !sar.Status.Allowed {
-			return fmt.Errorf("user %s does not have permission to %s %s.%s", user.Username, sar.Spec.ResourceAttributes.Verb, sar.Spec.ResourceAttributes.Resource, sar.Spec.ResourceAttributes.Group)
-		}
+// validatePodCreatePermission checks if the user requesting the change on the CR
+// has permission to create pods in the given namespace.
+//
+// Some fields of the CR (e.g. custom container images, a custom ServiceAccount or environment variables) directly control
+// the pods created by the operator. Setting these fields must not allow a user without permission to create pods
+// to run arbitrary images, to run pods with arbitrary ServiceAccounts or to expose arbitrary Secrets to the pods.
+func validatePodCreatePermission(ctx context.Context, client client.Client, namespace string) error {
+	req, err := admission.RequestFromContext(ctx)
+	if err != nil {
+		return err
 	}
 
-	return nil
+	rules := []rbacv1.PolicyRule{{
+		APIGroups: []string{""},
+		Resources: []string{"pods"},
+		Verbs:     []string{"create"},
+	}}
+	sars := subjectAccessReviewsForRules(req.UserInfo, namespace, rules)
+	return checkSubjectAccessReviews(ctx, client, req.UserInfo, sars)
 }
