@@ -1,0 +1,5 @@
+change_type: bug_fix
+component: must-gather
+note: Fix must-gather crashing when collecting ServiceMonitor or PodMonitor resources.
+issues: [1717]
+subtext:
