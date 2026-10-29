@@ -82,6 +82,9 @@ const (
 	featureGateOpenShiftNoAuthWarning    = "openshift.noAuthWarning"
 	featureGateOpenShiftClusterTLSPolicy = "openshift.clusterTLSPolicy"
 
+	// Tempo feature gates.
+	featureGateTempoTLSCurvePreferences = "tempo.tlsCurvePreferences"
+
 	// TLS/Encryption feature gates.
 	featureGateHTTPEncryption = "httpEncryption"
 	featureGateGRPCEncryption = "grpcEncryption"

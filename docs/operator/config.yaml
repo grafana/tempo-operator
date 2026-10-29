@@ -335,6 +335,13 @@ featureGates:
   # This CRD is part of prometheus-operator.
   prometheusOperator: false
 
+  # Tempo configures Tempo component features.
+  tempo:
+
+    # TLSCurvePreferences enables applying TLS profile curve preferences to Tempo components.
+    # This requires a patched Tempo image.
+    tlsCurvePreferences: false
+
   # TLSProfile allows to chose a TLS security profile. Enforced
   # when using HTTPEncryption or GRPCEncryption.
   tlsProfile: ""
