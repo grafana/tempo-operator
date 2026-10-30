@@ -13,7 +13,7 @@ require (
 	github.com/novln/docker-parser v1.0.0
 	github.com/onsi/ginkgo/v2 v2.32.1
 	github.com/onsi/gomega v1.44.0
-	github.com/openshift/cloud-credential-operator v0.0.0-20250417173756-8ff60a024ed9
+	github.com/openshift/cloud-credential-operator v0.0.0-20261027085400-a19ed01469ad
 	github.com/openshift/library-go v0.0.0-20261001144932-192662696fc7
 	github.com/operator-framework/api v0.45.0
 	github.com/operator-framework/operator-lib v0.19.0
@@ -41,7 +41,7 @@ require (
 require (
 	github.com/openshift/api v0.0.0-20261002115817-f8795cdde518
 	github.com/openshift/controller-runtime-common v0.0.0-20261008111711-8ec0dc844066
-	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.74.0
+	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.86.1
 	github.com/stretchr/testify v1.12.1
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/utils v0.0.0-20260707023825-cf1189d6abe3
