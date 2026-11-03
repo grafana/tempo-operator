@@ -32,6 +32,10 @@ func start(c *cobra.Command, args []string) {
 	setupLog := ctrl.Log.WithName("setup")
 	version := version.Get()
 
+	if ctrlConfig.Distribution != "openshift" {
+		setupLog.Info("Starting December 1, 2026, new operator images will be published at ghcr.io/grafana-community/tempo-operator/tempo-operator. Existing images will remain available at the old location. For more information, see this issue: https://github.com/grafana/tempo-operator/issues/1721")
+	}
+
 	// Create a cancellable context for graceful shutdown on TLS profile changes
 	ctx, cancel := context.WithCancel(ctrl.SetupSignalHandler())
 	defer cancel()

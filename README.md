@@ -3,6 +3,16 @@
 This is a Kubernetes operator for [Grafana Tempo](https://github.com/grafana/tempo).
 
 
+> [!IMPORTANT]
+> On **December 1, 2026**, this repository will move from [grafana/tempo-operator](https://github.com/grafana/tempo-operator) to [grafana-community/tempo-operator](https://github.com/grafana-community/tempo-operator).
+>
+> Existing container images will remain available at their current location. New images will be published at the new location, and the Go module path will be updated to match.
+>
+> **No action is required** for existing operator installations deployed through [OperatorHub](https://operatorhub.io/), the Red Hat Software Catalog, or the Kubernetes manifests provided with each release.
+>
+> **Action is required** if you pin the `main` tag `ghcr.io/grafana/tempo-operator/tempo-operator:main` or import the Go module: update your image reference or Go module imports to the new location.
+
+
 ## Features
 
 * **Resource Limits** - Specify overall resource requests and limits in the `TempoStack` CR; the operator assigns fractions of it to each component
