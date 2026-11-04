@@ -311,7 +311,7 @@ storage:
       bucket: {{ .StorageParams.S3.Bucket }}
       endpoint: {{ .StorageParams.S3.Endpoint }}
       insecure: {{ .StorageParams.S3.Insecure }}
-    {{- if .StorageParams.S3.RequiresExplicitRegion }}
+    {{- if .StorageParams.S3.Region }}
       region: {{ .StorageParams.S3.Region }}
     {{- end }}
     {{- if .S3StorageTLS.Enabled }}

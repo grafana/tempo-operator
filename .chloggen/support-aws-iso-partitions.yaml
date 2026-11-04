@@ -16,7 +16,9 @@ issues: [1109]
 subtext: |
   The S3 endpoint, the STS endpoint and the ARN of the CredentialsRequest are now derived from the
   AWS partition of the configured region, instead of always assuming the commercial partition.
-  The generated configuration of the commercial and GovCloud partitions is unchanged.
+  In these credential modes the region of the storage secret is now also rendered as the signing
+  region of the S3 client (`storage.trace.s3.region`) in every partition. This changes the generated
+  configuration of existing instances, which are rolled out once after the upgrade.
 
   The storage secret of the `token` and `token-cco` credential modes accepts two new optional fields:
 

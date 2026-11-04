@@ -368,9 +368,9 @@ func TestConfigureStorageWithS3CCO_iso_partition(t *testing.T) {
 				Partition: "aws-iso",
 			},
 		}, &S3{
-			Region:      "us-iso-east-1",
-			Audience:    "openshift",
-			STSEndpoint: "https://sts.us-iso-east-1.c2s.ic.gov",
+			Region:    "us-iso-east-1",
+			Audience:  "openshift",
+			Partition: AWSPartitionForRegion("us-iso-east-1"),
 		}))
 
 	assert.Len(t, pod.Containers[0].Env, 6)
@@ -396,8 +396,8 @@ func TestConfigureStorageWithS3Token_iso_partition(t *testing.T) {
 	// STS endpoint of the partition has to be set.
 	assert.NoError(t, ConfigureS3Storage(&pod, "ingester", "test", nil,
 		v1alpha1.CredentialModeToken, "", nil, &S3{
-			Region:      "us-iso-east-1",
-			STSEndpoint: "https://sts.us-iso-east-1.c2s.ic.gov",
+			Region:    "us-iso-east-1",
+			Partition: AWSPartitionForRegion("us-iso-east-1"),
 		}))
 
 	assert.Len(t, pod.Containers[0].Env, 1)

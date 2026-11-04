@@ -32,7 +32,7 @@ For the `token` and `token-cco` credential modes:
 | S3 endpoint (`storage.trace.s3.endpoint`) | `s3.<region>.<dns suffix>` |
 | STS endpoint of the token exchange | `https://sts.<region>.<dns suffix>`, only outside of `amazonaws.com` |
 | `Resource` of the CCO `CredentialsRequest` | `arn:<partition>:s3:*:*:*`, taken from the partition of the role ARN |
-| Signing region (`storage.trace.s3.region`) | only rendered when it cannot be derived from the endpoint, see below |
+| Signing region (`storage.trace.s3.region`) | the region of the storage secret, see below |
 
 The `Resource` of the `CredentialsRequest` uses the partition of the role ARN rather than the one of
 the region, because an IAM policy must name resources in the same partition as the role it is
@@ -68,7 +68,7 @@ stringData:
   endpoint: "http://s3.us-iso-east-1.c2s.ic.gov"
 ```
 
-## Why the signing region is rendered conditionally
+## Why the signing region is rendered
 
 Tempo does not set the signing region on the S3 client unless `storage.trace.s3.region` is
 configured, and lets the minio-go client derive it from the endpoint host. That derivation
@@ -76,10 +76,11 @@ configured, and lets the minio-go client derive it from the endpoint host. That 
 only matches hosts under `amazonaws.com` and `amazonaws.com.cn`, and returns an empty region for
 anything else, which makes the client sign requests for the wrong region.
 
-The operator therefore renders `region` whenever the endpoint is not one minio-go can parse — that
-is, outside of the commercial and GovCloud partitions, and whenever the secret carries a custom
-endpoint. In every other case the rendered configuration is unchanged, which matters because any
-change of the configuration rolls every pod of an existing deployment.
+The operator therefore renders `region` whenever the storage secret sets one. For the endpoints
+minio-go can parse, the rendered region is the one it would have derived, so rendering it
+unconditionally keeps the template simple at no cost. The only side effect is that the configuration
+of existing instances in the commercial and GovCloud partitions changes once, which rolls their pods
+after the upgrade.
 
 ## Why the STS endpoint is an environment variable
 

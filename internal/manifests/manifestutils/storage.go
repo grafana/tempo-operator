@@ -194,8 +194,8 @@ func configureS3StorageWithCOOAuth(pod *corev1.PodSpec, containerIdx int, tempo 
 		},
 	}...)
 
-	if s3 != nil && s3.STSEndpoint != "" {
-		pod.Containers[containerIdx].Env = append(pod.Containers[containerIdx].Env, stsEndpointEnvVar(s3))
+	if stsEndpoint := awsSTSEndpoint(s3); stsEndpoint != "" {
+		pod.Containers[containerIdx].Env = append(pod.Containers[containerIdx].Env, stsEndpointEnvVar(stsEndpoint))
 	}
 
 	// Define volume with credentials
@@ -253,6 +253,16 @@ func awsAudience(s3 *S3) string {
 	return AWSDefaultAudience
 }
 
+// awsSTSEndpoint returns the URL of the regional STS endpoint of the partition of the S3
+// storage, or an empty string for partitions served under amazonaws.com, because only the
+// other partitions need to override the endpoint the AWS credential chain of Tempo defaults to.
+func awsSTSEndpoint(s3 *S3) string {
+	if s3 == nil || s3.Partition.DNSSuffix == "" || s3.Partition.IsCommercial() {
+		return ""
+	}
+	return "https://" + s3.Partition.STSEndpoint(s3.Region)
+}
+
 // stsEndpointEnvVar overrides the STS endpoint the credential chain of Tempo resolves
 // internally. Tempo obtains AWS credentials through the minio-go client, which builds the
 // endpoint of the token exchange as sts.<region>.amazonaws.com, with the DNS suffix
@@ -260,10 +270,10 @@ func awsAudience(s3 *S3) string {
 // Tempo exposes to override it (tempo, tempodb/backend/s3/s3.go, fetchCreds), and it is
 // required in partitions serving their endpoints under a different DNS suffix, such as
 // the ISO and ISOB partitions.
-func stsEndpointEnvVar(s3 *S3) corev1.EnvVar {
+func stsEndpointEnvVar(stsEndpoint string) corev1.EnvVar {
 	return corev1.EnvVar{
 		Name:  "TEST_IAM_ENDPOINT",
-		Value: s3.STSEndpoint,
+		Value: stsEndpoint,
 	}
 }
 
@@ -275,12 +285,12 @@ func ConfigureS3Storage(pod *corev1.PodSpec, containerName string, storageSecret
 		// In token mode the credentials are injected by the pod identity webhook of the
 		// cloud provider, the operator only needs to point the token exchange at the
 		// STS endpoint of the partition when it is not served under amazonaws.com.
-		if s3 != nil && s3.STSEndpoint != "" {
+		if stsEndpoint := awsSTSEndpoint(s3); stsEndpoint != "" {
 			containerIdx, err := findContainerIndex(pod, containerName)
 			if err != nil {
 				return err
 			}
-			pod.Containers[containerIdx].Env = append(pod.Containers[containerIdx].Env, stsEndpointEnvVar(s3))
+			pod.Containers[containerIdx].Env = append(pod.Containers[containerIdx].Env, stsEndpointEnvVar(stsEndpoint))
 		}
 		return nil
 	}
