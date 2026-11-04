@@ -1,0 +1,23 @@
+# One of 'breaking', 'deprecation', 'new_component', 'enhancement', 'bug_fix'
+change_type: bug_fix
+
+# The name of the component, or a single word describing the area of concern, (e.g. tempostack, tempomonolithic, github action)
+component: tempostack, tempomonolithic
+
+# A brief description of the change. Surround your text with quotes ("") if it needs to start with a backtick (`).
+note: Require permission to create pods when setting custom container images, a custom ServiceAccount or environment variables in TempoStack or TempoMonolithic.
+
+# One or more tracking issues related to the change
+issues: [1719]
+
+# (Optional) One or more lines of additional information to render under the primary note.
+# These lines will be padded with 2 spaces and then inserted directly into the document.
+# Use pipe (|) for multiline entries.
+subtext: |
+  Previously, a user with permission to create a TempoStack or TempoMonolithic, but without permission to create pods,
+  could use `spec.images`, `spec.serviceAccount`, `spec.env` or `spec.envFrom` to make the operator run pods with arbitrary
+  container images or ServiceAccounts, or expose arbitrary Secrets of the namespace to the Tempo pods.
+  The validating webhooks now verify that the user creating or updating the CR has permission to create pods
+  in its namespace whenever these fields are set.
+
+  Reported by user melaluca via Grafana Labs's intigriti.com portal.
