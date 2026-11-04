@@ -221,8 +221,8 @@ github.com/openshift/api v0.0.0-20261002115817-f8795cdde518 h1:m0CfIxttdj/Wu0N/u
 github.com/openshift/api v0.0.0-20261002115817-f8795cdde518/go.mod h1:2oI3aXQFDjjl7l4xA9ZPSkB+l+lyfWLg7P2sWg9yEvM=
 github.com/openshift/cloud-credential-operator v0.0.0-20250417173756-8ff60a024ed9 h1:J+IRohkwLBnB1K+BTAxynqYAQalJOAN10F0t9fteXeM=
 github.com/openshift/cloud-credential-operator v0.0.0-20250417173756-8ff60a024ed9/go.mod h1:6YMhc3w1DCW9NAZyLmoeTBnpUPTu50RhDutljqJesb8=
-github.com/openshift/controller-runtime-common v0.0.0-20261008111711-8ec0dc844066 h1:dZ8exz2DPQdoQmjfb5p66b3hWwBrlbnMe0HifkouYgI=
-github.com/openshift/controller-runtime-common v0.0.0-20261008111711-8ec0dc844066/go.mod h1:wRo2jx/+tZd6HnYYmKayArJgL3T6LLbovLr28DGukMg=
+github.com/openshift/controller-runtime-common v0.0.0-20261026124434-bdfc411d93cd h1:ryKoDx8pbVqytd/plQ5TvOeoTTC8l4akPB6O3FZULuQ=
+github.com/openshift/controller-runtime-common v0.0.0-20261026124434-bdfc411d93cd/go.mod h1:wRo2jx/+tZd6HnYYmKayArJgL3T6LLbovLr28DGukMg=
 github.com/openshift/library-go v0.0.0-20261001144932-192662696fc7 h1:PDH/v+jap31Eb4N9q+Q3X05QHIXZA4sVyr4zb/n+Cv0=
 github.com/openshift/library-go v0.0.0-20261001144932-192662696fc7/go.mod h1:k0EA2kHPdvdKgyV38lWS1u1eIgMBgrpWkCl2ei4A3ug=
 github.com/operator-framework/api v0.45.0 h1:hkROwtsLH3oszp4IW+WsXEFSDgveSahHI7DKStOtrUI=
