@@ -63,10 +63,9 @@ func TestGetS3Params_short_lived(t *testing.T) {
 		RoleARN:   "abc",
 		Region:    "us-east-2",
 		Endpoint:  "s3.us-east-2.amazonaws.com",
-		Partition: "aws",
+		Partition: manifestutils.AWSPartitionForRegion("us-east-2"),
 		Audience:  "sts.amazonaws.com",
 	}, s3)
-	require.False(t, s3.RequiresExplicitRegion())
 }
 
 func TestGetS3Params_short_lived_govcloud(t *testing.T) {
@@ -83,11 +82,9 @@ func TestGetS3Params_short_lived_govcloud(t *testing.T) {
 	require.Len(t, errs, 0)
 	// GovCloud is served under amazonaws.com, therefore nothing must be overridden.
 	require.Equal(t, "s3.us-gov-west-1.amazonaws.com", s3.Endpoint)
-	require.Equal(t, "aws-us-gov", s3.Partition)
+	require.Equal(t, "aws-us-gov", s3.Partition.ID)
 	require.Equal(t, "sts.amazonaws.com", s3.Audience)
-	require.Empty(t, s3.STSEndpoint)
 	require.False(t, s3.Insecure)
-	require.False(t, s3.RequiresExplicitRegion())
 }
 
 func TestGetS3Params_short_lived_iso(t *testing.T) {
@@ -103,15 +100,13 @@ func TestGetS3Params_short_lived_iso(t *testing.T) {
 
 	require.Len(t, errs, 0)
 	require.Equal(t, &manifestutils.S3{
-		Bucket:      "testbucket",
-		RoleARN:     "arn:aws-iso:iam::12345:role/test",
-		Region:      "us-iso-east-1",
-		Endpoint:    "s3.us-iso-east-1.c2s.ic.gov",
-		Partition:   "aws-iso",
-		Audience:    "sts.amazonaws.com",
-		STSEndpoint: "https://sts.us-iso-east-1.c2s.ic.gov",
+		Bucket:    "testbucket",
+		RoleARN:   "arn:aws-iso:iam::12345:role/test",
+		Region:    "us-iso-east-1",
+		Endpoint:  "s3.us-iso-east-1.c2s.ic.gov",
+		Partition: manifestutils.AWSPartitionForRegion("us-iso-east-1"),
+		Audience:  "sts.amazonaws.com",
 	}, s3)
-	require.True(t, s3.RequiresExplicitRegion())
 }
 
 func TestGetS3Params_short_lived_isob(t *testing.T) {
@@ -126,12 +121,11 @@ func TestGetS3Params_short_lived_isob(t *testing.T) {
 
 	require.Len(t, errs, 0)
 	require.Equal(t, &manifestutils.S3{
-		Bucket:      "testbucket",
-		Region:      "us-isob-east-1",
-		Endpoint:    "s3.us-isob-east-1.sc2s.sgov.gov",
-		Partition:   "aws-iso-b",
-		Audience:    "sts.amazonaws.com",
-		STSEndpoint: "https://sts.us-isob-east-1.sc2s.sgov.gov",
+		Bucket:    "testbucket",
+		Region:    "us-isob-east-1",
+		Endpoint:  "s3.us-isob-east-1.sc2s.sgov.gov",
+		Partition: manifestutils.AWSPartitionForRegion("us-isob-east-1"),
+		Audience:  "sts.amazonaws.com",
 	}, s3)
 }
 
@@ -151,7 +145,7 @@ func TestGetS3Params_short_lived_custom_endpoint(t *testing.T) {
 	require.Len(t, errs, 0)
 	require.Equal(t, "s3.us-iso-east-1.c2s.ic.gov", s3.Endpoint)
 	require.True(t, s3.Insecure)
-	require.Equal(t, "https://sts.us-iso-east-1.c2s.ic.gov", s3.STSEndpoint)
+	require.Equal(t, "aws-iso", s3.Partition.ID)
 }
 
 func TestGetS3Params_short_lived_custom_endpoint_secure(t *testing.T) {
@@ -169,8 +163,6 @@ func TestGetS3Params_short_lived_custom_endpoint_secure(t *testing.T) {
 	require.Len(t, errs, 0)
 	require.Equal(t, "bucket.vpce-1234.s3.us-east-2.vpce.amazonaws.com", s3.Endpoint)
 	require.False(t, s3.Insecure)
-	// A custom endpoint is not parseable by the minio client, the region must be explicit.
-	require.True(t, s3.RequiresExplicitRegion())
 }
 
 func TestGetS3Params_short_lived_invalid_endpoint(t *testing.T) {

@@ -149,22 +149,13 @@ func getS3ShortLivedParams(storageSecret corev1.Secret, mode v1alpha1.Credential
 		audience = string(rawAudience)
 	}
 
-	// Tempo obtains its AWS credentials through the credential chain of the minio-go client,
-	// which resolves the STS endpoint to sts.<region>.amazonaws.com. Partitions serving their
-	// endpoints under a different DNS suffix must override it, see ConfigureS3Storage.
-	stsEndpoint := ""
-	if !partition.IsCommercial() {
-		stsEndpoint = "https://" + partition.STSEndpoint(region)
-	}
-
 	s3 := &manifestutils.S3{
-		Bucket:      string(storageSecret.Data["bucket"]),
-		Region:      region,
-		Endpoint:    endpoint,
-		Insecure:    insecure,
-		Partition:   partition.ID,
-		Audience:    audience,
-		STSEndpoint: stsEndpoint,
+		Bucket:    string(storageSecret.Data["bucket"]),
+		Region:    region,
+		Endpoint:  endpoint,
+		Insecure:  insecure,
+		Partition: partition,
+		Audience:  audience,
 	}
 
 	if mode == v1alpha1.CredentialModeToken {

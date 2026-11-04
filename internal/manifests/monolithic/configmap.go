@@ -276,9 +276,7 @@ func buildTempoConfig(opts Options) ([]byte, error) {
 				config.Storage.Trace.S3.Bucket = opts.StorageParams.S3.Bucket
 				config.Storage.Trace.S3.Endpoint = opts.StorageParams.S3.Endpoint
 				config.Storage.Trace.S3.Insecure = opts.StorageParams.S3.Insecure
-				if opts.StorageParams.S3.RequiresExplicitRegion() {
-					config.Storage.Trace.S3.Region = opts.StorageParams.S3.Region
-				}
+				config.Storage.Trace.S3.Region = opts.StorageParams.S3.Region
 			}
 
 		case v1alpha1.MonolithicTracesStorageBackendAzure:

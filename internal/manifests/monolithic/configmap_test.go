@@ -495,6 +495,7 @@ storage:
       endpoint: s3.us-east-2.amazonaws.com
       bucket: tempo
       insecure: false
+      region: us-east-2
 distributor:
   receivers:
     otlp:

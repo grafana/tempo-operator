@@ -2647,6 +2647,7 @@ storage:
       bucket: tempo
       endpoint: "s3.us-east-2.amazonaws.com"
       insecure: true
+      region: us-east-2
     wal:
       path: /var/tempo/wal
 usage_report:
@@ -2760,6 +2761,7 @@ storage:
       bucket: tempo
       endpoint: "s3.us-east-2.amazonaws.com"
       insecure: false
+      region: us-east-2
     wal:
       path: /var/tempo/wal
 usage_report:
@@ -3336,6 +3338,7 @@ func TestBuildConfiguration_S3_partitions(t *testing.T) {
 				"bucket":   "tempo",
 				"endpoint": "s3.us-east-2.amazonaws.com",
 				"insecure": false,
+				"region":   "us-east-2",
 			},
 		},
 		{
@@ -3349,6 +3352,7 @@ func TestBuildConfiguration_S3_partitions(t *testing.T) {
 				"bucket":   "tempo",
 				"endpoint": "s3.us-gov-west-1.amazonaws.com",
 				"insecure": false,
+				"region":   "us-gov-west-1",
 			},
 		},
 		{
