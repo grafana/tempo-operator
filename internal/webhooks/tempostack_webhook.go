@@ -277,6 +277,62 @@ func (v *validator) ValidateDelete(_ context.Context, tempo *v1alpha1.TempoStack
 	return nil, nil
 }
 
+// validatePodOverrides verifies that the user requesting the change has permission to create pods
+// if custom container images, a custom ServiceAccount or environment variables are set.
+// Otherwise a user with permission to create TempoStack CRs, but without permission to create pods,
+// could let the operator create pods with arbitrary images, ServiceAccounts or Secrets exposed as environment variables.
+//
+// Images which are equal to the default images of the operator are not considered custom images.
+func (v *validator) validatePodOverrides(ctx context.Context, tempo v1alpha1.TempoStack) field.ErrorList {
+	var paths []*field.Path
+	images := tempo.Spec.Images
+	defaultImages := v.ctrlConfig.DefaultImages
+	imagesPath := field.NewPath("spec", "images")
+
+	if images.Tempo != "" && images.Tempo != defaultImages.Tempo {
+		paths = append(paths, imagesPath.Child("tempo"))
+	}
+	if images.TempoQuery != "" && images.TempoQuery != defaultImages.TempoQuery {
+		paths = append(paths, imagesPath.Child("tempoQuery"))
+	}
+	if images.JaegerQuery != "" && images.JaegerQuery != defaultImages.JaegerQuery {
+		paths = append(paths, imagesPath.Child("jaegerQuery"))
+	}
+	if images.TempoGateway != "" && images.TempoGateway != defaultImages.TempoGateway {
+		paths = append(paths, imagesPath.Child("tempoGateway"))
+	}
+	if images.TempoGatewayOpa != "" && images.TempoGatewayOpa != defaultImages.TempoGatewayOpa {
+		paths = append(paths, imagesPath.Child("tempoGatewayOpa"))
+	}
+	if images.OauthProxy != "" && images.OauthProxy != defaultImages.OauthProxy {
+		paths = append(paths, imagesPath.Child("oauthProxy"))
+	}
+	if tempo.Spec.ServiceAccount != "" && tempo.Spec.ServiceAccount != naming.DefaultServiceAccountName(tempo.Name) {
+		paths = append(paths, field.NewPath("spec", "serviceAccount"))
+	}
+	if len(tempo.Spec.Env) > 0 {
+		paths = append(paths, field.NewPath("spec", "env"))
+	}
+	if len(tempo.Spec.EnvFrom) > 0 {
+		paths = append(paths, field.NewPath("spec", "envFrom"))
+	}
+
+	if len(paths) == 0 {
+		return nil
+	}
+
+	err := validatePodCreatePermission(ctx, v.client, tempo.Namespace)
+	if err == nil {
+		return nil
+	}
+
+	var allErrs field.ErrorList
+	for _, path := range paths {
+		allErrs = append(allErrs, field.Forbidden(path, fmt.Sprintf("setting this field requires permission to create pods: %v", err)))
+	}
+	return allErrs
+}
+
 func (v *validator) validateServiceAccount(ctx context.Context, tempo v1alpha1.TempoStack) field.ErrorList {
 	var allErrs field.ErrorList
 
@@ -442,9 +498,8 @@ func (v *validator) validateGateway(ctx context.Context, tempo v1alpha1.TempoSta
 		if tempo.Spec.Tenants != nil && tempo.Spec.Tenants.Mode == v1alpha1.ModeOpenShift {
 			err := validateGatewayOpenShiftModeRBAC(ctx, v.client)
 			if err != nil {
-				return nil, field.ErrorList{field.Invalid(
+				return nil, field.ErrorList{field.Forbidden(
 					field.NewPath("spec").Child("tenants").Child("mode"),
-					tempo.Spec.Tenants.Mode,
 					fmt.Sprintf("Cannot enable OpenShift tenancy mode: %v", err),
 				)}
 			}
@@ -632,6 +687,7 @@ func (v *validator) validate(ctx context.Context, tempo *v1alpha1.TempoStack) (a
 	}
 
 	allErrors = append(allErrors, validateName(tempo.Name)...)
+	allErrors = append(allErrors, v.validatePodOverrides(ctx, *tempo)...)
 	allErrors = append(allErrors, v.validateServiceAccount(ctx, *tempo)...)
 	addValidationResults(v.validateStorage(ctx, *tempo))
 

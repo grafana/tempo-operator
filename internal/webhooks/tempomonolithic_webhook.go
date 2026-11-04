@@ -90,6 +90,7 @@ func (v *monolithicValidator) validateTempoMonolithic(ctx context.Context, tempo
 	errors = append(errors, v.validateJaegerUI(tempo)...)
 	addValidationResults(v.validateMultitenancy(ctx, tempo))
 	errors = append(errors, v.validateObservability(tempo)...)
+	errors = append(errors, v.validatePodOverrides(ctx, tempo)...)
 	errors = append(errors, v.validateServiceAccount(ctx, tempo)...)
 	errors = append(errors, v.validateConflictWithTempoStack(ctx, tempo)...)
 
@@ -191,9 +192,8 @@ func (v *monolithicValidator) validateMultitenancy(ctx context.Context, tempo te
 	if tempo.Spec.Multitenancy != nil && tempo.Spec.Multitenancy.Mode == tempov1alpha1.ModeOpenShift {
 		err := validateGatewayOpenShiftModeRBAC(ctx, v.client)
 		if err != nil {
-			return nil, field.ErrorList{field.Invalid(
+			return nil, field.ErrorList{field.Forbidden(
 				multitenancyBase.Child("mode"),
-				tempo.Spec.Multitenancy.Mode,
 				fmt.Sprintf("Cannot enable OpenShift tenancy mode: %v", err),
 			)}
 		}
@@ -293,6 +293,39 @@ func (v *monolithicValidator) validateServiceAccount(ctx context.Context, tempo 
 	}
 
 	return nil
+}
+
+// validatePodOverrides verifies that the user requesting the change has permission to create pods
+// if a custom ServiceAccount or environment variables are set.
+// Otherwise a user with permission to create TempoMonolithic CRs, but without permission to create pods,
+// could let the operator create pods with arbitrary ServiceAccounts or Secrets exposed as environment variables.
+func (v *monolithicValidator) validatePodOverrides(ctx context.Context, tempo tempov1alpha1.TempoMonolithic) field.ErrorList {
+	var paths []*field.Path
+
+	if tempo.Spec.ServiceAccount != "" {
+		paths = append(paths, field.NewPath("spec", "serviceAccount"))
+	}
+	if len(tempo.Spec.Env) > 0 {
+		paths = append(paths, field.NewPath("spec", "env"))
+	}
+	if len(tempo.Spec.EnvFrom) > 0 {
+		paths = append(paths, field.NewPath("spec", "envFrom"))
+	}
+
+	if len(paths) == 0 {
+		return nil
+	}
+
+	err := validatePodCreatePermission(ctx, v.client, tempo.Namespace)
+	if err == nil {
+		return nil
+	}
+
+	var allErrs field.ErrorList
+	for _, path := range paths {
+		allErrs = append(allErrs, field.Forbidden(path, fmt.Sprintf("setting this field requires permission to create pods: %v", err)))
+	}
+	return allErrs
 }
 
 func (v *monolithicValidator) validateExtraConfig(tempo tempov1alpha1.TempoMonolithic) admission.Warnings {
