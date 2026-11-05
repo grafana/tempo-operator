@@ -166,18 +166,70 @@ func TestGetS3Params_short_lived_custom_endpoint_secure(t *testing.T) {
 }
 
 func TestGetS3Params_short_lived_invalid_endpoint(t *testing.T) {
-	storageSecret := corev1.Secret{
-		Data: map[string][]byte{
-			"bucket":   []byte("testbucket"),
-			"region":   []byte("us-iso-east-1"),
-			"endpoint": []byte("s3.us-iso-east-1.c2s.ic.gov"),
-		},
+	// The scheme of the endpoint selects the transport, therefore it must be explicit:
+	// a missing or unknown scheme must not silently fall back to plain HTTP.
+	tests := []struct {
+		name     string
+		endpoint string
+		wantErr  string
+	}{
+		{name: "no scheme", endpoint: "s3.us-iso-east-1.c2s.ic.gov", wantErr: "http:// or https:// scheme"},
+		{name: "host and port without scheme", endpoint: "s3.us-iso-east-1.c2s.ic.gov:443", wantErr: "http:// or https:// scheme"},
+		{name: "unsupported scheme", endpoint: "s3://s3.us-iso-east-1.c2s.ic.gov", wantErr: "http:// or https:// scheme"},
+		{name: "missing host", endpoint: "https://", wantErr: "http:// or https:// scheme"},
+		{name: "path", endpoint: "https://s3.us-iso-east-1.c2s.ic.gov/bucket", wantErr: "only contain a scheme, a host and an optional port"},
+		{name: "query", endpoint: "https://s3.us-iso-east-1.c2s.ic.gov?a=b", wantErr: "only contain a scheme, a host and an optional port"},
+		{name: "credentials", endpoint: "https://user:pass@s3.us-iso-east-1.c2s.ic.gov", wantErr: "only contain a scheme, a host and an optional port"},
 	}
 
-	_, errs := getS3Params(storageSecret, nil, v1alpha1.CredentialModeTokenCCO)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			storageSecret := corev1.Secret{
+				Data: map[string][]byte{
+					"bucket":   []byte("testbucket"),
+					"region":   []byte("us-iso-east-1"),
+					"endpoint": []byte(tt.endpoint),
+				},
+			}
 
-	require.Len(t, errs, 1)
-	require.Contains(t, errs[0].Detail, "must be a valid URL")
+			_, errs := getS3Params(storageSecret, nil, v1alpha1.CredentialModeTokenCCO)
+
+			require.Len(t, errs, 1)
+			require.Contains(t, errs[0].Detail, tt.wantErr)
+		})
+	}
+}
+
+func TestGetS3Params_short_lived_endpoint_scheme(t *testing.T) {
+	tests := []struct {
+		name         string
+		endpoint     string
+		wantEndpoint string
+		wantInsecure bool
+	}{
+		{name: "http", endpoint: "http://s3.us-iso-east-1.c2s.ic.gov", wantEndpoint: "s3.us-iso-east-1.c2s.ic.gov", wantInsecure: true},
+		{name: "https", endpoint: "https://s3.us-iso-east-1.c2s.ic.gov", wantEndpoint: "s3.us-iso-east-1.c2s.ic.gov", wantInsecure: false},
+		{name: "uppercase scheme", endpoint: "HTTPS://s3.us-iso-east-1.c2s.ic.gov", wantEndpoint: "s3.us-iso-east-1.c2s.ic.gov", wantInsecure: false},
+		{name: "port and trailing slash", endpoint: "http://s3.us-iso-east-1.c2s.ic.gov:8080/", wantEndpoint: "s3.us-iso-east-1.c2s.ic.gov:8080", wantInsecure: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			storageSecret := corev1.Secret{
+				Data: map[string][]byte{
+					"bucket":   []byte("testbucket"),
+					"region":   []byte("us-iso-east-1"),
+					"endpoint": []byte(tt.endpoint),
+				},
+			}
+
+			s3, errs := getS3Params(storageSecret, nil, v1alpha1.CredentialModeTokenCCO)
+
+			require.Len(t, errs, 0)
+			require.Equal(t, tt.wantEndpoint, s3.Endpoint)
+			require.Equal(t, tt.wantInsecure, s3.Insecure)
+		})
+	}
 }
 
 func TestGetS3Params_short_lived_audience_override(t *testing.T) {

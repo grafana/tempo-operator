@@ -22,8 +22,9 @@ subtext: |
 
   The storage secret of the `token` and `token-cco` credential modes accepts two new optional fields:
 
-  * `endpoint` overrides the auto-generated S3 endpoint, and its scheme selects the transport: an
-    `http://` endpoint configures Tempo to reach S3 over plain HTTP. Previously, these modes always
+  * `endpoint` overrides the auto-generated S3 endpoint. It must be an `http://` or `https://` URL
+    without a path, and its scheme selects the transport: an `http://` endpoint configures Tempo to
+    reach S3 over plain HTTP. Previously, these modes always
     used HTTPS: the field was ignored, and caused a validation error when the credential mode was
     auto-detected.
   * `audience` overrides the audience of the projected service account token.

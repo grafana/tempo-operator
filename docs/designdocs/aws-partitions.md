@@ -49,11 +49,13 @@ every partition, which is also the default audience of the pod identity webhook.
 The storage secret of the `token` and `token-cco` modes accepts two optional fields:
 
 * `endpoint` overrides the auto-generated S3 endpoint, for private endpoints and for endpoints
-  behind a proxy. Its scheme selects the transport: `http://` makes Tempo reach S3 over plain HTTP,
-  and any other scheme keeps HTTPS. Amazon S3 accepts both protocols in every partition unless a
+  behind a proxy. It must be an `http://` or `https://` URL with only a host and an optional port,
+  otherwise the storage secret is rejected. Its scheme selects the transport: `http://` makes Tempo
+  reach S3 over plain HTTP, and `https://` keeps HTTPS. The scheme is mandatory so that a missing or
+  mistyped one never silently falls back to plain HTTP. Amazon S3 accepts both protocols in every partition unless a
   bucket policy denies HTTP through the `aws:SecureTransport` condition key, which AWS recommends.
-  This is the same rule as for the `static` mode: in all modes, setting `spec.storage.tls.enabled`
-  forces HTTPS regardless of the scheme.
+  The `static` mode keeps its more lenient validation for backwards compatibility. In all modes,
+  setting `spec.storage.tls.enabled` forces HTTPS regardless of the scheme.
 * `audience` overrides the audience of the projected service account token, for the case the IAM
   OIDC identity provider of the cluster was registered with a different one.
 
