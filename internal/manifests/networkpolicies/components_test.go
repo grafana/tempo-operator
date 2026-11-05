@@ -590,6 +590,32 @@ func TestExtractStoragePorts(t *testing.T) {
 			expectedLength: 1,
 		},
 		{
+			name: "S3 token-cco mode over HTTP (ISO partition)",
+			storageParams: manifestutils.StorageParams{
+				S3: &manifestutils.S3{
+					Region:   "us-iso-east-1",
+					Endpoint: "s3.us-iso-east-1.c2s.ic.gov",
+					Insecure: true,
+				},
+				CredentialMode: v1alpha1.CredentialModeTokenCCO,
+			},
+			expectedPort:   80,
+			expectedLength: 1,
+		},
+		{
+			name: "S3 token mode with a custom endpoint port",
+			storageParams: manifestutils.StorageParams{
+				S3: &manifestutils.S3{
+					Region:   "us-iso-east-1",
+					Endpoint: "s3.us-iso-east-1.c2s.ic.gov:9000",
+					Insecure: true,
+				},
+				CredentialMode: v1alpha1.CredentialModeToken,
+			},
+			expectedPort:   9000,
+			expectedLength: 1,
+		},
+		{
 			name: "S3 token mode (AWS)",
 			storageParams: manifestutils.StorageParams{
 				S3: &manifestutils.S3{

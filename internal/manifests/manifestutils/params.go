@@ -68,6 +68,11 @@ type S3 struct {
 	RoleARN  string
 	Region   string
 	Insecure bool
+	// Partition is the AWS partition the region belongs to.
+	// The zero value is treated as the commercial partition.
+	Partition AWSPartition
+	// Audience of the projected service account token. Empty means AWSDefaultAudience.
+	Audience string
 }
 
 // StorageTLS holds StorageTLS configuration.
