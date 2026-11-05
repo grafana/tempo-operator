@@ -1599,7 +1599,7 @@ func TestValidateStorageSecret(t *testing.T) {
 				},
 			},
 			expected: field.ErrorList{
-				field.Invalid(secretNamePath, tempoS3.Spec.Storage.Secret.Name, "\"endpoint\" field of storage secret must be a valid URL"),
+				field.Invalid(secretNamePath, tempoS3.Spec.Storage.Secret.Name, "\"endpoint\" field of storage secret must be a URL with an http:// or https:// scheme"),
 			},
 		},
 	}

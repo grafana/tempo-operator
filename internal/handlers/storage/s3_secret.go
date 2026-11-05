@@ -88,12 +88,12 @@ func validateS3Secret(storageSecret corev1.Secret, path *field.Path, credentialM
 	case v1alpha1.CredentialModeToken:
 		var allErrs field.ErrorList
 		allErrs = append(allErrs, ensureNotEmpty(storageSecret, s3ShortLivedFields, path)...)
-		allErrs = append(allErrs, validateS3Endpoint(storageSecret, path)...)
+		allErrs = append(allErrs, validateS3ShortLivedEndpoint(storageSecret, path)...)
 		return allErrs
 	case v1alpha1.CredentialModeTokenCCO:
 		var allErrs field.ErrorList
 		allErrs = append(allErrs, ensureNotEmpty(storageSecret, s3CCOShortLivedFields, path)...)
-		allErrs = append(allErrs, validateS3Endpoint(storageSecret, path)...)
+		allErrs = append(allErrs, validateS3ShortLivedEndpoint(storageSecret, path)...)
 		return allErrs
 	}
 
@@ -135,10 +135,14 @@ func getS3ShortLivedParams(storageSecret corev1.Secret, mode v1alpha1.Credential
 	// The endpoint is optional for short lived credentials: by default it is derived from the
 	// region and the partition it belongs to. An explicit endpoint supports private endpoints,
 	// and its scheme is the only way to reach S3 over plain HTTP in these modes.
+	// validateS3ShortLivedEndpoint guarantees the endpoint is an http:// or https:// URL.
 	endpoint := partition.S3Endpoint(region)
 	insecure := false
 	if rawEndpoint, ok := storageSecret.Data["endpoint"]; ok {
-		endpoint, insecure = parseS3Endpoint(string(rawEndpoint))
+		if u, err := url.Parse(string(rawEndpoint)); err == nil {
+			endpoint = u.Host
+			insecure = u.Scheme == "http"
+		}
 	}
 
 	// The audience must match a client ID of the IAM OIDC identity provider of the cluster.
@@ -180,6 +184,37 @@ func validateS3Endpoint(storageSecret corev1.Secret, path *field.Path) field.Err
 			path,
 			storageSecret.Name,
 			"\"endpoint\" field of storage secret must be a valid URL",
+		)}
+	}
+
+	return nil
+}
+
+// validateS3ShortLivedEndpoint ensures the optional "endpoint" field of a storage secret with
+// short lived credentials is an http:// or https:// URL consisting only of a host and an optional
+// port. Unlike in the static mode, which accepts any scheme for backwards compatibility, the
+// scheme must be explicit: it selects the transport, and a missing or unknown scheme must not
+// silently fall back to plain HTTP.
+func validateS3ShortLivedEndpoint(storageSecret corev1.Secret, path *field.Path) field.ErrorList {
+	endpoint, ok := storageSecret.Data["endpoint"]
+	if !ok {
+		return nil
+	}
+
+	u, err := url.Parse(string(endpoint))
+	if err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {
+		return field.ErrorList{field.Invalid(
+			path,
+			storageSecret.Name,
+			"\"endpoint\" field of storage secret must be a URL with an http:// or https:// scheme",
+		)}
+	}
+
+	if u.User != nil || (u.Path != "" && u.Path != "/") || u.RawQuery != "" || u.Fragment != "" {
+		return field.ErrorList{field.Invalid(
+			path,
+			storageSecret.Name,
+			"\"endpoint\" field of storage secret must only contain a scheme, a host and an optional port",
 		)}
 	}
 
