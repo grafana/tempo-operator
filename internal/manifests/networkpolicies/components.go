@@ -141,7 +141,7 @@ func policyPeersFor(name string, params manifestutils.Params) []networkingv1.Net
 			peers := make([]networkingv1.NetworkPolicyPeer, 0, len(params.KubeAPIServer.IPs))
 			for _, ip := range params.KubeAPIServer.IPs {
 				peers = append(peers, networkingv1.NetworkPolicyPeer{
-					IPBlock: &networkingv1.IPBlock{CIDR: ip + "/32"},
+					IPBlock: &networkingv1.IPBlock{CIDR: ipToCIDR(ip)},
 				})
 			}
 			return peers
@@ -153,6 +153,17 @@ func policyPeersFor(name string, params manifestutils.Params) []networkingv1.Net
 				IPBlock: &networkingv1.IPBlock{CIDR: "0.0.0.0/0"},
 			},
 		}
+	case netPolicyKubeAPIServerSvc:
+		// Allow egress to the cluster IP of the kubernetes service. CNIs which evaluate egress
+		// policies before the service IP is translated to an endpoint IP see this address as the
+		// destination, so allowing the endpoints alone is not enough.
+		peers := make([]networkingv1.NetworkPolicyPeer, 0, len(params.KubeAPIServer.ServiceIPs))
+		for _, ip := range params.KubeAPIServer.ServiceIPs {
+			peers = append(peers, networkingv1.NetworkPolicyPeer{
+				IPBlock: &networkingv1.IPBlock{CIDR: ipToCIDR(ip)},
+			})
+		}
+		return peers
 	case netPolicyOAuthServer:
 		// Allow egress to OpenShift OAuth server for token exchange
 		// The OAuth server can be accessed via route (external) or service (internal)
@@ -196,8 +207,11 @@ const (
 	netPolicyOtelTargets       = "otel"
 	netPolicyClusterComponents = "cluster"
 	netPolicyKubeAPIServer     = "kube-apiserver"
-	netPolicyOAuthServer       = "oauth-server"
-	netPolicyPrometheusServer  = "prometheus"
+	// netPolicyKubeAPIServerSvc is the cluster IP of the kubernetes service, which is a separate
+	// target from the endpoints of the API server because it has its own address and port.
+	netPolicyKubeAPIServerSvc = "kube-apiserver-service"
+	netPolicyOAuthServer      = "oauth-server"
+	netPolicyPrometheusServer = "prometheus"
 )
 
 func componentRelations(params manifestutils.Params) networkRelations {
@@ -226,7 +240,9 @@ func componentRelations(params manifestutils.Params) networkRelations {
 		}
 		// Use discovered Kubernetes API server ports, or fall back to default 6443
 		kubeAPIServer = params.KubeAPIServer.Ports
-		oauthServer   = []networkingv1.NetworkPolicyPort{
+		// Ports of the kubernetes service, which differ from the ports of its endpoints
+		kubeAPIServerSvc = params.KubeAPIServer.ServicePorts
+		oauthServer      = []networkingv1.NetworkPolicyPort{
 			{
 				Protocol: ptr.To(corev1.ProtocolTCP),
 				Port:     ptr.To(intstr.FromInt(443)),
@@ -315,6 +331,12 @@ func componentRelations(params manifestutils.Params) networkRelations {
 		// Gateway needs to access Kubernetes API server for TokenReview/SubjectAccessReview
 		// when using OpenShift RBAC mode for multi-tenancy
 		fromTo[manifestutils.GatewayComponentName][netPolicyKubeAPIServer] = kubeAPIServer
+
+		// The gateway reaches the API server through the cluster IP of the kubernetes service,
+		// which some CNIs see as the destination of the traffic instead of the endpoint IP.
+		if len(params.KubeAPIServer.ServiceIPs) > 0 && len(kubeAPIServerSvc) > 0 {
+			fromTo[manifestutils.GatewayComponentName][netPolicyKubeAPIServerSvc] = kubeAPIServerSvc
+		}
 
 		// Gateway needs to access OpenShift OAuth server for token exchange
 		// when using OpenShift authentication mode

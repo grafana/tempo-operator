@@ -26,8 +26,8 @@ func TestGenerateOperatorPolicies(t *testing.T) {
 
 	namespace := "($TEMPO_NAMESPACE)"
 
-	// Use fallback API server info for tests (port 6443, no specific IPs)
-	apiServerInfo := fallbackKubeAPIServerInfo()
+	// Use fallback API server info for tests (port 6443, no specific IPs, no service IPs)
+	apiServerInfo := fallbackKubeAPIServerInfo(nil, nil)
 
 	policies := GenerateOperatorPolicies(namespace, apiServerInfo)
 
@@ -149,4 +149,49 @@ func loadExpectedPolicies(t *testing.T, filePath string) ([]client.Object, error
 		objs = append(objs, policy)
 	}
 	return objs, nil
+}
+
+// TestGenerateOperatorPoliciesWithAPIServerServiceIP covers https://github.com/grafana/tempo-operator/issues/1386:
+// the operator dials the cluster IP of the kubernetes service, which CNIs evaluating egress
+// policies before DNAT see as the destination of the traffic.
+func TestGenerateOperatorPoliciesWithAPIServerServiceIP(t *testing.T) {
+	apiServerInfo := manifestutils.KubeAPIServerInfo{
+		Ports: []networkingv1.NetworkPolicyPort{
+			{Protocol: ptr.To(corev1.ProtocolTCP), Port: ptr.To(intstr.FromInt(6443))},
+		},
+		IPs: []string{"10.0.0.1", "10.0.0.2"},
+		ServicePorts: []networkingv1.NetworkPolicyPort{
+			{Protocol: ptr.To(corev1.ProtocolTCP), Port: ptr.To(intstr.FromInt(443))},
+		},
+		ServiceIPs: []string{"10.96.0.1"},
+	}
+
+	policy := policyAPIServer("operator", "tempo-operator-system", apiServerInfo)
+
+	require.Len(t, policy.Spec.Egress, 2, "expected one rule for the endpoints and one for the service")
+
+	endpoints := policy.Spec.Egress[0]
+	assert.Equal(t, int32(6443), endpoints.Ports[0].Port.IntVal)
+	assert.Equal(t, []networkingv1.NetworkPolicyPeer{
+		{IPBlock: &networkingv1.IPBlock{CIDR: "10.0.0.1/32"}},
+		{IPBlock: &networkingv1.IPBlock{CIDR: "10.0.0.2/32"}},
+	}, endpoints.To)
+
+	service := policy.Spec.Egress[1]
+	assert.Equal(t, int32(443), service.Ports[0].Port.IntVal)
+	assert.Equal(t, []networkingv1.NetworkPolicyPeer{
+		{IPBlock: &networkingv1.IPBlock{CIDR: "10.96.0.1/32"}},
+	}, service.To)
+}
+
+func TestGenerateOperatorPoliciesWithoutAPIServerServiceIP(t *testing.T) {
+	apiServerInfo := manifestutils.KubeAPIServerInfo{
+		Ports: []networkingv1.NetworkPolicyPort{
+			{Protocol: ptr.To(corev1.ProtocolTCP), Port: ptr.To(intstr.FromInt(6443))},
+		},
+		IPs: []string{"10.0.0.1"},
+	}
+
+	policy := policyAPIServer("operator", "tempo-operator-system", apiServerInfo)
+	assert.Len(t, policy.Spec.Egress, 1)
 }

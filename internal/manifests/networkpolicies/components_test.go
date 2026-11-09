@@ -5,6 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -646,4 +647,62 @@ func TestExtractStoragePorts(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestGatewayEgressToAPIServerService covers https://github.com/grafana/tempo-operator/issues/1386
+// for the operand policies: the gateway reaches the API server through the cluster IP of the
+// kubernetes service, which CNIs evaluating egress policies before DNAT see as the destination.
+func TestGatewayEgressToAPIServerService(t *testing.T) {
+	params := manifestutils.Params{
+		Tempo: v1alpha1.TempoStack{
+			ObjectMeta: metav1.ObjectMeta{Name: "simplest", Namespace: "observability"},
+			Spec: v1alpha1.TempoStackSpec{
+				Template: v1alpha1.TempoTemplateSpec{
+					Gateway: v1alpha1.TempoGatewaySpec{Enabled: true},
+				},
+			},
+		},
+		KubeAPIServer: manifestutils.KubeAPIServerInfo{
+			Ports: []networkingv1.NetworkPolicyPort{
+				{Protocol: ptr.To(corev1.ProtocolTCP), Port: ptr.To(intstr.FromInt(6443))},
+			},
+			IPs: []string{"10.0.0.1"},
+			ServicePorts: []networkingv1.NetworkPolicyPort{
+				{Protocol: ptr.To(corev1.ProtocolTCP), Port: ptr.To(intstr.FromInt(443))},
+			},
+			ServiceIPs: []string{"10.96.0.1"},
+		},
+	}
+
+	np := generatePolicyFor(params, manifestutils.GatewayComponentName)
+	require.NotNil(t, np)
+
+	hasEgressTo := func(cidr string, port int) bool {
+		for _, egress := range np.Spec.Egress {
+			matchesPort := false
+			for _, p := range egress.Ports {
+				if p.Port != nil && p.Port.IntValue() == port {
+					matchesPort = true
+				}
+			}
+			if !matchesPort {
+				continue
+			}
+			for _, to := range egress.To {
+				if to.IPBlock != nil && to.IPBlock.CIDR == cidr {
+					return true
+				}
+			}
+		}
+		return false
+	}
+
+	assert.True(t, hasEgressTo("10.0.0.1/32", 6443), "gateway should reach the API server endpoints")
+	assert.True(t, hasEgressTo("10.96.0.1/32", 443), "gateway should reach the cluster IP of the kubernetes service")
+
+	// without a discovered service the policy stays as before
+	params.KubeAPIServer.ServiceIPs = nil
+	params.KubeAPIServer.ServicePorts = nil
+	np = generatePolicyFor(params, manifestutils.GatewayComponentName)
+	assert.False(t, hasEgressTo("10.96.0.1/32", 443))
 }
