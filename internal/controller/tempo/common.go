@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/google/go-cmp/cmp"
@@ -27,6 +28,7 @@ import (
 	"github.com/grafana/tempo-operator/internal/handlers/gateway"
 	"github.com/grafana/tempo-operator/internal/manifests"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
+	"github.com/grafana/tempo-operator/internal/manifests/networkpolicies"
 	"github.com/grafana/tempo-operator/internal/status"
 	"github.com/grafana/tempo-operator/internal/webhooks"
 )
@@ -90,6 +92,22 @@ var (
 		DeleteFunc:  func(e event.DeleteEvent) bool { return true },
 		GenericFunc: func(e event.GenericEvent) bool { return false },
 	})
+	// apiServerEndpointSliceChanged matches changes of the EndpointSlice of the Kubernetes API server.
+	// The IP addresses of the API server are embedded in the NetworkPolicies, so the policies must be
+	// refreshed whenever those addresses change, e.g. when a control plane node is replaced.
+	// Updates which leave the addresses and ports untouched cannot change the generated policies
+	// and are filtered out.
+	apiServerEndpointSliceChanged = predicate.And[client.Object](
+		predicate.NewPredicateFuncs(networkpolicies.IsAPIServerEndpointSlice),
+		predicate.Funcs{
+			UpdateFunc: func(e event.UpdateEvent) bool {
+				oldIPs, oldPorts := networkpolicies.EndpointSliceIPsAndPorts(e.ObjectOld)
+				newIPs, newPorts := networkpolicies.EndpointSliceIPsAndPorts(e.ObjectNew)
+				return !slices.Equal(oldIPs, newIPs) || !slices.Equal(oldPorts, newPorts)
+			},
+		},
+	)
+	apiServerEndpointSlicePred = ctrlbuilder.WithPredicates(apiServerEndpointSliceChanged)
 )
 
 func statusDifferent(e event.UpdateEvent) bool {

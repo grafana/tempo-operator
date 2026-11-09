@@ -17,7 +17,9 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/version"
 	"k8s.io/client-go/rest"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
 	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
@@ -155,4 +157,22 @@ func TestReconcileOperator(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Len(t, list.Items, 0)
 	}
+}
+
+// TestSetupOperatorControllerWithManager verifies that the controller watching the EndpointSlice
+// of the Kubernetes API server can be registered. The controller has no For() object, which the
+// controller-runtime builder only rejects at runtime.
+func TestSetupOperatorControllerWithManager(t *testing.T) {
+	mgr, err := ctrl.NewManager(testCfg, ctrl.Options{
+		Scheme:  testScheme,
+		Metrics: metricsserver.Options{BindAddress: "0"},
+	})
+	require.NoError(t, err)
+
+	reconciler := &OperatorReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+		Config: mgr.GetConfig(),
+	}
+	require.NoError(t, reconciler.SetupWithManager(mgr, configv1alpha1.ProjectConfig{}))
 }
