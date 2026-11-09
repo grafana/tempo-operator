@@ -8,12 +8,15 @@ import (
 
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	v1 "k8s.io/api/apps/v1"
+	discoveryv1 "k8s.io/api/discovery/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	configv1alpha1 "github.com/grafana/tempo-operator/api/config/v1alpha1"
 	"github.com/grafana/tempo-operator/internal/manifests"
@@ -27,6 +30,32 @@ type OperatorReconciler struct {
 	client.Client
 	Config *rest.Config
 	Scheme *runtime.Scheme
+}
+
+// SetupWithManager sets up the controller with the Manager.
+//
+// The NetworkPolicies of the operator contain the IP addresses of the Kubernetes API server,
+// which change for example when a control plane node is replaced. Watch the EndpointSlice of the
+// API server and build the manifests again on every change, otherwise the operator keeps a policy
+// pointing at IP addresses which do not exist anymore and loses access to the API server.
+func (r *OperatorReconciler) SetupWithManager(mgr ctrl.Manager, ctrlConfig configv1alpha1.ProjectConfig) error {
+	return ctrl.NewControllerManagedBy(mgr).
+		Named("operator").
+		Watches(
+			&discoveryv1.EndpointSlice{},
+			handler.EnqueueRequestsFromMapFunc(enqueueOperatorReconcile),
+			apiServerEndpointSlicePred,
+		).
+		Complete(reconcile.Func(func(ctx context.Context, _ ctrl.Request) (ctrl.Result, error) {
+			return ctrl.Result{}, r.Reconcile(ctx, ctrlConfig)
+		}))
+}
+
+// enqueueOperatorReconcile maps an event to a single, empty request. The operator reconciler
+// manages one fixed set of manifests instead of acting on the object of the event, and identical
+// requests are deduplicated by the controller, so a burst of events results in one reconcile.
+func enqueueOperatorReconcile(_ context.Context, _ client.Object) []reconcile.Request {
+	return []reconcile.Request{{}}
 }
 
 func (r *OperatorReconciler) getOperatorDeployment(ctx context.Context) (v1.Deployment, error) {

@@ -2,6 +2,8 @@ package networkpolicies
 
 import (
 	"context"
+	"maps"
+	"slices"
 
 	corev1 "k8s.io/api/core/v1"
 	discoveryv1 "k8s.io/api/discovery/v1"
@@ -14,6 +16,51 @@ import (
 	"github.com/grafana/tempo-operator/internal/manifests/manifestutils"
 )
 
+const (
+	// apiServerNamespace is the namespace of the service of the Kubernetes API server.
+	apiServerNamespace = "default"
+	// apiServerServiceName is the name of the service of the Kubernetes API server.
+	apiServerServiceName = "kubernetes"
+	// serviceNameLabel is set by Kubernetes on every EndpointSlice and holds the name of the owning service.
+	serviceNameLabel = "kubernetes.io/service-name"
+)
+
+// IsAPIServerEndpointSlice returns true if the given object is an EndpointSlice of the
+// Kubernetes API server service.
+func IsAPIServerEndpointSlice(obj client.Object) bool {
+	return obj.GetNamespace() == apiServerNamespace &&
+		obj.GetLabels()[serviceNameLabel] == apiServerServiceName
+}
+
+// EndpointSliceIPsAndPorts returns the deduplicated and sorted IP addresses and ports of an
+// EndpointSlice. These are the only parts of the slice which end up in the NetworkPolicies,
+// therefore two slices with an equal result produce identical policies.
+// It returns nothing if the object is not an EndpointSlice.
+func EndpointSliceIPsAndPorts(obj client.Object) ([]string, []int32) {
+	endpointSlice, ok := obj.(*discoveryv1.EndpointSlice)
+	if !ok {
+		return nil, nil
+	}
+
+	ipSet := map[string]struct{}{}
+	for _, endpoint := range endpointSlice.Endpoints {
+		for _, addr := range endpoint.Addresses {
+			ipSet[addr] = struct{}{}
+		}
+	}
+
+	portSet := map[int32]struct{}{}
+	for _, port := range endpointSlice.Ports {
+		if port.Port != nil {
+			portSet[*port.Port] = struct{}{}
+		}
+	}
+
+	// Sort both, so that a reordering of the endpoints by the API server does not
+	// produce a different NetworkPolicy.
+	return slices.Sorted(maps.Keys(ipSet)), slices.Sorted(maps.Keys(portSet))
+}
+
 // DiscoverKubernetesAPIServer discovers the Kubernetes API server endpoints and ports
 // from the EndpointSlice in the default namespace.
 // It returns both the ports and IP addresses that can be used in NetworkPolicies.
@@ -24,7 +71,7 @@ func DiscoverKubernetesAPIServer(ctx context.Context, k8sClient client.Client) m
 	// List EndpointSlices for the kubernetes service
 	endpointSliceList := &discoveryv1.EndpointSliceList{}
 	err := k8sClient.List(ctx, endpointSliceList, &client.ListOptions{
-		Namespace: "default",
+		Namespace: apiServerNamespace,
 	})
 	if err != nil {
 		logger.Error(err, "failed to list EndpointSlices, falling back to default API server port 6443")
@@ -34,7 +81,7 @@ func DiscoverKubernetesAPIServer(ctx context.Context, k8sClient client.Client) m
 	// Find the kubernetes service EndpointSlice
 	var kubeEndpointSlice *discoveryv1.EndpointSlice
 	for i := range endpointSliceList.Items {
-		if endpointSliceList.Items[i].Labels["kubernetes.io/service-name"] == "kubernetes" {
+		if IsAPIServerEndpointSlice(&endpointSliceList.Items[i]) {
 			kubeEndpointSlice = &endpointSliceList.Items[i]
 			break
 		}
@@ -45,31 +92,14 @@ func DiscoverKubernetesAPIServer(ctx context.Context, k8sClient client.Client) m
 		return fallbackKubeAPIServerInfo()
 	}
 
-	// Extract ports from the EndpointSlice
+	ips, portNumbers := EndpointSliceIPsAndPorts(kubeEndpointSlice)
+
 	var ports []networkingv1.NetworkPolicyPort
-	portSet := make(map[int32]bool) // Use a set to deduplicate ports
-
-	for _, port := range kubeEndpointSlice.Ports {
-		if port.Port != nil && !portSet[*port.Port] {
-			portSet[*port.Port] = true
-			ports = append(ports, networkingv1.NetworkPolicyPort{
-				Protocol: ptr.To(corev1.ProtocolTCP),
-				Port:     ptr.To(intstr.FromInt(int(*port.Port))),
-			})
-		}
-	}
-
-	// Extract IP addresses from the endpoints
-	var ips []string
-	ipSet := make(map[string]bool) // Use a set to deduplicate IPs
-
-	for _, endpoint := range kubeEndpointSlice.Endpoints {
-		for _, addr := range endpoint.Addresses {
-			if !ipSet[addr] {
-				ipSet[addr] = true
-				ips = append(ips, addr)
-			}
-		}
+	for _, port := range portNumbers {
+		ports = append(ports, networkingv1.NetworkPolicyPort{
+			Protocol: ptr.To(corev1.ProtocolTCP),
+			Port:     ptr.To(intstr.FromInt(int(port))),
+		})
 	}
 
 	// If no ports or IPs found, fall back to defaults
