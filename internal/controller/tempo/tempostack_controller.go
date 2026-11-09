@@ -12,6 +12,7 @@ import (
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	discoveryv1 "k8s.io/api/discovery/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -265,6 +266,11 @@ func (r *TempoStackReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			&corev1.Secret{},
 			handler.EnqueueRequestsFromMapFunc(r.findTempoStackForStorageSecret),
 			createUpdateOrDeletePred,
+		).
+		Watches(
+			&discoveryv1.EndpointSlice{},
+			handler.EnqueueRequestsFromMapFunc(r.findAllTempoStacks),
+			apiServerEndpointSlicePred,
 		)
 
 	if r.CtrlConfig.Gates.OpenShift.OpenShiftRoute {
@@ -286,6 +292,28 @@ func (r *TempoStackReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	}
 
 	return builder.Complete(r)
+}
+
+// findAllTempoStacks returns a reconcile request for every TempoStack in the cluster.
+// The NetworkPolicies of an instance pin the IP addresses of the Kubernetes API server, so every
+// instance has to be reconciled when those addresses change, otherwise the gateway of the instance
+// loses access to the API server and cannot authorize requests anymore.
+func (r *TempoStackReconciler) findAllTempoStacks(ctx context.Context, _ client.Object) []reconcile.Request {
+	tempostacks := &v1alpha1.TempoStackList{}
+	err := r.List(ctx, tempostacks)
+	if err != nil {
+		ctrl.LoggerFrom(ctx).Error(err, "failed to list TempoStacks to refresh the NetworkPolicies of the Kubernetes API server")
+		return nil
+	}
+
+	requests := make([]reconcile.Request, len(tempostacks.Items))
+	for i := range tempostacks.Items {
+		requests[i] = reconcile.Request{
+			NamespacedName: client.ObjectKeyFromObject(&tempostacks.Items[i]),
+		}
+	}
+
+	return requests
 }
 
 func (r *TempoStackReconciler) findTempoStackForStorageSecret(ctx context.Context, secret client.Object) []reconcile.Request {
