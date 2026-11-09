@@ -22,11 +22,28 @@ func policyAPIServer(instanceName, namespace string, apiServerInfo manifestutils
 	if len(apiServerInfo.IPs) > 0 {
 		for _, ip := range apiServerInfo.IPs {
 			egressRule.To = append(egressRule.To, networkingv1.NetworkPolicyPeer{
-				IPBlock: &networkingv1.IPBlock{CIDR: ip + "/32"},
+				IPBlock: &networkingv1.IPBlock{CIDR: ipToCIDR(ip)},
 			})
 		}
 	}
 	// If no specific IPs, To field remains nil which allows all destinations (port restriction still applies)
+
+	egress := []networkingv1.NetworkPolicyEgressRule{egressRule}
+
+	// Clients reach the API server through the cluster IP of the kubernetes service. CNIs which
+	// evaluate egress policies before the service IP is translated to an endpoint IP see that
+	// address and port as the destination, so allow them in a rule of their own.
+	if len(apiServerInfo.ServiceIPs) > 0 && len(apiServerInfo.ServicePorts) > 0 {
+		serviceRule := networkingv1.NetworkPolicyEgressRule{
+			Ports: apiServerInfo.ServicePorts,
+		}
+		for _, ip := range apiServerInfo.ServiceIPs {
+			serviceRule.To = append(serviceRule.To, networkingv1.NetworkPolicyPeer{
+				IPBlock: &networkingv1.IPBlock{CIDR: ipToCIDR(ip)},
+			})
+		}
+		egress = append(egress, serviceRule)
+	}
 
 	return &networkingv1.NetworkPolicy{
 		TypeMeta: metav1.TypeMeta{
@@ -45,7 +62,7 @@ func policyAPIServer(instanceName, namespace string, apiServerInfo manifestutils
 			PolicyTypes: []networkingv1.PolicyType{
 				networkingv1.PolicyTypeEgress,
 			},
-			Egress: []networkingv1.NetworkPolicyEgressRule{egressRule},
+			Egress: egress,
 		},
 	}
 }
