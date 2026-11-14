@@ -14,7 +14,7 @@ require (
 	github.com/onsi/ginkgo/v2 v2.32.1
 	github.com/onsi/gomega v1.44.0
 	github.com/openshift/cloud-credential-operator v0.0.0-20250417173756-8ff60a024ed9
-	github.com/openshift/library-go v0.0.0-20261001144932-192662696fc7
+	github.com/openshift/library-go v0.0.0-20261110211704-6859b4a48389
 	github.com/operator-framework/api v0.45.0
 	github.com/operator-framework/operator-lib v0.19.0
 	github.com/prometheus/client_golang v1.25.0
@@ -39,7 +39,7 @@ require (
 )
 
 require (
-	github.com/openshift/api v0.0.0-20261002115817-f8795cdde518
+	github.com/openshift/api v0.0.0-20261023091600-9809689a2448
 	github.com/openshift/controller-runtime-common v0.0.0-20261008111711-8ec0dc844066
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.74.0
 	github.com/stretchr/testify v1.12.1
