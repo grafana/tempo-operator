@@ -142,8 +142,8 @@ func (r *OperatorReconciler) pruneObjects(ctx context.Context, featureGates conf
 			if err != nil {
 				return fmt.Errorf("error listing service monitors: %w", err)
 			}
-			for _, obj := range servicemonitorList.Items {
-				err = r.Delete(ctx, obj, &client.DeleteOptions{})
+			for i := range servicemonitorList.Items {
+				err = r.Delete(ctx, &servicemonitorList.Items[i], &client.DeleteOptions{})
 				if err != nil {
 					return fmt.Errorf("failed to prune service monitor: %w", err)
 				}
@@ -155,8 +155,8 @@ func (r *OperatorReconciler) pruneObjects(ctx context.Context, featureGates conf
 			if err != nil {
 				return fmt.Errorf("error listing prometheus rules: %w", err)
 			}
-			for _, obj := range prometheusruleList.Items {
-				err = r.Delete(ctx, obj, &client.DeleteOptions{})
+			for i := range prometheusruleList.Items {
+				err = r.Delete(ctx, &prometheusruleList.Items[i], &client.DeleteOptions{})
 				if err != nil {
 					return fmt.Errorf("failed to prune prometheus rule: %w", err)
 				}

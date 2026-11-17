@@ -337,7 +337,7 @@ func (r *TempoMonolithicReconciler) getOwnedObjects(ctx context.Context, tempo v
 			return nil, fmt.Errorf("error listing service monitors: %w", err)
 		}
 		for i := range servicemonitorList.Items {
-			ownedObjects[servicemonitorList.Items[i].GetUID()] = servicemonitorList.Items[i]
+			ownedObjects[servicemonitorList.Items[i].GetUID()] = &servicemonitorList.Items[i]
 		}
 
 		prometheusRulesList := &monitoringv1.PrometheusRuleList{}
@@ -346,7 +346,7 @@ func (r *TempoMonolithicReconciler) getOwnedObjects(ctx context.Context, tempo v
 			return nil, fmt.Errorf("error listing prometheus rules: %w", err)
 		}
 		for i := range prometheusRulesList.Items {
-			ownedObjects[prometheusRulesList.Items[i].GetUID()] = prometheusRulesList.Items[i]
+			ownedObjects[prometheusRulesList.Items[i].GetUID()] = &prometheusRulesList.Items[i]
 		}
 	}
 
