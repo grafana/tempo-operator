@@ -13,9 +13,13 @@ func DiscoverTokenCCOAuthConfig() *manifestutils.TokenCCOAuthConfig {
 
 	switch {
 	case roleARN != "":
+		// The partition of the resources the role may access must match the partition of
+		// the role itself, which is the second field of its ARN.
+		partition, _ := manifestutils.AWSPartitionForARN(roleARN)
 		return &manifestutils.TokenCCOAuthConfig{
 			AWS: &manifestutils.TokenCCOAWSEnvironment{
-				RoleARN: roleARN,
+				RoleARN:   roleARN,
+				Partition: partition.ID,
 			},
 		}
 	}

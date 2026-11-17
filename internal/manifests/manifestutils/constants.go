@@ -173,12 +173,13 @@ const (
 
 	tokenAuthConfigVolumeName       = "token-auth-config"       //#nosec G101 -- False positive
 	tokenAuthConfigDirectory        = "/etc/storage/token-auth" //#nosec G101 -- False positive
-	awsDefaultAudience              = "sts.amazonaws.com"
 	saTokenVolumeName               = "bound-sa-token"
 	saTokenExpiration         int64 = 3600
 	saTokenVolumeMountPath          = "/var/run/secrets/storage/serviceaccount" //#nosec G101 -- False positive
 	// ServiceAccountTokenFilePath path for token STS.
 	ServiceAccountTokenFilePath = saTokenVolumeMountPath + "/token"
+	// AWSDefaultAudience default aws audience for short lived tokens.
+	AWSDefaultAudience = "sts.amazonaws.com"
 	// AzureDefaultAudience default azure audience.
 	AzureDefaultAudience = "api://AzureADTokenExchange"
 	// GcpDefaultAudience default gcp audience for short token.
