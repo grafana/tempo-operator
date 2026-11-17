@@ -56,9 +56,9 @@ func GetStorageParamsForTempoStack(ctx context.Context, client client.Client, te
 			storageParams.CloudCredentials.ContentHash = contentHash
 		}
 
-		// getS3Params() sets S3.Insecure:
-		// - for static credentials, S3.Insecure is derived from the endpoint scheme (http:// means insecure)
-		// - for token-based credentials, S3.Insecure is false (TLS is always enabled)
+		// getS3Params() derives S3.Insecure from the scheme of the endpoint field of the storage
+		// secret (http:// means insecure). The endpoint is required for static credentials, and
+		// optional for token-based credentials, which default to HTTPS without it.
 		storageParams.S3, errs = getS3Params(storageSecret, secretNamePath, credentialMode)
 		if len(errs) > 0 {
 			return manifestutils.StorageParams{}, errs
@@ -191,9 +191,9 @@ func GetStorageParamsForTempoMonolithic(ctx context.Context, client client.Clien
 			storageParams.CloudCredentials.ContentHash = contentHash
 		}
 
-		// getS3Params() sets S3.Insecure:
-		// - for static credentials, S3.Insecure is derived from the endpoint scheme (http:// means insecure)
-		// - for token-based credentials, S3.Insecure is false (TLS is always enabled)
+		// getS3Params() derives S3.Insecure from the scheme of the endpoint field of the storage
+		// secret (http:// means insecure). The endpoint is required for static credentials, and
+		// optional for token-based credentials, which default to HTTPS without it.
 		storageParams.S3, errs = getS3Params(storageSecret, secretNamePath, credentialMode)
 		if len(errs) > 0 {
 			return manifestutils.StorageParams{}, errs
