@@ -25,7 +25,7 @@ jobs:
           - name: min
             kube-version: "1.25"
           - name: max
-            kube-version: "1.36"
+            kube-version: "1.37"
 
     steps:
     - name: Checkout
