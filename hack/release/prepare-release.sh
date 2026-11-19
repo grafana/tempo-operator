@@ -53,6 +53,16 @@ require_commands git gh go make
 require_gh_auth
 
 BRANCH="releases/$VERSION"
+# Used both as the commit message and as the pull request title, and both of
+# them matter:
+#   * "[chore]" makes the changelog workflow skip this pull request, which
+#     consumes the .chloggen entries instead of adding one.
+#   * the release workflow only cuts a release for a commit whose message
+#     contains "[chore] Prepare release v", so that no other change to the
+#     CHANGELOG reaching main can trigger one. Keeping the commit message and
+#     the title identical makes that hold whether the pull request is squashed,
+#     rebased or merged.
+TITLE="[chore] Prepare release v$VERSION"
 UPSTREAM_REMOTE=$(remote_for_repo "$UPSTREAM_REPO") \
     || fail "no git remote points at $UPSTREAM_REPO"
 
@@ -99,7 +109,7 @@ make chlog-update OPERATOR_VERSION="$VERSION"
 info "committing to $BRANCH"
 git checkout --quiet -b "$BRANCH"
 git add -A
-git commit --quiet -m "Prepare Release $VERSION"
+git commit --quiet -m "$TITLE"
 git --no-pager show --stat HEAD
 
 if [[ "$DRY_RUN" == "true" ]]; then
@@ -111,9 +121,6 @@ fi
 info "pushing $BRANCH to $FORK_REMOTE"
 git push --quiet --force --set-upstream "$FORK_REMOTE" "$BRANCH"
 
-# The changelog CI job requires every pull request to add a .chloggen entry.
-# This one consumes them instead, so the title is prefixed with [chore] to skip
-# that check.
 info "creating the pull request against $UPSTREAM_REPO"
 head="$BRANCH"
 [[ "$FORK_REPO" == "$UPSTREAM_REPO" ]] || head="${FORK_REPO%%/*}:$BRANCH"
@@ -121,7 +128,7 @@ gh pr create \
     --repo "$UPSTREAM_REPO" \
     --base main \
     --head "$head" \
-    --title "[chore] Prepare release v$VERSION" \
+    --title "$TITLE" \
     --body "v$VERSION"
 
 cat <<EOF

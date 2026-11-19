@@ -24,6 +24,9 @@ Steps to release a new version of the Tempo Operator:
    from your fork. Pass `--dry-run` to review the changes before anything is pushed.
 1. Use that branch to build, deploy and, run OpenShift tests against an OpenShift cluster (see below for instructions).
 1. Once the PR above is merged and available in the `main` branch, it will trigger the release workflow which will create the tag, the GitHub release, and push the images, bundle and catalog to ghcr.io.
+   The workflow only runs for commits whose message contains "[chore] Prepare release v", so that
+   no other change reaching `CHANGELOG.md` can cut a release, and it is a no-op if the version
+   has already been released.
 1. Once the release workflow finished, run `./hack/release/operatorhub-release.sh`. This takes the
    bundles from the `vx.y.z` tag and opens a PR against `k8s-operatorhub/community-operators`
    (community bundle) and `redhat-openshift-ecosystem/community-operators-prod` (openshift
