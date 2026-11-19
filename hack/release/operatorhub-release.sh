@@ -107,13 +107,6 @@ publish() {
         return 0
     fi
 
-    # Only the maintainers listed in ci.yaml can get a pull request merged
-    # automatically by the OperatorHub pipeline.
-    local ci_file="$clone_dir/operators/tempo-operator/ci.yaml"
-    if [[ -f "$ci_file" ]] && ! grep -qE "^[[:space:]]*-[[:space:]]+${GH_USER}[[:space:]]*$" "$ci_file"; then
-        warn "[$org_repo] $GH_USER is not listed in operators/tempo-operator/ci.yaml, the pull request will not be merged automatically"
-    fi
-
     info "[$org_repo] copying the $variant bundle to operators/tempo-operator/$VERSION"
     mkdir -p "$dest"
     git archive "v$VERSION" "bundle/$variant" | tar -x --strip-components=2 -C "$dest"
