@@ -6,8 +6,8 @@ The release is driven from your machine with the scripts in `hack/release/`, usi
 GitHub credentials. You need:
 
 * An authenticated [`gh`](https://cli.github.com/) (`gh auth login`), plus `go` and `make`.
-* A fork of `grafana/tempo-operator` and a git remote pointing at it. The scripts pick the first
-  remote that is not the upstream repository, override it with `FORK_REMOTE=<remote>`.
+* Write access to `grafana/tempo-operator`: the release branch is pushed to the repository itself.
+  Commit signing has to be configured, it is required on every branch.
 * Your GitHub user listed in `operators/tempo-operator/ci.yaml` of
   [k8s-operatorhub/community-operators](https://github.com/k8s-operatorhub/community-operators)
   and [redhat-openshift-ecosystem/community-operators-prod](https://github.com/redhat-openshift-ecosystem/community-operators-prod),
@@ -20,8 +20,8 @@ Steps to release a new version of the Tempo Operator:
 1. Checkout the main branch, and make sure you have the latest changes.
 1. Confirm that `MIN_KUBERNETES_VERSION` and [`MIN_OPENSHIFT_VERSION`](https://access.redhat.com/support/policy/updates/openshift#dates) in the `Makefile` are still up-to-date, and create a PR if required.
 1. Run `./hack/release/prepare-release.sh x.y.z`. This bumps `OPERATOR_VERSION`, regenerates the
-   bundles and the CHANGELOG, and creates a PR with the title "[chore] Prepare release vx.y.z"
-   from your fork. Pass `--dry-run` to review the changes before anything is pushed.
+   bundles and the CHANGELOG, and creates a PR with the title "[chore] Prepare release vx.y.z".
+   Pass `--dry-run` to review the changes before anything is pushed.
 1. Use that branch to build, deploy and, run OpenShift tests against an OpenShift cluster (see below for instructions).
 1. Once the PR above is merged and available in the `main` branch, it will trigger the release workflow which will create the tag, the GitHub release, and push the images, bundle and catalog to ghcr.io.
    The workflow only runs for commits whose message contains "[chore] Prepare release v", so that
