@@ -10,11 +10,19 @@ permissions: {}
 
 jobs:
   release:
+    # Only the pull request created by hack/release/prepare-release.sh cuts a
+    # release. Any other change to the CHANGELOG must not, and one can reach
+    # main: the changelog workflow lets a pull request modify the CHANGELOG
+    # when its title contains "[chore]" or it carries the "Skip Changelog"
+    # label. "contains" rather than "startsWith" so this holds for squash,
+    # rebase and merge commits alike.
+    if: contains(github.event.head_commit.message, '[chore] Prepare release v')
     permissions:
       contents: write
     runs-on: ubuntu-22.04
     outputs:
       operator_version: ${{ steps.operator-version.outputs.version }}
+      already_released: ${{ steps.released.outputs.already_released }}
     steps:
     - name: Checkout
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -27,17 +35,36 @@ jobs:
       id: operator-version
       run: echo "version=$(grep -Eo '## [0-9]+\.[0-9]+\.[0-9]+' CHANGELOG.md | head -n 1 | awk '{print $2}')" >> "$GITHUB_OUTPUT"
 
+    # Re-running the workflow, or merging a change that touches an already
+    # released section of the CHANGELOG, should be a no-op rather than a
+    # failure on "gh release create".
+    - name: Check whether this version was already released
+      id: released
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        OPERATOR_VERSION: ${{ steps.operator-version.outputs.version }}
+      run: |
+        if gh release view "v${OPERATOR_VERSION}" --repo "${{ github.repository }}" >/dev/null 2>&1; then
+          echo "::notice::v${OPERATOR_VERSION} has already been released, skipping."
+          echo "already_released=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "already_released=false" >> "$GITHUB_OUTPUT"
+        fi
+
     - name: Set up Go
+      if: steps.released.outputs.already_released == 'false'
       uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
       with:
         go-version-file: go.mod
 
     - name: "generate release resources"
+      if: steps.released.outputs.already_released == 'false'
       run: make release-artifacts
       env:
         IMG_PREFIX: ghcr.io/${{ github.repository }}
 
     - name: "create the release in GitHub"
+      if: steps.released.outputs.already_released == 'false'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         OPERATOR_VERSION: ${{ steps.operator-version.outputs.version }}
@@ -51,6 +78,7 @@ jobs:
 
   publish-images:
     needs: release
+    if: needs.release.outputs.already_released == 'false'
     uses: ./.github/workflows/reusable-publish-images.yaml
     permissions:
       packages: write # push container image
@@ -59,27 +87,5 @@ jobs:
       version_tag: v${{ needs.release.outputs.operator_version }}
       push: true
 
-
-  operator-hub-prod-release:
-    needs: publish-images
-    uses: ./.github/workflows/reusable-operator-hub-release.yaml
-    with:
-      org: redhat-openshift-ecosystem
-      repo: community-operators-prod
-      branch: ${{ github.event.pull_request.head.ref }}
-      oprepo: ${{ github.repository }}
-      bundletype: openshift
-    secrets:
-      TEMPOOPERATORBOT_GITHUB_TOKEN: ${{ secrets.TEMPOOPERATORBOT_GITHUB_TOKEN }}
-
-  operator-hub-community-release:
-    needs: publish-images
-    uses: ./.github/workflows/reusable-operator-hub-release.yaml
-    with:
-      org: k8s-operatorhub
-      repo: community-operators
-      branch: ${{ github.event.pull_request.head.ref }}
-      oprepo: ${{ github.repository }}
-      bundletype: community
-    secrets:
-      TEMPOOPERATORBOT_GITHUB_TOKEN: ${{ secrets.TEMPOOPERATORBOT_GITHUB_TOKEN }}
+  # The OperatorHub pull requests are created locally by a release manager with
+  # ./hack/release/operatorhub-release.sh, see RELEASE.md.
