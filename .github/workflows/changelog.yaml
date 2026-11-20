@@ -27,7 +27,7 @@ permissions:
 
 jobs:
   changelog:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-26.04
     if: |
       github.event.pull_request.user.login != 'dependabot[bot]' &&
       github.event.pull_request.user.login != 'renovate-sh-app[bot]' &&
