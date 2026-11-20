@@ -19,7 +19,7 @@ jobs:
     if: contains(github.event.head_commit.message, '[chore] Prepare release v')
     permissions:
       contents: write
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-26.04
     outputs:
       operator_version: ${{ steps.operator-version.outputs.version }}
       already_released: ${{ steps.released.outputs.already_released }}

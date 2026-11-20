@@ -15,7 +15,7 @@ permissions: {}
 jobs:
   e2e-tests:
     name: End-to-end tests ${{ matrix.name }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-26.04
     strategy:
       matrix:
         # The e2e tests are run on the lowest and highest supported k8s version.
@@ -64,7 +64,7 @@ jobs:
 
   upgrade-tests:
     name: Upgrade tests ${{ matrix.name }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-26.04
     strategy:
       matrix:
         include:
