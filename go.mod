@@ -26,7 +26,7 @@ require (
 	go.opentelemetry.io/otel/metric v1.47.0
 	go.opentelemetry.io/otel/sdk/metric v1.47.0
 	go.uber.org/zap v1.28.0
-	gopkg.in/yaml.v2 v2.4.0
+	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.37.2
 	k8s.io/apiextensions-apiserver v0.37.2
 	k8s.io/apimachinery v0.37.2
@@ -43,7 +43,6 @@ require (
 	github.com/openshift/controller-runtime-common v0.0.0-20261026124434-bdfc411d93cd
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.86.1
 	github.com/stretchr/testify v1.12.1
-	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/utils v0.0.0-20261023123148-ca04ba58ecab
 	sigs.k8s.io/controller-tools v0.23.0
 )
