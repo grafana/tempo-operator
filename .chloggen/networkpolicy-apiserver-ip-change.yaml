@@ -1,0 +1,11 @@
+change_type: bug_fix
+component: operator
+note: Update the NetworkPolicies of the operator and of every TempoStack when the IP addresses of the Kubernetes API server change
+issues: [1737]
+subtext: |
+  The NetworkPolicies allowing egress to the Kubernetes API server pin the IP addresses of the
+  API server endpoints. Those addresses change when a control plane node is replaced, and the
+  policies were only built at operator startup and on reconcile of a TempoStack. The operator and
+  the gateway therefore lost access to the API server until they were restarted or the instance
+  was changed. The operator now watches the EndpointSlice of the API server and rebuilds the
+  affected policies when the addresses or ports change.

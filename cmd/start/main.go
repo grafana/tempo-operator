@@ -186,13 +186,13 @@ func start(c *cobra.Command, args []string) {
 }
 
 func addDependencies(mgr ctrl.Manager, ctrlConfig configv1alpha1.ProjectConfig) error {
-	err := mgr.Add(manager.RunnableFunc(func(ctx context.Context) error {
-		reconciler := &controllers.OperatorReconciler{
-			Client: mgr.GetClient(),
-			Scheme: mgr.GetScheme(),
-			Config: mgr.GetConfig(),
-		}
+	reconciler := &controllers.OperatorReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+		Config: mgr.GetConfig(),
+	}
 
+	err := mgr.Add(manager.RunnableFunc(func(ctx context.Context) error {
 		// log error but do not fail operator startup if operator reconcile fails
 		// operator reconcile is only used for creating ServiceMonitor and PrometheusRules of the operator itself
 		err := reconciler.Reconcile(ctx, ctrlConfig)
@@ -203,6 +203,15 @@ func addDependencies(mgr ctrl.Manager, ctrlConfig configv1alpha1.ProjectConfig) 
 	}))
 	if err != nil {
 		return fmt.Errorf("failed to setup operator reconciler: %w", err)
+	}
+
+	// The NetworkPolicies of the operator pin the IP addresses of the Kubernetes API server,
+	// so they must be rebuilt whenever those addresses change. The reconcile above only runs once,
+	// at startup.
+	if ctrlConfig.Gates.NetworkPolicies {
+		if err := reconciler.SetupWithManager(mgr, ctrlConfig); err != nil {
+			return fmt.Errorf("failed to setup operator controller: %w", err)
+		}
 	}
 
 	return nil

@@ -11,6 +11,7 @@ import (
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 
@@ -22,6 +23,7 @@ import (
 var k8sClient client.Client
 var testEnv *envtest.Environment
 var testScheme *runtime.Scheme = scheme.Scheme
+var testCfg *rest.Config
 
 func TestMain(m *testing.M) {
 	testEnv = &envtest.Environment{
@@ -36,6 +38,7 @@ func TestMain(m *testing.M) {
 		fmt.Printf("failed to start testEnv: %v", err)
 		os.Exit(1)
 	}
+	testCfg = cfg
 
 	if err := v1alpha1.AddToScheme(testScheme); err != nil {
 		fmt.Printf("failed to register scheme: %v", err)
