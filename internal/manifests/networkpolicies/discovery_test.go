@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	corev1 "k8s.io/api/core/v1"
 	discoveryv1 "k8s.io/api/discovery/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -151,5 +152,96 @@ func TestDiscoverKubernetesAPIServer(t *testing.T) {
 		// Should deduplicate to 1 port and 2 IPs
 		assert.Len(t, info.Ports, 1)
 		assert.Len(t, info.IPs, 2)
+	})
+}
+
+func TestIPToCIDR(t *testing.T) {
+	assert.Equal(t, "10.0.0.1/32", ipToCIDR("10.0.0.1"))
+	assert.Equal(t, "fd00::1/128", ipToCIDR("fd00::1"))
+}
+
+func TestDiscoverKubernetesService(t *testing.T) {
+	scheme := runtime.NewScheme()
+	require.NoError(t, discoveryv1.AddToScheme(scheme))
+	require.NoError(t, corev1.AddToScheme(scheme))
+
+	kubernetesService := func(clusterIPs []string, ports []int32) *corev1.Service {
+		service := &corev1.Service{
+			ObjectMeta: metav1.ObjectMeta{Name: "kubernetes", Namespace: "default"},
+			Spec:       corev1.ServiceSpec{ClusterIPs: clusterIPs},
+		}
+		for _, port := range ports {
+			service.Spec.Ports = append(service.Spec.Ports, corev1.ServicePort{Port: port})
+		}
+		return service
+	}
+	endpointSlice := &discoveryv1.EndpointSlice{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "kubernetes",
+			Namespace: "default",
+			Labels:    map[string]string{"kubernetes.io/service-name": "kubernetes"},
+		},
+		Ports:     []discoveryv1.EndpointPort{{Port: ptr.To(int32(6443))}},
+		Endpoints: []discoveryv1.Endpoint{{Addresses: []string{"10.0.0.1"}}},
+	}
+
+	t.Run("discovers the cluster IP and port of the kubernetes service", func(t *testing.T) {
+		k8sClient := fake.NewClientBuilder().
+			WithScheme(scheme).
+			WithObjects(endpointSlice, kubernetesService([]string{"10.96.0.1"}, []int32{443})).
+			Build()
+
+		info := DiscoverKubernetesAPIServer(context.Background(), k8sClient)
+
+		assert.Equal(t, []string{"10.0.0.1"}, info.IPs)
+		assert.Equal(t, []string{"10.96.0.1"}, info.ServiceIPs)
+		require.Len(t, info.ServicePorts, 1)
+		assert.Equal(t, int32(443), info.ServicePorts[0].Port.IntVal)
+	})
+
+	t.Run("discovers both addresses of a dual-stack service", func(t *testing.T) {
+		k8sClient := fake.NewClientBuilder().
+			WithScheme(scheme).
+			WithObjects(endpointSlice, kubernetesService([]string{"10.96.0.1", "fd00::1"}, []int32{443})).
+			Build()
+
+		info := DiscoverKubernetesAPIServer(context.Background(), k8sClient)
+		assert.Equal(t, []string{"10.96.0.1", "fd00::1"}, info.ServiceIPs)
+	})
+
+	t.Run("keeps the service addresses when the endpoints cannot be discovered", func(t *testing.T) {
+		k8sClient := fake.NewClientBuilder().
+			WithScheme(scheme).
+			WithObjects(kubernetesService([]string{"10.96.0.1"}, []int32{443})).
+			Build()
+
+		info := DiscoverKubernetesAPIServer(context.Background(), k8sClient)
+
+		// falls back to 0.0.0.0/0 on port 6443, which does not cover the cluster IP on port 443
+		assert.Nil(t, info.IPs)
+		assert.Equal(t, []string{"10.96.0.1"}, info.ServiceIPs)
+		require.Len(t, info.ServicePorts, 1)
+		assert.Equal(t, int32(443), info.ServicePorts[0].Port.IntVal)
+	})
+
+	t.Run("ignores a headless service", func(t *testing.T) {
+		k8sClient := fake.NewClientBuilder().
+			WithScheme(scheme).
+			WithObjects(endpointSlice, kubernetesService([]string{corev1.ClusterIPNone}, []int32{443})).
+			Build()
+
+		info := DiscoverKubernetesAPIServer(context.Background(), k8sClient)
+		assert.Nil(t, info.ServiceIPs)
+		assert.Nil(t, info.ServicePorts)
+	})
+
+	t.Run("works without the kubernetes service", func(t *testing.T) {
+		k8sClient := fake.NewClientBuilder().WithScheme(scheme).WithObjects(endpointSlice).Build()
+
+		info := DiscoverKubernetesAPIServer(context.Background(), k8sClient)
+
+		assert.Equal(t, []string{"10.0.0.1"}, info.IPs)
+		assert.Nil(t, info.ServiceIPs)
+		assert.Nil(t, info.ServicePorts)
 	})
 }

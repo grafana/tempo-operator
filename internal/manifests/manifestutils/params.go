@@ -12,6 +12,12 @@ import (
 type KubeAPIServerInfo struct {
 	Ports []networkingv1.NetworkPolicyPort
 	IPs   []string
+	// ServiceIPs are the cluster IP addresses of the kubernetes service and ServicePorts are its
+	// ports. Clients reach the API server through them, and CNIs which evaluate egress policies
+	// before the service IP is translated to an endpoint IP see them as the destination,
+	// so they have to be allowed next to the endpoints themselves.
+	ServiceIPs   []string
+	ServicePorts []networkingv1.NetworkPolicyPort
 }
 
 // Params holds parameters used to create Tempo objects.

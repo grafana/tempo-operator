@@ -1,0 +1,10 @@
+change_type: bug_fix
+component: operator
+note: Allow egress to the cluster IP of the kubernetes service in the API server NetworkPolicies
+issues: [1386]
+subtext: |
+  The NetworkPolicies only allowed egress to the endpoints of the Kubernetes API server. Clients
+  reach the API server through the cluster IP of the kubernetes service, and CNIs which evaluate
+  egress policies before that address is translated to an endpoint address see it as the
+  destination, so the traffic was denied. On OpenShift the policies are evaluated after the
+  translation, which is why it only affected other distributions.
