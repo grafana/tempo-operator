@@ -15,7 +15,7 @@ require (
 	github.com/onsi/gomega v1.44.0
 	github.com/openshift/cloud-credential-operator v0.0.0-20261106184921-fba3af8b887d
 	github.com/openshift/library-go v0.0.0-20261001144932-192662696fc7
-	github.com/operator-framework/api v0.46.0
+	github.com/operator-framework/api v0.47.0
 	github.com/operator-framework/operator-lib v0.19.0
 	github.com/prometheus/client_golang v1.25.0
 	github.com/prometheus/common v0.74.0
