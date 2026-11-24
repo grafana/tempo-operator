@@ -219,8 +219,8 @@ github.com/opencontainers/image-spec v1.1.1 h1:y0fUlFfIZhPF1W537XOLg0/fcx6zcHCJw
 github.com/opencontainers/image-spec v1.1.1/go.mod h1:qpqAh3Dmcf36wStyyWU+kCeDgrGnAve2nCC8+7h8Q0M=
 github.com/openshift/api v0.0.0-20261002115817-f8795cdde518 h1:m0CfIxttdj/Wu0N/uHNgj3ZCB6zQpkWhbdr6rTK1q60=
 github.com/openshift/api v0.0.0-20261002115817-f8795cdde518/go.mod h1:2oI3aXQFDjjl7l4xA9ZPSkB+l+lyfWLg7P2sWg9yEvM=
-github.com/openshift/cloud-credential-operator v0.0.0-20261106184921-fba3af8b887d h1:1amym2Tl7OEvslPZUQWGMSf6eI9fn4DAd+GKaidI0vo=
-github.com/openshift/cloud-credential-operator v0.0.0-20261106184921-fba3af8b887d/go.mod h1:GsS1doj65MPP/j85qTJ8vyT0eiUZTiqDRaEWv7yFwqE=
+github.com/openshift/cloud-credential-operator v0.0.0-20261120214042-d2b6ffcb0c9f h1:70TMRRvdq+NRXG5mOgSutdd49ZNNqGMDnPf9A7HjAdg=
+github.com/openshift/cloud-credential-operator v0.0.0-20261120214042-d2b6ffcb0c9f/go.mod h1:Pkzu7FF5MhfUMw4pwGkSaIfPILabq5s/SgB3eTYL4sQ=
 github.com/openshift/controller-runtime-common v0.0.0-20261026124434-bdfc411d93cd h1:ryKoDx8pbVqytd/plQ5TvOeoTTC8l4akPB6O3FZULuQ=
 github.com/openshift/controller-runtime-common v0.0.0-20261026124434-bdfc411d93cd/go.mod h1:wRo2jx/+tZd6HnYYmKayArJgL3T6LLbovLr28DGukMg=
 github.com/openshift/library-go v0.0.0-20261001144932-192662696fc7 h1:PDH/v+jap31Eb4N9q+Q3X05QHIXZA4sVyr4zb/n+Cv0=

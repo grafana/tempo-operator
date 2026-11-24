@@ -13,7 +13,7 @@ require (
 	github.com/novln/docker-parser v1.0.0
 	github.com/onsi/ginkgo/v2 v2.34.0
 	github.com/onsi/gomega v1.44.0
-	github.com/openshift/cloud-credential-operator v0.0.0-20261106184921-fba3af8b887d
+	github.com/openshift/cloud-credential-operator v0.0.0-20261120214042-d2b6ffcb0c9f
 	github.com/openshift/library-go v0.0.0-20261001144932-192662696fc7
 	github.com/operator-framework/api v0.46.0
 	github.com/operator-framework/operator-lib v0.19.0
