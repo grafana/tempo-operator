@@ -10,14 +10,14 @@ spec:
   - name: step-00
     try:
     - command:
-        entrypoint: oc
+        entrypoint: kubectl
         args:
         - get
         - pods
         - -A
         - -l control-plane=controller-manager
         - -l app.kubernetes.io/name=tempo-operator
-        - -o 
+        - -o
         - jsonpath={.items[0].metadata.namespace}
         outputs:
         - name: TEMPO_NAMESPACE
